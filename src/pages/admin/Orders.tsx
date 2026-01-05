@@ -1,0 +1,236 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Search, Eye, Package } from 'lucide-react';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { ORDER_STATUSES } from '@/lib/constants';
+
+export default function AdminOrders() {
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const queryClient = useQueryClient();
+
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ['admin-orders', search, statusFilter],
+    queryFn: async () => {
+      let query = supabase
+        .from('orders')
+        .select(`*, order_items(*, products(name))`)
+        .order('created_at', { ascending: false });
+
+      if (search) query = query.ilike('customer_email', `%${search}%`);
+      if (statusFilter !== 'all') query = query.eq('status', statusFilter);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Order status updated');
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
+  const getStatusBadge = (status: string) => {
+    const config = ORDER_STATUSES[status as keyof typeof ORDER_STATUSES];
+    if (!config) return <Badge variant="outline">{status}</Badge>;
+
+    const colorMap: Record<string, string> = {
+      success: 'bg-green-500/10 text-green-500 border-green-500/30',
+      warning: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
+      destructive: 'bg-red-500/10 text-red-500 border-red-500/30',
+      primary: 'bg-primary/10 text-primary border-primary/30',
+      muted: 'bg-muted text-muted-foreground',
+    };
+
+    return (
+      <Badge variant="outline" className={colorMap[config.color] || colorMap.muted}>
+        {config.label}
+      </Badge>
+    );
+  };
+
+  return (
+    <AdminLayout requiredRoles={['admin', 'order_manager']}>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-display font-bold">Orders</h1>
+          <p className="text-muted-foreground">Manage customer orders</p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-card"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40 bg-card">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {Object.entries(ORDER_STATUSES).map(([key, { label }]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Order ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : orders?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No orders found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders?.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-sm">
+                      {order.id.slice(0, 8).toUpperCase()}
+                    </TableCell>
+                    <TableCell>{order.customer_email}</TableCell>
+                    <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>£{order.total.toFixed(2)}</TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Order Detail Dialog */}
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Order {selectedOrder?.id.slice(0, 8).toUpperCase()}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedOrder && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Customer</p>
+                  <p className="font-medium">{selectedOrder.customer_email}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Date</p>
+                  <p className="font-medium">{new Date(selectedOrder.created_at).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Payment Method</p>
+                  <p className="font-medium capitalize">{selectedOrder.payment_method || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Total</p>
+                  <p className="font-bold text-lg">£{selectedOrder.total.toFixed(2)}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Items</p>
+                <div className="space-y-2">
+                  {selectedOrder.order_items?.map((item: any) => (
+                    <div key={item.id} className="flex justify-between p-2 bg-muted/50 rounded">
+                      <span>{item.product_name}</span>
+                      <span className="font-medium">£{item.price.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Update Status</p>
+                <Select
+                  value={selectedOrder.status}
+                  onValueChange={(status) => {
+                    updateStatusMutation.mutate({ id: selectedOrder.id, status });
+                    setSelectedOrder({ ...selectedOrder, status });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(ORDER_STATUSES).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </AdminLayout>
+  );
+}
