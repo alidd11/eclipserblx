@@ -123,7 +123,16 @@ export default function Checkout() {
                 Payment
               </h2>
               
-              <StripeProvider>
+              <StripeProvider fallback={
+                <Button
+                  onClick={handleStripeCheckout}
+                  className="w-full h-12 gradient-button border-0"
+                  disabled={isProcessing}
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)}`}
+                </Button>
+              }>
                 <div className="space-y-4">
                   {/* Native Apple Pay / Google Pay */}
                   <PaymentRequestButton

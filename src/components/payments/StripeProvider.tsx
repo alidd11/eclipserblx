@@ -1,27 +1,36 @@
 import { ReactNode, useMemo } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
 interface StripeProviderProps {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
-export function StripeProvider({ children }: StripeProviderProps) {
-  const stripePromise = useMemo(() => {
-    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-    if (!publishableKey) {
-      console.error('Stripe publishable key not found');
-      return null;
-    }
-    return loadStripe(publishableKey);
-  }, []);
+// Initialize Stripe outside the component to avoid recreating on each render
+let stripePromise: Promise<Stripe | null> | null = null;
 
+function getStripePromise() {
   if (!stripePromise) {
-    return <>{children}</>;
+    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    if (publishableKey) {
+      stripePromise = loadStripe(publishableKey);
+    }
+  }
+  return stripePromise;
+}
+
+export function StripeProvider({ children, fallback }: StripeProviderProps) {
+  const stripe = useMemo(() => getStripePromise(), []);
+
+  // If no Stripe key, render fallback or nothing for payment buttons
+  if (!stripe) {
+    console.error('Stripe publishable key not found');
+    return <>{fallback ?? null}</>;
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ locale: 'en-GB' }}>
+    <Elements stripe={stripe} options={{ locale: 'en-GB' }}>
       {children}
     </Elements>
   );
