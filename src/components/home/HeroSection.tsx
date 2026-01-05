@@ -20,14 +20,13 @@ export function HeroSection() {
 
           {/* Heading */}
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-            Elevate Your{' '}
-            <span className="gradient-text">UK Roleplay</span>{' '}
-            Server
+            Power Your Server{' '}
+            <span className="gradient-text">With Eclipse</span>
           </h1>
 
           {/* Description */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Professional vehicle liveries, powerful scripts, stunning 3D models, and sleek UI kits. Everything you need to create an immersive UK roleplay experience.
+            Professional vehicle liveries, powerful scripts, stunning 3D models, and sleek UI kits. Everything you need to create an immersive roleplay experience.
           </p>
 
           {/* CTAs */}
