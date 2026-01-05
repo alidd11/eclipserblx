@@ -48,19 +48,25 @@ export function PaymentRequestButton({
       requestPayerEmail: true,
     });
 
-    pr.canMakePayment().then((result) => {
-      if (result) {
-        setCanMakePayment(true);
-        setPaymentRequest(pr);
-        if (result.applePay) {
-          setWalletType('applePay');
-        } else if (result.googlePay) {
-          setWalletType('googlePay');
+    pr.canMakePayment()
+      .then((result) => {
+        console.info('[PaymentRequest] canMakePayment result', result);
+        if (result) {
+          setCanMakePayment(true);
+          setPaymentRequest(pr);
+          if (result.applePay) {
+            setWalletType('applePay');
+          } else if (result.googlePay) {
+            setWalletType('googlePay');
+          }
+        } else {
+          setCanMakePayment(false);
         }
-      } else {
+      })
+      .catch((err) => {
+        console.error('[PaymentRequest] canMakePayment error', err);
         setCanMakePayment(false);
-      }
-    });
+      });
   }, [stripe, items, total]);
 
   useEffect(() => {
