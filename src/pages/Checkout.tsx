@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, Lock, ChevronLeft, Apple, Wallet } from 'lucide-react';
+import { CreditCard, Lock, ChevronLeft } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { StripeProvider } from '@/components/payments/StripeProvider';
+import { PaymentRequestButton } from '@/components/payments/PaymentRequestButton';
 
 export default function Checkout() {
   const { items, total } = useCart();
@@ -118,34 +120,50 @@ export default function Checkout() {
             <div className="gaming-card p-6 space-y-4">
               <h2 className="text-xl font-display font-bold flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Payment Methods
+                Payment
               </h2>
               
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
-                  <CreditCard className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm">Card</span>
-                </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
-                  <Apple className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm">Apple Pay</span>
-                </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
-                  <Wallet className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm">Google Pay</span>
-                </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
-                  <span className="text-sm font-semibold text-pink-400">Klarna</span>
-                </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50 col-span-2">
-                  <span className="text-sm font-semibold text-blue-400">PayPal</span>
-                </div>
-              </div>
+              <StripeProvider>
+                <div className="space-y-4">
+                  {/* Native Apple Pay / Google Pay */}
+                  <PaymentRequestButton
+                    items={items.map(item => ({
+                      id: item.id,
+                      name: item.name,
+                      price: item.price,
+                      image: item.image,
+                    }))}
+                    total={total}
+                    email={email || user?.email || ''}
+                    accessToken={session?.access_token}
+                    onProcessing={setIsProcessing}
+                  />
 
-              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-                <Lock className="h-4 w-4" />
-                Secure payment powered by Stripe
-              </div>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">Or pay with card</span>
+                    </div>
+                  </div>
+
+                  {/* Stripe Checkout Fallback */}
+                  <Button
+                    onClick={handleStripeCheckout}
+                    className="w-full h-12 gradient-button border-0"
+                    disabled={isProcessing}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)} with Card`}
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
+                    <Lock className="h-3 w-3" />
+                    Secure payment powered by Stripe
+                  </p>
+                </div>
+              </StripeProvider>
             </div>
           </div>
 
@@ -188,18 +206,6 @@ export default function Checkout() {
                 <span>£{total.toFixed(2)}</span>
               </div>
             </div>
-
-            <Button
-              onClick={handleStripeCheckout}
-              className="w-full h-12 gradient-button border-0"
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'Redirecting to payment...' : `Pay £${total.toFixed(2)}`}
-            </Button>
-
-            <p className="text-xs text-center text-muted-foreground">
-              You'll be redirected to Stripe's secure checkout
-            </p>
           </div>
         </div>
       </div>
