@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { CreditCard, Lock, ChevronLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CreditCard, Lock, ChevronLeft, Apple, Wallet } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCart();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { items, total } = useCart();
+  const { user, session } = useAuth();
   const [email, setEmail] = useState(user?.email || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
@@ -32,10 +31,8 @@ export default function Checkout() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email) {
+  const handleStripeCheckout = async () => {
+    if (!email && !user?.email) {
       toast.error('Please enter your email address');
       return;
     }
@@ -43,50 +40,31 @@ export default function Checkout() {
     setIsProcessing(true);
 
     try {
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          customer_email: email,
-          user_id: user?.id || null,
-          subtotal: total,
-          total: total,
-          status: 'pending',
-        })
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+          })),
+          email: email || user?.email,
+        },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`,
+        } : undefined,
+      });
 
-      if (orderError) throw orderError;
+      if (error) throw error;
 
-      // Create order items
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.id,
-        product_name: item.name,
-        price: item.price,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Update order to paid (simulating payment)
-      const { error: updateError } = await supabase
-        .from('orders')
-        .update({ status: 'paid', payment_method: 'stripe' })
-        .eq('id', order.id);
-
-      if (updateError) throw updateError;
-
-      clearCart();
-      toast.success('Order placed successfully!');
-      navigate(`/order-success?id=${order.id}`);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (error: any) {
       console.error('Checkout error:', error);
-      toast.error(error.message || 'Failed to process order');
-    } finally {
+      toast.error(error.message || 'Failed to start checkout');
       setIsProcessing(false);
     }
   };
@@ -101,7 +79,7 @@ export default function Checkout() {
 
         <h1 className="text-3xl md:text-4xl font-display font-bold">Checkout</h1>
 
-        <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Customer Details */}
           <div className="space-y-6">
             <div className="gaming-card p-6 space-y-4">
@@ -140,14 +118,33 @@ export default function Checkout() {
             <div className="gaming-card p-6 space-y-4">
               <h2 className="text-xl font-display font-bold flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Payment
+                Payment Methods
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Demo mode: Click "Complete Order" to simulate a successful payment.
-              </p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">Card</span>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
+                  <Apple className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">Apple Pay</span>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
+                  <Wallet className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">Google Pay</span>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50">
+                  <span className="text-sm font-semibold text-pink-400">Klarna</span>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-background/50 col-span-2">
+                  <span className="text-sm font-semibold text-blue-400">PayPal</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
                 <Lock className="h-4 w-4" />
-                Your payment information is secure
+                Secure payment powered by Stripe
               </div>
             </div>
           </div>
@@ -193,14 +190,18 @@ export default function Checkout() {
             </div>
 
             <Button
-              type="submit"
+              onClick={handleStripeCheckout}
               className="w-full h-12 gradient-button border-0"
               disabled={isProcessing}
             >
-              {isProcessing ? 'Processing...' : `Complete Order • £${total.toFixed(2)}`}
+              {isProcessing ? 'Redirecting to payment...' : `Pay £${total.toFixed(2)}`}
             </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              You'll be redirected to Stripe's secure checkout
+            </p>
           </div>
-        </form>
+        </div>
       </div>
     </MainLayout>
   );
