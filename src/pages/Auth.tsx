@@ -1,41 +1,126 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const emailSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+});
+
+type AuthMode = 'login' | 'signup' | 'forgot' | 'reset';
+
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [resetSent, setResetSent] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check for password reset flow (when user clicks reset link from email)
   useEffect(() => {
-    if (user) {
+    const type = searchParams.get('type');
+    if (type === 'recovery') {
+      setMode('reset');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (user && mode !== 'reset') {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, navigate, mode]);
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    const result = emailSchema.safeParse({ email });
+    if (!result.success) {
+      setErrors({ email: result.error.errors[0].message });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      });
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        setResetSent(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    if (password.length < 6) {
+      setErrors({ password: 'Password must be at least 6 characters' });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrors({ confirmPassword: 'Passwords do not match' });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Password Updated!',
+          description: 'Your password has been reset successfully.',
+        });
+        navigate('/');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     
-    // Validate
     const result = authSchema.safeParse({ email, password });
     if (!result.success) {
       const fieldErrors: { email?: string; password?: string } = {};
@@ -50,7 +135,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
@@ -102,6 +187,24 @@ export default function Auth() {
     }
   };
 
+  const getTitle = () => {
+    switch (mode) {
+      case 'signup': return 'Create Account';
+      case 'forgot': return 'Reset Password';
+      case 'reset': return 'Set New Password';
+      default: return 'Welcome Back';
+    }
+  };
+
+  const getDescription = () => {
+    switch (mode) {
+      case 'signup': return 'Join UK Roleplay Assets to start shopping';
+      case 'forgot': return 'Enter your email and we\'ll send you a reset link';
+      case 'reset': return 'Enter your new password below';
+      default: return 'Sign in to access your purchases and account';
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Background Effects */}
@@ -125,85 +228,190 @@ export default function Auth() {
             <div className="inline-flex h-12 w-12 rounded-xl gradient-button items-center justify-center mb-4">
               <span className="text-white font-display font-bold text-lg">UK</span>
             </div>
-            <h1 className="font-display text-2xl font-bold">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              {isLogin
-                ? 'Sign in to access your purchases and account'
-                : 'Join UK Roleplay Assets to start shopping'}
-            </p>
+            <h1 className="font-display text-2xl font-bold">{getTitle()}</h1>
+            <p className="text-muted-foreground mt-2">{getDescription()}</p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
-            {!isLogin && (
+          {/* Forgot Password Success */}
+          {mode === 'forgot' && resetSent ? (
+            <div className="gaming-card p-6 text-center space-y-4">
+              <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
+              <h2 className="font-display font-bold text-lg">Check Your Email</h2>
+              <p className="text-muted-foreground text-sm">
+                We've sent a password reset link to <strong>{email}</strong>. Click the link in the email to reset your password.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => { setMode('login'); setResetSent(false); }}
+                className="w-full"
+              >
+                Back to Sign In
+              </Button>
+            </div>
+          ) : mode === 'forgot' ? (
+            /* Forgot Password Form */
+            <form onSubmit={handleForgotPassword} className="gaming-card p-6 space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name (optional)</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="displayName"
-                  type="text"
-                  placeholder="Your name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="bg-input"
+                  required
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-input"
-                required
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
+              <Button
+                type="submit"
+                className="w-full gradient-button border-0"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send Reset Link
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setMode('login')}
+                className="w-full text-sm text-muted-foreground hover:text-foreground"
+              >
+                Back to Sign In
+              </button>
+            </form>
+          ) : mode === 'reset' ? (
+            /* Reset Password Form */
+            <form onSubmit={handleResetPassword} className="gaming-card p-6 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="password">New Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-input"
+                  required
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="bg-input"
+                  required
+                />
+                {errors.confirmPassword && (
+                  <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gradient-button border-0"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Update Password
+              </Button>
+            </form>
+          ) : (
+            /* Login/Signup Form */
+            <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
+              {mode === 'signup' && (
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Display Name (optional)</Label>
+                  <Input
+                    id="displayName"
+                    type="text"
+                    placeholder="Your name"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="bg-input"
+                  />
+                </div>
               )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-input"
-                required
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-input"
+                  required
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
 
-            <Button
-              type="submit"
-              className="w-full gradient-button border-0"
-              disabled={loading}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </Button>
-          </form>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => setMode('forgot')}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-input"
+                  required
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gradient-button border-0"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
+              </Button>
+            </form>
+          )}
 
           {/* Toggle */}
-          <p className="text-center text-sm text-muted-foreground">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline font-medium"
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
+          {(mode === 'login' || mode === 'signup') && (
+            <p className="text-center text-sm text-muted-foreground">
+              {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+              <button
+                type="button"
+                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                className="text-primary hover:underline font-medium"
+              >
+                {mode === 'login' ? 'Sign up' : 'Sign in'}
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>
