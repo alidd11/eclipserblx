@@ -1,5 +1,5 @@
-export const SITE_NAME = "UK Roleplay Assets";
-export const SITE_DESCRIPTION = "Premium Roblox assets for UK roleplay servers";
+export const SITE_NAME = "Eclipse";
+export const SITE_DESCRIPTION = "Premium Roblox assets for your roleplay servers";
 
 export const CATEGORIES = [
   { name: "Vehicle Liveries", slug: "vehicle-liveries", icon: "Car" },
