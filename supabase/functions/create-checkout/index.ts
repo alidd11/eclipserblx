@@ -85,18 +85,14 @@ serve(async (req) => {
     // Store order info in metadata
     const origin = req.headers.get("origin") || "http://localhost:5173";
 
-    // Create Stripe Checkout Session with multiple payment methods
+    // Create Stripe Checkout Session - uses automatic payment methods based on dashboard settings
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : userEmail,
       line_items: lineItems,
       mode: "payment",
-      payment_method_types: ["card", "klarna", "paypal"],
-      payment_method_options: {
-        card: {
-          request_three_d_secure: "automatic",
-        },
-      },
+      // Let Stripe automatically show available payment methods based on your dashboard settings
+      // Enable Apple Pay, Google Pay, Klarna, PayPal etc. in Stripe Dashboard > Settings > Payment methods
       success_url: successUrl || `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${origin}/checkout`,
       metadata: {
