@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.verify-payment]
 verify_jwt = false
+
+[functions.download-asset]
+verify_jwt = false
