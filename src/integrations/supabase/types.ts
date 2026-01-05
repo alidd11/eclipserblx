@@ -160,6 +160,45 @@ export type Database = {
         }
         Relationships: []
       }
+      download_logs: {
+        Row: {
+          downloaded_at: string
+          id: string
+          order_item_id: string | null
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          downloaded_at?: string
+          id?: string
+          order_item_id?: string | null
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          downloaded_at?: string
+          id?: string
+          order_item_id?: string | null
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "download_logs_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "download_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -462,6 +501,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_user_download: { Args: { _user_id: string }; Returns: boolean }
+      get_next_download_time: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
