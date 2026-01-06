@@ -42,6 +42,33 @@ export function CreateThreadDialog({
   // Show image upload for showcase and requests categories
   const showImageUpload = categorySlug === 'showcase' || categorySlug === 'requests';
 
+  // Check image for NSFW content
+  const checkNSFW = async (file: File): Promise<{ isNSFW: boolean; reason: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64 = reader.result as string;
+          const response = await supabase.functions.invoke('check-nsfw', {
+            body: { imageBase64: base64 }
+          });
+          
+          if (response.error) {
+            console.error('NSFW check error:', response.error);
+            resolve({ isNSFW: false, reason: '' }); // Allow on error
+            return;
+          }
+          
+          resolve(response.data);
+        } catch (error) {
+          console.error('NSFW check failed:', error);
+          resolve({ isNSFW: false, reason: '' }); // Allow on error
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !user) return;
@@ -58,6 +85,15 @@ export function CreateThreadDialog({
 
         if (file.size > 5 * 1024 * 1024) {
           toast.error(`${file.name} is too large (max 5MB)`);
+          continue;
+        }
+
+        // Check for NSFW content
+        toast.info(`Checking ${file.name}...`);
+        const nsfwResult = await checkNSFW(file);
+        
+        if (nsfwResult.isNSFW) {
+          toast.error(`${file.name} was rejected: ${nsfwResult.reason || 'Inappropriate content detected'}`);
           continue;
         }
 
