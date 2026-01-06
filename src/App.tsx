@@ -17,6 +17,7 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import ChatHistory from "./pages/ChatHistory";
 import Forum from "./pages/Forum";
+import ThreadDetail from "./pages/ThreadDetail";
 import Jobs from "./pages/Jobs";
 import RefundPolicy from "./pages/RefundPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/chat-history" element={<ChatHistory />} />
               <Route path="/forum" element={<Forum />} />
               <Route path="/forum/:categorySlug" element={<Forum />} />
+              <Route path="/forum/:categorySlug/:threadSlug" element={<ThreadDetail />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/refunds" element={<RefundPolicy />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
