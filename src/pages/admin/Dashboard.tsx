@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, PoundSterling, Download } from 'lucide-react';
+import { Package, ShoppingCart, Users, PoundSterling, Download, TrendingUp, Calendar } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
 
 export default function AdminDashboard() {
   const { data: stats } = useQuery({
@@ -28,6 +29,45 @@ export default function AdminDashboard() {
         pendingOrders,
         downloads: downloads.count ?? 0,
       };
+    },
+  });
+
+  // Income breakdown query
+  const { data: incomeBreakdown } = useQuery({
+    queryKey: ['admin-income-breakdown'],
+    queryFn: async () => {
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('total, status, created_at')
+        .in('status', ['paid', 'fulfilled']);
+
+      if (error) throw error;
+
+      const now = new Date();
+      const dayStart = startOfDay(now);
+      const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+      const monthStart = startOfMonth(now);
+      const yearStart = startOfYear(now);
+
+      const paidOrders = orders ?? [];
+
+      const daily = paidOrders
+        .filter(o => isAfter(new Date(o.created_at), dayStart))
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+
+      const weekly = paidOrders
+        .filter(o => isAfter(new Date(o.created_at), weekStart))
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+
+      const monthly = paidOrders
+        .filter(o => isAfter(new Date(o.created_at), monthStart))
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+
+      const yearly = paidOrders
+        .filter(o => isAfter(new Date(o.created_at), yearStart))
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+
+      return { daily, weekly, monthly, yearly };
     },
   });
 
@@ -196,6 +236,51 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Income Breakdown Section */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Income Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="p-4 rounded-lg bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium text-muted-foreground">Today</span>
+                </div>
+                <p className="text-2xl font-bold text-green-500">£{(incomeBreakdown?.daily ?? 0).toFixed(2)}</p>
+              </div>
+
+              <div className="p-4 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm font-medium text-muted-foreground">This Week</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-500">£{(incomeBreakdown?.weekly ?? 0).toFixed(2)}</p>
+              </div>
+
+              <div className="p-4 rounded-lg bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-purple-500" />
+                  <span className="text-sm font-medium text-muted-foreground">This Month</span>
+                </div>
+                <p className="text-2xl font-bold text-purple-500">£{(incomeBreakdown?.monthly ?? 0).toFixed(2)}</p>
+              </div>
+
+              <div className="p-4 rounded-lg bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-medium text-muted-foreground">This Year</span>
+                </div>
+                <p className="text-2xl font-bold text-amber-500">£{(incomeBreakdown?.yearly ?? 0).toFixed(2)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
