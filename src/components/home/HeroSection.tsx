@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// Base values to add real counts on top of
+const BASE_STATS = {
+  downloads: 108,
+  users: 480,
+};
+
 export function HeroSection() {
   const { data: stats } = useQuery({
     queryKey: ['homepage-stats'],
@@ -16,8 +22,8 @@ export function HeroSection() {
 
       return {
         products: products.count ?? 0,
-        downloads: downloads.count ?? 0,
-        users: users.count ?? 0,
+        downloads: BASE_STATS.downloads + (downloads.count ?? 0),
+        users: BASE_STATS.users + (users.count ?? 0),
       };
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
