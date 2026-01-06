@@ -371,7 +371,7 @@ export default function AdminLiveChat() {
                           {conv.customer_name || 'Anonymous'}
                         </span>
                         <Badge
-                          variant={conv.status === 'open' ? 'default' : 'secondary'}
+                          variant={conv.status !== 'closed' ? 'default' : 'secondary'}
                           className="text-xs"
                         >
                           {conv.status}
@@ -392,7 +392,7 @@ export default function AdminLiveChat() {
                         <Circle
                           className={cn(
                             'h-2 w-2 fill-current',
-                            conv.status === 'open' ? 'text-green-500' : 'text-gray-400'
+                            conv.status !== 'closed' ? 'text-green-500' : 'text-gray-400'
                           )}
                         />
                         <span>
@@ -435,7 +435,7 @@ export default function AdminLiveChat() {
                       </p>
                     )}
                   </div>
-                  {selectedConversation.status === 'open' && (
+                  {selectedConversation.status !== 'closed' && (
                     <Button variant="outline" size="sm" onClick={closeConversation}>
                       Close Chat
                     </Button>
@@ -516,7 +516,7 @@ export default function AdminLiveChat() {
                       </ScrollArea>
 
                 {/* Input */}
-                  {selectedConversation.status === 'open' && (
+                  {selectedConversation.status !== 'closed' && (
                     <div className="p-4 border-t border-border space-y-2">
                       <input
                         type="file"
