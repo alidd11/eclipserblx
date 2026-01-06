@@ -175,13 +175,8 @@ export default function AdminReviews() {
                 {reviews.map((review) => (
                   <TableRow key={review.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {review.profiles?.display_name || 'Unknown'}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {review.profiles?.email}
-                        </div>
+                      <div className="font-medium">
+                        {review.profiles?.display_name || 'Unknown'}
                       </div>
                     </TableCell>
                     <TableCell>
