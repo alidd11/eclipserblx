@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, PoundSterling, Download } from 'lucide-react';
+import { Package, ShoppingCart, Users, Download } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,13 +10,10 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const [products, orders, users, downloads] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }),
-        supabase.from('orders').select('id, total, status'),
+        supabase.from('orders').select('id, status'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('download_logs').select('id', { count: 'exact', head: true }),
       ]);
-
-      const totalRevenue = orders.data?.filter(o => o.status === 'paid' || o.status === 'fulfilled')
-        .reduce((sum, o) => sum + (o.total || 0), 0) ?? 0;
 
       const pendingOrders = orders.data?.filter(o => o.status === 'pending').length ?? 0;
 
@@ -24,7 +21,6 @@ export default function AdminDashboard() {
         products: products.count ?? 0,
         orders: orders.data?.length ?? 0,
         users: users.count ?? 0,
-        revenue: totalRevenue,
         pendingOrders,
         downloads: downloads.count ?? 0,
       };
@@ -66,17 +62,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-              <PoundSterling className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">£{(stats?.revenue ?? 0).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
@@ -141,7 +127,6 @@ export default function AdminDashboard() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">£{order.total.toFixed(2)}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
                           order.status === 'paid' ? 'bg-green-500/10 text-green-500' :
                           order.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :

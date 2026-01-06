@@ -335,15 +335,39 @@ export default function AdminLiveChat() {
   };
 
   const closeConversation = async () => {
-    if (!selectedConversation) return;
+    if (!selectedConversation || !user) return;
 
     await supabase
       .from('chat_conversations')
       .update({ status: 'closed' })
       .eq('id', selectedConversation.id);
 
+    // Log staff activity
+    await supabase.from('staff_activity').insert({
+      user_id: user.id,
+      activity_type: 'chat_completed',
+      resource_id: selectedConversation.id,
+      resource_type: 'chat_conversation',
+      details: { customer_name: selectedConversation.customer_name, customer_email: selectedConversation.customer_email },
+    });
+
     setSelectedConversation(null);
     loadConversations();
+  };
+
+  const claimConversation = async (conv: Conversation) => {
+    if (!user) return;
+    
+    setSelectedConversation(conv);
+    
+    // Log staff activity for claiming
+    await supabase.from('staff_activity').insert({
+      user_id: user.id,
+      activity_type: 'chat_claimed',
+      resource_id: conv.id,
+      resource_type: 'chat_conversation',
+      details: { customer_name: conv.customer_name, customer_email: conv.customer_email },
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -401,7 +425,7 @@ export default function AdminLiveChat() {
                     .map((conv) => (
                     <button
                       key={conv.id}
-                      onClick={() => setSelectedConversation(conv)}
+                      onClick={() => chatFilter === 'active' && conv.status !== 'closed' ? claimConversation(conv) : setSelectedConversation(conv)}
                       className={cn(
                         'w-full p-3 lg:p-4 text-left hover:bg-muted/50 transition-colors touch-manipulation',
                         selectedConversation?.id === conv.id && 'bg-muted'
