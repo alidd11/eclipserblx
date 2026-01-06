@@ -31,6 +31,7 @@ import AdminUsers from "./pages/admin/Users";
 import AdminSettings from "./pages/admin/Settings";
 import AdminLiveChat from "./pages/admin/LiveChat";
 import AdminApplications from "./pages/admin/Applications";
+import AdminReviews from "./pages/admin/Reviews";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/admin/live-chat" element={<AdminLiveChat />} />
               <Route path="/admin/applications" element={<AdminApplications />} />
+              <Route path="/admin/reviews" element={<AdminReviews />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
