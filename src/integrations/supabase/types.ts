@@ -323,6 +323,57 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          applicant_email: string
+          applicant_name: string
+          created_at: string
+          discord_username: string | null
+          experience: string | null
+          id: string
+          message: string
+          notes: string | null
+          portfolio_url: string | null
+          position: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_email: string
+          applicant_name: string
+          created_at?: string
+          discord_username?: string | null
+          experience?: string | null
+          id?: string
+          message: string
+          notes?: string | null
+          portfolio_url?: string | null
+          position: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_email?: string
+          applicant_name?: string
+          created_at?: string
+          discord_username?: string | null
+          experience?: string | null
+          id?: string
+          message?: string
+          notes?: string | null
+          portfolio_url?: string | null
+          position?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
