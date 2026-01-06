@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils';
 export function FeaturedProducts() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const minSwipeDistance = 50;
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products'],
@@ -53,6 +56,41 @@ export function FeaturedProducts() {
   // Pause auto-play on hover
   const handleMouseEnter = () => setIsAutoPlaying(false);
   const handleMouseLeave = () => setIsAutoPlaying(true);
+
+  // Touch handlers for swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+    setIsAutoPlaying(false);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) {
+      setIsAutoPlaying(true);
+      return;
+    }
+
+    const distance = touchStartX.current - touchEndX.current;
+    const isSwipe = Math.abs(distance) > minSwipeDistance;
+
+    if (isSwipe) {
+      if (distance > 0) {
+        // Swiped left - go to next
+        goToNext();
+      } else {
+        // Swiped right - go to prev
+        goToPrev();
+      }
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+    setIsAutoPlaying(true);
+  };
 
   const currentProduct = products?.[currentIndex];
 
@@ -119,7 +157,12 @@ export function FeaturedProducts() {
             )}
 
             {/* Product Card with Animation */}
-            <div className="overflow-hidden">
+            <div 
+              className="overflow-hidden touch-pan-y"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <div 
                 className="transition-transform duration-500 ease-out"
                 key={currentIndex}
