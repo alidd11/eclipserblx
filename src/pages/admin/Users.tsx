@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Shield, Plus, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,13 +40,35 @@ const ROLES: { value: AppRole; label: string; color: string }[] = [
   { value: 'order_manager', label: 'Order Manager', color: 'bg-green-500/10 text-green-500 border-green-500/30' },
   { value: 'support_agent', label: 'Support Agent', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
   { value: 'analyst', label: 'Analyst', color: 'bg-purple-500/10 text-purple-500 border-purple-500/30' },
+  { value: 'recruiter', label: 'Recruiter', color: 'bg-violet-500/10 text-violet-500 border-violet-500/30' },
 ];
+
+const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
 export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<AppRole | ''>('');
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Check if current user is the primary admin
+  const { data: currentProfile } = useQuery({
+    queryKey: ['current-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['admin-profiles', search],
@@ -111,7 +134,13 @@ export default function AdminUsers() {
 
   const availableRoles = (userId: string) => {
     const existing = getUserRoles(userId).map(r => r.role);
-    return ROLES.filter(r => !existing.includes(r.value));
+    return ROLES.filter(r => {
+      // Exclude roles the user already has
+      if (existing.includes(r.value)) return false;
+      // Only primary admin can assign admin role
+      if (r.value === 'admin' && !isPrimaryAdmin) return false;
+      return true;
+    });
   };
 
   return (
@@ -214,12 +243,15 @@ export default function AdminUsers() {
                     getUserRoles(selectedUser.user_id).map((r) => (
                       <Badge key={r.id} variant="outline" className="gap-1">
                         {ROLES.find(role => role.value === r.role)?.label || r.role}
-                        <button
-                          onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role })}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                        {/* Only show remove button if: not admin role, OR current user is primary admin */}
+                        {(r.role !== 'admin' || isPrimaryAdmin) && (
+                          <button
+                            onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role })}
+                            className="ml-1 hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
                       </Badge>
                     ))
                   )}
