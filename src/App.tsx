@@ -17,6 +17,9 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import ChatHistory from "./pages/ChatHistory";
 import Forum from "./pages/Forum";
+import Jobs from "./pages/Jobs";
+import RefundPolicy from "./pages/RefundPolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
@@ -48,6 +51,9 @@ const App = () => (
               <Route path="/chat-history" element={<ChatHistory />} />
               <Route path="/forum" element={<Forum />} />
               <Route path="/forum/:categorySlug" element={<Forum />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/refunds" element={<RefundPolicy />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
