@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Filter, Search, Grid3X3, LayoutGrid } from 'lucide-react';
+import { Filter, Search, Grid3X3, LayoutGrid, ChevronDown } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
 
@@ -14,6 +15,7 @@ export default function Products() {
   const categorySlug = searchParams.get('category');
   const [search, setSearch] = useState('');
   const [gridSize, setGridSize] = useState<'small' | 'large'>('large');
+  const [categoriesOpen, setCategoriesOpen] = useState(true);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -101,36 +103,43 @@ export default function Products() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
-          <aside className="w-full lg:w-64 space-y-4">
-            <h3 className="font-display font-semibold flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Categories
-            </h3>
-            <nav className="space-y-1">
-              <Link
-                to="/products"
-                className={`block px-3 py-2 rounded-lg transition-colors ${
-                  !categorySlug
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-card text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                All Products
-              </Link>
-              {categories?.map((category) => (
-                <Link
-                  key={category.id}
-                  to={`/products?category=${category.slug}`}
-                  className={`block px-3 py-2 rounded-lg transition-colors ${
-                    categorySlug === category.slug
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-card text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </nav>
+          <aside className="w-full lg:w-64">
+            <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-display font-semibold hover:text-primary transition-colors">
+                <span className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Categories
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-2">
+                <nav className="space-y-1">
+                  <Link
+                    to="/products"
+                    className={`block px-3 py-2 rounded-lg transition-colors ${
+                      !categorySlug
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-card text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    All Products
+                  </Link>
+                  {categories?.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/products?category=${category.slug}`}
+                      className={`block px-3 py-2 rounded-lg transition-colors ${
+                        categorySlug === category.slug
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-card text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </nav>
+              </CollapsibleContent>
+            </Collapsible>
           </aside>
 
           {/* Products Grid */}
