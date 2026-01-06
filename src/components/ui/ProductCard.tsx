@@ -26,13 +26,13 @@ export function ProductCard({ id, name, slug, price, image, category, isFeatured
   };
 
   return (
-    <Link to={`/products/${slug}`} className="group">
+    <Link to={`/products/${slug}`} className="group block h-full">
       <div className={cn(
-        "gaming-card-hover overflow-hidden",
+        "gaming-card-hover overflow-hidden h-full flex flex-col",
         isFeatured && "ring-1 ring-primary/50"
       )}>
         {/* Image */}
-        <div className="relative aspect-video bg-muted overflow-hidden">
+        <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
           {image ? (
             <img
               src={image}
@@ -41,51 +41,54 @@ export function ProductCard({ id, name, slug, price, image, category, isFeatured
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
-              <span className="text-4xl font-display font-bold text-muted-foreground/30">
+              <span className="text-2xl font-display font-bold text-muted-foreground/30">
                 {name.charAt(0)}
               </span>
             </div>
           )}
           
           {isFeatured && (
-            <div className="absolute top-2 left-2 px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded">
+            <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[10px] font-medium bg-primary text-primary-foreground rounded">
               Featured
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-3">
+        <div className="p-2.5 flex flex-col flex-1 gap-1.5">
           {category && (
-            <span className="text-xs font-medium text-primary uppercase tracking-wider">
+            <span className="text-[10px] font-medium text-primary uppercase tracking-wider truncate">
               {category}
             </span>
           )}
           
-          <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+          <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
             {name}
           </h3>
 
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-foreground">
+          <div className="flex items-center justify-between gap-2 mt-auto pt-1">
+            <span className="text-sm font-bold text-foreground whitespace-nowrap">
               £{price.toFixed(2)}
             </span>
             
             <Button
               size="sm"
               variant={inCart ? "secondary" : "default"}
-              className={cn(!inCart && "gradient-button border-0")}
+              className={cn(
+                "h-7 px-2 text-xs flex-shrink-0",
+                !inCart && "gradient-button border-0"
+              )}
               onClick={handleAddToCart}
             >
               {inCart ? (
                 <>
-                  <Check className="h-4 w-4 mr-1" />
-                  Added
+                  <Check className="h-3 w-3 mr-0.5" />
+                  <span className="hidden sm:inline">Added</span>
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="h-4 w-4 mr-1" />
-                  Add
+                  <ShoppingCart className="h-3 w-3 mr-0.5" />
+                  <span className="hidden sm:inline">Add</span>
                 </>
               )}
             </Button>
