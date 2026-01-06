@@ -29,6 +29,12 @@ export function ChatWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { playSound } = useNotificationSound();
 
+  const openChat = () => {
+    console.log('ChatWidget: open');
+    setIsMinimized(false);
+    setIsOpen(true);
+  };
+
   // Load existing conversation
   useEffect(() => {
     if (user) {
@@ -176,8 +182,14 @@ export function ChatWidget() {
   if (!isOpen) {
     return (
       <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full gradient-button shadow-lg z-[9999]"
+        type="button"
+        onClick={openChat}
+        onTouchEnd={(e) => {
+          // iOS Safari: ensure touch reliably opens the widget
+          e.preventDefault();
+          openChat();
+        }}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full gradient-button shadow-lg z-[9999] touch-manipulation cursor-pointer"
         size="icon"
         aria-label="Open live chat"
       >
