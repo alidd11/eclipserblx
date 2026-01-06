@@ -45,7 +45,7 @@ export function ForumShowcase() {
 
   if (isLoading) {
     return (
-      <section className="pt-4 pb-16 px-4">
+      <section className="pb-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <Skeleton className="h-8 w-64 mx-auto mb-4" />
@@ -58,7 +58,7 @@ export function ForumShowcase() {
   }
 
   return (
-    <section className="pt-4 pb-16 px-4">
+    <section className="pb-16 px-4">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
