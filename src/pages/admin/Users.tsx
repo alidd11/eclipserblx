@@ -94,9 +94,17 @@ export default function AdminUsers() {
   const isAdmin = userRoles?.some(r => r.user_id === user?.id && r.role === 'admin') ?? false;
 
   const addRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
+    mutationFn: async ({ userId, role, targetEmail }: { userId: string; role: AppRole; targetEmail: string }) => {
       const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
       if (error) throw error;
+      
+      // Log the action to audit_logs
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action: 'role_added',
+        resource: 'user_roles',
+        details: { target_user_id: userId, target_email: targetEmail, role }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
@@ -109,9 +117,17 @@ export default function AdminUsers() {
   });
 
   const removeRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
+    mutationFn: async ({ userId, role, targetEmail }: { userId: string; role: AppRole; targetEmail: string }) => {
       const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
       if (error) throw error;
+      
+      // Log the action to audit_logs
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action: 'role_removed',
+        resource: 'user_roles',
+        details: { target_user_id: userId, target_email: targetEmail, role }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
@@ -249,7 +265,7 @@ export default function AdminUsers() {
                         {/* Only show remove button if: not admin role, OR current user is primary admin */}
                         {(r.role !== 'admin' || isPrimaryAdmin) && (
                           <button
-                            onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role })}
+                            onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role, targetEmail: selectedUser.email })}
                             className="ml-1 hover:text-destructive"
                           >
                             <X className="h-3 w-3" />
@@ -279,7 +295,7 @@ export default function AdminUsers() {
                     </Select>
                     <Button
                       disabled={!newRole || addRoleMutation.isPending}
-                      onClick={() => newRole && addRoleMutation.mutate({ userId: selectedUser.user_id, role: newRole })}
+                      onClick={() => newRole && addRoleMutation.mutate({ userId: selectedUser.user_id, role: newRole, targetEmail: selectedUser.email })}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
