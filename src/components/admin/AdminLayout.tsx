@@ -1,8 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Loader2 } from 'lucide-react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) {
   const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (loading) {
     return (
@@ -51,13 +53,18 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 lg:p-8">
-          {children}
-        </div>
-      </main>
-    </div>
+    <TooltipProvider delayDuration={0}>
+      <div className="min-h-screen flex bg-background">
+        <AdminSidebar 
+          collapsed={sidebarCollapsed} 
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+        />
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 lg:p-8">
+            {children}
+          </div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
