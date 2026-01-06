@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Orbitron', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
+        display: ['Cinzel', 'serif'],
+        sans: ['Rajdhani', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -63,6 +63,15 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        jade: {
+          DEFAULT: "hsl(var(--jade))",
+          light: "hsl(var(--jade-light))",
+          dark: "hsl(var(--jade-dark))",
+        },
+        gold: "hsl(var(--gold))",
+        emerald: {
+          glow: "hsl(var(--emerald-glow))",
         },
         neon: {
           purple: "hsl(var(--neon-purple))",
