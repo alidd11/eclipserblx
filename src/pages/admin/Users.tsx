@@ -90,6 +90,9 @@ export default function AdminUsers() {
     },
   });
 
+  // Check if current user has admin role
+  const isAdmin = userRoles?.some(r => r.user_id === user?.id && r.role === 'admin') ?? false;
+
   const addRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
       const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
@@ -192,7 +195,7 @@ export default function AdminUsers() {
                       <TableCell>
                         <div>
                           <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
-                          <p className="text-xs text-muted-foreground">{profile.email}</p>
+                          {isAdmin && <p className="text-xs text-muted-foreground">{profile.email}</p>}
                         </div>
                       </TableCell>
                       <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
@@ -231,7 +234,7 @@ export default function AdminUsers() {
             <div className="space-y-6">
               <div>
                 <p className="font-medium">{selectedUser.display_name || 'Unnamed User'}</p>
-                <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                {isAdmin && <p className="text-sm text-muted-foreground">{selectedUser.email}</p>}
               </div>
 
               <div>
