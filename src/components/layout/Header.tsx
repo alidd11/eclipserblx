@@ -24,13 +24,26 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border glass-effect">
       <div className="container mx-auto px-4">
         <div className="flex h-14 sm:h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <EclipseLogo size="sm" />
-            <span className="font-display text-lg font-bold gradient-text hidden sm:block">
-              {SITE_NAME}
-            </span>
-          </Link>
+          {/* Left side - Mobile menu + Logo */}
+          <div className="flex items-center gap-2">
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
+            </Button>
+
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <EclipseLogo size="sm" />
+              <span className="font-display text-lg font-bold gradient-text hidden sm:block">
+                {SITE_NAME}
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
@@ -92,16 +105,6 @@ export function Header() {
                 </Button>
               </Link>
             )}
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
-            </Button>
           </div>
         </div>
 
