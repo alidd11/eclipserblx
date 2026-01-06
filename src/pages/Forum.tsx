@@ -17,7 +17,10 @@ import {
   Shield,
   Crown,
   Star,
-  Wrench
+  Wrench,
+  ScrollText,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -93,6 +96,7 @@ interface ForumCategory {
   icon: string | null;
   color: string | null;
   display_order: number | null;
+  rules: string | null;
 }
 
 interface ForumThread {
@@ -113,6 +117,7 @@ export default function Forum() {
   const { user } = useAuth();
   const { isAdmin, isStaff, roles } = useAdminAuth();
   const navigate = useNavigate();
+  const [rulesExpanded, setRulesExpanded] = useState(true);
 
   // Check if current category is announcements (only admins can post)
   const isAnnouncementsCategory = categorySlug === 'announcements';
@@ -344,6 +349,47 @@ export default function Forum() {
             )}
           </div>
         </div>
+
+        {/* Pinned Rules Card */}
+        {currentCategory?.rules && (
+          <Card className="gaming-card mb-6 overflow-hidden border-primary/30">
+            <button
+              onClick={() => setRulesExpanded(!rulesExpanded)}
+              className="w-full p-4 flex items-center gap-3 hover:bg-primary/5 transition-colors"
+            >
+              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
+                <ScrollText className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-0">
+                    <Pin className="h-3 w-3 mr-1" />
+                    Pinned
+                  </Badge>
+                  <h3 className="font-display font-semibold text-foreground">
+                    Channel Rules
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Please read before posting
+                </p>
+              </div>
+              {rulesExpanded ? (
+                <ChevronUp className="h-5 w-5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+              )}
+            </button>
+            
+            {rulesExpanded && (
+              <div className="px-4 pb-4 border-t border-border/50">
+                <div className="pt-4 pl-[52px] text-sm text-muted-foreground whitespace-pre-line">
+                  {currentCategory.rules}
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Threads List */}
         <div className="space-y-2">
