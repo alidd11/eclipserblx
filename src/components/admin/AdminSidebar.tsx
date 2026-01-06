@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ const navItems = [
   { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
   { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
   { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
+  { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
   { title: 'Settings', icon: Settings, href: '/admin/settings', roles: ['admin'] },
 ];
 
