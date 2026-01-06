@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  FileText, Search, User, Mail, Calendar, ExternalLink, 
+  MessageSquare, CheckCircle, XCircle, Clock, Eye, Send
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Eye, FileText, Clock, CheckCircle, XCircle, ExternalLink, User, Mail, MessageSquare } from 'lucide-react';
-import { format } from 'date-fns';
+import { useAuth } from '@/hooks/useAuth';
 
 interface JobApplication {
   id: string;
@@ -25,30 +30,31 @@ interface JobApplication {
   message: string;
   status: string;
   notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  reviewing: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
-  rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
-};
-
-const statusIcons: Record<string, React.ReactNode> = {
-  pending: <Clock className="h-3 w-3" />,
-  reviewing: <Eye className="h-3 w-3" />,
-  accepted: <CheckCircle className="h-3 w-3" />,
-  rejected: <XCircle className="h-3 w-3" />,
-};
+interface ApplicantMessage {
+  id: string;
+  application_id: string;
+  subject: string;
+  message: string;
+  sent_by: string | null;
+  is_read: boolean;
+  created_at: string;
+}
 
 export default function AdminApplications() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [notes, setNotes] = useState('');
+  const [messageSubject, setMessageSubject] = useState('');
+  const [messageBody, setMessageBody] = useState('');
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ['job-applications'],
@@ -61,6 +67,22 @@ export default function AdminApplications() {
       if (error) throw error;
       return data as JobApplication[];
     },
+  });
+
+  const { data: applicationMessages } = useQuery({
+    queryKey: ['application-messages', selectedApplication?.id],
+    queryFn: async () => {
+      if (!selectedApplication) return [];
+      const { data, error } = await supabase
+        .from('applicant_messages')
+        .select('*')
+        .eq('application_id', selectedApplication.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as ApplicantMessage[];
+    },
+    enabled: !!selectedApplication,
   });
 
   const updateStatusMutation = useMutation({
@@ -79,10 +101,33 @@ export default function AdminApplications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       toast.success('Application updated');
-      setSelectedApplication(null);
     },
     onError: () => {
       toast.error('Failed to update application');
+    },
+  });
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ applicationId, subject, message }: { applicationId: string; subject: string; message: string }) => {
+      const { error } = await supabase
+        .from('applicant_messages')
+        .insert([{
+          application_id: applicationId,
+          subject,
+          message,
+          sent_by: user?.id,
+        }]);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['application-messages', selectedApplication?.id] });
+      toast.success('Message sent to applicant');
+      setMessageSubject('');
+      setMessageBody('');
+    },
+    onError: () => {
+      toast.error('Failed to send message');
     },
   });
 
@@ -105,21 +150,38 @@ export default function AdminApplications() {
     rejected: applications?.filter(a => a.status === 'rejected').length || 0,
   };
 
-  const handleUpdateStatus = (status: string) => {
-    if (selectedApplication) {
-      updateStatusMutation.mutate({ 
-        id: selectedApplication.id, 
-        status,
-        notes 
-      });
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+      case 'reviewing':
+        return <Badge variant="secondary" className="bg-blue-500/20 text-blue-400"><Eye className="h-3 w-3 mr-1" />Reviewing</Badge>;
+      case 'accepted':
+        return <Badge variant="secondary" className="bg-green-500/20 text-green-400"><CheckCircle className="h-3 w-3 mr-1" />Accepted</Badge>;
+      case 'rejected':
+        return <Badge variant="secondary" className="bg-red-500/20 text-red-400"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
+  };
+
+  const handleSendMessage = () => {
+    if (!selectedApplication || !messageSubject || !messageBody) {
+      toast.error('Please fill in subject and message');
+      return;
+    }
+    sendMessageMutation.mutate({
+      applicationId: selectedApplication.id,
+      subject: messageSubject,
+      message: messageBody,
+    });
   };
 
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-display font-bold">Job Applications</h1>
+          <h1 className="text-3xl font-bold">Job Applications</h1>
           <p className="text-muted-foreground">Review and manage job applications</p>
         </div>
 
@@ -200,172 +262,232 @@ export default function AdminApplications() {
             ) : filteredApplications?.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No applications found</p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Applicant</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredApplications?.map((app) => (
-                    <TableRow key={app.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{app.applicant_name}</p>
-                          <p className="text-sm text-muted-foreground">{app.applicant_email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{app.position}</TableCell>
-                      <TableCell>
-                        <Badge className={statusColors[app.status] || ''} variant="outline">
-                          <span className="flex items-center gap-1">
-                            {statusIcons[app.status]}
-                            {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                          </span>
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{format(new Date(app.created_at), 'dd MMM yyyy')}</TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            setSelectedApplication(app);
-                            setNotes(app.notes || '');
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Applicant</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Applied</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredApplications?.map((app) => (
+                      <TableRow key={app.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{app.applicant_name}</p>
+                            <p className="text-sm text-muted-foreground">{app.applicant_email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{app.position}</TableCell>
+                        <TableCell>{getStatusBadge(app.status)}</TableCell>
+                        <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedApplication(app);
+                              setNotes(app.notes || '');
+                            }}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
 
         {/* Application Detail Dialog */}
-        <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)}>
+        <Dialog open={!!selectedApplication} onOpenChange={(open) => !open && setSelectedApplication(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Application Details</DialogTitle>
               <DialogDescription>
-                Review the application and update status
+                Review application and send messages to the applicant.
               </DialogDescription>
             </DialogHeader>
 
             {selectedApplication && (
-              <div className="space-y-6">
-                {/* Applicant Info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Name</p>
-                      <p className="font-medium">{selectedApplication.applicant_name}</p>
+              <Tabs defaultValue="details" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="messages">
+                    Messages
+                    {applicationMessages && applicationMessages.length > 0 && (
+                      <Badge variant="secondary" className="ml-2">{applicationMessages.length}</Badge>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="details" className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-muted-foreground">Name</Label>
+                      <p className="font-medium flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        {selectedApplication.applicant_name}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-muted-foreground">Email</Label>
+                      <p className="font-medium flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        {selectedApplication.applicant_email}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-muted-foreground">Position</Label>
+                      <p className="font-medium">{selectedApplication.position}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-muted-foreground">Applied</Label>
+                      <p className="font-medium flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(selectedApplication.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    {selectedApplication.discord_username && (
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Discord</Label>
+                        <p className="font-medium">{selectedApplication.discord_username}</p>
+                      </div>
+                    )}
+                    {selectedApplication.portfolio_url && (
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Portfolio</Label>
+                        <a 
+                          href={selectedApplication.portfolio_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="font-medium text-primary flex items-center gap-1 hover:underline"
+                        >
+                          View Portfolio <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedApplication.experience && (
+                    <div className="space-y-1">
+                      <Label className="text-muted-foreground">Experience</Label>
+                      <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">{selectedApplication.experience}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Message</Label>
+                    <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">{selectedApplication.message}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Internal Notes</Label>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Add internal notes about this application..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Update Status</Label>
+                    <div className="flex gap-2 flex-wrap">
+                      {['pending', 'reviewing', 'accepted', 'rejected'].map((status) => (
+                        <Button
+                          key={status}
+                          variant={selectedApplication.status === status ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            updateStatusMutation.mutate({ 
+                              id: selectedApplication.id, 
+                              status,
+                              notes 
+                            });
+                            setSelectedApplication({ ...selectedApplication, status, notes });
+                          }}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </Button>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium">{selectedApplication.applicant_email}</p>
-                    </div>
+                </TabsContent>
+
+                <TabsContent value="messages" className="space-y-4 mt-4">
+                  {/* Send new message */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Send className="h-4 w-4" />
+                        Send Message to Applicant
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Subject</Label>
+                        <Input
+                          value={messageSubject}
+                          onChange={(e) => setMessageSubject(e.target.value)}
+                          placeholder="Message subject..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Message</Label>
+                        <Textarea
+                          value={messageBody}
+                          onChange={(e) => setMessageBody(e.target.value)}
+                          placeholder="Type your message to the applicant..."
+                          rows={4}
+                        />
+                      </div>
+                      <Button 
+                        onClick={handleSendMessage}
+                        disabled={sendMessageMutation.isPending || !messageSubject || !messageBody}
+                      >
+                        {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Message history */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Message History
+                    </h4>
+                    {applicationMessages?.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">No messages sent yet.</p>
+                    ) : (
+                      applicationMessages?.map((msg) => (
+                        <div key={msg.id} className="p-3 rounded-lg bg-muted/50 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{msg.subject}</span>
+                            <div className="flex items-center gap-2">
+                              {msg.is_read && (
+                                <Badge variant="outline" className="text-xs">Read</Badge>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(msg.created_at).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{msg.message}</p>
+                        </div>
+                      ))
+                    )}
                   </div>
-                </div>
-
-                {selectedApplication.discord_username && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Discord</p>
-                    <p className="font-medium">{selectedApplication.discord_username}</p>
-                  </div>
-                )}
-
-                {selectedApplication.portfolio_url && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Portfolio</p>
-                    <a 
-                      href={selectedApplication.portfolio_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline flex items-center gap-1"
-                    >
-                      {selectedApplication.portfolio_url}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Position</p>
-                  <Badge variant="secondary">{selectedApplication.position}</Badge>
-                </div>
-
-                {selectedApplication.experience && (
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">Experience</p>
-                    <p className="text-sm bg-muted/50 p-3 rounded-lg">{selectedApplication.experience}</p>
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4" />
-                    Application Message
-                  </p>
-                  <p className="text-sm bg-muted/50 p-3 rounded-lg whitespace-pre-wrap">
-                    {selectedApplication.message}
-                  </p>
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Internal Notes</p>
-                  <Textarea
-                    placeholder="Add notes about this application..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-
-                {/* Status Actions */}
-                <div className="flex flex-wrap gap-2 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleUpdateStatus('reviewing')}
-                    disabled={updateStatusMutation.isPending}
-                    className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Mark Reviewing
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleUpdateStatus('accepted')}
-                    disabled={updateStatusMutation.isPending}
-                    className="border-green-500/30 text-green-400 hover:bg-green-500/10"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Accept
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleUpdateStatus('rejected')}
-                    disabled={updateStatusMutation.isPending}
-                    className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    Reject
-                  </Button>
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
             )}
           </DialogContent>
         </Dialog>
