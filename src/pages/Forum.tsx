@@ -16,8 +16,8 @@ import {
   ArrowLeft,
   Shield,
   Crown,
-  Star,
   Wrench,
+  Briefcase,
   ScrollText,
   ChevronDown,
   ChevronUp
@@ -31,7 +31,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { GeneralChatChannel } from '@/components/forum/GeneralChatChannel';
+import { CreateThreadDialog } from '@/components/forum/CreateThreadDialog';
 
 // Badge configuration for user roles
 const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
@@ -59,6 +61,11 @@ const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ cl
     label: 'Staff', 
     icon: Shield, 
     className: 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30' 
+  },
+  recruiter: { 
+    label: 'Recruiter', 
+    icon: Briefcase, 
+    className: 'bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-400 border-violet-500/30' 
   },
 };
 
@@ -118,9 +125,11 @@ export default function Forum() {
   const { isAdmin, isStaff, roles } = useAdminAuth();
   const navigate = useNavigate();
   const [rulesExpanded, setRulesExpanded] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Check if current category is announcements (only admins can post)
   const isAnnouncementsCategory = categorySlug === 'announcements';
+  const isGeneralChat = categorySlug === 'general';
   const canCreateThread = user && (!isAnnouncementsCategory || isAdmin);
 
   // Fetch categories
@@ -230,6 +239,7 @@ export default function Forum() {
   const getUserBadge = (userId: string) => {
     const roles = userRoles?.[userId] || [];
     if (roles.includes('admin')) return roleBadges.admin;
+    if (roles.includes('recruiter')) return roleBadges.recruiter;
     if (roles.includes('support_agent')) return roleBadges.support_agent;
     if (roles.some(r => ['product_manager', 'order_manager', 'analyst'].includes(r))) return roleBadges.product_manager;
     return null;
@@ -336,8 +346,8 @@ export default function Forum() {
               </p>
             </div>
             
-            {canCreateThread && (
-              <Button className="gradient-button">
+            {canCreateThread && !isGeneralChat && (
+              <Button className="gradient-button" onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Thread
               </Button>
@@ -391,27 +401,30 @@ export default function Forum() {
           </Card>
         )}
 
-        {/* Threads List */}
-        <div className="space-y-2">
-          {loadingThreads ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
-            ))
-          ) : threads?.length === 0 ? (
-            <Card className="gaming-card p-8 text-center">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <h3 className="font-display font-semibold text-lg mb-2">No threads yet</h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Be the first to start a discussion!
-              </p>
-              {canCreateThread && (
-                <Button className="gradient-button">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Thread
-                </Button>
-              )}
-            </Card>
-          ) : (
+        {/* General Chat Channel or Threads List */}
+        {isGeneralChat ? (
+          <GeneralChatChannel />
+        ) : (
+          <div className="space-y-2">
+            {loadingThreads ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))
+            ) : threads?.length === 0 ? (
+              <Card className="gaming-card p-8 text-center">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <h3 className="font-display font-semibold text-lg mb-2">No threads yet</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Be the first to start a discussion!
+                </p>
+                {canCreateThread && (
+                  <Button className="gradient-button" onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Thread
+                  </Button>
+                )}
+              </Card>
+            ) : (
             threads?.map((thread) => {
               const profile = profiles?.[thread.user_id];
               const authorName = profile?.display_name || 'Anonymous';
@@ -484,7 +497,19 @@ export default function Forum() {
               );
             })
           )}
-        </div>
+          </div>
+        )}
+
+        {/* Create Thread Dialog */}
+        {currentCategory && (
+          <CreateThreadDialog
+            open={createDialogOpen}
+            onOpenChange={setCreateDialogOpen}
+            categoryId={currentCategory.id}
+            categorySlug={categorySlug || ''}
+            onSuccess={(threadSlug) => navigate(`/forum/${categorySlug}/${threadSlug}`)}
+          />
+        )}
       </div>
     </MainLayout>
   );
