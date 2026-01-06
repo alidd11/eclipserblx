@@ -417,9 +417,8 @@ export function GeneralChatChannel() {
                   </div>
 
                   {/* Message content */}
-                  <div className={cn("max-w-[70%]", isOwn && "items-end")}>
-                    <div className={cn("flex items-center gap-2 mb-1", isOwn && "flex-row-reverse")}>
-                      <span className="text-sm font-medium text-foreground">{authorName}</span>
+                  <div className={cn("max-w-[70%] flex flex-col", isOwn && "items-end")}>
+                    <div className={cn("flex items-center gap-2 mb-1 flex-wrap", isOwn && "flex-row-reverse")}>
                       {badge && (
                         <Badge 
                           variant="outline" 
@@ -429,9 +428,7 @@ export function GeneralChatChannel() {
                           {badge.label}
                         </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                      </span>
+                      <span className="text-sm font-medium text-foreground">{authorName}</span>
                       
                       {/* Delete button for admins/own messages */}
                       {canDeleteMessage(msg.user_id) && (
@@ -454,6 +451,14 @@ export function GeneralChatChannel() {
                       )}>
                         {msg.message}
                       </div>
+                      
+                      {/* Timestamp */}
+                      <span className={cn(
+                        "text-[10px] text-muted-foreground mt-0.5 block",
+                        isOwn && "text-right"
+                      )}>
+                        {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                      </span>
                       
                       {/* Reaction button */}
                       {user && (
