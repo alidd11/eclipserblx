@@ -112,7 +112,7 @@ export default function Products() {
                 </span>
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
-              <CollapsibleContent className="pt-2">
+              <CollapsibleContent className="pt-2 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
                 <nav className="space-y-1">
                   <Link
                     to="/products"
