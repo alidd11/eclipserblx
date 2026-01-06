@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,13 @@ const CANNED_RESPONSES = [
     responses: [
       { label: 'Download help', text: 'To download your purchased items, please go to your Account page and click on "Downloads". If you\'re having trouble, please let me know the specific error you\'re seeing.' },
       { label: 'Download limit', text: 'Each product can be downloaded up to 3 times. If you need additional downloads, please let me know and I can assist you.' },
+    ],
+  },
+  {
+    category: 'Payments',
+    responses: [
+      { label: 'Secure payments', text: 'All payments are securely processed through Stripe, a PCI-certified payment provider trusted by millions of businesses worldwide. Your card details are encrypted and never stored on our servers.' },
+      { label: 'Payment methods', text: 'We accept all major credit/debit cards, Apple Pay, Google Pay, and Klarna through our secure Stripe integration.' },
     ],
   },
   {
@@ -344,13 +351,17 @@ export default function AdminLiveChat() {
           <p className="text-muted-foreground">Respond to customer inquiries in real-time</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100%-5rem)]">
-          {/* Conversations List */}
-          <div className="border border-border rounded-lg bg-card overflow-hidden">
-            <div className="p-4 border-b border-border bg-muted/50">
-              <h2 className="font-semibold">Conversations</h2>
+        <div className="relative h-[calc(100%-5rem)]">
+          {/* Conversations List - Always visible on desktop, slides out on mobile when chat selected */}
+          <div className={cn(
+            "absolute inset-0 lg:relative lg:inset-auto border border-border rounded-lg bg-card overflow-hidden transition-transform duration-300 z-10",
+            "lg:w-[33%] lg:float-left lg:mr-4 lg:h-full",
+            selectedConversation ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
+          )}>
+            <div className="p-3 lg:p-4 border-b border-border bg-muted/50">
+              <h2 className="font-semibold text-sm lg:text-base">Conversations</h2>
             </div>
-            <ScrollArea className="h-[calc(100%-3.5rem)]">
+            <ScrollArea className="h-[calc(100%-3rem)] lg:h-[calc(100%-3.5rem)]">
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
               ) : conversations.length === 0 ? (
@@ -362,17 +373,17 @@ export default function AdminLiveChat() {
                       key={conv.id}
                       onClick={() => setSelectedConversation(conv)}
                       className={cn(
-                        'w-full p-4 text-left hover:bg-muted/50 transition-colors',
+                        'w-full p-3 lg:p-4 text-left hover:bg-muted/50 transition-colors touch-manipulation',
                         selectedConversation?.id === conv.id && 'bg-muted'
                       )}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium truncate">
+                        <span className="font-medium truncate text-sm lg:text-base">
                           {conv.customer_name || 'Anonymous'}
                         </span>
                         <Badge
                           variant={conv.status !== 'closed' ? 'default' : 'secondary'}
-                          className="text-xs"
+                          className="text-[10px] lg:text-xs"
                         >
                           {conv.status}
                         </Badge>
@@ -406,45 +417,59 @@ export default function AdminLiveChat() {
             </ScrollArea>
           </div>
 
-          {/* Chat Area */}
-          <div className="lg:col-span-2 border border-border rounded-lg bg-card flex flex-col overflow-hidden">
+          {/* Chat Area - Full screen on mobile, right side on desktop */}
+          <div className={cn(
+            "absolute inset-0 lg:relative lg:inset-auto border border-border rounded-lg bg-card flex flex-col overflow-hidden transition-transform duration-300",
+            "lg:w-[calc(67%-1rem)] lg:float-right lg:h-full",
+            selectedConversation ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+          )}>
             {selectedConversation ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-border bg-muted/50 flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">
-                        {selectedConversation.customer_name || 'Anonymous'}
-                      </h3>
-                      {selectedConversation.issue_category && (
-                        <Badge 
-                          variant="outline" 
-                          className={cn(
-                            "text-xs",
-                            ISSUE_CATEGORY_COLORS[selectedConversation.issue_category] || ISSUE_CATEGORY_COLORS.other
-                          )}
-                        >
-                          {ISSUE_CATEGORY_LABELS[selectedConversation.issue_category] || selectedConversation.issue_category}
-                        </Badge>
+                <div className="p-3 lg:p-4 border-b border-border bg-muted/50 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="lg:hidden shrink-0 h-8 w-8"
+                      onClick={() => setSelectedConversation(null)}
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-sm lg:text-base truncate">
+                          {selectedConversation.customer_name || 'Anonymous'}
+                        </h3>
+                        {selectedConversation.issue_category && (
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "text-[10px] lg:text-xs shrink-0",
+                              ISSUE_CATEGORY_COLORS[selectedConversation.issue_category] || ISSUE_CATEGORY_COLORS.other
+                            )}
+                          >
+                            {ISSUE_CATEGORY_LABELS[selectedConversation.issue_category] || selectedConversation.issue_category}
+                          </Badge>
+                        )}
+                      </div>
+                      {selectedConversation.customer_email && (
+                        <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                          {selectedConversation.customer_email}
+                        </p>
                       )}
                     </div>
-                    {selectedConversation.customer_email && (
-                      <p className="text-sm text-muted-foreground">
-                        {selectedConversation.customer_email}
-                      </p>
-                    )}
                   </div>
                   {selectedConversation.status !== 'closed' && (
-                    <Button variant="outline" size="sm" onClick={closeConversation}>
-                      Close Chat
+                    <Button variant="outline" size="sm" onClick={closeConversation} className="shrink-0 text-xs lg:text-sm">
+                      Close
                     </Button>
                   )}
                 </div>
 
                 {/* Messages */}
-                <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-                  <div className="space-y-4">
+                <ScrollArea className="flex-1 p-3 lg:p-4" ref={scrollRef}>
+                  <div className="space-y-3 lg:space-y-4">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
@@ -455,7 +480,7 @@ export default function AdminLiveChat() {
                       >
                         <div
                           className={cn(
-                            'max-w-[70%] rounded-lg px-4 py-2',
+                            'max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4',
                             msg.sender_type === 'agent'
                               ? 'bg-primary text-primary-foreground'
                               : msg.sender_type === 'system'
@@ -486,104 +511,107 @@ export default function AdminLiveChat() {
                               )}
                             </div>
                           )}
-                          {!msg.attachment_url && <p>{msg.message}</p>}
+                          {!msg.attachment_url && <p className="text-sm lg:text-base">{msg.message}</p>}
                           <p
                             className={cn(
-                              'text-xs mt-1 opacity-70',
+                              'text-[10px] lg:text-xs mt-1 opacity-70',
                               msg.sender_type === 'agent'
                                 ? 'text-primary-foreground'
                                 : 'text-muted-foreground'
                             )}
                           >
-                                  {new Date(msg.created_at).toLocaleTimeString()}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                          {customerTyping && (
-                            <div className="flex justify-start">
-                              <div className="bg-muted text-muted-foreground rounded-lg px-4 py-2 flex items-center gap-1">
-                                <span className="text-sm italic">Customer is typing</span>
-                                <span className="flex gap-1">
-                                  <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                  <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                  <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                            {new Date(msg.created_at).toLocaleTimeString()}
+                          </p>
                         </div>
-                      </ScrollArea>
+                      </div>
+                    ))}
+                    {customerTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 lg:px-4 flex items-center gap-1">
+                          <span className="text-xs lg:text-sm italic">Customer is typing</span>
+                          <span className="flex gap-1">
+                            <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
 
                 {/* Input */}
-                  {selectedConversation.status !== 'closed' && (
-                    <div className="p-4 border-t border-border space-y-2">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        accept="image/*,.pdf,.doc,.docx,.txt"
+                {selectedConversation.status !== 'closed' && (
+                  <div className="p-2 lg:p-4 border-t border-border space-y-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      accept="image/*,.pdf,.doc,.docx,.txt"
+                    />
+                    <div className="flex gap-1 lg:gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button type="button" size="icon" variant="ghost" title="Canned responses" className="h-9 w-9 lg:h-10 lg:w-10 shrink-0">
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-72 max-h-80 overflow-y-auto">
+                          {CANNED_RESPONSES.map((category) => (
+                            <div key={category.category}>
+                              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                {category.category}
+                              </DropdownMenuLabel>
+                              {category.responses.map((response) => (
+                                <DropdownMenuItem
+                                  key={response.label}
+                                  onClick={() => insertCannedResponse(response.text)}
+                                  className="cursor-pointer touch-manipulation"
+                                >
+                                  <span className="truncate">{response.label}</span>
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuSeparator />
+                            </div>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="h-9 w-9 lg:h-10 lg:w-10 shrink-0"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Paperclip className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Input
+                        placeholder="Type your reply..."
+                        value={newMessage}
+                        onChange={(e) => {
+                          setNewMessage(e.target.value);
+                          handleTyping();
+                        }}
+                        onKeyPress={handleKeyPress}
+                        className="text-base"
                       />
-                      <div className="flex gap-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button type="button" size="icon" variant="ghost" title="Canned responses">
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-72 max-h-80 overflow-y-auto">
-                            {CANNED_RESPONSES.map((category) => (
-                              <div key={category.category}>
-                                <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                  {category.category}
-                                </DropdownMenuLabel>
-                                {category.responses.map((response) => (
-                                  <DropdownMenuItem
-                                    key={response.label}
-                                    onClick={() => insertCannedResponse(response.text)}
-                                    className="cursor-pointer"
-                                  >
-                                    <span className="truncate">{response.label}</span>
-                                  </DropdownMenuItem>
-                                ))}
-                                <DropdownMenuSeparator />
-                              </div>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isUploading}
-                        >
-                          {isUploading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Paperclip className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Input
-                          placeholder="Type your reply..."
-                          value={newMessage}
-                          onChange={(e) => {
-                            setNewMessage(e.target.value);
-                            handleTyping();
-                          }}
-                          onKeyPress={handleKeyPress}
-                        />
-                        <Button onClick={sendMessage} disabled={!newMessage.trim()}>
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button onClick={sendMessage} disabled={!newMessage.trim()} className="h-9 lg:h-10 shrink-0 px-3">
+                        <Send className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )}
+                  </div>
+                )}
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                Select a conversation to start chatting
+              <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm lg:text-base p-4 text-center">
+                <span className="hidden lg:inline">Select a conversation to start chatting</span>
+                <span className="lg:hidden">Tap a conversation to start chatting</span>
               </div>
             )}
           </div>
