@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, MessageCircle } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ const navItems = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', roles: [] },
   { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
   { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
+  { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
   { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
   { title: 'Settings', icon: Settings, href: '/admin/settings', roles: ['admin'] },
 ];
