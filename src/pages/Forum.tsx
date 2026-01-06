@@ -13,7 +13,11 @@ import {
   Eye,
   MessageSquare,
   Plus,
-  ArrowLeft
+  ArrowLeft,
+  Shield,
+  Crown,
+  Star,
+  Wrench
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -22,8 +26,38 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
+
+// Badge configuration for user roles
+const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
+  admin: { 
+    label: 'Admin', 
+    icon: Crown, 
+    className: 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30' 
+  },
+  product_manager: { 
+    label: 'Staff', 
+    icon: Shield, 
+    className: 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30' 
+  },
+  order_manager: { 
+    label: 'Staff', 
+    icon: Shield, 
+    className: 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30' 
+  },
+  support_agent: { 
+    label: 'Support', 
+    icon: Wrench, 
+    className: 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30' 
+  },
+  analyst: { 
+    label: 'Staff', 
+    icon: Shield, 
+    className: 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30' 
+  },
+};
 
 // Icon mapping for categories
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -77,7 +111,12 @@ interface ForumThread {
 export default function Forum() {
   const { categorySlug } = useParams();
   const { user } = useAuth();
+  const { isAdmin, isStaff, roles } = useAdminAuth();
   const navigate = useNavigate();
+
+  // Check if current category is announcements (only admins can post)
+  const isAnnouncementsCategory = categorySlug === 'announcements';
+  const canCreateThread = user && (!isAnnouncementsCategory || isAdmin);
 
   // Fetch categories
   const { data: categories, isLoading: loadingCategories } = useQuery({
@@ -157,6 +196,39 @@ export default function Forum() {
     },
     enabled: !!threads?.length,
   });
+
+  // Fetch user roles for badges
+  const { data: userRoles } = useQuery({
+    queryKey: ['forum-user-roles', threads?.map(t => t.user_id)],
+    queryFn: async () => {
+      if (!threads?.length) return {};
+      
+      const userIds = [...new Set(threads.map(t => t.user_id))];
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+      
+      if (error) throw error;
+      
+      const map: Record<string, string[]> = {};
+      data.forEach(r => {
+        if (!map[r.user_id]) map[r.user_id] = [];
+        map[r.user_id].push(r.role);
+      });
+      return map;
+    },
+    enabled: !!threads?.length,
+  });
+
+  // Helper to get the highest priority badge for a user
+  const getUserBadge = (userId: string) => {
+    const roles = userRoles?.[userId] || [];
+    if (roles.includes('admin')) return roleBadges.admin;
+    if (roles.includes('support_agent')) return roleBadges.support_agent;
+    if (roles.some(r => ['product_manager', 'order_manager', 'analyst'].includes(r))) return roleBadges.product_manager;
+    return null;
+  };
 
   // Categories view
   if (!categorySlug) {
@@ -259,11 +331,16 @@ export default function Forum() {
               </p>
             </div>
             
-            {user && (
+            {canCreateThread && (
               <Button className="gradient-button">
                 <Plus className="h-4 w-4 mr-2" />
                 New Thread
               </Button>
+            )}
+            {user && isAnnouncementsCategory && !isAdmin && (
+              <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">
+                Only admins can post announcements
+              </Badge>
             )}
           </div>
         </div>
@@ -281,7 +358,7 @@ export default function Forum() {
               <p className="text-muted-foreground text-sm mb-4">
                 Be the first to start a discussion!
               </p>
-              {user && (
+              {canCreateThread && (
                 <Button className="gradient-button">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Thread
@@ -326,8 +403,24 @@ export default function Forum() {
                       <h3 className="font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                         {thread.title}
                       </h3>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span>{authorName}</span>
+                      <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mt-1">
+                        <span className="font-medium text-foreground/80">{authorName}</span>
+                        {(() => {
+                          const badge = getUserBadge(thread.user_id);
+                          if (badge) {
+                            const BadgeIcon = badge.icon;
+                            return (
+                              <Badge 
+                                variant="outline" 
+                                className={cn("text-[10px] px-1.5 py-0 h-4 font-medium border", badge.className)}
+                              >
+                                <BadgeIcon className="h-2.5 w-2.5 mr-0.5" />
+                                {badge.label}
+                              </Badge>
+                            );
+                          }
+                          return null;
+                        })()}
                         <span>•</span>
                         <span>{formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}</span>
                       </div>
