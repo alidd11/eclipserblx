@@ -136,10 +136,10 @@ export default function Products() {
           {/* Products Grid */}
           <div className="flex-1">
             {isLoading ? (
-              <div className={`grid gap-6 ${
+              <div className={`grid gap-4 ${
                 gridSize === 'large'
-                  ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
-                  : 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
+                  ? 'grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-3 sm:grid-cols-4 xl:grid-cols-5'
               }`}>
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="gaming-card animate-pulse">
@@ -163,10 +163,10 @@ export default function Products() {
                 </Button>
               </div>
             ) : (
-              <div className={`grid gap-6 ${
+              <div className={`grid gap-4 ${
                 gridSize === 'large'
-                  ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
-                  : 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
+                  ? 'grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-3 sm:grid-cols-4 xl:grid-cols-5'
               }`}>
                 {products?.map((product) => (
                   <ProductCard
