@@ -57,16 +57,11 @@ export function HeroSection() {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex items-center justify-center">
             <Link to="/products">
               <Button size="lg" className="gradient-button border-0 text-lg px-8">
                 Browse Products
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/forum">
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                View Forum
               </Button>
             </Link>
           </div>

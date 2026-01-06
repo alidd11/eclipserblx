@@ -3,8 +3,19 @@ import { MessageSquare, ArrowRight, Users, TrendingUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import { useRef } from 'react';
 
 export function ForumShowcase() {
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: false })
+  );
+
   const { data: categories, isLoading } = useQuery({
     queryKey: ['forum-categories-home'],
     queryFn: async () => {
@@ -40,11 +51,7 @@ export function ForumShowcase() {
             <Skeleton className="h-8 w-64 mx-auto mb-4" />
             <Skeleton className="h-5 w-96 mx-auto" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-48 rounded-xl" />
-            ))}
-          </div>
+          <Skeleton className="h-48 rounded-xl" />
         </div>
       </section>
     );
@@ -62,41 +69,51 @@ export function ForumShowcase() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories?.map((category, index) => {
-            const IconComponent = iconMap[category.icon || ''] || MessageSquare;
-            const gradient = gradientMap[index % 4];
+        <Carousel
+          opts={{
+            align: 'start',
+            loop: true,
+          }}
+          plugins={[autoplayPlugin.current]}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {categories?.map((category, index) => {
+              const IconComponent = iconMap[category.icon || ''] || MessageSquare;
+              const gradient = gradientMap[index % 4];
 
-            return (
-              <Link
-                key={category.id}
-                to={`/forum?category=${category.slug}`}
-                className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                
-                <div className="relative z-10">
-                  <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                    <IconComponent className="h-6 w-6" />
-                  </div>
-                  
-                  <h3 className="font-display font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {category.description || 'Join the discussion'}
-                  </p>
-                  
-                  <div className="flex items-center text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span>Browse Forum</span>
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+              return (
+                <CarouselItem key={category.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Link
+                    to={`/forum?category=${category.slug}`}
+                    className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 block h-full"
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                    
+                    <div className="relative z-10">
+                      <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+                        <IconComponent className="h-6 w-6" />
+                      </div>
+                      
+                      <h3 className="font-display font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                        {category.name}
+                      </h3>
+                      
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                        {category.description || 'Join the discussion'}
+                      </p>
+                      
+                      <div className="flex items-center text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span>Browse Forum</span>
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </Link>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
 
         <div className="text-center mt-8">
           <Link
