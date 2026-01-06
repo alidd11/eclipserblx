@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,7 +74,9 @@ export default function AdminProducts() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const { data: categories } = useQuery({
@@ -135,6 +137,53 @@ export default function AdminProducts() {
       }
     }
     setForm({ ...form, asset_file_url: '' });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file is an image
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      // Add to images list
+      const currentImages = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+      currentImages.push(publicUrl);
+      setForm({ ...form, images: currentImages.join(', ') });
+      toast.success('Image uploaded successfully');
+    } catch (error: any) {
+      toast.error(`Upload failed: ${error.message}`);
+    } finally {
+      setIsUploadingImage(false);
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    const currentImages = form.images.split(',').map(s => s.trim()).filter(Boolean);
+    currentImages.splice(indexToRemove, 1);
+    setForm({ ...form, images: currentImages.join(', ') });
   };
 
   const saveMutation = useMutation({
@@ -379,13 +428,61 @@ export default function AdminProducts() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="images">Image URLs (comma separated)</Label>
-              <Input
-                id="images"
-                value={form.images}
-                onChange={(e) => setForm({ ...form, images: e.target.value })}
-                placeholder="https://..."
+              <Label>Product Images</Label>
+              <input
+                type="file"
+                ref={imageInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
               />
+              
+              {/* Image previews */}
+              {form.images && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {form.images.split(',').map((img, idx) => {
+                    const trimmedImg = img.trim();
+                    if (!trimmedImg) return null;
+                    return (
+                      <div key={idx} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-border">
+                        <img src={trimmedImg} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                        >
+                          <X className="h-4 w-4 text-white" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  className="flex-1"
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-4 w-4 mr-2" />
+                      Upload Image
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Upload product images directly or they will be stored securely
+              </p>
             </div>
 
             <div className="space-y-2">
