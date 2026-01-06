@@ -54,6 +54,7 @@ export type Database = {
           customer_email: string | null
           customer_name: string | null
           id: string
+          issue_category: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -64,6 +65,7 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string | null
           id?: string
+          issue_category?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string | null
           id?: string
+          issue_category?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -82,6 +85,7 @@ export type Database = {
       }
       chat_messages: {
         Row: {
+          attachment_url: string | null
           conversation_id: string
           created_at: string
           id: string
@@ -90,6 +94,7 @@ export type Database = {
           sender_type: string
         }
         Insert: {
+          attachment_url?: string | null
           conversation_id: string
           created_at?: string
           id?: string
@@ -98,6 +103,7 @@ export type Database = {
           sender_type: string
         }
         Update: {
+          attachment_url?: string | null
           conversation_id?: string
           created_at?: string
           id?: string
