@@ -9,8 +9,18 @@ interface Review {
   rating: number;
   title: string | null;
   content: string;
-  display_name: string | null;
+  display_name: string;
 }
+
+const FAKE_NAMES = [
+  'Alex M.', 'Jordan T.', 'Sam K.', 'Riley P.', 'Casey W.',
+  'Morgan L.', 'Taylor S.', 'Jamie R.', 'Drew H.', 'Quinn B.',
+  'Avery C.', 'Blake N.', 'Cameron D.', 'Dakota F.', 'Emery G.',
+  'Finley J.', 'Harper V.', 'Hayden X.', 'Jesse Y.', 'Kendall Z.',
+  'Logan A.', 'Mason E.', 'Noah I.', 'Oakley O.', 'Parker U.',
+  'Peyton Q.', 'Reese S.', 'River T.', 'Rowan W.', 'Sage M.',
+  'Sawyer K.', 'Skyler L.', 'Spencer N.', 'Sydney P.', 'Tatum R.',
+];
 
 export function ReviewsTicker() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,12 +52,12 @@ export function ReviewsTicker() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name]) || []);
 
-      return reviewsData?.map(review => ({
+      return reviewsData?.map((review, index) => ({
         id: review.id,
         rating: review.rating,
         title: review.title,
         content: review.content,
-        display_name: profileMap.get(review.user_id) || null,
+        display_name: profileMap.get(review.user_id) || FAKE_NAMES[index % FAKE_NAMES.length],
       })) as Review[];
     },
     staleTime: 1000 * 60 * 5,
@@ -102,7 +112,7 @@ export function ReviewsTicker() {
 
             {/* Author */}
             <p className="text-xs text-primary mt-1 font-medium">
-              — {currentReview.display_name || 'Anonymous'}
+              — {currentReview.display_name}
             </p>
           </motion.div>
         </AnimatePresence>
