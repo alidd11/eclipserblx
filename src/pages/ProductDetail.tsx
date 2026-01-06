@@ -1,18 +1,25 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Clock } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['product', slug] });
+    await queryClient.invalidateQueries({ queryKey: ['related-products'] });
+  }, [queryClient, slug]);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -94,7 +101,8 @@ export default function ProductDetail() {
 
   return (
     <MainLayout>
-      <div className="container py-8 space-y-8">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="container py-8 space-y-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
@@ -260,7 +268,8 @@ export default function ProductDetail() {
             </div>
           </section>
         )}
-      </div>
+        </div>
+      </PullToRefresh>
     </MainLayout>
   );
 }

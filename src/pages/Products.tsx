@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Filter, Search, Grid3X3, LayoutGrid, ChevronDown } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -11,11 +12,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
 
 export default function Products() {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const categorySlug = searchParams.get('category');
   const [search, setSearch] = useState('');
   const [gridSize, setGridSize] = useState<'small' | 'large'>('large');
   const [categoriesOpen, setCategoriesOpen] = useState(true);
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['products'] });
+    await queryClient.invalidateQueries({ queryKey: ['categories'] });
+  }, [queryClient]);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -60,7 +67,8 @@ export default function Products() {
 
   return (
     <MainLayout>
-      <div className="container py-8 space-y-8">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="container py-8 space-y-8">
         {/* Header */}
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-display font-bold">
@@ -193,7 +201,8 @@ export default function Products() {
             )}
           </div>
         </div>
-      </div>
+        </div>
+      </PullToRefresh>
     </MainLayout>
   );
 }
