@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +47,7 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationStatus, setConversationStatus] = useState<string>('active');
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [issueCategory, setIssueCategory] = useState('other');
@@ -100,7 +101,7 @@ export function ChatWidget() {
     }
   }, [hasStarted, permission, requestPermission]);
 
-  // Subscribe to new messages and typing indicator
+  // Subscribe to new messages, typing indicator, and conversation status
   useEffect(() => {
     if (!conversationId) return;
 
@@ -136,6 +137,31 @@ export function ChatWidget() {
       )
       .subscribe();
 
+    // Conversation status channel - detect when staff closes the chat
+    const conversationChannel = supabase
+      .channel(`conversation-status-${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_conversations',
+          filter: `id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const updated = payload.new as { status: string };
+          setConversationStatus(updated.status);
+          if (updated.status === 'closed') {
+            playSound();
+            sendNotification('Chat closed', {
+              body: 'This conversation has been closed by support.',
+              tag: 'chat-closed',
+            });
+          }
+        }
+      )
+      .subscribe();
+
     // Typing indicator channel
     const typingChannel = supabase
       .channel(`typing-${conversationId}`)
@@ -150,6 +176,7 @@ export function ChatWidget() {
 
     return () => {
       supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(conversationChannel);
       supabase.removeChannel(typingChannel);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -253,8 +280,21 @@ export function ChatWidget() {
     }
   };
 
+  const startNewChat = () => {
+    // Reset state to show the start form again
+    setConversationId(null);
+    setConversationStatus('active');
+    setHasStarted(false);
+    setMessages([]);
+    setCustomerName('');
+    setCustomerEmail('');
+    setIssueCategory('other');
+    setIssueDescription('');
+    setNewMessage('');
+  };
+
   const sendMessage = async () => {
-    if (!newMessage.trim() || !conversationId) return;
+    if (!newMessage.trim() || !conversationId || conversationStatus === 'closed') return;
 
     const messageText = newMessage.trim();
     setNewMessage('');
@@ -554,30 +594,46 @@ export function ChatWidget() {
                   </div>
                 </ScrollArea>
 
-              {/* Input */}
-              <div className="p-4 border-t border-border">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="flex-shrink-0"
-                  >
-                    {isUploading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Paperclip className="h-4 w-4" />
-                    )}
-                  </Button>
+              {/* Input or Closed State */}
+              {conversationStatus === 'closed' ? (
+                <div className="p-4 border-t border-border bg-muted/50">
+                  <div className="text-center space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      This conversation has been closed.
+                    </div>
+                    <Button
+                      onClick={startNewChat}
+                      className="gradient-button w-full"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Start New Chat
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 border-t border-border">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept="image/*,.pdf,.doc,.docx,.txt"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="flex-shrink-0"
+                    >
+                      {isUploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Paperclip className="h-4 w-4" />
+                      )}
+                    </Button>
                     <Input
                       placeholder="Type a message..."
                       value={newMessage}
@@ -587,16 +643,17 @@ export function ChatWidget() {
                       }}
                       onKeyPress={handleKeyPress}
                     />
-                  <Button
-                    size="icon"
-                    onClick={sendMessage}
-                    disabled={!newMessage.trim()}
-                    className="gradient-button"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                    <Button
+                      size="icon"
+                      onClick={sendMessage}
+                      disabled={!newMessage.trim()}
+                      className="gradient-button"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </>
