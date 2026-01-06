@@ -185,7 +185,7 @@ export default function AdminUsers() {
                   </TableCell>
                 </TableRow>
               ) : (
-                profiles?.map((profile) => {
+                profiles?.filter(p => p.email !== PRIMARY_ADMIN_EMAIL).map((profile) => {
                   const roles = getUserRoles(profile.user_id);
                   return (
                     <TableRow key={profile.id}>
