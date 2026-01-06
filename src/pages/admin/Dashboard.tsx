@@ -27,18 +27,6 @@ export default function AdminDashboard() {
     },
   });
 
-  const { data: recentOrders } = useQuery({
-    queryKey: ['admin-recent-orders'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      if (error) throw error;
-      return data;
-    },
-  });
 
   const { data: productDownloads } = useQuery({
     queryKey: ['admin-product-downloads'],
@@ -107,41 +95,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Recent Orders */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {recentOrders?.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No orders yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {recentOrders?.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div>
-                        <p className="font-medium text-sm">{order.customer_email}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(order.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          order.status === 'paid' ? 'bg-green-500/10 text-green-500' :
-                          order.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+        <div className="grid gap-6">
           {/* Download Stats by Product */}
           <Card className="bg-card border-border">
             <CardHeader>
