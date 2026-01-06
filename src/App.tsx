@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import Downloads from "./pages/Downloads";
 import Products from "./pages/Products";
+import Categories from "./pages/Categories";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/account" element={<Account />} />
               <Route path="/downloads" element={<Downloads />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/categories" element={<Categories />} />
               <Route path="/products/:slug" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />

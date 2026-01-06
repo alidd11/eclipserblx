@@ -1,7 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { HeroSection } from '@/components/home/HeroSection';
 import { ForumShowcase } from '@/components/home/ForumShowcase';
-import { FeaturedProducts } from '@/components/home/FeaturedProducts';
 import { TrustSignals } from '@/components/home/TrustSignals';
 
 export default function Index() {
@@ -9,7 +8,6 @@ export default function Index() {
     <MainLayout>
       <HeroSection />
       <ForumShowcase />
-      <FeaturedProducts />
       <TrustSignals />
     </MainLayout>
   );

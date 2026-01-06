@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
+import { FeaturedProducts } from '@/components/home/FeaturedProducts';
 
 export default function Products() {
   const queryClient = useQueryClient();
@@ -201,6 +202,9 @@ export default function Products() {
             )}
           </div>
         </div>
+
+        {/* Featured Products Section */}
+        <FeaturedProducts />
         </div>
       </PullToRefresh>
     </MainLayout>
