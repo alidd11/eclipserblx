@@ -45,33 +45,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if user can download (48 hour limit)
-    const { data: canDownload, error: canDownloadError } = await supabaseClient
-      .rpc('can_user_download', { _user_id: user.id });
-
-    if (canDownloadError) {
-      console.error("Error checking download eligibility:", canDownloadError);
-      return new Response(
-        JSON.stringify({ error: "Failed to check download eligibility" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!canDownload) {
-      // Get next available download time
-      const { data: nextTime } = await supabaseClient
-        .rpc('get_next_download_time', { _user_id: user.id });
-
-      return new Response(
-        JSON.stringify({ 
-          error: "Download limit reached", 
-          nextDownloadAt: nextTime,
-          message: "You can download 1 product every 48 hours"
-        }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Verify user has purchased this product
     const { data: orderItem, error: orderError } = await supabaseClient
       .from('order_items')
