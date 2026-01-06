@@ -39,7 +39,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   return (
     <aside className={cn(
       "border-r border-border bg-card flex flex-col h-screen sticky top-0 transition-all duration-300",
-      collapsed ? "w-16" : "w-64"
+      collapsed ? "w-14" : "w-64"
     )}>
       {/* Header */}
       <div className="p-4 border-b border-border">
