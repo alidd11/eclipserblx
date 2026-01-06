@@ -18,7 +18,7 @@ export default function Products() {
   const categorySlug = searchParams.get('category');
   const [search, setSearch] = useState('');
   const [gridSize, setGridSize] = useState<'small' | 'large'>('large');
-  const [categoriesOpen, setCategoriesOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['products'] });
