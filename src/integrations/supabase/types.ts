@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      applicant_messages: {
+        Row: {
+          application_id: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          sent_by: string | null
+          subject: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          sent_by?: string | null
+          subject: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          sent_by?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
