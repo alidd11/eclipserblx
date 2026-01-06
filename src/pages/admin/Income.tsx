@@ -38,6 +38,14 @@ export default function AdminIncome() {
       } else {
         setIsVerified(true);
         toast.success('Access granted to income analytics');
+        
+        // Log access to audit_logs
+        await supabase.from('audit_logs').insert({
+          user_id: user.id,
+          action: 'access',
+          resource: 'income_analytics',
+          details: { timestamp: new Date().toISOString() },
+        });
       }
     } catch (error) {
       toast.error('Verification failed. Please try again.');

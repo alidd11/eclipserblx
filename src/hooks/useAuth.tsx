@@ -21,10 +21,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Log staff login/logout activity
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          // Check if user is staff and log login (only on SIGNED_IN, not TOKEN_REFRESHED)
+          if (event === 'SIGNED_IN') {
+            const { data: roles } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user.id);
+
+            if (roles && roles.length > 0) {
+              await supabase.from('staff_activity').insert({
+                user_id: session.user.id,
+                activity_type: 'login',
+                details: { roles: roles.map(r => r.role) },
+              });
+            }
+          }
+        }
       }
     );
 
@@ -65,6 +84,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Log staff logout before signing out
+    if (user) {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+
+      if (roles && roles.length > 0) {
+        await supabase.from('staff_activity').insert({
+          user_id: user.id,
+          activity_type: 'logout',
+          details: { roles: roles.map(r => r.role) },
+        });
+      }
+    }
     await supabase.auth.signOut();
   };
 
