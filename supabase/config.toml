@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.download-asset]
 verify_jwt = false
+
+[functions.check-nsfw]
+verify_jwt = false
