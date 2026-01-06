@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 const navLinks = [
   { href: '/products', label: 'Products' },
   { href: '/categories', label: 'Categories' },
+  { href: '/forum', label: 'Forum' },
 ];
 
 export function Header() {
