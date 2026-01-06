@@ -78,13 +78,13 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
                 end={item.href === '/admin'}
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
-                  collapsed && "justify-center px-2",
+                  collapsed && "justify-center px-0",
                   isActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
+                <item.icon className={cn("h-4 w-4 shrink-0", collapsed && "mx-auto")} />
                 {!collapsed && item.title}
               </NavLink>
             </TooltipTrigger>
