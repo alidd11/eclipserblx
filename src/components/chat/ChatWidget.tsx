@@ -44,7 +44,7 @@ export function ChatWidget() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [issueCategory, setIssueCategory] = useState('');
+  const [issueCategory, setIssueCategory] = useState('other');
   const [issueDescription, setIssueDescription] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -178,12 +178,19 @@ export function ChatWidget() {
   const startConversation = async () => {
     if (!customerName.trim() || !issueCategory) return;
 
+    // Live chat requires authentication (RLS enforces user-scoped access)
+    if (!user) {
+      alert('Please sign in to start live chat.');
+      window.location.href = '/auth';
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data: conversation, error } = await supabase
         .from('chat_conversations')
         .insert({
-          user_id: user?.id || null,
+          user_id: user.id,
           customer_name: customerName,
           customer_email: customerEmail || null,
           status: 'open',
@@ -198,7 +205,7 @@ export function ChatWidget() {
       setHasStarted(true);
 
       // Get the category label
-      const categoryLabel = ISSUE_CATEGORIES.find(c => c.value === issueCategory)?.label || issueCategory;
+      const categoryLabel = ISSUE_CATEGORIES.find((c) => c.value === issueCategory)?.label || issueCategory;
 
       // Send welcome message with issue context
       await supabase.from('chat_messages').insert({
@@ -213,13 +220,14 @@ export function ChatWidget() {
           conversation_id: conversation.id,
           message: `[${categoryLabel}] ${issueDescription.trim()}`,
           sender_type: 'customer',
-          sender_id: user?.id || null,
+          sender_id: user.id,
         });
       }
 
       loadMessages(conversation.id);
     } catch (error) {
       console.error('Error starting conversation:', error);
+      alert('Could not start chat. Please try again (or sign in again).');
     } finally {
       setIsLoading(false);
     }
@@ -392,7 +400,7 @@ export function ChatWidget() {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <Label htmlFor="chat-issue" className="text-xs">What can we help with? *</Label>
+                  <Label htmlFor="chat-issue" className="text-xs">What can we help with?</Label>
                   <Select value={issueCategory} onValueChange={setIssueCategory}>
                     <SelectTrigger id="chat-issue" className="h-9 bg-background">
                       <SelectValue placeholder="Select issue type" />
