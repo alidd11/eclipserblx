@@ -1,14 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Crown, Shield, Wrench, Briefcase } from 'lucide-react';
+import { Send, Crown, Shield, Wrench, Briefcase, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 
 // Badge configuration for user roles
 const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
@@ -51,12 +53,37 @@ interface ChatMessage {
   created_at: string;
 }
 
+interface TypingUser {
+  id: string;
+  name: string;
+}
+
 export function GeneralChatChannel() {
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTypingRef = useRef<number>(0);
+
+  // Fetch current user's profile for typing indicator
+  const { data: currentProfile } = useQuery({
+    queryKey: ['current-user-profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   // Fetch messages
   const { data: messages = [] } = useQuery({
@@ -137,14 +164,35 @@ export function GeneralChatChannel() {
     },
   });
 
-  // Real-time subscription
+  // Delete message mutation (admin only)
+  const deleteMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { error } = await supabase
+        .from('forum_chat_messages')
+        .delete()
+        .eq('id', messageId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum-chat-messages'] });
+      toast.success('Message deleted');
+    },
+    onError: () => {
+      toast.error('Failed to delete message');
+    },
+  });
+
+  // Real-time subscription for messages and typing
   useEffect(() => {
     const channel = supabase
-      .channel('forum-chat')
+      .channel('forum-chat-presence', {
+        config: { presence: { key: user?.id || 'anonymous' } }
+      })
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'forum_chat_messages'
         },
@@ -152,12 +200,53 @@ export function GeneralChatChannel() {
           queryClient.invalidateQueries({ queryKey: ['forum-chat-messages'] });
         }
       )
-      .subscribe();
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const typing: TypingUser[] = [];
+        
+        Object.entries(state).forEach(([userId, presences]) => {
+          if (userId !== user?.id && Array.isArray(presences)) {
+            const presence = presences[0] as { typing?: boolean; name?: string };
+            if (presence?.typing) {
+              typing.push({ id: userId, name: presence.name || 'Someone' });
+            }
+          }
+        });
+        
+        setTypingUsers(typing);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && user) {
+          await channel.track({ typing: false, name: currentProfile?.display_name || 'User' });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, user, currentProfile?.display_name]);
+
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (!user) return;
+    
+    const now = Date.now();
+    if (now - lastTypingRef.current < 1000) return; // Throttle to once per second
+    lastTypingRef.current = now;
+
+    const channel = supabase.channel('forum-chat-presence');
+    channel.track({ typing: true, name: currentProfile?.display_name || 'User' });
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Stop typing after 2 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      channel.track({ typing: false, name: currentProfile?.display_name || 'User' });
+    }, 2000);
+  }, [user, currentProfile?.display_name]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -169,7 +258,17 @@ export function GeneralChatChannel() {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !user) return;
+    
+    // Stop typing indicator
+    const channel = supabase.channel('forum-chat-presence');
+    channel.track({ typing: false, name: currentProfile?.display_name || 'User' });
+    
     sendMutation.mutate(newMessage.trim());
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    handleTyping();
   };
 
   const getUserBadge = (userId: string) => {
@@ -179,6 +278,10 @@ export function GeneralChatChannel() {
     if (roles.includes('support_agent')) return roleBadges.support_agent;
     if (roles.some(r => ['product_manager', 'order_manager', 'analyst'].includes(r))) return roleBadges.product_manager;
     return null;
+  };
+
+  const canDeleteMessage = (msgUserId: string) => {
+    return isAdmin || user?.id === msgUserId;
   };
 
   return (
@@ -201,7 +304,7 @@ export function GeneralChatChannel() {
                 <div
                   key={msg.id}
                   className={cn(
-                    "flex gap-3",
+                    "flex gap-3 group",
                     isOwn && "flex-row-reverse"
                   )}
                 >
@@ -228,6 +331,17 @@ export function GeneralChatChannel() {
                       <span className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                       </span>
+                      
+                      {/* Delete button for admins/own messages */}
+                      {canDeleteMessage(msg.user_id) && (
+                        <button
+                          onClick={() => deleteMutation.mutate(msg.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/20 rounded text-destructive"
+                          title="Delete message"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                     <div className={cn(
                       "px-3 py-2 rounded-xl text-sm",
@@ -245,6 +359,25 @@ export function GeneralChatChannel() {
         </div>
       </ScrollArea>
 
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-4 py-2 text-xs text-muted-foreground animate-pulse">
+          <span className="inline-flex items-center gap-1">
+            <span className="flex gap-0.5">
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+            <span className="ml-1">
+              {typingUsers.length === 1 
+                ? `${typingUsers[0].name} is typing...`
+                : `${typingUsers.map(u => u.name).join(', ')} are typing...`
+              }
+            </span>
+          </span>
+        </div>
+      )}
+
       {/* Input area */}
       <div className="p-4 border-t border-border/50">
         {user ? (
@@ -252,7 +385,7 @@ export function GeneralChatChannel() {
             <Input
               ref={inputRef}
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={handleInputChange}
               placeholder="Type a message..."
               className="flex-1"
               disabled={sendMutation.isPending}
