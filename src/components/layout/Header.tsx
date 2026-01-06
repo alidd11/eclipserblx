@@ -146,6 +146,32 @@ export function Header() {
               </svg>
               Join Discord
             </a>
+            
+            {/* Separator */}
+            <div className="my-2 border-t border-border mx-4" />
+            
+            {/* Legal & Support Links */}
+            <Link
+              to="/privacy"
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors touch-manipulation"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/terms"
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors touch-manipulation"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Terms of Service
+            </Link>
+            <Link
+              to="/refunds"
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors touch-manipulation"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Refund Policy
+            </Link>
           </nav>
         </div>
       </div>
