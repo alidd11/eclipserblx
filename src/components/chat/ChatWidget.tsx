@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +22,7 @@ interface Message {
   message: string;
   sender_type: string;
   created_at: string;
+  attachment_url?: string | null;
 }
 
 const ISSUE_CATEGORIES = [
@@ -47,7 +48,9 @@ export function ChatWidget() {
   const [issueDescription, setIssueDescription] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { playSound } = useNotificationSound();
 
   const openChat = () => {
@@ -146,6 +149,7 @@ export function ChatWidget() {
           customer_name: customerName,
           customer_email: customerEmail || null,
           status: 'open',
+          issue_category: issueCategory,
         })
         .select()
         .single();
@@ -202,6 +206,50 @@ export function ChatWidget() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !conversationId) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${conversationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('chat-attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-attachments')
+        .getPublicUrl(fileName);
+
+      // Send message with attachment
+      await supabase.from('chat_messages').insert({
+        conversation_id: conversationId,
+        message: file.name,
+        sender_type: 'customer',
+        sender_id: user?.id || null,
+        attachment_url: publicUrl,
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -211,6 +259,10 @@ export function ChatWidget() {
         startConversation();
       }
     }
+  };
+
+  const isImageUrl = (url: string) => {
+    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
 
   if (!isOpen) {
@@ -361,7 +413,30 @@ export function ChatWidget() {
                             : 'bg-muted text-foreground'
                         )}
                       >
-                        {msg.message}
+                        {msg.attachment_url && (
+                          <div className="mb-2">
+                            {isImageUrl(msg.attachment_url) ? (
+                              <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
+                                <img 
+                                  src={msg.attachment_url} 
+                                  alt="Attachment" 
+                                  className="max-w-full rounded max-h-32 object-cover"
+                                />
+                              </a>
+                            ) : (
+                              <a 
+                                href={msg.attachment_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-xs underline"
+                              >
+                                <Paperclip className="h-3 w-3" />
+                                {msg.message}
+                              </a>
+                            )}
+                          </div>
+                        )}
+                        {!msg.attachment_url && msg.message}
                       </div>
                     </div>
                   ))}
@@ -370,7 +445,28 @@ export function ChatWidget() {
 
               {/* Input */}
               <div className="p-4 border-t border-border">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                />
                 <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex-shrink-0"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Paperclip className="h-4 w-4" />
+                    )}
+                  </Button>
                   <Input
                     placeholder="Type a message..."
                     value={newMessage}

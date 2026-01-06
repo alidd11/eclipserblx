@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Circle } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ interface Conversation {
   customer_name: string | null;
   customer_email: string | null;
   status: string;
+  issue_category: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,7 +27,28 @@ interface Message {
   sender_type: string;
   sender_id: string | null;
   created_at: string;
+  attachment_url: string | null;
 }
+
+const ISSUE_CATEGORY_LABELS: Record<string, string> = {
+  order: 'Order Issue',
+  download: 'Download',
+  payment: 'Payment',
+  product: 'Product',
+  refund: 'Refund',
+  technical: 'Technical',
+  other: 'Other',
+};
+
+const ISSUE_CATEGORY_COLORS: Record<string, string> = {
+  order: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  download: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  payment: 'bg-green-500/20 text-green-400 border-green-500/30',
+  product: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  refund: 'bg-red-500/20 text-red-400 border-red-500/30',
+  technical: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  other: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+};
 
 export default function AdminLiveChat() {
   const { user } = useAuth();
@@ -35,7 +57,9 @@ export default function AdminLiveChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { playSound } = useNotificationSound();
 
   // Load conversations
@@ -153,6 +177,53 @@ export default function AdminLiveChat() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedConversation || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${selectedConversation.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('chat-attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-attachments')
+        .getPublicUrl(fileName);
+
+      await supabase.from('chat_messages').insert({
+        conversation_id: selectedConversation.id,
+        message: file.name,
+        sender_type: 'agent',
+        sender_id: user.id,
+        attachment_url: publicUrl,
+      });
+
+      await supabase
+        .from('chat_conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', selectedConversation.id);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const closeConversation = async () => {
     if (!selectedConversation) return;
 
@@ -170,6 +241,10 @@ export default function AdminLiveChat() {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const isImageUrl = (url: string) => {
+    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
 
   return (
@@ -213,6 +288,17 @@ export default function AdminLiveChat() {
                           {conv.status}
                         </Badge>
                       </div>
+                      {conv.issue_category && (
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-[10px] mb-1",
+                            ISSUE_CATEGORY_COLORS[conv.issue_category] || ISSUE_CATEGORY_COLORS.other
+                          )}
+                        >
+                          {ISSUE_CATEGORY_LABELS[conv.issue_category] || conv.issue_category}
+                        </Badge>
+                      )}
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Circle
                           className={cn(
@@ -238,9 +324,22 @@ export default function AdminLiveChat() {
                 {/* Chat Header */}
                 <div className="p-4 border-b border-border bg-muted/50 flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold">
-                      {selectedConversation.customer_name || 'Anonymous'}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">
+                        {selectedConversation.customer_name || 'Anonymous'}
+                      </h3>
+                      {selectedConversation.issue_category && (
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs",
+                            ISSUE_CATEGORY_COLORS[selectedConversation.issue_category] || ISSUE_CATEGORY_COLORS.other
+                          )}
+                        >
+                          {ISSUE_CATEGORY_LABELS[selectedConversation.issue_category] || selectedConversation.issue_category}
+                        </Badge>
+                      )}
+                    </div>
                     {selectedConversation.customer_email && (
                       <p className="text-sm text-muted-foreground">
                         {selectedConversation.customer_email}
@@ -275,7 +374,30 @@ export default function AdminLiveChat() {
                               : 'bg-muted text-foreground'
                           )}
                         >
-                          <p>{msg.message}</p>
+                          {msg.attachment_url && (
+                            <div className="mb-2">
+                              {isImageUrl(msg.attachment_url) ? (
+                                <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
+                                  <img 
+                                    src={msg.attachment_url} 
+                                    alt="Attachment" 
+                                    className="max-w-full rounded max-h-40 object-cover"
+                                  />
+                                </a>
+                              ) : (
+                                <a 
+                                  href={msg.attachment_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-xs underline"
+                                >
+                                  <Paperclip className="h-3 w-3" />
+                                  {msg.message}
+                                </a>
+                              )}
+                            </div>
+                          )}
+                          {!msg.attachment_url && <p>{msg.message}</p>}
                           <p
                             className={cn(
                               'text-xs mt-1 opacity-70',
@@ -295,7 +417,27 @@ export default function AdminLiveChat() {
                 {/* Input */}
                 {selectedConversation.status === 'open' && (
                   <div className="p-4 border-t border-border">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      accept="image/*,.pdf,.doc,.docx,.txt"
+                    />
                     <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Paperclip className="h-4 w-4" />
+                        )}
+                      </Button>
                       <Input
                         placeholder="Type your reply..."
                         value={newMessage}
