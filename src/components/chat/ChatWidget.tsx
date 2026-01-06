@@ -177,8 +177,9 @@ export function ChatWidget() {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full gradient-button shadow-lg z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full gradient-button shadow-lg z-[9999]"
         size="icon"
+        aria-label="Open live chat"
       >
         <MessageCircle className="h-6 w-6" />
       </Button>
@@ -188,7 +189,7 @@ export function ChatWidget() {
   return (
     <div
       className={cn(
-        'fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-2xl z-50 flex flex-col transition-all duration-200',
+        'fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-2xl z-[9999] flex flex-col transition-all duration-200',
         isMinimized ? 'h-14' : 'h-[500px]'
       )}
     >
