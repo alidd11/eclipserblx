@@ -47,16 +47,15 @@ export function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <a
               href="https://discord.gg/d3Tq4KbNwq"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex"
             >
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
                 <svg
-                  className="h-5 w-5"
+                  className="h-4 w-4 sm:h-5 sm:w-5"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                   xmlns="http://www.w3.org/2000/svg"
@@ -66,15 +65,15 @@ export function Header() {
               </Button>
             </a>
 
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Search className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
 
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-                <ShoppingCart className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs font-medium text-primary-foreground flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary text-[10px] sm:text-xs font-medium text-primary-foreground flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
@@ -83,13 +82,13 @@ export function Header() {
 
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                  <User className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button size="sm" className="gradient-button border-0">
+                <Button size="sm" className="gradient-button border-0 h-8 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm">
                   Sign In
                 </Button>
               </Link>
@@ -99,10 +98,10 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-muted-foreground hover:text-foreground"
+              className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
           </div>
         </div>
