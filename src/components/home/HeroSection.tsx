@@ -64,9 +64,9 @@ export function HeroSection() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/categories">
+            <Link to="/forum">
               <Button size="lg" variant="outline" className="text-lg px-8">
-                View Categories
+                View Forum
               </Button>
             </Link>
           </div>
