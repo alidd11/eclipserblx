@@ -1,7 +1,7 @@
 import { Star } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Review {
@@ -22,8 +22,13 @@ const FAKE_NAMES = [
   'Sawyer K.', 'Skyler L.', 'Spencer N.', 'Sydney P.', 'Tatum R.',
 ];
 
+const SWIPE_THRESHOLD = 50;
+
 export function ReviewsTicker() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const { data: reviews } = useQuery({
     queryKey: ['hero-reviews'],
@@ -67,11 +72,41 @@ export function ReviewsTicker() {
     if (!reviews || reviews.length === 0) return;
 
     const interval = setInterval(() => {
+      setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % reviews.length);
     }, 3000);
 
     return () => clearInterval(interval);
   }, [reviews]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!reviews || reviews.length === 0) return;
+    
+    const diff = touchStartX.current - touchEndX.current;
+    
+    if (Math.abs(diff) > SWIPE_THRESHOLD) {
+      if (diff > 0) {
+        // Swiped left - next review
+        setDirection(1);
+        setCurrentIndex((prev) => (prev + 1) % reviews.length);
+      } else {
+        // Swiped right - previous review
+        setDirection(-1);
+        setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+      }
+    }
+    
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
 
   if (!reviews || reviews.length === 0) {
     return null;
@@ -81,14 +116,19 @@ export function ReviewsTicker() {
 
   return (
     <div className="pt-8 max-w-2xl mx-auto">
-      <div className="relative h-24 overflow-hidden">
-        <AnimatePresence mode="wait">
+      <div 
+        className="relative h-24 overflow-hidden touch-pan-x"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentReview.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+            initial={{ opacity: 0, x: direction >= 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction >= 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
           >
             {/* Stars */}

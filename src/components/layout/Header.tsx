@@ -52,7 +52,7 @@ export function Header() {
               href="https://discord.gg/d3Tq4KbNwq"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex"
+              className="hidden landscape:flex sm:flex"
             >
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                 <svg
