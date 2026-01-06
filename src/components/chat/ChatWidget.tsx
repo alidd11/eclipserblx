@@ -420,9 +420,16 @@ export function ChatWidget() {
                 </div>
                 
                 <Button
+                  type="button"
                   onClick={startConversation}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    if (customerName.trim() && issueCategory && !isLoading) {
+                      startConversation();
+                    }
+                  }}
                   disabled={!customerName.trim() || !issueCategory || isLoading}
-                  className="gradient-button mt-2"
+                  className="gradient-button mt-2 touch-manipulation"
                 >
                   {isLoading ? 'Starting...' : 'Start Chat'}
                 </Button>
