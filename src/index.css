@@ -104,14 +104,28 @@
     @apply border-border;
   }
   
-  body {
+  html, body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+  }
+  
+  /* Enable smooth scrolling on iOS */
+  .overflow-y-auto,
+  .overflow-auto,
+  .overflow-scroll {
+    -webkit-overflow-scrolling: touch;
   }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 700;
+  }
+  
+  /* Improve touch targets for mobile */
+  button, a, [role="button"] {
+    touch-action: manipulation;
   }
 }
 

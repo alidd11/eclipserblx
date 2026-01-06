@@ -110,16 +110,20 @@ export function Header() {
         {/* Mobile Navigation */}
         <div
           className={cn(
-            'md:hidden overflow-hidden transition-all duration-300',
-            mobileMenuOpen ? 'max-h-48 pb-4' : 'max-h-0'
+            'md:hidden transition-all duration-300',
+            mobileMenuOpen ? 'max-h-[70vh] pb-4 overflow-y-auto' : 'max-h-0 overflow-hidden'
           )}
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
         >
           <nav className="flex flex-col gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors touch-manipulation"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
@@ -129,7 +133,7 @@ export function Header() {
               href="https://discord.gg/d3Tq4KbNwq"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors flex items-center gap-2 touch-manipulation"
               onClick={() => setMobileMenuOpen(false)}
             >
               <svg
