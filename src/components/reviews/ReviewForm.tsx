@@ -1,0 +1,135 @@
+import { useState } from 'react';
+import { Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+
+interface ReviewFormProps {
+  productId?: string;
+  productName?: string;
+  onSuccess?: () => void;
+}
+
+export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProps) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [rating, setRating] = useState(5);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error('Please sign in to leave a review');
+      return;
+    }
+
+    if (!content.trim()) {
+      toast.error('Please write a review');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        user_id: user.id,
+        product_id: productId || null,
+        rating,
+        title: title.trim() || null,
+        content: content.trim(),
+      });
+
+      if (error) throw error;
+
+      toast.success('Review submitted! It will be visible after approval.');
+      setRating(5);
+      setTitle('');
+      setContent('');
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error('Failed to submit review');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        Please sign in to leave a review
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <Label className="mb-2 block">Rating</Label>
+        <div className="flex items-center gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHoveredRating(star)}
+              onMouseLeave={() => setHoveredRating(0)}
+              className="p-1 transition-transform hover:scale-110"
+            >
+              <Star
+                className={`h-6 w-6 transition-colors ${
+                  star <= (hoveredRating || rating)
+                    ? 'text-amber-400 fill-amber-400'
+                    : 'text-muted-foreground'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {productName && (
+        <div className="text-sm text-muted-foreground">
+          Reviewing: <span className="font-medium text-foreground">{productName}</span>
+        </div>
+      )}
+
+      <div>
+        <Label htmlFor="title">Title (optional)</Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Summarize your experience"
+          maxLength={100}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="content">Your Review</Label>
+        <Textarea
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Tell us about your experience..."
+          rows={4}
+          required
+        />
+      </div>
+
+      <Button type="submit" disabled={isSubmitting} className="w-full">
+        {isSubmitting ? 'Submitting...' : 'Submit Review'}
+      </Button>
+    </form>
+  );
+}
