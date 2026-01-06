@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +53,7 @@ interface ProductForm {
   is_active: boolean;
   is_featured: boolean;
   images: string;
+  asset_file_url: string;
 }
 
 const emptyForm: ProductForm = {
@@ -64,6 +65,7 @@ const emptyForm: ProductForm = {
   is_active: true,
   is_featured: false,
   images: '',
+  asset_file_url: '',
 };
 
 export default function AdminProducts() {
@@ -71,6 +73,8 @@ export default function AdminProducts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>(emptyForm);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const { data: categories } = useQuery({
@@ -93,6 +97,46 @@ export default function AdminProducts() {
     },
   });
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get the file path (not public URL since bucket is private)
+      setForm({ ...form, asset_file_url: filePath });
+      toast.success('File uploaded successfully');
+    } catch (error: any) {
+      toast.error(`Upload failed: ${error.message}`);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeAssetFile = async () => {
+    if (form.asset_file_url) {
+      try {
+        await supabase.storage.from('product-assets').remove([form.asset_file_url]);
+      } catch (error) {
+        console.error('Failed to remove file:', error);
+      }
+    }
+    setForm({ ...form, asset_file_url: '' });
+  };
+
   const saveMutation = useMutation({
     mutationFn: async (data: ProductForm) => {
       const payload = {
@@ -104,6 +148,7 @@ export default function AdminProducts() {
         is_active: data.is_active,
         is_featured: data.is_featured,
         images: data.images ? data.images.split(',').map(s => s.trim()) : [],
+        asset_file_url: data.asset_file_url || null,
       };
 
       if (data.id) {
@@ -151,6 +196,7 @@ export default function AdminProducts() {
       is_active: product.is_active,
       is_featured: product.is_featured,
       images: product.images?.join(', ') || '',
+      asset_file_url: product.asset_file_url || '',
     });
     setIsDialogOpen(true);
   };
@@ -340,6 +386,54 @@ export default function AdminProducts() {
                 onChange={(e) => setForm({ ...form, images: e.target.value })}
                 placeholder="https://..."
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Downloadable File</Label>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              {form.asset_file_url ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
+                  <FileCheck className="h-5 w-5 text-green-500" />
+                  <span className="flex-1 text-sm truncate">{form.asset_file_url}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={removeAssetFile}
+                    className="h-8 w-8"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload File
+                    </>
+                  )}
+                </Button>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Upload the file customers will download after purchase
+              </p>
             </div>
 
             <div className="flex items-center gap-6">

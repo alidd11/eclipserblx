@@ -134,7 +134,7 @@ serve(async (req) => {
       // Don't fail the download, just log the error
     }
 
-    // Increment product download count using service role
+    // Use service role to access storage and increment count
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -145,11 +145,24 @@ serve(async (req) => {
       .update({ download_count: (product.download_count || 0) + 1 })
       .eq('id', productId);
 
+    // Generate signed URL for the file (valid for 1 hour)
+    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+      .from('product-assets')
+      .createSignedUrl(product.asset_file_url, 3600); // 1 hour expiry
+
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      console.error("Error creating signed URL:", signedUrlError);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate download link" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log(`Download logged: user=${user.id}, product=${productId}`);
 
     return new Response(
       JSON.stringify({ 
-        downloadUrl: product.asset_file_url,
+        downloadUrl: signedUrlData.signedUrl,
         productName: product.name
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
