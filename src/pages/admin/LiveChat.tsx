@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -35,6 +36,7 @@ export default function AdminLiveChat() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { playSound } = useNotificationSound();
 
   // Load conversations
   useEffect(() => {
@@ -80,6 +82,10 @@ export default function AdminLiveChat() {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
+            // Play sound for customer messages
+            if (newMsg.sender_type === 'customer') {
+              playSound();
+            }
             return [...prev, newMsg];
           });
         }
