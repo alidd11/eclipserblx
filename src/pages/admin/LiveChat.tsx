@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,8 +17,9 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 
 const CANNED_RESPONSES = [
   {
@@ -112,10 +114,19 @@ export default function AdminLiveChat() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [customerTyping, setCustomerTyping] = useState(false);
+  const [chatFilter, setChatFilter] = useState<'active' | 'closed'>('active');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { playSound } = useNotificationSound();
+  const { sendNotification, requestPermission, permission } = usePushNotifications();
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (permission === 'default') {
+      requestPermission();
+    }
+  }, [permission, requestPermission]);
 
   // Handle agent typing indicator
   const handleTyping = () => {
@@ -182,9 +193,16 @@ export default function AdminLiveChat() {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
-            // Play sound for customer messages
+            // Play sound and send push notification for customer messages
             if (newMsg.sender_type === 'customer') {
               playSound();
+              // Send push notification if window is not focused
+              if (document.hidden) {
+                sendNotification('New customer message', {
+                  body: `${selectedConversation.customer_name || 'Customer'}: ${newMsg.message.substring(0, 100)}`,
+                  tag: 'admin-chat-message',
+                });
+              }
             }
             return [...prev, newMsg];
           });
@@ -359,16 +377,28 @@ export default function AdminLiveChat() {
             selectedConversation ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
           )}>
             <div className="p-3 lg:p-4 border-b border-border bg-muted/50">
-              <h2 className="font-semibold text-sm lg:text-base">Conversations</h2>
+              <Tabs value={chatFilter} onValueChange={(v) => setChatFilter(v as 'active' | 'closed')}>
+                <TabsList className="w-full h-8">
+                  <TabsTrigger value="active" className="flex-1 text-xs">Active</TabsTrigger>
+                  <TabsTrigger value="closed" className="flex-1 text-xs">
+                    <Archive className="h-3 w-3 mr-1" />
+                    Closed
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-            <ScrollArea className="h-[calc(100%-3rem)] lg:h-[calc(100%-3.5rem)]">
+            <ScrollArea className="h-[calc(100%-4rem)] lg:h-[calc(100%-4.5rem)]">
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
-              ) : conversations.length === 0 ? (
-                <div className="p-4 text-center text-muted-foreground">No conversations yet</div>
+              ) : conversations.filter(c => chatFilter === 'active' ? c.status !== 'closed' : c.status === 'closed').length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  {chatFilter === 'active' ? 'No active conversations' : 'No closed conversations'}
+                </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {conversations.map((conv) => (
+                  {conversations
+                    .filter(c => chatFilter === 'active' ? c.status !== 'closed' : c.status === 'closed')
+                    .map((conv) => (
                     <button
                       key={conv.id}
                       onClick={() => setSelectedConversation(conv)}
@@ -474,10 +504,22 @@ export default function AdminLiveChat() {
                       <div
                         key={msg.id}
                         className={cn(
-                          'flex',
-                          msg.sender_type === 'agent' ? 'justify-end' : 'justify-start'
+                          'flex flex-col',
+                          msg.sender_type === 'agent' ? 'items-end' : 'items-start'
                         )}
                       >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] lg:text-xs font-medium text-muted-foreground">
+                            {msg.sender_type === 'agent'
+                              ? 'You'
+                              : msg.sender_type === 'system'
+                              ? 'System'
+                              : selectedConversation.customer_name || 'Customer'}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/70">
+                            {format(new Date(msg.created_at), 'p')}
+                          </span>
+                        </div>
                         <div
                           className={cn(
                             'max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4',
@@ -512,16 +554,6 @@ export default function AdminLiveChat() {
                             </div>
                           )}
                           {!msg.attachment_url && <p className="text-sm lg:text-base">{msg.message}</p>}
-                          <p
-                            className={cn(
-                              'text-[10px] lg:text-xs mt-1 opacity-70',
-                              msg.sender_type === 'agent'
-                                ? 'text-primary-foreground'
-                                : 'text-muted-foreground'
-                            )}
-                          >
-                            {new Date(msg.created_at).toLocaleTimeString()}
-                          </p>
                         </div>
                       </div>
                     ))}

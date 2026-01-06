@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, Image as ImageIcon } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,12 +15,16 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
   message: string;
   sender_type: string;
+  sender_id: string | null;
   created_at: string;
   attachment_url?: string | null;
 }
@@ -37,6 +41,7 @@ const ISSUE_CATEGORIES = [
 
 export function ChatWidget() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,6 +59,7 @@ export function ChatWidget() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { playSound } = useNotificationSound();
+  const { sendNotification, requestPermission, permission } = usePushNotifications();
 
   // Handle customer typing indicator
   const handleTyping = () => {
@@ -87,6 +93,13 @@ export function ChatWidget() {
     }
   }, [user]);
 
+  // Request push notification permission when chat starts
+  useEffect(() => {
+    if (hasStarted && permission === 'default') {
+      requestPermission();
+    }
+  }, [hasStarted, permission, requestPermission]);
+
   // Subscribe to new messages and typing indicator
   useEffect(() => {
     if (!conversationId) return;
@@ -106,9 +119,16 @@ export function ChatWidget() {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
-            // Play sound for agent messages
+            // Play sound and send push notification for agent messages
             if (newMsg.sender_type === 'agent') {
               playSound();
+              // Send push notification if window is not focused
+              if (document.hidden) {
+                sendNotification('New message from Support', {
+                  body: newMsg.message.substring(0, 100),
+                  tag: 'chat-message',
+                });
+              }
             }
             return [...prev, newMsg];
           });
@@ -344,6 +364,20 @@ export function ChatWidget() {
           <span className="font-medium text-sm">Live Support</span>
         </div>
         <div className="flex items-center gap-1">
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/chat-history');
+              }}
+              title="View chat history"
+            >
+              <History className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -452,10 +486,22 @@ export function ChatWidget() {
                     <div
                       key={msg.id}
                       className={cn(
-                        'flex',
-                        msg.sender_type === 'customer' ? 'justify-end' : 'justify-start'
+                        'flex flex-col',
+                        msg.sender_type === 'customer' ? 'items-end' : 'items-start'
                       )}
                     >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {msg.sender_type === 'customer'
+                            ? 'You'
+                            : msg.sender_type === 'system'
+                            ? 'System'
+                            : 'Support Agent'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/70">
+                          {format(new Date(msg.created_at), 'p')}
+                        </span>
+                      </div>
                       <div
                         className={cn(
                           'max-w-[80%] rounded-lg px-3 py-2 text-sm',
@@ -489,10 +535,10 @@ export function ChatWidget() {
                             )}
                           </div>
                         )}
-                          {!msg.attachment_url && msg.message}
-                        </div>
+                        {!msg.attachment_url && msg.message}
                       </div>
-                    ))}
+                    </div>
+                  ))}
                     {agentTyping && (
                       <div className="flex justify-start">
                         <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 flex items-center gap-1">
