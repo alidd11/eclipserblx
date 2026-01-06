@@ -49,9 +49,30 @@ export function ChatWidget() {
   const [hasStarted, setHasStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [agentTyping, setAgentTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { playSound } = useNotificationSound();
+
+  // Handle customer typing indicator
+  const handleTyping = () => {
+    if (!conversationId) return;
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Send typing status via presence
+    const channel = supabase.channel(`typing-${conversationId}`);
+    channel.track({ typing: true, role: 'customer' });
+
+    // Stop typing after 2 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      channel.track({ typing: false, role: 'customer' });
+    }, 2000);
+  };
 
   const openChat = () => {
     console.log('ChatWidget: open');
@@ -66,11 +87,12 @@ export function ChatWidget() {
     }
   }, [user]);
 
-  // Subscribe to new messages
+  // Subscribe to new messages and typing indicator
   useEffect(() => {
     if (!conversationId) return;
 
-    const channel = supabase
+    // Messages channel
+    const messagesChannel = supabase
       .channel(`chat-${conversationId}`)
       .on(
         'postgres_changes',
@@ -94,8 +116,24 @@ export function ChatWidget() {
       )
       .subscribe();
 
+    // Typing indicator channel
+    const typingChannel = supabase
+      .channel(`typing-${conversationId}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = typingChannel.presenceState();
+        const isTyping = Object.values(state).some((presences: any) =>
+          presences.some((p: any) => p.typing && p.role === 'agent')
+        );
+        setAgentTyping(isTyping);
+      })
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(typingChannel);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [conversationId]);
 
@@ -436,12 +474,24 @@ export function ChatWidget() {
                             )}
                           </div>
                         )}
-                        {!msg.attachment_url && msg.message}
+                          {!msg.attachment_url && msg.message}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                    ))}
+                    {agentTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 flex items-center gap-1">
+                          <span className="text-xs italic">Agent is typing</span>
+                          <span className="flex gap-0.5">
+                            <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
 
               {/* Input */}
               <div className="p-4 border-t border-border">
@@ -467,12 +517,15 @@ export function ChatWidget() {
                       <Paperclip className="h-4 w-4" />
                     )}
                   </Button>
-                  <Input
-                    placeholder="Type a message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                  />
+                    <Input
+                      placeholder="Type a message..."
+                      value={newMessage}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        handleTyping();
+                      }}
+                      onKeyPress={handleKeyPress}
+                    />
                   <Button
                     size="icon"
                     onClick={sendMessage}
