@@ -151,7 +151,7 @@ export function ChatWidget() {
       .from('chat_conversations')
       .select('id')
       .eq('user_id', user.id)
-      .eq('status', 'open')
+      .in('status', ['active', 'waiting'])
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -193,7 +193,7 @@ export function ChatWidget() {
           user_id: user.id,
           customer_name: customerName,
           customer_email: customerEmail || null,
-          status: 'open',
+          status: 'active',
           issue_category: issueCategory,
         })
         .select()
