@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -26,6 +27,7 @@ export function ChatWidget() {
   const [hasStarted, setHasStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { playSound } = useNotificationSound();
 
   // Load existing conversation
   useEffect(() => {
@@ -52,6 +54,10 @@ export function ChatWidget() {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
+            // Play sound for agent messages
+            if (newMsg.sender_type === 'agent') {
+              playSound();
+            }
             return [...prev, newMsg];
           });
         }
