@@ -1,8 +1,35 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function HeroSection() {
+  const { data: stats } = useQuery({
+    queryKey: ['homepage-stats'],
+    queryFn: async () => {
+      const [products, downloads, users] = await Promise.all([
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('download_logs').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+      ]);
+
+      return {
+        products: products.count ?? 0,
+        downloads: downloads.count ?? 0,
+        users: users.count ?? 0,
+      };
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(num >= 10000 ? 0 : 1)}K+`;
+    }
+    return num.toString();
+  };
+
   return (
     <section className="relative overflow-hidden">
       {/* Background Effects */}
@@ -47,16 +74,22 @@ export function HeroSection() {
           {/* Stats */}
           <div className="pt-12 grid grid-cols-3 gap-8 max-w-lg mx-auto">
             <div className="text-center">
-              <div className="font-display text-3xl font-bold gradient-text">500+</div>
+              <div className="font-display text-3xl font-bold gradient-text">
+                {stats?.products ?? 0}+
+              </div>
               <div className="text-sm text-muted-foreground">Products</div>
             </div>
             <div className="text-center">
-              <div className="font-display text-3xl font-bold gradient-text">10K+</div>
+              <div className="font-display text-3xl font-bold gradient-text">
+                {formatNumber(stats?.downloads ?? 0)}
+              </div>
               <div className="text-sm text-muted-foreground">Downloads</div>
             </div>
             <div className="text-center">
-              <div className="font-display text-3xl font-bold gradient-text">99%</div>
-              <div className="text-sm text-muted-foreground">Satisfaction</div>
+              <div className="font-display text-3xl font-bold gradient-text">
+                {formatNumber(stats?.users ?? 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Happy Users</div>
             </div>
           </div>
         </div>
