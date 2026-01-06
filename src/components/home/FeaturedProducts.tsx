@@ -1,12 +1,17 @@
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export function FeaturedProducts() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
@@ -18,12 +23,38 @@ export function FeaturedProducts() {
         `)
         .eq('is_featured', true)
         .eq('is_active', true)
-        .limit(4);
+        .limit(8);
       
       if (error) throw error;
       return data;
     },
   });
+
+  const goToNext = useCallback(() => {
+    if (products && products.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % products.length);
+    }
+  }, [products]);
+
+  const goToPrev = useCallback(() => {
+    if (products && products.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
+    }
+  }, [products]);
+
+  // Auto-rotate every 5 seconds
+  useEffect(() => {
+    if (!isAutoPlaying || !products || products.length <= 1) return;
+
+    const interval = setInterval(goToNext, 5000);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, products, goToNext]);
+
+  // Pause auto-play on hover
+  const handleMouseEnter = () => setIsAutoPlaying(false);
+  const handleMouseLeave = () => setIsAutoPlaying(true);
+
+  const currentProduct = products?.[currentIndex];
 
   return (
     <section className="py-20">
@@ -46,35 +77,107 @@ export function FeaturedProducts() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="gaming-card overflow-hidden">
-                <Skeleton className="aspect-video" />
-                <div className="p-4 space-y-3">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-5 w-full" />
-                  <div className="flex justify-between">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-9 w-20" />
-                  </div>
+          <div className="max-w-md mx-auto">
+            <div className="gaming-card overflow-hidden">
+              <Skeleton className="aspect-[4/3]" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-5 w-full" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-9 w-20" />
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         ) : products && products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                slug={product.slug}
-                price={Number(product.price)}
-                image={product.images?.[0]}
-                category={product.categories?.name}
-                isFeatured={product.is_featured}
-              />
-            ))}
+          <div 
+            className="relative max-w-md mx-auto"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            {/* Navigation Arrows */}
+            {products.length > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full mr-4 z-10 hidden md:flex bg-background/80 backdrop-blur-sm"
+                  onClick={goToPrev}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full ml-4 z-10 hidden md:flex bg-background/80 backdrop-blur-sm"
+                  onClick={goToNext}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+
+            {/* Product Card with Animation */}
+            <div className="overflow-hidden">
+              <div 
+                className="transition-transform duration-500 ease-out"
+                key={currentIndex}
+              >
+                {currentProduct && (
+                  <div className="animate-fade-in">
+                    <ProductCard
+                      id={currentProduct.id}
+                      name={currentProduct.name}
+                      slug={currentProduct.slug}
+                      price={Number(currentProduct.price)}
+                      image={currentProduct.images?.[0]}
+                      category={currentProduct.categories?.name}
+                      isFeatured={currentProduct.is_featured}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Navigation Arrows */}
+            {products.length > 1 && (
+              <div className="flex justify-center gap-4 mt-4 md:hidden">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={goToPrev}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={goToNext}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
+
+            {/* Dot Indicators */}
+            {products.length > 1 && (
+              <div className="flex justify-center gap-2 mt-6">
+                {products.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all duration-300",
+                      idx === currentIndex 
+                        ? "bg-primary w-6" 
+                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    )}
+                    aria-label={`Go to product ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
