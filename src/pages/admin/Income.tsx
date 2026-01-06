@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,49 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
+const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
 export default function AdminIncome() {
   const { user } = useAuth();
   const [isVerified, setIsVerified] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [timeRemaining, setTimeRemaining] = useState<number>(SESSION_TIMEOUT_MS);
+
+  // Reset activity timer on user interaction
+  const resetActivityTimer = useCallback(() => {
+    if (isVerified) {
+      setLastActivity(Date.now());
+    }
+  }, [isVerified]);
+
+  // Session timeout effect
+  useEffect(() => {
+    if (!isVerified) return;
+
+    const checkTimeout = setInterval(() => {
+      const elapsed = Date.now() - lastActivity;
+      const remaining = SESSION_TIMEOUT_MS - elapsed;
+      setTimeRemaining(Math.max(0, remaining));
+
+      if (elapsed >= SESSION_TIMEOUT_MS) {
+        setIsVerified(false);
+        setPassword('');
+        toast.info('Session expired due to inactivity. Please re-verify.');
+      }
+    }, 1000);
+
+    // Add activity listeners
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, resetActivityTimer));
+
+    return () => {
+      clearInterval(checkTimeout);
+      events.forEach(event => window.removeEventListener(event, resetActivityTimer));
+    };
+  }, [isVerified, lastActivity, resetActivityTimer]);
 
   const handleVerifyPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +74,7 @@ export default function AdminIncome() {
         setPassword('');
       } else {
         setIsVerified(true);
+        setLastActivity(Date.now());
         toast.success('Access granted to income analytics');
         
         // Log access to audit_logs
@@ -52,6 +90,12 @@ export default function AdminIncome() {
     } finally {
       setVerifying(false);
     }
+  };
+
+  const formatTimeRemaining = (ms: number) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   // Income breakdown query
@@ -233,10 +277,16 @@ export default function AdminIncome() {
             </h1>
             <p className="text-muted-foreground">Detailed financial overview and reports</p>
           </div>
-          <Button onClick={exportIncomeReport} className="gap-2">
-            <FileDown className="h-4 w-4" />
-            Export Report
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+              <Clock className="h-4 w-4" />
+              <span>Session: {formatTimeRemaining(timeRemaining)}</span>
+            </div>
+            <Button onClick={exportIncomeReport} className="gap-2">
+              <FileDown className="h-4 w-4" />
+              Export Report
+            </Button>
+          </div>
         </div>
 
         {/* Income Summary Cards */}
