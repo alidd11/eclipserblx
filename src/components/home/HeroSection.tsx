@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCountUp } from '@/hooks/useCountUp';
+import { ReviewsTicker } from './ReviewsTicker';
 
 // Base values to add real counts on top of
 const BASE_STATS = {
@@ -92,6 +93,9 @@ export function HeroSection() {
             <AnimatedStat value={stats?.downloads ?? 0} label="Downloads" suffix="+" />
             <AnimatedStat value={stats?.users ?? 0} label="Happy Users" suffix="+" />
           </div>
+
+          {/* Reviews Ticker */}
+          <ReviewsTicker />
         </div>
       </div>
     </section>
