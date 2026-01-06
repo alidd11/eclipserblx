@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Eye, Package } from 'lucide-react';
+import { Search, Eye, Package, Trash2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,11 +40,16 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ORDER_STATUSES } from '@/lib/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AdminOrders() {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  
+  // Check if current user is the primary admin
+  const isPrimaryAdmin = user?.email === 'alicanimir1@gmail.com';
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
@@ -61,6 +77,29 @@ export default function AdminOrders() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       toast.success('Order status updated');
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      // First delete order items
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+      if (itemsError) throw itemsError;
+      
+      // Then delete the order
+      const { error } = await supabase.from('orders').delete().eq('id', orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      setSelectedOrder(null);
+      toast.success('Order deleted successfully');
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -208,15 +247,16 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Update Status</p>
-                <Select
-                  value={selectedOrder.status}
-                  onValueChange={(status) => {
-                    updateStatusMutation.mutate({ id: selectedOrder.id, status });
-                    setSelectedOrder({ ...selectedOrder, status });
-                  }}
-                >
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-2">Update Status</p>
+                  <Select
+                    value={selectedOrder.status}
+                    onValueChange={(status) => {
+                      updateStatusMutation.mutate({ id: selectedOrder.id, status });
+                      setSelectedOrder({ ...selectedOrder, status });
+                    }}
+                  >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -224,8 +264,36 @@ export default function AdminOrders() {
                     {Object.entries(ORDER_STATUSES).map(([key, { label }]) => (
                       <SelectItem key={key} value={key}>{label}</SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {isPrimaryAdmin && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="icon">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Order</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this order? This action cannot be undone and will remove all associated order items.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteOrderMutation.mutate(selectedOrder.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </div>
           )}

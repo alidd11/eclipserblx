@@ -1,11 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, PoundSterling, Download, TrendingUp, Calendar } from 'lucide-react';
+import { Package, ShoppingCart, Users, PoundSterling, Download, TrendingUp, Calendar, FileDown, Lock } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
+import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { toast } from 'sonner';
 
 export default function AdminDashboard() {
+  const { isAdmin } = useAdminAuth();
+
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -70,6 +77,68 @@ export default function AdminDashboard() {
       return { daily, weekly, monthly, yearly };
     },
   });
+
+  // 30-day income trend query (admin only)
+  const { data: incomeTrend } = useQuery({
+    queryKey: ['admin-income-trend'],
+    queryFn: async () => {
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('total, created_at')
+        .in('status', ['paid', 'fulfilled'])
+        .gte('created_at', subDays(new Date(), 30).toISOString());
+
+      if (error) throw error;
+
+      // Create a map for the last 30 days
+      const dailyTotals: Record<string, number> = {};
+      for (let i = 29; i >= 0; i--) {
+        const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
+        dailyTotals[date] = 0;
+      }
+
+      // Sum up orders by day
+      (orders ?? []).forEach((order) => {
+        const date = format(new Date(order.created_at), 'yyyy-MM-dd');
+        if (dailyTotals[date] !== undefined) {
+          dailyTotals[date] += order.total || 0;
+        }
+      });
+
+      return Object.entries(dailyTotals).map(([date, total]) => ({
+        date,
+        displayDate: format(new Date(date), 'MMM d'),
+        total,
+      }));
+    },
+    enabled: isAdmin,
+  });
+
+  const exportIncomeReport = () => {
+    if (!incomeTrend) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = ['Date', 'Income (£)'];
+    const rows = incomeTrend.map((day) => [day.date, day.total.toFixed(2)]);
+    
+    // Add summary
+    const totalIncome = incomeTrend.reduce((sum, day) => sum + day.total, 0);
+    rows.push(['', '']);
+    rows.push(['Total (30 days)', totalIncome.toFixed(2)]);
+    rows.push(['Daily Average', (totalIncome / 30).toFixed(2)]);
+
+    const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `income-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Report exported successfully');
+  };
 
   const { data: recentOrders } = useQuery({
     queryKey: ['admin-recent-orders'],
@@ -237,7 +306,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Income Breakdown Section */}
+        {/* Income Breakdown Section - Visible to all staff */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -281,6 +350,101 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Admin-Only Income Analytics Section */}
+        {isAdmin && (
+          <Card className="bg-card border-border border-primary/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-primary" />
+                  Income Analytics
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Admin Only</span>
+                </CardTitle>
+                <Button variant="outline" size="sm" onClick={exportIncomeReport} className="gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Export Report
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-4">30-Day Income Trend</h4>
+                  <div className="h-[300px] w-full">
+                    <ChartContainer
+                      config={{
+                        total: {
+                          label: "Income",
+                          color: "hsl(var(--primary))",
+                        },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis
+                            dataKey="displayDate"
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                          />
+                          <YAxis
+                            tickFormatter={(value) => `£${value}`}
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <ChartTooltip
+                            content={
+                              <ChartTooltipContent
+                                formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Income']}
+                              />
+                            }
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="total"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </div>
+
+                {incomeTrend && (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <p className="text-sm text-muted-foreground">30-Day Total</p>
+                      <p className="text-2xl font-bold text-primary">
+                        £{incomeTrend.reduce((sum, day) => sum + day.total, 0).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <p className="text-sm text-muted-foreground">Daily Average</p>
+                      <p className="text-2xl font-bold">
+                        £{(incomeTrend.reduce((sum, day) => sum + day.total, 0) / 30).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <p className="text-sm text-muted-foreground">Best Day</p>
+                      <p className="text-2xl font-bold text-green-500">
+                        £{Math.max(...incomeTrend.map((day) => day.total)).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );
