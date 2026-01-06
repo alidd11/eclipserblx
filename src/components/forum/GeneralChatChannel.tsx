@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Crown, Shield, Wrench, Briefcase, Trash2 } from 'lucide-react';
+import { Send, Crown, Shield, Wrench, Briefcase, Trash2, SmilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -46,11 +47,21 @@ const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ cl
   },
 };
 
+// Available reaction emojis
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '👎', '🎉'];
+
 interface ChatMessage {
   id: string;
   user_id: string;
   message: string;
   created_at: string;
+}
+
+interface ChatReaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
 }
 
 interface TypingUser {
@@ -64,6 +75,7 @@ export function GeneralChatChannel() {
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [openReactionPopover, setOpenReactionPopover] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -97,6 +109,19 @@ export function GeneralChatChannel() {
       
       if (error) throw error;
       return data as ChatMessage[];
+    },
+  });
+
+  // Fetch reactions
+  const { data: reactions = [] } = useQuery({
+    queryKey: ['forum-chat-reactions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('forum_chat_reactions')
+        .select('*');
+      
+      if (error) throw error;
+      return data as ChatReaction[];
     },
   });
 
@@ -183,7 +208,43 @@ export function GeneralChatChannel() {
     },
   });
 
-  // Real-time subscription for messages and typing
+  // Add reaction mutation
+  const addReactionMutation = useMutation({
+    mutationFn: async ({ messageId, emoji }: { messageId: string; emoji: string }) => {
+      if (!user) throw new Error('Must be logged in');
+      
+      const { error } = await supabase
+        .from('forum_chat_reactions')
+        .insert({ message_id: messageId, user_id: user.id, emoji });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum-chat-reactions'] });
+      setOpenReactionPopover(null);
+    },
+  });
+
+  // Remove reaction mutation
+  const removeReactionMutation = useMutation({
+    mutationFn: async ({ messageId, emoji }: { messageId: string; emoji: string }) => {
+      if (!user) throw new Error('Must be logged in');
+      
+      const { error } = await supabase
+        .from('forum_chat_reactions')
+        .delete()
+        .eq('message_id', messageId)
+        .eq('user_id', user.id)
+        .eq('emoji', emoji);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum-chat-reactions'] });
+    },
+  });
+
+  // Real-time subscription for messages, reactions, and typing
   useEffect(() => {
     const channel = supabase
       .channel('forum-chat-presence', {
@@ -198,6 +259,17 @@ export function GeneralChatChannel() {
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['forum-chat-messages'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'forum_chat_reactions'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['forum-chat-reactions'] });
         }
       )
       .on('presence', { event: 'sync' }, () => {
@@ -231,18 +303,16 @@ export function GeneralChatChannel() {
     if (!user) return;
     
     const now = Date.now();
-    if (now - lastTypingRef.current < 1000) return; // Throttle to once per second
+    if (now - lastTypingRef.current < 1000) return;
     lastTypingRef.current = now;
 
     const channel = supabase.channel('forum-chat-presence');
     channel.track({ typing: true, name: currentProfile?.display_name || 'User' });
 
-    // Clear previous timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Stop typing after 2 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       channel.track({ typing: false, name: currentProfile?.display_name || 'User' });
     }, 2000);
@@ -259,7 +329,6 @@ export function GeneralChatChannel() {
     e.preventDefault();
     if (!newMessage.trim() || !user) return;
     
-    // Stop typing indicator
     const channel = supabase.channel('forum-chat-presence');
     channel.track({ typing: false, name: currentProfile?.display_name || 'User' });
     
@@ -269,6 +338,37 @@ export function GeneralChatChannel() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
     handleTyping();
+  };
+
+  const handleReactionClick = (messageId: string, emoji: string) => {
+    if (!user) return;
+    
+    const existingReaction = reactions.find(
+      r => r.message_id === messageId && r.user_id === user.id && r.emoji === emoji
+    );
+    
+    if (existingReaction) {
+      removeReactionMutation.mutate({ messageId, emoji });
+    } else {
+      addReactionMutation.mutate({ messageId, emoji });
+    }
+  };
+
+  const getMessageReactions = (messageId: string) => {
+    const messageReactions = reactions.filter(r => r.message_id === messageId);
+    const grouped: Record<string, { count: number; userReacted: boolean }> = {};
+    
+    messageReactions.forEach(r => {
+      if (!grouped[r.emoji]) {
+        grouped[r.emoji] = { count: 0, userReacted: false };
+      }
+      grouped[r.emoji].count++;
+      if (user && r.user_id === user.id) {
+        grouped[r.emoji].userReacted = true;
+      }
+    });
+    
+    return grouped;
   };
 
   const getUserBadge = (userId: string) => {
@@ -299,6 +399,7 @@ export function GeneralChatChannel() {
               const authorName = profile?.display_name || 'Anonymous';
               const badge = getUserBadge(msg.user_id);
               const isOwn = user?.id === msg.user_id;
+              const messageReactions = getMessageReactions(msg.id);
 
               return (
                 <div
@@ -343,14 +444,74 @@ export function GeneralChatChannel() {
                         </button>
                       )}
                     </div>
-                    <div className={cn(
-                      "px-3 py-2 rounded-xl text-sm",
-                      isOwn 
-                        ? "bg-primary text-primary-foreground rounded-br-sm" 
-                        : "bg-muted rounded-bl-sm"
-                    )}>
-                      {msg.message}
+                    
+                    <div className="relative">
+                      <div className={cn(
+                        "px-3 py-2 rounded-xl text-sm",
+                        isOwn 
+                          ? "bg-primary text-primary-foreground rounded-br-sm" 
+                          : "bg-muted rounded-bl-sm"
+                      )}>
+                        {msg.message}
+                      </div>
+                      
+                      {/* Reaction button */}
+                      {user && (
+                        <Popover 
+                          open={openReactionPopover === msg.id} 
+                          onOpenChange={(open) => setOpenReactionPopover(open ? msg.id : null)}
+                        >
+                          <PopoverTrigger asChild>
+                            <button
+                              className={cn(
+                                "absolute -bottom-2 opacity-0 group-hover:opacity-100 transition-opacity",
+                                "p-1 bg-card border border-border rounded-full shadow-sm hover:bg-muted",
+                                isOwn ? "left-0" : "right-0"
+                              )}
+                              title="Add reaction"
+                            >
+                              <SmilePlus className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2" side="top">
+                            <div className="flex gap-1">
+                              {REACTION_EMOJIS.map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  onClick={() => handleReactionClick(msg.id, emoji)}
+                                  className="text-lg hover:scale-125 transition-transform p-1 rounded hover:bg-muted"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
                     </div>
+                    
+                    {/* Reactions display */}
+                    {Object.keys(messageReactions).length > 0 && (
+                      <div className={cn("flex flex-wrap gap-1 mt-1", isOwn && "justify-end")}>
+                        {Object.entries(messageReactions).map(([emoji, data]) => (
+                          <button
+                            key={emoji}
+                            onClick={() => handleReactionClick(msg.id, emoji)}
+                            disabled={!user}
+                            className={cn(
+                              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors",
+                              data.userReacted 
+                                ? "bg-primary/20 border-primary/50 text-primary" 
+                                : "bg-muted border-border hover:bg-muted/80",
+                              !user && "cursor-default"
+                            )}
+                          >
+                            <span>{emoji}</span>
+                            <span className="font-medium">{data.count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
