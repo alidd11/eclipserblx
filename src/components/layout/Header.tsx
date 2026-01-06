@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { SITE_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import eclipseBanner from '@/assets/eclipse-banner.jpeg';
 
 const navLinks = [
   { href: '/products', label: 'Products' },
@@ -21,13 +23,20 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border glass-effect">
+      {/* Eclipse Banner */}
+      <div className="w-full">
+        <img 
+          src={eclipseBanner} 
+          alt="Eclipse" 
+          className="w-full h-10 sm:h-12 md:h-14 object-cover object-center"
+        />
+      </div>
+      
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg gradient-button flex items-center justify-center">
-              <span className="text-white font-display font-bold text-sm">UK</span>
-            </div>
+            <EclipseLogo size="sm" />
             <span className="font-display text-lg font-bold gradient-text hidden sm:block">
               {SITE_NAME}
             </span>
