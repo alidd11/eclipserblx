@@ -2,7 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
@@ -15,6 +24,16 @@ interface Message {
   created_at: string;
 }
 
+const ISSUE_CATEGORIES = [
+  { value: 'order', label: 'Order Issue' },
+  { value: 'download', label: 'Download Problem' },
+  { value: 'payment', label: 'Payment & Billing' },
+  { value: 'product', label: 'Product Question' },
+  { value: 'refund', label: 'Refund Request' },
+  { value: 'technical', label: 'Technical Support' },
+  { value: 'other', label: 'Other' },
+];
+
 export function ChatWidget() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +43,8 @@ export function ChatWidget() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [issueCategory, setIssueCategory] = useState('');
+  const [issueDescription, setIssueDescription] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -114,7 +135,7 @@ export function ChatWidget() {
   };
 
   const startConversation = async () => {
-    if (!customerName.trim()) return;
+    if (!customerName.trim() || !issueCategory) return;
 
     setIsLoading(true);
     try {
@@ -134,12 +155,25 @@ export function ChatWidget() {
       setConversationId(conversation.id);
       setHasStarted(true);
 
-      // Send welcome message
+      // Get the category label
+      const categoryLabel = ISSUE_CATEGORIES.find(c => c.value === issueCategory)?.label || issueCategory;
+
+      // Send welcome message with issue context
       await supabase.from('chat_messages').insert({
         conversation_id: conversation.id,
-        message: `Hi ${customerName}! How can we help you today?`,
+        message: `Hi ${customerName}! Thanks for reaching out about: ${categoryLabel}. How can we help you today?`,
         sender_type: 'system',
       });
+
+      // If customer provided an initial description, send it as their first message
+      if (issueDescription.trim()) {
+        await supabase.from('chat_messages').insert({
+          conversation_id: conversation.id,
+          message: `[${categoryLabel}] ${issueDescription.trim()}`,
+          sender_type: 'customer',
+          sender_id: user?.id || null,
+        });
+      }
 
       loadMessages(conversation.id);
     } catch (error) {
@@ -235,34 +269,75 @@ export function ChatWidget() {
         <>
           {!hasStarted ? (
             /* Start Form */
-            <div className="flex-1 p-4 flex flex-col justify-center gap-4">
-              <div className="text-center mb-4">
-                <h3 className="font-display font-semibold text-lg">Start a conversation</h3>
-                <p className="text-sm text-muted-foreground">
-                  We typically reply within a few minutes
-                </p>
+            <ScrollArea className="flex-1">
+              <div className="p-4 flex flex-col gap-3">
+                <div className="text-center mb-2">
+                  <h3 className="font-display font-semibold text-lg">Start a conversation</h3>
+                  <p className="text-xs text-muted-foreground">
+                    We typically reply within a few minutes
+                  </p>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="chat-name" className="text-xs">Your name *</Label>
+                  <Input
+                    id="chat-name"
+                    placeholder="Enter your name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="chat-email" className="text-xs">Email (optional)</Label>
+                  <Input
+                    id="chat-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="chat-issue" className="text-xs">What can we help with? *</Label>
+                  <Select value={issueCategory} onValueChange={setIssueCategory}>
+                    <SelectTrigger id="chat-issue" className="h-9 bg-background">
+                      <SelectValue placeholder="Select issue type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border border-border z-[10000]">
+                      {ISSUE_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="chat-description" className="text-xs">Describe your issue (optional)</Label>
+                  <Textarea
+                    id="chat-description"
+                    placeholder="Tell us more about your issue..."
+                    value={issueDescription}
+                    onChange={(e) => setIssueDescription(e.target.value)}
+                    rows={3}
+                    className="resize-none text-sm"
+                  />
+                </div>
+                
+                <Button
+                  onClick={startConversation}
+                  disabled={!customerName.trim() || !issueCategory || isLoading}
+                  className="gradient-button mt-2"
+                >
+                  {isLoading ? 'Starting...' : 'Start Chat'}
+                </Button>
               </div>
-              <Input
-                placeholder="Your name *"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                onKeyPress={handleKeyPress}
-              />
-              <Input
-                type="email"
-                placeholder="Email (optional)"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                onKeyPress={handleKeyPress}
-              />
-              <Button
-                onClick={startConversation}
-                disabled={!customerName.trim() || isLoading}
-                className="gradient-button"
-              >
-                {isLoading ? 'Starting...' : 'Start Chat'}
-              </Button>
-            </div>
+            </ScrollArea>
           ) : (
             <>
               {/* Messages */}
