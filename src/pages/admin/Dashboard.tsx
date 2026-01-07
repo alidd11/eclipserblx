@@ -60,6 +60,8 @@ export default function AdminDashboard() {
   const createAnnouncementMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('Not authenticated');
+      
+      // Create the announcement
       const { error } = await supabase
         .from('staff_announcements')
         .insert({
@@ -69,6 +71,36 @@ export default function AdminDashboard() {
           created_by: user.id,
         });
       if (error) throw error;
+
+      // Send push notification for urgent/high priority announcements
+      if (newAnnouncementPriority === 'urgent' || newAnnouncementPriority === 'high') {
+        // Get all staff user IDs
+        const { data: staffRoles } = await supabase
+          .from('user_roles')
+          .select('user_id');
+        
+        if (staffRoles && staffRoles.length > 0) {
+          const staffUserIds = staffRoles
+            .map(r => r.user_id)
+            .filter(id => id !== user.id); // Don't notify the sender
+          
+          if (staffUserIds.length > 0) {
+            // Send push notification via edge function
+            const priorityEmoji = newAnnouncementPriority === 'urgent' ? '🚨' : '⚠️';
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                user_ids: staffUserIds,
+                payload: {
+                  title: `${priorityEmoji} ${newAnnouncementPriority.toUpperCase()}: ${newAnnouncementTitle}`,
+                  body: newAnnouncementContent.substring(0, 150),
+                  tag: 'staff-announcement',
+                  requireInteraction: newAnnouncementPriority === 'urgent',
+                },
+              },
+            });
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-announcements'] });
