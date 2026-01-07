@@ -167,6 +167,24 @@ export default function AdminDiscounts() {
     return new Date(expiresAt) < new Date();
   };
 
+  const getStatusBadge = (discount: any) => {
+    if (!discount.is_active) {
+      return <Badge variant="secondary">Inactive</Badge>;
+    } else if (isExpired(discount.expires_at)) {
+      return <Badge variant="destructive">Expired</Badge>;
+    } else if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) {
+      return <Badge variant="secondary">Maxed Out</Badge>;
+    }
+    return <Badge variant="default">Active</Badge>;
+  };
+
+  const getDiscountDisplay = (discount: any) => {
+    if (discount.discount_type === 'percentage') {
+      return `${discount.discount_value}%`;
+    }
+    return `£${discount.discount_value.toFixed(2)}`;
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -175,14 +193,14 @@ export default function AdminDiscounts() {
             <h1 className="text-2xl font-display font-bold">Discount Codes</h1>
             <p className="text-sm text-muted-foreground">Create and manage discount codes for your store</p>
           </div>
-          <Button onClick={openCreate}>
+          <Button onClick={openCreate} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Create Discount
           </Button>
         </div>
 
         {/* Search */}
-        <div className="relative max-w-sm">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search codes..."
@@ -192,8 +210,8 @@ export default function AdminDiscounts() {
           />
         </div>
 
-        {/* Table */}
-        <div className="border rounded-lg overflow-hidden">
+        {/* Desktop Table */}
+        <div className="hidden md:block border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -244,16 +262,11 @@ export default function AdminDiscounts() {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         {discount.discount_type === 'percentage' ? (
-                          <>
-                            <Percent className="h-3 w-3 text-muted-foreground" />
-                            {discount.discount_value}%
-                          </>
+                          <Percent className="h-3 w-3 text-muted-foreground" />
                         ) : (
-                          <>
-                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            £{discount.discount_value.toFixed(2)}
-                          </>
+                          <DollarSign className="h-3 w-3 text-muted-foreground" />
                         )}
+                        {getDiscountDisplay(discount)}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -272,17 +285,7 @@ export default function AdminDiscounts() {
                         '-'
                       )}
                     </TableCell>
-                    <TableCell>
-                      {!discount.is_active ? (
-                        <Badge variant="secondary">Inactive</Badge>
-                      ) : isExpired(discount.expires_at) ? (
-                        <Badge variant="destructive">Expired</Badge>
-                      ) : discount.max_uses && (discount.current_uses || 0) >= discount.max_uses ? (
-                        <Badge variant="secondary">Maxed Out</Badge>
-                      ) : (
-                        <Badge variant="default">Active</Badge>
-                      )}
-                    </TableCell>
+                    <TableCell>{getStatusBadge(discount)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
@@ -308,6 +311,99 @@ export default function AdminDiscounts() {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : discounts?.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No discount codes found</div>
+          ) : (
+            discounts?.map((discount) => (
+              <div key={discount.id} className="border rounded-lg p-4 space-y-3 bg-card">
+                {/* Header: Code + Status */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <code className="bg-muted px-2 py-1 rounded text-sm font-mono font-medium">
+                      {discount.code}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => copyCode(discount.code)}
+                    >
+                      {copiedCode === discount.code ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                  {getStatusBadge(discount)}
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Discount:</span>
+                    <div className="flex items-center gap-1 font-medium">
+                      {discount.discount_type === 'percentage' ? (
+                        <Percent className="h-3 w-3 text-muted-foreground" />
+                      ) : (
+                        <DollarSign className="h-3 w-3 text-muted-foreground" />
+                      )}
+                      {getDiscountDisplay(discount)}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Uses:</span>
+                    <div className="font-medium">
+                      {discount.current_uses || 0}
+                      {discount.max_uses ? ` / ${discount.max_uses}` : ' (unlimited)'}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Min Order:</span>
+                    <div className="font-medium">
+                      {discount.min_order_amount ? `£${discount.min_order_amount.toFixed(2)}` : 'None'}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Expires:</span>
+                    <div className={`font-medium ${isExpired(discount.expires_at) ? 'text-destructive' : ''}`}>
+                      {discount.expires_at
+                        ? format(new Date(discount.expires_at), 'MMM d, yyyy')
+                        : 'Never'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => openEdit(discount)}
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-destructive hover:text-destructive"
+                    onClick={() => openDelete(discount)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
