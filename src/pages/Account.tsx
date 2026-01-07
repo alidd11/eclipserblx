@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { User, Package, LogOut, Settings, Shield, Download } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -14,6 +14,7 @@ import { ORDER_STATUSES } from '@/lib/constants';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut } = useAuth();
   const { isStaff } = useAdminAuth();
+  const navigate = useNavigate();
 
   const { data: profile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -47,6 +48,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
   };
 
   if (!user) {
