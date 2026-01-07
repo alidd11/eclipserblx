@@ -72,29 +72,29 @@ export default function Products() {
         <div className="container py-8 space-y-6">
         {/* Combined Header & Filter Card */}
         <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
-          <CardContent className="p-5 space-y-4">
-            {/* Header Section */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-xl md:text-2xl font-display text-foreground flex items-center gap-2">
-                  <Package className="h-5 w-5 text-primary/80" />
-                  {activeCategory ? activeCategory.name : 'All Products'}
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
-                </p>
-              </div>
-              
-              {/* Search Bar */}
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-                <Input
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50"
-                />
-              </div>
+          <CardContent className="p-4 space-y-3">
+            {/* Title Row */}
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary/80" />
+              <h1 className="text-lg font-display text-foreground">
+                {activeCategory ? activeCategory.name : 'All Products'}
+              </h1>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-muted-foreground">
+              {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
+            </p>
+
+            {/* Search Bar - Full Width */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50 w-full"
+              />
             </div>
 
             {/* Categories Filter */}
