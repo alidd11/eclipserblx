@@ -1,12 +1,13 @@
-import { memo, useState, useMemo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Search, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { SITE_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { supabase } from '@/integrations/supabase/client';
 
 const navLinks = [
   { href: '/products', label: 'Products' },
@@ -15,10 +16,45 @@ const navLinks = [
   { href: '/jobs', label: 'Jobs' },
 ];
 
+type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
+
 export const Header = memo(function Header() {
   const { user } = useAuth();
   const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
+
+  // Check system status on mount and periodically
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const start = Date.now();
+        const { error } = await supabase.from('categories').select('id').limit(1);
+        const latency = Date.now() - start;
+        
+        if (error) {
+          setSystemStatus('offline');
+        } else if (latency > 2000) {
+          setSystemStatus('degraded');
+        } else {
+          setSystemStatus('online');
+        }
+      } catch {
+        setSystemStatus('offline');
+      }
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const statusConfig = {
+    online: { label: 'All Systems Operational', color: 'text-green-500', bg: 'bg-green-500' },
+    degraded: { label: 'Degraded Performance', color: 'text-yellow-500', bg: 'bg-yellow-500' },
+    offline: { label: 'Service Disruption', color: 'text-red-500', bg: 'bg-red-500' },
+    checking: { label: 'Checking Status...', color: 'text-muted-foreground', bg: 'bg-muted-foreground' },
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border glass-effect">
@@ -147,6 +183,20 @@ export const Header = memo(function Header() {
               </svg>
               Join Discord
             </a>
+            
+            {/* Separator */}
+            <div className="my-2 border-t border-border mx-4" />
+
+            {/* System Status */}
+            <div className="px-4 py-3 rounded-lg bg-muted/50 mx-0">
+              <div className="flex items-center gap-2">
+                <Circle className={cn('h-3 w-3 fill-current', statusConfig[systemStatus].color)} />
+                <span className="text-sm font-medium">System Status</span>
+              </div>
+              <p className={cn('text-xs mt-1', statusConfig[systemStatus].color)}>
+                {statusConfig[systemStatus].label}
+              </p>
+            </div>
             
             {/* Separator */}
             <div className="my-2 border-t border-border mx-4" />
