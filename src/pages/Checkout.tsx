@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, Lock, ChevronLeft } from 'lucide-react';
+import { CreditCard, Lock, ChevronLeft, Tag, X, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,25 @@ import { toast } from 'sonner';
 import { StripeProvider } from '@/components/payments/StripeProvider';
 import { PaymentRequestButton } from '@/components/payments/PaymentRequestButton';
 
+interface AppliedDiscount {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  amount: number;
+}
+
 export default function Checkout() {
   const { items, total } = useCart();
   const { user, session } = useAuth();
   const [email, setEmail] = useState(user?.email || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
+  const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+
+  const discountAmount = appliedDiscount?.amount || 0;
+  const finalTotal = Math.max(0, total - discountAmount);
 
   if (items.length === 0) {
     return (
@@ -32,6 +45,74 @@ export default function Checkout() {
       </MainLayout>
     );
   }
+
+  const applyDiscount = async () => {
+    if (!discountCode.trim()) {
+      toast.error('Please enter a discount code');
+      return;
+    }
+
+    setIsApplyingDiscount(true);
+
+    try {
+      const { data: discount, error } = await supabase
+        .from('discount_codes')
+        .select('*')
+        .eq('code', discountCode.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+      if (error || !discount) {
+        toast.error('Invalid discount code');
+        return;
+      }
+
+      // Check if expired
+      if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
+        toast.error('This discount code has expired');
+        return;
+      }
+
+      // Check max uses
+      if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) {
+        toast.error('This discount code has reached its usage limit');
+        return;
+      }
+
+      // Check minimum order
+      if (discount.min_order_amount && total < discount.min_order_amount) {
+        toast.error(`Minimum order of £${discount.min_order_amount.toFixed(2)} required`);
+        return;
+      }
+
+      // Calculate discount amount
+      let amount = 0;
+      if (discount.discount_type === 'percentage') {
+        amount = (total * discount.discount_value) / 100;
+      } else {
+        amount = Math.min(discount.discount_value, total);
+      }
+
+      setAppliedDiscount({
+        id: discount.id,
+        code: discount.code,
+        discount_type: discount.discount_type as 'percentage' | 'fixed',
+        discount_value: discount.discount_value,
+        amount,
+      });
+
+      setDiscountCode('');
+      toast.success('Discount applied!');
+    } catch (error) {
+      toast.error('Failed to apply discount');
+    } finally {
+      setIsApplyingDiscount(false);
+    }
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount(null);
+  };
 
   const handleStripeCheckout = async () => {
     if (!email && !user?.email) {
@@ -51,6 +132,7 @@ export default function Checkout() {
             image: item.image,
           })),
           email: email || user?.email,
+          discountCodeId: appliedDiscount?.id,
         },
         headers: session?.access_token ? {
           Authorization: `Bearer ${session.access_token}`,
@@ -105,16 +187,50 @@ export default function Checkout() {
             </div>
 
             <div className="gaming-card p-6 space-y-4">
-              <h2 className="text-xl font-display font-bold">Discount Code</h2>
-              <div className="flex gap-2">
-                <Input
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                  placeholder="Enter code"
-                  className="bg-background"
-                />
-                <Button type="button" variant="outline">Apply</Button>
-              </div>
+              <h2 className="text-xl font-display font-bold flex items-center gap-2">
+                <Tag className="h-5 w-5" />
+                Discount Code
+              </h2>
+              
+              {appliedDiscount ? (
+                <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span className="font-mono font-medium">{appliedDiscount.code}</span>
+                    <span className="text-sm text-muted-foreground">
+                      ({appliedDiscount.discount_type === 'percentage' 
+                        ? `${appliedDiscount.discount_value}% off` 
+                        : `£${appliedDiscount.discount_value.toFixed(2)} off`})
+                    </span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={removeDiscount}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                    placeholder="Enter code"
+                    className="bg-background uppercase"
+                    onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={applyDiscount}
+                    disabled={isApplyingDiscount}
+                  >
+                    {isApplyingDiscount ? 'Applying...' : 'Apply'}
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="gaming-card p-6 space-y-4">
@@ -130,7 +246,7 @@ export default function Checkout() {
                   disabled={isProcessing}
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)}`}
+                  {isProcessing ? 'Processing...' : `Pay £${finalTotal.toFixed(2)}`}
                 </Button>
               }>
                 <div className="space-y-4">
@@ -142,7 +258,7 @@ export default function Checkout() {
                       price: item.price,
                       image: item.image,
                     }))}
-                    total={total}
+                    total={finalTotal}
                     email={email || user?.email || ''}
                     accessToken={session?.access_token}
                     onProcessing={setIsProcessing}
@@ -164,7 +280,7 @@ export default function Checkout() {
                     disabled={isProcessing}
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
-                    {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)} with Card`}
+                    {isProcessing ? 'Processing...' : `Pay £${finalTotal.toFixed(2)} with Card`}
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
@@ -208,11 +324,13 @@ export default function Checkout() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Discount</span>
-                <span>£0.00</span>
+                <span className={discountAmount > 0 ? 'text-primary' : ''}>
+                  {discountAmount > 0 ? `-£${discountAmount.toFixed(2)}` : '£0.00'}
+                </span>
               </div>
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                 <span>Total</span>
-                <span>£{total.toFixed(2)}</span>
+                <span>£{finalTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
