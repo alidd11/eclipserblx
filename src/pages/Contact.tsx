@@ -14,6 +14,7 @@ import {
   Clock,
   ExternalLink,
 } from 'lucide-react';
+import { contactFormSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
 export default function Contact() {
   const { user } = useAuth();
@@ -27,6 +28,21 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate input with schema
+    const validation = validateWithSchema(contactFormSchema, {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      subject: formData.subject.trim(),
+      message: formData.message.trim(),
+    });
+
+    if (isValidationError(validation)) {
+      toast.error(validation.error);
+      return;
+    }
+
+    // Validation passed, we can proceed
     setIsSubmitting(true);
 
     // Simulate form submission
@@ -210,8 +226,10 @@ export default function Contact() {
                     rows={5}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    maxLength={5000}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">{formData.message.length}/5000 characters</p>
                 </div>
 
                 <Button

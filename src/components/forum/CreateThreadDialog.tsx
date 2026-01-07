@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { forumThreadSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
 interface CreateThreadDialogProps {
   open: boolean;
@@ -137,7 +138,18 @@ export function CreateThreadDialog({
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Must be logged in');
-      if (!title.trim() || !content.trim()) throw new Error('Title and content required');
+      
+      // Validate input with schema
+      const validation = validateWithSchema(forumThreadSchema, {
+        title: title.trim(),
+        content: content.trim(),
+      });
+
+      if (isValidationError(validation)) {
+        throw new Error(validation.error);
+      }
+
+      const validatedData = validation.data;
 
       // Generate slug from title
       const slug = title
@@ -230,8 +242,10 @@ export function CreateThreadDialog({
               onChange={(e) => setContent(e.target.value)}
               placeholder={showImageUpload ? "Describe your creation or request..." : "What would you like to discuss?"}
               className="min-h-[150px] resize-none"
+              maxLength={10000}
               required
             />
+            <p className="text-xs text-muted-foreground">{content.length}/10000 characters</p>
           </div>
 
           {showImageUpload && (

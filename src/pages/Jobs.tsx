@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Briefcase, MapPin, Clock, Send, CheckCircle, AlertCircle, Mail, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { jobApplicationSchema, emailCheckSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
 const jobOpenings = [
   {
@@ -71,9 +72,25 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
 
   const submitMutation = useMutation({
     mutationFn: async (data: ApplicationFormData) => {
+      // Validate input with schema
+      const validation = validateWithSchema(jobApplicationSchema, data);
+      if (isValidationError(validation)) {
+        throw new Error(validation.error);
+      }
+
+      const validatedData = validation.data;
+
       const { error } = await supabase
         .from('job_applications')
-        .insert([data]);
+        .insert([{
+          position: validatedData.position,
+          applicant_name: validatedData.applicant_name,
+          applicant_email: validatedData.applicant_email,
+          discord_username: validatedData.discord_username || null,
+          portfolio_url: validatedData.portfolio_url || null,
+          experience: validatedData.experience || null,
+          message: validatedData.message,
+        }]);
       
       if (error) {
         if (error.code === '23505') {
@@ -90,17 +107,13 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
       if (error.message === 'DUPLICATE_EMAIL') {
         toast.error('You have already submitted an application. Only one application per person is allowed.');
       } else {
-        toast.error('Failed to submit application. Please try again.');
+        toast.error(error.message || 'Failed to submit application. Please try again.');
       }
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.applicant_name || !formData.applicant_email || !formData.message) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
     submitMutation.mutate(formData);
   };
 
@@ -171,8 +184,10 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           placeholder="Tell us why you'd be a great fit..."
           rows={4}
+          maxLength={5000}
           required
         />
+        <p className="text-xs text-muted-foreground">{formData.message.length}/5000 characters</p>
       </div>
 
       <p className="text-xs text-muted-foreground">
@@ -203,10 +218,14 @@ function ApplicationStatusCheck() {
   } | null>(null);
 
   const checkStatus = async () => {
-    if (!email) {
-      toast.error('Please enter your email address');
+    // Validate email with schema
+    const validation = validateWithSchema(emailCheckSchema, { email });
+    if (isValidationError(validation)) {
+      toast.error(validation.error);
       return;
     }
+
+    const validatedEmail = validation.data.email;
 
     setIsChecking(true);
     try {
@@ -214,7 +233,7 @@ function ApplicationStatusCheck() {
       const { data: application, error: appError } = await supabase
         .from('job_applications')
         .select('id, status')
-        .eq('applicant_email', email)
+        .eq('applicant_email', validatedEmail)
         .maybeSingle();
 
       if (appError) throw appError;
