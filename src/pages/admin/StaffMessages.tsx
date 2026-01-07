@@ -401,8 +401,10 @@ export default function StaffMessages() {
   };
 
   const insertMention = (staff: StaffProfile) => {
-    const textBeforeCursor = newMessage.slice(0, cursorPosition);
-    const textAfterCursor = newMessage.slice(cursorPosition);
+    // Get current cursor position from the input directly
+    const currentCursor = inputRef.current?.selectionStart || cursorPosition;
+    const textBeforeCursor = newMessage.slice(0, currentCursor);
+    const textAfterCursor = newMessage.slice(currentCursor);
     const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
     
     if (mentionMatch) {
@@ -418,14 +420,17 @@ export default function StaffMessages() {
           const newCursorPos = beforeMention.length + mentionName.length + 2;
           inputRef.current.focus();
           inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          setCursorPosition(newCursorPos);
         }
       }, 0);
     }
   };
 
   const insertGroupMention = (mentionName: string) => {
-    const textBeforeCursor = newMessage.slice(0, cursorPosition);
-    const textAfterCursor = newMessage.slice(cursorPosition);
+    // Get current cursor position from the input directly
+    const currentCursor = inputRef.current?.selectionStart || cursorPosition;
+    const textBeforeCursor = newMessage.slice(0, currentCursor);
+    const textAfterCursor = newMessage.slice(currentCursor);
     const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
     
     if (mentionMatch) {
@@ -439,6 +444,7 @@ export default function StaffMessages() {
           const newCursorPos = beforeMention.length + mentionName.length + 2;
           inputRef.current.focus();
           inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          setCursorPosition(newCursorPos);
         }
       }, 0);
     }
@@ -448,7 +454,10 @@ export default function StaffMessages() {
   const totalSuggestions = filteredGroupMentions.length + filteredStaff.length;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showMentionSuggestions || totalSuggestions === 0) return;
+    // Only intercept keys if mention suggestions are shown
+    if (!showMentionSuggestions || totalSuggestions === 0) {
+      return; // Let the form handle Enter normally
+    }
     
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -456,16 +465,21 @@ export default function StaffMessages() {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setMentionIndex(prev => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter' && showMentionSuggestions) {
+    } else if (e.key === 'Tab' || (e.key === 'Enter' && showMentionSuggestions)) {
+      // Use Tab or Enter to select mention, but only if dropdown is visible
       e.preventDefault();
+      e.stopPropagation();
       // Handle selection based on index
       if (mentionIndex < filteredGroupMentions.length) {
         insertGroupMention(filteredGroupMentions[mentionIndex].name);
       } else {
         const staffIndex = mentionIndex - filteredGroupMentions.length;
-        insertMention(filteredStaff[staffIndex]);
+        if (filteredStaff[staffIndex]) {
+          insertMention(filteredStaff[staffIndex]);
+        }
       }
     } else if (e.key === 'Escape') {
+      e.preventDefault();
       setShowMentionSuggestions(false);
     }
   };
