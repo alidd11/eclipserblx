@@ -18,7 +18,7 @@ import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -42,6 +42,10 @@ const ISSUE_CATEGORIES = [
 export function ChatWidget() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Hide the chat widget on admin pages
+  const isAdminRoute = location.pathname.startsWith('/admin');
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -370,6 +374,11 @@ export function ChatWidget() {
   const isImageUrl = (url: string) => {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
+
+  // Don't render anything on admin routes
+  if (isAdminRoute) {
+    return null;
+  }
 
   if (!isOpen) {
     return (
