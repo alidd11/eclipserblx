@@ -28,6 +28,7 @@ import FAQ from "./pages/FAQ";
 import Support from "./pages/Support";
 import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/admin/Dashboard";
+import AdminLogin from "./pages/admin/Login";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminIncome from "./pages/admin/Income";
 import AdminStaffActivity from "./pages/admin/StaffActivity";
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="/support" element={<Support />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/analytics" element={<AdminAnalytics />} />
               <Route path="/admin/income" element={<AdminIncome />} />
               <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
