@@ -57,10 +57,10 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
 
   // Redirect if already logged in as staff
   useEffect(() => {
-    if (!adminLoading && user && isStaff) {
+    if (!adminLoading && !loading && user && isStaff) {
       navigate('/admin');
     }
-  }, [user, isStaff, adminLoading, navigate]);
+  }, [user, isStaff, adminLoading, loading, navigate]);
 
   const handleBiometricLogin = async () => {
     const storedUserId = getStoredUserId();
@@ -160,19 +160,15 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
           });
         }
       } else {
-        // Get user session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user && isSupported && !checkEnrollment(session.user.id)) {
-          // Prompt to enroll biometric
-          setPendingUserId(session.user.id);
-          setPendingEmail(email);
-          setShowEnrollPrompt(true);
-        } else {
-          toast({
-            title: 'Welcome back!',
-            description: 'Redirecting to dashboard...',
-          });
-        }
+        // Wait for roles to be fetched then redirect
+        toast({
+          title: 'Welcome back!',
+          description: 'Redirecting to dashboard...',
+        });
+        // Force a small delay to allow role query to refetch
+        setTimeout(() => {
+          navigate('/admin');
+        }, 500);
       }
     } finally {
       setLoading(false);
