@@ -247,23 +247,28 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Quick Actions - Rows of 3 */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {quickLinks.map((link) => (
-              <Link key={link.href} to={link.href}>
-                <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer h-full">
-                  <CardContent className="flex flex-col items-center gap-2 p-3 text-center">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
+              {quickLinks.map((link) => (
+                <Link key={link.href} to={link.href}>
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-center">
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
                       <link.icon className="h-5 w-5 text-primary" />
                     </div>
                     <p className="font-medium text-xs">{link.title}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* My Recent Duty Logs */}
         <Card className="bg-card border-border">
