@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,7 +33,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [resetSent, setResetSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string }>({});
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -138,6 +140,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     // Enforce minimum password strength on signup
     if (mode === 'signup' && !isPasswordStrongEnough(password)) {
       setErrors({ password: 'Please choose a stronger password (good or strong)' });
+      return;
+    }
+
+    // Verify captcha on signup
+    if (mode === 'signup' && !captchaVerified) {
+      setErrors({ captcha: 'Please verify that you are not a robot' });
       return;
     }
 
@@ -428,6 +436,28 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
+
+              {mode === 'signup' && (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-3 p-4 border border-border rounded-lg bg-muted/30">
+                    <Checkbox
+                      id="captcha"
+                      checked={captchaVerified}
+                      onCheckedChange={(checked) => setCaptchaVerified(checked === true)}
+                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                    <Label 
+                      htmlFor="captcha" 
+                      className="text-sm font-normal cursor-pointer select-none"
+                    >
+                      I'm not a robot
+                    </Label>
+                  </div>
+                  {errors.captcha && (
+                    <p className="text-sm text-destructive">{errors.captcha}</p>
+                  )}
+                </div>
+              )}
 
               <Button
                 type="submit"
