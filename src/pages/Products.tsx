@@ -69,119 +69,113 @@ export default function Products() {
   return (
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="container py-8 space-y-8">
-        {/* Header Card */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl md:text-3xl font-display flex items-center gap-2">
-              <Package className="h-7 w-7 text-primary" />
-              {activeCategory ? activeCategory.name : 'All Products'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
-            </p>
-            {/* Search Bar */}
-            <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-muted/50 border-border"
-              />
+        <div className="container py-8 space-y-6">
+        {/* Combined Header & Filter Card */}
+        <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
+          <CardContent className="p-5 space-y-4">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-xl md:text-2xl font-display text-foreground flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary/80" />
+                  {activeCategory ? activeCategory.name : 'All Products'}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
+                </p>
+              </div>
+              
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+                <Input
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50"
+                />
+              </div>
             </div>
+
+            {/* Categories Filter */}
+            <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Filter className="h-3.5 w-3.5" />
+                <span>Categories</span>
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                <nav className="flex flex-wrap gap-2">
+                  <Link
+                    to="/products"
+                    className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                      !categorySlug
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    All
+                  </Link>
+                  {categories?.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/products?category=${category.slug}`}
+                      className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                        categorySlug === category.slug
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </nav>
+              </CollapsibleContent>
+            </Collapsible>
           </CardContent>
         </Card>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-64">
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-display font-semibold hover:text-primary transition-colors">
-                    <span className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      Categories
-                    </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-2 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                    <nav className="space-y-1">
-                      <Link
-                        to="/products"
-                        className={`block px-3 py-2 rounded-lg transition-colors ${
-                          !categorySlug
-                            ? 'bg-primary text-primary-foreground'
-                            : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        All Products
-                      </Link>
-                      {categories?.map((category) => (
-                        <Link
-                          key={category.id}
-                          to={`/products?category=${category.slug}`}
-                          className={`block px-3 py-2 rounded-lg transition-colors ${
-                            categorySlug === category.slug
-                              ? 'bg-primary text-primary-foreground'
-                              : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {category.name}
-                        </Link>
-                      ))}
-                    </nav>
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            </Card>
-          </aside>
-
-          {/* Products Grid */}
-          <div className="flex-1">
-            {isLoading ? (
-              <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="gaming-card animate-pulse">
-                    <div className="aspect-video bg-muted" />
-                    <div className="p-4 space-y-3">
-                      <div className="h-4 bg-muted rounded w-1/4" />
-                      <div className="h-5 bg-muted rounded w-3/4" />
-                      <div className="h-8 bg-muted rounded w-1/2" />
-                    </div>
+        {/* Products Grid */}
+        <div>
+          {isLoading ? (
+            <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="gaming-card animate-pulse">
+                  <div className="aspect-video bg-muted" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                    <div className="h-5 bg-muted rounded w-3/4" />
+                    <div className="h-8 bg-muted rounded w-1/2" />
                   </div>
-                ))}
-              </div>
-            ) : products?.length === 0 ? (
-              <div className="text-center py-16 space-y-4">
-                <p className="text-xl text-muted-foreground">No products found</p>
-                <Button variant="outline" onClick={() => {
-                  setSearch('');
-                  setSearchParams({});
-                }}>
-                  Clear filters
-                </Button>
-              </div>
-            ) : (
-              <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                {products?.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    slug={product.slug}
-                    price={product.price}
-                    image={product.images?.[0]}
-                    category={product.categories?.name}
-                    isFeatured={product.is_featured}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : products?.length === 0 ? (
+            <div className="text-center py-16 space-y-4">
+              <p className="text-xl text-muted-foreground">No products found</p>
+              <Button variant="outline" onClick={() => {
+                setSearch('');
+                setSearchParams({});
+              }}>
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {products?.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  slug={product.slug}
+                  price={product.price}
+                  image={product.images?.[0]}
+                  category={product.categories?.name}
+                  isFeatured={product.is_featured}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Featured Products Section */}
