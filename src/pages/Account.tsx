@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo } from 'react';
+import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { User, Package, LogOut, Settings, Shield, Download, Loader2 } from 'lucide-react';
@@ -10,12 +10,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
+import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const fallbackDisplayName = useMemo(() => {
     if (!user) return '';
@@ -81,7 +84,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   });
 
   const handleSignOut = async () => {
+    setIsSigningOut(true);
     await signOut();
+    setIsSigningOut(false);
+    setShowSignOutDialog(false);
     navigate('/');
   };
 
@@ -192,7 +198,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <Button
                 variant="outline"
                 className="w-full justify-start text-destructive hover:text-destructive"
-                onClick={handleSignOut}
+                onClick={() => setShowSignOutDialog(true)}
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -242,6 +248,14 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             )}
           </CardContent>
         </Card>
+
+        {/* Sign Out Confirmation Dialog */}
+        <SignOutConfirmDialog
+          open={showSignOutDialog}
+          onOpenChange={setShowSignOutDialog}
+          onConfirm={handleSignOut}
+          isLoading={isSigningOut}
+        />
       </div>
     </MainLayout>
   );
