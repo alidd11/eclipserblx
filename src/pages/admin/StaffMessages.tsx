@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { notifyStaffMention } from '@/lib/pushNotifications';
 
 interface ChatMessage {
   id: string;
@@ -328,7 +329,7 @@ export default function StaffMessages() {
           table: 'staff_messages',
           filter: 'recipient_id=is.null',
         },
-        (payload) => {
+        async (payload) => {
           const newMsg = payload.new as { sender_id: string; message: string };
           
           // Only notify for messages from other staff members
@@ -361,6 +362,54 @@ export default function StaffMessages() {
                 });
               }
             }
+
+            // Send background push notifications for mentions
+            if (allStaff) {
+              const senderProfile = profiles?.[newMsg.sender_id];
+              const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Staff';
+              const mentions = parseMentions(newMsg.message);
+              const groupMentions = hasGroupMention(newMsg.message);
+              
+              // Find mentioned user IDs
+              const mentionedUserIds: string[] = [];
+              
+              if (groupMentions.everyone) {
+                // Notify all staff except sender
+                allStaff.forEach(staff => {
+                  if (staff.user_id !== newMsg.sender_id) {
+                    mentionedUserIds.push(staff.user_id);
+                  }
+                });
+              } else if (groupMentions.here) {
+                // Notify online staff except sender
+                onlineUsers.forEach(online => {
+                  if (online.user_id !== newMsg.sender_id) {
+                    mentionedUserIds.push(online.user_id);
+                  }
+                });
+              } else {
+                // Notify individually mentioned staff
+                mentions.forEach(mentionHandle => {
+                  const mentionedStaff = allStaff.find(s => getMentionHandle(s) === mentionHandle);
+                  if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
+                    mentionedUserIds.push(mentionedStaff.user_id);
+                  }
+                });
+              }
+
+              // Send background push to mentioned users
+              if (mentionedUserIds.length > 0) {
+                try {
+                  await notifyStaffMention(
+                    mentionedUserIds,
+                    senderName,
+                    newMsg.message
+                  );
+                } catch (error) {
+                  console.error('Failed to send background push for mention:', error);
+                }
+              }
+            }
           }
           
           queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
@@ -371,7 +420,7 @@ export default function StaffMessages() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned]);
+  }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned, allStaff, onlineUsers]);
 
   // Presence channel for online + typing indicators
   useEffect(() => {
