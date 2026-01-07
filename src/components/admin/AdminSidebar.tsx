@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail, BarChart3 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -6,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { SITE_NAME } from '@/lib/constants';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 
 const navItems = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', roles: [] },
@@ -34,9 +36,14 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   const { signOut } = useAuth();
   const { isAdmin, hasRole } = useAdminAuth();
   const navigate = useNavigate();
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
+    setIsSigningOut(true);
     await signOut();
+    setIsSigningOut(false);
+    setShowSignOutDialog(false);
     navigate('/');
   };
 
@@ -137,7 +144,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             variant="ghost"
             size="sm"
             className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg px-3 py-2.5 mt-2"
-            onClick={handleSignOut}
+            onClick={() => setShowSignOutDialog(true)}
           >
             <LogOut className="h-4 w-4 shrink-0" />
             <span className="ml-3">Sign Out</span>
@@ -179,7 +186,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                 "w-full text-muted-foreground hover:text-destructive",
                 isCollapsed ? "justify-center px-2" : "justify-start"
               )}
-              onClick={handleSignOut}
+              onClick={() => setShowSignOutDialog(true)}
             >
               <LogOut className="h-4 w-4 shrink-0" />
               {!isCollapsed && <span className="ml-3">Sign Out</span>}
@@ -189,6 +196,14 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         </Tooltip>
         </div>
       )}
+
+      {/* Sign Out Confirmation Dialog */}
+      <SignOutConfirmDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={handleSignOut}
+        isLoading={isSigningOut}
+      />
     </aside>
   );
 }
