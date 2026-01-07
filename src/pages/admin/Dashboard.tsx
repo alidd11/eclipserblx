@@ -313,95 +313,6 @@ export default function AdminDashboard() {
           </CardHeader>
         </Card>
 
-        {/* Duty Clock In/Out */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Duty Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {activeSession ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20">
-                    <Timer className="h-6 w-6 text-green-500" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-green-500">Currently On Duty</p>
-                    <p className="text-sm text-muted-foreground">
-                      Clocked in at {format(new Date(activeSession.clock_in), 'h:mm a')}
-                    </p>
-                  </div>
-                  <div className="text-2xl font-mono font-bold text-green-500">
-                    {elapsedTime}
-                  </div>
-                </div>
-                <Textarea
-                  placeholder="Add notes for this session (optional)..."
-                  value={clockOutNotes}
-                  onChange={(e) => setClockOutNotes(e.target.value)}
-                  rows={2}
-                />
-                <Button 
-                  onClick={() => clockOutMutation.mutate()} 
-                  disabled={clockOutMutation.isPending}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  <Square className="h-4 w-4 mr-2" />
-                  {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
-                    <Clock className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Not Currently On Duty</p>
-                    <p className="text-sm text-muted-foreground">Clock in to start logging your hours</p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => clockInMutation.mutate()} 
-                  disabled={clockInMutation.isPending}
-                  className="w-full"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  {clockInMutation.isPending ? 'Clocking In...' : 'Clock In'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions - Rows of 3 */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
-              {quickLinks.map((link) => (
-                <Link key={link.href} to={link.href}>
-                  <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-center">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                      <link.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <p className="font-medium text-xs">{link.title}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Staff Announcements */}
         <Card className="bg-card border-border">
           <CardHeader>
@@ -504,6 +415,95 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Duty Clock In/Out */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Duty Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {activeSession ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20">
+                    <Timer className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-green-500">Currently On Duty</p>
+                    <p className="text-sm text-muted-foreground">
+                      Clocked in at {format(new Date(activeSession.clock_in), 'h:mm a')}
+                    </p>
+                  </div>
+                  <div className="text-2xl font-mono font-bold text-green-500">
+                    {elapsedTime}
+                  </div>
+                </div>
+                <Textarea
+                  placeholder="Add notes for this session (optional)..."
+                  value={clockOutNotes}
+                  onChange={(e) => setClockOutNotes(e.target.value)}
+                  rows={2}
+                />
+                <Button 
+                  onClick={() => clockOutMutation.mutate()} 
+                  disabled={clockOutMutation.isPending}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  <Square className="h-4 w-4 mr-2" />
+                  {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
+                    <Clock className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">Not Currently On Duty</p>
+                    <p className="text-sm text-muted-foreground">Clock in to start logging your hours</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => clockInMutation.mutate()} 
+                  disabled={clockInMutation.isPending}
+                  className="w-full"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  {clockInMutation.isPending ? 'Clocking In...' : 'Clock In'}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions - Rows of 3 */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
+              {quickLinks.map((link) => (
+                <Link key={link.href} to={link.href}>
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                      <link.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="font-medium text-xs">{link.title}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
