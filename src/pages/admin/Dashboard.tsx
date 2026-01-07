@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, ArrowRight, Clock, Play, Square, Timer } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -246,6 +246,25 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
+        {/* Quick Actions - Rows of 3 */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {quickLinks.map((link) => (
+              <Link key={link.href} to={link.href}>
+                <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="flex flex-col items-center gap-2 p-3 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                      <link.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="font-medium text-xs">{link.title}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* My Recent Duty Logs */}
         <Card className="bg-card border-border">
           <CardHeader>
@@ -325,28 +344,6 @@ export default function AdminDashboard() {
           </Card>
         )}
 
-        {/* Quick Links */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {quickLinks.map((link) => (
-              <Link key={link.href} to={link.href}>
-                <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer h-full">
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                      <link.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{link.title}</p>
-                      <p className="text-xs text-muted-foreground">{link.description}</p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
       </div>
     </AdminLayout>
   );
