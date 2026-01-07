@@ -512,17 +512,27 @@ export function ChatWidget() {
         <>
           {!isOnline && !hasStarted ? (
             /* Offline Message */
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                <MessageCircle className="h-8 w-8 text-muted-foreground" />
+            <div className="flex-1 flex items-center p-4">
+              <div className="flex items-start gap-4 w-full">
+                <div className="h-12 w-12 shrink-0 rounded-full bg-muted flex items-center justify-center">
+                  <MessageCircle className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-semibold text-base mb-1">Support Offline</h3>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    {getSupportHoursMessage()}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <a href="/faq" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
+                      View FAQ
+                    </a>
+                    <span className="text-muted-foreground text-xs">•</span>
+                    <a href="/support" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
+                      Submit Ticket
+                    </a>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">We're Currently Offline</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                {getSupportHoursMessage()}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Need help now? Visit our <a href="/faq" className="text-primary hover:underline">FAQ</a> or <a href="/support" className="text-primary hover:underline">submit a ticket</a>.
-              </p>
             </div>
           ) : !hasStarted ? (
             /* Start Form */
