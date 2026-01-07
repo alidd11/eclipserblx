@@ -180,7 +180,8 @@ export default function AdminUsers() {
           />
         </div>
 
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="hidden md:block rounded-lg border border-border bg-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -236,6 +237,47 @@ export default function AdminUsers() {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : profiles?.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No users found</div>
+          ) : (
+            profiles?.filter(p => p.email !== PRIMARY_ADMIN_EMAIL).map((profile) => {
+              const roles = getUserRoles(profile.user_id);
+              return (
+                <div key={profile.id} className="rounded-lg border border-border bg-card p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{profile.display_name || 'Unnamed'}</p>
+                      {isAdmin && <p className="text-xs text-muted-foreground truncate">{profile.email}</p>}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Joined {new Date(profile.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setSelectedUser(profile)}
+                      className="shrink-0"
+                    >
+                      <Shield className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {roles.length === 0 ? (
+                      <Badge variant="secondary" className="text-xs">Customer</Badge>
+                    ) : (
+                      roles.map(r => getRoleBadge(r.role))
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
