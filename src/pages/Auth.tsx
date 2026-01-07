@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle, Eye, EyeOff, Mail } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { PasswordStrengthMeter, isPasswordStrongEnough } from '@/components/auth/PasswordStrengthMeter';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -20,7 +21,7 @@ const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
-type AuthMode = 'login' | 'signup' | 'forgot' | 'reset';
+type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify';
 
 const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [searchParams] = useSearchParams();
@@ -33,8 +34,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [resetSent, setResetSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string }>({});
   const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -193,11 +195,79 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           }
         } else {
           toast({
-            title: 'Account Created!',
-            description: 'Welcome to UK Roleplay Assets!',
+            title: 'Check Your Email',
+            description: 'We sent you a 6-digit verification code.',
           });
-          navigate('/');
+          setMode('verify');
         }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    if (otpCode.length !== 6) {
+      setErrors({ otp: 'Please enter the complete 6-digit code' });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'signup',
+      });
+
+      if (error) {
+        if (error.message.includes('expired')) {
+          setErrors({ otp: 'Code has expired. Please request a new one.' });
+        } else if (error.message.includes('invalid')) {
+          setErrors({ otp: 'Invalid code. Please check and try again.' });
+        } else {
+          toast({
+            title: 'Verification Failed',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Email Verified!',
+          description: 'Your account has been verified successfully.',
+        });
+        navigate('/');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Code Sent!',
+          description: 'A new verification code has been sent to your email.',
+        });
+        setOtpCode('');
       }
     } finally {
       setLoading(false);
@@ -209,6 +279,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       case 'signup': return 'Create Account';
       case 'forgot': return 'Reset Password';
       case 'reset': return 'Set New Password';
+      case 'verify': return 'Verify Your Email';
       default: return 'Welcome Back';
     }
   };
@@ -218,6 +289,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       case 'signup': return 'Join UK Roleplay Assets to start shopping';
       case 'forgot': return 'Enter your email and we\'ll send you a reset link';
       case 'reset': return 'Enter your new password below';
+      case 'verify': return `Enter the 6-digit code sent to ${email}`;
       default: return 'Sign in to access your purchases and account';
     }
   };
@@ -365,6 +437,68 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Update Password
               </Button>
+            </form>
+          ) : mode === 'verify' ? (
+            /* OTP Verification Form */
+            <form onSubmit={handleVerifyOtp} className="gaming-card p-6 space-y-6">
+              <div className="flex justify-center">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Mail className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(value) => setOtpCode(value)}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                {errors.otp && (
+                  <p className="text-sm text-destructive text-center">{errors.otp}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gradient-button border-0"
+                disabled={loading || otpCode.length !== 6}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Verify Email
+              </Button>
+
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Didn't receive the code?
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  disabled={loading}
+                  className="text-sm text-primary hover:underline disabled:opacity-50"
+                >
+                  Resend Code
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => { setMode('signup'); setOtpCode(''); }}
+                className="w-full text-sm text-muted-foreground hover:text-foreground"
+              >
+                Back to Sign Up
+              </button>
             </form>
           ) : (
             /* Login/Signup Form */
