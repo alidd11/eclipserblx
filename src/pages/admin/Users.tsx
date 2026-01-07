@@ -74,7 +74,9 @@ export default function AdminUsers() {
     queryKey: ['admin-profiles', search],
     queryFn: async () => {
       let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      if (search) query = query.ilike('email', `%${search}%`);
+      if (search) {
+        query = query.or(`email.ilike.%${search}%,customer_id.ilike.%${search}%`);
+      }
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -173,7 +175,7 @@ export default function AdminUsers() {
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by email..."
+            placeholder="Search by email or customer ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-card"
@@ -213,6 +215,9 @@ export default function AdminUsers() {
                         <div>
                           <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
                           {isAdmin && <p className="text-xs text-muted-foreground">{profile.email}</p>}
+                          {profile.customer_id && (
+                            <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
@@ -254,6 +259,9 @@ export default function AdminUsers() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">{profile.display_name || 'Unnamed'}</p>
                       {isAdmin && <p className="text-xs text-muted-foreground truncate">{profile.email}</p>}
+                      {profile.customer_id && (
+                        <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-1">
                         Joined {new Date(profile.created_at).toLocaleDateString()}
                       </p>
@@ -293,6 +301,9 @@ export default function AdminUsers() {
               <div className="p-3 rounded-lg bg-muted/50">
                 <p className="font-medium text-sm">{selectedUser.display_name || 'Unnamed User'}</p>
                 {isAdmin && <p className="text-xs text-muted-foreground truncate">{selectedUser.email}</p>}
+                {selectedUser.customer_id && (
+                  <p className="text-xs font-mono text-primary mt-1">{selectedUser.customer_id}</p>
+                )}
               </div>
 
               <div>

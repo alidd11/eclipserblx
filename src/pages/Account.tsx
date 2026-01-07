@@ -47,7 +47,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, display_name, avatar_url, created_at, updated_at')
+        .select('user_id, email, display_name, avatar_url, customer_id, created_at, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -184,6 +184,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 <p className="text-sm text-muted-foreground">Email</p>
                 <p className="font-medium">{user.email}</p>
               </div>
+              {profile?.customer_id && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Customer ID</p>
+                  <p className="font-mono font-medium text-primary">{profile.customer_id}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-muted-foreground">Member Since</p>
                 <p className="font-medium">
