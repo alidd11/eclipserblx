@@ -39,7 +39,7 @@ const ISSUE_CATEGORIES = [
   { value: 'other', label: 'Other' },
 ];
 
-// Check if support is online (Mon-Sat 9am-9pm, offline all day Sunday)
+// Check if support is online (Mon-Fri 9am-9pm, Sat 9am-8pm, offline Sunday)
 const isSupportOnline = (): boolean => {
   const now = new Date();
   const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
@@ -48,28 +48,22 @@ const isSupportOnline = (): boolean => {
   // Offline all day Sunday
   if (day === 0) return false;
   
-  // Online Mon-Sat 9am (9) to 9pm (21)
+  // Saturday: 9am to 8pm
+  if (day === 6) return hour >= 9 && hour < 20;
+  
+  // Mon-Fri: 9am to 9pm
   return hour >= 9 && hour < 21;
 };
 
-const getSupportHoursMessage = (): string => {
-  const now = new Date();
-  const day = now.getDay();
-  
-  if (day === 0) {
-    return "We're closed on Sundays. Live chat is available Monday - Saturday, 9AM - 9PM.";
-  }
-  
-  const hour = now.getHours();
-  if (hour < 9) {
-    return "We open at 9AM. Live chat is available Monday - Saturday, 9AM - 9PM.";
-  }
-  if (hour >= 21) {
-    return "We're closed for today. Live chat is available Monday - Saturday, 9AM - 9PM.";
-  }
-  
-  return "";
-};
+const SUPPORT_HOURS = [
+  { day: 'Monday', hours: '9:00 AM - 9:00 PM' },
+  { day: 'Tuesday', hours: '9:00 AM - 9:00 PM' },
+  { day: 'Wednesday', hours: '9:00 AM - 9:00 PM' },
+  { day: 'Thursday', hours: '9:00 AM - 9:00 PM' },
+  { day: 'Friday', hours: '9:00 AM - 9:00 PM' },
+  { day: 'Saturday', hours: '9:00 AM - 8:00 PM' },
+  { day: 'Sunday', hours: 'Closed' },
+];
 
 export function ChatWidget() {
   const { user } = useAuth();
@@ -512,28 +506,42 @@ export function ChatWidget() {
         <>
           {!isOnline && !hasStarted ? (
             /* Offline Message */
-            <div className="flex-1 flex items-center p-4">
-              <div className="flex items-start gap-4 w-full">
-                <div className="h-12 w-12 shrink-0 rounded-full bg-muted flex items-center justify-center">
-                  <MessageCircle className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold text-base mb-1">Support Offline</h3>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {getSupportHoursMessage()}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <a href="/faq" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-                      View FAQ
-                    </a>
-                    <span className="text-muted-foreground text-xs">•</span>
-                    <a href="/support" className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-                      Submit Ticket
-                    </a>
+            <ScrollArea className="flex-1">
+              <div className="p-4">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-muted flex items-center justify-center">
+                    <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-sm">Support Offline</h3>
+                    <p className="text-xs text-muted-foreground">We'll be back during business hours</p>
                   </div>
                 </div>
+                
+                <div className="bg-muted/50 rounded-lg p-3 mb-4">
+                  <h4 className="text-xs font-medium mb-2">Business Hours</h4>
+                  <div className="space-y-1">
+                    {SUPPORT_HOURS.map((item) => (
+                      <div key={item.day} className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">{item.day}</span>
+                        <span className={item.hours === 'Closed' ? 'text-muted-foreground' : 'text-foreground font-medium'}>
+                          {item.hours}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <a href="/faq" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
+                    View FAQ
+                  </a>
+                  <a href="/support" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
+                    Submit Ticket
+                  </a>
+                </div>
               </div>
-            </div>
+            </ScrollArea>
           ) : !hasStarted ? (
             /* Start Form */
             <ScrollArea className="flex-1">
