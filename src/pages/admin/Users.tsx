@@ -263,7 +263,7 @@ export default function AdminUsers() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium truncate">{profile.display_name || 'Unnamed'}</p>
+                        <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
                         {roles.length === 0 ? (
                           <Badge variant="secondary" className="text-xs">Customer</Badge>
                         ) : (
