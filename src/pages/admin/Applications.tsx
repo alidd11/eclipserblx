@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -254,23 +254,23 @@ export default function AdminApplications() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Job Applications</h1>
-            <p className="text-muted-foreground">Review and manage job applications</p>
-          </div>
-          <Button 
-            onClick={() => setShowMassMessage(true)}
-            variant="outline"
-            className="gap-2"
-          >
-            <Megaphone className="h-4 w-4" />
-            Mass Message
-          </Button>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display">Job Applications</CardTitle>
+                <CardDescription>Review and manage job applications</CardDescription>
+              </div>
+              <Button onClick={() => setShowMassMessage(true)} variant="outline" className="gap-2 w-full sm:w-auto">
+                <Megaphone className="h-4 w-4" />
+                Mass Message
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Card className="glass-card">
             <CardContent className="pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -346,58 +346,82 @@ export default function AdminApplications() {
             ) : filteredApplications?.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No applications found</p>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
+              <>
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-3">
+                  {filteredApplications?.map((app) => (
+                    <div key={app.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+                      <div className="flex items-center gap-2">
                         <Checkbox 
-                          checked={filteredApplications?.length > 0 && filteredApplications.every(app => selectedApplicationIds.includes(app.id))}
-                          onCheckedChange={selectAllFiltered}
+                          checked={selectedApplicationIds.includes(app.id)}
+                          onCheckedChange={() => toggleApplicationSelection(app.id)}
                         />
-                      </TableHead>
-                      <TableHead>Applicant</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Applied</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredApplications?.map((app) => (
-                      <TableRow key={app.id}>
-                        <TableCell>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{app.applicant_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{app.applicant_email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{app.position}</span>
+                        {getStatusBadge(app.status)}
+                      </div>
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-xs text-muted-foreground">{new Date(app.created_at).toLocaleDateString()}</span>
+                        <Button variant="outline" size="sm" onClick={() => { setSelectedApplication(app); setNotes(app.notes || ''); }}>
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
                           <Checkbox 
-                            checked={selectedApplicationIds.includes(app.id)}
-                            onCheckedChange={() => toggleApplicationSelection(app.id)}
+                            checked={filteredApplications?.length > 0 && filteredApplications.every(app => selectedApplicationIds.includes(app.id))}
+                            onCheckedChange={selectAllFiltered}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{app.applicant_name}</p>
-                            <p className="text-sm text-muted-foreground">{app.applicant_email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{app.position}</TableCell>
-                        <TableCell>{getStatusBadge(app.status)}</TableCell>
-                        <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedApplication(app);
-                              setNotes(app.notes || '');
-                            }}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
+                        </TableHead>
+                        <TableHead>Applicant</TableHead>
+                        <TableHead>Position</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Applied</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredApplications?.map((app) => (
+                        <TableRow key={app.id}>
+                          <TableCell>
+                            <Checkbox 
+                              checked={selectedApplicationIds.includes(app.id)}
+                              onCheckedChange={() => toggleApplicationSelection(app.id)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{app.applicant_name}</p>
+                              <p className="text-sm text-muted-foreground">{app.applicant_email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{app.position}</TableCell>
+                          <TableCell>{getStatusBadge(app.status)}</TableCell>
+                          <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" onClick={() => { setSelectedApplication(app); setNotes(app.notes || ''); }}>
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

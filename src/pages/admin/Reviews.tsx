@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -134,146 +135,157 @@ export default function AdminReviews() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold">Reviews</h1>
-            <p className="text-muted-foreground">Manage customer reviews</p>
-          </div>
-
-          <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter reviews" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Reviews</SelectItem>
-              <SelectItem value="pending">Pending Approval</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="featured">Featured</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Loading reviews...</div>
-        ) : !reviews?.length ? (
-          <div className="text-center py-12 text-muted-foreground">No reviews found</div>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead className="max-w-[300px]">Review</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reviews.map((review) => (
-                  <TableRow key={review.id}>
-                    <TableCell>
-                      <div className="font-medium">
-                        {review.profiles?.display_name || 'Unknown'}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display">Reviews</CardTitle>
+                <CardDescription>Manage customer reviews</CardDescription>
+              </div>
+              <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter reviews" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Reviews</SelectItem>
+                  <SelectItem value="pending">Pending Approval</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Loading reviews...</div>
+            ) : !reviews?.length ? (
+              <div className="text-center py-12 text-muted-foreground">No reviews found</div>
+            ) : (
+              <>
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-3">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{review.profiles?.display_name || 'Unknown'}</span>
+                        {review.is_featured ? (
+                          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Featured</Badge>
+                        ) : review.is_approved ? (
+                          <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">Approved</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">Pending</Badge>
+                        )}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {review.products?.name || (
-                        <span className="text-muted-foreground">General</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 ${
-                              i < review.rating
-                                ? 'text-amber-400 fill-amber-400'
-                                : 'text-muted-foreground'
-                            }`}
-                          />
+                          <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
                         ))}
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {review.products?.name || 'General'}
+                        </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="max-w-[300px]">
-                      {review.title && (
-                        <div className="font-medium text-sm mb-1">{review.title}</div>
-                      )}
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {review.content}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {review.is_featured ? (
-                          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                            Featured
-                          </Badge>
-                        ) : review.is_approved ? (
-                          <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">
-                            Approved
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">
-                            Pending
-                          </Badge>
-                        )}
+                      {review.title && <p className="font-medium text-sm">{review.title}</p>}
+                      <p className="text-sm text-muted-foreground line-clamp-3">{review.content}</p>
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-xs text-muted-foreground">{format(new Date(review.created_at), 'MMM d, yyyy')}</span>
+                        <div className="flex items-center gap-1">
+                          {!review.is_approved && (
+                            <Button size="sm" variant="ghost" onClick={() => handleApprove(review.id, true)} className="h-8 w-8 p-0">
+                              <Check className="h-4 w-4 text-emerald-400" />
+                            </Button>
+                          )}
+                          {review.is_approved && !review.is_featured && (
+                            <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, true)} className="h-8 w-8 p-0">
+                              <Sparkles className="h-4 w-4 text-amber-400" />
+                            </Button>
+                          )}
+                          {review.is_featured && (
+                            <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, false)} className="h-8 w-8 p-0">
+                              <X className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={() => deleteReviewMutation.mutate(review.id)} className="h-8 w-8 p-0">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(review.created_at), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {!review.is_approved && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleApprove(review.id, true)}
-                            title="Approve"
-                          >
-                            <Check className="h-4 w-4 text-emerald-400" />
-                          </Button>
-                        )}
-                        {review.is_approved && !review.is_featured && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleFeature(review.id, true)}
-                            title="Feature on homepage"
-                          >
-                            <Sparkles className="h-4 w-4 text-amber-400" />
-                          </Button>
-                        )}
-                        {review.is_featured && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleFeature(review.id, false)}
-                            title="Remove from featured"
-                          >
-                            <X className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deleteReviewMutation.mutate(review.id)}
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Rating</TableHead>
+                        <TableHead className="max-w-[300px]">Review</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reviews.map((review) => (
+                        <TableRow key={review.id}>
+                          <TableCell>
+                            <div className="font-medium">{review.profiles?.display_name || 'Unknown'}</div>
+                          </TableCell>
+                          <TableCell>{review.products?.name || <span className="text-muted-foreground">General</span>}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px]">
+                            {review.title && <div className="font-medium text-sm mb-1">{review.title}</div>}
+                            <p className="text-sm text-muted-foreground line-clamp-2">{review.content}</p>
+                          </TableCell>
+                          <TableCell>
+                            {review.is_featured ? (
+                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Featured</Badge>
+                            ) : review.is_approved ? (
+                              <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">Approved</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">Pending</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{format(new Date(review.created_at), 'MMM d, yyyy')}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {!review.is_approved && (
+                                <Button size="sm" variant="ghost" onClick={() => handleApprove(review.id, true)} title="Approve">
+                                  <Check className="h-4 w-4 text-emerald-400" />
+                                </Button>
+                              )}
+                              {review.is_approved && !review.is_featured && (
+                                <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, true)} title="Feature on homepage">
+                                  <Sparkles className="h-4 w-4 text-amber-400" />
+                                </Button>
+                              )}
+                              {review.is_featured && (
+                                <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, false)} title="Remove from featured">
+                                  <X className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" onClick={() => deleteReviewMutation.mutate(review.id)} title="Delete">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

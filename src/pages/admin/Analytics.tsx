@@ -149,10 +149,12 @@ export default function AdminAnalytics() {
   return (
     <AdminLayout requiredRoles={['admin']}>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Analytics</h1>
-          <p className="text-muted-foreground">Detailed performance metrics and insights</p>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl sm:text-3xl font-display">Analytics</CardTitle>
+            <p className="text-muted-foreground text-sm">Detailed performance metrics and insights</p>
+          </CardHeader>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

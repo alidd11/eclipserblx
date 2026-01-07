@@ -269,28 +269,32 @@ export default function AdminIncome() {
   return (
     <AdminLayout requiredRoles={['admin']}>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-display font-bold flex items-center gap-2">
-              <TrendingUp className="h-8 w-8 text-primary" />
-              Income Analytics
-            </h1>
-            <p className="text-muted-foreground">Detailed financial overview and reports</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
-              <Clock className="h-4 w-4" />
-              <span>Session: {formatTimeRemaining(timeRemaining)}</span>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                  Income Analytics
+                </CardTitle>
+                <p className="text-muted-foreground text-sm mt-1">Detailed financial overview and reports</p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+                  <Clock className="h-4 w-4" />
+                  <span>Session: {formatTimeRemaining(timeRemaining)}</span>
+                </div>
+                <Button onClick={exportIncomeReport} className="gap-2 w-full sm:w-auto">
+                  <FileDown className="h-4 w-4" />
+                  Export Report
+                </Button>
+              </div>
             </div>
-            <Button onClick={exportIncomeReport} className="gap-2">
-              <FileDown className="h-4 w-4" />
-              Export Report
-            </Button>
-          </div>
-        </div>
+          </CardHeader>
+        </Card>
 
         {/* Income Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
           <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
