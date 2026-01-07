@@ -777,6 +777,36 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          recipient_id: string | null
+          sender_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          recipient_id?: string | null
+          sender_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          recipient_id?: string | null
+          sender_id?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       support_tickets: {
         Row: {
           assigned_to: string | null
