@@ -138,22 +138,9 @@ export default function StaffMessages() {
   const { data: allStaff } = useQuery({
     queryKey: ['all-staff-profiles'],
     queryFn: async () => {
-      // Get all users with staff roles
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id');
-      
-      if (rolesError) throw rolesError;
-      
-      const staffIds = [...new Set(roles.map(r => r.user_id))];
-      
-      const { data: staffProfiles, error } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, email')
-        .in('user_id', staffIds);
-      
+      const { data, error } = await supabase.functions.invoke('list-staff');
       if (error) throw error;
-      return staffProfiles as StaffProfile[];
+      return (data?.staff ?? []) as StaffProfile[];
     },
   });
 
