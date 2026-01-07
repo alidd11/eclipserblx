@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,43 +9,73 @@ import { CartProvider } from "@/hooks/useCart";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Eagerly loaded - critical path
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Account from "./pages/Account";
-import Downloads from "./pages/Downloads";
-import Products from "./pages/Products";
-import Categories from "./pages/Categories";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import OrderSuccess from "./pages/OrderSuccess";
-import ChatHistory from "./pages/ChatHistory";
-import Forum from "./pages/Forum";
-import ThreadDetail from "./pages/ThreadDetail";
-import Jobs from "./pages/Jobs";
-import RefundPolicy from "./pages/RefundPolicy";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import FAQ from "./pages/FAQ";
-import Support from "./pages/Support";
-import Contact from "./pages/Contact";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminLogin from "./pages/admin/Login";
-import AdminAnalytics from "./pages/admin/Analytics";
-import AdminIncome from "./pages/admin/Income";
-import AdminStaffActivity from "./pages/admin/StaffActivity";
-import AdminStaffMessages from "./pages/admin/StaffMessages";
-import AdminProducts from "./pages/admin/Products";
-import AdminOrders from "./pages/admin/Orders";
-import AdminUsers from "./pages/admin/Users";
-import AdminSettings from "./pages/admin/Settings";
-import AdminLiveChat from "./pages/admin/LiveChat";
-import AdminApplications from "./pages/admin/Applications";
-import AdminReviews from "./pages/admin/Reviews";
-import AdminAuditLogs from "./pages/admin/AuditLogs";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Lazy loaded - user pages
+const Account = lazy(() => import("./pages/Account"));
+const Downloads = lazy(() => import("./pages/Downloads"));
+const Products = lazy(() => import("./pages/Products"));
+const Categories = lazy(() => import("./pages/Categories"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
+const ChatHistory = lazy(() => import("./pages/ChatHistory"));
+const Forum = lazy(() => import("./pages/Forum"));
+const ThreadDetail = lazy(() => import("./pages/ThreadDetail"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const Support = lazy(() => import("./pages/Support"));
+const Contact = lazy(() => import("./pages/Contact"));
+
+// Lazy loaded - admin pages
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminLogin = lazy(() => import("./pages/admin/Login"));
+const AdminAnalytics = lazy(() => import("./pages/admin/Analytics"));
+const AdminIncome = lazy(() => import("./pages/admin/Income"));
+const AdminStaffActivity = lazy(() => import("./pages/admin/StaffActivity"));
+const AdminStaffMessages = lazy(() => import("./pages/admin/StaffMessages"));
+const AdminProducts = lazy(() => import("./pages/admin/Products"));
+const AdminOrders = lazy(() => import("./pages/admin/Orders"));
+const AdminUsers = lazy(() => import("./pages/admin/Users"));
+const AdminSettings = lazy(() => import("./pages/admin/Settings"));
+const AdminLiveChat = lazy(() => import("./pages/admin/LiveChat"));
+const AdminApplications = lazy(() => import("./pages/admin/Applications"));
+const AdminReviews = lazy(() => import("./pages/admin/Reviews"));
+const AdminAuditLogs = lazy(() => import("./pages/admin/AuditLogs"));
+
+// Optimized QueryClient with better caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+// Minimal loading fallback
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="space-y-4 w-full max-w-md px-4">
+        <Skeleton className="h-8 w-3/4 mx-auto" />
+        <Skeleton className="h-4 w-1/2 mx-auto" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    </div>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -55,45 +86,47 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <PWAWrapper>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/downloads" element={<Downloads />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/products/:slug" element={<ProductDetail />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/order-success" element={<OrderSuccess />} />
-                <Route path="/chat-history" element={<ChatHistory />} />
-                <Route path="/forum" element={<Forum />} />
-                <Route path="/forum/:categorySlug" element={<Forum />} />
-                <Route path="/forum/:categorySlug/:threadSlug" element={<ThreadDetail />} />
-                <Route path="/jobs" element={<Jobs />} />
-                <Route path="/refunds" element={<RefundPolicy />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                <Route path="/admin/income" element={<AdminIncome />} />
-                <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
-                <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
-                <Route path="/admin/products" element={<AdminProducts />} />
-                <Route path="/admin/orders" element={<AdminOrders />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/live-chat" element={<AdminLiveChat />} />
-                <Route path="/admin/applications" element={<AdminApplications />} />
-                <Route path="/admin/reviews" element={<AdminReviews />} />
-                <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/downloads" element={<Downloads />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/products/:slug" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/order-success" element={<OrderSuccess />} />
+                  <Route path="/chat-history" element={<ChatHistory />} />
+                  <Route path="/forum" element={<Forum />} />
+                  <Route path="/forum/:categorySlug" element={<Forum />} />
+                  <Route path="/forum/:categorySlug/:threadSlug" element={<ThreadDetail />} />
+                  <Route path="/jobs" element={<Jobs />} />
+                  <Route path="/refunds" element={<RefundPolicy />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                  <Route path="/admin/income" element={<AdminIncome />} />
+                  <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
+                  <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
+                  <Route path="/admin/products" element={<AdminProducts />} />
+                  <Route path="/admin/orders" element={<AdminOrders />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
+                  <Route path="/admin/settings" element={<AdminSettings />} />
+                  <Route path="/admin/live-chat" element={<AdminLiveChat />} />
+                  <Route path="/admin/applications" element={<AdminApplications />} />
+                  <Route path="/admin/reviews" element={<AdminReviews />} />
+                  <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
               <ChatWidget />
               <InstallPrompt />
             </PWAWrapper>

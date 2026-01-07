@@ -1,3 +1,4 @@
+import { memo, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, ArrowRight, Users, TrendingUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -9,9 +10,8 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { useRef } from 'react';
 
-export function ForumShowcase() {
+export const ForumShowcase = memo(function ForumShowcase() {
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false })
   );
@@ -28,13 +28,14 @@ export function ForumShowcase() {
       if (error) throw error;
       return data;
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
-  const iconMap: Record<string, React.ElementType> = {
+  const iconMap = useMemo<Record<string, React.ElementType>>(() => ({
     MessageSquare,
     Users,
     TrendingUp,
-  };
+  }), []);
 
   const gradientMap: Record<number, string> = {
     0: 'from-purple-500/20 to-purple-600/20',
@@ -127,4 +128,4 @@ export function ForumShowcase() {
       </div>
     </section>
   );
-}
+});
