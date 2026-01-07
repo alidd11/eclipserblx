@@ -82,32 +82,57 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-        {filteredItems.map((item) => (
-          <Tooltip key={item.href}>
-            <TooltipTrigger asChild>
+        {filteredItems.map((item) => {
+          const LinkContent = (
+            <>
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!isCollapsed && (
+                <span className="min-w-0 truncate leading-none">{item.title}</span>
+              )}
+            </>
+          );
+
+          const linkClassName = ({ isActive }: { isActive: boolean }) =>
+            cn(
+              "rounded-lg transition-colors text-sm font-medium",
+              isCollapsed
+                ? "flex items-center justify-center py-2.5"
+                : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2.5",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            );
+
+          if (!isCollapsed) {
+            return (
               <NavLink
+                key={item.href}
                 to={item.href}
                 end={item.href === '/admin'}
                 onClick={handleNavClick}
-                className={({ isActive }) => cn(
-                  "rounded-lg transition-colors text-sm font-medium",
-                  isCollapsed
-                    ? "flex items-center justify-center py-2.5"
-                    : "grid grid-cols-[16px_1fr] items-center gap-x-3 px-3 py-2.5",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
+                className={linkClassName}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {!isCollapsed && (
-                  <span className="min-w-0 truncate">{item.title}</span>
-                )}
+                {LinkContent}
               </NavLink>
-            </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
-          </Tooltip>
-        ))}
+            );
+          }
+
+          return (
+            <Tooltip key={item.href}>
+              <TooltipTrigger asChild>
+                <NavLink
+                  to={item.href}
+                  end={item.href === '/admin'}
+                  onClick={handleNavClick}
+                  className={linkClassName}
+                >
+                  {LinkContent}
+                </NavLink>
+              </TooltipTrigger>
+              <TooltipContent side="right">{item.title}</TooltipContent>
+            </Tooltip>
+          );
+        })}
       </nav>
 
       {/* Footer */}
