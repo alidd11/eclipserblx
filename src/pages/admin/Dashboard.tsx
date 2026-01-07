@@ -319,12 +319,19 @@ export default function AdminDashboard() {
     }
   };
 
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-4">
         <div className="pb-1">
           <h1 className="text-xl sm:text-2xl font-display font-bold">
-            Welcome{profile?.display_name ? `, ${profile.display_name}` : ''}!
+            {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
           </h1>
           <p className="text-muted-foreground text-sm">Manage your duties and quick actions.</p>
         </div>
