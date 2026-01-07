@@ -90,15 +90,15 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                 end={item.href === '/admin'}
                 onClick={handleNavClick}
                 className={({ isActive }) => cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium whitespace-nowrap",
+                  "flex flex-row flex-nowrap items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
                   isCollapsed && "justify-center px-0",
                   isActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <item.icon className={cn("h-4 w-4 shrink-0", isCollapsed && "mx-auto")} />
-                {!isCollapsed && <span className="truncate">{item.title}</span>}
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!isCollapsed && <span className="whitespace-nowrap">{item.title}</span>}
               </NavLink>
             </TooltipTrigger>
             {isCollapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
