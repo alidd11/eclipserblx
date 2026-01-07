@@ -17,6 +17,7 @@ export function useAdminAuth() {
       return data.map(r => r.role);
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // Cache roles for 5 minutes
   });
 
   const isAdmin = roles?.includes('admin') ?? false;
