@@ -129,7 +129,7 @@ export const ReviewsTicker = memo(function ReviewsTicker() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction >= 0 ? -50 : 50 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 will-change-transform"
           >
             {/* Stars */}
             <div className="flex items-center gap-1 mb-2">
