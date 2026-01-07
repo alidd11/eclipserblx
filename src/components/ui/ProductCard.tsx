@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,16 +15,16 @@ interface ProductCardProps {
   isFeatured?: boolean;
 }
 
-export function ProductCard({ id, name, slug, price, image, category, isFeatured }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, isFeatured }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
   const inCart = isInCart(id);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!inCart) {
       addItem({ id, name, price, image, slug });
     }
-  };
+  }, [inCart, addItem, id, name, price, image, slug]);
 
   return (
     <Link to={`/products/${slug}`} className="group block h-full">
@@ -37,6 +38,8 @@ export function ProductCard({ id, name, slug, price, image, category, isFeatured
             <img
               src={image}
               alt={name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
@@ -97,4 +100,4 @@ export function ProductCard({ id, name, slug, price, image, category, isFeatured
       </div>
     </Link>
   );
-}
+});

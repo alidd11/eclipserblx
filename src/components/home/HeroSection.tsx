@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ const BASE_STATS = {
   users: 480,
 };
 
-function AnimatedStat({ value, label, suffix = '' }: { value: number; label: string; suffix?: string }) {
+const AnimatedStat = memo(function AnimatedStat({ value, label, suffix = '' }: { value: number; label: string; suffix?: string }) {
   const { count, elementRef } = useCountUp({ end: value, duration: 2000 });
   
   const formatNumber = (num: number) => {
@@ -30,7 +31,7 @@ function AnimatedStat({ value, label, suffix = '' }: { value: number; label: str
       <div className="text-sm text-muted-foreground">{label}</div>
     </div>
   );
-}
+});
 
 export function HeroSection() {
   const { data: stats } = useQuery({

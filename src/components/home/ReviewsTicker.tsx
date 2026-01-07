@@ -1,7 +1,7 @@
+import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { Star } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Review {
@@ -24,7 +24,7 @@ const FAKE_NAMES = [
 
 const SWIPE_THRESHOLD = 50;
 
-export function ReviewsTicker() {
+export const ReviewsTicker = memo(function ReviewsTicker() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef(0);
@@ -178,4 +178,4 @@ export function ReviewsTicker() {
       </div>
     </div>
   );
-}
+});

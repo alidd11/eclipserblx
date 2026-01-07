@@ -1,6 +1,6 @@
+import { memo, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, Search } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -15,7 +15,7 @@ const navLinks = [
   { href: '/jobs', label: 'Jobs' },
 ];
 
-export function Header() {
+export const Header = memo(function Header() {
   const { user } = useAuth();
   const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -178,4 +178,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+});
