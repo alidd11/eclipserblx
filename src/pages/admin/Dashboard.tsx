@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,11 +8,26 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { toast } from 'sonner';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes, formatDistanceToNow } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  created_by: string;
+  created_at: string;
+  expires_at: string | null;
+  is_active: boolean;
+}
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -20,6 +35,71 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [clockOutNotes, setClockOutNotes] = useState('');
   const [elapsedTime, setElapsedTime] = useState<string>('00:00:00');
+  const [showNewAnnouncement, setShowNewAnnouncement] = useState(false);
+  const [newAnnouncementTitle, setNewAnnouncementTitle] = useState('');
+  const [newAnnouncementContent, setNewAnnouncementContent] = useState('');
+  const [newAnnouncementPriority, setNewAnnouncementPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+
+  // Fetch active announcements
+  const { data: announcements } = useQuery({
+    queryKey: ['staff-announcements'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('staff_announcements')
+        .select('*')
+        .eq('is_active', true)
+        .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as Announcement[];
+    },
+  });
+
+  // Create announcement mutation
+  const createAnnouncementMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('Not authenticated');
+      const { error } = await supabase
+        .from('staff_announcements')
+        .insert({
+          title: newAnnouncementTitle,
+          content: newAnnouncementContent,
+          priority: newAnnouncementPriority,
+          created_by: user.id,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-announcements'] });
+      setNewAnnouncementTitle('');
+      setNewAnnouncementContent('');
+      setNewAnnouncementPriority('normal');
+      setShowNewAnnouncement(false);
+      toast.success('Announcement created');
+    },
+    onError: (error) => {
+      toast.error('Failed to create announcement: ' + error.message);
+    },
+  });
+
+  // Delete announcement mutation
+  const deleteAnnouncementMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('staff_announcements')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-announcements'] });
+      toast.success('Announcement deleted');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete announcement: ' + error.message);
+    },
+  });
 
   // Check for active duty session
   const { data: activeSession } = useQuery({
@@ -173,6 +253,24 @@ export default function AdminDashboard() {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return <AlertCircle className="h-4 w-4 text-destructive" />;
+      case 'high': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      case 'normal': return <Info className="h-4 w-4 text-primary" />;
+      default: return <Info className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getPriorityStyles = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'border-destructive/50 bg-destructive/5';
+      case 'high': return 'border-orange-500/50 bg-orange-500/5';
+      case 'normal': return 'border-primary/50 bg-primary/5';
+      default: return 'border-muted bg-muted/50';
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-8">
@@ -269,6 +367,111 @@ export default function AdminDashboard() {
                 </Link>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Staff Announcements */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Megaphone className="h-5 w-5" />
+                Announcements
+              </div>
+              {isAdmin && (
+                <Dialog open={showNewAnnouncement} onOpenChange={setShowNewAnnouncement}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4 mr-1" />
+                      New
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create Announcement</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Input
+                          placeholder="Announcement title..."
+                          value={newAnnouncementTitle}
+                          onChange={(e) => setNewAnnouncementTitle(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Textarea
+                          placeholder="Announcement content..."
+                          value={newAnnouncementContent}
+                          onChange={(e) => setNewAnnouncementContent(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Select 
+                          value={newAnnouncementPriority} 
+                          onValueChange={(v) => setNewAnnouncementPriority(v as 'low' | 'normal' | 'high' | 'urgent')}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        onClick={() => createAnnouncementMutation.mutate()}
+                        disabled={!newAnnouncementTitle.trim() || !newAnnouncementContent.trim() || createAnnouncementMutation.isPending}
+                        className="w-full"
+                      >
+                        {createAnnouncementMutation.isPending ? 'Creating...' : 'Create Announcement'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!announcements?.length ? (
+              <p className="text-muted-foreground text-center py-4">No active announcements</p>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map((announcement) => (
+                  <div
+                    key={announcement.id}
+                    className={cn(
+                      "p-3 rounded-lg border",
+                      getPriorityStyles(announcement.priority)
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {getPriorityIcon(announcement.priority)}
+                        <span className="font-medium text-sm">{announcement.title}</span>
+                      </div>
+                      {isAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => deleteAnnouncementMutation.mutate(announcement.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{announcement.content}</p>
+                    <p className="text-xs text-muted-foreground/70 mt-2">
+                      {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -917,6 +917,39 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          priority: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: string
+          title?: string
+        }
+        Relationships: []
+      }
       staff_duty_logs: {
         Row: {
           clock_in: string
