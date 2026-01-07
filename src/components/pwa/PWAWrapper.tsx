@@ -1,6 +1,5 @@
 import { useState, useEffect, ReactNode } from 'react';
-import { RefreshCw, WifiOff, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { RefreshCw, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PWAWrapperProps {
@@ -10,7 +9,6 @@ interface PWAWrapperProps {
 export function PWAWrapper({ children }: PWAWrapperProps) {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [showRefreshHint, setShowRefreshHint] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
@@ -22,14 +20,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
     const standalone = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
-
-    // Show refresh hint after 10 seconds in standalone mode
-    if (standalone) {
-      const timer = setTimeout(() => {
-        setShowRefreshHint(true);
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
   }, []);
 
   useEffect(() => {
@@ -95,7 +85,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    setShowRefreshHint(false);
     
     // Clear service worker cache and reload
     if ('caches' in window) {
@@ -144,35 +133,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
           >
             <WifiOff className="h-4 w-4" />
             You're offline. Some features may be unavailable.
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Subtle refresh hint in header area for PWA */}
-      <AnimatePresence>
-        {isStandalone && showRefreshHint && !isOffline && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="fixed top-20 right-4 z-[100] flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg"
-          >
-            <span className="text-xs text-muted-foreground">Stuck?</span>
-            <Button
-              onClick={handleRefresh}
-              size="sm"
-              variant="ghost"
-              className="h-7 w-7 p-0 hover:bg-primary/10"
-              disabled={isRefreshing}
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-            <button
-              onClick={() => setShowRefreshHint(false)}
-              className="text-muted-foreground hover:text-foreground text-xs"
-            >
-              ✕
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
