@@ -39,6 +39,21 @@ const parseMentions = (text: string): string[] => {
   return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
 };
 
+// Check for group mentions
+const hasGroupMention = (text: string): { everyone: boolean; here: boolean } => {
+  const mentions = parseMentions(text);
+  return {
+    everyone: mentions.includes('everyone'),
+    here: mentions.includes('here'),
+  };
+};
+
+// Group mention options
+const GROUP_MENTIONS = [
+  { id: 'everyone', name: 'everyone', description: 'Notify all staff members' },
+  { id: 'here', name: 'here', description: 'Notify all online staff' },
+];
+
 export default function StaffMessages() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -154,15 +169,25 @@ export default function StaffMessages() {
     },
   });
 
-  // Get filtered staff for mentions
+  // Get filtered staff for mentions (including group mentions)
+  const filteredGroupMentions = GROUP_MENTIONS.filter(g => 
+    g.name.includes(mentionFilter.toLowerCase())
+  );
+  
   const filteredStaff = allStaff?.filter(staff => {
     if (staff.user_id === user?.id) return false;
     const name = (staff.display_name || staff.email.split('@')[0]).toLowerCase();
     return name.includes(mentionFilter.toLowerCase());
   }) || [];
 
-  // Check if user is mentioned in a message
+  // Check if user is mentioned in a message (including group mentions)
   const isUserMentioned = useCallback((message: string, userId: string): boolean => {
+    // Check for group mentions first
+    const groupMentions = hasGroupMention(message);
+    if (groupMentions.everyone || groupMentions.here) {
+      return true; // @everyone and @here notify all staff
+    }
+    
     if (!allStaff) return false;
     const mentions = parseMentions(message);
     const userProfile = allStaff.find(s => s.user_id === userId);
@@ -398,18 +423,48 @@ export default function StaffMessages() {
     }
   };
 
+  const insertGroupMention = (mentionName: string) => {
+    const textBeforeCursor = newMessage.slice(0, cursorPosition);
+    const textAfterCursor = newMessage.slice(cursorPosition);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      const beforeMention = textBeforeCursor.slice(0, -mentionMatch[0].length);
+      const newText = `${beforeMention}@${mentionName} ${textAfterCursor}`;
+      setNewMessage(newText);
+      setShowMentionSuggestions(false);
+      
+      setTimeout(() => {
+        if (inputRef.current) {
+          const newCursorPos = beforeMention.length + mentionName.length + 2;
+          inputRef.current.focus();
+          inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 0);
+    }
+  };
+
+  // Total suggestions count for keyboard navigation
+  const totalSuggestions = filteredGroupMentions.length + filteredStaff.length;
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showMentionSuggestions || filteredStaff.length === 0) return;
+    if (!showMentionSuggestions || totalSuggestions === 0) return;
     
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setMentionIndex(prev => Math.min(prev + 1, filteredStaff.length - 1));
+      setMentionIndex(prev => Math.min(prev + 1, totalSuggestions - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setMentionIndex(prev => Math.max(prev - 1, 0));
     } else if (e.key === 'Enter' && showMentionSuggestions) {
       e.preventDefault();
-      insertMention(filteredStaff[mentionIndex]);
+      // Handle selection based on index
+      if (mentionIndex < filteredGroupMentions.length) {
+        insertGroupMention(filteredGroupMentions[mentionIndex].name);
+      } else {
+        const staffIndex = mentionIndex - filteredGroupMentions.length;
+        insertMention(filteredStaff[staffIndex]);
+      }
     } else if (e.key === 'Escape') {
       setShowMentionSuggestions(false);
     }
@@ -421,6 +476,7 @@ export default function StaffMessages() {
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         const mentionedName = part.slice(1).toLowerCase();
+        const isGroupMention = mentionedName === 'everyone' || mentionedName === 'here';
         const currentUserName = (currentUserProfile?.display_name || currentUserProfile?.email?.split('@')[0] || '').toLowerCase();
         const isCurrentUser = mentionedName === currentUserName || currentUserName.includes(mentionedName);
         
@@ -428,8 +484,12 @@ export default function StaffMessages() {
           <span 
             key={i} 
             className={cn(
-              "font-semibold",
-              isCurrentUser ? "text-yellow-400 bg-yellow-400/20 px-1 rounded" : "text-primary"
+              "font-semibold px-1 rounded",
+              isGroupMention 
+                ? "text-red-400 bg-red-400/20" 
+                : isCurrentUser 
+                  ? "text-yellow-400 bg-yellow-400/20" 
+                  : "text-primary"
             )}
           >
             {part}
@@ -569,36 +629,67 @@ export default function StaffMessages() {
             {/* Input */}
             <div className="p-2 sm:p-4 border-t border-border shrink-0 relative">
               {/* Mention suggestions dropdown */}
-              {showMentionSuggestions && filteredStaff.length > 0 && (
+              {showMentionSuggestions && totalSuggestions > 0 && (
                 <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden z-50">
                   <div className="p-1 max-h-48 overflow-y-auto">
                     <div className="px-2 py-1.5 text-xs text-muted-foreground flex items-center gap-1">
                       <AtSign className="h-3 w-3" />
-                      Mention a staff member
+                      Mention someone
                     </div>
-                    {filteredStaff.slice(0, 8).map((staff, index) => (
+                    
+                    {/* Group mentions */}
+                    {filteredGroupMentions.map((group, index) => (
                       <button
-                        key={staff.user_id}
+                        key={group.id}
                         type="button"
-                        onClick={() => insertMention(staff)}
+                        onClick={() => insertGroupMention(group.name)}
                         className={cn(
                           "w-full flex items-center gap-2 px-2 py-2 rounded text-left transition-colors",
                           index === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
                         )}
                       >
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-xs bg-primary/20">
-                            {getInitials(staff)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="h-6 w-6 rounded-full bg-red-500/20 flex items-center justify-center">
+                          <Users className="h-3.5 w-3.5 text-red-400" />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {staff.display_name || staff.email.split('@')[0]}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
+                          <p className="text-sm font-medium text-red-400">@{group.name}</p>
+                          <p className="text-xs text-muted-foreground">{group.description}</p>
                         </div>
                       </button>
                     ))}
+                    
+                    {/* Divider if both groups and staff exist */}
+                    {filteredGroupMentions.length > 0 && filteredStaff.length > 0 && (
+                      <div className="border-t border-border my-1" />
+                    )}
+                    
+                    {/* Individual staff members */}
+                    {filteredStaff.slice(0, 8).map((staff, index) => {
+                      const actualIndex = filteredGroupMentions.length + index;
+                      return (
+                        <button
+                          key={staff.user_id}
+                          type="button"
+                          onClick={() => insertMention(staff)}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-2 py-2 rounded text-left transition-colors",
+                            actualIndex === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
+                          )}
+                        >
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-xs bg-primary/20">
+                              {getInitials(staff)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {staff.display_name || staff.email.split('@')[0]}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
