@@ -9,9 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2 } from 'lucide-react';
+import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing } from 'lucide-react';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { useAuth } from '@/hooks/useAuth';
 
 interface StoreSettings {
@@ -36,6 +37,16 @@ export default function AdminSettings() {
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem('notification_sound_enabled') !== 'false';
   });
+  
+  // Background push notifications
+  const {
+    isSupported: pushSupported,
+    isSubscribed: isPushSubscribed,
+    isLoading: pushLoading,
+    permission: pushPermission,
+    subscribe: subscribePush,
+    unsubscribe: unsubscribePush,
+  } = useBackgroundPush();
   
   // Biometric settings
   const {
@@ -165,6 +176,25 @@ export default function AdminSettings() {
       toast.success('Test notification sent');
     } else {
       toast.error('Please enable notifications first');
+    }
+  };
+
+  // Background push handlers
+  const handleEnablePush = async () => {
+    const success = await subscribePush();
+    if (success) {
+      toast.success('Background push notifications enabled! You\'ll receive notifications even when the app is closed.');
+    } else {
+      toast.error('Failed to enable push notifications. Please check browser permissions.');
+    }
+  };
+
+  const handleDisablePush = async () => {
+    const success = await unsubscribePush();
+    if (success) {
+      toast.success('Background push notifications disabled');
+    } else {
+      toast.error('Failed to disable push notifications');
     }
   };
 
@@ -346,6 +376,106 @@ export default function AdminSettings() {
                 >
                   Send Test Notification
                 </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Background Push Notifications */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BellRing className="h-5 w-5 text-primary" />
+                <CardTitle>Background Push Notifications</CardTitle>
+              </div>
+              <CardDescription>Receive notifications even when the app is closed</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Push Support Check */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Push Support</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {pushSupported ? 'Your browser supports background push' : 'Push not supported'}
+                  </p>
+                </div>
+                {pushSupported ? (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> Supported
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                    <XCircle className="h-3 w-3 mr-1" /> Not Supported
+                  </Badge>
+                )}
+              </div>
+
+              {/* Subscription Status */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Subscription Status</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isPushSubscribed ? 'You will receive background notifications' : 'Background notifications disabled'}
+                  </p>
+                </div>
+                {pushLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isPushSubscribed ? (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> Active
+                  </Badge>
+                ) : (
+                  <Badge className="bg-muted text-muted-foreground">
+                    <AlertCircle className="h-3 w-3 mr-1" /> Inactive
+                  </Badge>
+                )}
+              </div>
+
+              {/* Enable/Disable Push */}
+              {pushSupported && user && (
+                <div className="space-y-2">
+                  {!isPushSubscribed ? (
+                    <Button 
+                      onClick={handleEnablePush}
+                      variant="outline"
+                      className="w-full"
+                      disabled={pushLoading}
+                    >
+                      {pushLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <BellRing className="h-4 w-4 mr-2" />
+                      )}
+                      Enable Background Push
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleDisablePush}
+                      variant="destructive"
+                      className="w-full"
+                      disabled={pushLoading}
+                    >
+                      {pushLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <XCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Disable Background Push
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {!pushSupported && (
+                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                  Background push notifications require a modern browser with service worker support.
+                  For the best experience, use Chrome, Firefox, or Edge.
+                </p>
+              )}
+
+              {pushSupported && !user && (
+                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                  Please sign in to enable background push notifications.
+                </p>
               )}
             </CardContent>
           </Card>
