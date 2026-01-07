@@ -305,13 +305,11 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl sm:text-3xl font-display">Dashboard</CardTitle>
-            <p className="text-muted-foreground text-sm">Welcome back! Manage your duties and quick actions.</p>
-          </CardHeader>
-        </Card>
+      <div className="space-y-4">
+        <div className="pb-1">
+          <h1 className="text-xl sm:text-2xl font-display font-bold">Dashboard</h1>
+          <p className="text-muted-foreground text-sm">Welcome back! Manage your duties and quick actions.</p>
+        </div>
 
         {/* Staff Announcements */}
         <Card className="bg-card border-border">
