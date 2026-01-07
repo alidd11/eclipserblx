@@ -25,9 +25,10 @@ interface AdminSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   onNavigate?: () => void;
+  isMobileDrawer?: boolean;
 }
 
-export function AdminSidebar({ collapsed, onToggle, onNavigate }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false }: AdminSidebarProps) {
   const { signOut } = useAuth();
   const { isAdmin, hasRole } = useAdminAuth();
   const navigate = useNavigate();
@@ -45,24 +46,28 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate }: AdminSidebarPr
     item.roles.length === 0 || isAdmin || item.roles.some(role => hasRole(role))
   );
 
+  // In mobile drawer mode, always show full sidebar (never collapsed)
+  const isCollapsed = isMobileDrawer ? false : collapsed;
+
   return (
     <aside className={cn(
-      "border-r border-border bg-card flex flex-col h-screen sticky top-0 transition-all duration-300 shrink-0",
-      collapsed ? "w-14" : "w-64"
+      "border-r border-border bg-card flex flex-col transition-all duration-300 shrink-0",
+      isMobileDrawer ? "h-full w-full" : "h-screen sticky top-0",
+      !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
     )}>
       {/* Header */}
       <div className="p-4 border-b border-border">
-        {!collapsed && (
+        {!isCollapsed && (
           <>
             <NavLink to="/" onClick={handleNavClick} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 shrink-0" />
               <span className="text-sm">Back to Store</span>
             </NavLink>
             <h1 className="font-display font-bold text-xl mt-3">{SITE_NAME}</h1>
             <p className="text-xs text-muted-foreground">Admin Dashboard</p>
           </>
         )}
-        {collapsed && (
+        {isCollapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
               <NavLink to="/" onClick={handleNavClick} className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
@@ -85,42 +90,44 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate }: AdminSidebarPr
                 onClick={handleNavClick}
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
-                  collapsed && "justify-center px-0",
+                  isCollapsed && "justify-center px-0",
                   isActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <item.icon className={cn("h-4 w-4 shrink-0", collapsed && "mx-auto")} />
-                {!collapsed && item.title}
+                <item.icon className={cn("h-4 w-4 shrink-0", isCollapsed && "mx-auto")} />
+                {!isCollapsed && <span>{item.title}</span>}
               </NavLink>
             </TooltipTrigger>
-            {collapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
+            {isCollapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
           </Tooltip>
         ))}
       </nav>
 
       {/* Footer */}
       <div className="p-2 border-t border-border space-y-1">
-        {/* Collapse Toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "w-full text-muted-foreground hover:text-foreground",
-            collapsed ? "justify-center px-2" : "justify-start"
-          )}
-          onClick={onToggle}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <>
-              <ChevronLeft className="h-4 w-4 mr-3" />
-              Collapse
-            </>
-          )}
-        </Button>
+        {/* Collapse Toggle - only show on desktop */}
+        {!isMobileDrawer && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "w-full text-muted-foreground hover:text-foreground",
+              isCollapsed ? "justify-center px-2" : "justify-start"
+            )}
+            onClick={onToggle}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4 mr-3" />
+                Collapse
+              </>
+            )}
+          </Button>
+        )}
 
         {/* Sign Out */}
         <Tooltip>
@@ -130,15 +137,15 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate }: AdminSidebarPr
               size="sm"
               className={cn(
                 "w-full text-muted-foreground hover:text-destructive",
-                collapsed ? "justify-center px-2" : "justify-start"
+                isCollapsed ? "justify-center px-2" : "justify-start"
               )}
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4 shrink-0" />
-              {!collapsed && <span className="ml-3">Sign Out</span>}
+              {!isCollapsed && <span className="ml-3">Sign Out</span>}
             </Button>
           </TooltipTrigger>
-          {collapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
+          {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
         </Tooltip>
       </div>
     </aside>
