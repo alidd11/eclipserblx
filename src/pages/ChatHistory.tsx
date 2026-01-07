@@ -252,9 +252,15 @@ export default function ChatHistory() {
 
   const sendTicketReply = async () => {
     if (!replyMessage.trim() || !selectedTicket || !user) return;
+    
+    // Prevent replies to closed tickets
+    if (selectedTicket.status === 'closed') {
+      toast.error('Cannot reply to a closed ticket.');
+      return;
+    }
 
     const messageText = replyMessage.trim();
-    const wasClosedOrResolved = selectedTicket.status === 'closed' || selectedTicket.status === 'resolved';
+    const wasResolved = selectedTicket.status === 'resolved';
     
     setIsSending(true);
     setReplyMessage('');
@@ -272,8 +278,8 @@ export default function ChatHistory() {
 
       if (msgError) throw msgError;
 
-      // If ticket was closed/resolved, re-open it
-      if (wasClosedOrResolved) {
+      // If ticket was resolved, re-open it
+      if (wasResolved) {
         const { error: updateError } = await supabase
           .from('support_tickets')
           .update({ status: 'open', updated_at: new Date().toISOString() })
@@ -520,35 +526,43 @@ export default function ChatHistory() {
                 )}
               </ScrollArea>
               
-              {/* Reply input */}
-              <div className="border-t p-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Type your reply..."
-                    value={replyMessage}
-                    onChange={(e) => setReplyMessage(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    disabled={isSending}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={sendTicketReply}
-                    disabled={!replyMessage.trim() || isSending}
-                    size="icon"
-                  >
-                    {isSending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                {(selectedTicket.status === 'closed' || selectedTicket.status === 'resolved') && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    This ticket is {selectedTicket.status}. Sending a reply will re-open it.
+              {/* Reply input - only show for non-closed tickets */}
+              {selectedTicket.status === 'closed' ? (
+                <div className="border-t p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    This ticket is closed and cannot receive new replies.
                   </p>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="border-t p-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Type your reply..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      disabled={isSending}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={sendTicketReply}
+                      disabled={!replyMessage.trim() || isSending}
+                      size="icon"
+                    >
+                      {isSending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {selectedTicket.status === 'resolved' && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      This ticket is resolved. Sending a reply will re-open it.
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
