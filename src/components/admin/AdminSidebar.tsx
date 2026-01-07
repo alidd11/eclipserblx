@@ -132,8 +132,23 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-2 border-t border-border space-y-1">
+      {/* Footer - Sign Out at top for mobile visibility */}
+      <div className={cn(
+        "p-2 border-t border-border",
+        isMobileDrawer ? "space-y-2" : "space-y-1"
+      )}>
+        {/* Sign Out - shown first on mobile for visibility */}
+        {isMobileDrawer && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-muted-foreground hover:text-destructive py-3"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            <span className="ml-3">Sign Out</span>
+          </Button>
+        )}
 
         {/* Collapse Toggle - only show on desktop */}
         {!isMobileDrawer && (
@@ -157,24 +172,26 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           </Button>
         )}
 
-        {/* Sign Out */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "w-full text-muted-foreground hover:text-destructive",
-                isCollapsed ? "justify-center px-2" : "justify-start"
-              )}
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4 shrink-0" />
-              {!isCollapsed && <span className="ml-3">Sign Out</span>}
-            </Button>
-          </TooltipTrigger>
-          {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
-        </Tooltip>
+        {/* Sign Out - desktop only (mobile shown above) */}
+        {!isMobileDrawer && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "w-full text-muted-foreground hover:text-destructive",
+                  isCollapsed ? "justify-center px-2" : "justify-start"
+                )}
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4 shrink-0" />
+                {!isCollapsed && <span className="ml-3">Sign Out</span>}
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
+          </Tooltip>
+        )}
       </div>
     </aside>
   );
