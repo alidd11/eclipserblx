@@ -152,13 +152,13 @@ function generateOtpEmailHtml(token: string, email_action_type: string): string 
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="padding-right: 20px;">
-                    <a href="https://eclipse-store.co.uk" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
+                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
-                    <a href="https://eclipse-store.co.uk/support" style="font-size: 12px; color: #10b981; text-decoration: none;">Support</a>
+                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #10b981; text-decoration: none;">Support</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px;">
-                    <a href="https://eclipse-store.co.uk/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
                   </td>
                 </tr>
               </table>
@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
     const html = generateOtpEmailHtml(token, email_action_type)
 
     const { error } = await resend.emails.send({
-      from: 'Eclipse <noreply@eclipse-store.co.uk>',
+      from: 'Eclipse <noreply@eclipserblx.com>',
       to: [user.email],
       subject: getSubject(email_action_type),
       html,
