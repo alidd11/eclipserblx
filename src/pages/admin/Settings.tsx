@@ -5,9 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2 } from 'lucide-react';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useAuth } from '@/hooks/useAuth';
 
 interface StoreSettings {
   store_name: string;
@@ -23,7 +28,36 @@ const DEFAULT_SETTINGS: StoreSettings = {
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<StoreSettings>(DEFAULT_SETTINGS);
+  
+  // Notification settings
+  const { isSupported: notifSupported, permission, requestPermission } = usePushNotifications();
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    return localStorage.getItem('notification_sound_enabled') !== 'false';
+  });
+  
+  // Biometric settings
+  const {
+    isSupported: biometricSupported,
+    isEnrolled,
+    loading: biometricLoading,
+    checkSupport,
+    checkEnrollment,
+    enrollBiometric,
+    removeBiometric,
+  } = useBiometricAuth();
+
+  // Check biometric support and enrollment on mount
+  useEffect(() => {
+    checkSupport();
+  }, [checkSupport]);
+
+  useEffect(() => {
+    if (user?.id) {
+      checkEnrollment(user.id);
+    }
+  }, [user?.id, checkEnrollment]);
 
   // Fetch settings from database
   const { data: settings, isLoading } = useQuery({
@@ -106,6 +140,116 @@ export default function AdminSettings() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Notification handlers
+  const handleEnableNotifications = async () => {
+    const granted = await requestPermission();
+    if (granted) {
+      toast.success('Notifications enabled successfully');
+    } else {
+      toast.error('Notification permission denied. Please enable in browser settings.');
+    }
+  };
+
+  const handleToggleSound = (enabled: boolean) => {
+    setSoundEnabled(enabled);
+    localStorage.setItem('notification_sound_enabled', String(enabled));
+    toast.success(enabled ? 'Notification sounds enabled' : 'Notification sounds disabled');
+  };
+
+  const handleTestNotification = () => {
+    if (permission === 'granted') {
+      new Notification('Test Notification', {
+        body: 'Notifications are working correctly!',
+        icon: '/favicon.ico',
+      });
+      toast.success('Test notification sent');
+    } else {
+      toast.error('Please enable notifications first');
+    }
+  };
+
+  // Biometric handlers
+  const handleEnrollBiometric = async () => {
+    if (!user?.id || !user?.email) {
+      toast.error('Please sign in first');
+      return;
+    }
+
+    const result = await enrollBiometric(user.id, user.email);
+    if (result.success) {
+      toast.success('Face ID / Touch ID enrolled successfully');
+    } else {
+      toast.error(result.error || 'Failed to enroll biometric');
+    }
+  };
+
+  const handleRemoveBiometric = () => {
+    if (!user?.id) return;
+    removeBiometric(user.id);
+    toast.success('Biometric authentication removed');
+  };
+
+  const handleTestBiometric = async () => {
+    if (!user?.id) return;
+    
+    const { authenticateWithBiometric } = await import('@/hooks/useBiometricAuth').then(m => {
+      const hook = m.useBiometricAuth();
+      return hook;
+    });
+    
+    // We need to test using the current instance
+    try {
+      const challenge = new Uint8Array(32);
+      crypto.getRandomValues(challenge);
+      
+      const storedCredential = localStorage.getItem(`biometric_credential_${user.id}`);
+      if (!storedCredential) {
+        toast.error('No biometric credential found');
+        return;
+      }
+      
+      const credentialData = JSON.parse(storedCredential);
+      const rawIdArray = Uint8Array.from(atob(credentialData.rawId), c => c.charCodeAt(0));
+
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge,
+          rpId: window.location.hostname,
+          allowCredentials: [{
+            id: rawIdArray,
+            type: 'public-key',
+            transports: ['internal'],
+          }],
+          userVerification: 'required',
+          timeout: 60000,
+        },
+      });
+
+      if (assertion) {
+        toast.success('Biometric authentication successful!');
+      } else {
+        toast.error('Biometric authentication failed');
+      }
+    } catch (error: any) {
+      if (error.name === 'NotAllowedError') {
+        toast.error('Authentication cancelled');
+      } else {
+        toast.error('Biometric test failed');
+      }
+    }
+  };
+
+  const getPermissionBadge = () => {
+    switch (permission) {
+      case 'granted':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Enabled</Badge>;
+      case 'denied':
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30"><XCircle className="h-3 w-3 mr-1" /> Denied</Badge>;
+      default:
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30"><AlertCircle className="h-3 w-3 mr-1" /> Not Set</Badge>;
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout requiredRoles={['admin']}>
@@ -122,11 +266,200 @@ export default function AdminSettings() {
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl sm:text-3xl font-display">Settings</CardTitle>
-            <CardDescription>Configure your store settings</CardDescription>
+            <CardDescription>Configure your store and personal settings</CardDescription>
           </CardHeader>
         </Card>
 
         <div className="grid gap-6 max-w-2xl">
+          {/* Notifications Settings */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                <CardTitle>Notifications</CardTitle>
+              </div>
+              <CardDescription>Manage push notification preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Browser Support Check */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Browser Support</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {notifSupported ? 'Your browser supports notifications' : 'Notifications not supported'}
+                  </p>
+                </div>
+                {notifSupported ? (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> Supported
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                    <XCircle className="h-3 w-3 mr-1" /> Not Supported
+                  </Badge>
+                )}
+              </div>
+
+              {/* Permission Status */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Permission Status</Label>
+                  <p className="text-sm text-muted-foreground">Current notification permission</p>
+                </div>
+                {getPermissionBadge()}
+              </div>
+
+              {/* Enable Notifications Button */}
+              {notifSupported && permission !== 'granted' && (
+                <Button 
+                  onClick={handleEnableNotifications}
+                  variant="outline"
+                  className="w-full"
+                  disabled={permission === 'denied'}
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  {permission === 'denied' ? 'Enable in Browser Settings' : 'Enable Notifications'}
+                </Button>
+              )}
+
+              {/* Sound Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {soundEnabled ? <Volume2 className="h-4 w-4 text-muted-foreground" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
+                  <div className="space-y-0.5">
+                    <Label>Notification Sounds</Label>
+                    <p className="text-sm text-muted-foreground">Play sound for new notifications</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={soundEnabled}
+                  onCheckedChange={handleToggleSound}
+                />
+              </div>
+
+              {/* Test Notification */}
+              {permission === 'granted' && (
+                <Button 
+                  onClick={handleTestNotification}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Send Test Notification
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Face ID / Biometric Settings */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Fingerprint className="h-5 w-5 text-primary" />
+                <CardTitle>Face ID / Touch ID</CardTitle>
+              </div>
+              <CardDescription>Use biometric authentication for quick login</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Device Support Check */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Device Support</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {biometricSupported === null 
+                      ? 'Checking...' 
+                      : biometricSupported 
+                        ? 'Your device supports biometric authentication'
+                        : 'Biometric auth not available on this device'}
+                  </p>
+                </div>
+                {biometricSupported === null ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : biometricSupported ? (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> Available
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                    <XCircle className="h-3 w-3 mr-1" /> Not Available
+                  </Badge>
+                )}
+              </div>
+
+              {/* Enrollment Status */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Enrollment Status</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isEnrolled ? 'Biometric login is set up' : 'Not enrolled yet'}
+                  </p>
+                </div>
+                {isEnrolled ? (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> Enrolled
+                  </Badge>
+                ) : (
+                  <Badge className="bg-muted text-muted-foreground">
+                    <AlertCircle className="h-3 w-3 mr-1" /> Not Enrolled
+                  </Badge>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              {biometricSupported && (
+                <div className="space-y-2">
+                  {!isEnrolled ? (
+                    <Button 
+                      onClick={handleEnrollBiometric}
+                      variant="outline"
+                      className="w-full"
+                      disabled={biometricLoading}
+                    >
+                      {biometricLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Fingerprint className="h-4 w-4 mr-2" />
+                      )}
+                      Set Up Face ID / Touch ID
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={handleTestBiometric}
+                        variant="secondary"
+                        className="w-full"
+                        disabled={biometricLoading}
+                      >
+                        {biometricLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Fingerprint className="h-4 w-4 mr-2" />
+                        )}
+                        Test Biometric Login
+                      </Button>
+                      <Button 
+                        onClick={handleRemoveBiometric}
+                        variant="destructive"
+                        className="w-full"
+                        disabled={biometricLoading}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove Biometric Login
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {!biometricSupported && biometricSupported !== null && (
+                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                  Biometric authentication requires a device with Face ID, Touch ID, or Windows Hello. 
+                  Try accessing the admin dashboard from your phone or a compatible laptop.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Store Information */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle>Store Information</CardTitle>
@@ -156,6 +489,7 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
+          {/* Discord Integration */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle>Discord Integration</CardTitle>
@@ -175,6 +509,7 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
+          {/* Payment Settings */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle>Payment Settings</CardTitle>
@@ -200,4 +535,3 @@ export default function AdminSettings() {
     </AdminLayout>
   );
 }
-
