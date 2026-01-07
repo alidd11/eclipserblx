@@ -149,6 +149,13 @@ export default function AdminProducts() {
       return;
     }
 
+    // Check max 8 images limit
+    const currentImages = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (currentImages.length >= 8) {
+      toast.error('Maximum 8 images allowed per product');
+      return;
+    }
+
     setIsUploadingImage(true);
     try {
       const fileExt = file.name.split('.').pop();
@@ -464,7 +471,7 @@ export default function AdminProducts() {
                   type="button"
                   variant="outline"
                   onClick={() => imageInputRef.current?.click()}
-                  disabled={isUploadingImage}
+                  disabled={isUploadingImage || (form.images ? form.images.split(',').filter(s => s.trim()).length >= 8 : false)}
                   className="flex-1"
                 >
                   {isUploadingImage ? (
@@ -481,7 +488,7 @@ export default function AdminProducts() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Upload product images directly or they will be stored securely
+                Upload up to 8 product images ({form.images ? form.images.split(',').filter(s => s.trim()).length : 0}/8)
               </p>
             </div>
 
