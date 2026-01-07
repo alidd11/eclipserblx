@@ -393,12 +393,11 @@ export default function AdminLiveChat() {
           <p className="text-muted-foreground">Respond to customer inquiries in real-time</p>
         </div>
 
-        <div className="relative h-[calc(100%-5rem)]">
-          {/* Conversations List - Always visible on desktop, slides out on mobile when chat selected */}
+        <div className="h-[calc(100%-5rem)] flex gap-4">
+          {/* Conversations List - Hidden on mobile when chat selected */}
           <div className={cn(
-            "absolute inset-0 lg:relative lg:inset-auto border border-border rounded-lg bg-card overflow-hidden transition-transform duration-300 z-10",
-            "lg:w-[33%] lg:float-left lg:mr-4 lg:h-full",
-            selectedConversation ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
+            "border border-border rounded-lg bg-card overflow-hidden flex-shrink-0 w-full lg:w-80 xl:w-96",
+            selectedConversation ? "hidden lg:block" : "block"
           )}>
             <div className="p-3 lg:p-4 border-b border-border bg-muted/50">
               <Tabs value={chatFilter} onValueChange={(v) => setChatFilter(v as 'active' | 'closed')}>
@@ -411,7 +410,7 @@ export default function AdminLiveChat() {
                 </TabsList>
               </Tabs>
             </div>
-            <ScrollArea className="h-[calc(100%-4rem)] lg:h-[calc(100%-4.5rem)]">
+            <ScrollArea className="h-[calc(100%-4rem)]">
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
               ) : conversations.filter(c => chatFilter === 'active' ? c.status !== 'closed' : c.status === 'closed').length === 0 ? (
@@ -471,11 +470,10 @@ export default function AdminLiveChat() {
             </ScrollArea>
           </div>
 
-          {/* Chat Area - Full screen on mobile, right side on desktop */}
+          {/* Chat Area - Full width on mobile, flex-1 on desktop */}
           <div className={cn(
-            "absolute inset-0 lg:relative lg:inset-auto border border-border rounded-lg bg-card flex flex-col overflow-hidden transition-transform duration-300",
-            "lg:w-[calc(67%-1rem)] lg:float-right lg:h-full",
-            selectedConversation ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+            "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0",
+            selectedConversation ? "block" : "hidden lg:flex"
           )}>
             {selectedConversation ? (
               <>
