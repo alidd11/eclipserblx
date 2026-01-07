@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { User, Package, LogOut, Settings, Shield, Download } from 'lucide-react';
@@ -10,7 +11,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 
-export default function Account() {
+const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut } = useAuth();
   const { isStaff } = useAdminAuth();
 
@@ -79,7 +80,7 @@ export default function Account() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout ref={ref}>
       <div className="container py-8 space-y-8 max-w-4xl">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-display font-bold">My Account</h1>
@@ -197,4 +198,6 @@ export default function Account() {
       </div>
     </MainLayout>
   );
-}
+});
+
+export default Account;
