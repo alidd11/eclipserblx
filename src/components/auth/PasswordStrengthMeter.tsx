@@ -20,6 +20,21 @@ const requirements: PasswordRequirement[] = [
   { label: 'Contains special character', test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
 ];
 
+export type PasswordStrength = 'weak' | 'fair' | 'good' | 'strong';
+
+export function getPasswordStrength(password: string): PasswordStrength {
+  const score = requirements.filter((req) => req.test(password)).length;
+  if (score >= 5) return 'strong';
+  if (score >= 4) return 'good';
+  if (score >= 3) return 'fair';
+  return 'weak';
+}
+
+export function isPasswordStrongEnough(password: string): boolean {
+  const strength = getPasswordStrength(password);
+  return strength === 'good' || strength === 'strong';
+}
+
 export function PasswordStrengthMeter({ password, className }: PasswordStrengthMeterProps) {
   const analysis = useMemo(() => {
     const passedRequirements = requirements.filter((req) => req.test(password));
