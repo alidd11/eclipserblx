@@ -32,6 +32,12 @@ interface TypingUser {
   name: string;
 }
 
+interface OnlineStaffUser {
+  user_id: string;
+  name: string;
+  typing: boolean;
+}
+
 // Convert a staff profile into a safe @mention handle (no spaces, only [a-z0-9_])
 const getMentionHandle = (profile: StaffProfile): string => {
   const base = (profile.display_name || profile.email.split('@')[0] || 'staff').toLowerCase();
@@ -69,6 +75,7 @@ export default function StaffMessages() {
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineStaffUser[]>([]);
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
@@ -210,11 +217,31 @@ export default function StaffMessages() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
+    onMutate: async (message: string) => {
+      if (!user?.id) return { previous: undefined as ChatMessage[] | undefined };
+
+      await queryClient.cancelQueries({ queryKey: ['staff-chat'] });
+      const previous = queryClient.getQueryData<ChatMessage[]>(['staff-chat']);
+
+      const optimistic: ChatMessage = {
+        id: `optimistic-${Date.now()}`,
+        sender_id: user.id,
+        message,
+        created_at: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
+        const next = [...old, optimistic];
+        return next.slice(-100);
+      });
+
+      return { previous };
+    },
     mutationFn: async (message: string) => {
       if (!user?.id) {
         throw new Error('You must be logged in to send messages');
       }
-      
+
       const { error } = await supabase
         .from('staff_messages')
         .insert({
@@ -223,7 +250,7 @@ export default function StaffMessages() {
           subject: 'Staff Chat',
           message,
         });
-      
+
       if (error) {
         console.error('Failed to send staff message:', error);
         throw error;
@@ -233,13 +260,24 @@ export default function StaffMessages() {
       setNewMessage('');
       setShowMentionSuggestions(false);
       inputRef.current?.focus();
+
       // Stop typing indicator when message is sent
-      if (presenceChannelRef.current) {
-        presenceChannelRef.current.track({ typing: false });
+      if (presenceChannelRef.current && user?.id) {
+        presenceChannelRef.current.track({
+          typing: false,
+          user_id: user.id,
+          name: getCurrentUserName(),
+        });
       }
+
+      // Ensure UI updates even if realtime isn't delivering events
+      queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
     },
-    onError: (error) => {
+    onError: (error, _message, context) => {
       console.error('Send message error:', error);
+      if (context?.previous) {
+        queryClient.setQueryData(['staff-chat'], context.previous);
+      }
       toast.error('Failed to send message');
     },
   });
@@ -268,8 +306,12 @@ export default function StaffMessages() {
 
     // Set timeout to stop typing indicator after 2 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
-      if (presenceChannelRef.current) {
-        presenceChannelRef.current.track({ typing: false });
+      if (presenceChannelRef.current && user?.id) {
+        presenceChannelRef.current.track({
+          typing: false,
+          user_id: user.id,
+          name: getCurrentUserName(),
+        });
       }
     }, 2000);
   }, [user?.id, getCurrentUserName]);
@@ -331,7 +373,7 @@ export default function StaffMessages() {
     };
   }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned]);
 
-  // Presence channel for typing indicators
+  // Presence channel for online + typing indicators
   useEffect(() => {
     if (!user?.id) return;
 
@@ -343,24 +385,41 @@ export default function StaffMessages() {
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.presenceState();
         const typing: TypingUser[] = [];
-        
+        const online: OnlineStaffUser[] = [];
+
         Object.entries(state).forEach(([key, presences]) => {
-          if (key !== user.id) {
-            const presence = (presences as any[])[0];
-            if (presence?.typing) {
-              typing.push({
-                user_id: key,
-                name: presence.name || 'Staff',
-              });
-            }
+          const presence = (presences as any[])[0] || {};
+          const staffProfile = allStaff?.find(s => s.user_id === key) || profiles?.[key];
+          const name =
+            presence?.name ||
+            staffProfile?.display_name ||
+            staffProfile?.email?.split('@')[0] ||
+            'Staff';
+
+          const isTyping = !!presence?.typing;
+          online.push({ user_id: key, name, typing: isTyping });
+
+          if (key !== user.id && isTyping) {
+            typing.push({ user_id: key, name });
           }
         });
-        
+
+        online.sort((a, b) => {
+          if (a.user_id === user.id) return -1;
+          if (b.user_id === user.id) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        setOnlineUsers(online);
         setTypingUsers(typing);
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await presenceChannel.track({ typing: false });
+          await presenceChannel.track({
+            typing: false,
+            user_id: user.id,
+            name: getCurrentUserName(),
+          });
         }
       });
 
@@ -372,8 +431,10 @@ export default function StaffMessages() {
       }
       supabase.removeChannel(presenceChannel);
       presenceChannelRef.current = null;
+      setOnlineUsers([]);
+      setTypingUsers([]);
     };
-  }, [user?.id]);
+  }, [user?.id, allStaff, profiles, getCurrentUserName]);
 
   // Auto-scroll to bottom
   useEffect(() => {
