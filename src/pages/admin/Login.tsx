@@ -179,15 +179,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
     }
   };
 
-  // Show loading while checking auth status
-  if (adminLoading && user) {
-    return (
-      <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   // Show biometric enrollment prompt
   if (showEnrollPrompt) {
     return (
