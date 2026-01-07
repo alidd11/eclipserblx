@@ -500,21 +500,25 @@ export default function StaffMessages() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const cursorPos = e.target.selectionStart || 0;
     setNewMessage(value);
-    setCursorPosition(cursorPos);
     
-    // Check for @mention trigger
-    const textBeforeCursor = value.slice(0, cursorPos);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-    
-    if (mentionMatch) {
-      setMentionFilter(mentionMatch[1]);
-      setShowMentionSuggestions(true);
-      setMentionIndex(0);
-    } else {
-      setShowMentionSuggestions(false);
-    }
+    // Use setTimeout to ensure we get the correct cursor position after React updates
+    setTimeout(() => {
+      const cursorPos = inputRef.current?.selectionStart ?? value.length;
+      setCursorPosition(cursorPos);
+      
+      // Check for @mention trigger
+      const textBeforeCursor = value.slice(0, cursorPos);
+      const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+      
+      if (mentionMatch) {
+        setMentionFilter(mentionMatch[1]);
+        setShowMentionSuggestions(true);
+        setMentionIndex(0);
+      } else {
+        setShowMentionSuggestions(false);
+      }
+    }, 0);
     
     if (value.trim()) {
       handleTyping();
