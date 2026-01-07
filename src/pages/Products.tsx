@@ -114,6 +114,7 @@ export default function Products() {
               <nav className="flex flex-wrap gap-2 pt-1">
                 <Link
                   to="/products"
+                  onClick={() => setCategoriesOpen(false)}
                   className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                     !categorySlug
                       ? 'bg-primary text-primary-foreground'
@@ -126,6 +127,7 @@ export default function Products() {
                   <Link
                     key={category.id}
                     to={`/products?category=${category.slug}`}
+                    onClick={() => setCategoriesOpen(false)}
                     className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                       categorySlug === category.slug
                         ? 'bg-primary text-primary-foreground'
