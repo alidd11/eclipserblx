@@ -24,9 +24,10 @@ const navItems = [
 interface AdminSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onNavigate?: () => void;
 }
 
-export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed, onToggle, onNavigate }: AdminSidebarProps) {
   const { signOut } = useAuth();
   const { isAdmin, hasRole } = useAdminAuth();
   const navigate = useNavigate();
@@ -36,20 +37,24 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
     navigate('/');
   };
 
+  const handleNavClick = () => {
+    onNavigate?.();
+  };
+
   const filteredItems = navItems.filter(item => 
     item.roles.length === 0 || isAdmin || item.roles.some(role => hasRole(role))
   );
 
   return (
     <aside className={cn(
-      "border-r border-border bg-card flex flex-col h-screen sticky top-0 transition-all duration-300",
+      "border-r border-border bg-card flex flex-col h-screen sticky top-0 transition-all duration-300 shrink-0",
       collapsed ? "w-14" : "w-64"
     )}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         {!collapsed && (
           <>
-            <NavLink to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <NavLink to="/" onClick={handleNavClick} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
               <ChevronLeft className="h-4 w-4" />
               <span className="text-sm">Back to Store</span>
             </NavLink>
@@ -60,7 +65,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
         {collapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <NavLink to="/" className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <NavLink to="/" onClick={handleNavClick} className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                 <ChevronLeft className="h-5 w-5" />
               </NavLink>
             </TooltipTrigger>
@@ -77,6 +82,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
               <NavLink
                 to={item.href}
                 end={item.href === '/admin'}
+                onClick={handleNavClick}
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
                   collapsed && "justify-center px-0",
