@@ -184,7 +184,7 @@ export default function AdminUsers() {
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by email or customer ID..."
+            placeholder="Search by customer ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-card"
@@ -198,46 +198,43 @@ export default function AdminUsers() {
               <TableRow className="hover:bg-transparent">
                 <TableHead>User</TableHead>
                 <TableHead>Joined</TableHead>
-                <TableHead>Roles</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : profiles?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                     No users found
                   </TableCell>
                 </TableRow>
               ) : (
-                profiles?.filter(p => p.email !== PRIMARY_ADMIN_EMAIL).map((profile) => {
+                profiles?.map((profile) => {
                   const roles = getUserRoles(profile.user_id);
                   return (
                     <TableRow key={profile.id}>
                       <TableCell>
-                        <div>
-                          <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
+                            {roles.length === 0 ? (
+                              <Badge variant="secondary" className="text-xs">Customer</Badge>
+                            ) : (
+                              roles.map(r => getRoleBadge(r.role))
+                            )}
+                          </div>
                           {profile.customer_id && (
                             <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {roles.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">Customer</span>
-                          ) : (
-                            roles.map(r => getRoleBadge(r.role))
-                          )}
-                        </div>
-                      </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}>
                           <Shield className="h-4 w-4 mr-2" />
@@ -259,17 +256,24 @@ export default function AdminUsers() {
           ) : profiles?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No users found</div>
           ) : (
-            profiles?.filter(p => p.email !== PRIMARY_ADMIN_EMAIL).map((profile) => {
+            profiles?.map((profile) => {
               const roles = getUserRoles(profile.user_id);
               return (
                 <div key={profile.id} className="rounded-lg border border-border bg-card p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{profile.display_name || 'Unnamed'}</p>
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium truncate">{profile.display_name || 'Unnamed'}</p>
+                        {roles.length === 0 ? (
+                          <Badge variant="secondary" className="text-xs">Customer</Badge>
+                        ) : (
+                          roles.map(r => getRoleBadge(r.role))
+                        )}
+                      </div>
                       {profile.customer_id && (
                         <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
                       )}
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground">
                         Joined {new Date(profile.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -281,13 +285,6 @@ export default function AdminUsers() {
                     >
                       <Shield className="h-4 w-4" />
                     </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {roles.length === 0 ? (
-                      <Badge variant="secondary" className="text-xs">Customer</Badge>
-                    ) : (
-                      roles.map(r => getRoleBadge(r.role))
-                    )}
                   </div>
                 </div>
               );
