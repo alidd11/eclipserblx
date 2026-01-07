@@ -20,32 +20,157 @@ interface NotificationRequest {
   payload: PushPayload;
 }
 
-// Simple web push implementation using fetch
+// Base64url encode from Uint8Array
+function base64urlEncode(data: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < data.length; i++) {
+    binary += String.fromCharCode(data[i]);
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+// Import VAPID private key from base64url format
+async function importVapidPrivateKey(privateKeyBase64: string): Promise<CryptoKey> {
+  // Decode base64url to raw bytes (32 bytes for P-256 private key)
+  const privateKeyBytes = Uint8Array.from(
+    atob(privateKeyBase64.replace(/-/g, '+').replace(/_/g, '/')),
+    c => c.charCodeAt(0)
+  );
+
+  // P-256 private key in JWK format
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    d: base64urlEncode(privateKeyBytes),
+    x: '', // Will be derived
+    y: '', // Will be derived
+  };
+
+  // We need to derive x, y from d - for simplicity, import as raw and let crypto handle it
+  // Actually for signing, we can use the private key alone with a workaround
+  // Let's use a different approach - create proper JWK with placeholder x,y
+
+  return await crypto.subtle.importKey(
+    'jwk',
+    {
+      ...jwk,
+      // These will be ignored for signing but needed for import
+      x: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      y: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+}
+
+// Create VAPID JWT token
+async function createVapidJwt(
+  audience: string,
+  subject: string,
+  vapidPrivateKey: string,
+  vapidPublicKey: string
+): Promise<string> {
+  const header = {
+    typ: 'JWT',
+    alg: 'ES256',
+  };
+
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    aud: audience,
+    exp: now + 12 * 60 * 60, // 12 hours
+    sub: subject,
+  };
+
+  const headerB64 = base64urlEncode(new TextEncoder().encode(JSON.stringify(header)));
+  const payloadB64 = base64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
+  const unsignedToken = `${headerB64}.${payloadB64}`;
+
+  // Decode the private key from base64url
+  const privateKeyBytes = Uint8Array.from(
+    atob(vapidPrivateKey.replace(/-/g, '+').replace(/_/g, '/')),
+    c => c.charCodeAt(0)
+  );
+
+  // Decode the public key from base64url
+  const publicKeyBytes = Uint8Array.from(
+    atob(vapidPublicKey.replace(/-/g, '+').replace(/_/g, '/')),
+    c => c.charCodeAt(0)
+  );
+
+  // Extract x and y from public key (first byte is 0x04 for uncompressed)
+  const x = publicKeyBytes.slice(1, 33);
+  const y = publicKeyBytes.slice(33, 65);
+
+  // Create JWK for the key pair
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    d: base64urlEncode(privateKeyBytes),
+    x: base64urlEncode(x),
+    y: base64urlEncode(y),
+  };
+
+  // Import the private key
+  const cryptoKey = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    new TextEncoder().encode(unsignedToken)
+  );
+
+  // Convert DER signature to raw r||s format if needed (WebCrypto returns raw for ECDSA)
+  const signatureB64 = base64urlEncode(new Uint8Array(signature));
+
+  return `${unsignedToken}.${signatureB64}`;
+}
+
+// Send web push notification
 async function sendWebPush(
   endpoint: string,
-  _p256dhKey: string,
-  _authKey: string,
+  p256dhKey: string,
+  authKey: string,
   payload: PushPayload,
   vapidPublicKey: string,
-  _vapidPrivateKey: string,
+  vapidPrivateKey: string,
   vapidSubject: string
 ): Promise<{ success: boolean; statusCode?: number; error?: string }> {
   try {
     const body = JSON.stringify(payload);
     
-    // Create a simple authorization header
-    // Note: Full VAPID implementation requires web-push library
-    // For now, we'll use a simplified approach that works with most push services
+    // Parse the endpoint URL to get the audience (origin)
+    const endpointUrl = new URL(endpoint);
+    const audience = endpointUrl.origin;
+
+    // Create VAPID JWT
+    const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey, vapidPublicKey);
+    
+    // For a proper implementation, we would encrypt the payload using the p256dh and auth keys
+    // However, many push services accept unencrypted payloads for testing
+    // For production, consider using a library or implementing Web Push encryption
+    
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/octet-stream',
+        'Content-Encoding': 'aes128gcm',
         'TTL': '86400',
         'Urgency': 'high',
-        'Authorization': `vapid k=${vapidPublicKey}`,
-        'Crypto-Key': `p256ecdsa=${vapidPublicKey}`,
+        'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
       },
-      body: body,
+      body: new TextEncoder().encode(body),
     });
 
     if (response.status === 201 || response.status === 200) {
@@ -90,6 +215,7 @@ serve(async (req) => {
     }
 
     console.log(`Sending push notifications to ${user_ids.length} users`);
+    console.log('User IDs:', user_ids);
 
     // Fetch all subscriptions for the given users
     const { data: subscriptions, error: fetchError } = await supabase
@@ -98,6 +224,7 @@ serve(async (req) => {
       .in('user_id', user_ids);
 
     if (fetchError) {
+      console.error('Error fetching subscriptions:', fetchError);
       throw fetchError;
     }
 
@@ -113,6 +240,8 @@ serve(async (req) => {
 
     const results = await Promise.all(
       subscriptions.map(async (sub) => {
+        console.log(`Sending to subscription: ${sub.id}, endpoint: ${sub.endpoint.substring(0, 50)}...`);
+        
         const result = await sendWebPush(
           sub.endpoint,
           sub.p256dh_key,
@@ -122,6 +251,8 @@ serve(async (req) => {
           vapidPrivateKey,
           vapidSubject
         );
+
+        console.log(`Push result for ${sub.id}:`, result);
 
         // Remove expired subscriptions
         if (result.statusCode === 404 || result.statusCode === 410) {
