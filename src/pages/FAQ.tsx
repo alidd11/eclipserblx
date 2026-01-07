@@ -5,8 +5,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { SITE_NAME } from '@/lib/constants';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, MessageCircle, Headphones } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const faqItems = [
   {
@@ -112,34 +115,59 @@ export default function FAQ() {
 
         <div className="space-y-8">
           {faqItems.map((category, categoryIndex) => (
-            <div key={categoryIndex}>
-              <h2 className="text-xl font-semibold mb-4 text-foreground">{category.category}</h2>
-              <Accordion type="single" collapsible className="space-y-2">
-                {category.questions.map((item, itemIndex) => (
-                  <AccordionItem
-                    key={itemIndex}
-                    value={`${categoryIndex}-${itemIndex}`}
-                    className="bg-card border border-border rounded-lg px-4"
-                  >
-                    <AccordionTrigger className="text-left hover:no-underline">
-                      {item.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
+            <Card key={categoryIndex} className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl">{category.category}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="space-y-2">
+                  {category.questions.map((item, itemIndex) => (
+                    <AccordionItem
+                      key={itemIndex}
+                      value={`${categoryIndex}-${itemIndex}`}
+                      className="bg-muted/30 border border-border rounded-lg px-4"
+                    >
+                      <AccordionTrigger className="text-left hover:no-underline">
+                        {item.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">
+                        {item.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
-        <div className="mt-12 text-center p-6 bg-muted/50 rounded-lg">
-          <h3 className="font-semibold mb-2">Still have questions?</h3>
-          <p className="text-muted-foreground mb-4">
-            Our support team is here to help. Use the live chat or visit our Support Centre.
-          </p>
-        </div>
+        {/* Still have questions card */}
+        <Card className="bg-card border-border mt-12">
+          <CardContent className="pt-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+              <Headphones className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="font-display font-semibold text-lg mb-2">Still have questions?</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Our support team is here to help. Use the live chat or visit our Support Centre.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  const chatButton = document.querySelector('[data-chat-widget]');
+                  if (chatButton instanceof HTMLElement) chatButton.click();
+                }}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Open Live Chat
+              </Button>
+              <Button asChild className="gradient-button border-0">
+                <Link to="/support">Visit Support Centre</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
