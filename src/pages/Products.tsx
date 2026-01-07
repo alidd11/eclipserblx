@@ -103,7 +103,7 @@ export default function Products() {
               <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
                 <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md bg-muted/30 hover:bg-muted/50">
                   <Filter className="h-3.5 w-3.5" />
-                  <span>Categories</span>
+                  <span>{activeCategory ? activeCategory.name : 'All Categories'}</span>
                   <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
               </Collapsible>
