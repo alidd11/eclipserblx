@@ -29,8 +29,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !authLoading,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const { data: orders } = useQuery({
