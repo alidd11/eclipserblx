@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { useCart } from '@/hooks/useCart';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -176,9 +177,7 @@ export default function ProductDetail() {
                     >
                       {img ? (
                         isVideo ? (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <span className="text-xs text-muted-foreground">Video</span>
-                          </div>
+                          <VideoThumbnail src={img} showPlayIcon={true} />
                         ) : (
                           <img src={img} alt="" className="w-full h-full object-cover" draggable={false} />
                         )
