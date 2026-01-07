@@ -32,9 +32,19 @@ interface TypingUser {
   name: string;
 }
 
+// Convert a staff profile into a safe @mention handle (no spaces, only [a-z0-9_])
+const getMentionHandle = (profile: StaffProfile): string => {
+  const base = (profile.display_name || profile.email.split('@')[0] || 'staff').toLowerCase();
+  const handle = base
+    .replace(/[^a-z0-9_]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return handle || 'staff';
+};
+
 // Parse @mentions from message text
 const parseMentions = (text: string): string[] => {
-  const mentionRegex = /@(\w+)/g;
+  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
   const matches = text.match(mentionRegex);
   return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
 };
@@ -176,25 +186,26 @@ export default function StaffMessages() {
   
   const filteredStaff = allStaff?.filter(staff => {
     if (staff.user_id === user?.id) return false;
-    const name = (staff.display_name || staff.email.split('@')[0]).toLowerCase();
-    return name.includes(mentionFilter.toLowerCase());
+    const display = (staff.display_name || staff.email.split('@')[0]).toLowerCase();
+    const handle = getMentionHandle(staff);
+    const q = mentionFilter.toLowerCase();
+    return display.includes(q) || handle.includes(q);
   }) || [];
 
   // Check if user is mentioned in a message (including group mentions)
   const isUserMentioned = useCallback((message: string, userId: string): boolean => {
-    // Check for group mentions first
+    // Group mentions
     const groupMentions = hasGroupMention(message);
-    if (groupMentions.everyone || groupMentions.here) {
-      return true; // @everyone and @here notify all staff
-    }
-    
+    if (groupMentions.everyone || groupMentions.here) return true;
+
     if (!allStaff) return false;
+
     const mentions = parseMentions(message);
     const userProfile = allStaff.find(s => s.user_id === userId);
     if (!userProfile) return false;
-    
-    const userName = (userProfile.display_name || userProfile.email.split('@')[0]).toLowerCase();
-    return mentions.some(m => userName.includes(m) || m.includes(userName.slice(0, m.length)));
+
+    const userHandle = getMentionHandle(userProfile);
+    return mentions.includes(userHandle);
   }, [allStaff]);
 
   // Send message mutation
@@ -409,7 +420,7 @@ export default function StaffMessages() {
     
     if (mentionMatch) {
       const beforeMention = textBeforeCursor.slice(0, -mentionMatch[0].length);
-      const mentionName = staff.display_name || staff.email.split('@')[0];
+      const mentionName = getMentionHandle(staff);
       const newText = `${beforeMention}@${mentionName} ${textAfterCursor}`;
       setNewMessage(newText);
       setShowMentionSuggestions(false);
@@ -465,8 +476,8 @@ export default function StaffMessages() {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setMentionIndex(prev => Math.max(prev - 1, 0));
-    } else if (e.key === 'Tab' || (e.key === 'Enter' && showMentionSuggestions)) {
-      // Use Tab or Enter to select mention, but only if dropdown is visible
+    } else if (e.key === 'Tab') {
+      // Use Tab to select mention while keeping Enter for sending messages
       e.preventDefault();
       e.stopPropagation();
       // Handle selection based on index
@@ -486,24 +497,25 @@ export default function StaffMessages() {
 
   // Render message with highlighted mentions
   const renderMessage = (text: string) => {
-    const parts = text.split(/(@\w+)/g);
+    const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
+    const currentUserHandle = currentUserProfile ? getMentionHandle(currentUserProfile) : '';
+
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
-        const mentionedName = part.slice(1).toLowerCase();
-        const isGroupMention = mentionedName === 'everyone' || mentionedName === 'here';
-        const currentUserName = (currentUserProfile?.display_name || currentUserProfile?.email?.split('@')[0] || '').toLowerCase();
-        const isCurrentUser = mentionedName === currentUserName || currentUserName.includes(mentionedName);
-        
+        const mentionedHandle = part.slice(1).toLowerCase();
+        const isGroupMention = mentionedHandle === 'everyone' || mentionedHandle === 'here';
+        const isCurrentUser = !!currentUserHandle && mentionedHandle === currentUserHandle;
+
         return (
-          <span 
-            key={i} 
+          <span
+            key={i}
             className={cn(
-              "font-semibold px-1 rounded",
-              isGroupMention 
-                ? "text-red-400 bg-red-400/20" 
-                : isCurrentUser 
-                  ? "text-yellow-400 bg-yellow-400/20" 
-                  : "text-primary"
+              'font-semibold px-1 rounded',
+              isGroupMention
+                ? 'text-destructive bg-destructive/15'
+                : isCurrentUser
+                  ? 'text-primary bg-primary/15'
+                  : 'text-primary'
             )}
           >
             {part}
@@ -662,11 +674,11 @@ export default function StaffMessages() {
                           index === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
                         )}
                       >
-                        <div className="h-6 w-6 rounded-full bg-red-500/20 flex items-center justify-center">
-                          <Users className="h-3.5 w-3.5 text-red-400" />
+                        <div className="h-6 w-6 rounded-full bg-destructive/15 flex items-center justify-center">
+                          <Users className="h-3.5 w-3.5 text-destructive" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-red-400">@{group.name}</p>
+                          <p className="text-sm font-medium text-destructive">@{group.name}</p>
                           <p className="text-xs text-muted-foreground">{group.description}</p>
                         </div>
                       </button>
