@@ -93,11 +93,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           {adminLoading ? (
             <Skeleton className="h-10 w-40" />
           ) : isStaff ? (
-            <Button asChild variant="outline">
-              <a href="/admin" target="_blank" rel="noopener noreferrer">
-                <Shield className="h-4 w-4 mr-2" />
-                Admin Dashboard
-              </a>
+            <Button variant="outline" onClick={() => window.open('/admin', '_blank')}>
+              <Shield className="h-4 w-4 mr-2" />
+              Admin Dashboard
             </Button>
           ) : null}
         </div>
