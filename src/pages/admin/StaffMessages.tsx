@@ -610,7 +610,7 @@ export default function StaffMessages() {
   };
 
   // Render message with highlighted mentions
-  const renderMessage = (text: string) => {
+  const renderMessage = (text: string, isOwnMessage: boolean = false) => {
     const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
     const currentUserHandle = currentUserProfile ? getMentionHandle(currentUserProfile) : '';
 
@@ -627,9 +627,11 @@ export default function StaffMessages() {
               'font-semibold px-1 rounded',
               isGroupMention
                 ? 'text-destructive bg-destructive/15'
-                : isCurrentUser
-                  ? 'text-primary bg-primary/15'
-                  : 'text-primary'
+                : isOwnMessage
+                  ? 'text-primary-foreground underline decoration-primary-foreground/50'
+                  : isCurrentUser
+                    ? 'text-primary bg-primary/15'
+                    : 'text-primary'
             )}
           >
             {part}
@@ -770,7 +772,7 @@ export default function StaffMessages() {
                               ? "bg-primary text-primary-foreground rounded-tr-sm" 
                               : "bg-muted rounded-tl-sm"
                           )}>
-                            <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message)}</p>
+                            <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message, isOwn)}</p>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1">
                             <span className="text-xs text-muted-foreground">
