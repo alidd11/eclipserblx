@@ -132,6 +132,22 @@ export function ChatWidget() {
     setIsOpen(true);
   };
 
+  // Load user's profile display name
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('profiles')
+        .select('display_name, email')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setCustomerName(data.display_name || data.email?.split('@')[0] || '');
+          }
+        });
+    }
+  }, [user]);
+
   // Load existing conversation
   useEffect(() => {
     if (user) {
@@ -520,25 +536,13 @@ export function ChatWidget() {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <Label htmlFor="chat-name" className="text-xs">Your name *</Label>
+                  <Label htmlFor="chat-name" className="text-xs">Display Name</Label>
                   <Input
                     id="chat-name"
-                    placeholder="Enter your name"
                     value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <Label htmlFor="chat-email" className="text-xs">Email (optional)</Label>
-                  <Input
-                    id="chat-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    className="h-9"
+                    readOnly
+                    disabled
+                    className="h-9 bg-muted/50 cursor-not-allowed"
                   />
                 </div>
                 
