@@ -20,13 +20,15 @@ import {
   Briefcase,
   ScrollText,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  User
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -435,13 +437,14 @@ export default function Forum() {
                   className="gaming-card-hover p-4 cursor-pointer"
                   onClick={() => navigate(`/forum/${categorySlug}/${thread.slug}`)}
                 >
-                  <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-4">
                     {/* Avatar */}
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                      <span className="text-white font-display font-bold text-sm">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={profile?.avatar_url || undefined} alt={authorName} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-display font-bold text-sm">
                         {authorName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                      </AvatarFallback>
+                    </Avatar>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
