@@ -521,14 +521,32 @@ export function ChatWidget() {
                 <div className="bg-muted/50 rounded-lg p-3 mb-4">
                   <h4 className="text-xs font-medium mb-2">Business Hours</h4>
                   <div className="space-y-1">
-                    {SUPPORT_HOURS.map((item) => (
-                      <div key={item.day} className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">{item.day}</span>
-                        <span className={item.hours === 'Closed' ? 'text-muted-foreground' : 'text-foreground font-medium'}>
-                          {item.hours}
-                        </span>
-                      </div>
-                    ))}
+                    {SUPPORT_HOURS.map((item, index) => {
+                      // Map index to day of week (0 = Monday in our array, but JS uses 0 = Sunday)
+                      const currentDay = new Date().getDay();
+                      const itemDayIndex = index === 6 ? 0 : index + 1; // Convert our array index to JS day
+                      const isToday = currentDay === itemDayIndex;
+                      
+                      return (
+                        <div 
+                          key={item.day} 
+                          className={cn(
+                            "flex justify-between text-xs py-0.5 px-1 rounded",
+                            isToday && "bg-primary/10"
+                          )}
+                        >
+                          <span className={isToday ? "text-primary font-medium" : "text-muted-foreground"}>
+                            {item.day}
+                          </span>
+                          <span className={cn(
+                            item.hours === 'Closed' ? 'text-muted-foreground' : 'text-foreground font-medium',
+                            isToday && "text-primary"
+                          )}>
+                            {item.hours}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 
@@ -536,7 +554,7 @@ export function ChatWidget() {
                   <a href="/faq" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
                     View FAQ
                   </a>
-                  <a href="/support" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
+                  <a href="/forum" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
                     Submit Ticket
                   </a>
                 </div>
