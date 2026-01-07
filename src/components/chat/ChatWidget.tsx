@@ -39,6 +39,38 @@ const ISSUE_CATEGORIES = [
   { value: 'other', label: 'Other' },
 ];
 
+// Check if support is online (Mon-Sat 9am-9pm, offline all day Sunday)
+const isSupportOnline = (): boolean => {
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const hour = now.getHours();
+  
+  // Offline all day Sunday
+  if (day === 0) return false;
+  
+  // Online Mon-Sat 9am (9) to 9pm (21)
+  return hour >= 9 && hour < 21;
+};
+
+const getSupportHoursMessage = (): string => {
+  const now = new Date();
+  const day = now.getDay();
+  
+  if (day === 0) {
+    return "We're closed on Sundays. Live chat is available Monday - Saturday, 9AM - 9PM.";
+  }
+  
+  const hour = now.getHours();
+  if (hour < 9) {
+    return "We open at 9AM. Live chat is available Monday - Saturday, 9AM - 9PM.";
+  }
+  if (hour >= 21) {
+    return "We're closed for today. Live chat is available Monday - Saturday, 9AM - 9PM.";
+  }
+  
+  return "";
+};
+
 export function ChatWidget() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -60,11 +92,20 @@ export function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [agentTyping, setAgentTyping] = useState(false);
+  const [isOnline, setIsOnline] = useState(isSupportOnline());
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { playSound } = useNotificationSound();
   const { sendNotification, requestPermission, permission } = usePushNotifications();
+
+  // Update online status every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsOnline(isSupportOnline());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle customer typing indicator
   const handleTyping = () => {
@@ -409,8 +450,13 @@ export function ChatWidget() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-muted/50 rounded-t-xl">
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-          <span className="font-medium text-sm">Live Support</span>
+          <div className={cn(
+            "h-3 w-3 rounded-full",
+            isOnline ? "bg-green-500 animate-pulse" : "bg-muted-foreground"
+          )} />
+          <span className="font-medium text-sm">
+            {isOnline ? 'Live Support' : 'Support Offline'}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {user && (
@@ -448,7 +494,21 @@ export function ChatWidget() {
 
       {!isMinimized && (
         <>
-          {!hasStarted ? (
+          {!isOnline && !hasStarted ? (
+            /* Offline Message */
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <MessageCircle className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="font-display font-semibold text-lg mb-2">We're Currently Offline</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {getSupportHoursMessage()}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Need help now? Visit our <a href="/faq" className="text-primary hover:underline">FAQ</a> or <a href="/support" className="text-primary hover:underline">submit a ticket</a>.
+              </p>
+            </div>
+          ) : !hasStarted ? (
             /* Start Form */
             <ScrollArea className="flex-1">
               <div className="p-4 flex flex-col gap-3">
