@@ -106,8 +106,8 @@ export function useBackgroundPush() {
     }
 
     if (!VAPID_PUBLIC_KEY) {
-      console.error('VAPID public key not configured');
-      return { success: false, error: 'Push notifications are not configured. Please contact support.' };
+      console.error('VAPID public key not configured. Ensure VITE_VAPID_PUBLIC_KEY is set.');
+      return { success: false, error: 'Background push is not available. VAPID keys need to be configured in the environment.' };
     }
 
     // iOS-specific checks
