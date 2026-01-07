@@ -188,15 +188,22 @@ export const Header = memo(function Header() {
             <div className="my-2 border-t border-border mx-4" />
 
             {/* System Status */}
-            <div className="px-4 py-3 rounded-lg bg-muted/50 mx-0">
-              <div className="flex items-center gap-2">
-                <Circle className={cn('h-3 w-3 fill-current', statusConfig[systemStatus].color)} />
-                <span className="text-sm font-medium">System Status</span>
+            <Link
+              to="/status"
+              className="px-4 py-3 rounded-lg bg-muted/50 mx-0 hover:bg-muted transition-colors touch-manipulation block"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Circle className={cn('h-3 w-3 fill-current', statusConfig[systemStatus].color)} />
+                  <span className="text-sm font-medium">System Status</span>
+                </div>
+                <span className="text-xs text-muted-foreground">View details →</span>
               </div>
               <p className={cn('text-xs mt-1', statusConfig[systemStatus].color)}>
                 {statusConfig[systemStatus].label}
               </p>
-            </div>
+            </Link>
             
             {/* Separator */}
             <div className="my-2 border-t border-border mx-4" />

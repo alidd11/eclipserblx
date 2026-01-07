@@ -35,6 +35,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Status = lazy(() => import("./pages/Status"));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -110,6 +111,7 @@ const App = () => (
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/support" element={<Support />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/status" element={<Status />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />
