@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -298,6 +299,7 @@ export default function Auth() {
                   className="bg-input"
                   required
                 />
+                <PasswordStrengthMeter password={password} />
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
@@ -383,6 +385,7 @@ export default function Auth() {
                   className="bg-input"
                   required
                 />
+                {mode === 'signup' && <PasswordStrengthMeter password={password} />}
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
