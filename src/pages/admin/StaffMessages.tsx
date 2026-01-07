@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users, AtSign } from 'lucide-react';
+import { Send, MessageSquare, Users, AtSign, Circle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -629,11 +629,39 @@ export default function StaffMessages() {
                 <span className="truncate">Staff Chat</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs lg:text-sm font-normal text-muted-foreground">
-                <Users className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                <span className="hidden sm:inline">{onlineCount} staff</span>
-                <span className="sm:hidden">{onlineCount}</span>
+                <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+                <span>{onlineUsers.length} online</span>
               </div>
             </CardTitle>
+            {/* Online staff panel */}
+            {onlineUsers.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {onlineUsers.map((staff) => (
+                  <div
+                    key={staff.user_id}
+                    className={cn(
+                      "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
+                      staff.user_id === user?.id
+                        ? "bg-primary/15 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    <Circle className={cn(
+                      "h-1.5 w-1.5",
+                      staff.typing
+                        ? "fill-yellow-500 text-yellow-500 animate-pulse"
+                        : "fill-green-500 text-green-500"
+                    )} />
+                    <span className="truncate max-w-[80px]">
+                      {staff.user_id === user?.id ? 'You' : staff.name}
+                    </span>
+                    {staff.typing && staff.user_id !== user?.id && (
+                      <span className="text-[10px] text-muted-foreground">typing</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </CardHeader>
           
           <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
@@ -653,13 +681,16 @@ export default function StaffMessages() {
                     const isOwn = msg.sender_id === user?.id;
                     const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
                     const profile = profiles?.[msg.sender_id];
+                    const isOptimistic = msg.id.startsWith('optimistic-');
+                    const isSending = isOptimistic && sendMessageMutation.isPending;
                     
                     return (
                       <div
                         key={msg.id}
                         className={cn(
                           "flex gap-3",
-                          isOwn && "flex-row-reverse"
+                          isOwn && "flex-row-reverse",
+                          isOptimistic && "opacity-70"
                         )}
                       >
                         {showAvatar ? (
@@ -688,9 +719,14 @@ export default function StaffMessages() {
                           )}>
                             <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message)}</p>
                           </div>
-                          <span className="text-xs text-muted-foreground mt-1">
-                            {formatTime(msg.created_at)}
-                          </span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              {formatTime(msg.created_at)}
+                            </span>
+                            {isSending && (
+                              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
