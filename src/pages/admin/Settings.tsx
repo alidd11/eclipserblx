@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing } from 'lucide-react';
+import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate } from 'lucide-react';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -37,6 +37,10 @@ export default function AdminSettings() {
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem('notification_sound_enabled') !== 'false';
   });
+  const [hapticEnabled, setHapticEnabled] = useState(() => {
+    return localStorage.getItem('notification_haptic_enabled') !== 'false';
+  });
+  const isHapticSupported = 'vibrate' in navigator;
   
   // Background push notifications
   const {
@@ -167,6 +171,15 @@ export default function AdminSettings() {
     setSoundEnabled(enabled);
     localStorage.setItem('notification_sound_enabled', String(enabled));
     toast.success(enabled ? 'Notification sounds enabled' : 'Notification sounds disabled');
+  };
+
+  const handleToggleHaptic = (enabled: boolean) => {
+    setHapticEnabled(enabled);
+    localStorage.setItem('notification_haptic_enabled', String(enabled));
+    if (enabled && 'vibrate' in navigator) {
+      navigator.vibrate(100); // Quick feedback vibration
+    }
+    toast.success(enabled ? 'Haptic feedback enabled' : 'Haptic feedback disabled');
   };
 
   const handleTestNotification = () => {
@@ -368,6 +381,23 @@ export default function AdminSettings() {
                   onCheckedChange={handleToggleSound}
                 />
               </div>
+
+              {/* Haptic Feedback Toggle */}
+              {isHapticSupported && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Vibrate className="h-4 w-4 text-muted-foreground" />
+                    <div className="space-y-0.5">
+                      <Label>Haptic Feedback</Label>
+                      <p className="text-sm text-muted-foreground">Vibrate on new notifications (mobile)</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={hapticEnabled}
+                    onCheckedChange={handleToggleHaptic}
+                  />
+                </div>
+              )}
 
               {/* Test Notification */}
               {permission === 'granted' && (
