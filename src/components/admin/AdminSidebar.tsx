@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail, BarChart3 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const navItems = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', roles: [] },
+  { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
   { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
   { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', roles: ['admin'] },
   { title: 'Staff Messages', icon: Mail, href: '/admin/staff-messages', roles: [] },
