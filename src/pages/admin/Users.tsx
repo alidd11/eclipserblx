@@ -75,7 +75,7 @@ export default function AdminUsers() {
     queryFn: async () => {
       let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
       if (search) {
-        query = query.or(`email.ilike.%${search}%,customer_id.ilike.%${search}%`);
+        query = query.ilike('customer_id', `%${search}%`);
       }
       const { data, error } = await query;
       if (error) throw error;
@@ -223,7 +223,6 @@ export default function AdminUsers() {
                       <TableCell>
                         <div>
                           <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
-                          {isAdmin && <p className="text-xs text-muted-foreground">{profile.email}</p>}
                           {profile.customer_id && (
                             <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
                           )}
@@ -267,7 +266,6 @@ export default function AdminUsers() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">{profile.display_name || 'Unnamed'}</p>
-                      {isAdmin && <p className="text-xs text-muted-foreground truncate">{profile.email}</p>}
                       {profile.customer_id && (
                         <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
                       )}
@@ -309,7 +307,6 @@ export default function AdminUsers() {
             <div className="space-y-5">
               <div className="p-3 rounded-lg bg-muted/50">
                 <p className="font-medium text-sm">{selectedUser.display_name || 'Unnamed User'}</p>
-                {isAdmin && <p className="text-xs text-muted-foreground truncate">{selectedUser.email}</p>}
                 {selectedUser.customer_id && (
                   <p className="text-xs font-mono text-primary mt-1">{selectedUser.customer_id}</p>
                 )}
