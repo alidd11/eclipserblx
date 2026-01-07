@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2 } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
+import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -18,6 +19,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const fallbackDisplayName = useMemo(() => {
@@ -207,6 +209,34 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </Card>
         </div>
 
+        {/* Danger Zone */}
+        <Card className="bg-card border-destructive/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="font-medium">Delete Account</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and all associated data including downloads.
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="shrink-0"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Orders */}
         <Card className="bg-card border-border">
           <CardHeader>
@@ -255,6 +285,14 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           onOpenChange={setShowSignOutDialog}
           onConfirm={handleSignOut}
           isLoading={isSigningOut}
+        />
+
+        {/* Delete Profile Dialog */}
+        <DeleteProfileDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          userEmail={user.email || ''}
+          onDeleted={() => navigate('/')}
         />
       </div>
     </MainLayout>
