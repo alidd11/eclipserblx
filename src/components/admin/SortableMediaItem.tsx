@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { X, GripVertical, Play } from 'lucide-react';
+import { X, GripVertical } from 'lucide-react';
+import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 
 interface SortableMediaItemProps {
   id: string;
@@ -36,9 +37,7 @@ export function SortableMediaItem({ id, url, index, onRemove }: SortableMediaIte
       className="relative group w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted"
     >
       {isVideo(url) ? (
-        <div className="w-full h-full flex items-center justify-center bg-black/20">
-          <Play className="h-6 w-6 text-white" />
-        </div>
+        <VideoThumbnail src={url} showPlayIcon={true} />
       ) : (
         <img src={url} alt="" className="w-full h-full object-cover" />
       )}
