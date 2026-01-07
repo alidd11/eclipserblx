@@ -42,7 +42,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   if (!isStaff) {
