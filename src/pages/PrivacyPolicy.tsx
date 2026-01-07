@@ -14,23 +14,26 @@ export default function PrivacyPolicy() {
           Last updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        <div className="prose prose-invert max-w-none space-y-8">
-          {/* Introduction */}
-          <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary" />
-              Introduction
-            </h2>
-            <p className="text-muted-foreground">
-              Welcome to {SITE_NAME}. We respect your privacy and are committed to protecting your personal 
-              data. This privacy policy explains how we collect, use, and safeguard your information when 
-              you visit our website and purchase our products.
-            </p>
-            <p className="text-muted-foreground mt-4">
-              This policy complies with the UK General Data Protection Regulation (UK GDPR) and the 
-              Data Protection Act 2018.
-            </p>
-          </section>
+        {/* Main Content Card */}
+        <Card className="bg-card border-border">
+          <CardContent className="pt-8 pb-8">
+            <div className="prose prose-invert max-w-none space-y-8">
+              {/* Introduction */}
+              <section>
+                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+                  <Shield className="h-6 w-6 text-primary" />
+                  Introduction
+                </h2>
+                <p className="text-muted-foreground">
+                  Welcome to {SITE_NAME}. We respect your privacy and are committed to protecting your personal 
+                  data. This privacy policy explains how we collect, use, and safeguard your information when 
+                  you visit our website and purchase our products.
+                </p>
+                <p className="text-muted-foreground mt-4">
+                  This policy complies with the UK General Data Protection Regulation (UK GDPR) and the 
+                  Data Protection Act 2018.
+                </p>
+              </section>
 
           {/* Data We Collect */}
           <section>
@@ -265,8 +268,10 @@ export default function PrivacyPolicy() {
                 ico.org.uk
               </a>.
             </p>
-          </section>
-        </div>
+            </section>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );

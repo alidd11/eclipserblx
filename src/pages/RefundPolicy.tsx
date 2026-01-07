@@ -31,23 +31,26 @@ export default function RefundPolicy() {
           </CardContent>
         </Card>
 
-        <div className="prose prose-invert max-w-none space-y-8">
-          {/* Digital Content Rights */}
-          <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <AlertCircle className="h-6 w-6 text-primary" />
-              Digital Content and Your Rights
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Under the Consumer Rights Act 2015, digital content (including digital downloads, scripts, 
-              liveries, and other digital assets) must be:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li><strong>Of satisfactory quality</strong> - Free from defects, safe, and durable</li>
-              <li><strong>Fit for purpose</strong> - Suitable for any purpose you made known to us</li>
-              <li><strong>As described</strong> - Match the description, sample, or model shown</li>
-            </ul>
-          </section>
+        {/* Main Content Card */}
+        <Card className="bg-card border-border">
+          <CardContent className="pt-8 pb-8">
+            <div className="prose prose-invert max-w-none space-y-8">
+              {/* Digital Content Rights */}
+              <section>
+                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+                  <AlertCircle className="h-6 w-6 text-primary" />
+                  Digital Content and Your Rights
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  Under the Consumer Rights Act 2015, digital content (including digital downloads, scripts, 
+                  liveries, and other digital assets) must be:
+                </p>
+                <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                  <li><strong>Of satisfactory quality</strong> - Free from defects, safe, and durable</li>
+                  <li><strong>Fit for purpose</strong> - Suitable for any purpose you made known to us</li>
+                  <li><strong>As described</strong> - Match the description, sample, or model shown</li>
+                </ul>
+              </section>
 
           {/* 14-Day Cancellation Right */}
           <section>
@@ -224,8 +227,10 @@ export default function RefundPolicy() {
               </a>
               {' '}or use the live chat feature on our website.
             </p>
-          </section>
-        </div>
+            </section>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );

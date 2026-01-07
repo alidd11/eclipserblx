@@ -1,10 +1,11 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { useCart } from '@/hooks/useCart';
 import { supabase } from '@/integrations/supabase/client';
@@ -193,102 +194,125 @@ export default function ProductDetail() {
 
           {/* Details */}
           <div className="space-y-6">
-            <div className="space-y-2">
-              {product.categories && (
-                <Badge variant="outline" className="text-primary border-primary">
-                  {product.categories.name}
-                </Badge>
-              )}
-              <h1 className="text-3xl md:text-4xl font-display font-bold">{product.name}</h1>
-              {product.is_featured && (
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  Featured Product
-                </Badge>
-              )}
-            </div>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6 space-y-6">
+                <div className="space-y-2">
+                  {product.categories && (
+                    <Badge variant="outline" className="text-primary border-primary">
+                      {product.categories.name}
+                    </Badge>
+                  )}
+                  <h1 className="text-3xl md:text-4xl font-display font-bold">{product.name}</h1>
+                  {product.is_featured && (
+                    <Badge className="bg-primary/10 text-primary border-primary/20">
+                      Featured Product
+                    </Badge>
+                  )}
+                </div>
 
-            <div className="text-4xl font-bold">£{product.price.toFixed(2)}</div>
+                <div className="text-4xl font-bold text-primary">£{product.price.toFixed(2)}</div>
 
-            {product.description && (
-              <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground leading-relaxed">{product.description}</p>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                size="lg"
-                className={cn(
-                  "flex-1 h-14 text-lg",
-                  !inCart && "gradient-button border-0"
+                {product.description && (
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                  </div>
                 )}
-                variant={inCart ? "secondary" : "default"}
-                onClick={handleAddToCart}
-              >
-                {inCart ? (
-                  <>
-                    <Check className="h-5 w-5 mr-2" />
-                    Added to Cart
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Cart
-                  </>
-                )}
-              </Button>
-              
-              {inCart && (
-                <Button size="lg" asChild className="h-14">
-                  <Link to="/cart">View Cart</Link>
-                </Button>
-              )}
-            </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button
+                    size="lg"
+                    className={cn(
+                      "flex-1 h-14 text-lg",
+                      !inCart && "gradient-button border-0"
+                    )}
+                    variant={inCart ? "secondary" : "default"}
+                    onClick={handleAddToCart}
+                  >
+                    {inCart ? (
+                      <>
+                        <Check className="h-5 w-5 mr-2" />
+                        Added to Cart
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-5 w-5 mr-2" />
+                        Add to Cart
+                      </>
+                    )}
+                  </Button>
+                  
+                  {inCart && (
+                    <Button size="lg" asChild className="h-14">
+                      <Link to="/cart">View Cart</Link>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
-              <div className="text-center space-y-2">
-                <Download className="h-6 w-6 mx-auto text-primary" />
-                <p className="text-xs text-muted-foreground">Instant Download</p>
-              </div>
-              <div className="text-center space-y-2">
-                <Shield className="h-6 w-6 mx-auto text-primary" />
-                <p className="text-xs text-muted-foreground">Secure Payment</p>
-              </div>
-              <div className="text-center space-y-2">
-                <Zap className="h-6 w-6 mx-auto text-primary" />
-                <p className="text-xs text-muted-foreground">24/7 Support</p>
-              </div>
-            </div>
+            <Card className="bg-card border-border">
+              <CardContent className="py-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center space-y-2">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                      <Download className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Instant Download</p>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                      <Shield className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Secure Payment</p>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                      <Zap className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">24/7 Support</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
         {/* Related Products */}
         {relatedProducts && relatedProducts.length > 0 && (
-          <section className="pt-12 space-y-6">
-            <h2 className="text-2xl font-display font-bold">Related Products</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((p) => (
-                <div key={p.id} className="gaming-card-hover overflow-hidden">
-                  <Link to={`/products/${p.slug}`}>
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Related Products
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {relatedProducts.map((p) => (
+                  <Link 
+                    key={p.id} 
+                    to={`/products/${p.slug}`}
+                    className="group rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors"
+                  >
                     <div className="aspect-video bg-muted overflow-hidden">
                       {p.images?.[0] ? (
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <span className="text-3xl font-bold text-muted-foreground/30">{p.name.charAt(0)}</span>
                         </div>
                       )}
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold truncate">{p.name}</h3>
+                    <div className="p-3">
+                      <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{p.name}</h3>
                       <p className="text-primary font-bold">£{p.price.toFixed(2)}</p>
                     </div>
                   </Link>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
         </div>
       </PullToRefresh>

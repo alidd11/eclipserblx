@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Filter, Search, ChevronDown } from 'lucide-react';
+import { Filter, Search, ChevronDown, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
@@ -69,66 +70,74 @@ export default function Products() {
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-8">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-display font-bold">
-            {activeCategory ? activeCategory.name : 'All Products'}
-          </h1>
-          <p className="text-muted-foreground">
-            {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-card border-border"
-          />
-        </div>
+        {/* Header Card */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl md:text-3xl font-display flex items-center gap-2">
+              <Package className="h-7 w-7 text-primary" />
+              {activeCategory ? activeCategory.name : 'All Products'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
+            </p>
+            {/* Search Bar */}
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-muted/50 border-border"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <aside className="w-full lg:w-64">
-            <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-display font-semibold hover:text-primary transition-colors">
-                <span className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  Categories
-                </span>
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-2 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                <nav className="space-y-1">
-                  <Link
-                    to="/products"
-                    className={`block px-3 py-2 rounded-lg transition-colors ${
-                      !categorySlug
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-card text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    All Products
-                  </Link>
-                  {categories?.map((category) => (
-                    <Link
-                      key={category.id}
-                      to={`/products?category=${category.slug}`}
-                      className={`block px-3 py-2 rounded-lg transition-colors ${
-                        categorySlug === category.slug
-                          ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-card text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </nav>
-              </CollapsibleContent>
-            </Collapsible>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-display font-semibold hover:text-primary transition-colors">
+                    <span className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      Categories
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-2 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                    <nav className="space-y-1">
+                      <Link
+                        to="/products"
+                        className={`block px-3 py-2 rounded-lg transition-colors ${
+                          !categorySlug
+                            ? 'bg-primary text-primary-foreground'
+                            : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        All Products
+                      </Link>
+                      {categories?.map((category) => (
+                        <Link
+                          key={category.id}
+                          to={`/products?category=${category.slug}`}
+                          className={`block px-3 py-2 rounded-lg transition-colors ${
+                            categorySlug === category.slug
+                              ? 'bg-primary text-primary-foreground'
+                              : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </nav>
+                  </CollapsibleContent>
+                </Collapsible>
+              </CardContent>
+            </Card>
           </aside>
 
           {/* Products Grid */}

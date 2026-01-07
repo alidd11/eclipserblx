@@ -14,23 +14,26 @@ export default function TermsOfService() {
           Last updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        <div className="prose prose-invert max-w-none space-y-8">
-          {/* Introduction */}
-          <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <FileText className="h-6 w-6 text-primary" />
-              Introduction
-            </h2>
-            <p className="text-muted-foreground">
-              Welcome to {SITE_NAME}. These Terms of Service ("Terms") govern your use of our website 
-              and the purchase of digital products from our platform. By accessing our website or 
-              making a purchase, you agree to be bound by these Terms.
-            </p>
-            <p className="text-muted-foreground mt-4">
-              These Terms are governed by the laws of England and Wales. If you are a consumer, you 
-              will benefit from any mandatory provisions of the law of the country in which you are resident.
-            </p>
-          </section>
+        {/* Main Content Card */}
+        <Card className="bg-card border-border">
+          <CardContent className="pt-8 pb-8">
+            <div className="prose prose-invert max-w-none space-y-8">
+              {/* Introduction */}
+              <section>
+                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+                  <FileText className="h-6 w-6 text-primary" />
+                  Introduction
+                </h2>
+                <p className="text-muted-foreground">
+                  Welcome to {SITE_NAME}. These Terms of Service ("Terms") govern your use of our website 
+                  and the purchase of digital products from our platform. By accessing our website or 
+                  making a purchase, you agree to be bound by these Terms.
+                </p>
+                <p className="text-muted-foreground mt-4">
+                  These Terms are governed by the laws of England and Wales. If you are a consumer, you 
+                  will benefit from any mandatory provisions of the law of the country in which you are resident.
+                </p>
+              </section>
 
           {/* About Us */}
           <section>
@@ -284,8 +287,10 @@ export default function TermsOfService() {
               </a>
               {' '}or use the live chat feature on our website.
             </p>
-          </section>
-        </div>
+            </section>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
