@@ -44,6 +44,8 @@ export default function AdminSettings() {
     isSubscribed: isPushSubscribed,
     isLoading: pushLoading,
     permission: pushPermission,
+    isiOSDevice,
+    isPWAMode,
     subscribe: subscribePush,
     unsubscribe: unsubscribePush,
   } = useBackgroundPush();
@@ -181,11 +183,11 @@ export default function AdminSettings() {
 
   // Background push handlers
   const handleEnablePush = async () => {
-    const success = await subscribePush();
-    if (success) {
+    const result = await subscribePush();
+    if (result.success) {
       toast.success('Background push notifications enabled! You\'ll receive notifications even when the app is closed.');
     } else {
-      toast.error('Failed to enable push notifications. Please check browser permissions.');
+      toast.error(result.error || 'Failed to enable push notifications. Please check browser permissions.');
     }
   };
 
@@ -462,6 +464,22 @@ export default function AdminSettings() {
                       Disable Background Push
                     </Button>
                   )}
+                </div>
+              )}
+
+              {/* iOS-specific guidance */}
+              {isiOSDevice && !isPWAMode && pushSupported && (
+                <div className="text-sm bg-yellow-500/10 border border-yellow-500/30 p-3 rounded-lg space-y-2">
+                  <p className="font-medium text-yellow-400">iOS Setup Required</p>
+                  <p className="text-muted-foreground">
+                    To receive push notifications on iOS, you need to install this app first:
+                  </p>
+                  <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                    <li>Tap the <strong>Share</strong> button in Safari</li>
+                    <li>Select <strong>"Add to Home Screen"</strong></li>
+                    <li>Open the app from your Home Screen</li>
+                    <li>Return here to enable notifications</li>
+                  </ol>
                 </div>
               )}
 
