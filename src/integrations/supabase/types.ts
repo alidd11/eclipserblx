@@ -777,6 +777,36 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_duty_logs: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_messages: {
         Row: {
           created_at: string
