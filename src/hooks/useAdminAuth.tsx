@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export function useAdminAuth() {
   const { user, loading: authLoading } = useAuth();
 
-  const { data: roles, isLoading: rolesLoading } = useQuery({
+  const { data: roles, isLoading: rolesLoading, isFetching } = useQuery({
     queryKey: ['user-roles', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -16,8 +16,10 @@ export function useAdminAuth() {
       if (error) throw error;
       return data.map(r => r.role);
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !authLoading,
     staleTime: 1000 * 60 * 5, // Cache roles for 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const isAdmin = roles?.includes('admin') ?? false;
@@ -29,6 +31,9 @@ export function useAdminAuth() {
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;
 
+  // Loading is true if auth is loading OR if we have a user but roles haven't been fetched yet
+  const loading = authLoading || (!!user?.id && rolesLoading);
+
   return {
     user,
     roles: roles ?? [],
@@ -39,6 +44,6 @@ export function useAdminAuth() {
     isAnalyst,
     isStaff,
     hasRole,
-    loading: authLoading || rolesLoading,
+    loading,
   };
 }
