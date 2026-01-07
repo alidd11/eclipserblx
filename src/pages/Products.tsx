@@ -86,52 +86,57 @@ export default function Products() {
               {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
             </p>
 
-            {/* Search Bar - Full Width */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-              <Input
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50 w-full"
-              />
+            {/* Search & Categories Row */}
+            <div className="flex items-center gap-3">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+                <Input
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50 w-full"
+                />
+              </div>
+
+              {/* Categories Filter */}
+              <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md bg-muted/30 hover:bg-muted/50">
+                  <Filter className="h-3.5 w-3.5" />
+                  <span>Categories</span>
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+              </Collapsible>
             </div>
 
-            {/* Categories Filter */}
-            <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <Filter className="h-3.5 w-3.5" />
-                <span>Categories</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-3 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                <nav className="flex flex-wrap gap-2">
+            {/* Categories Dropdown */}
+            {categoriesOpen && (
+              <nav className="flex flex-wrap gap-2 pt-1">
+                <Link
+                  to="/products"
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    !categorySlug
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  All
+                </Link>
+                {categories?.map((category) => (
                   <Link
-                    to="/products"
+                    key={category.id}
+                    to={`/products?category=${category.slug}`}
                     className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                      !categorySlug
+                      categorySlug === category.slug
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
-                    All
+                    {category.name}
                   </Link>
-                  {categories?.map((category) => (
-                    <Link
-                      key={category.id}
-                      to={`/products?category=${category.slug}`}
-                      className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                        categorySlug === category.slug
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-                      }`}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </nav>
-              </CollapsibleContent>
-            </Collapsible>
+                ))}
+              </nav>
+            )}
           </CardContent>
         </Card>
 
