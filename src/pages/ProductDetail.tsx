@@ -131,13 +131,27 @@ export default function ProductDetail() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Images */}
           <div className="space-y-4">
-            <div className="aspect-video gaming-card overflow-hidden">
+            <div 
+              className="aspect-video gaming-card overflow-hidden select-none"
+              onContextMenu={(e) => e.preventDefault()}
+            >
               {images[selectedImage] ? (
-                <img
-                  src={images[selectedImage]}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) ? (
+                  <video
+                    src={images[selectedImage]}
+                    controls
+                    controlsList="nodownload"
+                    className="w-full h-full object-cover pointer-events-auto"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                ) : (
+                  <img
+                    src={images[selectedImage]}
+                    alt={product.name}
+                    className="w-full h-full object-cover pointer-events-none"
+                    draggable={false}
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
                   <span className="text-6xl font-display font-bold text-muted-foreground/30">
@@ -149,22 +163,31 @@ export default function ProductDetail() {
             
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    className={cn(
-                      "flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border-2 transition-colors",
-                      selectedImage === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
-                    )}
-                  >
-                    {img ? (
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-muted" />
-                    )}
-                  </button>
-                ))}
+                {images.map((img, i) => {
+                  const isVideo = img && /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(img);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(i)}
+                      className={cn(
+                        "flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border-2 transition-colors",
+                        selectedImage === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+                      )}
+                    >
+                      {img ? (
+                        isVideo ? (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">Video</span>
+                          </div>
+                        ) : (
+                          <img src={img} alt="" className="w-full h-full object-cover" draggable={false} />
+                        )
+                      ) : (
+                        <div className="w-full h-full bg-muted" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

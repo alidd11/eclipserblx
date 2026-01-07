@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SortableMediaItem } from '@/components/admin/SortableMediaItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -77,7 +80,16 @@ export default function AdminProducts() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const queryClient = useQueryClient();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -139,24 +151,33 @@ export default function AdminProducts() {
     setForm({ ...form, asset_file_url: '' });
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file is an image
-    if (!file.type.startsWith('image/')) {
+    // Validate file type
+    if (type === 'image' && !file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
-
-    // Check max 8 images limit
-    const currentImages = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
-    if (currentImages.length >= 8) {
-      toast.error('Maximum 8 images allowed per product');
+    if (type === 'video' && !file.type.startsWith('video/')) {
+      toast.error('Please select a video file');
       return;
     }
 
-    setIsUploadingImage(true);
+    // Check max 8 media limit
+    const currentMedia = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (currentMedia.length >= 8) {
+      toast.error('Maximum 8 media files allowed per product');
+      return;
+    }
+
+    if (type === 'image') {
+      setIsUploadingImage(true);
+    } else {
+      setIsUploadingVideo(true);
+    }
+
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -172,25 +193,39 @@ export default function AdminProducts() {
         .from('product-images')
         .getPublicUrl(fileName);
 
-      // Add to images list
-      const currentImages = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
-      currentImages.push(publicUrl);
-      setForm({ ...form, images: currentImages.join(', ') });
-      toast.success('Image uploaded successfully');
+      // Add to media list
+      const currentMedia = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+      currentMedia.push(publicUrl);
+      setForm({ ...form, images: currentMedia.join(', ') });
+      toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
     } catch (error: any) {
       toast.error(`Upload failed: ${error.message}`);
     } finally {
-      setIsUploadingImage(false);
-      if (imageInputRef.current) {
-        imageInputRef.current.value = '';
+      if (type === 'image') {
+        setIsUploadingImage(false);
+        if (imageInputRef.current) imageInputRef.current.value = '';
+      } else {
+        setIsUploadingVideo(false);
+        if (videoInputRef.current) videoInputRef.current.value = '';
       }
     }
   };
 
-  const removeImage = (indexToRemove: number) => {
-    const currentImages = form.images.split(',').map(s => s.trim()).filter(Boolean);
-    currentImages.splice(indexToRemove, 1);
-    setForm({ ...form, images: currentImages.join(', ') });
+  const removeMedia = (indexToRemove: number) => {
+    const currentMedia = form.images.split(',').map(s => s.trim()).filter(Boolean);
+    currentMedia.splice(indexToRemove, 1);
+    setForm({ ...form, images: currentMedia.join(', ') });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const currentMedia = form.images.split(',').map(s => s.trim()).filter(Boolean);
+      const oldIndex = currentMedia.findIndex((_, i) => `media-${i}` === active.id);
+      const newIndex = currentMedia.findIndex((_, i) => `media-${i}` === over.id);
+      const reordered = arrayMove(currentMedia, oldIndex, newIndex);
+      setForm({ ...form, images: reordered.join(', ') });
+    }
   };
 
   const saveMutation = useMutation({
@@ -435,35 +470,50 @@ export default function AdminProducts() {
             </div>
 
             <div className="space-y-2">
-              <Label>Product Images</Label>
+              <Label>Product Media (Images & Videos)</Label>
               <input
                 type="file"
                 ref={imageInputRef}
-                onChange={handleImageUpload}
+                onChange={(e) => handleMediaUpload(e, 'image')}
                 accept="image/*"
                 className="hidden"
               />
+              <input
+                type="file"
+                ref={videoInputRef}
+                onChange={(e) => handleMediaUpload(e, 'video')}
+                accept="video/*"
+                className="hidden"
+              />
               
-              {/* Image previews */}
+              {/* Media previews with drag-and-drop */}
               {form.images && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {form.images.split(',').map((img, idx) => {
-                    const trimmedImg = img.trim();
-                    if (!trimmedImg) return null;
-                    return (
-                      <div key={idx} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-border">
-                        <img src={trimmedImg} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                        >
-                          <X className="h-4 w-4 text-white" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={form.images.split(',').map((_, i) => `media-${i}`).filter((_, i) => form.images.split(',')[i]?.trim())}
+                    strategy={horizontalListSortingStrategy}
+                  >
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {form.images.split(',').map((media, idx) => {
+                        const trimmedMedia = media.trim();
+                        if (!trimmedMedia) return null;
+                        return (
+                          <SortableMediaItem
+                            key={`media-${idx}`}
+                            id={`media-${idx}`}
+                            url={trimmedMedia}
+                            index={idx}
+                            onRemove={removeMedia}
+                          />
+                        );
+                      })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
               
               <div className="flex gap-2">
@@ -471,7 +521,7 @@ export default function AdminProducts() {
                   type="button"
                   variant="outline"
                   onClick={() => imageInputRef.current?.click()}
-                  disabled={isUploadingImage || (form.images ? form.images.split(',').filter(s => s.trim()).length >= 8 : false)}
+                  disabled={isUploadingImage || isUploadingVideo || (form.images ? form.images.split(',').filter(s => s.trim()).length >= 8 : false)}
                   className="flex-1"
                 >
                   {isUploadingImage ? (
@@ -482,13 +532,32 @@ export default function AdminProducts() {
                   ) : (
                     <>
                       <ImagePlus className="h-4 w-4 mr-2" />
-                      Upload Image
+                      Image
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={isUploadingImage || isUploadingVideo || (form.images ? form.images.split(',').filter(s => s.trim()).length >= 8 : false)}
+                  className="flex-1"
+                >
+                  {isUploadingVideo ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Video className="h-4 w-4 mr-2" />
+                      Video
                     </>
                   )}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Upload up to 8 product images ({form.images ? form.images.split(',').filter(s => s.trim()).length : 0}/8)
+                Drag to reorder. Upload up to 8 files ({form.images ? form.images.split(',').filter(s => s.trim()).length : 0}/8)
               </p>
             </div>
 
