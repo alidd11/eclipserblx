@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, MessageSquare, Eye, Pin, Lock, ImagePlus, X, Loader2, Crown, Shield, Wrench, Briefcase } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Eye, Pin, Lock, ImagePlus, X, Loader2, Crown, Shield, Wrench, Briefcase, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -463,11 +464,12 @@ export default function ThreadDetail() {
                 <Card key={post.id} className="gaming-card p-4">
                   <div className="flex gap-4">
                     {/* Avatar */}
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                      <span className="text-white font-display font-bold text-sm">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={profile?.avatar_url || undefined} alt={authorName} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-display font-bold text-sm">
                         {authorName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                      </AvatarFallback>
+                    </Avatar>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">

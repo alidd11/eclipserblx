@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Crown, Shield, Wrench, Briefcase, Trash2, SmilePlus } from 'lucide-react';
+import { Send, Crown, Shield, Wrench, Briefcase, Trash2, SmilePlus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -410,11 +411,12 @@ export function GeneralChatChannel() {
                   )}
                 >
                   {/* Avatar */}
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                    <span className="text-white font-display font-bold text-xs">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={authorName} />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-display font-bold text-xs">
                       {authorName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                    </AvatarFallback>
+                  </Avatar>
 
                   {/* Message content */}
                   <div className={cn("max-w-[70%] flex flex-col", isOwn && "items-end")}>
