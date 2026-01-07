@@ -226,33 +226,37 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 Quick Actions
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link to="/downloads">
-                  <Download className="h-4 w-4 mr-2" />
-                  My Downloads
+            <CardContent>
+              <div className="grid grid-cols-3 gap-3">
+                <Link
+                  to="/downloads"
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
+                >
+                  <Download className="h-6 w-6 text-primary" />
+                  <span className="text-xs font-medium">My Downloads</span>
                 </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link to="/products">
-                  <Package className="h-4 w-4 mr-2" />
-                  Browse Products
+                <Link
+                  to="/products"
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
+                >
+                  <Package className="h-6 w-6 text-primary" />
+                  <span className="text-xs font-medium">Browse Products</span>
                 </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link to="/chat-history">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Support History
+                <Link
+                  to="/chat-history"
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
+                >
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                  <span className="text-xs font-medium">Support History</span>
                 </Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-destructive hover:text-destructive"
-                onClick={() => setShowSignOutDialog(true)}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+                <button
+                  onClick={() => setShowSignOutDialog(true)}
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-destructive/10 transition-colors text-center"
+                >
+                  <LogOut className="h-6 w-6 text-destructive" />
+                  <span className="text-xs font-medium text-destructive">Sign Out</span>
+                </button>
+              </div>
             </CardContent>
           </Card>
         </div>
