@@ -161,7 +161,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           ) : null}
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {/* Profile Card */}
           <Card className="bg-card border-border">
             <CardHeader>
@@ -219,7 +219,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="bg-card border-border md:col-span-2">
+          <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
