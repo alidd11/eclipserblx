@@ -148,33 +148,31 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
         )}
       </AnimatePresence>
 
-      {/* Floating refresh button for PWA */}
+      {/* Subtle refresh hint in header area for PWA */}
       <AnimatePresence>
         {isStandalone && showRefreshHint && !isOffline && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="fixed bottom-20 right-4 z-[100]"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="fixed top-20 right-4 z-[100] flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg"
           >
+            <span className="text-xs text-muted-foreground">Stuck?</span>
             <Button
               onClick={handleRefresh}
-              size="lg"
-              className="rounded-full shadow-2xl gradient-button border-0 h-14 w-14 p-0"
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 hover:bg-primary/10"
               disabled={isRefreshing}
             >
-              <RefreshCw className={`h-6 w-6 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
-            <div className="absolute -top-12 right-0 bg-card border border-border rounded-lg px-3 py-2 text-xs text-muted-foreground whitespace-nowrap shadow-lg">
-              <AlertCircle className="h-3 w-3 inline mr-1" />
-              Stuck? Tap to refresh
-              <button
-                onClick={() => setShowRefreshHint(false)}
-                className="ml-2 text-foreground hover:text-primary"
-              >
-                ✕
-              </button>
-            </div>
+            <button
+              onClick={() => setShowRefreshHint(false)}
+              className="text-muted-foreground hover:text-foreground text-xs"
+            >
+              ✕
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
