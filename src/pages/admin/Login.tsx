@@ -2,12 +2,14 @@ import { useState, useEffect, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Shield, Eye, EyeOff, Fingerprint, Smartphone } from 'lucide-react';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -20,11 +22,38 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [showEnrollPrompt, setShowEnrollPrompt] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const { signIn, user } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const {
+    isSupported,
+    isEnrolled,
+    loading: biometricLoading,
+    checkSupport,
+    checkEnrollment,
+    enrollBiometric,
+    authenticateWithBiometric,
+    getStoredUserId,
+  } = useBiometricAuth();
+
+  // Check biometric support on mount
+  useEffect(() => {
+    checkSupport();
+  }, [checkSupport]);
+
+  // Check enrollment when we have a stored user
+  useEffect(() => {
+    const storedUserId = getStoredUserId();
+    if (storedUserId) {
+      checkEnrollment(storedUserId);
+    }
+  }, [getStoredUserId, checkEnrollment]);
 
   // Redirect if already logged in as staff
   useEffect(() => {
@@ -32,6 +61,70 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
       navigate('/admin');
     }
   }, [user, isStaff, adminLoading, navigate]);
+
+  const handleBiometricLogin = async () => {
+    const storedUserId = getStoredUserId();
+    if (!storedUserId) {
+      toast({
+        title: 'No biometric enrolled',
+        description: 'Please log in with password first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const result = await authenticateWithBiometric(storedUserId);
+    if (result.success) {
+      // Refresh the session - user should still be logged in
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        toast({
+          title: 'Welcome back!',
+          description: 'Redirecting to dashboard...',
+        });
+        navigate('/admin');
+      } else {
+        toast({
+          title: 'Session expired',
+          description: 'Please log in with your password.',
+          variant: 'destructive',
+        });
+      }
+    } else {
+      if (result.error !== 'Authentication cancelled') {
+        toast({
+          title: 'Biometric failed',
+          description: result.error,
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
+  const handleEnrollBiometric = async () => {
+    if (!pendingUserId || !pendingEmail) return;
+
+    const result = await enrollBiometric(pendingUserId, pendingEmail);
+    if (result.success) {
+      toast({
+        title: 'Biometric enrolled!',
+        description: 'You can now use Face ID/Touch ID to log in.',
+      });
+    } else {
+      toast({
+        title: 'Enrollment failed',
+        description: result.error,
+        variant: 'destructive',
+      });
+    }
+    setShowEnrollPrompt(false);
+    navigate('/admin');
+  };
+
+  const handleSkipEnrollment = () => {
+    setShowEnrollPrompt(false);
+    navigate('/admin');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,11 +160,19 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
           });
         }
       } else {
-        toast({
-          title: 'Welcome back!',
-          description: 'Redirecting to dashboard...',
-        });
-        // The useEffect will handle redirect after roles are loaded
+        // Get user session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && isSupported && !checkEnrollment(session.user.id)) {
+          // Prompt to enroll biometric
+          setPendingUserId(session.user.id);
+          setPendingEmail(email);
+          setShowEnrollPrompt(true);
+        } else {
+          toast({
+            title: 'Welcome back!',
+            description: 'Redirecting to dashboard...',
+          });
+        }
       }
     } finally {
       setLoading(false);
@@ -86,6 +187,56 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
       </div>
     );
   }
+
+  // Show biometric enrollment prompt
+  if (showEnrollPrompt) {
+    return (
+      <div ref={ref} className="min-h-screen flex flex-col bg-background">
+        <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <div className="flex-1 flex items-center justify-center p-4 relative">
+          <div className="w-full max-w-md space-y-8">
+            <div className="text-center">
+              <div className="inline-flex h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 items-center justify-center mb-4">
+                <Fingerprint className="h-8 w-8 text-primary" />
+              </div>
+              <h1 className="font-display text-2xl font-bold">Enable Biometric Login?</h1>
+              <p className="text-muted-foreground mt-2">
+                Use Face ID or Touch ID for faster, secure logins
+              </p>
+            </div>
+
+            <div className="gaming-card p-6 space-y-4">
+              <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                <Smartphone className="h-5 w-5 text-primary mt-0.5" />
+                <p>Your biometric data never leaves your device. We only store a secure key.</p>
+              </div>
+
+              <Button
+                onClick={handleEnrollBiometric}
+                className="w-full gradient-button border-0"
+                disabled={biometricLoading}
+              >
+                {biometricLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Fingerprint className="mr-2 h-4 w-4" />
+                Enable Biometric Login
+              </Button>
+
+              <Button
+                onClick={handleSkipEnrollment}
+                variant="ghost"
+                className="w-full"
+              >
+                Skip for now
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const storedUserId = getStoredUserId();
+  const canUseBiometric = isSupported && storedUserId && isEnrolled;
 
   return (
     <div ref={ref} className="min-h-screen flex flex-col bg-background">
@@ -106,6 +257,33 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
               Sign in to access the admin dashboard
             </p>
           </div>
+
+          {/* Biometric Login Button */}
+          {canUseBiometric && (
+            <div className="gaming-card p-4">
+              <Button
+                onClick={handleBiometricLogin}
+                className="w-full h-14 text-lg"
+                variant="outline"
+                disabled={biometricLoading}
+              >
+                {biometricLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Fingerprint className="mr-2 h-5 w-5" />
+                )}
+                Sign in with Face ID / Touch ID
+              </Button>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or use password</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
@@ -162,6 +340,14 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
               Sign In
             </Button>
           </form>
+
+          {/* Biometric hint */}
+          {isSupported && !canUseBiometric && (
+            <p className="text-center text-xs text-muted-foreground">
+              <Fingerprint className="inline h-3 w-3 mr-1" />
+              Sign in with password to enable biometric login
+            </p>
+          )}
 
           <p className="text-center text-xs text-muted-foreground">
             Eclipse Admin Dashboard
