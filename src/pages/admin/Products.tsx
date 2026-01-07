@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -309,74 +310,56 @@ export default function AdminProducts() {
   return (
     <AdminLayout requiredRoles={['admin', 'product_manager']}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-display font-bold">Products</h1>
-            <p className="text-muted-foreground">Manage your product catalog</p>
-          </div>
-          <Button onClick={openCreate} className="gradient-button border-0">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display">Products</CardTitle>
+                <CardDescription>Manage your product catalog</CardDescription>
+              </div>
+              <Button onClick={openCreate} className="gradient-button border-0 w-full sm:w-auto">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative w-full sm:max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-background"
+              />
+            </div>
 
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-card"
-          />
-        </div>
-
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-3">
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+                <p className="text-center py-8 text-muted-foreground">Loading...</p>
               ) : products?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No products found
-                  </TableCell>
-                </TableRow>
+                <p className="text-center py-8 text-muted-foreground">No products found</p>
               ) : (
                 products?.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded bg-muted overflow-hidden">
-                          {product.images?.[0] ? (
-                            <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                              {product.name.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">{product.slug}</p>
-                        </div>
+                  <div key={product.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded bg-muted overflow-hidden flex-shrink-0">
+                        {product.images?.[0] ? (
+                          <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            {product.name.charAt(0)}
+                          </div>
+                        )}
                       </div>
-                    </TableCell>
-                    <TableCell>{product.categories?.name || '—'}</TableCell>
-                    <TableCell>£{product.price.toFixed(2)}</TableCell>
-                    <TableCell>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{product.name}</p>
+                        <p className="text-xs text-muted-foreground">{product.categories?.name || 'Uncategorized'}</p>
+                      </div>
+                      <span className="font-bold text-primary">£{product.price.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
                       <div className="flex gap-2">
                         {product.is_active ? (
                           <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
@@ -387,21 +370,91 @@ export default function AdminProducts() {
                           <Badge variant="outline" className="text-primary border-primary/30">Featured</Badge>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(product)} className="h-8 w-8">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id)} className="h-8 w-8">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 ))
               )}
-            </TableBody>
-          </Table>
-        </div>
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-lg border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Product</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
+                    </TableRow>
+                  ) : products?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No products found</TableCell>
+                    </TableRow>
+                  ) : (
+                    products?.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded bg-muted overflow-hidden">
+                              {product.images?.[0] ? (
+                                <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                  {product.name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-xs text-muted-foreground">{product.slug}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{product.categories?.name || '—'}</TableCell>
+                        <TableCell>£{product.price.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            {product.is_active ? (
+                              <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
+                            )}
+                            {product.is_featured && (
+                              <Badge variant="outline" className="text-primary border-primary/30">Featured</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Create/Edit Dialog */}

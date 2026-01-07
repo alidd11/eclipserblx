@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -387,11 +388,13 @@ export default function AdminLiveChat() {
 
   return (
     <AdminLayout requiredRoles={['admin', 'support_agent']}>
-      <div className="h-[calc(100vh-8rem)]">
-        <div className="mb-6">
-          <h1 className="text-2xl font-display font-bold">Live Chat</h1>
-          <p className="text-muted-foreground">Respond to customer inquiries in real-time</p>
-        </div>
+      <div className="h-[calc(100vh-6rem)] flex flex-col">
+        <Card className="bg-card border-border mb-4">
+          <CardHeader className="pb-2 py-3 lg:py-4">
+            <CardTitle className="text-xl sm:text-2xl font-display">Live Chat</CardTitle>
+            <p className="text-muted-foreground text-sm">Respond to customer inquiries in real-time</p>
+          </CardHeader>
+        </Card>
 
         <div className="h-[calc(100%-5rem)] flex gap-4">
           {/* Conversations List - Hidden on mobile when chat selected */}

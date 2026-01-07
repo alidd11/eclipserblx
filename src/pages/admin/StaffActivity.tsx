@@ -174,16 +174,18 @@ export default function StaffActivityPage() {
   return (
     <AdminLayout requiredRoles={['admin']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold flex items-center gap-2">
-            <Activity className="h-8 w-8 text-primary" />
-            Staff Activity
-          </h1>
-          <p className="text-muted-foreground">Track staff logins, ticket claims, and chat activity</p>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
+              <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              Staff Activity
+            </CardTitle>
+            <CardDescription>Track staff logins, ticket claims, and chat activity</CardDescription>
+          </CardHeader>
+        </Card>
 
         {/* Today's Stats */}
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">

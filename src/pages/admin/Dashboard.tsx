@@ -176,10 +176,12 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Manage your duties and quick actions.</p>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl sm:text-3xl font-display">Dashboard</CardTitle>
+            <p className="text-muted-foreground text-sm">Welcome back! Manage your duties and quick actions.</p>
+          </CardHeader>
+        </Card>
 
         {/* Duty Clock In/Out */}
         <Card className="bg-card border-border">
@@ -255,7 +257,7 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {quickLinks.map((link) => (
                 <Link key={link.href} to={link.href}>
                   <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-center">

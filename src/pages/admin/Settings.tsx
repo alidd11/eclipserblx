@@ -119,10 +119,12 @@ export default function AdminSettings() {
   return (
     <AdminLayout requiredRoles={['admin']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Settings</h1>
-          <p className="text-muted-foreground">Configure your store settings</p>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl sm:text-3xl font-display">Settings</CardTitle>
+            <CardDescription>Configure your store settings</CardDescription>
+          </CardHeader>
+        </Card>
 
         <div className="grid gap-6 max-w-2xl">
           <Card className="bg-card border-border">
