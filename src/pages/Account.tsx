@@ -85,10 +85,10 @@ export default function Account() {
           <h1 className="text-3xl font-display font-bold">My Account</h1>
           {isStaff && (
             <Button asChild variant="outline">
-              <Link to="/admin">
+              <a href="/admin" target="_blank" rel="noopener noreferrer">
                 <Shield className="h-4 w-4 mr-2" />
                 Admin Dashboard
-              </Link>
+              </a>
             </Button>
           )}
         </div>
