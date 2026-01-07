@@ -40,6 +40,22 @@ export default function AdminDashboard() {
   const [newAnnouncementContent, setNewAnnouncementContent] = useState('');
   const [newAnnouncementPriority, setNewAnnouncementPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
 
+  // Fetch user profile for display name
+  const { data: profile } = useQuery({
+    queryKey: ['user-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
   // Fetch active announcements
   const { data: announcements } = useQuery({
     queryKey: ['staff-announcements'],
@@ -307,8 +323,10 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="space-y-4">
         <div className="pb-1">
-          <h1 className="text-xl sm:text-2xl font-display font-bold">Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Welcome back! Manage your duties and quick actions.</p>
+          <h1 className="text-xl sm:text-2xl font-display font-bold">
+            Welcome{profile?.display_name ? `, ${profile.display_name}` : ''}!
+          </h1>
+          <p className="text-muted-foreground text-sm">Manage your duties and quick actions.</p>
         </div>
 
         {/* Staff Announcements */}
