@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { PWAWrapper } from "@/components/pwa/PWAWrapper";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
@@ -53,47 +54,49 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/downloads" element={<Downloads />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/products/:slug" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order-success" element={<OrderSuccess />} />
-              <Route path="/chat-history" element={<ChatHistory />} />
-              <Route path="/forum" element={<Forum />} />
-              <Route path="/forum/:categorySlug" element={<Forum />} />
-              <Route path="/forum/:categorySlug/:threadSlug" element={<ThreadDetail />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/refunds" element={<RefundPolicy />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/analytics" element={<AdminAnalytics />} />
-              <Route path="/admin/income" element={<AdminIncome />} />
-              <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
-              <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-              <Route path="/admin/live-chat" element={<AdminLiveChat />} />
-              <Route path="/admin/applications" element={<AdminApplications />} />
-              <Route path="/admin/reviews" element={<AdminReviews />} />
-              <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <ChatWidget />
-            <InstallPrompt />
+            <PWAWrapper>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/downloads" element={<Downloads />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/products/:slug" element={<ProductDetail />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/chat-history" element={<ChatHistory />} />
+                <Route path="/forum" element={<Forum />} />
+                <Route path="/forum/:categorySlug" element={<Forum />} />
+                <Route path="/forum/:categorySlug/:threadSlug" element={<ThreadDetail />} />
+                <Route path="/jobs" element={<Jobs />} />
+                <Route path="/refunds" element={<RefundPolicy />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                <Route path="/admin/income" element={<AdminIncome />} />
+                <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
+                <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
+                <Route path="/admin/products" element={<AdminProducts />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/live-chat" element={<AdminLiveChat />} />
+                <Route path="/admin/applications" element={<AdminApplications />} />
+                <Route path="/admin/reviews" element={<AdminReviews />} />
+                <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <ChatWidget />
+              <InstallPrompt />
+            </PWAWrapper>
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
