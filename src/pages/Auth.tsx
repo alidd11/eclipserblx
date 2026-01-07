@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ const emailSchema = z.object({
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'reset';
 
-export default function Auth() {
+const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -215,7 +215,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div ref={ref} className="min-h-screen flex flex-col bg-background">
       {/* Background Effects */}
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
       <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
@@ -457,4 +457,6 @@ export default function Auth() {
       </div>
     </div>
   );
-}
+});
+
+export default Auth;
