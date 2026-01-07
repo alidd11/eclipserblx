@@ -15,7 +15,7 @@ import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
 import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
 import { NewBadgeToast } from '@/components/badges/NewBadgeToast';
-
+import { AvatarUpload } from '@/components/account/AvatarUpload';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
@@ -162,6 +162,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <AvatarUpload
+                userId={user.id}
+                currentAvatarUrl={profile?.avatar_url || null}
+                displayName={profile?.display_name || fallbackDisplayName || ''}
+                onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+              />
               <div>
                 <p className="text-sm text-muted-foreground">Display Name</p>
                 <p className="font-medium">
