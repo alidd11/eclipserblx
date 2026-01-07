@@ -1,12 +1,11 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { User, Package, LogOut, Settings, Shield, Download, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +14,16 @@ import { ORDER_STATUSES } from '@/lib/constants';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const fallbackDisplayName = useMemo(() => {
+    if (!user) return '';
+    const metaName = (user.user_metadata as any)?.display_name;
+    if (typeof metaName === 'string' && metaName.trim()) return metaName.trim();
+    if (user.email) return user.email.split('@')[0];
+    return '';
+  }, [user]);
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', user?.id],
@@ -23,17 +31,39 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('user_id, email, display_name, avatar_url, created_at, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && !authLoading,
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
+
+  // Ensure a profile row exists (some older accounts may not have one).
+  useEffect(() => {
+    if (!user?.id || !user.email) return;
+    if (profileLoading) return;
+    if (profile) return;
+
+    const run = async () => {
+      const { error } = await supabase.from('profiles').insert({
+        user_id: user.id,
+        email: user.email,
+        display_name: fallbackDisplayName || null,
+      });
+
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+      }
+    };
+
+    // Fire-and-forget; if RLS blocks this insert, we simply keep using the fallback name.
+    void run();
+  }, [user?.id, user?.email, profileLoading, profile, fallbackDisplayName, queryClient]);
 
   const { data: orders } = useQuery({
     queryKey: ['user-orders', user?.id],
@@ -91,7 +121,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-display font-bold">My Account</h1>
           {adminLoading ? (
-            <Skeleton className="h-10 w-40" />
+            <Button variant="outline" disabled>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Checking access…
+            </Button>
           ) : isStaff ? (
             <Button variant="outline" onClick={() => window.open('/admin', '_blank')}>
               <Shield className="h-4 w-4 mr-2" />
@@ -112,11 +145,15 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Display Name</p>
-                {profileLoading ? (
-                  <Skeleton className="h-5 w-32 mt-1" />
-                ) : (
-                  <p className="font-medium">{profile?.display_name || 'Not set'}</p>
-                )}
+                <p className="font-medium">
+                  {profile?.display_name || fallbackDisplayName || 'Not set'}
+                  {profileLoading && (
+                    <span className="ml-2 inline-flex items-center text-xs text-muted-foreground">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Loading
+                    </span>
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
