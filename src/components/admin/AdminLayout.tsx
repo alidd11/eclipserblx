@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Loader2, Menu } from 'lucide-react';
+import { Loader2, Menu, RefreshCw } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -22,10 +22,28 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
+
+  // Check if running as PWA
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    window.location.reload();
+  };
   
   // Swipe gesture tracking
   const touchStartX = useRef<number | null>(null);
@@ -162,16 +180,29 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         <div className="flex-1 flex flex-col overflow-auto">
           {/* Mobile Header */}
           {isMobile && (
-            <header className="sticky top-0 z-40 border-b border-border bg-card px-4 py-3 flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="shrink-0"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <span className="font-display font-bold">Admin Dashboard</span>
+            <header className="sticky top-0 z-40 border-b border-border bg-card px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="shrink-0"
+                  onClick={() => setMobileOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <span className="font-display font-bold">Admin Dashboard</span>
+              </div>
+              {isStandalone && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+                </Button>
+              )}
             </header>
           )}
           
