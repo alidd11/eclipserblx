@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users } from 'lucide-react';
+import { Send, MessageSquare, Users, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,11 +32,22 @@ interface TypingUser {
   name: string;
 }
 
+// Parse @mentions from message text
+const parseMentions = (text: string): string[] => {
+  const mentionRegex = /@(\w+)/g;
+  const matches = text.match(mentionRegex);
+  return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
+};
+
 export default function StaffMessages() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState('');
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -90,6 +101,29 @@ export default function StaffMessages() {
     enabled: !!messages?.length,
   });
 
+  // Fetch all staff members for @mentions
+  const { data: allStaff } = useQuery({
+    queryKey: ['all-staff-profiles'],
+    queryFn: async () => {
+      // Get all users with staff roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id');
+      
+      if (rolesError) throw rolesError;
+      
+      const staffIds = [...new Set(roles.map(r => r.user_id))];
+      
+      const { data: staffProfiles, error } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .in('user_id', staffIds);
+      
+      if (error) throw error;
+      return staffProfiles as StaffProfile[];
+    },
+  });
+
   // Fetch current user profile for presence
   const { data: currentUserProfile } = useQuery({
     queryKey: ['current-user-profile', user?.id],
@@ -120,6 +154,24 @@ export default function StaffMessages() {
     },
   });
 
+  // Get filtered staff for mentions
+  const filteredStaff = allStaff?.filter(staff => {
+    if (staff.user_id === user?.id) return false;
+    const name = (staff.display_name || staff.email.split('@')[0]).toLowerCase();
+    return name.includes(mentionFilter.toLowerCase());
+  }) || [];
+
+  // Check if user is mentioned in a message
+  const isUserMentioned = useCallback((message: string, userId: string): boolean => {
+    if (!allStaff) return false;
+    const mentions = parseMentions(message);
+    const userProfile = allStaff.find(s => s.user_id === userId);
+    if (!userProfile) return false;
+    
+    const userName = (userProfile.display_name || userProfile.email.split('@')[0]).toLowerCase();
+    return mentions.some(m => userName.includes(m) || m.includes(userName.slice(0, m.length)));
+  }, [allStaff]);
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -143,6 +195,7 @@ export default function StaffMessages() {
     },
     onSuccess: () => {
       setNewMessage('');
+      setShowMentionSuggestions(false);
       inputRef.current?.focus();
       // Stop typing indicator when message is sent
       if (presenceChannelRef.current) {
@@ -202,17 +255,33 @@ export default function StaffMessages() {
           
           // Only notify for messages from other staff members
           if (newMsg.sender_id !== user?.id) {
-            // Play notification sound
+            // Check if current user is mentioned
+            const isMentioned = user?.id ? isUserMentioned(newMsg.message, user.id) : false;
+            
+            // Always play sound, but louder/different for mentions
             playSound();
             
-            // Send push notification if tab is not focused
-            if (document.hidden) {
+            // Send push notification if tab is not focused OR if mentioned
+            if (document.hidden || isMentioned) {
               const senderProfile = profiles?.[newMsg.sender_id];
               const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Staff';
-              sendNotification('New Staff Message', {
-                body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-                tag: 'staff-chat-message',
-              });
+              
+              if (isMentioned) {
+                sendNotification('🔔 You were mentioned!', {
+                  body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
+                  tag: 'staff-chat-mention',
+                  requireInteraction: true,
+                });
+                // Show toast for mentions even when focused
+                if (!document.hidden) {
+                  toast.info(`${senderName} mentioned you in staff chat`);
+                }
+              } else {
+                sendNotification('New Staff Message', {
+                  body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
+                  tag: 'staff-chat-message',
+                });
+              }
             }
           }
           
@@ -224,7 +293,7 @@ export default function StaffMessages() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id, profiles, playSound, sendNotification]);
+  }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned]);
 
   // Presence channel for typing indicators
   useEffect(() => {
@@ -284,10 +353,91 @@ export default function StaffMessages() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
-    if (e.target.value.trim()) {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setNewMessage(value);
+    setCursorPosition(cursorPos);
+    
+    // Check for @mention trigger
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      setMentionFilter(mentionMatch[1]);
+      setShowMentionSuggestions(true);
+      setMentionIndex(0);
+    } else {
+      setShowMentionSuggestions(false);
+    }
+    
+    if (value.trim()) {
       handleTyping();
     }
+  };
+
+  const insertMention = (staff: StaffProfile) => {
+    const textBeforeCursor = newMessage.slice(0, cursorPosition);
+    const textAfterCursor = newMessage.slice(cursorPosition);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      const beforeMention = textBeforeCursor.slice(0, -mentionMatch[0].length);
+      const mentionName = staff.display_name || staff.email.split('@')[0];
+      const newText = `${beforeMention}@${mentionName} ${textAfterCursor}`;
+      setNewMessage(newText);
+      setShowMentionSuggestions(false);
+      
+      // Focus input and set cursor position after mention
+      setTimeout(() => {
+        if (inputRef.current) {
+          const newCursorPos = beforeMention.length + mentionName.length + 2;
+          inputRef.current.focus();
+          inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 0);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showMentionSuggestions || filteredStaff.length === 0) return;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setMentionIndex(prev => Math.min(prev + 1, filteredStaff.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setMentionIndex(prev => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter' && showMentionSuggestions) {
+      e.preventDefault();
+      insertMention(filteredStaff[mentionIndex]);
+    } else if (e.key === 'Escape') {
+      setShowMentionSuggestions(false);
+    }
+  };
+
+  // Render message with highlighted mentions
+  const renderMessage = (text: string) => {
+    const parts = text.split(/(@\w+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        const mentionedName = part.slice(1).toLowerCase();
+        const currentUserName = (currentUserProfile?.display_name || currentUserProfile?.email?.split('@')[0] || '').toLowerCase();
+        const isCurrentUser = mentionedName === currentUserName || currentUserName.includes(mentionedName);
+        
+        return (
+          <span 
+            key={i} 
+            className={cn(
+              "font-semibold",
+              isCurrentUser ? "text-yellow-400 bg-yellow-400/20 px-1 rounded" : "text-primary"
+            )}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
   const getInitials = (profile: StaffProfile | undefined) => {
@@ -389,7 +539,7 @@ export default function StaffMessages() {
                               ? "bg-primary text-primary-foreground rounded-tr-sm" 
                               : "bg-muted rounded-tl-sm"
                           )}>
-                            <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                            <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message)}</p>
                           </div>
                           <span className="text-xs text-muted-foreground mt-1">
                             {formatTime(msg.created_at)}
@@ -417,25 +567,63 @@ export default function StaffMessages() {
             )}
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-2 sm:p-4 border-t border-border shrink-0">
-              <div className="flex gap-2">
-                <Input
-                  ref={inputRef}
-                  value={newMessage}
-                  onChange={handleInputChange}
-                  placeholder="Type a message..."
-                  className="flex-1"
-                  disabled={sendMessageMutation.isPending}
-                />
-                <Button 
-                  type="submit" 
-                  size="icon"
-                  disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </form>
+            <div className="p-2 sm:p-4 border-t border-border shrink-0 relative">
+              {/* Mention suggestions dropdown */}
+              {showMentionSuggestions && filteredStaff.length > 0 && (
+                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden z-50">
+                  <div className="p-1 max-h-48 overflow-y-auto">
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground flex items-center gap-1">
+                      <AtSign className="h-3 w-3" />
+                      Mention a staff member
+                    </div>
+                    {filteredStaff.slice(0, 8).map((staff, index) => (
+                      <button
+                        key={staff.user_id}
+                        type="button"
+                        onClick={() => insertMention(staff)}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-2 py-2 rounded text-left transition-colors",
+                          index === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
+                        )}
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs bg-primary/20">
+                            {getInitials(staff)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {staff.display_name || staff.email.split('@')[0]}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <form onSubmit={handleSend}>
+                <div className="flex gap-2">
+                  <Input
+                    ref={inputRef}
+                    value={newMessage}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type a message... Use @ to mention"
+                    className="flex-1"
+                    disabled={sendMessageMutation.isPending}
+                  />
+                  <Button 
+                    type="submit" 
+                    size="icon"
+                    disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+            </div>
           </CardContent>
         </Card>
       </div>
