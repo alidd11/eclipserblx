@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { reviewSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
 interface ReviewFormProps {
   productId?: string;
@@ -32,10 +33,19 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
       return;
     }
 
-    if (!content.trim()) {
-      toast.error('Please write a review');
+    // Validate input with schema
+    const validation = validateWithSchema(reviewSchema, {
+      title: title.trim() || undefined,
+      content: content.trim(),
+      rating,
+    });
+
+    if (isValidationError(validation)) {
+      toast.error(validation.error);
       return;
     }
+
+    const validatedData = validation.data;
 
     setIsSubmitting(true);
 
@@ -43,9 +53,9 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
       const { error } = await supabase.from('reviews').insert({
         user_id: user.id,
         product_id: productId || null,
-        rating,
-        title: title.trim() || null,
-        content: content.trim(),
+        rating: validatedData.rating,
+        title: validatedData.title || null,
+        content: validatedData.content,
       });
 
       if (error) throw error;
@@ -123,8 +133,10 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
           onChange={(e) => setContent(e.target.value)}
           placeholder="Tell us about your experience..."
           rows={4}
+          maxLength={5000}
           required
         />
+        <p className="text-xs text-muted-foreground mt-1">{content.length}/5000 characters</p>
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
