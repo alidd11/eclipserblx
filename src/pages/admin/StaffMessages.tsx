@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, MessageSquare, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,12 +25,20 @@ interface StaffProfile {
   email: string;
 }
 
+interface TypingUser {
+  user_id: string;
+  name: string;
+}
+
 export default function StaffMessages() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Fetch messages (using staff_messages table with recipient_id = null for general chat)
   const { data: messages, isLoading } = useQuery({
@@ -69,6 +77,23 @@ export default function StaffMessages() {
     enabled: !!messages?.length,
   });
 
+  // Fetch current user profile for presence
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['current-user-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) return null;
+      return data as StaffProfile;
+    },
+    enabled: !!user?.id,
+  });
+
   // Fetch online staff count
   const { data: onlineCount } = useQuery({
     queryKey: ['staff-online-count'],
@@ -99,13 +124,47 @@ export default function StaffMessages() {
     onSuccess: () => {
       setNewMessage('');
       inputRef.current?.focus();
+      // Stop typing indicator when message is sent
+      if (presenceChannelRef.current) {
+        presenceChannelRef.current.track({ typing: false });
+      }
     },
     onError: () => {
       toast.error('Failed to send message');
     },
   });
 
-  // Real-time subscription
+  // Get display name for current user
+  const getCurrentUserName = useCallback(() => {
+    if (!currentUserProfile) return 'Staff';
+    return currentUserProfile.display_name || currentUserProfile.email?.split('@')[0] || 'Staff';
+  }, [currentUserProfile]);
+
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (!presenceChannelRef.current || !user?.id) return;
+
+    // Track that user is typing
+    presenceChannelRef.current.track({
+      typing: true,
+      user_id: user.id,
+      name: getCurrentUserName(),
+    });
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set timeout to stop typing indicator after 2 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      if (presenceChannelRef.current) {
+        presenceChannelRef.current.track({ typing: false });
+      }
+    }, 2000);
+  }, [user?.id, getCurrentUserName]);
+
+  // Real-time subscription for messages
   useEffect(() => {
     const channel = supabase
       .channel('staff-chat-realtime')
@@ -128,6 +187,50 @@ export default function StaffMessages() {
     };
   }, [queryClient]);
 
+  // Presence channel for typing indicators
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const presenceChannel = supabase.channel('staff-chat-presence', {
+      config: { presence: { key: user.id } },
+    });
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const typing: TypingUser[] = [];
+        
+        Object.entries(state).forEach(([key, presences]) => {
+          if (key !== user.id) {
+            const presence = (presences as any[])[0];
+            if (presence?.typing) {
+              typing.push({
+                user_id: key,
+                name: presence.name || 'Staff',
+              });
+            }
+          }
+        });
+        
+        setTypingUsers(typing);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({ typing: false });
+        }
+      });
+
+    presenceChannelRef.current = presenceChannel;
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      supabase.removeChannel(presenceChannel);
+      presenceChannelRef.current = null;
+    };
+  }, [user?.id]);
+
   // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
@@ -139,6 +242,13 @@ export default function StaffMessages() {
     e.preventDefault();
     if (!newMessage.trim()) return;
     sendMessageMutation.mutate(newMessage.trim());
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    if (e.target.value.trim()) {
+      handleTyping();
+    }
   };
 
   const getInitials = (profile: StaffProfile | undefined) => {
@@ -163,6 +273,13 @@ export default function StaffMessages() {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getTypingText = () => {
+    if (typingUsers.length === 0) return null;
+    if (typingUsers.length === 1) return `${typingUsers[0].name} is typing...`;
+    if (typingUsers.length === 2) return `${typingUsers[0].name} and ${typingUsers[1].name} are typing...`;
+    return `${typingUsers[0].name} and ${typingUsers.length - 1} others are typing...`;
   };
 
   return (
@@ -245,13 +362,27 @@ export default function StaffMessages() {
               )}
             </ScrollArea>
 
+            {/* Typing Indicator */}
+            {typingUsers.length > 0 && (
+              <div className="px-4 py-2 border-t border-border/50">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span>{getTypingText()}</span>
+                </div>
+              </div>
+            )}
+
             {/* Input */}
             <form onSubmit={handleSend} className="p-4 border-t border-border shrink-0">
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder="Type a message..."
                   className="flex-1"
                   disabled={sendMessageMutation.isPending}
