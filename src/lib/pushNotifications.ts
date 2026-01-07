@@ -142,6 +142,38 @@ export async function notifyNewChatMessage(
 }
 
 /**
+ * Send push notification when a customer replies to a closed/resolved ticket
+ */
+export async function notifyTicketReply(
+  ticket: { id: string; subject: string; customer_email?: string }
+): Promise<{ success: boolean; sent?: number; error?: string }> {
+  try {
+    // Get all support agents with push subscriptions
+    const { data: supportAgents } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .in('role', ['admin', 'support_agent']);
+
+    if (!supportAgents || supportAgents.length === 0) {
+      return { success: true, sent: 0 };
+    }
+
+    const staffUserIds = supportAgents.map(a => a.user_id);
+
+    return await sendPushNotification(staffUserIds, {
+      title: 'Ticket Re-opened',
+      body: `Customer replied to: ${ticket.subject}`,
+      tag: `ticket-reply-${ticket.id}`,
+      url: '/admin/support',
+      requireInteraction: true,
+    });
+  } catch (error) {
+    console.error('Error notifying ticket reply:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+/**
  * Send push notification for a new job application
  */
 export async function notifyNewJobApplication(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,10 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, MessageSquare, Clock, Download, FileText, Ticket } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, MessageSquare, Clock, Download, FileText, Ticket, Send, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { notifyTicketReply } from '@/lib/pushNotifications';
+import { toast } from 'sonner';
 
 interface Conversation {
   id: string;
@@ -76,6 +79,9 @@ export default function ChatHistory() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [ticketMessages, setTicketMessages] = useState<TicketMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [replyMessage, setReplyMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -241,6 +247,78 @@ export default function ChatHistory() {
     setSelectedTicket(null);
     setMessages([]);
     setTicketMessages([]);
+    setReplyMessage('');
+  };
+
+  const sendTicketReply = async () => {
+    if (!replyMessage.trim() || !selectedTicket || !user) return;
+
+    const messageText = replyMessage.trim();
+    const wasClosedOrResolved = selectedTicket.status === 'closed' || selectedTicket.status === 'resolved';
+    
+    setIsSending(true);
+    setReplyMessage('');
+
+    try {
+      // Insert the reply message
+      const { error: msgError } = await supabase
+        .from('ticket_messages')
+        .insert({
+          ticket_id: selectedTicket.id,
+          sender_id: user.id,
+          sender_type: 'customer',
+          message: messageText,
+        });
+
+      if (msgError) throw msgError;
+
+      // If ticket was closed/resolved, re-open it
+      if (wasClosedOrResolved) {
+        const { error: updateError } = await supabase
+          .from('support_tickets')
+          .update({ status: 'open', updated_at: new Date().toISOString() })
+          .eq('id', selectedTicket.id);
+
+        if (updateError) throw updateError;
+
+        // Update local state
+        setSelectedTicket({ ...selectedTicket, status: 'open' });
+        setTickets(prev => prev.map(t => 
+          t.id === selectedTicket.id ? { ...t, status: 'open' } : t
+        ));
+
+        // Send push notification to support staff
+        notifyTicketReply({
+          id: selectedTicket.id,
+          subject: selectedTicket.subject,
+        });
+
+        toast.success('Reply sent! Your ticket has been re-opened.');
+      } else {
+        toast.success('Reply sent!');
+      }
+
+      // Reload messages
+      await loadTicketMessages(selectedTicket.id);
+
+      // Scroll to bottom
+      setTimeout(() => {
+        scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (error) {
+      console.error('Error sending reply:', error);
+      toast.error('Failed to send reply. Please try again.');
+      setReplyMessage(messageText);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendTicketReply();
+    }
   };
 
   if (loading) {
@@ -401,7 +479,7 @@ export default function ChatHistory() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <ScrollArea className="h-[400px] p-4">
+              <ScrollArea className="h-[350px] p-4">
                 {ticketMessages.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -437,9 +515,40 @@ export default function ChatHistory() {
                         </div>
                       </div>
                     ))}
+                    <div ref={scrollRef} />
                   </div>
                 )}
               </ScrollArea>
+              
+              {/* Reply input */}
+              <div className="border-t p-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Type your reply..."
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    disabled={isSending}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={sendTicketReply}
+                    disabled={!replyMessage.trim() || isSending}
+                    size="icon"
+                  >
+                    {isSending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {(selectedTicket.status === 'closed' || selectedTicket.status === 'resolved') && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This ticket is {selectedTicket.status}. Sending a reply will re-open it.
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
