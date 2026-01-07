@@ -2,7 +2,23 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+async function getVapidPublicKey(): Promise<string | undefined> {
+  const fromEnv = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined)?.trim();
+  if (fromEnv) return fromEnv;
+
+  try {
+    const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
+    if (error) throw error;
+
+    const key = (data as any)?.publicKey;
+    if (typeof key === 'string' && key.trim()) return key.trim();
+  } catch (err) {
+    console.error('Failed to retrieve VAPID public key from backend:', err);
+  }
+
+  return undefined;
+}
+
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -105,10 +121,6 @@ export function useBackgroundPush() {
       return { success: false, error: 'Please sign in to enable push notifications.' };
     }
 
-    if (!VAPID_PUBLIC_KEY) {
-      console.error('VAPID public key not configured. Ensure VITE_VAPID_PUBLIC_KEY is set.');
-      return { success: false, error: 'Background push is not available. VAPID keys need to be configured in the environment.' };
-    }
 
     // iOS-specific checks
     if (isIOS()) {
@@ -143,7 +155,15 @@ export function useBackgroundPush() {
       
       if (!subscription) {
         // Create new subscription
-        const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        const vapidPublicKey = await getVapidPublicKey();
+        if (!vapidPublicKey) {
+          console.error(
+            'VAPID public key not configured. Configure VAPID_PUBLIC_KEY in backend secrets (and optionally VITE_VAPID_PUBLIC_KEY for the client).'
+          );
+          return { success: false, error: 'Background push is not available yet. VAPID keys are not configured.' };
+        }
+
+        const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
