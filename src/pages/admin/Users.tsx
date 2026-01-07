@@ -283,34 +283,34 @@ export default function AdminUsers() {
 
       {/* Manage Roles Dialog */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-[95vw] sm:max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle>Manage Roles</DialogTitle>
+            <DialogTitle className="text-lg">Manage Roles</DialogTitle>
           </DialogHeader>
 
           {selectedUser && (
-            <div className="space-y-6">
-              <div>
-                <p className="font-medium">{selectedUser.display_name || 'Unnamed User'}</p>
-                {isAdmin && <p className="text-sm text-muted-foreground">{selectedUser.email}</p>}
+            <div className="space-y-5">
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="font-medium text-sm">{selectedUser.display_name || 'Unnamed User'}</p>
+                {isAdmin && <p className="text-xs text-muted-foreground truncate">{selectedUser.email}</p>}
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-3">Current Roles</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Current Roles</p>
                 <div className="flex flex-wrap gap-2">
                   {getUserRoles(selectedUser.user_id).length === 0 ? (
                     <span className="text-sm text-muted-foreground">No roles assigned</span>
                   ) : (
                     getUserRoles(selectedUser.user_id).map((r) => (
-                      <Badge key={r.id} variant="outline" className="gap-1">
+                      <Badge key={r.id} variant="outline" className="gap-1 py-1.5 px-2">
                         {ROLES.find(role => role.value === r.role)?.label || r.role}
                         {/* Only show remove button if: not admin role, OR current user is primary admin */}
                         {(r.role !== 'admin' || isPrimaryAdmin) && (
                           <button
                             onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role, targetEmail: selectedUser.email })}
-                            className="ml-1 hover:text-destructive"
+                            className="ml-1 hover:text-destructive touch-manipulation"
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-3.5 w-3.5" />
                           </button>
                         )}
                       </Badge>
@@ -321,15 +321,15 @@ export default function AdminUsers() {
 
               {availableRoles(selectedUser.user_id).length > 0 && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-3">Add Role</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Add Role</p>
                   <div className="flex gap-2">
                     <Select value={newRole} onValueChange={(v) => setNewRole(v as AppRole)}>
-                      <SelectTrigger className="flex-1">
+                      <SelectTrigger className="flex-1 h-10">
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableRoles(selectedUser.user_id).map((role) => (
-                          <SelectItem key={role.value} value={role.value}>
+                          <SelectItem key={role.value} value={role.value} className="py-2.5">
                             {role.label}
                           </SelectItem>
                         ))}
@@ -338,6 +338,7 @@ export default function AdminUsers() {
                     <Button
                       disabled={!newRole || addRoleMutation.isPending}
                       onClick={() => newRole && addRoleMutation.mutate({ userId: selectedUser.user_id, role: newRole, targetEmail: selectedUser.email })}
+                      className="h-10 px-4"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
