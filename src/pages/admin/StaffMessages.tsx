@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 interface ChatMessage {
   id: string;
@@ -39,6 +41,17 @@ export default function StaffMessages() {
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  
+  // Notification hooks
+  const { playSound } = useNotificationSound();
+  const { sendNotification, requestPermission, permission } = usePushNotifications();
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (permission === 'default') {
+      requestPermission();
+    }
+  }, [permission, requestPermission]);
 
   // Fetch messages (using staff_messages table with recipient_id = null for general chat)
   const { data: messages, isLoading } = useQuery({
@@ -172,7 +185,7 @@ export default function StaffMessages() {
     }, 2000);
   }, [user?.id, getCurrentUserName]);
 
-  // Real-time subscription for messages
+  // Real-time subscription for messages with notifications
   useEffect(() => {
     const channel = supabase
       .channel('staff-chat-realtime')
@@ -184,7 +197,25 @@ export default function StaffMessages() {
           table: 'staff_messages',
           filter: 'recipient_id=is.null',
         },
-        () => {
+        (payload) => {
+          const newMsg = payload.new as { sender_id: string; message: string };
+          
+          // Only notify for messages from other staff members
+          if (newMsg.sender_id !== user?.id) {
+            // Play notification sound
+            playSound();
+            
+            // Send push notification if tab is not focused
+            if (document.hidden) {
+              const senderProfile = profiles?.[newMsg.sender_id];
+              const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Staff';
+              sendNotification('New Staff Message', {
+                body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
+                tag: 'staff-chat-message',
+              });
+            }
+          }
+          
           queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
         }
       )
@@ -193,7 +224,7 @@ export default function StaffMessages() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, user?.id, profiles, playSound, sendNotification]);
 
   // Presence channel for typing indicators
   useEffect(() => {
