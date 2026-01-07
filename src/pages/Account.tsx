@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,15 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
+
+  const copyCustomerId = async () => {
+    if (profile?.customer_id) {
+      await navigator.clipboard.writeText(profile.customer_id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    }
+  };
 
   // Check for new badges when account page loads
   useEffect(() => {
@@ -187,7 +196,17 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               {profile?.customer_id && (
                 <div>
                   <p className="text-sm text-muted-foreground">Customer ID</p>
-                  <p className="font-mono font-medium text-primary">{profile.customer_id}</p>
+                  <button
+                    onClick={copyCustomerId}
+                    className="flex items-center gap-2 font-mono font-medium text-primary hover:text-primary/80 transition-colors"
+                  >
+                    {profile.customer_id}
+                    {copiedId ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
                 </div>
               )}
               <div>
