@@ -230,7 +230,7 @@ export default function AdminUsers() {
                             )}
                           </div>
                           {profile.customer_id && (
-                            <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
+                            <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
                           )}
                         </div>
                       </TableCell>
@@ -271,7 +271,7 @@ export default function AdminUsers() {
                         )}
                       </div>
                       {profile.customer_id && (
-                        <p className="text-xs font-mono text-primary">{profile.customer_id}</p>
+                        <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
                       )}
                       <p className="text-xs text-muted-foreground">
                         Joined {new Date(profile.created_at).toLocaleDateString()}
@@ -305,7 +305,7 @@ export default function AdminUsers() {
               <div className="p-3 rounded-lg bg-muted/50">
                 <p className="font-medium text-sm">{selectedUser.display_name || 'Unnamed User'}</p>
                 {selectedUser.customer_id && (
-                  <p className="text-xs font-mono text-primary mt-1">{selectedUser.customer_id}</p>
+                  <p className="text-xs font-mono text-primary mt-1">Customer ID: {selectedUser.customer_id}</p>
                 )}
               </div>
 
