@@ -1,26 +1,37 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2 } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useBadges } from '@/hooks/useBadges';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
+import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
+import { NewBadgeToast } from '@/components/badges/NewBadgeToast';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
+  const { badges, userBadges, newBadges, checkBadges, clearNewBadges } = useBadges();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  // Check for new badges when account page loads
+  useEffect(() => {
+    if (user) {
+      checkBadges();
+    }
+  }, [user, checkBadges]);
 
   const fallbackDisplayName = useMemo(() => {
     if (!user) return '';
@@ -197,6 +208,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   Browse Products
                 </Link>
               </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to="/chat-history">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Support History
+                </Link>
+              </Button>
               <Button
                 variant="outline"
                 className="w-full justify-start text-destructive hover:text-destructive"
@@ -208,6 +225,19 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Badges */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              My Badges
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BadgeShowcase badges={badges} userBadges={userBadges} showAll />
+          </CardContent>
+        </Card>
 
         {/* Orders */}
         <Card className="bg-card border-border">
@@ -294,6 +324,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           userEmail={user.email || ''}
           onDeleted={() => navigate('/')}
         />
+
+        {/* New Badge Toast Notifications */}
+        <NewBadgeToast badges={newBadges} onClear={clearNewBadges} />
       </div>
     </MainLayout>
   );

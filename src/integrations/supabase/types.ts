@@ -82,6 +82,45 @@ export type Database = {
         }
         Relationships: []
       }
+      badges: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          description: string
+          display_order: number | null
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          category: string
+          color?: string
+          created_at?: string
+          description: string
+          display_order?: number | null
+          icon: string
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          description?: string
+          display_order?: number | null
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -1012,6 +1051,35 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1039,6 +1107,21 @@ export type Database = {
     }
     Functions: {
       can_user_download: { Args: { _user_id: string }; Returns: boolean }
+      check_and_award_badges: {
+        Args: { _user_id: string }
+        Returns: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_badges"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
