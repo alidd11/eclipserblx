@@ -110,16 +110,23 @@ export default function StaffMessages() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
+      if (!user?.id) {
+        throw new Error('You must be logged in to send messages');
+      }
+      
       const { error } = await supabase
         .from('staff_messages')
-        .insert([{
-          sender_id: user?.id,
+        .insert({
+          sender_id: user.id,
           recipient_id: null,
           subject: 'Staff Chat',
           message,
-        }]);
+        });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Failed to send staff message:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       setNewMessage('');
@@ -129,7 +136,8 @@ export default function StaffMessages() {
         presenceChannelRef.current.track({ typing: false });
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Send message error:', error);
       toast.error('Failed to send message');
     },
   });
