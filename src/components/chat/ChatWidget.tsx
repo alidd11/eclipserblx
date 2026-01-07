@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { notifyNewLiveChat, notifyNewChatMessage } from '@/lib/pushNotifications';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -326,6 +327,13 @@ export function ChatWidget() {
         });
       }
 
+      // Notify support agents via push notification
+      notifyNewLiveChat({
+        id: conversation.id,
+        customer_name: customerName,
+        issue_category: issueCategory,
+      });
+
       loadMessages(conversation.id);
     } catch (error) {
       console.error('Error starting conversation:', error);
@@ -361,6 +369,9 @@ export function ChatWidget() {
         sender_type: 'customer',
         sender_id: user?.id || null,
       });
+
+      // Notify support agents via push notification
+      notifyNewChatMessage(conversationId, customerName, messageText);
     } catch (error) {
       console.error('Error sending message:', error);
       setNewMessage(messageText);
@@ -400,6 +411,9 @@ export function ChatWidget() {
         sender_id: user?.id || null,
         attachment_url: publicUrl,
       });
+
+      // Notify support agents via push notification
+      notifyNewChatMessage(conversationId, customerName, `[Attachment] ${file.name}`);
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file');

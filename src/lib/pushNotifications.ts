@@ -74,20 +74,71 @@ export async function notifyStaffMention(
 }
 
 /**
- * Send push notification for a new live chat message
+ * Send push notification for a new live chat conversation
+ */
+export async function notifyNewLiveChat(
+  conversation: { id: string; customer_name: string; issue_category?: string }
+): Promise<{ success: boolean; sent?: number; error?: string }> {
+  try {
+    // Get all support agents with push subscriptions
+    const { data: supportAgents } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .in('role', ['admin', 'support_agent']);
+
+    if (!supportAgents || supportAgents.length === 0) {
+      return { success: true, sent: 0 };
+    }
+
+    const staffUserIds = supportAgents.map(a => a.user_id);
+    const categoryLabel = conversation.issue_category 
+      ? conversation.issue_category.charAt(0).toUpperCase() + conversation.issue_category.slice(1)
+      : 'General';
+
+    return await sendPushNotification(staffUserIds, {
+      title: 'New Live Chat',
+      body: `${conversation.customer_name} needs help with: ${categoryLabel}`,
+      tag: `live-chat-${conversation.id}`,
+      url: '/admin/live-chat',
+      requireInteraction: true,
+    });
+  } catch (error) {
+    console.error('Error notifying new live chat:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+/**
+ * Send push notification for a new live chat message from customer
  */
 export async function notifyNewChatMessage(
-  staffUserIds: string[],
+  conversationId: string,
   customerName: string,
-  messagePreview: string,
-  conversationId: string
-): Promise<void> {
-  await sendPushNotification(staffUserIds, {
-    title: `New message from ${customerName}`,
-    body: messagePreview.substring(0, 100) + (messagePreview.length > 100 ? '...' : ''),
-    tag: `chat-${conversationId}`,
-    url: '/admin/live-chat',
-  });
+  messagePreview: string
+): Promise<{ success: boolean; sent?: number; error?: string }> {
+  try {
+    // Get all support agents with push subscriptions
+    const { data: supportAgents } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .in('role', ['admin', 'support_agent']);
+
+    if (!supportAgents || supportAgents.length === 0) {
+      return { success: true, sent: 0 };
+    }
+
+    const staffUserIds = supportAgents.map(a => a.user_id);
+
+    return await sendPushNotification(staffUserIds, {
+      title: `Message from ${customerName}`,
+      body: messagePreview.substring(0, 100) + (messagePreview.length > 100 ? '...' : ''),
+      tag: `chat-${conversationId}`,
+      url: '/admin/live-chat',
+    });
+  } catch (error) {
+    console.error('Error notifying new chat message:', error);
+    return { success: false, error: (error as Error).message };
+  }
 }
 
 /**
