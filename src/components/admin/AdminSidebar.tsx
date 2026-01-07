@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, ExternalLink } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -107,6 +107,25 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
       {/* Footer */}
       <div className="p-2 border-t border-border space-y-1">
+        {/* Open in New Tab */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "w-full text-muted-foreground hover:text-foreground",
+                isCollapsed ? "justify-center px-2" : "justify-start"
+              )}
+              onClick={() => window.open('/admin', '_blank')}
+            >
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              {!isCollapsed && <span className="ml-3">Open in New Tab</span>}
+            </Button>
+          </TooltipTrigger>
+          {isCollapsed && <TooltipContent side="right">Open in New Tab</TooltipContent>}
+        </Tooltip>
+
         {/* Collapse Toggle - only show on desktop */}
         {!isMobileDrawer && (
           <Button
