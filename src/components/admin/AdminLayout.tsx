@@ -1,12 +1,13 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Loader2, Menu } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
@@ -77,15 +78,38 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           />
         )}
 
-        {/* Mobile Sidebar (Sheet) */}
+        {/* Mobile Sidebar (Sheet with swipe support) */}
         {isMobile && (
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetContent side="left" className="p-0 w-64">
-              <AdminSidebar 
-                collapsed={false} 
-                onToggle={() => setMobileOpen(false)}
-                onNavigate={() => setMobileOpen(false)}
-              />
+            <SheetContent 
+              side="left" 
+              className="p-0 w-72 [&>button]:hidden"
+              onPointerDownOutside={() => setMobileOpen(false)}
+            >
+              <div 
+                className="h-full"
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  (e.currentTarget as any)._touchStartX = touch.clientX;
+                }}
+                onTouchEnd={(e) => {
+                  const touchStartX = (e.currentTarget as any)._touchStartX;
+                  const touchEndX = e.changedTouches[0].clientX;
+                  const swipeDistance = touchStartX - touchEndX;
+                  
+                  // Swipe left to close (threshold of 50px)
+                  if (swipeDistance > 50) {
+                    setMobileOpen(false);
+                  }
+                }}
+              >
+                <AdminSidebar 
+                  collapsed={false} 
+                  onToggle={() => setMobileOpen(false)}
+                  onNavigate={() => setMobileOpen(false)}
+                  isMobileDrawer
+                />
+              </div>
             </SheetContent>
           </Sheet>
         )}
