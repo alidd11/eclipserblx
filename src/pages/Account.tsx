@@ -1,22 +1,23 @@
 import { forwardRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
-  const { user, signOut } = useAuth();
-  const { isStaff } = useAdminAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
+  const { isStaff, loading: adminLoading } = useAdminAuth();
   const navigate = useNavigate();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -29,6 +30,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       return data;
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   const { data: orders } = useQuery({
@@ -86,14 +88,16 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       <div className="container py-8 space-y-8 max-w-4xl">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-display font-bold">My Account</h1>
-          {isStaff && (
+          {adminLoading ? (
+            <Skeleton className="h-10 w-40" />
+          ) : isStaff ? (
             <Button asChild variant="outline">
               <a href="/admin" target="_blank" rel="noopener noreferrer">
                 <Shield className="h-4 w-4 mr-2" />
                 Admin Dashboard
               </a>
             </Button>
-          )}
+          ) : null}
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -108,7 +112,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Display Name</p>
-                <p className="font-medium">{profile?.display_name || 'Not set'}</p>
+                {profileLoading ? (
+                  <Skeleton className="h-5 w-32 mt-1" />
+                ) : (
+                  <p className="font-medium">{profile?.display_name || 'Not set'}</p>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
