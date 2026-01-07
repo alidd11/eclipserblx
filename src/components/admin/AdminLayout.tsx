@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useRef } from 'react';
+import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -25,6 +25,46 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
+  
+  // Swipe gesture tracking
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  // Handle swipe from left edge to open sidebar
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX.current;
+    const deltaY = Math.abs(touch.clientY - touchStartY.current);
+    
+    // Only trigger if horizontal swipe is dominant and started from left edge
+    if (touchStartX.current < 30 && deltaX > 60 && deltaY < 100 && !mobileOpen) {
+      setMobileOpen(true);
+    }
+    
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }, [mobileOpen]);
+
+  // Add edge swipe listener for mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobile, handleTouchStart, handleTouchEnd]);
 
   // Enable support ticket notifications for all admin pages
   useSupportTicketNotifications();
