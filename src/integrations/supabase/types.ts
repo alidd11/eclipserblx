@@ -1142,6 +1142,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       can_user_download: { Args: { _user_id: string }; Returns: boolean }
       check_and_award_badges: {
         Args: { _user_id: string }
