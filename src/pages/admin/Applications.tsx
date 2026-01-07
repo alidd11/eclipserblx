@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   FileText, Search, User, Mail, Calendar, ExternalLink, 
-  MessageSquare, CheckCircle, XCircle, Clock, Eye, Send
+  MessageSquare, CheckCircle, XCircle, Clock, Eye, Send, Users, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -55,6 +56,13 @@ export default function AdminApplications() {
   const [notes, setNotes] = useState('');
   const [messageSubject, setMessageSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
+  
+  // Mass messaging state
+  const [showMassMessage, setShowMassMessage] = useState(false);
+  const [selectedApplicationIds, setSelectedApplicationIds] = useState<string[]>([]);
+  const [massMessageSubject, setMassMessageSubject] = useState('');
+  const [massMessageBody, setMassMessageBody] = useState('');
+  const [massMessageStatusFilter, setMassMessageStatusFilter] = useState('all');
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ['job-applications'],
@@ -131,6 +139,34 @@ export default function AdminApplications() {
     },
   });
 
+  const sendMassMessageMutation = useMutation({
+    mutationFn: async ({ applicationIds, subject, message }: { applicationIds: string[]; subject: string; message: string }) => {
+      const messages = applicationIds.map(appId => ({
+        application_id: appId,
+        subject,
+        message,
+        sent_by: user?.id,
+      }));
+      
+      const { error } = await supabase
+        .from('applicant_messages')
+        .insert(messages);
+      
+      if (error) throw error;
+      return applicationIds.length;
+    },
+    onSuccess: (count) => {
+      toast.success(`Message sent to ${count} applicant${count > 1 ? 's' : ''}`);
+      setShowMassMessage(false);
+      setMassMessageSubject('');
+      setMassMessageBody('');
+      setSelectedApplicationIds([]);
+    },
+    onError: () => {
+      toast.error('Failed to send mass message');
+    },
+  });
+
   const filteredApplications = applications?.filter(app => {
     const matchesSearch = 
       app.applicant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,12 +213,60 @@ export default function AdminApplications() {
     });
   };
 
+  const handleSendMassMessage = () => {
+    if (selectedApplicationIds.length === 0 || !massMessageSubject || !massMessageBody) {
+      toast.error('Please select applicants and fill in subject and message');
+      return;
+    }
+    sendMassMessageMutation.mutate({
+      applicationIds: selectedApplicationIds,
+      subject: massMessageSubject,
+      message: massMessageBody,
+    });
+  };
+
+  const toggleApplicationSelection = (id: string) => {
+    setSelectedApplicationIds(prev => 
+      prev.includes(id) 
+        ? prev.filter(appId => appId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const selectAllFiltered = () => {
+    if (!filteredApplications) return;
+    const allIds = filteredApplications.map(app => app.id);
+    const allSelected = allIds.every(id => selectedApplicationIds.includes(id));
+    
+    if (allSelected) {
+      setSelectedApplicationIds(prev => prev.filter(id => !allIds.includes(id)));
+    } else {
+      setSelectedApplicationIds(prev => [...new Set([...prev, ...allIds])]);
+    }
+  };
+
+  const getApplicationsForMassMessage = () => {
+    if (!applications) return [];
+    if (massMessageStatusFilter === 'all') return applications;
+    return applications.filter(app => app.status === massMessageStatusFilter);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Job Applications</h1>
-          <p className="text-muted-foreground">Review and manage job applications</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Job Applications</h1>
+            <p className="text-muted-foreground">Review and manage job applications</p>
+          </div>
+          <Button 
+            onClick={() => setShowMassMessage(true)}
+            variant="outline"
+            className="gap-2"
+          >
+            <Megaphone className="h-4 w-4" />
+            Mass Message
+          </Button>
         </div>
 
         {/* Stats */}
@@ -266,6 +350,12 @@ export default function AdminApplications() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox 
+                          checked={filteredApplications?.length > 0 && filteredApplications.every(app => selectedApplicationIds.includes(app.id))}
+                          onCheckedChange={selectAllFiltered}
+                        />
+                      </TableHead>
                       <TableHead>Applicant</TableHead>
                       <TableHead>Position</TableHead>
                       <TableHead>Status</TableHead>
@@ -276,6 +366,12 @@ export default function AdminApplications() {
                   <TableBody>
                     {filteredApplications?.map((app) => (
                       <TableRow key={app.id}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedApplicationIds.includes(app.id)}
+                            onCheckedChange={() => toggleApplicationSelection(app.id)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{app.applicant_name}</p>
@@ -489,6 +585,85 @@ export default function AdminApplications() {
                 </TabsContent>
               </Tabs>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Mass Message Dialog */}
+        <Dialog open={showMassMessage} onOpenChange={setShowMassMessage}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Megaphone className="h-5 w-5" />
+                Send Mass Message
+              </DialogTitle>
+              <DialogDescription>
+                Send a message to multiple applicants at once. Use this to notify applicants about decisions or updates.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Filter by Status</Label>
+                <Select value={massMessageStatusFilter} onValueChange={setMassMessageStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Applicants ({applications?.length || 0})</SelectItem>
+                    <SelectItem value="pending">Pending ({stats.pending})</SelectItem>
+                    <SelectItem value="reviewing">Reviewing ({stats.reviewing})</SelectItem>
+                    <SelectItem value="accepted">Accepted ({stats.accepted})</SelectItem>
+                    <SelectItem value="rejected">Rejected ({stats.rejected})</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  <Users className="h-3 w-3 inline mr-1" />
+                  {getApplicationsForMassMessage().length} applicant{getApplicationsForMassMessage().length !== 1 ? 's' : ''} will receive this message
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Subject *</Label>
+                <Input
+                  value={massMessageSubject}
+                  onChange={(e) => setMassMessageSubject(e.target.value)}
+                  placeholder="e.g., Application Status Update"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Message *</Label>
+                <Textarea
+                  value={massMessageBody}
+                  onChange={(e) => setMassMessageBody(e.target.value)}
+                  placeholder="Type your message to all selected applicants..."
+                  rows={5}
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowMassMessage(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const targetApps = getApplicationsForMassMessage();
+                    if (targetApps.length === 0) {
+                      toast.error('No applicants match the selected filter');
+                      return;
+                    }
+                    sendMassMessageMutation.mutate({
+                      applicationIds: targetApps.map(a => a.id),
+                      subject: massMessageSubject,
+                      message: massMessageBody,
+                    });
+                  }}
+                  disabled={sendMassMessageMutation.isPending || !massMessageSubject || !massMessageBody}
+                >
+                  {sendMassMessageMutation.isPending ? 'Sending...' : `Send to ${getApplicationsForMassMessage().length} Applicant${getApplicationsForMassMessage().length !== 1 ? 's' : ''}`}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
