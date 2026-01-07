@@ -323,24 +323,25 @@ export default function StaffMessages() {
 
   return (
     <AdminLayout>
-      <div className="h-[calc(100vh-8rem)] flex flex-col">
-        <Card className="glass-card flex-1 flex flex-col overflow-hidden">
-          <CardHeader className="border-b border-border shrink-0">
-            <CardTitle className="flex items-center justify-between">
+      <div className="h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)] flex flex-col -mx-2 sm:mx-0">
+        <Card className="glass-card flex-1 flex flex-col overflow-hidden rounded-none sm:rounded-lg">
+          <CardHeader className="border-b border-border shrink-0 px-3 py-3 lg:px-6 lg:py-4">
+            <CardTitle className="flex items-center justify-between text-base lg:text-lg">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Staff Chat
+                <MessageSquare className="h-4 w-4 lg:h-5 lg:w-5" />
+                <span className="truncate">Staff Chat</span>
               </div>
-              <div className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
-                <Users className="h-4 w-4" />
-                {onlineCount} staff members
+              <div className="flex items-center gap-1.5 text-xs lg:text-sm font-normal text-muted-foreground">
+                <Users className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                <span className="hidden sm:inline">{onlineCount} staff</span>
+                <span className="sm:hidden">{onlineCount}</span>
               </div>
             </CardTitle>
           </CardHeader>
           
           <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+            <ScrollArea className="flex-1 p-2 sm:p-4" ref={scrollRef}>
               {isLoading ? (
                 <p className="text-center text-muted-foreground py-8">Loading messages...</p>
               ) : messages?.length === 0 ? (
@@ -416,7 +417,7 @@ export default function StaffMessages() {
             )}
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-4 border-t border-border shrink-0">
+            <form onSubmit={handleSend} className="p-2 sm:p-4 border-t border-border shrink-0">
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}
