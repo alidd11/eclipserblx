@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
+import { AdminInstallPrompt } from './AdminInstallPrompt';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Loader2, Menu } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -173,6 +174,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
               <span className="font-display font-bold">Admin Dashboard</span>
             </header>
           )}
+          
+          {/* Mobile PWA Install Prompt */}
+          {isMobile && <AdminInstallPrompt />}
           
           <main className="flex-1">
             <div className="p-4 md:p-6 lg:p-8">
