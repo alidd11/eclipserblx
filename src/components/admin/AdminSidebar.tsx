@@ -61,22 +61,18 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       <div className="p-4 border-b border-border">
         {!isCollapsed && (
           <>
-            <NavLink to="/" onClick={handleNavClick} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronLeft className="h-4 w-4 shrink-0" />
-              <span className="text-sm">Back to Store</span>
-            </NavLink>
-            <h1 className="font-display font-bold text-xl mt-3">{SITE_NAME}</h1>
+            <h1 className="font-display font-bold text-xl">{SITE_NAME}</h1>
             <p className="text-xs text-muted-foreground">Admin Dashboard</p>
           </>
         )}
         {isCollapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <NavLink to="/" onClick={handleNavClick} className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                <ChevronLeft className="h-5 w-5" />
-              </NavLink>
+              <div className="flex items-center justify-center">
+                <span className="font-display font-bold text-lg">E</span>
+              </div>
             </TooltipTrigger>
-            <TooltipContent side="right">Back to Store</TooltipContent>
+            <TooltipContent side="right">{SITE_NAME}</TooltipContent>
           </Tooltip>
         )}
       </div>
