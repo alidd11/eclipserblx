@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNotificationSound } from './useNotificationSound';
 import { usePushNotifications } from './usePushNotifications';
+import { notifyNewSupportTicket } from '@/lib/pushNotifications';
 
 interface NewTicket {
   id: string;
@@ -34,13 +35,13 @@ export function useSupportTicketNotifications() {
           schema: 'public',
           table: 'support_tickets',
         },
-        (payload) => {
+        async (payload) => {
           const newTicket = payload.new as NewTicket;
           
           // Play notification sound
           playSound();
           
-          // Send push notification
+          // Send foreground push notification (when app is open)
           const priorityLabel = newTicket.priority 
             ? newTicket.priority.charAt(0).toUpperCase() + newTicket.priority.slice(1)
             : 'Medium';
@@ -49,6 +50,26 @@ export function useSupportTicketNotifications() {
             body: `[${priorityLabel}] ${newTicket.subject}\nFrom: ${newTicket.customer_email}`,
             tag: `support-ticket-${newTicket.id}`,
           });
+
+          // Send background push notifications to all staff with push subscriptions
+          try {
+            // Fetch all staff user IDs who have push subscriptions
+            const { data: subscriptions } = await supabase
+              .from('push_subscriptions')
+              .select('user_id');
+            
+            if (subscriptions && subscriptions.length > 0) {
+              const staffUserIds = [...new Set(subscriptions.map(s => s.user_id))];
+              await notifyNewSupportTicket(staffUserIds, {
+                id: newTicket.id,
+                subject: newTicket.subject,
+                customer_email: newTicket.customer_email,
+                priority: newTicket.priority || undefined,
+              });
+            }
+          } catch (error) {
+            console.error('Failed to send background push for support ticket:', error);
+          }
         }
       )
       .subscribe();
