@@ -763,6 +763,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          customer_id: string | null
           display_name: string | null
           email: string
           id: string
@@ -772,6 +773,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          customer_id?: string | null
           display_name?: string | null
           email: string
           id?: string
@@ -781,6 +783,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          customer_id?: string | null
           display_name?: string | null
           email?: string
           id?: string
@@ -1155,6 +1158,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      generate_customer_id: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

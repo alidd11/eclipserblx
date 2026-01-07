@@ -95,6 +95,7 @@ const CANNED_RESPONSES = [
 
 interface Conversation {
   id: string;
+  user_id: string | null;
   customer_name: string | null;
   customer_email: string | null;
   status: string;
@@ -142,6 +143,7 @@ export default function AdminLiveChat() {
   const [isUploading, setIsUploading] = useState(false);
   const [customerTyping, setCustomerTyping] = useState(false);
   const [chatFilter, setChatFilter] = useState<'active' | 'closed'>('active');
+  const [customerProfiles, setCustomerProfiles] = useState<Record<string, { customer_id: string | null }>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -273,6 +275,23 @@ export default function AdminLiveChat() {
 
     if (data) {
       setConversations(data);
+      
+      // Fetch customer profiles for conversations with user_id
+      const userIds = data.filter(c => c.user_id).map(c => c.user_id) as string[];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, customer_id')
+          .in('user_id', userIds);
+        
+        if (profiles) {
+          const profileMap: Record<string, { customer_id: string | null }> = {};
+          profiles.forEach(p => {
+            profileMap[p.user_id] = { customer_id: p.customer_id };
+          });
+          setCustomerProfiles(profileMap);
+        }
+      }
     }
     setIsLoading(false);
   };
@@ -522,6 +541,11 @@ export default function AdminLiveChat() {
                         <h3 className="font-semibold text-sm lg:text-base truncate">
                           {selectedConversation.customer_name || 'Anonymous'}
                         </h3>
+                        {selectedConversation.user_id && customerProfiles[selectedConversation.user_id]?.customer_id && (
+                          <Badge variant="secondary" className="text-[10px] lg:text-xs font-mono shrink-0">
+                            {customerProfiles[selectedConversation.user_id].customer_id}
+                          </Badge>
+                        )}
                         {selectedConversation.issue_category && (
                           <Badge 
                             variant="outline" 
