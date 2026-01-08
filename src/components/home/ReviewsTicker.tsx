@@ -57,13 +57,25 @@ export const ReviewsTicker = memo(function ReviewsTicker() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name]) || []);
 
-      return reviewsData?.map((review, index) => ({
-        id: review.id,
-        rating: review.rating,
-        title: review.title,
-        content: review.content,
-        display_name: profileMap.get(review.user_id) || FAKE_NAMES[index % FAKE_NAMES.length],
-      })) as Review[];
+      // Shuffle fake names deterministically based on review ID for consistency
+      const shuffledNames = [...FAKE_NAMES].sort((a, b) => {
+        const hash = (str: string) => str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return hash(a) - hash(b);
+      });
+
+      return reviewsData?.map((review, index) => {
+        // Use review ID to pick a consistent random name
+        const idHash = review.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const nameIndex = idHash % shuffledNames.length;
+        
+        return {
+          id: review.id,
+          rating: review.rating,
+          title: review.title,
+          content: review.content,
+          display_name: shuffledNames[nameIndex],
+        };
+      }) as Review[];
     },
     staleTime: 1000 * 60 * 5,
   });
