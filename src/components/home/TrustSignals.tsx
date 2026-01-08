@@ -1,4 +1,5 @@
 import { Shield, Zap, Headphones, RefreshCw } from 'lucide-react';
+import { SectionWrapper } from './SectionWrapper';
 
 const signals = [
   {
@@ -25,54 +26,52 @@ const signals = [
 
 export function TrustSignals() {
   return (
-    <section className="pb-8">
-      <div className="mx-auto w-full max-w-4xl px-4">
-        {/* Card Container - matching other cards */}
-        <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-amber-500/5 p-6 md:p-8 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
-          {/* Animated background glow */}
-          <div className="absolute -top-32 -right-32 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl opacity-50" />
-          <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-primary/15 rounded-full blur-3xl opacity-50" />
-          
-          {/* Scanline effect */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)' }} />
+    <SectionWrapper>
+      {/* Card Container - matching other cards */}
+      <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-amber-500/5 p-6 md:p-8 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
+        {/* Animated background glow */}
+        <div className="absolute -top-32 -right-32 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl opacity-50" />
+        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-primary/15 rounded-full blur-3xl opacity-50" />
+        
+        {/* Scanline effect */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)' }} />
 
-          <div className="relative z-10">
-            {/* Header (same language as other cards) */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-500/30 border border-white/10">
-                  <Shield className="h-5 w-5 text-amber-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl md:text-2xl font-display font-bold">Why Eclipse</h2>
-                  <p className="text-sm text-muted-foreground">Fast, secure, and supported</p>
-                </div>
+        <div className="relative z-10">
+          {/* Header (same language as other cards) */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-500/30 border border-white/10">
+                <Shield className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-xl md:text-2xl font-display font-bold">Why Eclipse</h2>
+                <p className="text-sm text-muted-foreground">Fast, secure, and supported</p>
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {signals.map((signal, index) => {
-                const colors = [
-                  { bg: 'bg-emerald-500/20', text: 'text-emerald-400', glow: 'shadow-emerald-500/30' },
-                  { bg: 'bg-violet-500/20', text: 'text-violet-400', glow: 'shadow-violet-500/30' },
-                  { bg: 'bg-blue-500/20', text: 'text-blue-400', glow: 'shadow-blue-500/30' },
-                  { bg: 'bg-amber-500/20', text: 'text-amber-400', glow: 'shadow-amber-500/30' },
-                ][index];
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {signals.map((signal, index) => {
+              const colors = [
+                { bg: 'bg-emerald-500/20', text: 'text-emerald-400', glow: 'shadow-emerald-500/30' },
+                { bg: 'bg-violet-500/20', text: 'text-violet-400', glow: 'shadow-violet-500/30' },
+                { bg: 'bg-blue-500/20', text: 'text-blue-400', glow: 'shadow-blue-500/30' },
+                { bg: 'bg-amber-500/20', text: 'text-amber-400', glow: 'shadow-amber-500/30' },
+              ][index];
 
-                return (
-                  <div key={signal.title} className="rounded-xl border border-border/50 bg-card/40 p-3 text-center">
-                    <div className={`mx-auto w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center shadow-lg ${colors.glow} border border-white/10 mb-3`}>
-                      <signal.icon className={`h-5 w-5 ${colors.text}`} />
-                    </div>
-                    <h3 className="font-display font-semibold text-sm mb-1">{signal.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{signal.description}</p>
+              return (
+                <div key={signal.title} className="rounded-xl border border-border/50 bg-card/40 p-3 text-center">
+                  <div className={`mx-auto w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center shadow-lg ${colors.glow} border border-white/10 mb-3`}>
+                    <signal.icon className={`h-5 w-5 ${colors.text}`} />
                   </div>
-                );
-              })}
-            </div>
+                  <h3 className="font-display font-semibold text-sm mb-1">{signal.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{signal.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
