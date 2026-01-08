@@ -12,8 +12,8 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
 function generatePasswordResetEmailHtml(token: string): string {
   // Create individual digit cells for the 4-digit code
   const digitCells = token.split('').map(digit => `
-    <td style="width: 48px; height: 56px; background: #0a1412; border: 2px solid #10b981; border-radius: 8px; text-align: center; vertical-align: middle; margin: 0 4px;">
-      <span style="font-size: 28px; font-weight: 700; color: #10b981; font-family: 'Courier New', Courier, monospace;">${digit}</span>
+    <td style="width: 48px; height: 56px; background: #1a1520; border: 2px solid #a855f7; border-radius: 8px; text-align: center; vertical-align: middle; margin: 0 4px;">
+      <span style="font-size: 28px; font-weight: 700; color: #a855f7; font-family: 'Courier New', Courier, monospace;">${digit}</span>
     </td>
   `).join('<td style="width: 8px;"></td>')
 
@@ -25,22 +25,22 @@ function generatePasswordResetEmailHtml(token: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eclipse Password Reset</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0a;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
     <tr>
       <td align="center" style="padding: 32px 16px;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 400px; background: linear-gradient(180deg, #111111 0%, #0d0d0d 100%); border: 1px solid #1f1f1f; border-radius: 16px; overflow: hidden;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 420px; background: linear-gradient(180deg, #151518 0%, #0d0d10 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; overflow: hidden;">
           
           <!-- Header with gradient accent -->
           <tr>
-            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%); padding: 24px 24px 20px;">
+            <td style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%); padding: 24px 24px 20px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
                     <!-- Eclipse Logo -->
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 10px; text-align: center; vertical-align: middle;">
+                        <td style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); width: 40px; height: 40px; border-radius: 10px; text-align: center; vertical-align: middle;">
                           <span style="font-size: 20px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
                         </td>
                         <td style="padding-left: 12px;">
@@ -59,7 +59,7 @@ function generatePasswordResetEmailHtml(token: string): string {
             <td align="center" style="padding: 20px 24px 12px;">
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 50%; text-align: center; vertical-align: middle;">
+                  <td style="width: 56px; height: 56px; background: rgba(168, 85, 247, 0.1); border: 2px solid rgba(168, 85, 247, 0.3); border-radius: 50%; text-align: center; vertical-align: middle;">
                     <span style="font-size: 24px;">&#128274;</span>
                   </td>
                 </tr>
@@ -117,7 +117,7 @@ function generatePasswordResetEmailHtml(token: string): string {
             <td style="padding: 0 24px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="border-top: 1px solid #1f1f1f;"></td>
+                  <td style="border-top: 1px solid rgba(168, 85, 247, 0.15);"></td>
                 </tr>
               </table>
             </td>
@@ -130,13 +130,13 @@ function generatePasswordResetEmailHtml(token: string): string {
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="padding-right: 16px;">
-                    <a href="https://eclipserblx.com" style="font-size: 11px; color: #10b981; text-decoration: none;">Website</a>
+                    <a href="https://eclipserblx.com" style="font-size: 11px; color: #a855f7; text-decoration: none;">Website</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 16px; padding-right: 16px;">
-                    <a href="https://eclipserblx.com/support" style="font-size: 11px; color: #10b981; text-decoration: none;">Support</a>
+                    <a href="https://eclipserblx.com/support" style="font-size: 11px; color: #a855f7; text-decoration: none;">Support</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 16px;">
-                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 11px; color: #10b981; text-decoration: none;">Privacy</a>
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 11px; color: #a855f7; text-decoration: none;">Privacy</a>
                   </td>
                 </tr>
               </table>

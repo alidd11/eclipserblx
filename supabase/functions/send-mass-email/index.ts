@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Format the content as HTML with Eclipse Jade & Obsidian branding
+    // Format the content as HTML with Eclipse Purple & Obsidian branding
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -84,25 +84,25 @@ const handler = async (req: Request): Promise<Response> => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #050505; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #050505;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%); border: 1px solid #1a1a1a; border-radius: 16px; overflow: hidden;">
+        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #151518 0%, #0d0d10 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; overflow: hidden;">
           
           <!-- Header with gradient accent -->
           <tr>
-            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
+            <td style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
+                        <td style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
                           <span style="font-size: 22px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif;">ECLIPSE</span>
+                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
                         </td>
                       </tr>
                     </table>
@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Content -->
           <tr>
             <td style="padding: 32px 40px;">
-              <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 20px 0; font-weight: 600; font-family: 'Cinzel', Georgia, serif;">${subject}</h2>
+              <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 20px 0; font-weight: 600; font-family: Georgia, serif;">${subject}</h2>
               <div style="color: #a3a3a3; font-size: 15px; line-height: 1.7;">
                 ${content.split('\n').map(line => `<p style="margin: 0 0 16px 0;">${line}</p>`).join('')}
               </div>
@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Divider -->
           <tr>
             <td style="padding: 0 40px;">
-              <hr style="border: none; border-top: 1px solid #1f1f1f; margin: 0;">
+              <hr style="border: none; border-top: 1px solid rgba(168, 85, 247, 0.15); margin: 0;">
             </td>
           </tr>
           
@@ -138,13 +138,13 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="padding-right: 20px;">
-                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
+                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #a855f7; text-decoration: none;">Website</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
-                    <a href="https://eclipserblx.com/account" style="font-size: 12px; color: #10b981; text-decoration: none;">Preferences</a>
+                    <a href="https://eclipserblx.com/account" style="font-size: 12px; color: #a855f7; text-decoration: none;">Preferences</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px;">
-                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #a855f7; text-decoration: none;">Privacy</a>
                   </td>
                 </tr>
               </table>

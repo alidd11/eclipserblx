@@ -26,28 +26,26 @@ const getStatusContent = (status: string, position: string, applicant_name: stri
       return {
         subject: `Congratulations! Your Application for ${position} Has Been Accepted`,
         iconEmoji: '✓',
-        iconBorderColor: 'rgba(16, 185, 129, 0.3)',
-        iconBgColor: 'rgba(16, 185, 129, 0.1)',
+        iconBorderColor: 'rgba(34, 197, 94, 0.3)',
+        iconBgColor: 'rgba(34, 197, 94, 0.1)',
         title: 'Congratulations! 🎉',
         subtitle: 'Your application has been accepted',
-        accentColor: '#10b981',
-        messageBoxBg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%)',
-        messageBoxBorder: 'rgba(16, 185, 129, 0.2)',
+        accentColor: '#22c55e',
         message: `
           <p style="margin: 0 0 20px 0; font-size: 16px; color: #e4e4e7; line-height: 1.6;">
             Hi ${applicant_name},
           </p>
           <p style="margin: 0 0 24px 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-            Great news! We're thrilled to inform you that your application for the <strong style="color: #10b981;">${position}</strong> position has been <strong style="color: #10b981;">accepted</strong>!
+            Great news! We're thrilled to inform you that your application for the <strong style="color: #22c55e;">${position}</strong> position has been <strong style="color: #22c55e;">accepted</strong>!
           </p>
           ${custom_message ? `
           <p style="margin: 0 0 24px 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-            <strong style="color: #10b981;">Message from our team:</strong><br>
+            <strong style="color: #22c55e;">Message from our team:</strong><br>
             ${custom_message}
           </p>
           ` : ''}
           <p style="margin: 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-            A member of our team will be in touch shortly with next steps. In the meantime, feel free to check the <a href="https://eclipserblx.com/jobs" style="color: #10b981; text-decoration: none;">Jobs page</a> for any messages.
+            A member of our team will be in touch shortly with next steps. In the meantime, feel free to check the <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a> for any messages.
           </p>
         `,
       };
@@ -60,8 +58,6 @@ const getStatusContent = (status: string, position: string, applicant_name: stri
         title: 'Application Update',
         subtitle: 'Thank you for your interest in Eclipse',
         accentColor: '#6b7280',
-        messageBoxBg: 'linear-gradient(135deg, rgba(107, 114, 128, 0.08) 0%, rgba(107, 114, 128, 0.02) 100%)',
-        messageBoxBorder: 'rgba(107, 114, 128, 0.2)',
         message: `
           <p style="margin: 0 0 20px 0; font-size: 16px; color: #e4e4e7; line-height: 1.6;">
             Hi ${applicant_name},
@@ -79,7 +75,7 @@ const getStatusContent = (status: string, position: string, applicant_name: stri
           </p>
           ` : ''}
           <p style="margin: 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-            We encourage you to apply again in the future. Keep an eye on our <a href="https://eclipserblx.com/jobs" style="color: #10b981; text-decoration: none;">Jobs page</a> for upcoming openings.
+            We encourage you to apply again in the future. Keep an eye on our <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a> for upcoming openings.
           </p>
         `,
       };
@@ -92,8 +88,6 @@ const getStatusContent = (status: string, position: string, applicant_name: stri
         title: 'Application Under Review',
         subtitle: "We're reviewing your application",
         accentColor: '#eab308',
-        messageBoxBg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(234, 179, 8, 0.02) 100%)',
-        messageBoxBorder: 'rgba(234, 179, 8, 0.2)',
         message: `
           <p style="margin: 0 0 20px 0; font-size: 16px; color: #e4e4e7; line-height: 1.6;">
             Hi ${applicant_name},
@@ -108,7 +102,7 @@ const getStatusContent = (status: string, position: string, applicant_name: stri
           </p>
           ` : ''}
           <p style="margin: 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-            We'll be in touch soon with an update. You can check your application status anytime on our <a href="https://eclipserblx.com/jobs" style="color: #10b981; text-decoration: none;">Jobs page</a>.
+            We'll be in touch soon with an update. You can check your application status anytime on our <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a>.
           </p>
         `,
       };
@@ -141,25 +135,25 @@ const handler = async (req: Request): Promise<Response> => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${content.subject}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #050505; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #050505;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%); border: 1px solid #1a1a1a; border-radius: 16px; overflow: hidden;">
+        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #151518 0%, #0d0d10 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; overflow: hidden;">
           
           <!-- Header with gradient accent -->
           <tr>
-            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
+            <td style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
+                        <td style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
                           <span style="font-size: 22px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif;">ECLIPSE</span>
+                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
                         </td>
                       </tr>
                     </table>
@@ -180,7 +174,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <tr>
             <td align="center" style="padding: 0 40px 12px;">
-              <h1 style="font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; font-family: 'Cinzel', Georgia, serif;">${content.title}</h1>
+              <h1 style="font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; font-family: Georgia, serif;">${content.title}</h1>
             </td>
           </tr>
           
@@ -210,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Divider -->
           <tr>
             <td style="padding: 0 40px;">
-              <hr style="border: none; border-top: 1px solid #1f1f1f; margin: 0;">
+              <hr style="border: none; border-top: 1px solid rgba(168, 85, 247, 0.15); margin: 0;">
             </td>
           </tr>
           
@@ -220,13 +214,13 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="padding-right: 20px;">
-                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
+                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #a855f7; text-decoration: none;">Website</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
-                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #10b981; text-decoration: none;">Support</a>
+                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #a855f7; text-decoration: none;">Support</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px;">
-                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #a855f7; text-decoration: none;">Privacy</a>
                   </td>
                 </tr>
               </table>
