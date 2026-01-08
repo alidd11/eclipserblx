@@ -459,7 +459,7 @@ export default function AdminProducts() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{form.id ? 'Edit Product' : 'Create Product'}</DialogTitle>
           </DialogHeader>
