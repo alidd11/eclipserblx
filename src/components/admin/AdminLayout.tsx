@@ -64,7 +64,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const deltaY = Math.abs(touch.clientY - touchStartY.current);
     
     // Only trigger if horizontal swipe is dominant and started from left edge
-    if (touchStartX.current < 30 && deltaX > 60 && deltaY < 100 && !mobileOpen) {
+    if (touchStartX.current < 50 && deltaX > 40 && deltaY < 100 && !mobileOpen) {
       setMobileOpen(true);
     }
     
@@ -177,6 +177,17 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           </Sheet>
         )}
 
+        {/* Swipe Indicator - Left Edge Hint */}
+        {isMobile && !mobileOpen && (
+          <div 
+            className="fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center"
+            onClick={() => setMobileOpen(true)}
+          >
+            <div className="w-1 h-16 bg-primary/40 rounded-r-full shadow-lg shadow-primary/20 transition-all duration-300 hover:w-1.5 hover:bg-primary/60 active:bg-primary/80">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-24 -ml-1" />
+            </div>
+          </div>
+        )}
         <div className="flex-1 flex flex-col overflow-auto">
           {isMobile && (
             <header className="sticky top-0 z-40 border-b border-border bg-card px-3 py-2 flex items-center justify-between">
