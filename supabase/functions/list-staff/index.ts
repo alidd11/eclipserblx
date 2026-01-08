@@ -72,10 +72,10 @@ serve(async (req) => {
       });
     }
 
-    // Fetch profiles for staff members
+    // Fetch profiles for staff members (including last_seen)
     const { data: staffProfiles, error: profilesError } = await service
       .from("profiles")
-      .select("user_id, display_name, email")
+      .select("user_id, display_name, email, last_seen")
       .in("user_id", staffIds);
 
     if (profilesError) throw profilesError;

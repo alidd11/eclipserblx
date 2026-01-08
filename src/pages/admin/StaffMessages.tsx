@@ -26,6 +26,7 @@ interface StaffProfile {
   user_id: string;
   display_name: string | null;
   email: string;
+  last_seen?: string | null;
 }
 
 interface TypingUser {
@@ -409,6 +410,33 @@ export default function StaffMessages() {
     };
   }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned, allStaff, onlineUsers]);
 
+  // Update last_seen when user is active
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const updateLastSeen = async () => {
+      await supabase
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('user_id', user.id);
+    };
+
+    // Update immediately on mount
+    updateLastSeen();
+
+    // Update periodically while active (every 30 seconds)
+    const interval = setInterval(updateLastSeen, 30000);
+
+    // Update on activity
+    const handleActivity = () => updateLastSeen();
+    window.addEventListener('focus', handleActivity);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleActivity);
+    };
+  }, [user?.id]);
+
   // Presence channel for online + typing indicators
   useEffect(() => {
     if (!user?.id) return;
@@ -656,6 +684,22 @@ export default function StaffMessages() {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatLastSeen = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+
   const getTypingText = () => {
     if (typingUsers.length === 0) return null;
     if (typingUsers.length === 1) return `${typingUsers[0].name} is typing...`;
@@ -678,9 +722,10 @@ export default function StaffMessages() {
                 <span>{onlineUsers.length} online</span>
               </div>
             </CardTitle>
-            {/* Online staff panel */}
-            {onlineUsers.length > 0 && (
+            {/* Staff panel - shows online and last seen */}
+            {allStaff && allStaff.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
+                {/* Online users first */}
                 {onlineUsers.map((staff) => (
                   <div
                     key={staff.user_id}
@@ -705,6 +750,25 @@ export default function StaffMessages() {
                     )}
                   </div>
                 ))}
+                {/* Offline users with last seen */}
+                {allStaff
+                  .filter(staff => !onlineUsers.some(o => o.user_id === staff.user_id))
+                  .map((staff) => {
+                    const lastSeen = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
+                    return (
+                      <div
+                        key={staff.user_id}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-muted/50 text-muted-foreground"
+                        title={`Last seen: ${lastSeen}`}
+                      >
+                        <Circle className="h-1.5 w-1.5 fill-muted-foreground/40 text-muted-foreground/40" />
+                        <span className="truncate max-w-[60px]">
+                          {staff.display_name || staff.email.split('@')[0]}
+                        </span>
+                        <span className="text-[10px] opacity-70">{lastSeen}</span>
+                      </div>
+                    );
+                  })}
               </div>
             )}
           </CardHeader>
