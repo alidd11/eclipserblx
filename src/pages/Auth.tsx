@@ -458,7 +458,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="min-h-screen flex items-center justify-center p-4 py-8 sm:py-12 relative">
+      <div className="min-h-screen flex items-center justify-center p-4 pt-[max(2rem,env(safe-area-inset-top))] pb-8 sm:py-12 relative">
         <div className="w-full max-w-md space-y-6">
           {/* Back Link */}
           <Link
