@@ -858,6 +858,7 @@ export type Database = {
           email: string
           id: string
           last_seen: string | null
+          referral_code: string | null
           updated_at: string
           user_id: string
         }
@@ -869,6 +870,7 @@ export type Database = {
           email: string
           id?: string
           last_seen?: string | null
+          referral_code?: string | null
           updated_at?: string
           user_id: string
         }
@@ -880,6 +882,7 @@ export type Database = {
           email?: string
           id?: string
           last_seen?: string | null
+          referral_code?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -914,6 +917,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          created_at: string | null
+          discount_code_id: string | null
+          expires_at: string | null
+          id: string
+          is_used: boolean | null
+          referral_id: string | null
+          reward_type: string
+          reward_value: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          discount_code_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          referral_id?: string | null
+          reward_type?: string
+          reward_value?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          discount_code_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          referral_id?: string | null
+          reward_type?: string
+          reward_value?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          order_id: string | null
+          referral_code: string
+          referred_id: string | null
+          referrer_id: string
+          reward_claimed: boolean | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          referral_code: string
+          referred_id?: string | null
+          referrer_id: string
+          reward_claimed?: boolean | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          referral_code?: string
+          referred_id?: string | null
+          referrer_id?: string
+          reward_claimed?: boolean | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -1282,6 +1380,7 @@ export type Database = {
         }
       }
       generate_customer_id: { Args: never; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
