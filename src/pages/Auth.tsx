@@ -882,6 +882,13 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {confirmPassword.length > 0 && password.length > 0 && (
+                    confirmPassword === password ? (
+                      <p className="text-sm text-green-500">Passwords match</p>
+                    ) : (
+                      <p className="text-sm text-destructive">Passwords do not match</p>
+                    )
+                  )}
                   {errors.confirmPassword && (
                     <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                   )}
