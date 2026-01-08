@@ -7,20 +7,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const logStep = (step: string, details?: unknown) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[VERIFY-PAYMENT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { sessionId } = await req.json();
+    const { sessionId, paymentIntentId } = await req.json();
 
-    if (!sessionId) {
-      throw new Error("Session ID is required");
+    if (!sessionId && !paymentIntentId) {
+      throw new Error("Session ID or Payment Intent ID is required");
     }
 
+    logStep("Starting verification", { sessionId, paymentIntentId });
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2023-10-16",
     });
 
     const supabaseClient = createClient(
@@ -28,37 +35,83 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Retrieve the checkout session
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["line_items", "payment_intent"],
-    });
+    let items: any[] = [];
+    let customerEmail = "";
+    let userId: string | null = null;
+    let paymentId = "";
+    let paymentMethod = "stripe";
+    let amountTotal = 0;
 
-    console.log("Session retrieved:", session.id, "Status:", session.payment_status);
-
-    if (session.payment_status !== "paid") {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: "Payment not completed" 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+    // Handle Stripe Checkout Session
+    if (sessionId) {
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["line_items", "payment_intent"],
       });
+
+      logStep("Session retrieved", { id: session.id, status: session.payment_status });
+
+      if (session.payment_status !== "paid") {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          message: "Payment not completed" 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      items = JSON.parse(session.metadata?.items || "[]");
+      customerEmail = session.customer_email || session.metadata?.customer_email || "";
+      userId = session.metadata?.user_id || null;
+      paymentId = session.id;
+      paymentMethod = session.payment_method_types?.[0] || "stripe";
+      amountTotal = session.amount_total ? session.amount_total / 100 : 0;
+    }
+    // Handle PaymentIntent (from Apple Pay/Google Pay)
+    else if (paymentIntentId) {
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      logStep("PaymentIntent retrieved", { id: paymentIntent.id, status: paymentIntent.status });
+
+      if (paymentIntent.status !== "succeeded") {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          message: "Payment not completed" 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      items = JSON.parse(paymentIntent.metadata?.items || "[]");
+      customerEmail = paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "";
+      userId = paymentIntent.metadata?.user_id || null;
+      paymentId = paymentIntent.id;
+      
+      // Determine payment method type
+      if (paymentIntent.payment_method) {
+        const pm = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
+        if (pm.type === 'card' && pm.card?.wallet?.type === 'apple_pay') {
+          paymentMethod = 'apple_pay';
+        } else if (pm.type === 'card' && pm.card?.wallet?.type === 'google_pay') {
+          paymentMethod = 'google_pay';
+        } else {
+          paymentMethod = pm.type || 'card';
+        }
+      }
+      
+      amountTotal = paymentIntent.amount / 100;
     }
 
-    // Parse items from metadata
-    const items = JSON.parse(session.metadata?.items || "[]");
-    const customerEmail = session.customer_email || session.metadata?.customer_email || "";
-    const userId = session.metadata?.user_id || null;
-
-    // Check if order already exists for this session
+    // Check if order already exists
     const { data: existingOrder } = await supabaseClient
       .from("orders")
       .select("id")
-      .eq("payment_id", session.id)
+      .eq("payment_id", paymentId)
       .single();
 
     if (existingOrder) {
-      console.log("Order already exists:", existingOrder.id);
+      logStep("Order already exists", { orderId: existingOrder.id });
       return new Response(JSON.stringify({ 
         success: true, 
         orderId: existingOrder.id,
@@ -71,7 +124,9 @@ serve(async (req) => {
 
     // Calculate totals
     const subtotal = items.reduce((sum: number, item: any) => sum + item.price, 0);
-    const total = session.amount_total ? session.amount_total / 100 : subtotal;
+    const total = amountTotal || subtotal;
+
+    logStep("Creating order", { customerEmail, userId, subtotal, total, paymentMethod });
 
     // Create order
     const { data: order, error: orderError } = await supabaseClient
@@ -82,18 +137,18 @@ serve(async (req) => {
         subtotal: subtotal,
         total: total,
         status: "paid",
-        payment_id: session.id,
-        payment_method: session.payment_method_types?.[0] || "stripe",
+        payment_id: paymentId,
+        payment_method: paymentMethod,
       })
       .select()
       .single();
 
     if (orderError) {
-      console.error("Order creation error:", orderError);
+      logStep("Order creation error", orderError);
       throw orderError;
     }
 
-    console.log("Order created:", order.id);
+    logStep("Order created", { orderId: order.id });
 
     // Create order items
     const orderItems = items.map((item: any) => ({
@@ -108,12 +163,12 @@ serve(async (req) => {
       .insert(orderItems);
 
     if (itemsError) {
-      console.error("Order items error:", itemsError);
+      logStep("Order items error", itemsError);
       throw itemsError;
     }
 
-    // Send order confirmation email with PDF receipt
-    console.log("Sending order confirmation email...");
+    // Send order confirmation email
+    logStep("Sending confirmation email");
     try {
       const emailPayload = {
         orderId: order.id,
@@ -124,7 +179,7 @@ serve(async (req) => {
         })),
         subtotal: subtotal,
         total: total,
-        paymentMethod: session.payment_method_types?.[0] || "card",
+        paymentMethod: paymentMethod,
         orderDate: order.created_at,
       };
 
@@ -142,13 +197,12 @@ serve(async (req) => {
 
       if (!emailResponse.ok) {
         const errorText = await emailResponse.text();
-        console.error("Email sending failed:", errorText);
+        logStep("Email sending failed", errorText);
       } else {
-        console.log("Order confirmation email sent successfully");
+        logStep("Email sent successfully");
       }
     } catch (emailError) {
-      // Don't fail the order if email fails
-      console.error("Failed to send confirmation email:", emailError);
+      logStep("Email error (non-fatal)", emailError);
     }
 
     return new Response(JSON.stringify({ 
@@ -160,7 +214,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Verify payment error:", errorMessage);
+    logStep("ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
