@@ -156,7 +156,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-screen flex bg-background">
+      <div className="min-h-screen h-[100dvh] flex bg-background overflow-hidden">
         {/* Desktop Sidebar */}
         {!isMobile && (
           <AdminSidebar 
@@ -214,7 +214,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         )}
         <div className="flex-1 flex flex-col min-h-0">
           {isMobile && (
-            <header className="shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+            <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 
