@@ -223,14 +223,16 @@ export default function AdminAnalytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[250px]">
-                <BarChart data={downloadTrend || []}>
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} />
+            <ChartContainer config={chartConfig} className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={downloadTrend || []} margin={{ left: 0, right: 8 }}>
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
+                  <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="downloads" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
-              </ChartContainer>
+              </ResponsiveContainer>
+            </ChartContainer>
             </CardContent>
           </Card>
 
@@ -243,14 +245,16 @@ export default function AdminAnalytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[250px]">
-                <LineChart data={orderTrend || []}>
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} />
+            <ChartContainer config={chartConfig} className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={orderTrend || []} margin={{ left: 0, right: 8 }}>
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
+                  <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line type="monotone" dataKey="orders" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-2))' }} />
                 </LineChart>
-              </ChartContainer>
+              </ResponsiveContainer>
+            </ChartContainer>
             </CardContent>
           </Card>
         </div>
@@ -265,14 +269,16 @@ export default function AdminAnalytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[250px]">
-                <BarChart data={userTrend || []}>
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} />
+            <ChartContainer config={chartConfig} className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={userTrend || []} margin={{ left: 0, right: 8 }}>
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
+                  <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="users" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
                 </BarChart>
-              </ChartContainer>
+              </ResponsiveContainer>
+            </ChartContainer>
             </CardContent>
           </Card>
 
@@ -288,7 +294,8 @@ export default function AdminAnalytics() {
               {categoryStats?.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">No products yet</p>
               ) : (
-                <ChartContainer config={chartConfig} className="h-[250px]">
+              <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Pie
@@ -305,7 +312,8 @@ export default function AdminAnalytics() {
                       ))}
                     </Pie>
                   </PieChart>
-                </ChartContainer>
+                </ResponsiveContainer>
+              </ChartContainer>
               )}
             </CardContent>
           </Card>
