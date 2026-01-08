@@ -94,7 +94,7 @@ export default function AdminApplications() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
+    mutationFn: async ({ id, status, notes, sendEmail = true }: { id: string; status: string; notes?: string; sendEmail?: boolean }) => {
       const { error } = await supabase
         .from('job_applications')
         .update({ 
@@ -105,10 +105,31 @@ export default function AdminApplications() {
         .eq('id', id);
       
       if (error) throw error;
+
+      // Return the status and application id for the onSuccess handler
+      return { id, status, sendEmail };
     },
-    onSuccess: () => {
+    onSuccess: async ({ status, sendEmail }) => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       toast.success('Application updated');
+
+      // Send status update email for accepted, rejected, or reviewing status
+      if (sendEmail && selectedApplication && ['accepted', 'rejected', 'reviewing'].includes(status)) {
+        try {
+          await supabase.functions.invoke('send-application-status-update', {
+            body: {
+              applicant_name: selectedApplication.applicant_name,
+              applicant_email: selectedApplication.applicant_email,
+              position: selectedApplication.position,
+              status: status,
+            },
+          });
+          toast.success(`Status update email sent to ${selectedApplication.applicant_email}`);
+        } catch (emailError) {
+          console.error('Failed to send status update email:', emailError);
+          toast.error('Failed to send status update email');
+        }
+      }
     },
     onError: () => {
       toast.error('Failed to update application');
