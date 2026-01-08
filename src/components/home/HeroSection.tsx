@@ -3,6 +3,7 @@ import { ArrowRight, Sparkles, Zap, Shield, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
+import { FeaturedProductsCard } from './FeaturedProductsCard';
 import { SectionWrapper } from './SectionWrapper';
 import { motion } from 'framer-motion';
 
@@ -125,7 +126,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Stats & Reviews Cards - outside the main hero card */}
+          {/* Stats, Reviews & Featured Cards */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -134,6 +135,16 @@ export function HeroSection() {
           >
             <StatsCard />
             <ReviewCard />
+          </motion.div>
+
+          {/* Featured Products Card - full width */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="mt-4"
+          >
+            <FeaturedProductsCard />
           </motion.div>
         </motion.div>
       </SectionWrapper>
