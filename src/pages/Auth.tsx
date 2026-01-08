@@ -241,7 +241,11 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       return;
     }
 
-    // Verify captcha on signup
+    // Validate password confirmation on signup
+    if (mode === 'signup' && password !== confirmPassword) {
+      setErrors({ confirmPassword: 'Passwords do not match' });
+      return;
+    }
     if (mode === 'signup' && !captchaVerified) {
       setErrors({ captcha: 'Please verify that you are not a robot' });
       return;
@@ -777,6 +781,34 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
+
+              {mode === 'signup' && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-input pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              )}
 
               {mode === 'signup' && (
                 <div className="space-y-4">
