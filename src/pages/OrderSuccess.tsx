@@ -12,22 +12,27 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const { clearCart } = useCart();
   
-  // Support both session_id (from Stripe) and id (legacy)
+  // Support session_id (from Stripe Checkout), payment_intent (from Apple/Google Pay), and id (legacy)
   const sessionId = searchParams.get('session_id');
+  const paymentIntentId = searchParams.get('payment_intent');
   const orderId = searchParams.get('id');
   
   const [verifiedOrderId, setVerifiedOrderId] = useState<string | null>(orderId);
-  const [isVerifying, setIsVerifying] = useState(!!sessionId && !orderId);
+  const [isVerifying, setIsVerifying] = useState(!!(sessionId || paymentIntentId) && !orderId);
 
-  // Verify payment and create order if we have a session_id
+  // Verify payment and create order
   useEffect(() => {
     const verifyPayment = async () => {
-      if (!sessionId || orderId) return;
+      // Skip if we already have an order ID or no payment reference
+      if (orderId || (!sessionId && !paymentIntentId)) return;
       
       setIsVerifying(true);
       try {
         const { data, error } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId },
+          body: { 
+            sessionId: sessionId || undefined,
+            paymentIntentId: paymentIntentId || undefined,
+          },
         });
         
         if (error) throw error;
@@ -47,7 +52,7 @@ export default function OrderSuccess() {
     };
     
     verifyPayment();
-  }, [sessionId, orderId, clearCart]);
+  }, [sessionId, paymentIntentId, orderId, clearCart]);
 
   const { data: order, isLoading: isLoadingOrder } = useQuery({
     queryKey: ['order', verifiedOrderId],
@@ -64,12 +69,12 @@ export default function OrderSuccess() {
     enabled: !!verifiedOrderId,
   });
 
-  // If no session or order id, redirect to home
+  // If no payment reference, redirect to home
   useEffect(() => {
-    if (!sessionId && !orderId) {
+    if (!sessionId && !paymentIntentId && !orderId) {
       navigate('/');
     }
-  }, [sessionId, orderId, navigate]);
+  }, [sessionId, paymentIntentId, orderId, navigate]);
 
   const isLoading = isVerifying || isLoadingOrder;
 
