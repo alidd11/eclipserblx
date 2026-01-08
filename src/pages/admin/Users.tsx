@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -28,6 +30,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
@@ -49,6 +61,10 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<AppRole | ''>('');
+  const [ipBanDialogUser, setIpBanDialogUser] = useState<any>(null);
+  const [ipAddress, setIpAddress] = useState('');
+  const [banReason, setBanReason] = useState('');
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -149,6 +165,62 @@ export default function AdminUsers() {
     },
   });
 
+  // IP Ban mutation
+  const ipBanMutation = useMutation({
+    mutationFn: async ({ ipAddress, reason, userId }: { ipAddress: string; reason?: string; userId?: string }) => {
+      const { error } = await supabase.from('ip_bans').insert({
+        ip_address: ipAddress,
+        reason: reason || null,
+        banned_by: user?.id,
+        user_id: userId || null,
+      });
+      if (error) throw error;
+
+      // Log the action
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action: 'ip_banned',
+        resource: 'ip_bans',
+        details: { ip_address: ipAddress, reason, target_user_id: userId }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ip-bans'] });
+      toast.success('IP address banned successfully');
+      setIpBanDialogUser(null);
+      setIpAddress('');
+      setBanReason('');
+    },
+    onError: (error: any) => {
+      if (error.message.includes('duplicate')) {
+        toast.error('This IP address is already banned');
+      } else {
+        toast.error(error.message);
+      }
+    },
+  });
+
+  // Delete account mutation (primary admin only)
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+        body: { userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
+      toast.success('Account deleted successfully');
+      setDeleteConfirmUser(null);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete account');
+    },
+  });
+
   const getUserRoles = (userId: string) => {
     return userRoles?.filter(r => r.user_id === userId) || [];
   };
@@ -171,6 +243,14 @@ export default function AdminUsers() {
       if (r.value === 'admin' && !isPrimaryAdmin) return false;
       return true;
     });
+  };
+
+  const canDeleteUser = (profile: any) => {
+    // Only primary admin can delete accounts
+    if (!isPrimaryAdmin) return false;
+    // Can't delete the primary admin
+    if (profile.email === PRIMARY_ADMIN_EMAIL) return false;
+    return true;
   };
 
   return (
@@ -236,10 +316,32 @@ export default function AdminUsers() {
                       </TableCell>
                       <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}>
-                          <Shield className="h-4 w-4 mr-2" />
-                          Manage Roles
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}>
+                            <Shield className="h-4 w-4 mr-2" />
+                            Roles
+                          </Button>
+                          {isAdmin && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setIpBanDialogUser(profile)}
+                              className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {canDeleteUser(profile) && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setDeleteConfirmUser(profile)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -277,14 +379,35 @@ export default function AdminUsers() {
                         Joined {new Date(profile.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setSelectedUser(profile)}
-                      className="shrink-0"
-                    >
-                      <Shield className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setSelectedUser(profile)}
+                      >
+                        <Shield className="h-4 w-4" />
+                      </Button>
+                      {isAdmin && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setIpBanDialogUser(profile)}
+                          className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                        >
+                          <Ban className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canDeleteUser(profile) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setDeleteConfirmUser(profile)}
+                          className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -363,6 +486,101 @@ export default function AdminUsers() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* IP Ban Dialog */}
+      <Dialog open={!!ipBanDialogUser} onOpenChange={() => { setIpBanDialogUser(null); setIpAddress(''); setBanReason(''); }}>
+        <DialogContent className="max-w-[95vw] sm:max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-orange-500" />
+              IP Ban User
+            </DialogTitle>
+            <DialogDescription>
+              Ban an IP address to prevent access from that address.
+            </DialogDescription>
+          </DialogHeader>
+
+          {ipBanDialogUser && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="font-medium text-sm">{ipBanDialogUser.display_name || 'No username'}</p>
+                {ipBanDialogUser.customer_id && (
+                  <p className="text-xs font-mono text-primary mt-1">Customer ID: {ipBanDialogUser.customer_id}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">IP Address *</label>
+                <Input
+                  placeholder="e.g., 192.168.1.100"
+                  value={ipAddress}
+                  onChange={(e) => setIpAddress(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">Enter the IP address to ban</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Reason (optional)</label>
+                <Textarea
+                  placeholder="Why is this IP being banned?"
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  rows={2}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => { setIpBanDialogUser(null); setIpAddress(''); setBanReason(''); }}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  disabled={!ipAddress.trim() || ipBanMutation.isPending}
+                  onClick={() => ipBanMutation.mutate({ 
+                    ipAddress: ipAddress.trim(), 
+                    reason: banReason.trim() || undefined,
+                    userId: ipBanDialogUser.user_id 
+                  })}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  {ipBanMutation.isPending ? 'Banning...' : 'Ban IP'}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Account Confirmation */}
+      <AlertDialog open={!!deleteConfirmUser} onOpenChange={() => setDeleteConfirmUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Account Permanently
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                You are about to permanently delete the account for{' '}
+                <strong>{deleteConfirmUser?.display_name || 'this user'}</strong>.
+              </p>
+              <p className="text-destructive font-medium">
+                This action cannot be undone. All user data, orders, and activity will be removed.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmUser && deleteAccountMutation.mutate(deleteConfirmUser.user_id)}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteAccountMutation.isPending}
+            >
+              {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

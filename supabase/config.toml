@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-application-status-update]
 verify_jwt = false
+
+[functions.delete-user-account]
+verify_jwt = false
