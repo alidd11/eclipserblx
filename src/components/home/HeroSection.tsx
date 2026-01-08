@@ -1,57 +1,10 @@
-import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useCountUp } from '@/hooks/useCountUp';
-import { ReviewsTicker } from './ReviewsTicker';
-
-// Base values to add real counts on top of
-const BASE_STATS = {
-  downloads: 108,
-  users: 480,
-};
-
-const AnimatedStat = memo(function AnimatedStat({ value, label, suffix = '' }: { value: number; label: string; suffix?: string }) {
-  const { count, elementRef } = useCountUp({ end: value, duration: 2000 });
-  
-  const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return `${(num / 1000).toFixed(num >= 10000 ? 0 : 1)}K`;
-    }
-    return num.toString();
-  };
-
-  return (
-    <div className="text-center" ref={elementRef}>
-      <div className="font-display text-3xl font-bold gradient-text">
-        {formatNumber(count)}{suffix}
-      </div>
-      <div className="text-sm text-muted-foreground">{label}</div>
-    </div>
-  );
-});
+import { StatsCard } from './StatsCard';
+import { ReviewCard } from './ReviewCard';
 
 export function HeroSection() {
-  const { data: stats } = useQuery({
-    queryKey: ['homepage-stats'],
-    queryFn: async () => {
-      const [products, downloads, users] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('download_logs').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-      ]);
-
-      return {
-        products: products.count ?? 0,
-        downloads: BASE_STATS.downloads + (downloads.count ?? 0),
-        users: BASE_STATS.users + (users.count ?? 0),
-      };
-    },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-  });
-
   return (
     <section className="relative overflow-hidden">
       {/* Background Effects */}
@@ -88,15 +41,11 @@ export function HeroSection() {
             </Link>
           </div>
 
-          {/* Stats */}
-          <div className="pt-12 grid grid-cols-3 gap-8 max-w-lg mx-auto">
-            <AnimatedStat value={stats?.products ?? 0} label="Products" suffix="+" />
-            <AnimatedStat value={stats?.downloads ?? 0} label="Downloads" suffix="+" />
-            <AnimatedStat value={stats?.users ?? 0} label="Happy Users" suffix="+" />
+          {/* Stats & Reviews Cards */}
+          <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+            <StatsCard />
+            <ReviewCard />
           </div>
-
-          {/* Reviews Ticker */}
-          <ReviewsTicker />
         </div>
       </div>
     </section>
