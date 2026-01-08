@@ -213,9 +213,10 @@ export default function ProductDetail() {
                 <div className="text-4xl font-bold text-primary">£{product.price.toFixed(2)}</div>
 
                 {product.description && (
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{product.description}</p>
-                  </div>
+                  <div 
+                    className="prose prose-invert prose-sm max-w-none text-muted-foreground [&>p]:leading-relaxed [&>h2]:text-foreground [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-foreground [&>h3]:text-base [&>h3]:font-medium [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>hr]:border-border [&>hr]:my-4"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-4">

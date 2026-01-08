@@ -34,8 +34,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import {
   Select,
   SelectContent,
@@ -513,12 +513,11 @@ export default function AdminProducts() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3}
+              <Label>Description</Label>
+              <RichTextEditor
+                content={form.description}
+                onChange={(content) => setForm({ ...form, description: content })}
+                placeholder="Write your product description..."
               />
             </div>
 
