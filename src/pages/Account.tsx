@@ -121,7 +121,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
   // Real-time username availability check
   useEffect(() => {
-    if (!editingUsername || !newUsername.trim() || newUsername.trim().length < 2) {
+    const trimmed = newUsername.trim();
+    if (!editingUsername || !trimmed || trimmed.length < 6 || trimmed.length > 20) {
       setUsernameAvailable(null);
       return;
     }
@@ -150,7 +151,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   }, [newUsername, editingUsername, profile?.display_name]);
 
   const handleSaveUsername = async () => {
-    if (!user || !newUsername.trim() || usernameAvailable === false) return;
+    const trimmed = newUsername.trim();
+    if (!user || !trimmed || trimmed.length < 6 || trimmed.length > 20 || usernameAvailable === false) return;
     
     setSavingUsername(true);
     try {
