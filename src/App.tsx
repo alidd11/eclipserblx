@@ -9,6 +9,7 @@ import { CartProvider } from "@/hooks/useCart";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
+import { IpBanCheck } from "@/components/IpBanCheck";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Eagerly loaded - critical path
@@ -91,9 +92,10 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <PWAWrapper>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
+            <IpBanCheck>
+              <PWAWrapper>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/account" element={<Account />} />
@@ -137,11 +139,12 @@ const App = () => (
                   <Route path="/admin/ip-bans" element={<AdminIpBans />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-              <ChatWidget />
-              <InstallPrompt />
-            </PWAWrapper>
+                  </Routes>
+                </Suspense>
+                <ChatWidget />
+                <InstallPrompt />
+              </PWAWrapper>
+            </IpBanCheck>
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>

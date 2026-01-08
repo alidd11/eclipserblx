@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.delete-user-account]
 verify_jwt = false
+
+[functions.check-ip-ban]
+verify_jwt = false
