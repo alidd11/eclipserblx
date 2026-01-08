@@ -48,12 +48,26 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // Swipe gesture tracking
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const isEdgeSwipe = useRef(false);
 
   // Handle swipe from left edge to open sidebar
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
+    // Mark as edge swipe if starting near left edge
+    isEdgeSwipe.current = touch.clientX < 30;
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    // Prevent browser back gesture when swiping from left edge
+    if (isEdgeSwipe.current && touchStartX.current !== null) {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartX.current;
+      if (deltaX > 10) {
+        e.preventDefault();
+      }
+    }
   }, []);
 
   const handleTouchEnd = useCallback((e: TouchEvent) => {
@@ -64,12 +78,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const deltaY = Math.abs(touch.clientY - touchStartY.current);
     
     // Only trigger if horizontal swipe is dominant and started from left edge
-    if (touchStartX.current < 50 && deltaX > 40 && deltaY < 100 && !mobileOpen) {
+    if (touchStartX.current < 30 && deltaX > 40 && deltaY < 100 && !mobileOpen) {
       setMobileOpen(true);
     }
     
     touchStartX.current = null;
     touchStartY.current = null;
+    isEdgeSwipe.current = false;
   }, [mobileOpen]);
 
   // Add edge swipe listener for mobile
@@ -77,13 +92,15 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     if (!isMobile) return;
     
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
     
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isMobile, handleTouchStart, handleTouchEnd]);
+  }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   // Enable support ticket notifications for all admin pages
   useSupportTicketNotifications();
