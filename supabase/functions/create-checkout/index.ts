@@ -85,14 +85,13 @@ serve(async (req) => {
     // Store order info in metadata
     const origin = req.headers.get("origin") || "http://localhost:5173";
 
-    // Create Stripe Checkout Session - uses automatic payment methods based on dashboard settings
+    // Create Stripe Checkout Session - uses automatic payment methods based on your Stripe settings
+    // (e.g. Card, Apple Pay/Google Pay via card wallets, and PayPal if it’s enabled on the account)
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : userEmail,
       line_items: lineItems,
       mode: "payment",
-      // Explicitly enable Card and PayPal payment methods
-      payment_method_types: ["card", "paypal"],
       success_url: successUrl || `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${origin}/checkout`,
       metadata: {
