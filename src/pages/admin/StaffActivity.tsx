@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { Activity, LogIn, LogOut, MessageCircle, Ticket, Clock, User, Filter } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -52,8 +53,17 @@ const ACTIVITY_LABELS: Record<string, string> = {
 };
 
 export default function StaffActivityPage() {
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterStaff, setFilterStaff] = useState<string>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filterType, setFilterType] = useState<string>(searchParams.get('type') || 'all');
+  const [filterStaff, setFilterStaff] = useState<string>(searchParams.get('staff') || 'all');
+
+  // Sync URL params with state
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (filterType !== 'all') params.set('type', filterType);
+    if (filterStaff !== 'all') params.set('staff', filterStaff);
+    setSearchParams(params, { replace: true });
+  }, [filterType, filterStaff, setSearchParams]);
 
   // Fetch staff activity with profiles
   const { data: activities, isLoading, refetch } = useQuery({

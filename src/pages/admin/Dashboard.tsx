@@ -614,9 +614,19 @@ export default function AdminDashboard() {
         {/* My Recent Duty Logs */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Timer className="h-5 w-5" />
-              My Recent Duty Logs
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Timer className="h-5 w-5" />
+                My Recent Duty Logs
+              </div>
+              {user?.id && (
+                <Link 
+                  to={`/admin/staff-activity?staff=${user.id}`}
+                  className="text-xs text-primary hover:underline font-normal"
+                >
+                  View Full History
+                </Link>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
