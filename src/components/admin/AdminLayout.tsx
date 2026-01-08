@@ -212,9 +212,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             </div>
           </div>
         )}
-        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+        <div className="flex-1 flex flex-col min-h-0">
           {isMobile && (
-            <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+            <header className="shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 
@@ -243,7 +243,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           {/* Mobile PWA Install Prompt */}
           {isMobile && <AdminInstallPrompt />}
           
-          <main className="flex-1">
+          <main className="flex-1 overflow-y-auto">
             <div className="p-4 md:p-6 lg:p-8">
               {children}
             </div>
