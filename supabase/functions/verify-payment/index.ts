@@ -112,6 +112,45 @@ serve(async (req) => {
       throw itemsError;
     }
 
+    // Send order confirmation email with PDF receipt
+    console.log("Sending order confirmation email...");
+    try {
+      const emailPayload = {
+        orderId: order.id,
+        customerEmail: customerEmail,
+        items: items.map((item: any) => ({
+          product_name: item.name,
+          price: item.price,
+        })),
+        subtotal: subtotal,
+        total: total,
+        paymentMethod: session.payment_method_types?.[0] || "card",
+        orderDate: order.created_at,
+      };
+
+      const emailResponse = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-confirmation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+          },
+          body: JSON.stringify(emailPayload),
+        }
+      );
+
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        console.error("Email sending failed:", errorText);
+      } else {
+        console.log("Order confirmation email sent successfully");
+      }
+    } catch (emailError) {
+      // Don't fail the order if email fails
+      console.error("Failed to send confirmation email:", emailError);
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       orderId: order.id 

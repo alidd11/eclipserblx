@@ -38,3 +38,18 @@ verify_jwt = false
 
 [functions.check-vpn]
 verify_jwt = false
+
+[functions.send-order-confirmation]
+verify_jwt = false
+
+[functions.send-mass-email]
+verify_jwt = false
+
+[functions.list-staff]
+verify_jwt = false
+
+[functions.generate-vapid-keys]
+verify_jwt = false
+
+[functions.get-vapid-public-key]
+verify_jwt = false
