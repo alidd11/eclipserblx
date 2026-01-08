@@ -44,6 +44,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     }
     window.location.reload();
   };
+
+  // Haptic feedback helper
+  const triggerHaptic = useCallback((pattern: number | number[] = 10) => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(pattern);
+    }
+  }, []);
   
   // Swipe gesture tracking
   const touchStartX = useRef<number | null>(null);
@@ -65,12 +72,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     
     // Only trigger if horizontal swipe is dominant and started from left edge
     if (touchStartX.current < 50 && deltaX > 40 && deltaY < 100 && !mobileOpen) {
+      triggerHaptic(15);
       setMobileOpen(true);
     }
     
     touchStartX.current = null;
     touchStartY.current = null;
-  }, [mobileOpen]);
+  }, [mobileOpen, triggerHaptic]);
 
   // Add edge swipe listener for mobile
   useEffect(() => {
@@ -160,8 +168,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                   const touchEndX = e.changedTouches[0].clientX;
                   const swipeDistance = touchStartX - touchEndX;
                   
-                  // Swipe left to close (threshold of 50px)
-                  if (swipeDistance > 50) {
+                  // Swipe left to close (threshold of 40px)
+                  if (swipeDistance > 40) {
+                    triggerHaptic(10);
                     setMobileOpen(false);
                   }
                 }}
