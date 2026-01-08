@@ -21,7 +21,7 @@ const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
-type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify';
+type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify' | 'reset-verify';
 
 const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [searchParams] = useSearchParams();
@@ -69,18 +69,112 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      // Use custom password reset endpoint
+      const response = await supabase.functions.invoke('custom-password-reset/request', {
+        body: { email },
       });
 
-      if (error) {
+      if (response.error) {
         toast({
           title: 'Error',
-          description: error.message,
+          description: 'Failed to send reset email. Please try again.',
           variant: 'destructive',
         });
       } else {
-        setResetSent(true);
+        // Move to OTP verification mode
+        setMode('reset-verify');
+        toast({
+          title: 'Check Your Email',
+          description: 'We sent you a 6-digit verification code.',
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    if (otpCode.length !== 6) {
+      setErrors({ otp: 'Please enter the complete 6-digit code' });
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrors({ password: 'Password must be at least 6 characters' });
+      return;
+    }
+
+    if (!isPasswordStrongEnough(password)) {
+      setErrors({ password: 'Please choose a stronger password (good or strong)' });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrors({ confirmPassword: 'Passwords do not match' });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await supabase.functions.invoke('custom-password-reset/verify', {
+        body: { 
+          email, 
+          code: otpCode, 
+          newPassword: password 
+        },
+      });
+
+      if (response.error || response.data?.error) {
+        const errorMessage = response.data?.error || 'Invalid or expired code';
+        if (errorMessage.includes('expired')) {
+          setErrors({ otp: 'Code has expired. Please request a new one.' });
+        } else if (errorMessage.includes('Invalid')) {
+          setErrors({ otp: 'Invalid code. Please check and try again.' });
+        } else {
+          toast({
+            title: 'Error',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Password Updated!',
+          description: 'Your password has been reset successfully. Please sign in.',
+        });
+        setMode('login');
+        setOtpCode('');
+        setPassword('');
+        setConfirmPassword('');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendResetCode = async () => {
+    setLoading(true);
+    try {
+      const response = await supabase.functions.invoke('custom-password-reset/request', {
+        body: { email },
+      });
+
+      if (response.error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to resend code. Please try again.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Code Sent!',
+          description: 'A new verification code has been sent to your email.',
+        });
+        setOtpCode('');
       }
     } finally {
       setLoading(false);
@@ -279,6 +373,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       case 'signup': return 'Create Account';
       case 'forgot': return 'Reset Password';
       case 'reset': return 'Set New Password';
+      case 'reset-verify': return 'Reset Your Password';
       case 'verify': return 'Verify Your Email';
       default: return 'Welcome Back';
     }
@@ -287,8 +382,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const getDescription = () => {
     switch (mode) {
       case 'signup': return 'Join UK Roleplay Assets to start shopping';
-      case 'forgot': return 'Enter your email and we\'ll send you a reset link';
+      case 'forgot': return 'Enter your email and we\'ll send you a verification code';
       case 'reset': return 'Enter your new password below';
+      case 'reset-verify': return `Enter the 6-digit code sent to ${email} and choose a new password`;
       case 'verify': return `Enter the 6-digit code sent to ${email}`;
       default: return 'Sign in to access your purchases and account';
     }
@@ -321,24 +417,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             <p className="text-muted-foreground mt-2">{getDescription()}</p>
           </div>
 
-          {/* Forgot Password Success */}
-          {mode === 'forgot' && resetSent ? (
-            <div className="gaming-card p-6 text-center space-y-4">
-              <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
-              <h2 className="font-display font-bold text-lg">Check Your Email</h2>
-              <p className="text-muted-foreground text-sm">
-                We've sent a password reset link to <strong>{email}</strong>. Click the link in the email to reset your password.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => { setMode('login'); setResetSent(false); }}
-                className="w-full"
-              >
-                Back to Sign In
-              </Button>
-            </div>
-          ) : mode === 'forgot' ? (
-            /* Forgot Password Form */
+          {/* Forgot Password - Email Entry */}
+          {mode === 'forgot' ? (
             <form onSubmit={handleForgotPassword} className="gaming-card p-6 space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -362,7 +442,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Send Reset Link
+                Send Verification Code
               </Button>
 
               <button
@@ -373,8 +453,123 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 Back to Sign In
               </button>
             </form>
+          ) : mode === 'reset-verify' ? (
+            /* Password Reset OTP Verification + New Password Form */
+            <form onSubmit={handleVerifyResetCode} className="gaming-card p-6 space-y-6">
+              <div className="flex justify-center">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Mail className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(value) => setOtpCode(value)}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                {errors.otp && (
+                  <p className="text-sm text-destructive text-center">{errors.otp}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-input pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <PasswordStrengthMeter password={password} />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-input pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gradient-button border-0"
+                disabled={loading || otpCode.length !== 6}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Reset Password
+              </Button>
+
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Didn't receive the code?
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResendResetCode}
+                  disabled={loading}
+                  className="text-sm text-primary hover:underline disabled:opacity-50"
+                >
+                  Resend Code
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => { setMode('forgot'); setOtpCode(''); setPassword(''); setConfirmPassword(''); }}
+                className="w-full text-sm text-muted-foreground hover:text-foreground"
+              >
+                Use a different email
+              </button>
+            </form>
           ) : mode === 'reset' ? (
-            /* Reset Password Form */
+            /* Reset Password Form (legacy - for magic link flow if needed) */
             <form onSubmit={handleResetPassword} className="gaming-card p-6 space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="password">New Password</Label>
