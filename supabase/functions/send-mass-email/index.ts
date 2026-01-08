@@ -75,45 +75,89 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Format the content as HTML with Eclipse branding
+    // Format the content as HTML with Eclipse Jade & Obsidian branding
     const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-            <!-- Header -->
-            <div style="text-align: center; margin-bottom: 32px;">
-              <h1 style="color: #a855f7; font-size: 28px; font-weight: bold; margin: 0;">Eclipse</h1>
-              <p style="color: #71717a; font-size: 14px; margin: 8px 0 0 0;">Premium Roblox Assets</p>
-            </div>
-            
-            <!-- Content -->
-            <div style="background-color: #18181b; border-radius: 12px; padding: 32px; border: 1px solid #27272a;">
-              <h2 style="color: #fafafa; font-size: 20px; margin: 0 0 16px 0;">${subject}</h2>
-              <div style="color: #a1a1aa; font-size: 16px; line-height: 1.6;">
-                ${content.split('\n').map(line => `<p style="margin: 0 0 12px 0;">${line}</p>`).join('')}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #050505; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #050505;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%); border: 1px solid #1a1a1a; border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header with gradient accent -->
+          <tr>
+            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
+                          <span style="font-size: 22px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif;">ECLIPSE</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 32px 40px;">
+              <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 20px 0; font-weight: 600; font-family: 'Cinzel', Georgia, serif;">${subject}</h2>
+              <div style="color: #a3a3a3; font-size: 15px; line-height: 1.7;">
+                ${content.split('\n').map(line => `<p style="margin: 0 0 16px 0;">${line}</p>`).join('')}
               </div>
-            </div>
-            
-            <!-- Footer -->
-            <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #27272a;">
-              <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0;">
+            </td>
+          </tr>
+          
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <hr style="border: none; border-top: 1px solid #1f1f1f; margin: 0;">
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 24px 40px 32px;">
+              <p style="font-size: 13px; color: #525252; margin: 0 0 16px 0;">
                 You're receiving this because you subscribed to Eclipse emails.
               </p>
-              <p style="color: #71717a; font-size: 12px; margin: 0;">
-                <a href="https://eclipserblx.com/account" style="color: #a855f7; text-decoration: underline;">Manage preferences</a>
-              </p>
-              <p style="color: #52525b; font-size: 11px; margin: 16px 0 0 0;">
-                © ${new Date().getFullYear()} Eclipse. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="padding-right: 20px;">
+                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
+                  </td>
+                  <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
+                    <a href="https://eclipserblx.com/account" style="font-size: 12px; color: #10b981; text-decoration: none;">Preferences</a>
+                  </td>
+                  <td style="border-left: 1px solid #333; padding-left: 20px;">
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="font-size: 11px; color: #404040; margin: 20px 0 0 0;">© ${new Date().getFullYear()} Eclipse. Premium Roblox assets for UK roleplay.</p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
     `;
 
     // Send emails in batches of 50 to avoid rate limits
