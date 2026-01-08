@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useRef } from 'react';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,7 +73,7 @@ export const ReviewCard = memo(function ReviewCard() {
     const interval = setInterval(() => {
       setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % reviews.length);
-    }, 5000); // 5 seconds per review (different from stats)
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [reviews]);
@@ -105,11 +105,22 @@ export const ReviewCard = memo(function ReviewCard() {
     touchEndX.current = 0;
   };
 
+  const goNext = () => {
+    if (!reviews) return;
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % reviews.length);
+  };
+
+  const goPrev = () => {
+    if (!reviews) return;
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-600/20 opacity-50" />
-        <div className="relative z-10 text-center text-muted-foreground">
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-blue-500/5 p-5">
+        <div className="relative z-10 text-center text-muted-foreground py-8">
           No reviews yet
         </div>
       </div>
@@ -120,32 +131,53 @@ export const ReviewCard = memo(function ReviewCard() {
 
   return (
     <div 
-      className="relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 touch-pan-x"
+      className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-blue-500/5 p-5 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 touch-pan-x"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-600/20 opacity-50" />
+      {/* Animated background */}
+      <div className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl opacity-30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      {/* Quote decoration */}
+      <div className="absolute top-3 right-3 opacity-10">
+        <Quote className="h-16 w-16 text-primary" />
+      </div>
       
       <div className="relative z-10">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-blue-400">
-            <MessageSquare className="h-5 w-5" />
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/10">
+                <MessageSquare className="h-4 w-4 text-blue-400" />
+              </div>
+            </div>
+            <span className="text-xs font-medium text-primary/80 uppercase tracking-wider">Reviews</span>
           </div>
-          <span className="text-xs text-muted-foreground">Customer Reviews</span>
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className="h-3 w-3 text-amber-400 fill-amber-400"
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="h-20 relative overflow-hidden">
+        {/* Review content */}
+        <div className="h-24 relative overflow-hidden">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentReview.id}
-              initial={{ opacity: 0, x: direction >= 0 ? 30 : -30 }}
+              initial={{ opacity: 0, x: direction >= 0 ? 40 : -40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction >= 0 ? -30 : 30 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              exit={{ opacity: 0, x: direction >= 0 ? -40 : 40 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
               className="absolute inset-0 will-change-transform"
             >
-              {/* Stars */}
+              {/* Stars for this review */}
               <div className="flex items-center gap-0.5 mb-2">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -153,45 +185,67 @@ export const ReviewCard = memo(function ReviewCard() {
                     className={`h-3.5 w-3.5 ${
                       i < currentReview.rating
                         ? 'text-amber-400 fill-amber-400'
-                        : 'text-muted-foreground/30'
+                        : 'text-muted-foreground/20'
                     }`}
                   />
                 ))}
+                <span className="ml-1.5 text-xs text-muted-foreground">{currentReview.rating}.0</span>
               </div>
 
-              {/* Review Content */}
-              <p className="text-sm text-muted-foreground line-clamp-2 italic mb-1">
+              {/* Review text */}
+              <p className="text-sm text-foreground/90 line-clamp-2 leading-relaxed">
                 "{currentReview.content}"
               </p>
 
               {/* Author */}
-              <p className="text-xs text-primary font-medium">
-                — {currentReview.display_name}
-              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
+                  {currentReview.display_name.charAt(0)}
+                </div>
+                <p className="text-xs font-medium text-primary">
+                  {currentReview.display_name}
+                </p>
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Dot Indicators */}
-        <div className="flex items-center gap-1 mt-2">
-          {reviews.slice(0, 8).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setDirection(i > currentIndex % 8 ? 1 : -1);
-                setCurrentIndex(i);
-              }}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                i === currentIndex % 8
-                  ? 'bg-primary w-3'
-                  : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-              }`}
-              aria-label={`Go to review ${i + 1}`}
-            />
-          ))}
-          {reviews.length > 8 && (
-            <span className="text-xs text-muted-foreground ml-1">+{reviews.length - 8}</span>
-          )}
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-1">
+            {reviews.slice(0, 6).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setDirection(i > currentIndex % 6 ? 1 : -1);
+                  setCurrentIndex(i);
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentIndex % 6
+                    ? 'bg-primary w-4'
+                    : 'bg-muted-foreground/30 w-1.5 hover:bg-muted-foreground/50'
+                }`}
+                aria-label={`Go to review ${i + 1}`}
+              />
+            ))}
+            {reviews.length > 6 && (
+              <span className="text-[10px] text-muted-foreground ml-1">+{reviews.length - 6}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={goPrev}
+              className="w-6 h-6 rounded-md bg-muted/30 flex items-center justify-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <button 
+              onClick={goNext}
+              className="w-6 h-6 rounded-md bg-muted/30 flex items-center justify-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
