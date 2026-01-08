@@ -98,9 +98,20 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
         }
         throw error;
       }
+
+      // Send confirmation email (fire and forget - don't block on this)
+      supabase.functions.invoke('send-application-confirmation', {
+        body: {
+          applicant_name: validatedData.applicant_name,
+          applicant_email: validatedData.applicant_email,
+          position: validatedData.position,
+        },
+      }).catch((emailError) => {
+        console.error('Failed to send confirmation email:', emailError);
+      });
     },
     onSuccess: () => {
-      toast.success('Application submitted successfully!');
+      toast.success('Application submitted successfully! Check your email for confirmation.');
       onSuccess();
     },
     onError: (error: Error) => {

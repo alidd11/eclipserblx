@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.custom-password-reset]
 verify_jwt = false
+
+[functions.send-application-confirmation]
+verify_jwt = false
+
+[functions.send-application-status-update]
+verify_jwt = false
