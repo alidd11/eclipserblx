@@ -57,8 +57,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
     hasPrevented.current = false;
-    // Mark as edge swipe if starting near left edge (expanded zone to 80px for easier trigger)
-    isEdgeSwipe.current = touch.clientX < 80;
+    // Mark as edge swipe if starting near left edge (expanded zone to 100px for easier trigger)
+    isEdgeSwipe.current = touch.clientX < 100;
   }, []);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
@@ -82,8 +82,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const deltaX = touch.clientX - touchStartX.current;
     const deltaY = Math.abs(touch.clientY - touchStartY.current);
     
-    // Maximum sensitivity: 15px threshold, 80px edge zone, allow more vertical movement
-    if (touchStartX.current < 80 && deltaX > 15 && deltaY < 150 && !mobileOpen) {
+    // Ultra-high sensitivity: 10px threshold, 100px edge zone, allow more vertical movement
+    if (touchStartX.current < 100 && deltaX > 10 && deltaY < 200 && !mobileOpen) {
       setMobileOpen(true);
     }
     
@@ -184,8 +184,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                   const touchEndX = e.changedTouches[0].clientX;
                   const swipeDistance = touchStartX - touchEndX;
                   
-                  // Swipe left to close (threshold of 50px)
-                  if (swipeDistance > 50) {
+                  // Higher sensitivity: 30px threshold to close (was 50px)
+                  if (swipeDistance > 30) {
                     setMobileOpen(false);
                   }
                 }}

@@ -1076,6 +1076,35 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_message_reads: {
+        Row: {
+          id: string
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "staff_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_messages: {
         Row: {
           created_at: string
