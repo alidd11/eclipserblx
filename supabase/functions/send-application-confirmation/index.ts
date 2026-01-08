@@ -40,25 +40,25 @@ const handler = async (req: Request): Promise<Response> => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Application Received - Eclipse</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #050505; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #050505;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%); border: 1px solid #1a1a1a; border-radius: 16px; overflow: hidden;">
+        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #151518 0%, #0d0d10 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; overflow: hidden;">
           
           <!-- Header with gradient accent -->
           <tr>
-            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
+            <td style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
+                        <td style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
                           <span style="font-size: 22px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif;">ECLIPSE</span>
+                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
                         </td>
                       </tr>
                     </table>
@@ -71,15 +71,15 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Icon & Heading -->
           <tr>
             <td align="center" style="padding: 24px 40px 16px;">
-              <div style="width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 50%; display: inline-block; line-height: 60px; text-align: center;">
-                <span style="font-size: 28px; line-height: 64px;">✓</span>
+              <div style="width: 64px; height: 64px; background: rgba(168, 85, 247, 0.1); border: 2px solid rgba(168, 85, 247, 0.3); border-radius: 50%; display: inline-block; line-height: 60px; text-align: center;">
+                <span style="font-size: 28px; line-height: 64px; color: #a855f7;">✓</span>
               </div>
             </td>
           </tr>
           
           <tr>
             <td align="center" style="padding: 0 40px 12px;">
-              <h1 style="font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; font-family: 'Cinzel', Georgia, serif;">Application Received!</h1>
+              <h1 style="font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; font-family: Georgia, serif;">Application Received!</h1>
             </td>
           </tr>
           
@@ -96,7 +96,7 @@ const handler = async (req: Request): Promise<Response> => {
                 Hi ${applicant_name},
               </p>
               <p style="margin: 0 0 24px 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-                We've received your application for the <strong style="color: #10b981;">${position}</strong> position at Eclipse. Our team will review your application carefully.
+                We've received your application for the <strong style="color: #a855f7;">${position}</strong> position at Eclipse. Our team will review your application carefully.
               </p>
             </td>
           </tr>
@@ -104,14 +104,14 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- What's Next Box -->
           <tr>
             <td style="padding: 0 40px 24px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.02) 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px;">
                 <tr>
                   <td style="padding: 20px;">
-                    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #10b981;">What's Next?</h3>
+                    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #a855f7;">What's Next?</h3>
                     <table role="presentation" cellspacing="0" cellpadding="0" style="color: #a3a3a3; font-size: 14px;">
                       <tr><td style="padding: 4px 0;">• Our recruiting team will review your application</td></tr>
                       <tr><td style="padding: 4px 0;">• You may receive messages from us with updates</td></tr>
-                      <tr><td style="padding: 4px 0;">• Check your status on our <a href="https://eclipserblx.com/jobs" style="color: #10b981; text-decoration: none;">Jobs page</a></td></tr>
+                      <tr><td style="padding: 4px 0;">• Check your status on our <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a></td></tr>
                     </table>
                   </td>
                 </tr>
@@ -134,7 +134,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Divider -->
           <tr>
             <td style="padding: 0 40px;">
-              <hr style="border: none; border-top: 1px solid #1f1f1f; margin: 0;">
+              <hr style="border: none; border-top: 1px solid rgba(168, 85, 247, 0.15); margin: 0;">
             </td>
           </tr>
           
@@ -144,13 +144,13 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="padding-right: 20px;">
-                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
+                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #a855f7; text-decoration: none;">Website</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
-                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #10b981; text-decoration: none;">Support</a>
+                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #a855f7; text-decoration: none;">Support</a>
                   </td>
                   <td style="border-left: 1px solid #333; padding-left: 20px;">
-                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #a855f7; text-decoration: none;">Privacy</a>
                   </td>
                 </tr>
               </table>
