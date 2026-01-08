@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
-import { FeaturedProducts } from '@/components/home/FeaturedProducts';
+import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 
 export default function Products() {
   const queryClient = useQueryClient();
@@ -185,8 +185,8 @@ export default function Products() {
           )}
         </div>
 
-        {/* Featured Products Section */}
-        <FeaturedProducts />
+        {/* Featured Products Card */}
+        <FeaturedProductsCard />
         </div>
       </PullToRefresh>
     </MainLayout>
