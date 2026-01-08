@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -9,6 +11,9 @@ interface IpApiResponse {
   hosting: boolean;
   query: string;
   message?: string;
+  country?: string;
+  city?: string;
+  isp?: string;
 }
 
 Deno.serve(async (req) => {
@@ -16,6 +21,10 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     // Get client IP from headers
@@ -36,8 +45,8 @@ Deno.serve(async (req) => {
     }
 
     // Use ip-api.com for VPN/proxy detection (free tier includes proxy detection)
-    // Fields: proxy (VPN/proxy), hosting (datacenter/hosting provider)
-    const apiUrl = `http://ip-api.com/json/${clientIp}?fields=status,proxy,hosting,query,message`;
+    // Fields: proxy (VPN/proxy), hosting (datacenter/hosting provider), plus location info
+    const apiUrl = `http://ip-api.com/json/${clientIp}?fields=status,proxy,hosting,query,message,country,city,isp`;
     
     const response = await fetch(apiUrl);
     
@@ -66,6 +75,36 @@ Deno.serve(async (req) => {
     const isVpn = data.proxy === true || data.hosting === true;
 
     console.log(`IP ${clientIp} - VPN/Proxy: ${data.proxy}, Hosting: ${data.hosting}, isVpn: ${isVpn}`);
+
+    // Log VPN detection to audit_logs for security monitoring
+    if (isVpn) {
+      try {
+        const { error: logError } = await supabase
+          .from('audit_logs')
+          .insert({
+            user_id: '00000000-0000-0000-0000-000000000000', // System user for unauthenticated actions
+            action: 'vpn_signup_blocked',
+            resource: 'auth',
+            ip_address: clientIp,
+            details: {
+              proxy: data.proxy,
+              hosting: data.hosting,
+              country: data.country,
+              city: data.city,
+              isp: data.isp,
+              blocked_at: new Date().toISOString(),
+            }
+          });
+
+        if (logError) {
+          console.error('Failed to log VPN detection to audit_logs:', logError);
+        } else {
+          console.log('VPN detection logged to audit_logs');
+        }
+      } catch (logErr) {
+        console.error('Error logging VPN detection:', logErr);
+      }
+    }
 
     return new Response(
       JSON.stringify({
