@@ -178,7 +178,7 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   // Show biometric enrollment prompt
   if (showEnrollPrompt) {
     return (
-      <div ref={ref} className="min-h-screen flex flex-col bg-background">
+      <div ref={ref} className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="flex-1 flex items-center justify-center p-4 relative">
           <div className="w-full max-w-md space-y-8">
@@ -226,7 +226,7 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   const canUseBiometric = isSupported && storedUserId && isEnrolled;
 
   return (
-    <div ref={ref} className="min-h-screen flex flex-col bg-background">
+    <div ref={ref} className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       {/* Background Effects */}
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
       <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
