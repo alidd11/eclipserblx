@@ -43,10 +43,11 @@ export default function Subscribers() {
   const { data: subscribers = [], isLoading, refetch } = useQuery({
     queryKey: ['admin-subscribers'],
     queryFn: async () => {
-      // Fetch subscriptions
+      // Fetch subscriptions - only those subscribed to at least one category
       const { data: subscriptions, error } = await supabase
         .from('email_subscriptions')
         .select('*')
+        .or('subscribed_to_updates.eq.true,subscribed_to_discounts.eq.true,subscribed_to_newsletters.eq.true')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
