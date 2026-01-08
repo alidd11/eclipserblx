@@ -12,7 +12,7 @@ export function ReferralCard() {
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const { data: profile } = useQuery({
+  const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ['profile-referral', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -22,10 +22,39 @@ export function ReferralCard() {
         .eq('user_id', user.id)
         .single();
       if (error) throw error;
+      
+      // If no referral code exists, generate one
+      if (!data?.referral_code) {
+        const newCode = await generateReferralCode();
+        if (newCode) {
+          await supabase
+            .from('profiles')
+            .update({ referral_code: newCode })
+            .eq('user_id', user.id);
+          return { referral_code: newCode };
+        }
+      }
+      
       return data;
     },
     enabled: !!user?.id,
   });
+
+  // Generate a unique referral code
+  const generateReferralCode = async (): Promise<string | null> => {
+    const code = crypto.randomUUID().substring(0, 8).toUpperCase();
+    // Check if code exists
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('referral_code')
+      .eq('referral_code', code)
+      .maybeSingle();
+    
+    if (existing) {
+      return generateReferralCode(); // Retry with new code
+    }
+    return code;
+  };
 
   const { data: referrals } = useQuery({
     queryKey: ['user-referrals', user?.id],
