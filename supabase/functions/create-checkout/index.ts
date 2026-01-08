@@ -29,7 +29,7 @@ serve(async (req) => {
 
   try {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2023-10-16",
     });
 
     const supabaseClient = createClient(
@@ -91,8 +91,8 @@ serve(async (req) => {
       customer_email: customerId ? undefined : userEmail,
       line_items: lineItems,
       mode: "payment",
-      // Let Stripe automatically show available payment methods based on your dashboard settings
-      // Enable Apple Pay, Google Pay, Klarna, PayPal etc. in Stripe Dashboard > Settings > Payment methods
+      // Explicitly enable Card and PayPal payment methods
+      payment_method_types: ["card", "paypal"],
       success_url: successUrl || `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${origin}/checkout`,
       metadata: {
