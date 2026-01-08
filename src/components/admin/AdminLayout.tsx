@@ -156,7 +156,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-screen h-[100dvh] flex bg-background overflow-hidden">
+      <div className="fixed inset-0 flex bg-background overflow-hidden">
         {/* Desktop Sidebar */}
         {!isMobile && (
           <AdminSidebar 
@@ -243,7 +243,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           {/* Mobile PWA Install Prompt */}
           {isMobile && <AdminInstallPrompt />}
           
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto overscroll-contain">
             <div className="p-4 md:p-6 lg:p-8">
               {children}
             </div>
