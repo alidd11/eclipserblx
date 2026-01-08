@@ -37,11 +37,7 @@ export default function AdminReferrals() {
     queryFn: async () => {
       let query = supabase
         .from('referrals')
-        .select(`
-          *,
-          referrer:profiles!referrals_referrer_id_fkey(display_name, email),
-          referred:profiles!referrals_referred_id_fkey(display_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (statusFilter !== 'all') {
@@ -51,10 +47,29 @@ export default function AdminReferrals() {
       const { data, error } = await query;
       if (error) throw error;
       
+      // Fetch profiles for referrers and referred users
+      const userIds = [...new Set([
+        ...data.map(r => r.referrer_id),
+        ...data.filter(r => r.referred_id).map(r => r.referred_id)
+      ])];
+      
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .in('user_id', userIds);
+      
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      
+      const enrichedData = data.map(r => ({
+        ...r,
+        referrer: profileMap.get(r.referrer_id),
+        referred: r.referred_id ? profileMap.get(r.referred_id) : null,
+      }));
+      
       // Filter by search
       if (search) {
         const searchLower = search.toLowerCase();
-        return data?.filter(r => 
+        return enrichedData.filter((r: any) => 
           r.referral_code?.toLowerCase().includes(searchLower) ||
           r.referrer?.display_name?.toLowerCase().includes(searchLower) ||
           r.referrer?.email?.toLowerCase().includes(searchLower) ||
@@ -63,7 +78,7 @@ export default function AdminReferrals() {
         );
       }
       
-      return data || [];
+      return enrichedData;
     },
   });
 
@@ -72,16 +87,31 @@ export default function AdminReferrals() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('referral_rewards')
-        .select(`
-          *,
-          user:profiles!referral_rewards_user_id_fkey(display_name, email),
-          discount_code:discount_codes(code, discount_value, discount_type)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
       
       if (error) throw error;
-      return data || [];
+      
+      // Fetch profiles and discount codes
+      const userIds = [...new Set(data.map(r => r.user_id))];
+      const discountIds = [...new Set(data.filter(r => r.discount_code_id).map(r => r.discount_code_id))];
+      
+      const [profilesRes, discountsRes] = await Promise.all([
+        supabase.from('profiles').select('user_id, display_name, email').in('user_id', userIds),
+        discountIds.length > 0 
+          ? supabase.from('discount_codes').select('id, code, discount_value, discount_type').in('id', discountIds)
+          : { data: [] }
+      ]);
+      
+      const profileMap = new Map<string, any>(profilesRes.data?.map(p => [p.user_id, p] as [string, any]) || []);
+      const discountMap = new Map<string, any>(discountsRes.data?.map((d: any) => [d.id, d] as [string, any]) || []);
+      
+      return data.map(r => ({
+        ...r,
+        user: profileMap.get(r.user_id),
+        discount_code: r.discount_code_id ? discountMap.get(r.discount_code_id) : null,
+      }));
     },
   });
 

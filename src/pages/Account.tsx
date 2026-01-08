@@ -17,6 +17,7 @@ import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
 import { NewBadgeToast } from '@/components/badges/NewBadgeToast';
 import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
+import { ReferralCard } from '@/components/account/ReferralCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
@@ -460,6 +461,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Referral Card */}
+        <ReferralCard />
 
         {/* Email Subscriptions */}
         <EmailSubscriptionCard />
