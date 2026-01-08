@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { PasswordStrengthMeter, isPasswordStrongEnough } from '@/components/auth/PasswordStrengthMeter';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -851,7 +852,18 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.span
+                        key={showPassword ? 'eye-off' : 'eye'}
+                        initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                        transition={{ duration: 0.15 }}
+                        className="block"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </motion.span>
+                    </AnimatePresence>
                   </button>
                 </div>
                 {mode === 'signup' && <PasswordStrengthMeter password={password} />}
@@ -887,7 +899,18 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                         className="text-muted-foreground hover:text-foreground transition-colors"
                         tabIndex={-1}
                       >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.span
+                            key={showConfirmPassword ? 'eye-off' : 'eye'}
+                            initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                            transition={{ duration: 0.15 }}
+                            className="block"
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </motion.span>
+                        </AnimatePresence>
                       </button>
                     </div>
                   </div>
