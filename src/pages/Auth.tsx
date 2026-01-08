@@ -247,6 +247,17 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       return;
     }
 
+    // Check username availability on signup
+    if (mode === 'signup') {
+      const { data: isAvailable } = await supabase.rpc('is_username_available', { 
+        username: displayName.trim() 
+      });
+      if (!isAvailable) {
+        setErrors({ displayName: 'This username is already taken' });
+        return;
+      }
+    }
+
     // Validate password confirmation on signup
     if (mode === 'signup' && password !== confirmPassword) {
       setErrors({ confirmPassword: 'Passwords do not match' });
