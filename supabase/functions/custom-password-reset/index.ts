@@ -142,9 +142,9 @@ function generatePasswordResetEmailHtml(token: string): string {
   `.trim()
 }
 
-// Generate a 6-digit code
+// Generate a 4-digit code
 function generateCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  return Math.floor(1000 + Math.random() * 9000).toString()
 }
 
 Deno.serve(async (req) => {
