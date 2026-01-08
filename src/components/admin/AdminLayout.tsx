@@ -44,13 +44,6 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     }
     window.location.reload();
   };
-
-  // Haptic feedback helper
-  const triggerHaptic = useCallback((pattern: number | number[] = 10) => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate(pattern);
-    }
-  }, []);
   
   // Swipe gesture tracking
   const touchStartX = useRef<number | null>(null);
@@ -72,13 +65,12 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     
     // Only trigger if horizontal swipe is dominant and started from left edge
     if (touchStartX.current < 50 && deltaX > 40 && deltaY < 100 && !mobileOpen) {
-      triggerHaptic(15);
       setMobileOpen(true);
     }
     
     touchStartX.current = null;
     touchStartY.current = null;
-  }, [mobileOpen, triggerHaptic]);
+  }, [mobileOpen]);
 
   // Add edge swipe listener for mobile
   useEffect(() => {
@@ -168,9 +160,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                   const touchEndX = e.changedTouches[0].clientX;
                   const swipeDistance = touchStartX - touchEndX;
                   
-                  // Swipe left to close (threshold of 40px)
-                  if (swipeDistance > 40) {
-                    triggerHaptic(10);
+                  // Swipe left to close (threshold of 50px)
+                  if (swipeDistance > 50) {
                     setMobileOpen(false);
                   }
                 }}
@@ -189,15 +180,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         {/* Swipe Indicator - Left Edge Hint */}
         {isMobile && !mobileOpen && (
           <div 
-            className="fixed left-0 top-1/2 -translate-y-1/2 z-50 flex items-center touch-none"
-            onClick={() => {
-              triggerHaptic(10);
-              setMobileOpen(true);
-            }}
-            style={{ touchAction: 'none' }}
+            className="fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center"
+            onClick={() => setMobileOpen(true)}
           >
-            <div className="w-2 h-20 bg-primary/50 rounded-r-full shadow-lg shadow-primary/30 transition-all duration-300 active:w-3 active:bg-primary/80 flex items-center justify-center">
-              <div className="w-0.5 h-8 bg-white/30 rounded-full" />
+            <div className="w-1 h-16 bg-primary/40 rounded-r-full shadow-lg shadow-primary/20 transition-all duration-300 hover:w-1.5 hover:bg-primary/60 active:bg-primary/80">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-24 -ml-1" />
             </div>
           </div>
         )}
