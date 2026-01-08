@@ -148,7 +148,7 @@ export default function AdminAnalytics() {
 
   return (
     <AdminLayout requiredRoles={['admin']}>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl sm:text-3xl font-display">Analytics</CardTitle>
@@ -156,54 +156,64 @@ export default function AdminAnalytics() {
           </CardHeader>
         </Card>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.orders ?? 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats?.pendingOrders ?? 0} pending · {stats?.completedOrders ?? 0} completed
-              </p>
-            </CardContent>
-          </Card>
+        {/* Combined Overview Card */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                  <ShoppingCart className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats?.orders ?? 0}</p>
+                  <p className="text-xs text-muted-foreground">Total Orders</p>
+                </div>
+                <p className="text-[10px] text-muted-foreground/70">
+                  {stats?.pendingOrders ?? 0} pending · {stats?.completedOrders ?? 0} completed
+                </p>
+              </div>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Products</CardTitle>
-              <Package className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.products ?? 0}</div>
-            </CardContent>
-          </Card>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                  <Package className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats?.products ?? 0}</p>
+                  <p className="text-xs text-muted-foreground">Products</p>
+                </div>
+              </div>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Users</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.users ?? 0}</div>
-            </CardContent>
-          </Card>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats?.users ?? 0}</p>
+                  <p className="text-xs text-muted-foreground">Users</p>
+                </div>
+              </div>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Downloads</CardTitle>
-              <Download className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.downloads ?? 0}</div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                  <Download className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats?.downloads ?? 0}</p>
+                  <p className="text-xs text-muted-foreground">Downloads</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           {/* Downloads Trend */}
           <Card className="bg-card border-border">
             <CardHeader>
@@ -245,7 +255,7 @@ export default function AdminAnalytics() {
           </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           {/* User Registrations */}
           <Card className="bg-card border-border">
             <CardHeader>
@@ -313,24 +323,24 @@ export default function AdminAnalytics() {
             {productDownloads?.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No downloads yet</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {productDownloads?.map((product, index) => (
-                  <div key={product.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                  <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs shrink-0">
                       {index + 1}
                     </div>
                     {product.images?.[0] && (
                       <img 
                         src={product.images[0]} 
                         alt={product.name} 
-                        className="w-10 h-10 rounded-lg object-cover"
+                        className="w-9 h-9 rounded-lg object-cover shrink-0"
                       />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{product.name}</p>
                     </div>
-                    <div className="flex items-center gap-1 text-primary font-bold">
-                      <Download className="h-4 w-4" />
+                    <div className="flex items-center gap-1 text-primary font-bold text-sm shrink-0">
+                      <Download className="h-3.5 w-3.5" />
                       {product.download_count ?? 0}
                     </div>
                   </div>
