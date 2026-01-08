@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +27,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [savingUsername, setSavingUsername] = useState(false);
 
   const copyCustomerId = async () => {
     if (profile?.customer_id) {
@@ -113,6 +118,64 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     // Fire-and-forget; if RLS blocks this insert, we simply keep using the fallback name.
     void run();
   }, [user?.id, user?.email, profileLoading, profile, fallbackDisplayName, queryClient]);
+
+  // Real-time username availability check
+  useEffect(() => {
+    if (!editingUsername || !newUsername.trim() || newUsername.trim().length < 2) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    // If same as current, mark as available
+    if (newUsername.trim().toLowerCase() === profile?.display_name?.toLowerCase()) {
+      setUsernameAvailable(true);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setCheckingUsername(true);
+      try {
+        const { data: isAvailable } = await supabase.rpc('is_username_available', {
+          username: newUsername.trim()
+        });
+        setUsernameAvailable(isAvailable ?? false);
+      } catch {
+        setUsernameAvailable(null);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [newUsername, editingUsername, profile?.display_name]);
+
+  const handleSaveUsername = async () => {
+    if (!user || !newUsername.trim() || usernameAvailable === false) return;
+    
+    setSavingUsername(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ display_name: newUsername.trim() })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+      setEditingUsername(false);
+      setNewUsername('');
+    } catch (error) {
+      console.error('Failed to update username:', error);
+    } finally {
+      setSavingUsername(false);
+    }
+  };
+
+  const startEditingUsername = () => {
+    setNewUsername(profile?.display_name || fallbackDisplayName || '');
+    setEditingUsername(true);
+    setUsernameAvailable(null);
+  };
 
   const { data: orders } = useQuery({
     queryKey: ['user-orders', user?.id],
@@ -202,16 +265,69 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
               />
               <div>
-                <p className="text-sm text-muted-foreground">Username</p>
-                <p className="font-medium">
-                  {profile?.display_name || fallbackDisplayName || 'Not set'}
-                  {profileLoading && (
-                    <span className="ml-2 inline-flex items-center text-xs text-muted-foreground">
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Loading
-                    </span>
-                  )}
-                </p>
+                <p className="text-sm text-muted-foreground mb-1">Username</p>
+                {editingUsername ? (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
+                        autoFocus
+                      />
+                      {newUsername.trim().length >= 2 && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingUsername ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : usernameAvailable === true ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="h-4 w-4 text-destructive" />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                      <p className="text-xs text-destructive">This username is already taken</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveUsername}
+                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                      >
+                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">
+                      {profile?.display_name || fallbackDisplayName || 'Not set'}
+                      {profileLoading && (
+                        <span className="ml-2 inline-flex items-center text-xs text-muted-foreground">
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          Loading
+                        </span>
+                      )}
+                    </p>
+                    <button
+                      onClick={startEditingUsername}
+                      className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                      title="Edit username"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ArrowLeft, CheckCircle, Eye, EyeOff, Mail } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle, Eye, EyeOff, Mail, Check, X } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { PasswordStrengthMeter, isPasswordStrongEnough } from '@/components/auth/PasswordStrengthMeter';
@@ -39,6 +39,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [otpCode, setOtpCode] = useState('');
   const [subscribeToEmails, setSubscribeToEmails] = useState(true);
   const [agreedToTos, setAgreedToTos] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -57,6 +59,30 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       navigate('/');
     }
   }, [user, navigate, mode]);
+
+  // Real-time username availability check
+  useEffect(() => {
+    if (mode !== 'signup' || !displayName.trim() || displayName.trim().length < 2) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setCheckingUsername(true);
+      try {
+        const { data: isAvailable } = await supabase.rpc('is_username_available', {
+          username: displayName.trim()
+        });
+        setUsernameAvailable(isAvailable ?? false);
+      } catch {
+        setUsernameAvailable(null);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [displayName, mode]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -734,15 +760,31 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               {mode === 'signup' && (
                 <div className="space-y-2">
                   <Label htmlFor="displayName">Username</Label>
-                  <Input
-                    id="displayName"
-                    type="text"
-                    placeholder="Choose a username"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="bg-input"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="bg-input pr-10"
+                      required
+                    />
+                    {displayName.trim().length >= 2 && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {checkingUsername ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : usernameAvailable === true ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : usernameAvailable === false ? (
+                          <X className="h-4 w-4 text-destructive" />
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                  {usernameAvailable === false && displayName.trim().length >= 2 && (
+                    <p className="text-sm text-destructive">This username is already taken</p>
+                  )}
                   {errors.displayName && (
                     <p className="text-sm text-destructive">{errors.displayName}</p>
                   )}
