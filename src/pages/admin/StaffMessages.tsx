@@ -707,106 +707,108 @@ export default function StaffMessages() {
 
   return (
     <AdminLayout>
-      <div className="h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)] flex flex-col -mx-2 sm:mx-0">
-        <Card className="glass-card flex-1 flex flex-col overflow-hidden rounded-none sm:rounded-lg">
-          <CardHeader className="border-b border-border shrink-0 px-3 py-3 lg:px-6 lg:py-4">
-            <CardTitle className="flex items-center justify-between text-base lg:text-lg">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 lg:h-5 lg:w-5" />
+      <div className="h-[calc(100vh-8rem)] md:h-[calc(100vh-7rem)] flex flex-col max-w-full overflow-hidden">
+        <Card className="glass-card flex-1 flex flex-col overflow-hidden">
+          <CardHeader className="border-b border-border shrink-0 px-3 py-3">
+            <CardTitle className="flex items-center justify-between text-base">
+              <div className="flex items-center gap-2 min-w-0">
+                <MessageSquare className="h-4 w-4 shrink-0" />
                 <span className="truncate">Staff Chat</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs lg:text-sm font-normal text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground shrink-0">
                 <Circle className="h-2 w-2 fill-green-500 text-green-500" />
                 <span>{onlineUsers.length} online</span>
               </div>
             </CardTitle>
             {/* Staff panel - shows online and last seen */}
             {allStaff && allStaff.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {/* Online users first */}
-                {onlineUsers.map((staff) => (
-                  <div
-                    key={staff.user_id}
-                    className={cn(
-                      "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
-                      staff.user_id === user?.id
-                        ? "bg-primary/15 text-primary"
-                        : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    <Circle className={cn(
-                      "h-1.5 w-1.5",
-                      staff.typing
-                        ? "fill-yellow-500 text-yellow-500 animate-pulse"
-                        : "fill-green-500 text-green-500"
-                    )} />
-                    <span className="truncate max-w-[80px]">
-                      {staff.user_id === user?.id ? 'You' : staff.name}
-                    </span>
-                    {staff.typing && staff.user_id !== user?.id && (
-                      <span className="text-[10px] text-muted-foreground">typing</span>
-                    )}
-                  </div>
-                ))}
-                {/* Offline users with last seen - sorted by most recently active */}
-                {allStaff
-                  .filter(staff => !onlineUsers.some(o => o.user_id === staff.user_id))
-                  .sort((a, b) => {
-                    const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
-                    const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
-                    return bTime - aTime; // Most recent first
-                  })
-                  .map((staff) => {
-                    const lastSeenText = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
-                    const isOffline = lastSeenText === 'Offline' || lastSeenText === 'Never';
-                    
-                    return (
-                      <div
-                        key={staff.user_id}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-opacity",
-                          isOffline 
-                            ? "bg-muted/30 text-muted-foreground/50 opacity-60" 
-                            : "bg-muted/50 text-muted-foreground"
-                        )}
-                        title={`Last seen: ${lastSeenText}`}
-                      >
-                        <Circle className={cn(
-                          "h-1.5 w-1.5",
-                          isOffline
-                            ? "fill-muted-foreground/20 text-muted-foreground/20"
-                            : "fill-amber-500/70 text-amber-500/70"
-                        )} />
-                        <span className={cn(
-                          "truncate max-w-[60px]",
-                          isOffline && "opacity-70"
-                        )}>
-                          {staff.display_name || staff.email.split('@')[0]}
-                        </span>
-                        <span className={cn(
-                          "text-[10px]",
-                          isOffline ? "opacity-50" : "opacity-80"
-                        )}>{lastSeenText}</span>
-                      </div>
-                    );
-                  })}
-              </div>
+              <ScrollArea className="max-h-20 mt-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {/* Online users first */}
+                  {onlineUsers.map((staff) => (
+                    <div
+                      key={staff.user_id}
+                      className={cn(
+                        "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs shrink-0",
+                        staff.user_id === user?.id
+                          ? "bg-primary/15 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <Circle className={cn(
+                        "h-1.5 w-1.5 shrink-0",
+                        staff.typing
+                          ? "fill-yellow-500 text-yellow-500 animate-pulse"
+                          : "fill-green-500 text-green-500"
+                      )} />
+                      <span className="truncate max-w-[60px]">
+                        {staff.user_id === user?.id ? 'You' : staff.name}
+                      </span>
+                      {staff.typing && staff.user_id !== user?.id && (
+                        <span className="text-[10px] text-muted-foreground">typing</span>
+                      )}
+                    </div>
+                  ))}
+                  {/* Offline users with last seen - sorted by most recently active */}
+                  {allStaff
+                    .filter(staff => !onlineUsers.some(o => o.user_id === staff.user_id))
+                    .sort((a, b) => {
+                      const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+                      const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+                      return bTime - aTime; // Most recent first
+                    })
+                    .map((staff) => {
+                      const lastSeenText = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
+                      const isOffline = lastSeenText === 'Offline' || lastSeenText === 'Never';
+                      
+                      return (
+                        <div
+                          key={staff.user_id}
+                          className={cn(
+                            "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-opacity shrink-0",
+                            isOffline 
+                              ? "bg-muted/30 text-muted-foreground/50 opacity-60" 
+                              : "bg-muted/50 text-muted-foreground"
+                          )}
+                          title={`Last seen: ${lastSeenText}`}
+                        >
+                          <Circle className={cn(
+                            "h-1.5 w-1.5 shrink-0",
+                            isOffline
+                              ? "fill-muted-foreground/20 text-muted-foreground/20"
+                              : "fill-amber-500/70 text-amber-500/70"
+                          )} />
+                          <span className={cn(
+                            "truncate max-w-[50px]",
+                            isOffline && "opacity-70"
+                          )}>
+                            {staff.display_name || staff.email.split('@')[0]}
+                          </span>
+                          <span className={cn(
+                            "text-[10px]",
+                            isOffline ? "opacity-50" : "opacity-80"
+                          )}>{lastSeenText}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </ScrollArea>
             )}
           </CardHeader>
           
-          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
             {/* Messages */}
-            <ScrollArea className="flex-1 p-2 sm:p-4" ref={scrollRef}>
+            <ScrollArea className="flex-1 p-3" ref={scrollRef}>
               {isLoading ? (
                 <p className="text-center text-muted-foreground py-8">Loading messages...</p>
               ) : messages?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-12">
-                  <MessageSquare className="h-12 w-12 mb-4 opacity-50" />
-                  <p>No messages yet</p>
-                  <p className="text-sm">Start the conversation!</p>
+                  <MessageSquare className="h-10 w-10 mb-3 opacity-50" />
+                  <p className="text-sm">No messages yet</p>
+                  <p className="text-xs">Start the conversation!</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {messages?.map((msg, index) => {
                     const isOwn = msg.sender_id === user?.id;
                     const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
@@ -818,43 +820,43 @@ export default function StaffMessages() {
                       <div
                         key={msg.id}
                         className={cn(
-                          "flex gap-3",
+                          "flex gap-2",
                           isOwn && "flex-row-reverse",
                           isOptimistic && "opacity-70"
                         )}
                       >
                         {showAvatar ? (
-                          <Avatar className="h-8 w-8 shrink-0">
+                          <Avatar className="h-7 w-7 shrink-0">
                             <AvatarFallback className="text-xs bg-primary/20">
                               {getInitials(profile)}
                             </AvatarFallback>
                           </Avatar>
                         ) : (
-                          <div className="w-8 shrink-0" />
+                          <div className="w-7 shrink-0" />
                         )}
                         <div className={cn(
-                          "flex flex-col max-w-[70%]",
+                          "flex flex-col min-w-0 max-w-[75%]",
                           isOwn && "items-end"
                         )}>
                           {showAvatar && (
-                            <span className="text-xs text-muted-foreground mb-1">
+                            <span className="text-xs text-muted-foreground mb-0.5">
                               {isOwn ? 'You' : getName(msg.sender_id)}
                             </span>
                           )}
                           <div className={cn(
-                            "rounded-2xl px-4 py-2",
+                            "rounded-2xl px-3 py-2",
                             isOwn 
                               ? "bg-primary text-primary-foreground rounded-tr-sm" 
                               : "bg-muted rounded-tl-sm"
                           )}>
                             <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message, isOwn)}</p>
                           </div>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground">
                               {formatTime(msg.created_at)}
                             </span>
                             {isSending && (
-                              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                              <Loader2 className="h-2.5 w-2.5 animate-spin text-muted-foreground" />
                             )}
                           </div>
                         </div>
@@ -867,26 +869,26 @@ export default function StaffMessages() {
 
             {/* Typing Indicator */}
             {typingUsers.length > 0 && (
-              <div className="px-4 py-2 border-t border-border/50">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="px-3 py-1.5 border-t border-border/50 shrink-0">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex gap-0.5">
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <span>{getTypingText()}</span>
+                  <span className="truncate">{getTypingText()}</span>
                 </div>
               </div>
             )}
 
             {/* Input */}
-            <div className="p-2 sm:p-4 border-t border-border shrink-0 relative">
+            <div className="p-3 border-t border-border shrink-0 relative">
               {/* Mention suggestions dropdown */}
               {showMentionSuggestions && totalSuggestions > 0 && (
-                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden z-50">
-                  <div className="p-1 max-h-48 overflow-y-auto">
-                    <div className="px-2 py-1.5 text-xs text-muted-foreground flex items-center gap-1">
-                      <AtSign className="h-3 w-3" />
+                <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden z-50 max-w-full">
+                  <div className="p-1 max-h-40 overflow-y-auto">
+                    <div className="px-2 py-1 text-xs text-muted-foreground flex items-center gap-1">
+                      <AtSign className="h-3 w-3 shrink-0" />
                       Mention someone
                     </div>
                     
@@ -897,16 +899,16 @@ export default function StaffMessages() {
                         type="button"
                         onClick={() => insertGroupMention(group.name)}
                         className={cn(
-                          "w-full flex items-center gap-2 px-2 py-2 rounded text-left transition-colors",
+                          "w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors",
                           index === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
                         )}
                       >
-                        <div className="h-6 w-6 rounded-full bg-destructive/15 flex items-center justify-center">
-                          <Users className="h-3.5 w-3.5 text-destructive" />
+                        <div className="h-5 w-5 rounded-full bg-destructive/15 flex items-center justify-center shrink-0">
+                          <Users className="h-3 w-3 text-destructive" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-destructive">@{group.name}</p>
-                          <p className="text-xs text-muted-foreground">{group.description}</p>
+                          <p className="text-xs font-medium text-destructive">@{group.name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{group.description}</p>
                         </div>
                       </button>
                     ))}
@@ -917,7 +919,7 @@ export default function StaffMessages() {
                     )}
                     
                     {/* Individual staff members */}
-                    {filteredStaff.slice(0, 8).map((staff, index) => {
+                    {filteredStaff.slice(0, 6).map((staff, index) => {
                       const actualIndex = filteredGroupMentions.length + index;
                       return (
                         <button
@@ -925,20 +927,19 @@ export default function StaffMessages() {
                           type="button"
                           onClick={() => insertMention(staff)}
                           className={cn(
-                            "w-full flex items-center gap-2 px-2 py-2 rounded text-left transition-colors",
+                            "w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors",
                             actualIndex === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
                           )}
                         >
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs bg-primary/20">
+                          <Avatar className="h-5 w-5 shrink-0">
+                            <AvatarFallback className="text-[10px] bg-primary/20">
                               {getInitials(staff)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
+                            <p className="text-xs font-medium truncate">
                               {staff.display_name || staff.email.split('@')[0]}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
                           </div>
                         </button>
                       );
@@ -954,13 +955,14 @@ export default function StaffMessages() {
                     value={newMessage}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type a message... Use @ to mention"
-                    className="flex-1"
+                    placeholder="Message... @ to mention"
+                    className="flex-1 h-9 text-sm"
                     disabled={sendMessageMutation.isPending}
                   />
                   <Button 
                     type="submit" 
                     size="icon"
+                    className="h-9 w-9 shrink-0"
                     disabled={!newMessage.trim() || sendMessageMutation.isPending}
                   >
                     <Send className="h-4 w-4" />
