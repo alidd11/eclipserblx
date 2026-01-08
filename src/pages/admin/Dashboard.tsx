@@ -295,7 +295,8 @@ export default function AdminDashboard() {
   ];
 
   const formatDuration = (minutes: number | null) => {
-    if (!minutes) return '-';
+    if (minutes === null || minutes === undefined) return '-';
+    if (minutes === 0) return '<1m';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
