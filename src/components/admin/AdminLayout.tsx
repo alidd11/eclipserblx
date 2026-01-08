@@ -177,10 +177,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           </Sheet>
         )}
 
-        {/* Swipe Indicator - Left Edge Hint */}
+        {/* Swipe Indicator - Left Edge Hint (positioned below header) */}
         {isMobile && !mobileOpen && (
           <div 
-            className="fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center"
+            className="fixed left-0 top-[calc(50%+24px)] -translate-y-1/2 z-30 flex items-center"
             onClick={() => setMobileOpen(true)}
           >
             <div className="w-1 h-16 bg-primary/40 rounded-r-full shadow-lg shadow-primary/20 transition-all duration-300 hover:w-1.5 hover:bg-primary/60 active:bg-primary/80">
