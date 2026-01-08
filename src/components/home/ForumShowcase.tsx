@@ -4,6 +4,7 @@ import { MessageSquare, ArrowRight, Users, TrendingUp, Sparkles } from 'lucide-r
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SectionWrapper } from './SectionWrapper';
 import {
   Carousel,
   CarouselContent,
@@ -47,18 +48,15 @@ export const ForumShowcase = memo(function ForumShowcase() {
 
   if (isLoading) {
     return (
-      <section className="pb-8">
-        <div className="mx-auto w-full max-w-4xl px-4">
-          <Skeleton className="h-64 rounded-2xl" />
-        </div>
-      </section>
+      <SectionWrapper>
+        <Skeleton className="h-64 rounded-2xl" />
+      </SectionWrapper>
     );
   }
 
   return (
-    <section className="pb-8">
-      <div className="mx-auto w-full max-w-4xl px-4">
-        <motion.div
+    <SectionWrapper>
+      <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -169,7 +167,6 @@ export const ForumShowcase = memo(function ForumShowcase() {
             </div>
           </div>
         </motion.div>
-      </div>
-    </section>
+    </SectionWrapper>
   );
 });

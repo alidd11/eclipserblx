@@ -3,6 +3,7 @@ import { ArrowRight, Sparkles, Zap, Shield, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
+import { SectionWrapper } from './SectionWrapper';
 import { motion } from 'framer-motion';
 
 export function HeroSection() {
@@ -18,12 +19,11 @@ export function HeroSection() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
       
-      <div className="container mx-auto px-4 pt-8 pb-8 md:pt-16 md:pb-12 relative">
+      <SectionWrapper as="div" className="pt-8 md:pt-16 relative">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
         >
           {/* Hero Card Container - matching stats/review card style */}
           <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-10 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
@@ -136,7 +136,7 @@ export function HeroSection() {
             <ReviewCard />
           </motion.div>
         </motion.div>
-      </div>
+      </SectionWrapper>
     </section>
   );
 }
