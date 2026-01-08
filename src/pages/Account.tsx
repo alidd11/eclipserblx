@@ -202,7 +202,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
               />
               <div>
-                <p className="text-sm text-muted-foreground">Display Name</p>
+                <p className="text-sm text-muted-foreground">Username</p>
                 <p className="font-medium">
                   {profile?.display_name || fallbackDisplayName || 'Not set'}
                   {profileLoading && (

@@ -222,7 +222,7 @@ export default function AdminUsers() {
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
+                            <p className="font-medium">{profile.display_name || 'No username'}</p>
                             {roles.length === 0 ? (
                               <Badge variant="secondary" className="text-xs">Customer</Badge>
                             ) : (
@@ -303,7 +303,7 @@ export default function AdminUsers() {
           {selectedUser && (
             <div className="space-y-5">
               <div className="p-3 rounded-lg bg-muted/50">
-                <p className="font-medium text-sm">{selectedUser.display_name || 'Unnamed User'}</p>
+                <p className="font-medium text-sm">{selectedUser.display_name || 'No username'}</p>
                 {selectedUser.customer_id && (
                   <p className="text-xs font-mono text-primary mt-1">Customer ID: {selectedUser.customer_id}</p>
                 )}
