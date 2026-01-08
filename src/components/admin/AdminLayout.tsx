@@ -205,9 +205,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             </div>
           </div>
         )}
-        <div className="flex-1 flex flex-col overflow-auto">
+        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
           {isMobile && (
-            <header className="sticky top-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+            <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 
