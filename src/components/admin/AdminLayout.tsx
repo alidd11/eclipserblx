@@ -146,7 +146,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent 
               side="left" 
-              className="p-0 w-[72vw] max-w-[16rem] pt-[env(safe-area-inset-top)] [&>button]:hidden"
+              className="p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] [&>button]:hidden"
               onPointerDownOutside={() => setMobileOpen(false)}
             >
               <div 
