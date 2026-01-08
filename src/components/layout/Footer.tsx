@@ -23,10 +23,10 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card/50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 py-6 md:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-8">
           {/* Brand */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <Link to="/" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg gradient-button flex items-center justify-center">
                 <span className="text-white font-display font-bold text-sm">UK</span>
@@ -42,7 +42,7 @@ export function Footer() {
             href="https://discord.gg/d3Tq4KbNwq"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mt-2"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <svg
               className="h-5 w-5"
@@ -58,8 +58,8 @@ export function Footer() {
 
           {/* Shop Links */}
           <div>
-            <h3 className="font-display text-sm font-semibold mb-4">Shop</h3>
-            <ul className="space-y-2">
+            <h3 className="font-display text-sm font-semibold mb-2">Shop</h3>
+            <ul className="space-y-1">
               {footerLinks.shop.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -75,8 +75,8 @@ export function Footer() {
 
           {/* Support Links */}
           <div>
-            <h3 className="font-display text-sm font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
+            <h3 className="font-display text-sm font-semibold mb-2">Support</h3>
+            <ul className="space-y-1">
               {footerLinks.support.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -92,8 +92,8 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="font-display text-sm font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2">
+            <h3 className="font-display text-sm font-semibold mb-2">Legal</h3>
+            <ul className="space-y-1">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -108,7 +108,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
