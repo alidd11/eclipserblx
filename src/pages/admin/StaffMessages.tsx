@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users, AtSign, Circle, Loader2 } from 'lucide-react';
+import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,12 +14,19 @@ import { cn } from '@/lib/utils';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { notifyStaffMention } from '@/lib/pushNotifications';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ChatMessage {
   id: string;
   sender_id: string;
   message: string;
   created_at: string;
+}
+
+interface MessageRead {
+  message_id: string;
+  user_id: string;
+  read_at: string;
 }
 
 interface StaffProfile {
@@ -75,6 +82,7 @@ const GROUP_MENTIONS = [
 export default function StaffMessages() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<OnlineStaffUser[]>([]);
@@ -86,6 +94,10 @@ export default function StaffMessages() {
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  
+  // Swipe tracking for mobile
+  const swipeStartY = useRef<number | null>(null);
+  const swipeStartX = useRef<number | null>(null);
   
   // Notification hooks
   const { playSound } = useNotificationSound();
@@ -112,6 +124,36 @@ export default function StaffMessages() {
       if (error) throw error;
       return data as ChatMessage[];
     },
+  });
+
+  // Fetch read receipts for messages
+  const { data: messageReads } = useQuery({
+    queryKey: ['staff-message-reads', messages?.map(m => m.id)],
+    queryFn: async () => {
+      if (!messages?.length) return {};
+      const messageIds = messages.map(m => m.id).filter(id => !id.startsWith('optimistic-'));
+      
+      if (messageIds.length === 0) return {};
+      
+      const { data, error } = await supabase
+        .from('staff_message_reads')
+        .select('message_id, user_id, read_at')
+        .in('message_id', messageIds);
+      
+      if (error) throw error;
+      
+      // Group reads by message_id
+      const readsByMessage: Record<string, MessageRead[]> = {};
+      data?.forEach((read: MessageRead) => {
+        if (!readsByMessage[read.message_id]) {
+          readsByMessage[read.message_id] = [];
+        }
+        readsByMessage[read.message_id].push(read);
+      });
+      
+      return readsByMessage;
+    },
+    enabled: !!messages?.length,
   });
 
   // Fetch staff profiles
@@ -510,6 +552,88 @@ export default function StaffMessages() {
     }
   }, [messages]);
 
+  // Mark messages as read when viewing
+  useEffect(() => {
+    if (!user?.id || !messages?.length) return;
+    
+    // Find messages not sent by current user and not yet read by current user
+    const unreadMessageIds = messages
+      .filter(msg => {
+        if (msg.sender_id === user.id) return false; // Skip own messages
+        if (msg.id.startsWith('optimistic-')) return false; // Skip optimistic messages
+        const reads = messageReads?.[msg.id] || [];
+        return !reads.some(r => r.user_id === user.id);
+      })
+      .map(msg => msg.id);
+    
+    if (unreadMessageIds.length === 0) return;
+    
+    // Mark messages as read
+    const markAsRead = async () => {
+      const inserts = unreadMessageIds.map(messageId => ({
+        message_id: messageId,
+        user_id: user.id,
+      }));
+      
+      const { error } = await supabase
+        .from('staff_message_reads')
+        .upsert(inserts, { onConflict: 'message_id,user_id' });
+      
+      if (error) {
+        console.error('Failed to mark messages as read:', error);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['staff-message-reads'] });
+      }
+    };
+    
+    markAsRead();
+  }, [messages, messageReads, user?.id, queryClient]);
+
+  // Real-time subscription for read receipts
+  useEffect(() => {
+    const channel = supabase
+      .channel('staff-message-reads-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'staff_message_reads',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['staff-message-reads'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  // Swipe down handler for mobile to navigate back
+  const handleSwipeStart = useCallback((e: React.TouchEvent) => {
+    if (!isMobile) return;
+    swipeStartY.current = e.touches[0].clientY;
+    swipeStartX.current = e.touches[0].clientX;
+  }, [isMobile]);
+
+  const handleSwipeEnd = useCallback((e: React.TouchEvent) => {
+    if (!isMobile || swipeStartY.current === null || swipeStartX.current === null) return;
+    
+    const deltaY = e.changedTouches[0].clientY - swipeStartY.current;
+    const deltaX = Math.abs(e.changedTouches[0].clientX - swipeStartX.current);
+    
+    // Swipe down with minimal horizontal movement to trigger sidebar
+    if (deltaY > 80 && deltaX < 50) {
+      // This will be handled by AdminLayout's left-edge swipe
+      // But we can use window.history or other navigation if needed
+    }
+    
+    swipeStartY.current = null;
+    swipeStartX.current = null;
+  }, [isMobile]);
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
@@ -816,6 +940,11 @@ export default function StaffMessages() {
                     const isOptimistic = msg.id.startsWith('optimistic-');
                     const isSending = isOptimistic && sendMessageMutation.isPending;
                     
+                    // Get read receipts for this message (only show for own messages)
+                    const reads = messageReads?.[msg.id] || [];
+                    const othersWhoRead = reads.filter(r => r.user_id !== user?.id);
+                    const hasBeenRead = othersWhoRead.length > 0;
+                    
                     return (
                       <div
                         key={msg.id}
@@ -857,6 +986,16 @@ export default function StaffMessages() {
                             </span>
                             {isSending && (
                               <Loader2 className="h-2.5 w-2.5 animate-spin text-muted-foreground" />
+                            )}
+                            {/* Read receipts - only show for own messages */}
+                            {isOwn && !isOptimistic && (
+                              <div className="flex items-center" title={hasBeenRead ? `Read by ${othersWhoRead.length} staff` : 'Sent'}>
+                                {hasBeenRead ? (
+                                  <CheckCheck className="h-3 w-3 text-primary" />
+                                ) : (
+                                  <Check className="h-3 w-3 text-muted-foreground" />
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
