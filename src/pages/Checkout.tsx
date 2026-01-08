@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CreditCard, Lock, ChevronLeft, Tag, X, Check } from 'lucide-react';
+import { Link, Navigate } from 'react-router-dom';
+import { CreditCard, Lock, ChevronLeft, Tag, X, Check, Wallet, Smartphone } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,8 +21,7 @@ interface AppliedDiscount {
 
 export default function Checkout() {
   const { items, total } = useCart();
-  const { user, session } = useAuth();
-  const [email, setEmail] = useState(user?.email || '');
+  const { user, session, loading } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
@@ -31,6 +29,12 @@ export default function Checkout() {
 
   const discountAmount = appliedDiscount?.amount || 0;
   const finalTotal = Math.max(0, total - discountAmount);
+
+  // Redirect to login if not authenticated
+  if (!loading && !user) {
+    toast.error('Please sign in to checkout');
+    return <Navigate to="/auth" state={{ from: '/checkout' }} replace />;
+  }
 
   if (items.length === 0) {
     return (
@@ -115,8 +119,8 @@ export default function Checkout() {
   };
 
   const handleStripeCheckout = async () => {
-    if (!email && !user?.email) {
-      toast.error('Please enter your email address');
+    if (!user?.email) {
+      toast.error('Please sign in to continue');
       return;
     }
 
@@ -131,7 +135,7 @@ export default function Checkout() {
             price: item.price,
             image: item.image,
           })),
-          email: email || user?.email,
+          email: user.email,
           discountCodeId: appliedDiscount?.id,
         },
         headers: session?.access_token ? {
@@ -148,7 +152,7 @@ export default function Checkout() {
       }
     } catch (error: any) {
       console.error('Checkout error:', error);
-      toast.error(error.message || 'Failed to start checkout');
+      toast.error(error.message || 'Failed to start checkout. Please try again.');
       setIsProcessing(false);
     }
   };
@@ -164,28 +168,58 @@ export default function Checkout() {
         <h1 className="text-3xl md:text-4xl font-display font-bold">Checkout</h1>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Customer Details */}
-          <div className="space-y-6">
-            <div className="gaming-card p-6 space-y-4">
-              <h2 className="text-xl font-display font-bold">Your Details</h2>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Your download links will be sent to this email
-                </p>
+          {/* Order Summary - Now First on Mobile */}
+          <div className="order-first lg:order-last gaming-card p-6 h-fit space-y-6">
+            <h2 className="text-xl font-display font-bold">Order Summary</h2>
+            
+            <div className="space-y-3">
+              {items.map((item) => (
+                <div key={item.id} className="flex gap-3">
+                  <div className="w-16 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
+                    {item.image ? (
+                      <img src={item.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-sm font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate text-sm">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">Digital Product</p>
+                  </div>
+                  <span className="font-medium">£{item.price.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-border pt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>£{total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Discount</span>
+                <span className={discountAmount > 0 ? 'text-primary' : ''}>
+                  {discountAmount > 0 ? `-£${discountAmount.toFixed(2)}` : '£0.00'}
+                </span>
+              </div>
+              <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
+                <span>Total</span>
+                <span>£{finalTotal.toFixed(2)}</span>
               </div>
             </div>
 
+            {/* Sending receipt to user email */}
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">
+                Receipt will be sent to: <span className="font-medium text-foreground">{user?.email}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Discount & Payment */}
+          <div className="space-y-6">
             <div className="gaming-card p-6 space-y-4">
               <h2 className="text-xl font-display font-bold flex items-center gap-2">
                 <Tag className="h-5 w-5" />
@@ -238,6 +272,27 @@ export default function Checkout() {
                 <CreditCard className="h-5 w-5" />
                 Payment
               </h2>
+
+              {/* Available Payment Methods Info */}
+              <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+                <span className="text-xs text-muted-foreground">Accepted:</span>
+                <div className="flex items-center gap-1 text-xs">
+                  <CreditCard className="h-3 w-3" />
+                  <span>Card</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs">
+                  <Smartphone className="h-3 w-3" />
+                  <span>Apple Pay</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs">
+                  <Smartphone className="h-3 w-3" />
+                  <span>Google Pay</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs">
+                  <Wallet className="h-3 w-3" />
+                  <span>PayPal</span>
+                </div>
+              </div>
               
               <StripeProvider fallback={
                 <Button
@@ -259,7 +314,7 @@ export default function Checkout() {
                       image: item.image,
                     }))}
                     total={finalTotal}
-                    email={email || user?.email || ''}
+                    email={user?.email || ''}
                     accessToken={session?.access_token}
                     onProcessing={setIsProcessing}
                   />
@@ -269,7 +324,7 @@ export default function Checkout() {
                       <span className="w-full border-t border-border" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or pay with card</span>
+                      <span className="bg-card px-2 text-muted-foreground">Or pay with card / PayPal</span>
                     </div>
                   </div>
 
@@ -280,7 +335,7 @@ export default function Checkout() {
                     disabled={isProcessing}
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
-                    {isProcessing ? 'Processing...' : `Pay £${finalTotal.toFixed(2)} with Card`}
+                    {isProcessing ? 'Processing...' : `Pay £${finalTotal.toFixed(2)}`}
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
@@ -289,49 +344,6 @@ export default function Checkout() {
                   </p>
                 </div>
               </StripeProvider>
-            </div>
-          </div>
-
-          {/* Order Summary */}
-          <div className="gaming-card p-6 h-fit space-y-6">
-            <h2 className="text-xl font-display font-bold">Order Summary</h2>
-            
-            <div className="space-y-3">
-              {items.map((item) => (
-                <div key={item.id} className="flex gap-3">
-                  <div className="w-16 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
-                    {item.image ? (
-                      <img src={item.image} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate text-sm">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">Digital Product</p>
-                  </div>
-                  <span className="font-medium">£{item.price.toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-border pt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span>£{total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Discount</span>
-                <span className={discountAmount > 0 ? 'text-primary' : ''}>
-                  {discountAmount > 0 ? `-£${discountAmount.toFixed(2)}` : '£0.00'}
-                </span>
-              </div>
-              <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
-                <span>Total</span>
-                <span>£{finalTotal.toFixed(2)}</span>
-              </div>
             </div>
           </div>
         </div>

@@ -36,10 +36,12 @@ export default function Downloads() {
   const [downloading, setDownloading] = useState<string | null>(null);
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['user-downloads', user?.id],
+    queryKey: ['user-downloads', user?.id, user?.email],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
+      if (!user?.id && !user?.email) return [];
+      
+      // Query by user_id first
+      let { data, error } = await supabase
         .from('orders')
         .select(`
           id,
@@ -64,9 +66,47 @@ export default function Downloads() {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Order[];
+      
+      // Also query by email to catch orders where user_id wasn't set
+      if (user?.email) {
+        const { data: emailOrders, error: emailError } = await supabase
+          .from('orders')
+          .select(`
+            id,
+            status,
+            created_at,
+            total,
+            order_items (
+              id,
+              product_name,
+              price,
+              product_id,
+              product:products (
+                id,
+                name,
+                images,
+                asset_file_url
+              )
+            )
+          `)
+          .eq('customer_email', user.email)
+          .is('user_id', null)
+          .in('status', ['paid', 'completed'])
+          .order('created_at', { ascending: false });
+        
+        if (!emailError && emailOrders) {
+          // Merge and deduplicate
+          const allOrders = [...(data || []), ...emailOrders];
+          const uniqueOrders = allOrders.filter((order, index, self) =>
+            index === self.findIndex((o) => o.id === order.id)
+          );
+          return uniqueOrders as Order[];
+        }
+      }
+      
+      return (data || []) as Order[];
     },
-    enabled: !!user?.id,
+    enabled: !!(user?.id || user?.email),
   });
 
   const handleDownload = async (item: OrderItem) => {
