@@ -16,6 +16,7 @@ import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
 import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
 import { NewBadgeToast } from '@/components/badges/NewBadgeToast';
 import { AvatarUpload } from '@/components/account/AvatarUpload';
+import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
@@ -41,6 +42,29 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       checkBadges();
     }
   }, [user, checkBadges]);
+
+  // Handle pending email subscription from signup
+  useEffect(() => {
+    const handlePendingSubscription = async () => {
+      const pending = sessionStorage.getItem('pendingEmailSubscription');
+      if (pending && user?.id && user?.email) {
+        sessionStorage.removeItem('pendingEmailSubscription');
+        try {
+          await supabase.from('email_subscriptions').insert({
+            user_id: user.id,
+            email: user.email,
+            subscribed_to_updates: true,
+            subscribed_to_discounts: true,
+            subscribed_to_newsletters: true,
+          });
+        } catch (error) {
+          // Ignore if already exists
+          console.log('Email subscription creation:', error);
+        }
+      }
+    };
+    handlePendingSubscription();
+  }, [user?.id, user?.email]);
 
   const fallbackDisplayName = useMemo(() => {
     if (!user) return '';
@@ -267,6 +291,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Email Subscriptions */}
+        <EmailSubscriptionCard />
 
         {/* Badges */}
         <Card className="bg-card border-border">

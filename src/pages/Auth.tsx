@@ -34,9 +34,11 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [resetSent, setResetSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string; tos?: string }>({});
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
+  const [subscribeToEmails, setSubscribeToEmails] = useState(true);
+  const [agreedToTos, setAgreedToTos] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -245,6 +247,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       return;
     }
 
+    // Verify TOS agreement on signup
+    if (mode === 'signup' && !agreedToTos) {
+      setErrors({ tos: 'You must agree to the Terms of Service to create an account' });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -288,6 +296,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             });
           }
         } else {
+          // Create email subscription if opted in
+          if (subscribeToEmails) {
+            // We'll create the subscription after email verification when the user is logged in
+            // Store the preference in sessionStorage to apply after verification
+            sessionStorage.setItem('pendingEmailSubscription', 'true');
+          }
           toast({
             title: 'Check Your Email',
             description: 'We sent you a 6-digit verification code.',
@@ -397,8 +411,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="min-h-screen flex items-center justify-center p-4 py-12 relative">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen flex items-center justify-center p-4 py-8 sm:py-12 relative">
+        <div className="w-full max-w-md space-y-6">
           {/* Back Link */}
           <Link
             to="/"
@@ -765,24 +779,81 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               </div>
 
               {mode === 'signup' && (
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-4 border border-border rounded-lg bg-muted/30">
+                <div className="space-y-4">
+                  {/* Captcha */}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3 p-4 border border-border rounded-lg bg-muted/30">
+                      <Checkbox
+                        id="captcha"
+                        checked={captchaVerified}
+                        onCheckedChange={(checked) => setCaptchaVerified(checked === true)}
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                      <Label 
+                        htmlFor="captcha" 
+                        className="text-sm font-normal cursor-pointer select-none"
+                      >
+                        I'm not a robot
+                      </Label>
+                    </div>
+                    {errors.captcha && (
+                      <p className="text-sm text-destructive">{errors.captcha}</p>
+                    )}
+                  </div>
+
+                  {/* Email Subscription */}
+                  <div className="flex items-start space-x-3 p-4 border border-border rounded-lg bg-muted/30">
                     <Checkbox
-                      id="captcha"
-                      checked={captchaVerified}
-                      onCheckedChange={(checked) => setCaptchaVerified(checked === true)}
-                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      id="emailSubscription"
+                      checked={subscribeToEmails}
+                      onCheckedChange={(checked) => setSubscribeToEmails(checked === true)}
+                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
                     />
                     <Label 
-                      htmlFor="captcha" 
-                      className="text-sm font-normal cursor-pointer select-none"
+                      htmlFor="emailSubscription" 
+                      className="text-sm font-normal cursor-pointer select-none leading-relaxed"
                     >
-                      I'm not a robot
+                      Subscribe to receive product updates, exclusive discount codes, and special offers
                     </Label>
                   </div>
-                  {errors.captcha && (
-                    <p className="text-sm text-destructive">{errors.captcha}</p>
-                  )}
+
+                  {/* Terms of Service */}
+                  <div className="space-y-2">
+                    <div className="flex items-start space-x-3 p-4 border border-border rounded-lg bg-muted/30">
+                      <Checkbox
+                        id="tos"
+                        checked={agreedToTos}
+                        onCheckedChange={(checked) => setAgreedToTos(checked === true)}
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
+                      />
+                      <Label 
+                        htmlFor="tos" 
+                        className="text-sm font-normal cursor-pointer select-none leading-relaxed"
+                      >
+                        I agree to the{' '}
+                        <Link 
+                          to="/terms-of-service" 
+                          target="_blank"
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Terms of Service
+                        </Link>{' '}
+                        and{' '}
+                        <Link 
+                          to="/privacy-policy" 
+                          target="_blank"
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Privacy Policy
+                        </Link>
+                      </Label>
+                    </div>
+                    {errors.tos && (
+                      <p className="text-sm text-destructive">{errors.tos}</p>
+                    )}
+                  </div>
                 </div>
               )}
 

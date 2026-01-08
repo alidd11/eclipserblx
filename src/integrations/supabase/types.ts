@@ -312,6 +312,39 @@ export type Database = {
           },
         ]
       }
+      email_subscriptions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          subscribed_to_discounts: boolean
+          subscribed_to_newsletters: boolean
+          subscribed_to_updates: boolean
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          subscribed_to_discounts?: boolean
+          subscribed_to_newsletters?: boolean
+          subscribed_to_updates?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          subscribed_to_discounts?: boolean
+          subscribed_to_newsletters?: boolean
+          subscribed_to_updates?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       forum_categories: {
         Row: {
           color: string | null
