@@ -50,13 +50,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   const touchStartY = useRef<number | null>(null);
   const isEdgeSwipe = useRef(false);
 
-  // Handle swipe from left edge to open sidebar
+  // Handle swipe from left edge to open sidebar (higher sensitivity)
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
-    // Mark as edge swipe if starting near left edge
-    isEdgeSwipe.current = touch.clientX < 30;
+    // Mark as edge swipe if starting near left edge (increased zone to 50px)
+    isEdgeSwipe.current = touch.clientX < 50;
   }, []);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
@@ -64,7 +64,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     if (isEdgeSwipe.current && touchStartX.current !== null) {
       const touch = e.touches[0];
       const deltaX = touch.clientX - touchStartX.current;
-      if (deltaX > 10) {
+      if (deltaX > 5) {
         e.preventDefault();
       }
     }
@@ -77,8 +77,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const deltaX = touch.clientX - touchStartX.current;
     const deltaY = Math.abs(touch.clientY - touchStartY.current);
     
-    // Only trigger if horizontal swipe is dominant and started from left edge
-    if (touchStartX.current < 30 && deltaX > 40 && deltaY < 100 && !mobileOpen) {
+    // Higher sensitivity: reduced threshold from 40px to 25px, wider edge zone
+    if (touchStartX.current < 50 && deltaX > 25 && deltaY < 120 && !mobileOpen) {
       setMobileOpen(true);
     }
     
