@@ -1,52 +1,144 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Shield, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
+import { motion } from 'framer-motion';
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse delay-1000" />
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-violet-500/5 rounded-full blur-3xl" />
       
-      <div className="container mx-auto px-4 py-24 md:py-32 relative">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary">
-            <Sparkles className="h-4 w-4" />
-            <span className="text-sm font-medium">Premium Roblox Assets</span>
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+      
+      <div className="container mx-auto px-4 py-20 md:py-28 relative">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-4xl mx-auto"
+        >
+          {/* Hero Card Container */}
+          <div className="relative rounded-3xl border border-primary/20 bg-gradient-to-br from-card/80 via-card/60 to-primary/5 backdrop-blur-sm p-8 md:p-12 overflow-hidden">
+            {/* Card glow effects */}
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-violet-500/15 rounded-full blur-3xl" />
+            
+            {/* Decorative corner elements */}
+            <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-primary/30 rounded-tl-lg" />
+            <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-primary/30 rounded-tr-lg" />
+            <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-primary/30 rounded-bl-lg" />
+            <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-primary/30 rounded-br-lg" />
+            
+            <div className="relative z-10 text-center space-y-6">
+              {/* Enhanced Badge */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-violet-500/20 border border-primary/30 shadow-lg shadow-primary/10"
+              >
+                <div className="relative">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <div className="absolute inset-0 animate-ping">
+                    <Sparkles className="h-4 w-4 text-primary opacity-50" />
+                  </div>
+                </div>
+                <span className="text-sm font-semibold bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">Premium Roblox Assets</span>
+              </motion.div>
+
+              {/* Enhanced Heading */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                  <span className="relative inline-block">
+                    Power Your Server
+                    <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                  </span>
+                  <br />
+                  <span className="relative inline-block mt-2">
+                    <span className="bg-gradient-to-r from-primary via-violet-400 to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_3s_ease-in-out_infinite]">
+                      With Eclipse
+                    </span>
+                    <Zap className="absolute -right-8 -top-2 h-6 w-6 text-amber-400 animate-pulse" />
+                  </span>
+                </h1>
+              </motion.div>
+
+              {/* Enhanced Description */}
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+              >
+                Professional vehicle liveries, powerful scripts, stunning 3D models, and sleek UI kits.{' '}
+                <span className="text-foreground font-medium">Everything you need</span> to create an immersive roleplay experience.
+              </motion.p>
+
+              {/* Trust indicators */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+                className="flex items-center justify-center gap-6 text-sm text-muted-foreground"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-emerald-400" />
+                  <span>Secure Payments</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                  <span>5-Star Rated</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Zap className="h-4 w-4 text-violet-400" />
+                  <span>Instant Delivery</span>
+                </div>
+              </motion.div>
+
+              {/* Enhanced CTA */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+                className="flex items-center justify-center pt-2"
+              >
+                <Link to="/products">
+                  <Button size="lg" className="relative group gradient-button border-0 text-lg px-10 py-6 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
+                    <span className="relative z-10 flex items-center gap-2">
+                      Browse Products
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    {/* Button glow */}
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary to-violet-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+                  </Button>
+                </Link>
+              </motion.div>
+            </div>
           </div>
 
-          {/* Heading */}
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-            Power Your Server{' '}
-            <span className="gradient-text">With Eclipse</span>
-          </h1>
-
-          {/* Description */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Professional vehicle liveries, powerful scripts, stunning 3D models, and sleek UI kits. Everything you need to create an immersive roleplay experience.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex items-center justify-center">
-            <Link to="/products">
-              <Button size="lg" className="gradient-button border-0 text-lg px-8">
-                Browse Products
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-
-          {/* Stats & Reviews Cards */}
-          <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+          {/* Stats & Reviews Cards - outside the main hero card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto"
+          >
             <StatsCard />
             <ReviewCard />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
