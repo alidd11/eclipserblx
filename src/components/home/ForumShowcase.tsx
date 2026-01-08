@@ -56,8 +56,8 @@ export const ForumShowcase = memo(function ForumShowcase() {
   }
 
   return (
-    <section className="pb-16 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <section className="pb-12 px-4">
+      <div className="container mx-auto max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

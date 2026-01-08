@@ -18,7 +18,7 @@ export function HeroSection() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
       
-      <div className="container mx-auto px-4 py-20 md:py-28 relative">
+      <div className="container mx-auto px-4 pt-8 pb-12 md:pt-16 md:pb-16 relative">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -130,7 +130,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
-            className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto"
+            className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
             <StatsCard />
             <ReviewCard />
