@@ -214,7 +214,7 @@ export default function ProductDetail() {
 
                 {product.description && (
                   <div className="prose prose-invert max-w-none">
-                    <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{product.description}</p>
                   </div>
                 )}
 
