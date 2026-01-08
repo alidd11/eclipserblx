@@ -126,25 +126,25 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Stats, Reviews & Featured Cards */}
+          {/* Featured Products Card */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
-            className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
+            className="mt-6"
           >
-            <StatsCard />
-            <ReviewCard />
+            <FeaturedProductsCard />
           </motion.div>
 
-          {/* Featured Products Card - full width */}
+          {/* Stats & Reviews Cards */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
-            className="mt-4"
+            className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
-            <FeaturedProductsCard />
+            <StatsCard />
+            <ReviewCard />
           </motion.div>
         </motion.div>
       </SectionWrapper>
