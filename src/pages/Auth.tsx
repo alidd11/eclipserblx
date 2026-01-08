@@ -85,7 +85,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         setMode('reset-verify');
         toast({
           title: 'Check Your Email',
-          description: 'We sent you a 6-digit verification code.',
+          description: 'We sent you a 4-digit verification code.',
         });
       }
     } finally {
@@ -97,8 +97,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     e.preventDefault();
     setErrors({});
 
-    if (otpCode.length !== 6) {
-      setErrors({ otp: 'Please enter the complete 6-digit code' });
+    if (otpCode.length !== 4) {
+      setErrors({ otp: 'Please enter the complete 4-digit code' });
       return;
     }
 
@@ -384,7 +384,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       case 'signup': return 'Join UK Roleplay Assets to start shopping';
       case 'forgot': return 'Enter your email and we\'ll send you a verification code';
       case 'reset': return 'Enter your new password below';
-      case 'reset-verify': return `Enter the 6-digit code sent to ${email} and choose a new password`;
+      case 'reset-verify': return `Enter the 4-digit code sent to ${email} and choose a new password`;
       case 'verify': return `Enter the 6-digit code sent to ${email}`;
       default: return 'Sign in to access your purchases and account';
     }
@@ -465,7 +465,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               <div className="space-y-4">
                 <div className="flex justify-center">
                   <InputOTP
-                    maxLength={6}
+                    maxLength={4}
                     value={otpCode}
                     onChange={(value) => setOtpCode(value)}
                   >
@@ -474,8 +474,6 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       <InputOTPSlot index={1} />
                       <InputOTPSlot index={2} />
                       <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
