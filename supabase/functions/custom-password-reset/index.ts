@@ -10,7 +10,12 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
 
 // Generate Eclipse branded HTML email template for password reset
 function generatePasswordResetEmailHtml(token: string): string {
-  const formattedToken = token.split('').join(' ')
+  // Create individual digit cells for the 4-digit code
+  const digitCells = token.split('').map(digit => `
+    <td style="width: 48px; height: 56px; background: #0a1412; border: 2px solid #10b981; border-radius: 8px; text-align: center; vertical-align: middle; margin: 0 4px;">
+      <span style="font-size: 28px; font-weight: 700; color: #10b981; font-family: 'Courier New', Courier, monospace;">${digit}</span>
+    </td>
+  `).join('<td style="width: 8px;"></td>')
 
   return `
 <!DOCTYPE html>
@@ -20,26 +25,26 @@ function generatePasswordResetEmailHtml(token: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eclipse Password Reset</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #050505; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #050505;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0a;">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%); border: 1px solid #1a1a1a; border-radius: 16px; overflow: hidden;">
+      <td align="center" style="padding: 32px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 400px; background: linear-gradient(180deg, #111111 0%, #0d0d0d 100%); border: 1px solid #1f1f1f; border-radius: 16px; overflow: hidden;">
           
           <!-- Header with gradient accent -->
           <tr>
-            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
+            <td style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%); padding: 24px 24px 20px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
-                    <!-- Eclipse Logo - PWA Icon -->
+                    <!-- Eclipse Logo -->
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="text-align: center; vertical-align: middle;">
-                          <img src="https://d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovableproject.com/apple-touch-icon.png" alt="Eclipse" width="56" height="56" style="display: block; border-radius: 12px;">
+                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 10px; text-align: center; vertical-align: middle;">
+                          <span style="font-size: 20px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
                         </td>
-                        <td style="padding-left: 14px;">
-                          <span style="font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 3px; font-family: 'Cinzel', Georgia, serif;">ECLIPSE</span>
+                        <td style="padding-left: 12px;">
+                          <span style="font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
                         </td>
                       </tr>
                     </table>
@@ -49,44 +54,46 @@ function generatePasswordResetEmailHtml(token: string): string {
             </td>
           </tr>
           
-          <!-- Icon & Heading -->
+          <!-- Lock Icon -->
           <tr>
-            <td align="center" style="padding: 24px 40px 16px;">
-              <div style="width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 50%; display: inline-block; line-height: 60px; text-align: center;">
-                <svg viewBox="0 0 24 24" width="28" height="28" style="vertical-align: middle; margin-top: 16px;" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="none" stroke="#10b981" stroke-width="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="#10b981" stroke-width="2"/>
-                </svg>
-              </div>
+            <td align="center" style="padding: 20px 24px 12px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 50%; text-align: center; vertical-align: middle;">
+                    <span style="font-size: 24px;">&#128274;</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           
+          <!-- Heading -->
           <tr>
-            <td align="center" style="padding: 0 40px 12px;">
-              <h1 style="font-size: 26px; font-weight: 700; color: #ffffff; margin: 0; font-family: 'Cinzel', Georgia, serif;">Reset Your Password</h1>
+            <td align="center" style="padding: 0 24px 8px;">
+              <h1 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0; font-family: Georgia, serif;">Reset Your Password</h1>
             </td>
           </tr>
           
           <!-- Body Text -->
           <tr>
-            <td align="center" style="padding: 0 40px 28px;">
-              <p style="font-size: 15px; line-height: 24px; color: #a3a3a3; margin: 0;">Enter the code below to reset your password. If you did not request this, please ignore this email.</p>
+            <td align="center" style="padding: 0 24px 24px;">
+              <p style="font-size: 14px; line-height: 22px; color: #a3a3a3; margin: 0;">Enter the code below to reset your password. If you did not request this, please ignore this email.</p>
             </td>
           </tr>
           
-          <!-- Code Box -->
+          <!-- Code Label -->
           <tr>
-            <td align="center" style="padding: 0 40px 12px;">
-              <p style="font-size: 13px; color: #737373; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">Your verification code</p>
+            <td align="center" style="padding: 0 24px 8px;">
+              <p style="font-size: 11px; color: #737373; margin: 0; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Your verification code</p>
             </td>
           </tr>
+          
+          <!-- Code Digits -->
           <tr>
-            <td align="center" style="padding: 0 40px 24px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0f1f1a 0%, #0a1412 100%); border: 2px solid #10b981; border-radius: 12px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255,255,255,0.05);">
+            <td align="center" style="padding: 0 24px 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="padding: 20px 36px;">
-                    <span style="font-size: 38px; font-weight: 800; color: #10b981; letter-spacing: 12px; font-family: 'SF Mono', Monaco, 'Roboto Mono', Consolas, monospace; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">${formattedToken}</span>
-                  </td>
+                  ${digitCells}
                 </tr>
               </table>
             </td>
@@ -94,11 +101,11 @@ function generatePasswordResetEmailHtml(token: string): string {
           
           <!-- Timer notice -->
           <tr>
-            <td align="center" style="padding: 0 40px 32px;">
+            <td align="center" style="padding: 0 24px 24px;">
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px; padding: 10px 16px;">
-                    <span style="font-size: 13px; color: #eab308;">⏱ This code expires in 15 minutes</span>
+                  <td style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.25); border-radius: 6px; padding: 8px 14px;">
+                    <span style="font-size: 12px; color: #eab308;">&#9202; Expires in 15 minutes</span>
                   </td>
                 </tr>
               </table>
@@ -107,29 +114,33 @@ function generatePasswordResetEmailHtml(token: string): string {
           
           <!-- Divider -->
           <tr>
-            <td style="padding: 0 40px;">
-              <hr style="border: none; border-top: 1px solid #1f1f1f; margin: 0;">
+            <td style="padding: 0 24px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="border-top: 1px solid #1f1f1f;"></td>
+                </tr>
+              </table>
             </td>
           </tr>
           
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding: 24px 40px 32px;">
-              <p style="font-size: 13px; color: #525252; margin: 0 0 16px 0;">If you didn't request this email, you can safely ignore it.</p>
+            <td align="center" style="padding: 20px 24px 24px;">
+              <p style="font-size: 12px; color: #525252; margin: 0 0 14px 0;">If you didn't request this email, you can safely ignore it.</p>
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="padding-right: 20px;">
-                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #10b981; text-decoration: none;">Website</a>
+                  <td style="padding-right: 16px;">
+                    <a href="https://eclipserblx.com" style="font-size: 11px; color: #10b981; text-decoration: none;">Website</a>
                   </td>
-                  <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
-                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #10b981; text-decoration: none;">Support</a>
+                  <td style="border-left: 1px solid #333; padding-left: 16px; padding-right: 16px;">
+                    <a href="https://eclipserblx.com/support" style="font-size: 11px; color: #10b981; text-decoration: none;">Support</a>
                   </td>
-                  <td style="border-left: 1px solid #333; padding-left: 20px;">
-                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #10b981; text-decoration: none;">Privacy</a>
+                  <td style="border-left: 1px solid #333; padding-left: 16px;">
+                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 11px; color: #10b981; text-decoration: none;">Privacy</a>
                   </td>
                 </tr>
               </table>
-              <p style="font-size: 11px; color: #404040; margin: 20px 0 0 0;">© 2025 Eclipse. Premium Roblox assets for UK roleplay.</p>
+              <p style="font-size: 10px; color: #404040; margin: 16px 0 0 0;">&copy; 2025 Eclipse. Premium Roblox assets for UK roleplay.</p>
             </td>
           </tr>
           
