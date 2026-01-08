@@ -214,7 +214,7 @@ export default function ProductDetail() {
 
                 {product.description && (
                   <div 
-                    className="prose prose-invert prose-sm max-w-none text-muted-foreground [&>p]:leading-relaxed [&>h2]:text-foreground [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-foreground [&>h3]:text-base [&>h3]:font-medium [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>hr]:border-border [&>hr]:my-4"
+                    className="prose prose-invert prose-sm max-w-none text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0 [&>p:empty]:h-4 [&>h2]:text-foreground [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:mt-6 [&>h2]:mb-3 [&>h3]:text-foreground [&>h3]:text-base [&>h3]:font-medium [&>h3]:mt-5 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>hr]:border-border [&>hr]:my-6 [&_br]:block [&_br]:content-[''] [&_br]:mt-4"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
                 )}
