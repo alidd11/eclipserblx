@@ -748,9 +748,14 @@ export default function StaffMessages() {
                     )}
                   </div>
                 ))}
-                {/* Offline users with last seen */}
+                {/* Offline users with last seen - sorted by most recently active */}
                 {allStaff
                   .filter(staff => !onlineUsers.some(o => o.user_id === staff.user_id))
+                  .sort((a, b) => {
+                    const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+                    const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+                    return bTime - aTime; // Most recent first
+                  })
                   .map((staff) => {
                     const lastSeenText = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
                     const isOffline = lastSeenText === 'Offline' || lastSeenText === 'Never';
