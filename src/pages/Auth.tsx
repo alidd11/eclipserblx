@@ -35,7 +35,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [resetSent, setResetSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string; tos?: string; displayName?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string; tos?: string; displayName?: string; vpn?: string }>({});
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [subscribeToEmails, setSubscribeToEmails] = useState(true);
@@ -316,6 +316,27 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setLoading(true);
 
     try {
+      // Check for VPN on signup
+      if (mode === 'signup') {
+        try {
+          const { data: vpnData, error: vpnError } = await supabase.functions.invoke('check-vpn');
+          
+          if (!vpnError && vpnData?.isVpn) {
+            setLoading(false);
+            setErrors({ vpn: 'VPN or proxy detected. Please disable your VPN to create an account.' });
+            toast({
+              title: 'VPN Detected',
+              description: 'Sign ups are not allowed while using a VPN or proxy. Please disable it and try again.',
+              variant: 'destructive',
+            });
+            return;
+          }
+        } catch (vpnCheckError) {
+          console.error('VPN check error:', vpnCheckError);
+          // Continue with signup if VPN check fails (fail open)
+        }
+      }
+
       if (mode === 'login') {
         const { error } = await signIn(email, password);
         if (error) {
@@ -1003,6 +1024,13 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       <p className="text-sm text-destructive">{errors.tos}</p>
                     )}
                   </div>
+
+                  {/* VPN Error */}
+                  {errors.vpn && (
+                    <div className="p-4 border border-destructive/50 rounded-lg bg-destructive/10">
+                      <p className="text-sm text-destructive font-medium">{errors.vpn}</p>
+                    </div>
+                  )}
                 </div>
               )}
 
