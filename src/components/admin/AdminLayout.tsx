@@ -170,11 +170,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent 
               side="left" 
-              className="p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] [&>button]:hidden"
+              className="p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] [&>button]:hidden shadow-2xl shadow-black/50"
               onPointerDownOutside={() => setMobileOpen(false)}
             >
               <div 
-                className="h-full"
+                className="h-full relative"
                 onTouchStart={(e) => {
                   const touch = e.touches[0];
                   (e.currentTarget as any)._touchStartX = touch.clientX;
@@ -190,6 +190,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                   }
                 }}
               >
+                {/* Drag Handle */}
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1 opacity-40">
+                  <div className="w-1 h-8 bg-muted-foreground/60 rounded-full" />
+                </div>
                 <AdminSidebar 
                   collapsed={false} 
                   onToggle={() => setMobileOpen(false)}
