@@ -692,12 +692,10 @@ export default function StaffMessages() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
     
+    // Show "Offline" if more than 1 hour ago
+    if (diffHours >= 1) return 'Offline';
     if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return `${diffMins}m ago`;
   };
 
   const getTypingText = () => {
