@@ -58,6 +58,7 @@ const AdminIncidents = lazy(() => import("./pages/admin/Incidents"));
 const AdminHelp = lazy(() => import("./pages/admin/Help"));
 const AdminSubscribers = lazy(() => import("./pages/admin/Subscribers"));
 const AdminIpBans = lazy(() => import("./pages/admin/IpBans"));
+const AdminReferrals = lazy(() => import("./pages/admin/Referrals"));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -137,6 +138,7 @@ const App = () => (
                   <Route path="/admin/help" element={<AdminHelp />} />
                   <Route path="/admin/subscribers" element={<AdminSubscribers />} />
                   <Route path="/admin/ip-bans" element={<AdminIpBans />} />
+                  <Route path="/admin/referrals" element={<AdminReferrals />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>

@@ -205,6 +205,33 @@ serve(async (req) => {
       logStep("Email error (non-fatal)", emailError);
     }
 
+    // Process referral if applicable
+    if (userId) {
+      logStep("Processing referral for user", { userId });
+      try {
+        const referralResponse = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/process-referral`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+            },
+            body: JSON.stringify({ orderId: order.id, userId }),
+          }
+        );
+
+        if (referralResponse.ok) {
+          const referralResult = await referralResponse.json();
+          logStep("Referral processed", referralResult);
+        } else {
+          logStep("Referral processing failed (non-fatal)");
+        }
+      } catch (referralError) {
+        logStep("Referral error (non-fatal)", referralError);
+      }
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       orderId: order.id 

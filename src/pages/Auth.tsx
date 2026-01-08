@@ -48,10 +48,17 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const { toast } = useToast();
 
   // Check for password reset flow (when user clicks reset link from email)
+  // Also check for referral code
   useEffect(() => {
     const type = searchParams.get('type');
     if (type === 'recovery') {
       setMode('reset');
+    }
+    
+    // Store referral code if present
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      sessionStorage.setItem('pendingReferralCode', refCode);
     }
   }, [searchParams]);
 
@@ -426,6 +433,36 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           });
         }
       } else {
+        // Process pending referral if exists
+        const pendingRefCode = sessionStorage.getItem('pendingReferralCode');
+        if (pendingRefCode) {
+          sessionStorage.removeItem('pendingReferralCode');
+          // Get the new user's ID from current session
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.id) {
+            try {
+              // Find the referrer by their referral code
+              const { data: referrerProfile } = await supabase
+                .from('profiles')
+                .select('user_id')
+                .eq('referral_code', pendingRefCode.toUpperCase())
+                .single();
+              
+              if (referrerProfile) {
+                // Create the referral record
+                await supabase.from('referrals').insert({
+                  referrer_id: referrerProfile.user_id,
+                  referred_id: session.user.id,
+                  referral_code: pendingRefCode.toUpperCase(),
+                  status: 'pending',
+                });
+              }
+            } catch (refError) {
+              console.error('Referral processing error:', refError);
+            }
+          }
+        }
+        
         toast({
           title: 'Email Verified!',
           description: 'Your account has been verified successfully.',
