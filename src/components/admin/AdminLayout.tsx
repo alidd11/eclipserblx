@@ -189,11 +189,15 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         {/* Swipe Indicator - Left Edge Hint */}
         {isMobile && !mobileOpen && (
           <div 
-            className="fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center"
-            onClick={() => setMobileOpen(true)}
+            className="fixed left-0 top-1/2 -translate-y-1/2 z-50 flex items-center touch-none"
+            onClick={() => {
+              triggerHaptic(10);
+              setMobileOpen(true);
+            }}
+            style={{ touchAction: 'none' }}
           >
-            <div className="w-1 h-16 bg-primary/40 rounded-r-full shadow-lg shadow-primary/20 transition-all duration-300 hover:w-1.5 hover:bg-primary/60 active:bg-primary/80">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-24 -ml-1" />
+            <div className="w-2 h-20 bg-primary/50 rounded-r-full shadow-lg shadow-primary/30 transition-all duration-300 active:w-3 active:bg-primary/80 flex items-center justify-center">
+              <div className="w-0.5 h-8 bg-white/30 rounded-full" />
             </div>
           </div>
         )}
