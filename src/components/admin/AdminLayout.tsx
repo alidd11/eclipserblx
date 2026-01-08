@@ -49,23 +49,28 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const isEdgeSwipe = useRef(false);
+  const hasPrevented = useRef(false);
 
-  // Handle swipe from left edge to open sidebar (higher sensitivity)
+  // Handle swipe from left edge to open sidebar (maximum sensitivity)
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
-    // Mark as edge swipe if starting near left edge (increased zone to 50px)
-    isEdgeSwipe.current = touch.clientX < 50;
+    hasPrevented.current = false;
+    // Mark as edge swipe if starting near left edge (expanded zone to 80px for easier trigger)
+    isEdgeSwipe.current = touch.clientX < 80;
   }, []);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    // Prevent browser back gesture when swiping from left edge
+    // Always prevent browser back gesture when swiping from left edge on PWA
     if (isEdgeSwipe.current && touchStartX.current !== null) {
       const touch = e.touches[0];
       const deltaX = touch.clientX - touchStartX.current;
-      if (deltaX > 5) {
+      // Immediately prevent any rightward swipe from the left edge
+      if (deltaX > 0) {
         e.preventDefault();
+        e.stopPropagation();
+        hasPrevented.current = true;
       }
     }
   }, []);
@@ -77,28 +82,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const deltaX = touch.clientX - touchStartX.current;
     const deltaY = Math.abs(touch.clientY - touchStartY.current);
     
-    // Higher sensitivity: reduced threshold from 40px to 25px, wider edge zone
-    if (touchStartX.current < 50 && deltaX > 25 && deltaY < 120 && !mobileOpen) {
+    // Maximum sensitivity: 15px threshold, 80px edge zone, allow more vertical movement
+    if (touchStartX.current < 80 && deltaX > 15 && deltaY < 150 && !mobileOpen) {
       setMobileOpen(true);
     }
     
     touchStartX.current = null;
     touchStartY.current = null;
     isEdgeSwipe.current = false;
+    hasPrevented.current = false;
   }, [mobileOpen]);
 
-  // Add edge swipe listener for mobile
+  // Add edge swipe listener for mobile - capture phase to intercept before browser
   useEffect(() => {
     if (!isMobile) return;
     
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    // Use capture phase to intercept gestures before browser handles them
+    document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true });
     
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      document.removeEventListener('touchend', handleTouchEnd, { capture: true });
     };
   }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
