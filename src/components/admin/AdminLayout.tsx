@@ -146,7 +146,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent 
               side="left" 
-              className="p-0 w-72 [&>button]:hidden"
+              className="p-0 w-72 pt-[env(safe-area-inset-top)] [&>button]:hidden"
               onPointerDownOutside={() => setMobileOpen(false)}
             >
               <div 
@@ -177,10 +177,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           </Sheet>
         )}
 
-        {/* Swipe Indicator - Left Edge Hint (positioned below header) */}
+        {/* Swipe Indicator - Left Edge Hint (kept clear of iOS status bar) */}
         {isMobile && !mobileOpen && (
           <div 
-            className="fixed left-0 top-[calc(50%+24px)] -translate-y-1/2 z-30 flex items-center"
+            className="fixed left-0 top-[calc(50%+env(safe-area-inset-top))] -translate-y-1/2 z-30 flex items-center"
             onClick={() => setMobileOpen(true)}
           >
             <div className="w-1 h-16 bg-primary/40 rounded-r-full shadow-lg shadow-primary/20 transition-all duration-300 hover:w-1.5 hover:bg-primary/60 active:bg-primary/80">
@@ -190,7 +190,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         )}
         <div className="flex-1 flex flex-col overflow-auto">
           {isMobile && (
-            <header className="sticky top-0 z-40 border-b border-border bg-card px-3 py-2 flex items-center justify-between">
+            <header className="sticky top-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 
