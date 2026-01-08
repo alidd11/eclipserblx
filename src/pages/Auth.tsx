@@ -782,7 +782,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       className="bg-input pr-10"
                       required
                     />
-                    {displayName.trim().length >= 2 && (
+                    {displayName.trim().length >= 6 && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         {checkingUsername ? (
                           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -794,7 +794,10 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       </div>
                     )}
                   </div>
-                  {usernameAvailable === false && displayName.trim().length >= 2 && (
+                  {usernameAvailable === true && displayName.trim().length >= 6 && (
+                    <p className="text-sm text-green-500">This username is available</p>
+                  )}
+                  {usernameAvailable === false && displayName.trim().length >= 6 && (
                     <p className="text-sm text-destructive">This username is already taken</p>
                   )}
                   {errors.displayName && (
