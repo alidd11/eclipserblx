@@ -170,7 +170,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent 
               side="left" 
-              className="p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] [&>button]:hidden"
+              className="p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] [&>button]:hidden"
               onPointerDownOutside={() => setMobileOpen(false)}
             >
               <div 
@@ -243,7 +243,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           {/* Mobile PWA Install Prompt */}
           {isMobile && <AdminInstallPrompt />}
           
-          <main className="flex-1 overflow-y-auto overscroll-contain">
+          <main className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
             <div className="p-4 md:p-6 lg:p-8">
               {children}
             </div>
