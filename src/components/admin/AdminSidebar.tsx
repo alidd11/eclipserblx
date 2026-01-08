@@ -22,6 +22,7 @@ const navItems = [
   { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
   { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
   { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
+  { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
   { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
   { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
   { title: 'Settings', icon: Settings, href: '/admin/settings', roles: ['admin'] },
