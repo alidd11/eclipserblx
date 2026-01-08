@@ -80,7 +80,28 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   }
 
   if (!products || products.length === 0) {
-    return null;
+    return (
+      <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-violet-500/5 p-5 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl opacity-30" />
+        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)' }} />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center shadow-lg shadow-violet-500/30">
+              <Sparkles className="h-4 w-4 text-violet-400" />
+            </div>
+            <span className="text-xs font-medium text-primary/80 uppercase tracking-wider">Featured</span>
+          </div>
+          <div className="h-24 flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">No featured products yet</p>
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Link to="/products" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+              Browse all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
