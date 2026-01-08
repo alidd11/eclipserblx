@@ -11,7 +11,8 @@ import { toast } from 'sonner';
 import { format, differenceInMinutes, formatDistanceToNow } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, isWithinInterval } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -39,6 +40,7 @@ export default function AdminDashboard() {
   const [newAnnouncementTitle, setNewAnnouncementTitle] = useState('');
   const [newAnnouncementContent, setNewAnnouncementContent] = useState('');
   const [newAnnouncementPriority, setNewAnnouncementPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [showClockOutConfirm, setShowClockOutConfirm] = useState(false);
 
   // Fetch user profile for display name
   const { data: profile } = useQuery({
@@ -202,12 +204,46 @@ export default function AdminDashboard() {
         .select('*')
         .eq('user_id', user.id)
         .order('clock_in', { ascending: false })
-        .limit(10);
+        .limit(50); // Fetch more for stats calculation
       if (error) throw error;
       return data;
     },
     enabled: !!user?.id,
   });
+
+  // Calculate weekly and monthly hours
+  const { weeklyMinutes, monthlyMinutes } = useMemo(() => {
+    if (!myDutyLogs) return { weeklyMinutes: 0, monthlyMinutes: 0 };
+    
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
+    
+    let weekly = 0;
+    let monthly = 0;
+    
+    myDutyLogs.forEach(log => {
+      if (!log.clock_out || !log.duration_minutes) return;
+      const logDate = new Date(log.clock_in);
+      
+      if (isWithinInterval(logDate, { start: weekStart, end: weekEnd })) {
+        weekly += log.duration_minutes;
+      }
+      if (isWithinInterval(logDate, { start: monthStart, end: monthEnd })) {
+        monthly += log.duration_minutes;
+      }
+    });
+    
+    return { weeklyMinutes: weekly, monthlyMinutes: monthly };
+  }, [myDutyLogs]);
+
+  const formatHoursMinutes = (totalMinutes: number) => {
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return `${hours}h ${mins}m`;
+  };
 
   // Admin: All staff duty logs with profile info
   const { data: allDutyLogs } = useQuery({
@@ -451,6 +487,18 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Weekly/Monthly Stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">This Week</p>
+                <p className="text-lg font-bold font-mono">{formatHoursMinutes(weeklyMinutes)}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">This Month</p>
+                <p className="text-lg font-bold font-mono">{formatHoursMinutes(monthlyMinutes)}</p>
+              </div>
+            </div>
+
             {activeSession ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
@@ -473,15 +521,47 @@ export default function AdminDashboard() {
                   onChange={(e) => setClockOutNotes(e.target.value)}
                   rows={2}
                 />
-                <Button 
-                  onClick={() => clockOutMutation.mutate()} 
-                  disabled={clockOutMutation.isPending}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  <Square className="h-4 w-4 mr-2" />
-                  {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
-                </Button>
+                <Dialog open={showClockOutConfirm} onOpenChange={setShowClockOutConfirm}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="destructive"
+                      className="w-full"
+                    >
+                      <Square className="h-4 w-4 mr-2" />
+                      Clock Out
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Clock Out</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        You've been on duty for <span className="font-mono font-bold text-foreground">{elapsedTime}</span>. Are you sure you want to clock out?
+                      </p>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => setShowClockOutConfirm(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          className="flex-1"
+                          disabled={clockOutMutation.isPending}
+                          onClick={() => {
+                            clockOutMutation.mutate();
+                            setShowClockOutConfirm(false);
+                          }}
+                        >
+                          {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             ) : (
               <div className="space-y-4">
