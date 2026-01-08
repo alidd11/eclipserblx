@@ -47,8 +47,8 @@ export const ForumShowcase = memo(function ForumShowcase() {
 
   if (isLoading) {
     return (
-      <section className="pb-16 px-4">
-        <div className="container mx-auto max-w-6xl">
+      <section className="pb-8">
+        <div className="mx-auto w-full max-w-4xl px-4">
           <Skeleton className="h-64 rounded-2xl" />
         </div>
       </section>
@@ -56,8 +56,8 @@ export const ForumShowcase = memo(function ForumShowcase() {
   }
 
   return (
-    <section className="pb-12 px-4">
-      <div className="container mx-auto max-w-4xl">
+    <section className="pb-8">
+      <div className="mx-auto w-full max-w-4xl px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -109,26 +109,37 @@ export const ForumShowcase = memo(function ForumShowcase() {
                     const colors = colorMap[index % 4];
 
                     return (
-                      <CarouselItem key={category.id} className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3">
+                      <CarouselItem key={category.id} className="pl-3 basis-full sm:basis-1/2 lg:basis-1/2">
                         <Link
                           to={`/forum?category=${category.slug}`}
-                          className="group/card relative overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/50 hover:bg-card block h-full"
+                          className="group/card relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-5 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 block h-full min-h-[170px]"
                         >
+                          {/* Per-card glow */}
+                          <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-30 ${colors.bgColor}`} />
                           <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-0 group-hover/card:opacity-100 transition-opacity duration-300`} />
-                          
+
+                          {/* Scanline effect */}
+                          <div
+                            className="absolute inset-0 opacity-5 pointer-events-none"
+                            style={{
+                              backgroundImage:
+                                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+                            }}
+                          />
+
                           <div className="relative z-10">
-                            <div className={`mb-3 inline-flex items-center justify-center w-10 h-10 rounded-lg ${colors.bgColor} ${colors.color} shadow-lg ${colors.glowColor} border border-white/10`}>
+                            <div className={`mb-3 inline-flex items-center justify-center w-10 h-10 rounded-xl ${colors.bgColor} ${colors.color} shadow-lg ${colors.glowColor} border border-white/10`}>
                               <IconComponent className="h-5 w-5" />
                             </div>
-                            
+
                             <h3 className="font-display font-semibold text-base mb-1.5 group-hover/card:text-primary transition-colors">
                               {category.name}
                             </h3>
-                            
-                            <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+
+                            <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
                               {category.description || 'Join the discussion'}
                             </p>
-                            
+
                             <div className="flex items-center text-xs text-primary font-medium opacity-0 group-hover/card:opacity-100 transition-opacity">
                               <span>Browse</span>
                               <ArrowRight className="ml-1 h-3.5 w-3.5 group-hover/card:translate-x-1 transition-transform" />
