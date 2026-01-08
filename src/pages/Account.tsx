@@ -179,19 +179,70 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     setUsernameAvailable(null);
   };
 
-  const { data: orders } = useQuery({
-    queryKey: ['user-orders', user?.id],
+  const { data: orders, isLoading: ordersLoading } = useQuery({
+    queryKey: ['user-orders', user?.id, user?.email],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
+      if (!user?.id && !user?.email) return [];
+      
+      // Query by user_id first
+      let { data, error } = await supabase
         .from('orders')
-        .select(`*, order_items(*)`)
+        .select(`
+          *,
+          order_items (
+            id,
+            product_name,
+            price,
+            product_id,
+            product:products (
+              id,
+              name,
+              images,
+              asset_file_url
+            )
+          )
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+      
       if (error) throw error;
-      return data;
+      
+      // Also query by email to catch orders where user_id wasn't set
+      if (user?.email) {
+        const { data: emailOrders, error: emailError } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items (
+              id,
+              product_name,
+              price,
+              product_id,
+              product:products (
+                id,
+                name,
+                images,
+                asset_file_url
+              )
+            )
+          `)
+          .eq('customer_email', user.email)
+          .is('user_id', null)
+          .order('created_at', { ascending: false });
+        
+        if (!emailError && emailOrders) {
+          // Merge and deduplicate
+          const allOrders = [...(data || []), ...emailOrders];
+          const uniqueOrders = allOrders.filter((order, index, self) =>
+            index === self.findIndex((o) => o.id === order.id)
+          );
+          return uniqueOrders;
+        }
+      }
+      
+      return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!(user?.id || user?.email),
   });
 
   const handleSignOut = async () => {
@@ -426,16 +477,20 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </CardContent>
         </Card>
 
-        {/* Orders */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              My Orders
+              <ShoppingBag className="h-5 w-5" />
+              Order History
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {!orders || orders.length === 0 ? (
+            {ordersLoading ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mt-2">Loading orders...</p>
+              </div>
+            ) : !orders || orders.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <p>You haven't made any orders yet.</p>
                 <Button asChild className="mt-4" variant="outline">
@@ -445,21 +500,93 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             ) : (
               <div className="space-y-4">
                 {orders.map((order) => (
-                  <div key={order.id} className="p-4 rounded-lg bg-muted/50 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-mono text-sm">{order.id.slice(0, 8).toUpperCase()}</p>
+                  <div key={order.id} className="p-4 rounded-lg bg-muted/50 space-y-4">
+                    {/* Order Header */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-mono text-sm font-medium">
+                            Order #{order.id.slice(0, 8).toUpperCase()}
+                          </p>
+                          {getStatusBadge(order.status)}
+                        </div>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(order.created_at).toLocaleDateString()}
+                          {new Date(order.created_at).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold">£{order.total.toFixed(2)}</p>
-                        {getStatusBadge(order.status)}
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-lg">£{Number(order.total).toFixed(2)}</p>
+                        {order.discount_amount > 0 && (
+                          <p className="text-xs text-primary">
+                            Saved £{Number(order.discount_amount).toFixed(2)}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {order.order_items?.length} item(s)
+                    
+                    {/* Order Items */}
+                    <div className="border-t border-border pt-3 space-y-2">
+                      {order.order_items?.map((item: any) => {
+                        const hasAsset = !!item.product?.asset_file_url;
+                        const isPaid = order.status === 'paid' || order.status === 'completed';
+                        
+                        return (
+                          <div 
+                            key={item.id}
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/70 transition-colors"
+                          >
+                            {/* Product Image */}
+                            <div className="w-12 h-12 rounded-md overflow-hidden bg-muted shrink-0">
+                              {item.product?.images?.[0] ? (
+                                <img 
+                                  src={item.product.images[0]} 
+                                  alt={item.product_name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Package className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Product Info */}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{item.product_name}</p>
+                              <p className="text-xs text-muted-foreground">£{Number(item.price).toFixed(2)}</p>
+                            </div>
+                            
+                            {/* Download Button */}
+                            {isPaid && hasAsset && (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="shrink-0"
+                              >
+                                <Link to="/downloads">
+                                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                                  Download
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Payment Info */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
+                      <span>
+                        Payment: {order.payment_method ? order.payment_method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Card'}
+                      </span>
+                      <span>{order.order_items?.length || 0} item(s)</span>
                     </div>
                   </div>
                 ))}
