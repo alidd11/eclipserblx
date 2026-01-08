@@ -62,7 +62,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
   // Real-time username availability check
   useEffect(() => {
-    if (mode !== 'signup' || !displayName.trim() || displayName.trim().length < 2) {
+    const trimmed = displayName.trim();
+    if (mode !== 'signup' || !trimmed || trimmed.length < 6 || trimmed.length > 20) {
       setUsernameAvailable(null);
       return;
     }
@@ -267,10 +268,21 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       return;
     }
 
-    // Validate username is required on signup
-    if (mode === 'signup' && !displayName.trim()) {
-      setErrors({ displayName: 'Username is required' });
-      return;
+    // Validate username on signup (required and 6-20 characters)
+    if (mode === 'signup') {
+      const trimmedUsername = displayName.trim();
+      if (!trimmedUsername) {
+        setErrors({ displayName: 'Username is required' });
+        return;
+      }
+      if (trimmedUsername.length < 6) {
+        setErrors({ displayName: 'Username must be at least 6 characters' });
+        return;
+      }
+      if (trimmedUsername.length > 20) {
+        setErrors({ displayName: 'Username must be 20 characters or less' });
+        return;
+      }
     }
 
     // Check username availability on signup
