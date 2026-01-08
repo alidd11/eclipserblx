@@ -24,9 +24,24 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-card/50">
       <div className="container mx-auto px-4 py-6 md:py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-          {/* Brand */}
-          <div className="space-y-2">
+        {/* Brand - full width on mobile */}
+        <div className="mb-4 md:hidden">
+          <Link to="/" className="flex items-center gap-2 mb-2">
+            <div className="h-8 w-8 rounded-lg gradient-button flex items-center justify-center">
+              <span className="text-white font-display font-bold text-sm">UK</span>
+            </div>
+            <span className="font-display text-lg font-bold gradient-text">
+              {SITE_NAME}
+            </span>
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            Premium quality assets for UK roleplay servers on Roblox.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-8">
+          {/* Brand - desktop only */}
+          <div className="hidden md:block space-y-2">
             <Link to="/" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg gradient-button flex items-center justify-center">
                 <span className="text-white font-display font-bold text-sm">UK</span>
@@ -35,10 +50,10 @@ export function Footer() {
                 {SITE_NAME}
               </span>
             </Link>
-          <p className="text-sm text-muted-foreground">
-            Premium quality assets for UK roleplay servers on Roblox. Elevate your server with professional liveries, scripts, and more.
-          </p>
-        </div>
+            <p className="text-sm text-muted-foreground">
+              Premium quality assets for UK roleplay servers on Roblox. Elevate your server with professional liveries, scripts, and more.
+            </p>
+          </div>
 
           {/* Shop Links */}
           <div>
