@@ -32,11 +32,11 @@ function generatePasswordResetEmailHtml(token: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
-                    <!-- Eclipse Logo -->
+                    <!-- Eclipse Logo - PWA Icon -->
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 48px; height: 48px; border-radius: 12px; text-align: center; vertical-align: middle;">
-                          <span style="font-size: 24px; font-weight: 800; color: #ffffff; font-family: 'Cinzel', Georgia, serif;">E</span>
+                        <td style="text-align: center; vertical-align: middle;">
+                          <img src="https://d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovableproject.com/apple-touch-icon.png" alt="Eclipse" width="56" height="56" style="display: block; border-radius: 12px;">
                         </td>
                         <td style="padding-left: 14px;">
                           <span style="font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 3px; font-family: 'Cinzel', Georgia, serif;">ECLIPSE</span>
