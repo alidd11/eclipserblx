@@ -752,18 +752,36 @@ export default function StaffMessages() {
                 {allStaff
                   .filter(staff => !onlineUsers.some(o => o.user_id === staff.user_id))
                   .map((staff) => {
-                    const lastSeen = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
+                    const lastSeenText = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
+                    const isOffline = lastSeenText === 'Offline' || lastSeenText === 'Never';
+                    
                     return (
                       <div
                         key={staff.user_id}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-muted/50 text-muted-foreground"
-                        title={`Last seen: ${lastSeen}`}
+                        className={cn(
+                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-opacity",
+                          isOffline 
+                            ? "bg-muted/30 text-muted-foreground/50 opacity-60" 
+                            : "bg-muted/50 text-muted-foreground"
+                        )}
+                        title={`Last seen: ${lastSeenText}`}
                       >
-                        <Circle className="h-1.5 w-1.5 fill-muted-foreground/40 text-muted-foreground/40" />
-                        <span className="truncate max-w-[60px]">
+                        <Circle className={cn(
+                          "h-1.5 w-1.5",
+                          isOffline
+                            ? "fill-muted-foreground/20 text-muted-foreground/20"
+                            : "fill-amber-500/70 text-amber-500/70"
+                        )} />
+                        <span className={cn(
+                          "truncate max-w-[60px]",
+                          isOffline && "opacity-70"
+                        )}>
                           {staff.display_name || staff.email.split('@')[0]}
                         </span>
-                        <span className="text-[10px] opacity-70">{lastSeen}</span>
+                        <span className={cn(
+                          "text-[10px]",
+                          isOffline ? "opacity-50" : "opacity-80"
+                        )}>{lastSeenText}</span>
                       </div>
                     );
                   })}
