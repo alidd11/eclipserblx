@@ -48,7 +48,7 @@ export default function PrivacyPolicy() {
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
               <li>Email address</li>
-              <li>Display name (optional)</li>
+              <li>Username</li>
               <li>Account credentials (securely hashed)</li>
               <li>Purchase and order history</li>
               <li>Download records</li>

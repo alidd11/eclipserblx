@@ -34,7 +34,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const [resetSent, setResetSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string; tos?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; captcha?: string; otp?: string; tos?: string; displayName?: string }>({});
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [subscribeToEmails, setSubscribeToEmails] = useState(true);
@@ -238,6 +238,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     // Enforce minimum password strength on signup
     if (mode === 'signup' && !isPasswordStrongEnough(password)) {
       setErrors({ password: 'Please choose a stronger password (good or strong)' });
+      return;
+    }
+
+    // Validate username is required on signup
+    if (mode === 'signup' && !displayName.trim()) {
+      setErrors({ displayName: 'Username is required' });
       return;
     }
 
@@ -716,15 +722,19 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
               {mode === 'signup' && (
                 <div className="space-y-2">
-                  <Label htmlFor="displayName">Display Name (optional)</Label>
+                  <Label htmlFor="displayName">Username</Label>
                   <Input
                     id="displayName"
                     type="text"
-                    placeholder="Your name"
+                    placeholder="Choose a username"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     className="bg-input"
+                    required
                   />
+                  {errors.displayName && (
+                    <p className="text-sm text-destructive">{errors.displayName}</p>
+                  )}
                 </div>
               )}
 

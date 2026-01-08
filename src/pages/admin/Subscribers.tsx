@@ -112,7 +112,7 @@ export default function Subscribers() {
 
   // Export to CSV
   const handleExport = () => {
-    const headers = ['Email', 'Display Name', 'Updates', 'Discounts', 'Newsletters', 'Subscribed At'];
+    const headers = ['Email', 'Username', 'Updates', 'Discounts', 'Newsletters', 'Subscribed At'];
     const rows = filteredSubscribers.map(sub => [
       sub.email,
       sub.display_name || '',
