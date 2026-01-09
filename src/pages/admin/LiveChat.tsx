@@ -147,6 +147,7 @@ export default function AdminLiveChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingChannelRef = useRef<any>(null);
   const { playSound } = useNotificationSound();
   const { sendNotification, requestPermission, permission } = usePushNotifications();
 
@@ -161,13 +162,15 @@ export default function AdminLiveChat() {
   const handleTyping = () => {
     if (!selectedConversation) return;
 
+    const channel = typingChannelRef.current;
+    if (!channel) return;
+
     // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Send typing status via presence
-    const channel = supabase.channel(`typing-${selectedConversation.id}`);
+    // Send typing status via presence (reuse the subscribed channel)
     channel.track({ typing: true, role: 'agent' });
 
     // Stop typing after 2 seconds of inactivity
@@ -257,7 +260,11 @@ export default function AdminLiveChat() {
         console.log('AdminLiveChat typingChannel status:', status);
       });
 
+    // Reuse this single presence channel for outgoing typing events
+    typingChannelRef.current = typingChannel;
+
     return () => {
+      typingChannelRef.current = null;
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(typingChannel);
       if (typingTimeoutRef.current) {
