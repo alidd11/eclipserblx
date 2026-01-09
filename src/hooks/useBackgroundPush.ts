@@ -3,15 +3,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 async function getVapidPublicKey(): Promise<string | undefined> {
+  // First try env variable
   const fromEnv = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined)?.trim();
-  if (fromEnv) return fromEnv;
+  if (fromEnv && fromEnv.length > 0) {
+    // Clean and validate the key
+    const cleaned = fromEnv.replace(/[\s\r\n]/g, '');
+    if (/^[A-Za-z0-9_-]+$/.test(cleaned)) {
+      return cleaned;
+    }
+    console.warn('VITE_VAPID_PUBLIC_KEY contains invalid characters, trying backend...');
+  }
 
   try {
     const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
     if (error) throw error;
 
     const key = (data as any)?.publicKey;
-    if (typeof key === 'string' && key.trim()) return key.trim();
+    if (typeof key === 'string' && key.trim()) {
+      // Clean and validate the key from backend
+      const cleaned = key.replace(/[\s\r\n]/g, '').trim();
+      if (/^[A-Za-z0-9_-]+$/.test(cleaned)) {
+        return cleaned;
+      }
+      console.error('VAPID key from backend contains invalid characters');
+    }
   } catch (err) {
     console.error('Failed to retrieve VAPID public key from backend:', err);
   }
@@ -21,8 +36,16 @@ async function getVapidPublicKey(): Promise<string | undefined> {
 
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
+  // Clean the string - remove any whitespace, newlines, or invalid characters
+  const cleanedBase64 = base64String.replace(/[\s\r\n]/g, '').trim();
+  
+  // Validate that the string contains only valid URL-safe base64 characters
+  if (!/^[A-Za-z0-9_-]+$/.test(cleanedBase64)) {
+    throw new Error('Invalid VAPID key format: contains non-base64 characters');
+  }
+  
+  const padding = '='.repeat((4 - cleanedBase64.length % 4) % 4);
+  const base64 = (cleanedBase64 + padding)
     .replace(/-/g, '+')
     .replace(/_/g, '/');
 
@@ -205,6 +228,12 @@ export function useBackgroundPush() {
       }
       if (error.message?.includes('push service')) {
         return { success: false, error: 'Unable to connect to push service. Please check your internet connection.' };
+      }
+      if (error.message?.includes('Invalid VAPID key') || error.message?.includes('invalid characters')) {
+        return { success: false, error: 'VAPID key configuration error. Please regenerate VAPID keys in Admin Settings.' };
+      }
+      if (error.name === 'InvalidCharacterError' || error.message?.includes('The string contains invalid characters')) {
+        return { success: false, error: 'VAPID key is malformed. Please regenerate VAPID keys in Admin Settings.' };
       }
       
       return { success: false, error: error.message || 'Failed to enable push notifications. Please try again.' };
