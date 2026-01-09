@@ -127,11 +127,21 @@
     @apply border-border;
   }
   
-  html, body {
+  html {
+    @apply bg-background text-foreground;
+    /* Extend background color into safe areas on iOS */
+    background-color: hsl(220 20% 4%);
+  }
+  
+  body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
+    /* Fill safe area with background color */
+    background-color: hsl(220 20% 4%);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
   
   /* Enable smooth scrolling on iOS */
