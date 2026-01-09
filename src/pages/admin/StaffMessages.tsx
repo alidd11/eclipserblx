@@ -316,7 +316,7 @@ export default function StaffMessages() {
   // Get display name for current user
   const getCurrentUserName = useCallback(() => {
     if (!currentUserProfile) return 'Staff';
-    return currentUserProfile.display_name || currentUserProfile.email?.split('@')[0] || 'Staff';
+    return currentUserProfile.display_name || 'Staff Member';
   }, [currentUserProfile]);
 
   // Handle typing indicator
@@ -373,7 +373,7 @@ export default function StaffMessages() {
             // Send push notification if tab is not focused OR if mentioned
             if (document.hidden || isMentioned) {
               const senderProfile = profiles?.[newMsg.sender_id];
-              const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Staff';
+              const senderName = senderProfile?.display_name || 'Staff Member';
               
               if (isMentioned) {
                 sendNotification('🔔 You were mentioned!', {
@@ -396,7 +396,7 @@ export default function StaffMessages() {
             // Send background push notifications for mentions
             if (allStaff) {
               const senderProfile = profiles?.[newMsg.sender_id];
-              const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Staff';
+              const senderName = senderProfile?.display_name || 'Staff Member';
               const mentions = parseMentions(newMsg.message);
               const groupMentions = hasGroupMention(newMsg.message);
               
@@ -499,8 +499,7 @@ export default function StaffMessages() {
           const name =
             presence?.name ||
             staffProfile?.display_name ||
-            staffProfile?.email?.split('@')[0] ||
-            'Staff';
+            'Staff Member';
 
           const isTyping = !!presence?.typing;
           online.push({ user_id: key, name, typing: isTyping });
@@ -789,12 +788,12 @@ export default function StaffMessages() {
     if (profile.display_name) {
       return profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     }
-    return profile.email.slice(0, 2).toUpperCase();
+    return 'SM';
   };
 
   const getName = (senderId: string) => {
     const profile = profiles?.[senderId];
-    return profile?.display_name || profile?.email?.split('@')[0] || 'Staff';
+    return profile?.display_name || 'Staff Member';
   };
 
   const formatTime = (dateString: string) => {
@@ -906,7 +905,7 @@ export default function StaffMessages() {
                             "truncate max-w-[50px]",
                             isOffline && "opacity-70"
                           )}>
-                            {staff.display_name || staff.email.split('@')[0]}
+                            {staff.display_name || 'Staff Member'}
                           </span>
                           <span className={cn(
                             "text-[10px]",
@@ -1077,7 +1076,7 @@ export default function StaffMessages() {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium truncate">
-                              {staff.display_name || staff.email.split('@')[0]}
+                              {staff.display_name || 'Staff Member'}
                             </p>
                           </div>
                         </button>
