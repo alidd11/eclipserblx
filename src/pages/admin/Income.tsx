@@ -14,9 +14,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
-// Stripe fee calculation: 2.9% + 30p per transaction
-const STRIPE_PERCENTAGE_FEE = 0.029;
-const STRIPE_FIXED_FEE = 0.30;
+// Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards)
+const STRIPE_PERCENTAGE_FEE = 0.015;
+const STRIPE_FIXED_FEE = 0.20;
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -126,7 +126,7 @@ export default function AdminIncome() {
         const filtered = paidOrders.filter(filterFn);
         const gross = filtered.reduce((sum, o) => sum + (o.total || 0), 0);
         const orderCount = filtered.length;
-        // Net = Gross - (2.9% per order) - (30p per order)
+        // Net = Gross - (1.5% per order) - (20p per order)
         const fees = (gross * STRIPE_PERCENTAGE_FEE) + (orderCount * STRIPE_FIXED_FEE);
         const net = gross - fees;
         return { gross, net, orderCount, fees };
@@ -471,7 +471,7 @@ export default function AdminIncome() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Percent className="h-4 w-4" />
-                  <span>Net earnings calculated after Stripe fees: <strong>2.9% + £0.30</strong> per transaction</span>
+                  <span>Net earnings calculated after Stripe fees: <strong>1.5% + £0.20</strong> per transaction (UK domestic cards)</span>
                 </div>
               </CardContent>
             </Card>
