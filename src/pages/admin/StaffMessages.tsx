@@ -297,6 +297,22 @@ export default function StaffMessages() {
   }, [allStaff]);
 
   // Send message mutation
+  // Scroll to bottom helper - defined early so it can be used in mutation
+  const scrollToBottom = useCallback((smooth = false) => {
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          if (smooth) {
+            viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
+          } else {
+            viewport.scrollTop = viewport.scrollHeight;
+          }
+        }
+      }
+    });
+  }, []);
+
   const sendMessageMutation = useMutation({
     onMutate: async (message: string) => {
       if (!user?.id) return { previous: undefined as ChatMessage[] | undefined };
@@ -315,6 +331,9 @@ export default function StaffMessages() {
         const next = [...old, optimistic];
         return next.slice(-100);
       });
+
+      // Scroll to bottom immediately after optimistic update
+      setTimeout(() => scrollToBottom(), 0);
 
       return { previous };
     },
@@ -600,13 +619,8 @@ export default function StaffMessages() {
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (viewport) {
-        viewport.scrollTop = viewport.scrollHeight;
-      }
-    }
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   // Mark messages as read when viewing
   useEffect(() => {
