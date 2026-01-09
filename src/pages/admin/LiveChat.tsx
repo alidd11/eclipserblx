@@ -193,7 +193,9 @@ export default function AdminLiveChat() {
           loadConversations();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('AdminLiveChat conversations channel status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -237,7 +239,9 @@ export default function AdminLiveChat() {
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('AdminLiveChat messagesChannel status:', status);
+      });
 
     // Typing indicator channel
     const typingChannel = supabase
@@ -249,7 +253,9 @@ export default function AdminLiveChat() {
         );
         setCustomerTyping(isTyping);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('AdminLiveChat typingChannel status:', status);
+      });
 
     return () => {
       supabase.removeChannel(messagesChannel);
@@ -315,18 +321,30 @@ export default function AdminLiveChat() {
     setNewMessage('');
 
     try {
-      await supabase.from('chat_messages').insert({
-        conversation_id: selectedConversation.id,
-        message: messageText,
-        sender_type: 'agent',
-        sender_id: user.id,
-      });
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: selectedConversation.id,
+          message: messageText,
+          sender_type: 'agent',
+          sender_id: user.id,
+        })
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data]));
+      }
 
       // Update conversation timestamp
-      await supabase
+      const { error: updateError } = await supabase
         .from('chat_conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', selectedConversation.id);
+
+      if (updateError) throw updateError;
     } catch (error) {
       console.error('Error sending message:', error);
       setNewMessage(messageText);
@@ -357,18 +375,30 @@ export default function AdminLiveChat() {
         .from('chat-attachments')
         .getPublicUrl(fileName);
 
-      await supabase.from('chat_messages').insert({
-        conversation_id: selectedConversation.id,
-        message: file.name,
-        sender_type: 'agent',
-        sender_id: user.id,
-        attachment_url: publicUrl,
-      });
+      const { data: inserted, error: insertError } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: selectedConversation.id,
+          message: file.name,
+          sender_type: 'agent',
+          sender_id: user.id,
+          attachment_url: publicUrl,
+        })
+        .select('*')
+        .single();
 
-      await supabase
+      if (insertError) throw insertError;
+
+      if (inserted) {
+        setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]));
+      }
+
+      const { error: updateError } = await supabase
         .from('chat_conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', selectedConversation.id);
+
+      if (updateError) throw updateError;
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file');
