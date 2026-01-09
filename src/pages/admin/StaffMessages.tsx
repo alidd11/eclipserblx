@@ -198,11 +198,12 @@ export default function StaffMessages() {
         .from('staff_messages')
         .select('id, sender_id, message, created_at')
         .is('recipient_id', null)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(100);
-      
+
       if (error) throw error;
-      return data as ChatMessage[];
+      // Fetch newest-first for efficiency, then reverse for chronological rendering.
+      return (data ?? []).reverse() as ChatMessage[];
     },
     select: (freshData) => {
       const cached = queryClient.getQueryData<ChatMessage[]>(['staff-chat']);
@@ -449,14 +450,15 @@ export default function StaffMessages() {
     onSuccess: (_data, _messagePayload, context) => {
       setNewMessage('');
       setShowMentionSuggestions(false);
-      
-      // Remove the optimistic message - the real one will come via realtime
+
+      // Keep the optimistic message in place (prevents "disappearing" while we wait for realtime/refetch).
+      // We'll reconcile it when the server row arrives.
       if (context?.tempId) {
         queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
-          old.filter(m => m._tempId !== context.tempId)
+          old.map(m => m._tempId === context.tempId ? { ...m, _status: 'success' as const } : m)
         );
       }
-      
+
       // On mobile, blur to hide keyboard and prevent layout shift
       // On desktop, keep focus for quick follow-up messages
       if (isMobile) {
@@ -550,11 +552,18 @@ export default function StaffMessages() {
             if (old.some(m => m.id === newMsg.id)) return old;
             
             // Check for optimistic equivalent (same sender, same message, within 5 minutes)
-            const optimisticIndex = old.findIndex(m => 
-              m._tempId && 
-              m.sender_id === newMsg.sender_id && 
-              m.message === newMsg.message
-            );
+            const optimisticIndex =
+              old.reduce<{ idx: number; dt: number } | null>((best, m, idx) => {
+                if (!m._tempId) return best;
+                if (m.sender_id !== newMsg.sender_id) return best;
+                if (m.message !== newMsg.message) return best;
+                const dt = Math.abs(
+                  new Date(m.created_at).getTime() - new Date(newMsg.created_at).getTime()
+                );
+                if (dt > 5 * 60 * 1000) return best;
+                if (!best || dt < best.dt) return { idx, dt };
+                return best;
+              }, null)?.idx ?? -1;
             
             if (optimisticIndex >= 0) {
               // Replace optimistic with real message
