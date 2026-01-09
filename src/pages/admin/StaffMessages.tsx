@@ -1061,7 +1061,7 @@ export default function StaffMessages() {
                   <p className="text-xs">Start the conversation!</p>
                 </div>
               ) : (
-                <div className="space-y-3 pb-4">
+                <div className="space-y-3 pb-8 md:pb-4">
                   {messages?.map((msg, index) => {
                     const isOwn = msg.sender_id === user?.id;
                     const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
