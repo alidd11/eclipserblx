@@ -104,6 +104,7 @@ export default function StaffMessages() {
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -116,6 +117,41 @@ export default function StaffMessages() {
   // Notification hooks
   const { playSound } = useNotificationSound();
   const { sendNotification, requestPermission, permission } = usePushNotifications();
+
+  // iOS VisualViewport keyboard handling
+  useEffect(() => {
+    if (!isMobile || typeof window === 'undefined') return;
+    
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    
+    const handleResize = () => {
+      // Calculate keyboard height by comparing window height to viewport height
+      const newKeyboardHeight = window.innerHeight - viewport.height;
+      setKeyboardHeight(Math.max(0, newKeyboardHeight));
+      
+      // Scroll to bottom when keyboard opens
+      if (newKeyboardHeight > 50 && scrollRef.current) {
+        setTimeout(() => {
+          const scrollArea = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+          if (scrollArea) {
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+          }
+        }, 100);
+      }
+    };
+    
+    viewport.addEventListener('resize', handleResize);
+    viewport.addEventListener('scroll', handleResize);
+    
+    // Initial check
+    handleResize();
+    
+    return () => {
+      viewport.removeEventListener('resize', handleResize);
+      viewport.removeEventListener('scroll', handleResize);
+    };
+  }, [isMobile]);
 
   // Request notification permission on mount
   useEffect(() => {
@@ -856,11 +892,17 @@ export default function StaffMessages() {
           "flex flex-col max-w-full overflow-hidden",
           // Mobile: stretch to fill entire remaining viewport below admin header, edge-to-edge
           isMobile 
-            ? "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top)+3.5rem)] z-20" 
+            ? "fixed inset-x-0 z-20" 
             : "h-[calc(100dvh-5rem)] -m-6 lg:-m-8 relative"
         )}
         style={{ 
           WebkitOverflowScrolling: 'touch',
+          // On mobile, dynamically adjust for keyboard using VisualViewport
+          ...(isMobile && {
+            top: 'calc(env(safe-area-inset-top) + 3.5rem)',
+            bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0px',
+            transition: 'bottom 0.1s ease-out',
+          }),
         }}
       >
         <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
@@ -1056,7 +1098,9 @@ export default function StaffMessages() {
               className={cn(
                 "border-t border-border shrink-0 relative",
                 isMobile
-                  ? "px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
+                  ? keyboardHeight > 0
+                    ? "px-3 py-2" // Keyboard open: no safe-area padding needed
+                    : "px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]" // Keyboard closed: add safe-area
                   : "p-3"
               )}
             >
