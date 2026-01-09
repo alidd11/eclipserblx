@@ -57,11 +57,25 @@ const getMentionHandle = (profile: StaffProfile): string => {
   return handle || 'staff';
 };
 
-// Parse @mentions from message text
+// Parse @mentions from message text (keep original case for display, normalize for matching)
 const parseMentions = (text: string): string[] => {
   const mentionRegex = /@([a-zA-Z0-9_]+)/g;
   const matches = text.match(mentionRegex);
   return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
+};
+
+// Match a mention handle against a staff profile (flexible matching)
+const matchesMention = (profile: StaffProfile, mentionHandle: string): boolean => {
+  const normalizedMention = mentionHandle.toLowerCase().replace(/_/g, '');
+  const handle = getMentionHandle(profile).replace(/_/g, '');
+  const displayName = (profile.display_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const emailPrefix = profile.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  return handle === normalizedMention || 
+         displayName === normalizedMention || 
+         emailPrefix === normalizedMention ||
+         handle.includes(normalizedMention) ||
+         displayName.includes(normalizedMention);
 };
 
 // Check for group mentions
@@ -242,8 +256,8 @@ export default function StaffMessages() {
     const userProfile = allStaff.find(s => s.user_id === userId);
     if (!userProfile) return false;
 
-    const userHandle = getMentionHandle(userProfile);
-    return mentions.includes(userHandle);
+    // Use flexible matching
+    return mentions.some(mentionHandle => matchesMention(userProfile, mentionHandle));
   }, [allStaff]);
 
   // Send message mutation
@@ -418,9 +432,9 @@ export default function StaffMessages() {
                   }
                 });
               } else {
-                // Notify individually mentioned staff
+                // Notify individually mentioned staff (use flexible matching)
                 mentions.forEach(mentionHandle => {
-                  const mentionedStaff = allStaff.find(s => getMentionHandle(s) === mentionHandle);
+                  const mentionedStaff = allStaff.find(s => matchesMention(s, mentionHandle));
                   if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
                     mentionedUserIds.push(mentionedStaff.user_id);
                   }
@@ -753,13 +767,13 @@ export default function StaffMessages() {
   // Render message with highlighted mentions
   const renderMessage = (text: string, isOwnMessage: boolean = false) => {
     const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
-    const currentUserHandle = currentUserProfile ? getMentionHandle(currentUserProfile) : '';
 
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         const mentionedHandle = part.slice(1).toLowerCase();
         const isGroupMention = mentionedHandle === 'everyone' || mentionedHandle === 'here';
-        const isCurrentUser = !!currentUserHandle && mentionedHandle === currentUserHandle;
+        // Use flexible matching to determine if current user is mentioned
+        const isCurrentUser = currentUserProfile ? matchesMention(currentUserProfile, mentionedHandle) : false;
 
         return (
           <span
