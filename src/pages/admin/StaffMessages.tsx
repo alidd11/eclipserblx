@@ -853,10 +853,10 @@ export default function StaffMessages() {
     <AdminLayout>
       <div 
         className={cn(
-          "flex flex-col max-w-full overflow-hidden min-h-0",
-          // Mobile: use relative positioning within the AdminLayout flow, not fixed
+          "flex flex-col max-w-full overflow-hidden",
+          // Mobile: stretch to fill entire remaining viewport below admin header, edge-to-edge
           isMobile 
-            ? "h-full -m-4 p-0" 
+            ? "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top)+3.5rem)] z-20" 
             : "h-[calc(100dvh-5rem)] -m-6 lg:-m-8 relative"
         )}
         style={{ 
