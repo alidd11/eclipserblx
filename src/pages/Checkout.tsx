@@ -134,6 +134,7 @@ export default function Checkout() {
             name: item.name,
             price: item.price,
             image: item.image,
+            category_slug: item.category_slug,
           })),
           email: user.email,
           discountCodeId: appliedDiscount?.id,
@@ -312,6 +313,7 @@ export default function Checkout() {
                       name: item.name,
                       price: item.price,
                       image: item.image,
+                      category_slug: item.category_slug,
                     }))}
                     total={finalTotal}
                     email={user?.email || ''}

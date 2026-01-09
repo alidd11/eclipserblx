@@ -11,6 +11,7 @@ interface CartItem {
   name: string;
   price: number;
   image?: string;
+  category_slug?: string;
 }
 
 interface PaymentRequestButtonProps {
