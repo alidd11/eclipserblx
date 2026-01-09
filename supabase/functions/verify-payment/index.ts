@@ -39,7 +39,7 @@ serve(async (req) => {
     let customerEmail = "";
     let userId: string | null = null;
     let paymentId = "";
-    let paymentMethod = "stripe";
+    let paymentMethod = "stripe"; // Valid values: stripe, paypal, klarna, apple_pay, google_pay
     let amountTotal = 0;
 
     // Handle Stripe Checkout Session
@@ -64,7 +64,11 @@ serve(async (req) => {
       customerEmail = session.customer_email || session.metadata?.customer_email || "";
       userId = session.metadata?.user_id || null;
       paymentId = session.id;
-      paymentMethod = session.payment_method_types?.[0] || "stripe";
+      // Map Stripe payment method types to our valid values
+      const pmType = session.payment_method_types?.[0];
+      if (pmType === 'paypal') paymentMethod = 'paypal';
+      else if (pmType === 'klarna') paymentMethod = 'klarna';
+      else paymentMethod = 'stripe'; // Default to stripe for card payments
       amountTotal = session.amount_total ? session.amount_total / 100 : 0;
     }
     // Handle PaymentIntent (from Apple Pay/Google Pay)
@@ -88,15 +92,19 @@ serve(async (req) => {
       userId = paymentIntent.metadata?.user_id || null;
       paymentId = paymentIntent.id;
       
-      // Determine payment method type
+      // Determine payment method type - must match constraint values
       if (paymentIntent.payment_method) {
         const pm = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
         if (pm.type === 'card' && pm.card?.wallet?.type === 'apple_pay') {
           paymentMethod = 'apple_pay';
         } else if (pm.type === 'card' && pm.card?.wallet?.type === 'google_pay') {
           paymentMethod = 'google_pay';
+        } else if (pm.type === 'paypal') {
+          paymentMethod = 'paypal';
+        } else if (pm.type === 'klarna') {
+          paymentMethod = 'klarna';
         } else {
-          paymentMethod = pm.type || 'card';
+          paymentMethod = 'stripe'; // Default for card and other types
         }
       }
       
