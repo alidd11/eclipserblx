@@ -247,13 +247,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           {/* Mobile PWA Install Prompt */}
           {isMobile && <AdminInstallPrompt />}
           
-          <main className="flex-1 overflow-y-auto overscroll-contain">
+          <main className="flex-1 overflow-y-auto overscroll-contain bg-background">
             <div className="p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
               {children}
             </div>
           </main>
-          {/* Bottom safe area fill for iOS PWA */}
-          <div className="shrink-0 h-[env(safe-area-inset-bottom)] bg-background" />
         </div>
       </div>
     </TooltipProvider>
