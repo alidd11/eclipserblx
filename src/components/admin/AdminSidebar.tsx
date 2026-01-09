@@ -19,7 +19,7 @@ const navItems = [
   { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
   { title: 'Referrals', icon: Gift, href: '/admin/referrals', roles: ['admin'] },
   { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
-  { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin', 'order_manager', 'support_agent'] },
+  { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin'] },
   { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
   { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
   { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
