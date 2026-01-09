@@ -326,23 +326,22 @@ export default function AdminLiveChat() {
   };
 
   const mergeServerMessages = (prev: Message[], server: Message[]) => {
-    const pendingOrFailed = prev.filter((m) => m._status === 'pending' || m._status === 'failed');
     const merged: Message[] = [...server];
+    const byId = new Set(merged.map((m) => m.id));
 
-    for (const optimistic of pendingOrFailed) {
-      const serverMatch = merged.find((m) => {
-        const timeDiffMs = Math.abs(
-          new Date(m.created_at).getTime() - new Date(optimistic.created_at).getTime()
-        );
-        return (
-          m.sender_type === optimistic.sender_type &&
-          m.sender_id === optimistic.sender_id &&
-          m.message === optimistic.message &&
-          timeDiffMs < 30_000
-        );
-      });
+    const now = Date.now();
+    const keepLocalMs = 2 * 60 * 1000; // 2 minutes safety window
 
-      if (!serverMatch) merged.push(optimistic);
+    for (const local of prev) {
+      if (byId.has(local.id)) continue;
+
+      const isOptimistic = local._status === 'pending' || local._status === 'failed' || !!local._tempId;
+      const isRecent = now - new Date(local.created_at).getTime() < keepLocalMs;
+
+      if (isOptimistic || isRecent) {
+        merged.push(local);
+        byId.add(local.id);
+      }
     }
 
     merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
