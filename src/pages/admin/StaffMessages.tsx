@@ -859,8 +859,8 @@ export default function StaffMessages() {
           WebkitOverflowScrolling: 'touch'
         }}
       >
-        <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
-          <CardHeader className="border-b border-border shrink-0 px-3 py-3">
+        <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border" style={{ paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : undefined }}>
+          <CardHeader className="border-b border-border shrink-0 px-3 py-3 pt-3">
             <CardTitle className="flex items-center justify-between text-base">
               <div className="flex items-center gap-2 min-w-0">
                 <MessageSquare className="h-4 w-4 shrink-0" />
