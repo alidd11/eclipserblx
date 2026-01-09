@@ -88,10 +88,19 @@ export function ChatWidget() {
   const [isUploading, setIsUploading] = useState(false);
   const [agentTyping, setAgentTyping] = useState(false);
   const [isOnline, setIsOnline] = useState(isSupportOnline());
+  const [messagesChannelStatus, setMessagesChannelStatus] = useState<string>('');
+  const [isRefreshingMessages, setIsRefreshingMessages] = useState(false);
+  const [realtimeNonce, setRealtimeNonce] = useState(0);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingChannelRef = useRef<any>(null);
+  const messagesRetryRef = useRef<{ attempt: number; timeoutId: ReturnType<typeof setTimeout> | null }>({
+    attempt: 0,
+    timeoutId: null,
+  });
+
   const { playSound } = useNotificationSound();
   const { sendNotification, requestPermission, permission } = usePushNotifications();
 
@@ -164,6 +173,27 @@ export function ChatWidget() {
   useEffect(() => {
     if (!conversationId) return;
 
+    setMessagesChannelStatus('CONNECTING');
+    messagesRetryRef.current.attempt = 0;
+    if (messagesRetryRef.current.timeoutId) {
+      clearTimeout(messagesRetryRef.current.timeoutId);
+      messagesRetryRef.current.timeoutId = null;
+    }
+
+    const scheduleRetry = (status: string) => {
+      if (status !== 'TIMED_OUT' && status !== 'CHANNEL_ERROR') return;
+      if (messagesRetryRef.current.timeoutId) return;
+
+      const attempt = messagesRetryRef.current.attempt + 1;
+      messagesRetryRef.current.attempt = attempt;
+      const delayMs = Math.min(30000, 1000 * 2 ** (attempt - 1));
+
+      messagesRetryRef.current.timeoutId = setTimeout(() => {
+        messagesRetryRef.current.timeoutId = null;
+        setRealtimeNonce((n) => n + 1);
+      }, delayMs);
+    };
+
     // Messages channel
     const messagesChannel = supabase
       .channel(`chat-${conversationId}`)
@@ -196,6 +226,17 @@ export function ChatWidget() {
       )
       .subscribe((status) => {
         console.log('ChatWidget messagesChannel status:', status);
+        setMessagesChannelStatus(status);
+
+        if (status === 'SUBSCRIBED') {
+          messagesRetryRef.current.attempt = 0;
+          if (messagesRetryRef.current.timeoutId) {
+            clearTimeout(messagesRetryRef.current.timeoutId);
+            messagesRetryRef.current.timeoutId = null;
+          }
+        } else {
+          scheduleRetry(status);
+        }
       });
 
     // Conversation status channel - detect when staff closes the chat
@@ -244,6 +285,10 @@ export function ChatWidget() {
 
     return () => {
       typingChannelRef.current = null;
+      if (messagesRetryRef.current.timeoutId) {
+        clearTimeout(messagesRetryRef.current.timeoutId);
+        messagesRetryRef.current.timeoutId = null;
+      }
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(conversationChannel);
       supabase.removeChannel(typingChannel);
@@ -251,7 +296,19 @@ export function ChatWidget() {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [conversationId]);
+  }, [conversationId, realtimeNonce]);
+
+  // Fallback polling while realtime is not fully subscribed
+  useEffect(() => {
+    if (!conversationId) return;
+    if (messagesChannelStatus === 'SUBSCRIBED') return;
+
+    const interval = setInterval(() => {
+      loadMessages(conversationId);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [conversationId, messagesChannelStatus]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -288,6 +345,16 @@ export function ChatWidget() {
 
     if (data) {
       setMessages(data);
+    }
+  };
+
+  const refreshMessages = async () => {
+    if (!conversationId) return;
+    setIsRefreshingMessages(true);
+    try {
+      await loadMessages(conversationId);
+    } finally {
+      setIsRefreshingMessages(false);
     }
   };
 
