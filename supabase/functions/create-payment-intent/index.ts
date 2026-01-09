@@ -12,6 +12,7 @@ interface CartItem {
   name: string;
   price: number;
   image?: string;
+  category_slug?: string;
 }
 
 interface PaymentIntentRequest {
@@ -89,7 +90,7 @@ serve(async (req) => {
       metadata: {
         user_id: userId || "",
         customer_email: userEmail || "",
-        items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price }))),
+        items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price, category_slug: i.category_slug }))),
       },
       automatic_payment_methods: {
         enabled: true,

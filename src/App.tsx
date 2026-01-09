@@ -37,6 +37,7 @@ const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Status = lazy(() => import("./pages/Status"));
+const BotInstallation = lazy(() => import("./pages/BotInstallation"));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -119,6 +120,7 @@ const App = () => (
                   <Route path="/support" element={<Support />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/status" element={<Status />} />
+                  <Route path="/bot-installation" element={<BotInstallation />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />

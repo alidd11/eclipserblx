@@ -97,6 +97,7 @@ export default function ProductDetail() {
         price: product.price,
         image: product.images?.[0],
         slug: product.slug,
+        category_slug: product.categories?.slug,
       });
     }
   };
