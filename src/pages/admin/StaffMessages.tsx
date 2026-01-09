@@ -469,7 +469,7 @@ export default function StaffMessages() {
         async (payload) => {
           const newMsg = payload.new as { sender_id: string; message: string };
           
-          // Only notify for messages from other staff members
+          // Handle notifications for messages from OTHER staff members (receivers)
           if (newMsg.sender_id !== user?.id) {
             // Check if current user is mentioned
             const isMentioned = user?.id ? isUserMentioned(newMsg.message, user.id) : false;
@@ -499,9 +499,11 @@ export default function StaffMessages() {
                 });
               }
             }
-
-            // Send background push notifications for mentions
-            // Fetch staff fresh to avoid stale closure issues
+          }
+          
+          // SENDER triggers background push notifications for mentions
+          // This ensures push is sent even if no other staff has the page open
+          if (newMsg.sender_id === user?.id) {
             const mentions = parseMentions(newMsg.message);
             const groupMentions = hasGroupMention(newMsg.message);
             
@@ -544,7 +546,7 @@ export default function StaffMessages() {
 
                   // Send background push to mentioned users
                   if (mentionedUserIds.length > 0) {
-                    console.log('[StaffMessages] Sending push to mentioned users:', mentionedUserIds);
+                    console.log('[StaffMessages] Sender triggering push to mentioned users:', mentionedUserIds);
                     await notifyStaffMention(
                       mentionedUserIds,
                       senderName,
