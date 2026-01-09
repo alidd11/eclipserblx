@@ -22,7 +22,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         .from('products')
         .select(`
           *,
-          categories (name)
+          categories (name, slug)
         `)
         .eq('is_featured', true)
         .eq('is_active', true)
@@ -177,6 +177,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                       price={Number(currentProduct.price)}
                       image={currentProduct.images?.[0]}
                       category={currentProduct.categories?.name}
+                      categorySlug={currentProduct.categories?.slug}
                       isFeatured={currentProduct.is_featured}
                     />
                   </div>

@@ -11,6 +11,7 @@ const corsHeaders = {
 interface OrderItem {
   product_name: string;
   price: number;
+  category_slug?: string;
 }
 
 interface OrderConfirmationRequest {
@@ -21,6 +22,7 @@ interface OrderConfirmationRequest {
   total: number;
   paymentMethod: string;
   orderDate: string;
+  hasBotPurchase?: boolean;
 }
 
 function logStep(step: string, details?: any) {
@@ -88,6 +90,12 @@ ${line}
 }
 
 function generateEmailHtml(data: OrderConfirmationRequest): string {
+  // Check if order contains bot purchases
+  const hasBotPurchase = data.hasBotPurchase || data.items.some(item => 
+    item.category_slug === 'bots' || 
+    item.product_name.toLowerCase().includes('bot')
+  );
+
   const itemsHtml = data.items
     .map(
       (item) => `
@@ -102,6 +110,74 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
     `
     )
     .join("");
+
+  // Bot installation notice section
+  const botInstallationNotice = hasBotPurchase ? `
+          <!-- Bot Installation Notice -->
+          <tr>
+            <td style="padding: 0 40px 32px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.15) 100%); border-radius: 12px; border: 2px solid rgba(59, 130, 246, 0.3); overflow: hidden;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding-bottom: 16px;">
+                          <h3 style="margin: 0; color: #60a5fa; font-size: 18px; font-weight: 700; font-family: 'Cinzel', serif;">
+                            🤖 Bot Installation Required
+                          </h3>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <p style="margin: 0 0 16px 0; color: #e0e0e0; font-size: 14px; line-height: 1.6;">
+                            Your bot purchase requires manual installation by our team. To get your bot set up:
+                          </p>
+                          <ol style="margin: 0 0 20px 0; padding-left: 20px; color: #c0c0c0; font-size: 14px; line-height: 1.8;">
+                            <li style="margin-bottom: 8px;">Open a support ticket on our website or Discord server</li>
+                            <li style="margin-bottom: 8px;">Include your <strong style="color: #a855f7;">Order ID: ${data.orderId}</strong></li>
+                            <li style="margin-bottom: 8px;">Provide your Discord server ID or Roblox game details</li>
+                            <li>Our team will install and configure your bot within 24-48 hours</li>
+                          </ol>
+                          <table cellpadding="0" cellspacing="0" style="margin-top: 8px;">
+                            <tr>
+                              <td style="padding-right: 12px;">
+                                <a href="https://eclipserblx.com/support" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                  Open Support Ticket
+                                </a>
+                              </td>
+                              <td>
+                                <a href="https://eclipserblx.com/bot-installation" style="display: inline-block; background: transparent; color: #60a5fa; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; border: 1px solid #3b82f6;">
+                                  Installation Guide
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+  ` : '';
+
+  // Download CTA - only show if there are non-bot items or no bot purchase
+  const downloadCta = `
+          <!-- Download CTA -->
+          <tr>
+            <td style="padding: 0 40px 40px 40px; text-align: center;">
+              <p style="margin: 0 0 20px 0; color: #a0a0a0; font-size: 14px;">
+                ${hasBotPurchase 
+                  ? 'Need other downloads? Access your digital products here.' 
+                  : 'Your digital products are ready for download!'}
+              </p>
+              <a href="https://eclipserblx.com/downloads" style="display: inline-block; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; letter-spacing: 0.5px;">
+                Access Your Downloads
+              </a>
+            </td>
+          </tr>
+  `;
 
   return `
 <!DOCTYPE html>
@@ -189,17 +265,9 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
             </td>
           </tr>
           
-          <!-- Download CTA -->
-          <tr>
-            <td style="padding: 0 40px 40px 40px; text-align: center;">
-              <p style="margin: 0 0 20px 0; color: #a0a0a0; font-size: 14px;">
-                Your digital products are ready for download!
-              </p>
-              <a href="https://eclipserblx.com/downloads" style="display: inline-block; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; letter-spacing: 0.5px;">
-                Access Your Downloads
-              </a>
-            </td>
-          </tr>
+          ${botInstallationNotice}
+          
+          ${downloadCta}
           
           <!-- Footer -->
           <tr>

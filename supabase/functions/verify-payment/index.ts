@@ -170,17 +170,25 @@ serve(async (req) => {
     // Send order confirmation email
     logStep("Sending confirmation email");
     try {
+      // Check if any item is a bot (for special installation instructions)
+      const hasBotPurchase = items.some((item: any) => 
+        item.category_slug === 'bots' || 
+        (item.name && item.name.toLowerCase().includes('bot'))
+      );
+
       const emailPayload = {
         orderId: order.id,
         customerEmail: customerEmail,
         items: items.map((item: any) => ({
           product_name: item.name,
           price: item.price,
+          category_slug: item.category_slug,
         })),
         subtotal: subtotal,
         total: total,
         paymentMethod: paymentMethod,
         orderDate: order.created_at,
+        hasBotPurchase: hasBotPurchase,
       };
 
       const emailResponse = await fetch(

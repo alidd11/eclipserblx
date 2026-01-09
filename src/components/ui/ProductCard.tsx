@@ -12,19 +12,20 @@ interface ProductCardProps {
   price: number;
   image?: string;
   category?: string;
+  categorySlug?: string;
   isFeatured?: boolean;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, isFeatured }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, isFeatured }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
   const inCart = isInCart(id);
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!inCart) {
-      addItem({ id, name, price, image, slug });
+      addItem({ id, name, price, image, slug, category_slug: categorySlug });
     }
-  }, [inCart, addItem, id, name, price, image, slug]);
+  }, [inCart, addItem, id, name, price, image, slug, categorySlug]);
 
   return (
     <Link to={`/products/${slug}`} className="group block h-full">

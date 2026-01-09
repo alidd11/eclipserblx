@@ -178,6 +178,7 @@ export default function Products() {
                   price={product.price}
                   image={product.images?.[0]}
                   category={product.categories?.name}
+                  categorySlug={product.categories?.slug}
                   isFeatured={product.is_featured}
                 />
               ))}
