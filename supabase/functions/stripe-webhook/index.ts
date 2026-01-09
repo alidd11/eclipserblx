@@ -34,10 +34,10 @@ serve(async (req) => {
       return new Response("No signature", { status: 400 });
     }
 
-    // Verify the webhook signature
+    // Verify the webhook signature (use async version for Deno)
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
       logStep("Signature verified", { eventType: event.type, eventId: event.id });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -160,8 +160,8 @@ async function processPayment(
     }
   }
 
-  // Determine payment method
-  let paymentMethod = "card";
+  // Determine payment method - must match check constraint: stripe, paypal, klarna, apple_pay, google_pay
+  let paymentMethod = "stripe";
   if (paymentType === "checkout_session") {
     try {
       const session = await stripe.checkout.sessions.retrieve(paymentId, {
@@ -170,6 +170,17 @@ async function processPayment(
       const pi = session.payment_intent as Stripe.PaymentIntent;
       if (pi?.payment_method_types?.includes("paypal")) {
         paymentMethod = "paypal";
+      } else if (pi?.payment_method_types?.includes("klarna")) {
+        paymentMethod = "klarna";
+      }
+      // Check for wallet types (Apple Pay / Google Pay)
+      if (pi?.payment_method) {
+        const pm = await stripe.paymentMethods.retrieve(pi.payment_method as string);
+        if (pm.type === 'card' && pm.card?.wallet?.type === 'apple_pay') {
+          paymentMethod = 'apple_pay';
+        } else if (pm.type === 'card' && pm.card?.wallet?.type === 'google_pay') {
+          paymentMethod = 'google_pay';
+        }
       }
     } catch (e) {
       logStep("Could not determine payment method", { error: String(e) });
