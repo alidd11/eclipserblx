@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck, ChevronDown, ChevronUp, AlertCircle, RotateCcw, X } from 'lucide-react';
+import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck, ChevronDown, ChevronUp, AlertCircle, RotateCcw, X, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,11 +19,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface ChatMessage {
   id: string;
   sender_id: string;
+  recipient_id?: string | null;
   message: string;
   created_at: string;
   _status?: 'pending' | 'failed' | 'success';
   _tempId?: string;
 }
+
+type RealtimeStatus = 'connecting' | 'connected' | 'reconnecting' | 'failed';
 
 interface MessageRead {
   message_id: string;
@@ -135,10 +138,14 @@ export default function StaffMessages() {
   const [cursorPosition, setCursorPosition] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [staffStripCollapsed, setStaffStripCollapsed] = useState(isMobile); // Collapsed by default on mobile
+  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>('connecting');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const messageChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const retryAttemptRef = useRef(0);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Swipe tracking for mobile
   const swipeStartY = useRef<number | null>(null);
@@ -191,12 +198,13 @@ export default function StaffMessages() {
   }, [permission, requestPermission]);
 
   // Fetch messages (using staff_messages table with recipient_id = null for general chat)
+  // Polling fallback when realtime is not connected
   const { data: messages, isLoading } = useQuery({
     queryKey: ['staff-chat'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('staff_messages')
-        .select('id, sender_id, message, created_at')
+        .select('id, sender_id, recipient_id, message, created_at')
         .is('recipient_id', null)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -210,6 +218,10 @@ export default function StaffMessages() {
       if (!cached) return freshData;
       return mergeServerMessages(cached, freshData);
     },
+    // Polling fallback: poll every 5s when realtime is not connected
+    refetchInterval: realtimeStatus === 'connected' ? false : 5000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Fetch read receipts for messages
@@ -531,152 +543,213 @@ export default function StaffMessages() {
     }, 2000);
   }, [user?.id, getCurrentUserName]);
 
-  // Real-time subscription for messages with notifications
+  // Real-time subscription for messages with notifications + auto-reconnect
   useEffect(() => {
-    const channel = supabase
-      .channel('staff-chat-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'staff_messages',
-          filter: 'recipient_id=is.null',
-        },
-        async (payload) => {
-          const newMsg = payload.new as { id: string; sender_id: string; message: string; created_at: string };
-          
-          // Merge the new message into the cache instead of invalidating
-          queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
-            // Check if message already exists
-            if (old.some(m => m.id === newMsg.id)) return old;
-            
-            // Check for optimistic equivalent (same sender, same message, within 5 minutes)
-            const optimisticIndex =
-              old.reduce<{ idx: number; dt: number } | null>((best, m, idx) => {
-                if (!m._tempId) return best;
-                if (m.sender_id !== newMsg.sender_id) return best;
-                if (m.message !== newMsg.message) return best;
-                const dt = Math.abs(
-                  new Date(m.created_at).getTime() - new Date(newMsg.created_at).getTime()
-                );
-                if (dt > 5 * 60 * 1000) return best;
-                if (!best || dt < best.dt) return { idx, dt };
-                return best;
-              }, null)?.idx ?? -1;
-            
-            if (optimisticIndex >= 0) {
-              // Replace optimistic with real message
-              const updated = [...old];
-              updated[optimisticIndex] = { ...newMsg, _status: 'success' as const };
-              return updated;
-            }
-            
-            // Add new message from other user
-            return [...old, newMsg as ChatMessage].sort((a, b) => 
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    let isMounted = true;
+
+    const handleNewMessage = async (payload: { new: Record<string, unknown> }) => {
+      const newMsg = payload.new as { 
+        id: string; 
+        sender_id: string; 
+        recipient_id: string | null;
+        message: string; 
+        created_at: string;
+      };
+      
+      // CLIENT-SIDE FILTER: Only process general chat messages (recipient_id = null)
+      if (newMsg.recipient_id !== null) return;
+      
+      // Merge the new message into the cache instead of invalidating
+      queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
+        // Check if message already exists
+        if (old.some(m => m.id === newMsg.id)) return old;
+        
+        // Check for optimistic equivalent (same sender, same message, within 5 minutes)
+        const optimisticIndex =
+          old.reduce<{ idx: number; dt: number } | null>((best, m, idx) => {
+            if (!m._tempId) return best;
+            if (m.sender_id !== newMsg.sender_id) return best;
+            if (m.message !== newMsg.message) return best;
+            const dt = Math.abs(
+              new Date(m.created_at).getTime() - new Date(newMsg.created_at).getTime()
             );
-          });
+            if (dt > 5 * 60 * 1000) return best;
+            if (!best || dt < best.dt) return { idx, dt };
+            return best;
+          }, null)?.idx ?? -1;
+        
+        if (optimisticIndex >= 0) {
+          // Replace optimistic with real message
+          const updated = [...old];
+          updated[optimisticIndex] = { ...newMsg, _status: 'success' as const };
+          return updated;
+        }
+        
+        // Add new message from other user
+        return [...old, newMsg as ChatMessage].sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      });
+      
+      // Handle notifications for messages from OTHER staff members (receivers)
+      if (newMsg.sender_id !== user?.id) {
+        // Check if current user is mentioned
+        const isMentioned = user?.id ? isUserMentioned(newMsg.message, user.id) : false;
+        
+        // Always play sound, but louder/different for mentions
+        playSound();
+        
+        // Send push notification if tab is not focused OR if mentioned
+        if (document.hidden || isMentioned) {
+          const senderProfile = profiles?.[newMsg.sender_id];
+          const senderName = senderProfile?.display_name || 'Staff Member';
           
-          // Handle notifications for messages from OTHER staff members (receivers)
-          if (newMsg.sender_id !== user?.id) {
-            // Check if current user is mentioned
-            const isMentioned = user?.id ? isUserMentioned(newMsg.message, user.id) : false;
+          if (isMentioned) {
+            sendNotification('🔔 You were mentioned!', {
+              body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
+              tag: 'staff-chat-mention',
+              requireInteraction: true,
+            });
+            // Show toast for mentions even when focused
+            if (!document.hidden) {
+              toast.info(`${senderName} mentioned you in staff chat`);
+            }
+          } else {
+            sendNotification('New Staff Message', {
+              body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
+              tag: 'staff-chat-message',
+            });
+          }
+        }
+      }
+      
+      // SENDER triggers background push notifications for mentions
+      // This ensures push is sent even if no other staff has the page open
+      if (newMsg.sender_id === user?.id) {
+        const mentions = parseMentions(newMsg.message);
+        const groupMentions = hasGroupMention(newMsg.message);
+        
+        if (mentions.length > 0 || groupMentions.everyone || groupMentions.here) {
+          try {
+            // Fetch current staff list directly to ensure fresh data
+            const { data: staffData } = await supabase.functions.invoke('list-staff');
+            const currentStaff = (staffData?.staff ?? []) as StaffProfile[];
             
-            // Always play sound, but louder/different for mentions
-            playSound();
-            
-            // Send push notification if tab is not focused OR if mentioned
-            if (document.hidden || isMentioned) {
-              const senderProfile = profiles?.[newMsg.sender_id];
+            if (currentStaff.length > 0) {
+              const senderProfile = currentStaff.find(s => s.user_id === newMsg.sender_id);
               const senderName = senderProfile?.display_name || 'Staff Member';
               
-              if (isMentioned) {
-                sendNotification('🔔 You were mentioned!', {
-                  body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-                  tag: 'staff-chat-mention',
-                  requireInteraction: true,
+              // Find mentioned user IDs
+              const mentionedUserIds: string[] = [];
+              
+              if (groupMentions.everyone) {
+                // Notify all staff except sender
+                currentStaff.forEach(staff => {
+                  if (staff.user_id !== newMsg.sender_id) {
+                    mentionedUserIds.push(staff.user_id);
+                  }
                 });
-                // Show toast for mentions even when focused
-                if (!document.hidden) {
-                  toast.info(`${senderName} mentioned you in staff chat`);
-                }
+              } else if (groupMentions.here) {
+                // Notify online staff except sender
+                onlineUsers.forEach(online => {
+                  if (online.user_id !== newMsg.sender_id) {
+                    mentionedUserIds.push(online.user_id);
+                  }
+                });
               } else {
-                sendNotification('New Staff Message', {
-                  body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-                  tag: 'staff-chat-message',
+                // Notify individually mentioned staff (use flexible matching)
+                mentions.forEach(mentionHandle => {
+                  const mentionedStaff = currentStaff.find(s => matchesMention(s, mentionHandle));
+                  if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
+                    mentionedUserIds.push(mentionedStaff.user_id);
+                  }
                 });
               }
-            }
-          }
-          
-          // SENDER triggers background push notifications for mentions
-          // This ensures push is sent even if no other staff has the page open
-          if (newMsg.sender_id === user?.id) {
-            const mentions = parseMentions(newMsg.message);
-            const groupMentions = hasGroupMention(newMsg.message);
-            
-            if (mentions.length > 0 || groupMentions.everyone || groupMentions.here) {
-              try {
-                // Fetch current staff list directly to ensure fresh data
-                const { data: staffData } = await supabase.functions.invoke('list-staff');
-                const currentStaff = (staffData?.staff ?? []) as StaffProfile[];
-                
-                if (currentStaff.length > 0) {
-                  const senderProfile = currentStaff.find(s => s.user_id === newMsg.sender_id);
-                  const senderName = senderProfile?.display_name || 'Staff Member';
-                  
-                  // Find mentioned user IDs
-                  const mentionedUserIds: string[] = [];
-                  
-                  if (groupMentions.everyone) {
-                    // Notify all staff except sender
-                    currentStaff.forEach(staff => {
-                      if (staff.user_id !== newMsg.sender_id) {
-                        mentionedUserIds.push(staff.user_id);
-                      }
-                    });
-                  } else if (groupMentions.here) {
-                    // Notify online staff except sender
-                    onlineUsers.forEach(online => {
-                      if (online.user_id !== newMsg.sender_id) {
-                        mentionedUserIds.push(online.user_id);
-                      }
-                    });
-                  } else {
-                    // Notify individually mentioned staff (use flexible matching)
-                    mentions.forEach(mentionHandle => {
-                      const mentionedStaff = currentStaff.find(s => matchesMention(s, mentionHandle));
-                      if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
-                        mentionedUserIds.push(mentionedStaff.user_id);
-                      }
-                    });
-                  }
 
-                  // Send background push to mentioned users
-                  if (mentionedUserIds.length > 0) {
-                    console.log('[StaffMessages] Sender triggering push to mentioned users:', mentionedUserIds);
-                    await notifyStaffMention(
-                      mentionedUserIds,
-                      senderName,
-                      newMsg.message
-                    );
-                    console.log('[StaffMessages] Push notification sent successfully');
-                  }
-                }
-              } catch (error) {
-                console.error('Failed to send background push for mention:', error);
+              // Send background push to mentioned users
+              if (mentionedUserIds.length > 0) {
+                console.log('[StaffMessages] Sender triggering push to mentioned users:', mentionedUserIds);
+                await notifyStaffMention(
+                  mentionedUserIds,
+                  senderName,
+                  newMsg.message
+                );
+                console.log('[StaffMessages] Push notification sent successfully');
               }
             }
+          } catch (error) {
+            console.error('Failed to send background push for mention:', error);
           }
-          
-          // No need to invalidate - we merged the message above
         }
-      )
-      .subscribe();
+      }
+    };
+
+    const subscribe = () => {
+      // Clean up any existing channel
+      if (messageChannelRef.current) {
+        supabase.removeChannel(messageChannelRef.current);
+        messageChannelRef.current = null;
+      }
+
+      const channelName = `staff-chat-realtime-${Date.now()}`;
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'staff_messages',
+            // NO server-side filter - we filter client-side for reliability
+          },
+          handleNewMessage
+        )
+        .subscribe((status, err) => {
+          if (!isMounted) return;
+
+          console.log('[StaffMessages] Realtime status:', status, err);
+
+          if (status === 'SUBSCRIBED') {
+            setRealtimeStatus('connected');
+            retryAttemptRef.current = 0;
+            // Resync data after reconnect to catch any missed messages
+            queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            setRealtimeStatus('reconnecting');
+            
+            // Calculate backoff: 1s, 2s, 4s, 8s, ... max 30s
+            const backoffMs = Math.min(1000 * Math.pow(2, retryAttemptRef.current), 30000);
+            retryAttemptRef.current += 1;
+            
+            console.log(`[StaffMessages] Scheduling reconnect in ${backoffMs}ms (attempt ${retryAttemptRef.current})`);
+            
+            // Clean up and retry
+            if (retryTimeoutRef.current) {
+              clearTimeout(retryTimeoutRef.current);
+            }
+            retryTimeoutRef.current = setTimeout(() => {
+              if (isMounted) {
+                subscribe();
+              }
+            }, backoffMs);
+          }
+        });
+
+      messageChannelRef.current = channel;
+    };
+
+    setRealtimeStatus('connecting');
+    subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+      if (messageChannelRef.current) {
+        supabase.removeChannel(messageChannelRef.current);
+        messageChannelRef.current = null;
+      }
     };
   }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned, onlineUsers]);
 
@@ -1076,6 +1149,28 @@ export default function StaffMessages() {
               <div className="flex items-center gap-2 min-w-0">
                 <MessageSquare className="h-4 w-4 shrink-0" />
                 <span className="truncate">Staff Chat</span>
+                {/* Realtime connection status indicator */}
+                {realtimeStatus === 'connected' ? (
+                  <span className="flex items-center gap-1 text-[10px] text-green-600 dark:text-green-400">
+                    <Wifi className="h-3 w-3" />
+                    <span className="hidden sm:inline">Live</span>
+                  </span>
+                ) : realtimeStatus === 'reconnecting' ? (
+                  <span className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 animate-pulse">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="hidden sm:inline">Reconnecting...</span>
+                  </span>
+                ) : realtimeStatus === 'connecting' ? (
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="hidden sm:inline">Connecting...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10px] text-destructive">
+                    <WifiOff className="h-3 w-3" />
+                    <span className="hidden sm:inline">Offline (polling)</span>
+                  </span>
+                )}
               </div>
               <button
                 type="button"
