@@ -299,20 +299,50 @@ export default function StaffMessages() {
 
   // Send message mutation
   // Scroll to bottom helper - defined early so it can be used in mutation
-  const scrollToBottom = useCallback((smooth = false) => {
-    requestAnimationFrame(() => {
-      if (scrollRef.current) {
-        const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if (viewport) {
-          if (smooth) {
-            viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
-          } else {
-            viewport.scrollTop = viewport.scrollHeight;
+  const scrollToBottom = useCallback(
+    (options?: { smooth?: boolean; attempt?: number }) => {
+      const smooth = options?.smooth ?? false;
+      const attempt = options?.attempt ?? 0;
+      const maxAttempts = 10;
+
+      requestAnimationFrame(() => {
+        const root = scrollRef.current;
+        if (!root) {
+          if (attempt < maxAttempts) {
+            setTimeout(() => scrollToBottom({ smooth, attempt: attempt + 1 }), 50);
           }
+          return;
         }
-      }
-    });
-  }, []);
+
+        const viewport = root.querySelector('[data-radix-scroll-area-viewport]') as
+          | HTMLElement
+          | null;
+
+        if (!viewport) {
+          if (attempt < maxAttempts) {
+            setTimeout(() => scrollToBottom({ smooth, attempt: attempt + 1 }), 50);
+          }
+          return;
+        }
+
+        const targetTop = viewport.scrollHeight;
+        if (smooth) {
+          viewport.scrollTo({ top: targetTop, behavior: 'smooth' });
+        } else {
+          viewport.scrollTop = targetTop;
+        }
+
+        // Verify we actually reached the bottom (Radix/iOS sometimes reflows after we set scrollTop)
+        const atBottom =
+          viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 2;
+
+        if (!atBottom && attempt < maxAttempts) {
+          setTimeout(() => scrollToBottom({ smooth, attempt: attempt + 1 }), 60);
+        }
+      });
+    },
+    []
+  );
 
   const sendMessageMutation = useMutation({
     onMutate: async (message: string) => {
