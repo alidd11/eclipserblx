@@ -195,6 +195,56 @@ function buildAes128gcmBody(
   return concat(salt, recordSize, keyIdLen, localPublicKey, ciphertext);
 }
 
+// Normalize an ECDSA signature into JOSE (raw r||s) format.
+// - Some runtimes return DER-encoded signatures.
+// - Others (including some WebCrypto implementations) return raw r||s already.
+function ecdsaSignatureToJose(sig: Uint8Array, partLength: number): Uint8Array {
+  // Already JOSE
+  if (sig.length === partLength * 2) return sig;
+
+  // DER -> JOSE
+  let offset = 0;
+
+  if (sig[offset++] !== 0x30) {
+    throw new Error('Invalid ECDSA signature format');
+  }
+
+  let seqLen = sig[offset++];
+  if (seqLen & 0x80) {
+    const lenBytes = seqLen & 0x7f;
+    seqLen = 0;
+    for (let i = 0; i < lenBytes; i++) {
+      seqLen = (seqLen << 8) + sig[offset++];
+    }
+  }
+
+  if (sig[offset++] !== 0x02) {
+    throw new Error('Invalid DER signature (expected INTEGER for r)');
+  }
+  const rLen = sig[offset++];
+  let r = sig.slice(offset, offset + rLen);
+  offset += rLen;
+
+  if (sig[offset++] !== 0x02) {
+    throw new Error('Invalid DER signature (expected INTEGER for s)');
+  }
+  const sLen = sig[offset++];
+  let s = sig.slice(offset, offset + sLen);
+
+  // Trim any leading 0x00 used to force positive INTEGER values.
+  while (r.length > partLength && r[0] === 0x00) r = r.slice(1);
+  while (s.length > partLength && s[0] === 0x00) s = s.slice(1);
+
+  if (r.length > partLength || s.length > partLength) {
+    throw new Error('Invalid DER signature (r/s too long)');
+  }
+
+  const out = new Uint8Array(partLength * 2);
+  out.set(r, partLength - r.length);
+  out.set(s, partLength * 2 - s.length);
+  return out;
+}
+
 // Create VAPID JWT token
 async function createVapidJwt(
   audience: string,
@@ -218,17 +268,16 @@ async function createVapidJwt(
   const payloadB64 = base64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
 
-  // Decode the private key from base64url
-  const privateKeyBytes = Uint8Array.from(
-    atob(vapidPrivateKey.replace(/-/g, '+').replace(/_/g, '/')),
-    c => c.charCodeAt(0)
-  );
+  // VAPID keys are base64url (no padding). Decode robustly.
+  const privateKeyBytes = base64urlDecode(vapidPrivateKey);
+  const publicKeyBytes = base64urlDecode(vapidPublicKey);
 
-  // Decode the public key from base64url
-  const publicKeyBytes = Uint8Array.from(
-    atob(vapidPublicKey.replace(/-/g, '+').replace(/_/g, '/')),
-    c => c.charCodeAt(0)
-  );
+  if (privateKeyBytes.length !== 32) {
+    throw new Error(`Invalid VAPID private key length (expected 32 bytes, got ${privateKeyBytes.length})`);
+  }
+  if (publicKeyBytes.length !== 65 || publicKeyBytes[0] !== 0x04) {
+    throw new Error('Invalid VAPID public key format (expected uncompressed P-256 key)');
+  }
 
   // Extract x and y from public key (first byte is 0x04 for uncompressed)
   const x = publicKeyBytes.slice(1, 33);
@@ -243,7 +292,6 @@ async function createVapidJwt(
     y: base64urlEncode(y),
   };
 
-  // Import the private key
   const cryptoKey = await crypto.subtle.importKey(
     'jwk',
     jwk,
@@ -252,14 +300,17 @@ async function createVapidJwt(
     ['sign']
   );
 
-  // Sign the token
-  const signature = await crypto.subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' },
-    cryptoKey,
-    new TextEncoder().encode(unsignedToken)
+  // IMPORTANT: Runtimes differ: some return DER-encoded ECDSA signatures, others return raw r||s already.
+  const signatureRaw = new Uint8Array(
+    await crypto.subtle.sign(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      cryptoKey,
+      new TextEncoder().encode(unsignedToken)
+    )
   );
 
-  const signatureB64 = base64urlEncode(new Uint8Array(signature));
+  const signatureJose = ecdsaSignatureToJose(signatureRaw, 32);
+  const signatureB64 = base64urlEncode(signatureJose);
 
   return `${unsignedToken}.${signatureB64}`;
 }
@@ -302,7 +353,9 @@ async function sendWebPush(
         'Content-Length': body.length.toString(),
         'TTL': '86400',
         'Urgency': 'high',
-        'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
+        // Standard VAPID headers (works across push services incl. iOS)
+        'Authorization': `WebPush ${jwt}`,
+        'Crypto-Key': `p256ecdsa=${vapidPublicKey}`,
       },
       body: toBuffer(body),
     });
