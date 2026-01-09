@@ -121,6 +121,63 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_installation_codes: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          installation_code: string
+          is_used: boolean
+          order_id: string
+          order_item_id: string
+          product_name: string
+          used_at: string | null
+          used_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          installation_code: string
+          is_used?: boolean
+          order_id: string
+          order_item_id: string
+          product_name: string
+          used_at?: string | null
+          used_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          installation_code?: string
+          is_used?: boolean
+          order_id?: string
+          order_item_id?: string
+          product_name?: string
+          used_at?: string | null
+          used_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_installation_codes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bot_installation_codes_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -1434,6 +1491,7 @@ export type Database = {
         }
       }
       generate_customer_id: { Args: never; Returns: string }
+      generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       has_role: {

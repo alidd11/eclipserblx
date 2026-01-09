@@ -116,7 +116,7 @@ async function processPayment(
   }
 
   // Parse items from metadata
-  let items: Array<{ id: string; name: string; price: number }> = [];
+  let items: Array<{ id: string; name: string; price: number; category_slug?: string }> = [];
   if (metadata?.items) {
     try {
       items = JSON.parse(metadata.items);
@@ -199,7 +199,9 @@ async function processPayment(
   const orderId = (order as { id: string }).id;
   logStep("Order created", { orderId });
 
-  // Create order items
+  // Create order items and track bot purchases
+  const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
+  
   if (items.length > 0) {
     const orderItems = items.map((item) => ({
       order_id: orderId,
@@ -208,14 +210,50 @@ async function processPayment(
       price: item.price,
     }));
 
-    const { error: itemsError } = await supabase
+    const { data: insertedItems, error: itemsError } = await supabase
       .from("order_items")
-      .insert(orderItems);
+      .insert(orderItems)
+      .select();
 
     if (itemsError) {
       logStep("ERROR creating order items", { error: itemsError.message });
     } else {
       logStep("Order items created", { count: orderItems.length });
+      
+      // Generate installation codes for bot purchases
+      const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i] as { id: string; name: string; price: number; category_slug?: string };
+        const isBotPurchase = item.category_slug === 'bots' || item.name.toLowerCase().includes('bot');
+        
+        if (isBotPurchase && insertedItemsArray[i]) {
+          // Generate unique installation code
+          const { data: codeResult } = await supabase.rpc('generate_installation_code');
+          const installationCode = codeResult as string;
+          
+          if (installationCode) {
+            const { error: codeError } = await supabase
+              .from("bot_installation_codes")
+              .insert({
+                order_id: orderId,
+                order_item_id: insertedItemsArray[i].id,
+                user_id: userId,
+                installation_code: installationCode,
+                product_name: item.name,
+              });
+            
+            if (codeError) {
+              logStep("ERROR creating installation code", { error: codeError.message });
+            } else {
+              botInstallationCodes.push({
+                product_name: item.name,
+                installation_code: installationCode,
+              });
+              logStep("Installation code created", { code: installationCode, product: item.name });
+            }
+          }
+        }
+      }
     }
   }
 
@@ -233,9 +271,10 @@ async function processPayment(
         customerEmail,
         items,
         total,
+        botInstallationCodes: botInstallationCodes.length > 0 ? botInstallationCodes : undefined,
       }),
     });
-    logStep("Email confirmation triggered", { status: response.status });
+    logStep("Email confirmation triggered", { status: response.status, botCodes: botInstallationCodes.length });
   } catch (e) {
     logStep("Failed to trigger email", { error: String(e) });
   }
