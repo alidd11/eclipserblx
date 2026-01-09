@@ -352,6 +352,31 @@ export function ChatWidget() {
     }
   };
 
+  const mergeServerMessages = (prev: Message[], server: Message[]) => {
+    // Preserve optimistic messages that haven't been persisted yet.
+    const pendingOrFailed = prev.filter((m) => m._status === 'pending' || m._status === 'failed');
+    const merged: Message[] = [...server];
+
+    for (const optimistic of pendingOrFailed) {
+      const serverMatch = merged.find((m) => {
+        const timeDiffMs = Math.abs(
+          new Date(m.created_at).getTime() - new Date(optimistic.created_at).getTime()
+        );
+        return (
+          m.sender_type === optimistic.sender_type &&
+          m.sender_id === optimistic.sender_id &&
+          m.message === optimistic.message &&
+          timeDiffMs < 30_000
+        );
+      });
+
+      if (!serverMatch) merged.push(optimistic);
+    }
+
+    merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    return merged;
+  };
+
   const loadMessages = async (convId: string) => {
     const { data } = await supabase
       .from('chat_messages')
@@ -360,7 +385,7 @@ export function ChatWidget() {
       .order('created_at', { ascending: true });
 
     if (data) {
-      setMessages(data);
+      setMessages((prev) => mergeServerMessages(prev, data as Message[]));
     }
   };
 
