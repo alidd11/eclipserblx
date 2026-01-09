@@ -270,12 +270,12 @@ async function processPayment(
 
   // Send order confirmation email
   try {
-    const functionsUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.functions.supabase.co');
-    const response = await fetch(`${functionsUrl}/v1/send-order-confirmation`, {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-order-confirmation`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
       },
       body: JSON.stringify({
         orderId,
@@ -285,7 +285,8 @@ async function processPayment(
         botInstallationCodes: botInstallationCodes.length > 0 ? botInstallationCodes : undefined,
       }),
     });
-    logStep("Email confirmation triggered", { status: response.status, botCodes: botInstallationCodes.length });
+    const responseText = await response.text();
+    logStep("Email confirmation triggered", { status: response.status, response: responseText, botCodes: botInstallationCodes.length });
   } catch (e) {
     logStep("Failed to trigger email", { error: String(e) });
   }
@@ -293,18 +294,18 @@ async function processPayment(
   // Process referral if user exists
   if (userId) {
     try {
-      const functionsUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.functions.supabase.co');
-      const response = await fetch(`${functionsUrl}/v1/process-referral`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
-        },
-        body: JSON.stringify({
-          userId,
-          orderId,
-          orderTotal: total,
-        }),
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const response = await fetch(`${supabaseUrl}/functions/v1/process-referral`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+      },
+      body: JSON.stringify({
+        userId,
+        orderId,
+        orderTotal: total,
+      }),
       });
       logStep("Referral processing triggered", { status: response.status });
     } catch (e) {
