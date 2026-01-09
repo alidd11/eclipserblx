@@ -14,6 +14,11 @@ interface OrderItem {
   category_slug?: string;
 }
 
+interface BotInstallationCode {
+  product_name: string;
+  installation_code: string;
+}
+
 interface OrderConfirmationRequest {
   orderId: string;
   customerEmail: string;
@@ -23,6 +28,7 @@ interface OrderConfirmationRequest {
   paymentMethod: string;
   orderDate: string;
   hasBotPurchase?: boolean;
+  botInstallationCodes?: BotInstallationCode[];
 }
 
 function logStep(step: string, details?: any) {
@@ -91,10 +97,12 @@ ${line}
 
 function generateEmailHtml(data: OrderConfirmationRequest): string {
   // Check if order contains bot purchases
-  const hasBotPurchase = data.hasBotPurchase || data.items.some(item => 
+  const hasBotPurchase = data.hasBotPurchase || data.botInstallationCodes?.length || data.items.some(item => 
     item.category_slug === 'bots' || 
     item.product_name.toLowerCase().includes('bot')
   );
+  
+  const botCodes = data.botInstallationCodes || [];
 
   const itemsHtml = data.items
     .map(
@@ -110,6 +118,39 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
     `
     )
     .join("");
+
+  // Bot installation codes section
+  const botCodesHtml = botCodes.length > 0 ? `
+          <!-- Bot Installation Codes -->
+          <tr>
+            <td style="padding: 0 40px 24px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%); border-radius: 12px; border: 2px solid rgba(34, 197, 94, 0.3); overflow: hidden;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <h3 style="margin: 0 0 16px 0; color: #22c55e; font-size: 18px; font-weight: 700; font-family: 'Cinzel', serif;">
+                      🔑 Your Installation Codes
+                    </h3>
+                    <p style="margin: 0 0 16px 0; color: #e0e0e0; font-size: 14px; line-height: 1.6;">
+                      <strong>IMPORTANT:</strong> Save these codes! You'll need to provide them when opening a support ticket for bot installation. Each code is unique and can only be used once.
+                    </p>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden;">
+                      ${botCodes.map(code => `
+                        <tr>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid rgba(34, 197, 94, 0.2);">
+                            <p style="margin: 0 0 4px 0; color: #a0a0a0; font-size: 12px;">${code.product_name}</p>
+                            <p style="margin: 0; color: #22c55e; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">
+                              ${code.installation_code}
+                            </p>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+  ` : '';
 
   // Bot installation notice section
   const botInstallationNotice = hasBotPurchase ? `
@@ -134,8 +175,8 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
                           </p>
                           <ol style="margin: 0 0 20px 0; padding-left: 20px; color: #c0c0c0; font-size: 14px; line-height: 1.8;">
                             <li style="margin-bottom: 8px;">Open a support ticket on our website or Discord server</li>
-                            <li style="margin-bottom: 8px;">Include your <strong style="color: #a855f7;">Order ID: ${data.orderId}</strong></li>
-                            <li style="margin-bottom: 8px;">Provide your Discord server ID or Roblox game details</li>
+                            <li style="margin-bottom: 8px;">Provide your <strong style="color: #22c55e;">Installation Code</strong> shown above</li>
+                            <li style="margin-bottom: 8px;">Include your Discord server ID or Roblox game details</li>
                             <li>Our team will install and configure your bot within 24-48 hours</li>
                           </ol>
                           <table cellpadding="0" cellspacing="0" style="margin-top: 8px;">
@@ -264,6 +305,8 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
               </table>
             </td>
           </tr>
+          
+          ${botCodesHtml}
           
           ${botInstallationNotice}
           
