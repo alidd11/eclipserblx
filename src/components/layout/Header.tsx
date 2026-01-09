@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 const navLinks = [
   { href: '/products', label: 'Products', icon: Package },
@@ -134,6 +135,8 @@ export const Header = memo(function Header() {
             <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
               <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
+
+            <NotificationBell />
 
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
