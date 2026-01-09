@@ -353,24 +353,30 @@ export function ChatWidget() {
   };
 
   const mergeServerMessages = (prev: Message[], server: Message[]) => {
-    // Server is source-of-truth, but never "drop" very recent local messages
-    // (can happen during polling/reconnect while inserts haven't surfaced yet).
+    // Never allow a refetch/poll to "shrink" the UI list; this prevents flicker/disappearing
+    // when realtime drops or the backend briefly returns an incomplete snapshot.
     const merged: Message[] = [...server];
     const byId = new Set(merged.map((m) => m.id));
 
-    const now = Date.now();
-    const keepLocalMs = 2 * 60 * 1000; // 2 minutes safety window
+    const hasEquivalentOnServer = (local: Message) => {
+      // Heuristic: if an optimistic local message has been persisted already,
+      // we'll usually see a server row with same sender+message near the same time.
+      if (!local._tempId) return false;
+      const localTs = new Date(local.created_at).getTime();
+      return merged.some((m) => {
+        if (m.sender_type !== local.sender_type) return false;
+        if (m.sender_id !== local.sender_id) return false;
+        if (m.message !== local.message) return false;
+        const dt = Math.abs(new Date(m.created_at).getTime() - localTs);
+        return dt < 5 * 60 * 1000; // 5 minutes
+      });
+    };
 
     for (const local of prev) {
       if (byId.has(local.id)) continue;
-
-      const isOptimistic = local._status === 'pending' || local._status === 'failed' || !!local._tempId;
-      const isRecent = now - new Date(local.created_at).getTime() < keepLocalMs;
-
-      if (isOptimistic || isRecent) {
-        merged.push(local);
-        byId.add(local.id);
-      }
+      if (hasEquivalentOnServer(local)) continue;
+      merged.push(local);
+      byId.add(local.id);
     }
 
     merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
