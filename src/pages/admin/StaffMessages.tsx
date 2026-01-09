@@ -853,7 +853,7 @@ export default function StaffMessages() {
     <AdminLayout>
       <div 
         className={cn(
-          "flex flex-col max-w-full overflow-hidden",
+          "flex flex-col max-w-full overflow-hidden min-h-0",
           // Mobile: use relative positioning within the AdminLayout flow, not fixed
           isMobile 
             ? "h-full -m-4 p-0" 
@@ -1052,7 +1052,14 @@ export default function StaffMessages() {
             )}
 
             {/* Input */}
-            <div className="p-3 border-t border-border shrink-0 relative">
+            <div
+              className={cn(
+                "border-t border-border shrink-0 relative",
+                isMobile
+                  ? "px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+                  : "p-3"
+              )}
+            >
               {/* Mention suggestions dropdown */}
               {showMentionSuggestions && totalSuggestions > 0 && (
                 <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden z-50 max-w-full">
