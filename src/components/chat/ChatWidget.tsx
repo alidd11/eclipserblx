@@ -191,7 +191,9 @@ export function ChatWidget() {
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('ChatWidget messagesChannel status:', status);
+      });
 
     // Conversation status channel - detect when staff closes the chat
     const conversationChannel = supabase
@@ -216,7 +218,9 @@ export function ChatWidget() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('ChatWidget conversationChannel status:', status);
+      });
 
     // Typing indicator channel
     const typingChannel = supabase
@@ -228,7 +232,9 @@ export function ChatWidget() {
         );
         setAgentTyping(isTyping);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('ChatWidget typingChannel status:', status);
+      });
 
     return () => {
       supabase.removeChannel(messagesChannel);
@@ -363,15 +369,25 @@ export function ChatWidget() {
     setNewMessage('');
 
     try {
-      await supabase.from('chat_messages').insert({
-        conversation_id: conversationId,
-        message: messageText,
-        sender_type: 'customer',
-        sender_id: user?.id || null,
-      });
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: conversationId,
+          message: messageText,
+          sender_type: 'customer',
+          sender_id: user?.id || null,
+        })
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data]));
+      }
 
       // Notify support agents via push notification
-      notifyNewChatMessage(conversationId, customerName, messageText);
+      await notifyNewChatMessage(conversationId, customerName, messageText);
     } catch (error) {
       console.error('Error sending message:', error);
       setNewMessage(messageText);
@@ -404,16 +420,26 @@ export function ChatWidget() {
         .getPublicUrl(fileName);
 
       // Send message with attachment
-      await supabase.from('chat_messages').insert({
-        conversation_id: conversationId,
-        message: file.name,
-        sender_type: 'customer',
-        sender_id: user?.id || null,
-        attachment_url: publicUrl,
-      });
+      const { data: inserted, error: insertError } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: conversationId,
+          message: file.name,
+          sender_type: 'customer',
+          sender_id: user?.id || null,
+          attachment_url: publicUrl,
+        })
+        .select('*')
+        .single();
+
+      if (insertError) throw insertError;
+
+      if (inserted) {
+        setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]));
+      }
 
       // Notify support agents via push notification
-      notifyNewChatMessage(conversationId, customerName, `[Attachment] ${file.name}`);
+      await notifyNewChatMessage(conversationId, customerName, `[Attachment] ${file.name}`);
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file');
