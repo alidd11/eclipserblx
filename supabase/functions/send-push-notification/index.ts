@@ -462,9 +462,10 @@ serve(async (req) => {
           vapidSubject
         );
 
-        // Remove expired subscriptions
-        if (result.statusCode === 404 || result.statusCode === 410) {
-          console.log(`Removing expired subscription: ${sub.id}`);
+        // Remove expired or invalid subscriptions (including VAPID key mismatch)
+        if (result.statusCode === 404 || result.statusCode === 410 || 
+            (result.statusCode === 400 && result.error?.includes('VapidPkHashMismatch'))) {
+          console.log(`Removing invalid/expired subscription: ${sub.id} (status: ${result.statusCode})`);
           await supabase
             .from('push_subscriptions')
             .delete()
