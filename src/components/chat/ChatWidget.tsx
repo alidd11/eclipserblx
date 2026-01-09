@@ -91,6 +91,7 @@ export function ChatWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingChannelRef = useRef<any>(null);
   const { playSound } = useNotificationSound();
   const { sendNotification, requestPermission, permission } = usePushNotifications();
 
@@ -106,13 +107,15 @@ export function ChatWidget() {
   const handleTyping = () => {
     if (!conversationId) return;
 
+    const channel = typingChannelRef.current;
+    if (!channel) return;
+
     // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Send typing status via presence
-    const channel = supabase.channel(`typing-${conversationId}`);
+    // Send typing status via presence (reuse the subscribed channel)
     channel.track({ typing: true, role: 'customer' });
 
     // Stop typing after 2 seconds of inactivity
@@ -236,7 +239,11 @@ export function ChatWidget() {
         console.log('ChatWidget typingChannel status:', status);
       });
 
+    // Reuse this single presence channel for outgoing typing events
+    typingChannelRef.current = typingChannel;
+
     return () => {
+      typingChannelRef.current = null;
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(conversationChannel);
       supabase.removeChannel(typingChannel);
