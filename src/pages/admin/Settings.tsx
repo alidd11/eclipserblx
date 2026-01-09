@@ -14,6 +14,7 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface StoreSettings {
   store_name: string;
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [formData, setFormData] = useState<StoreSettings>(DEFAULT_SETTINGS);
   const [isGeneratingVapid, setIsGeneratingVapid] = useState(false);
   const [generatedVapidKeys, setGeneratedVapidKeys] = useState<{
@@ -302,7 +304,7 @@ export default function AdminSettings() {
 
   if (isLoading) {
     return (
-      <AdminLayout requiredRoles={['admin']}>
+      <AdminLayout>
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -311,7 +313,7 @@ export default function AdminSettings() {
   }
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
@@ -531,101 +533,103 @@ export default function AdminSettings() {
                 </p>
               )}
 
-              {/* VAPID Key Management */}
-              <div className="border-t border-border pt-4 mt-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Key className="h-4 w-4 text-muted-foreground" />
-                    <Label>VAPID Key Management</Label>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    If push notifications show "invalid characters" errors, regenerate your VAPID keys below.
-                  </p>
-                  
-                  <Button
-                    onClick={async () => {
-                      setIsGeneratingVapid(true);
-                      try {
-                        const { data, error } = await supabase.functions.invoke('generate-vapid-keys');
-                        if (error) throw error;
-                        setGeneratedVapidKeys({
-                          publicKey: data.publicKey,
-                          privateKey: data.privateKey,
-                        });
-                        toast.success('VAPID keys generated! Copy and update your secrets below.');
-                      } catch (err: any) {
-                        console.error('Failed to generate VAPID keys:', err);
-                        toast.error('Failed to generate VAPID keys');
-                      } finally {
-                        setIsGeneratingVapid(false);
-                      }
-                    }}
-                    variant="outline"
-                    className="w-full"
-                    disabled={isGeneratingVapid}
-                  >
-                    {isGeneratingVapid ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                    )}
-                    Generate New VAPID Keys
-                  </Button>
+              {/* VAPID Key Management - Admin Only */}
+              {isAdmin && (
+                <div className="border-t border-border pt-4 mt-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Key className="h-4 w-4 text-muted-foreground" />
+                      <Label>VAPID Key Management</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      If push notifications show "invalid characters" errors, regenerate your VAPID keys below.
+                    </p>
+                    
+                    <Button
+                      onClick={async () => {
+                        setIsGeneratingVapid(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('generate-vapid-keys');
+                          if (error) throw error;
+                          setGeneratedVapidKeys({
+                            publicKey: data.publicKey,
+                            privateKey: data.privateKey,
+                          });
+                          toast.success('VAPID keys generated! Copy and update your secrets below.');
+                        } catch (err: any) {
+                          console.error('Failed to generate VAPID keys:', err);
+                          toast.error('Failed to generate VAPID keys');
+                        } finally {
+                          setIsGeneratingVapid(false);
+                        }
+                      }}
+                      variant="outline"
+                      className="w-full"
+                      disabled={isGeneratingVapid}
+                    >
+                      {isGeneratingVapid ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                      )}
+                      Generate New VAPID Keys
+                    </Button>
 
-                  {generatedVapidKeys && (
-                    <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
-                      <p className="text-sm font-medium text-green-400">✓ Keys Generated Successfully!</p>
-                      <p className="text-xs text-muted-foreground">
-                        You must update these secrets in your backend settings for push notifications to work:
-                      </p>
-                      
-                      <div className="space-y-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">VAPID_PUBLIC_KEY & VITE_VAPID_PUBLIC_KEY:</Label>
-                          <div className="flex gap-2">
-                            <code className="flex-1 text-xs bg-background p-2 rounded border break-all">
-                              {generatedVapidKeys.publicKey}
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                navigator.clipboard.writeText(generatedVapidKeys.publicKey);
-                                toast.success('Public key copied!');
-                              }}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                    {generatedVapidKeys && (
+                      <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-green-400">✓ Keys Generated Successfully!</p>
+                        <p className="text-xs text-muted-foreground">
+                          You must update these secrets in your backend settings for push notifications to work:
+                        </p>
+                        
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs">VAPID_PUBLIC_KEY & VITE_VAPID_PUBLIC_KEY:</Label>
+                            <div className="flex gap-2">
+                              <code className="flex-1 text-xs bg-background p-2 rounded border break-all">
+                                {generatedVapidKeys.publicKey}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(generatedVapidKeys.publicKey);
+                                  toast.success('Public key copied!');
+                                }}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <Label className="text-xs">VAPID_PRIVATE_KEY:</Label>
+                            <div className="flex gap-2">
+                              <code className="flex-1 text-xs bg-background p-2 rounded border break-all">
+                                {generatedVapidKeys.privateKey}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(generatedVapidKeys.privateKey);
+                                  toast.success('Private key copied!');
+                                }}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                         
-                        <div className="space-y-1">
-                          <Label className="text-xs">VAPID_PRIVATE_KEY:</Label>
-                          <div className="flex gap-2">
-                            <code className="flex-1 text-xs bg-background p-2 rounded border break-all">
-                              {generatedVapidKeys.privateKey}
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                navigator.clipboard.writeText(generatedVapidKeys.privateKey);
-                                toast.success('Private key copied!');
-                              }}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
+                        <div className="text-xs text-yellow-400 bg-yellow-500/10 p-2 rounded">
+                          <strong>Important:</strong> After updating secrets, all users must re-subscribe to push notifications.
                         </div>
                       </div>
-                      
-                      <div className="text-xs text-yellow-400 bg-yellow-500/10 p-2 rounded">
-                        <strong>Important:</strong> After updating secrets, all users must re-subscribe to push notifications.
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -738,77 +742,82 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
-          {/* Store Information */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Store Information</CardTitle>
-              <CardDescription>Basic information about your store</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="storeName">Store Name</Label>
-                <Input
-                  id="storeName"
-                  value={formData.store_name}
-                  onChange={(e) => handleChange('store_name', e.target.value)}
-                  className="bg-background"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="storeEmail">Contact Email</Label>
-                <Input
-                  id="storeEmail"
-                  type="email"
-                  value={formData.contact_email}
-                  onChange={(e) => handleChange('contact_email', e.target.value)}
-                  placeholder="support@example.com"
-                  className="bg-background"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Admin-Only Settings */}
+          {isAdmin && (
+            <>
+              {/* Store Information */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle>Store Information</CardTitle>
+                  <CardDescription>Basic information about your store</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="storeName">Store Name</Label>
+                    <Input
+                      id="storeName"
+                      value={formData.store_name}
+                      onChange={(e) => handleChange('store_name', e.target.value)}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="storeEmail">Contact Email</Label>
+                    <Input
+                      id="storeEmail"
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => handleChange('contact_email', e.target.value)}
+                      placeholder="support@example.com"
+                      className="bg-background"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Discord Integration */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Discord Integration</CardTitle>
-              <CardDescription>Send notifications to Discord</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="webhookUrl">Order Notification Webhook</Label>
-                <Input
-                  id="webhookUrl"
-                  value={formData.discord_webhook_url}
-                  onChange={(e) => handleChange('discord_webhook_url', e.target.value)}
-                  placeholder="https://discord.com/api/webhooks/..."
-                  className="bg-background"
-                />
-              </div>
-            </CardContent>
-          </Card>
+              {/* Discord Integration */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle>Discord Integration</CardTitle>
+                  <CardDescription>Send notifications to Discord</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="webhookUrl">Order Notification Webhook</Label>
+                    <Input
+                      id="webhookUrl"
+                      value={formData.discord_webhook_url}
+                      onChange={(e) => handleChange('discord_webhook_url', e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-background"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Payment Settings */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Payment Settings</CardTitle>
-              <CardDescription>Configure payment providers</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Payment integration with Stripe can be enabled from the Stripe connector.
-              </p>
-            </CardContent>
-          </Card>
+              {/* Payment Settings */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle>Payment Settings</CardTitle>
+                  <CardDescription>Configure payment providers</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Payment integration with Stripe can be enabled from the Stripe connector.
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Button
-            onClick={handleSave}
-            className="w-fit"
-            disabled={saveMutation.isPending}
-          >
-            {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Save Changes
-          </Button>
+              <Button
+                onClick={handleSave}
+                className="w-fit"
+                disabled={saveMutation.isPending}
+              >
+                {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Save Changes
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </AdminLayout>
