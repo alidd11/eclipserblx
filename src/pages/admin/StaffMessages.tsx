@@ -1056,7 +1056,7 @@ export default function StaffMessages() {
               className={cn(
                 "border-t border-border shrink-0 relative",
                 isMobile
-                  ? "px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+                  ? "px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
                   : "p-3"
               )}
             >
