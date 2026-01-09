@@ -10,6 +10,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
+import { useStaffPresence } from '@/hooks/useStaffPresence';
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
@@ -111,6 +112,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   // Enable support ticket notifications for all admin pages
   useSupportTicketNotifications();
+  
+  // Track staff presence across all admin pages (keeps user "online" when navigating)
+  useStaffPresence();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
