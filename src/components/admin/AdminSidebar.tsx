@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, AlertTriangle, Tags, Ban, Gift } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, AlertTriangle, Tags, Ban, Gift, Key } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ const navItems = [
   { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
   { title: 'Referrals', icon: Gift, href: '/admin/referrals', roles: ['admin'] },
   { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
+  { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin', 'order_manager', 'support_agent'] },
   { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
   { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
   { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
