@@ -844,8 +844,8 @@ export default function StaffMessages() {
 
   return (
     <AdminLayout>
-      <div className="h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-7rem)] md:h-[calc(100dvh-5rem)] flex flex-col max-w-full overflow-hidden -m-4 md:-m-6 lg:-m-8 p-0">
-        <Card className="glass-card flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6">
+      <div className="h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-4rem)] md:h-[calc(100dvh-5rem)] flex flex-col max-w-full overflow-hidden -m-4 md:-m-6 lg:-m-8 p-0">
+        <Card className="glass-card flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background">
           <CardHeader className="border-b border-border shrink-0 px-3 py-3">
             <CardTitle className="flex items-center justify-between text-base">
               <div className="flex items-center gap-2 min-w-0">
