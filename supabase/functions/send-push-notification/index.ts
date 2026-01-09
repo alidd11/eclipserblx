@@ -268,15 +268,27 @@ async function createVapidJwt(
   const payloadB64 = base64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
 
+  console.log('VAPID JWT creation:');
+  console.log('  audience:', audience);
+  console.log('  subject:', subject);
+  console.log('  privateKey length:', vapidPrivateKey.length);
+  console.log('  publicKey length:', vapidPublicKey.length);
+
   // VAPID keys are base64url (no padding). Decode robustly.
   const privateKeyBytes = base64urlDecode(vapidPrivateKey);
   const publicKeyBytes = base64urlDecode(vapidPublicKey);
+
+  console.log('  decoded privateKey bytes:', privateKeyBytes.length);
+  console.log('  decoded publicKey bytes:', publicKeyBytes.length);
+  if (publicKeyBytes.length > 0) {
+    console.log('  publicKey first byte:', publicKeyBytes[0].toString(16));
+  }
 
   if (privateKeyBytes.length !== 32) {
     throw new Error(`Invalid VAPID private key length (expected 32 bytes, got ${privateKeyBytes.length})`);
   }
   if (publicKeyBytes.length !== 65 || publicKeyBytes[0] !== 0x04) {
-    throw new Error('Invalid VAPID public key format (expected uncompressed P-256 key)');
+    throw new Error(`Invalid VAPID public key format (expected 65 bytes starting with 0x04, got ${publicKeyBytes.length} bytes starting with 0x${publicKeyBytes[0]?.toString(16)})`);
   }
 
   // Extract x and y from public key (first byte is 0x04 for uncompressed)
@@ -300,7 +312,7 @@ async function createVapidJwt(
     ['sign']
   );
 
-  // IMPORTANT: Runtimes differ: some return DER-encoded ECDSA signatures, others return raw r||s already.
+  // Deno's WebCrypto returns raw r||s format (64 bytes), not DER
   const signatureRaw = new Uint8Array(
     await crypto.subtle.sign(
       { name: 'ECDSA', hash: 'SHA-256' },
@@ -309,10 +321,16 @@ async function createVapidJwt(
     )
   );
 
+  console.log('  signature raw length:', signatureRaw.length);
+
   const signatureJose = ecdsaSignatureToJose(signatureRaw, 32);
   const signatureB64 = base64urlEncode(signatureJose);
 
-  return `${unsignedToken}.${signatureB64}`;
+  const jwt = `${unsignedToken}.${signatureB64}`;
+  console.log('  JWT length:', jwt.length);
+  console.log('  JWT preview:', jwt.substring(0, 50) + '...');
+
+  return jwt;
 }
 
 // Send web push notification with proper encryption
@@ -345,6 +363,10 @@ async function sendWebPush(
     // Create VAPID JWT
     const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey, vapidPublicKey);
     
+    console.log('Sending push with headers:');
+    console.log('  Authorization: vapid t=<JWT>, k=<pubkey>');
+    console.log('  JWT length:', jwt.length);
+    
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -353,9 +375,8 @@ async function sendWebPush(
         'Content-Length': body.length.toString(),
         'TTL': '86400',
         'Urgency': 'high',
-        // Standard VAPID headers (works across push services incl. iOS)
-        'Authorization': `WebPush ${jwt}`,
-        'Crypto-Key': `p256ecdsa=${vapidPublicKey}`,
+        // Apple Push requires the "vapid t=<JWT>, k=<KEY>" format
+        'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
       },
       body: toBuffer(body),
     });
