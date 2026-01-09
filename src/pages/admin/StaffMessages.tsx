@@ -856,11 +856,12 @@ export default function StaffMessages() {
         style={{ 
           // Prevent layout shift when mobile keyboard hides
           minHeight: isMobile ? '100dvh' : undefined,
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : undefined,
         }}
       >
-        <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border" style={{ paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : undefined }}>
-          <CardHeader className="border-b border-border shrink-0 px-3 py-3 pt-3">
+        <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
+          <CardHeader className="border-b border-border shrink-0 px-3 py-3">
             <CardTitle className="flex items-center justify-between text-base">
               <div className="flex items-center gap-2 min-w-0">
                 <MessageSquare className="h-4 w-4 shrink-0" />
@@ -873,7 +874,7 @@ export default function StaffMessages() {
             </CardTitle>
             {/* Staff panel - shows online and last seen */}
             {allStaff && allStaff.length > 0 && (
-              <ScrollArea className="max-h-20 mt-2">
+              <ScrollArea className="max-h-24 mt-2">
                 <div className="flex flex-wrap gap-1.5">
                   {/* Online users first */}
                   {onlineUsers.map((staff) => (
