@@ -670,7 +670,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               <Button
                 type="submit"
                 className="w-full gradient-button border-0"
-                disabled={loading || otpCode.length !== 6}
+                disabled={loading || otpCode.length !== 4}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Reset Password
