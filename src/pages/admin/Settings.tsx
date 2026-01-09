@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate } from 'lucide-react';
+import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate, Key, RefreshCw, Copy } from 'lucide-react';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -31,6 +31,11 @@ export default function AdminSettings() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [formData, setFormData] = useState<StoreSettings>(DEFAULT_SETTINGS);
+  const [isGeneratingVapid, setIsGeneratingVapid] = useState(false);
+  const [generatedVapidKeys, setGeneratedVapidKeys] = useState<{
+    publicKey: string;
+    privateKey: string;
+  } | null>(null);
   
   // Notification settings
   const { isSupported: notifSupported, permission, requestPermission } = usePushNotifications();
@@ -525,6 +530,102 @@ export default function AdminSettings() {
                   Please sign in to enable background push notifications.
                 </p>
               )}
+
+              {/* VAPID Key Management */}
+              <div className="border-t border-border pt-4 mt-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Key className="h-4 w-4 text-muted-foreground" />
+                    <Label>VAPID Key Management</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    If push notifications show "invalid characters" errors, regenerate your VAPID keys below.
+                  </p>
+                  
+                  <Button
+                    onClick={async () => {
+                      setIsGeneratingVapid(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('generate-vapid-keys');
+                        if (error) throw error;
+                        setGeneratedVapidKeys({
+                          publicKey: data.publicKey,
+                          privateKey: data.privateKey,
+                        });
+                        toast.success('VAPID keys generated! Copy and update your secrets below.');
+                      } catch (err: any) {
+                        console.error('Failed to generate VAPID keys:', err);
+                        toast.error('Failed to generate VAPID keys');
+                      } finally {
+                        setIsGeneratingVapid(false);
+                      }
+                    }}
+                    variant="outline"
+                    className="w-full"
+                    disabled={isGeneratingVapid}
+                  >
+                    {isGeneratingVapid ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    Generate New VAPID Keys
+                  </Button>
+
+                  {generatedVapidKeys && (
+                    <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+                      <p className="text-sm font-medium text-green-400">✓ Keys Generated Successfully!</p>
+                      <p className="text-xs text-muted-foreground">
+                        You must update these secrets in your backend settings for push notifications to work:
+                      </p>
+                      
+                      <div className="space-y-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">VAPID_PUBLIC_KEY & VITE_VAPID_PUBLIC_KEY:</Label>
+                          <div className="flex gap-2">
+                            <code className="flex-1 text-xs bg-background p-2 rounded border break-all">
+                              {generatedVapidKeys.publicKey}
+                            </code>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                navigator.clipboard.writeText(generatedVapidKeys.publicKey);
+                                toast.success('Public key copied!');
+                              }}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label className="text-xs">VAPID_PRIVATE_KEY:</Label>
+                          <div className="flex gap-2">
+                            <code className="flex-1 text-xs bg-background p-2 rounded border break-all">
+                              {generatedVapidKeys.privateKey}
+                            </code>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                navigator.clipboard.writeText(generatedVapidKeys.privateKey);
+                                toast.success('Private key copied!');
+                              }}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-yellow-400 bg-yellow-500/10 p-2 rounded">
+                        <strong>Important:</strong> After updating secrets, all users must re-subscribe to push notifications.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
