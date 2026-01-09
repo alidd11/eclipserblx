@@ -214,6 +214,8 @@ export default function AdminLiveChat() {
   useEffect(() => {
     if (!selectedConversation) return;
 
+    // Prevent cross-conversation message bleed during refetch merges.
+    setMessages([]);
     loadMessages(selectedConversation.id);
     setCustomerTyping(false);
 
@@ -329,19 +331,23 @@ export default function AdminLiveChat() {
     const merged: Message[] = [...server];
     const byId = new Set(merged.map((m) => m.id));
 
-    const now = Date.now();
-    const keepLocalMs = 2 * 60 * 1000; // 2 minutes safety window
+    const hasEquivalentOnServer = (local: Message) => {
+      if (!local._tempId) return false;
+      const localTs = new Date(local.created_at).getTime();
+      return merged.some((m) => {
+        if (m.sender_type !== local.sender_type) return false;
+        if (m.sender_id !== local.sender_id) return false;
+        if (m.message !== local.message) return false;
+        const dt = Math.abs(new Date(m.created_at).getTime() - localTs);
+        return dt < 5 * 60 * 1000;
+      });
+    };
 
     for (const local of prev) {
       if (byId.has(local.id)) continue;
-
-      const isOptimistic = local._status === 'pending' || local._status === 'failed' || !!local._tempId;
-      const isRecent = now - new Date(local.created_at).getTime() < keepLocalMs;
-
-      if (isOptimistic || isRecent) {
-        merged.push(local);
-        byId.add(local.id);
-      }
+      if (hasEquivalentOnServer(local)) continue;
+      merged.push(local);
+      byId.add(local.id);
     }
 
     merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
