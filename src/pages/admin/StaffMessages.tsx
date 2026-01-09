@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck, ChevronDown, ChevronUp, AlertCircle, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,8 @@ interface ChatMessage {
   sender_id: string;
   message: string;
   created_at: string;
+  _status?: 'pending' | 'failed' | 'success';
+  _tempId?: string;
 }
 
 interface MessageRead {
@@ -92,6 +94,33 @@ const GROUP_MENTIONS = [
   { id: 'everyone', name: 'everyone', description: 'Notify all staff members' },
   { id: 'here', name: 'here', description: 'Notify all online staff' },
 ];
+
+// Merge server messages without losing local optimistic messages
+const mergeServerMessages = (prev: ChatMessage[], server: ChatMessage[]): ChatMessage[] => {
+  const merged: ChatMessage[] = [...server];
+  const byId = new Set(merged.map((m) => m.id));
+
+  const hasEquivalentOnServer = (local: ChatMessage) => {
+    if (!local._tempId) return false;
+    const localTs = new Date(local.created_at).getTime();
+    return merged.some((m) => {
+      if (m.sender_id !== local.sender_id) return false;
+      if (m.message !== local.message) return false;
+      const dt = Math.abs(new Date(m.created_at).getTime() - localTs);
+      return dt < 5 * 60 * 1000; // 5 minutes
+    });
+  };
+
+  for (const local of prev) {
+    if (byId.has(local.id)) continue;
+    if (hasEquivalentOnServer(local)) continue;
+    merged.push(local);
+    byId.add(local.id);
+  }
+
+  merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  return merged;
+};
 
 export default function StaffMessages() {
   const queryClient = useQueryClient();
@@ -174,6 +203,11 @@ export default function StaffMessages() {
       
       if (error) throw error;
       return data as ChatMessage[];
+    },
+    select: (freshData) => {
+      const cached = queryClient.getQueryData<ChatMessage[]>(['staff-chat']);
+      if (!cached) return freshData;
+      return mergeServerMessages(cached, freshData);
     },
   });
 
@@ -344,31 +378,56 @@ export default function StaffMessages() {
     []
   );
 
+  // Remove a failed message from the cache
+  const removeFailedMessage = useCallback((tempId: string) => {
+    queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
+      old.filter(m => m._tempId !== tempId)
+    );
+  }, [queryClient]);
+
   const sendMessageMutation = useMutation({
-    onMutate: async (message: string) => {
-      if (!user?.id) return { previous: undefined as ChatMessage[] | undefined };
+    onMutate: async (messagePayload: string | { message: string; tempId: string }) => {
+      const message = typeof messagePayload === 'string' ? messagePayload : messagePayload.message;
+      const tempId = typeof messagePayload === 'string' ? `temp-${Date.now()}-${Math.random().toString(36).slice(2)}` : messagePayload.tempId;
+
+      if (!user?.id) return { previous: undefined as ChatMessage[] | undefined, tempId };
 
       await queryClient.cancelQueries({ queryKey: ['staff-chat'] });
       const previous = queryClient.getQueryData<ChatMessage[]>(['staff-chat']);
 
-      const optimistic: ChatMessage = {
-        id: `optimistic-${Date.now()}`,
-        sender_id: user.id,
-        message,
-        created_at: new Date().toISOString(),
-      };
+      // Check if retrying an existing failed message
+      const isRetry = previous?.some(m => m._tempId === tempId);
 
-      queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
-        const next = [...old, optimistic];
-        return next.slice(-100);
-      });
+      if (isRetry) {
+        // Update existing message status to pending
+        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
+          old.map(m => m._tempId === tempId ? { ...m, _status: 'pending' as const } : m)
+        );
+      } else {
+        // Add new optimistic message
+        const optimistic: ChatMessage = {
+          id: `optimistic-${Date.now()}`,
+          sender_id: user.id,
+          message,
+          created_at: new Date().toISOString(),
+          _status: 'pending',
+          _tempId: tempId,
+        };
+
+        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
+          const next = [...old, optimistic];
+          return next.slice(-100);
+        });
+      }
 
       // Scroll to bottom immediately after optimistic update
       setTimeout(() => scrollToBottom(), 0);
 
-      return { previous };
+      return { previous, tempId };
     },
-    mutationFn: async (message: string) => {
+    mutationFn: async (messagePayload: string | { message: string; tempId: string }) => {
+      const message = typeof messagePayload === 'string' ? messagePayload : messagePayload.message;
+
       if (!user?.id) {
         throw new Error('You must be logged in to send messages');
       }
@@ -387,9 +446,16 @@ export default function StaffMessages() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, _messagePayload, context) => {
       setNewMessage('');
       setShowMentionSuggestions(false);
+      
+      // Remove the optimistic message - the real one will come via realtime
+      if (context?.tempId) {
+        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
+          old.filter(m => m._tempId !== context.tempId)
+        );
+      }
       
       // On mobile, blur to hide keyboard and prevent layout shift
       // On desktop, keep focus for quick follow-up messages
@@ -411,14 +477,23 @@ export default function StaffMessages() {
       // Ensure UI updates even if realtime isn't delivering events
       queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
     },
-    onError: (error, _message, context) => {
+    onError: (error, _messagePayload, context) => {
       console.error('Send message error:', error);
-      if (context?.previous) {
-        queryClient.setQueryData(['staff-chat'], context.previous);
+      // Mark the optimistic message as failed instead of removing it
+      if (context?.tempId) {
+        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
+          old.map(m => m._tempId === context.tempId ? { ...m, _status: 'failed' as const } : m)
+        );
       }
       toast.error('Failed to send message');
     },
   });
+
+  // Retry a failed message
+  const retryMessage = useCallback((msg: ChatMessage) => {
+    if (!msg._tempId) return;
+    sendMessageMutation.mutate({ message: msg.message, tempId: msg._tempId });
+  }, [sendMessageMutation]);
 
   // Get display name for current user
   const getCurrentUserName = useCallback(() => {
@@ -467,7 +542,32 @@ export default function StaffMessages() {
           filter: 'recipient_id=is.null',
         },
         async (payload) => {
-          const newMsg = payload.new as { sender_id: string; message: string };
+          const newMsg = payload.new as { id: string; sender_id: string; message: string; created_at: string };
+          
+          // Merge the new message into the cache instead of invalidating
+          queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
+            // Check if message already exists
+            if (old.some(m => m.id === newMsg.id)) return old;
+            
+            // Check for optimistic equivalent (same sender, same message, within 5 minutes)
+            const optimisticIndex = old.findIndex(m => 
+              m._tempId && 
+              m.sender_id === newMsg.sender_id && 
+              m.message === newMsg.message
+            );
+            
+            if (optimisticIndex >= 0) {
+              // Replace optimistic with real message
+              const updated = [...old];
+              updated[optimisticIndex] = { ...newMsg, _status: 'success' as const };
+              return updated;
+            }
+            
+            // Add new message from other user
+            return [...old, newMsg as ChatMessage].sort((a, b) => 
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
+          });
           
           // Handle notifications for messages from OTHER staff members (receivers)
           if (newMsg.sender_id !== user?.id) {
@@ -561,7 +661,7 @@ export default function StaffMessages() {
             }
           }
           
-          queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
+          // No need to invalidate - we merged the message above
         }
       )
       .subscribe();
@@ -1077,8 +1177,9 @@ export default function StaffMessages() {
                     const isOwn = msg.sender_id === user?.id;
                     const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
                     const profile = profiles?.[msg.sender_id];
-                    const isOptimistic = msg.id.startsWith('optimistic-');
-                    const isSending = isOptimistic && sendMessageMutation.isPending;
+                    const isPending = msg._status === 'pending';
+                    const isFailed = msg._status === 'failed';
+                    const isOptimistic = isPending || isFailed || !!msg._tempId;
                     
                     // Get read receipts for this message (only show for own messages)
                     const reads = messageReads?.[msg.id] || [];
@@ -1091,7 +1192,7 @@ export default function StaffMessages() {
                         className={cn(
                           "flex gap-2",
                           isOwn && "flex-row-reverse",
-                          isOptimistic && "opacity-70"
+                          isPending && "opacity-70"
                         )}
                       >
                         {showAvatar ? (
@@ -1116,7 +1217,8 @@ export default function StaffMessages() {
                             "rounded-2xl px-3 py-2",
                             isOwn 
                               ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                              : "bg-muted rounded-tl-sm"
+                              : "bg-muted rounded-tl-sm",
+                            isFailed && "bg-destructive/20 text-destructive-foreground"
                           )}>
                             <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message, isOwn)}</p>
                           </div>
@@ -1124,8 +1226,30 @@ export default function StaffMessages() {
                             <span className="text-[10px] text-muted-foreground">
                               {formatTime(msg.created_at)}
                             </span>
-                            {isSending && (
+                            {isPending && (
                               <Loader2 className="h-2.5 w-2.5 animate-spin text-muted-foreground" />
+                            )}
+                            {isFailed && (
+                              <div className="flex items-center gap-1 text-destructive">
+                                <AlertCircle className="h-3 w-3" />
+                                <span className="text-[10px]">Failed</span>
+                                <button 
+                                  type="button"
+                                  onClick={() => retryMessage(msg)} 
+                                  className="flex items-center gap-0.5 text-[10px] hover:underline"
+                                >
+                                  <RotateCcw className="h-2.5 w-2.5" />
+                                  Retry
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => msg._tempId && removeFailedMessage(msg._tempId)} 
+                                  className="flex items-center gap-0.5 text-[10px] hover:underline"
+                                >
+                                  <X className="h-2.5 w-2.5" />
+                                  Remove
+                                </button>
+                              </div>
                             )}
                             {/* Read receipts - only show for own messages */}
                             {isOwn && !isOptimistic && (
