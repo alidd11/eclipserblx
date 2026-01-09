@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,6 +104,8 @@ interface Conversation {
   updated_at: string;
 }
 
+type MessageStatus = 'pending' | 'sent' | 'failed';
+
 interface Message {
   id: string;
   message: string;
@@ -111,6 +113,9 @@ interface Message {
   sender_id: string | null;
   created_at: string;
   attachment_url: string | null;
+  // Optimistic UI fields
+  _status?: MessageStatus;
+  _tempId?: string;
 }
 
 const ISSUE_CATEGORY_LABELS: Record<string, string> = {
@@ -226,6 +231,17 @@ export default function AdminLiveChat() {
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
+            // Check if this is reconciling an optimistic message
+            const optimisticIdx = prev.findIndex(
+              (m) => m._tempId && m.message === newMsg.message && m.sender_type === newMsg.sender_type
+            );
+            if (optimisticIdx !== -1) {
+              // Replace optimistic message with real one
+              const updated = [...prev];
+              updated[optimisticIdx] = { ...newMsg, _status: 'sent' };
+              return updated;
+            }
+            // Dedupe by id
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             // Play sound and send push notification for customer messages
             if (newMsg.sender_type === 'customer') {
@@ -321,41 +337,80 @@ export default function AdminLiveChat() {
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) return;
+  const sendMessage = async (retryTempId?: string) => {
+    let messageText: string;
+    let tempId: string;
 
-    const messageText = newMessage.trim();
-    setNewMessage('');
+    if (retryTempId) {
+      // Retry a failed message
+      const failedMsg = messages.find((m) => m._tempId === retryTempId);
+      if (!failedMsg) return;
+      messageText = failedMsg.message;
+      tempId = retryTempId;
+      // Mark as pending
+      setMessages((prev) =>
+        prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'pending' } : m))
+      );
+    } else {
+      // New message
+      if (!newMessage.trim() || !selectedConversation || !user) return;
+      messageText = newMessage.trim();
+      tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      setNewMessage('');
+
+      // Optimistically add message
+      const optimisticMsg: Message = {
+        id: tempId,
+        message: messageText,
+        sender_type: 'agent',
+        sender_id: user.id,
+        created_at: new Date().toISOString(),
+        attachment_url: null,
+        _status: 'pending',
+        _tempId: tempId,
+      };
+      setMessages((prev) => [...prev, optimisticMsg]);
+    }
 
     try {
       const { data, error } = await supabase
         .from('chat_messages')
         .insert({
-          conversation_id: selectedConversation.id,
+          conversation_id: selectedConversation!.id,
           message: messageText,
           sender_type: 'agent',
-          sender_id: user.id,
+          sender_id: user!.id,
         })
         .select('*')
         .single();
 
       if (error) throw error;
 
+      // Replace optimistic message with real one
       if (data) {
-        setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data]));
+        setMessages((prev) =>
+          prev.map((m) => (m._tempId === tempId ? { ...data, _status: 'sent' } : m))
+        );
       }
 
       // Update conversation timestamp
       const { error: updateError } = await supabase
         .from('chat_conversations')
         .update({ updated_at: new Date().toISOString() })
-        .eq('id', selectedConversation.id);
+        .eq('id', selectedConversation!.id);
 
       if (updateError) throw updateError;
     } catch (error) {
       console.error('Error sending message:', error);
-      setNewMessage(messageText);
+      // Mark as failed
+      setMessages((prev) =>
+        prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'failed' } : m))
+      );
     }
+  };
+
+  const removeFailedMessage = (tempId: string) => {
+    setMessages((prev) => prev.filter((m) => m._tempId !== tempId));
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -631,6 +686,12 @@ export default function AdminLiveChat() {
                           <span className="text-[10px] text-muted-foreground/70">
                             {format(new Date(msg.created_at), 'p')}
                           </span>
+                          {msg._status === 'pending' && (
+                            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                          )}
+                          {msg._status === 'failed' && (
+                            <AlertCircle className="h-3 w-3 text-destructive" />
+                          )}
                         </div>
                         <div
                           className={cn(
@@ -639,7 +700,9 @@ export default function AdminLiveChat() {
                               ? 'bg-primary text-primary-foreground'
                               : msg.sender_type === 'system'
                               ? 'bg-muted text-muted-foreground italic text-sm'
-                              : 'bg-muted text-foreground'
+                              : 'bg-muted text-foreground',
+                            msg._status === 'pending' && 'opacity-70',
+                            msg._status === 'failed' && 'bg-destructive/20 border border-destructive/40'
                           )}
                         >
                           {msg.attachment_url && (
@@ -667,6 +730,24 @@ export default function AdminLiveChat() {
                           )}
                           {!msg.attachment_url && <p className="text-sm lg:text-base">{msg.message}</p>}
                         </div>
+                        {/* Retry/Remove for failed messages */}
+                        {msg._status === 'failed' && msg._tempId && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <button
+                              onClick={() => sendMessage(msg._tempId)}
+                              className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                            >
+                              <RefreshCw className="h-3 w-3" />
+                              Retry
+                            </button>
+                            <button
+                              onClick={() => removeFailedMessage(msg._tempId!)}
+                              className="text-[10px] text-muted-foreground hover:text-destructive"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                     {customerTyping && (
@@ -745,7 +826,7 @@ export default function AdminLiveChat() {
                         onKeyPress={handleKeyPress}
                         className="text-base"
                       />
-                      <Button onClick={sendMessage} disabled={!newMessage.trim()} className="h-9 lg:h-10 shrink-0 px-3">
+                      <Button onClick={() => sendMessage()} disabled={!newMessage.trim()} className="h-9 lg:h-10 shrink-0 px-3">
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>

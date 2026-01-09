@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+type MessageStatus = 'pending' | 'sent' | 'failed';
+
 interface Message {
   id: string;
   message: string;
@@ -28,6 +30,9 @@ interface Message {
   sender_id: string | null;
   created_at: string;
   attachment_url?: string | null;
+  // Optimistic UI fields (not in DB)
+  _status?: MessageStatus;
+  _tempId?: string;
 }
 
 const ISSUE_CATEGORIES = [
@@ -208,6 +213,17 @@ export function ChatWidget() {
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
+            // Check if this is reconciling an optimistic message
+            const optimisticIdx = prev.findIndex(
+              (m) => m._tempId && m.message === newMsg.message && m.sender_type === newMsg.sender_type
+            );
+            if (optimisticIdx !== -1) {
+              // Replace optimistic message with real one
+              const updated = [...prev];
+              updated[optimisticIdx] = { ...newMsg, _status: 'sent' };
+              return updated;
+            }
+            // Dedupe by id
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             // Play sound and send push notification for agent messages
             if (newMsg.sender_type === 'agent') {
@@ -436,11 +452,39 @@ export function ChatWidget() {
     setNewMessage('');
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !conversationId || conversationStatus === 'closed') return;
+  const sendMessage = async (retryTempId?: string) => {
+    let messageText: string;
+    let tempId: string;
 
-    const messageText = newMessage.trim();
-    setNewMessage('');
+    if (retryTempId) {
+      // Retry a failed message
+      const failedMsg = messages.find((m) => m._tempId === retryTempId);
+      if (!failedMsg) return;
+      messageText = failedMsg.message;
+      tempId = retryTempId;
+      // Mark as pending
+      setMessages((prev) =>
+        prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'pending' } : m))
+      );
+    } else {
+      // New message
+      if (!newMessage.trim() || !conversationId || conversationStatus === 'closed') return;
+      messageText = newMessage.trim();
+      tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      setNewMessage('');
+
+      // Optimistically add message
+      const optimisticMsg: Message = {
+        id: tempId,
+        message: messageText,
+        sender_type: 'customer',
+        sender_id: user?.id || null,
+        created_at: new Date().toISOString(),
+        _status: 'pending',
+        _tempId: tempId,
+      };
+      setMessages((prev) => [...prev, optimisticMsg]);
+    }
 
     try {
       const { data, error } = await supabase
@@ -456,16 +500,26 @@ export function ChatWidget() {
 
       if (error) throw error;
 
+      // Replace optimistic message with real one
       if (data) {
-        setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data]));
+        setMessages((prev) =>
+          prev.map((m) => (m._tempId === tempId ? { ...data, _status: 'sent' } : m))
+        );
       }
 
       // Notify support agents via push notification
-      await notifyNewChatMessage(conversationId, customerName, messageText);
+      await notifyNewChatMessage(conversationId!, customerName, messageText);
     } catch (error) {
       console.error('Error sending message:', error);
-      setNewMessage(messageText);
+      // Mark as failed
+      setMessages((prev) =>
+        prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'failed' } : m))
+      );
     }
+  };
+
+  const removeFailedMessage = (tempId: string) => {
+    setMessages((prev) => prev.filter((m) => m._tempId !== tempId));
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -764,6 +818,12 @@ export function ChatWidget() {
                         <span className="text-[10px] text-muted-foreground/70">
                           {format(new Date(msg.created_at), 'p')}
                         </span>
+                        {msg._status === 'pending' && (
+                          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        )}
+                        {msg._status === 'failed' && (
+                          <AlertCircle className="h-3 w-3 text-destructive" />
+                        )}
                       </div>
                       <div
                         className={cn(
@@ -772,7 +832,9 @@ export function ChatWidget() {
                             ? 'bg-primary text-primary-foreground'
                             : msg.sender_type === 'system'
                             ? 'bg-muted text-muted-foreground italic'
-                            : 'bg-muted text-foreground'
+                            : 'bg-muted text-foreground',
+                          msg._status === 'pending' && 'opacity-70',
+                          msg._status === 'failed' && 'bg-destructive/20 border border-destructive/40'
                         )}
                       >
                         {msg.attachment_url && (
@@ -800,6 +862,24 @@ export function ChatWidget() {
                         )}
                         {!msg.attachment_url && msg.message}
                       </div>
+                      {/* Retry/Remove for failed messages */}
+                      {msg._status === 'failed' && msg._tempId && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <button
+                            onClick={() => sendMessage(msg._tempId)}
+                            className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                          >
+                            <RefreshCw className="h-3 w-3" />
+                            Retry
+                          </button>
+                          <button
+                            onClick={() => removeFailedMessage(msg._tempId!)}
+                            className="text-[10px] text-muted-foreground hover:text-destructive"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                     {agentTyping && (
@@ -868,7 +948,7 @@ export function ChatWidget() {
                     />
                     <Button
                       size="icon"
-                      onClick={sendMessage}
+                      onClick={() => sendMessage()}
                       disabled={!newMessage.trim()}
                       className="gradient-button"
                     >
