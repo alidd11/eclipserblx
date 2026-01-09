@@ -304,7 +304,14 @@ export default function StaffMessages() {
     onSuccess: () => {
       setNewMessage('');
       setShowMentionSuggestions(false);
-      inputRef.current?.focus();
+      
+      // On mobile, blur to hide keyboard and prevent layout shift
+      // On desktop, keep focus for quick follow-up messages
+      if (isMobile) {
+        inputRef.current?.blur();
+      } else {
+        inputRef.current?.focus();
+      }
 
       // Stop typing indicator when message is sent
       if (presenceChannelRef.current && user?.id) {
@@ -844,7 +851,14 @@ export default function StaffMessages() {
 
   return (
     <AdminLayout>
-      <div className="h-[100dvh] md:h-[calc(100dvh-5rem)] flex flex-col max-w-full overflow-hidden -m-4 md:-m-6 lg:-m-8 -mt-4 md:mt-0 p-0 fixed inset-0 md:relative md:inset-auto z-10">
+      <div 
+        className="h-[100dvh] md:h-[calc(100dvh-5rem)] flex flex-col max-w-full overflow-hidden -m-4 md:-m-6 lg:-m-8 -mt-4 md:mt-0 p-0 fixed inset-0 md:relative md:inset-auto z-10"
+        style={{ 
+          // Prevent layout shift when mobile keyboard hides
+          minHeight: isMobile ? '100dvh' : undefined,
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
           <CardHeader className="border-b border-border shrink-0 px-3 py-3">
             <CardTitle className="flex items-center justify-between text-base">
