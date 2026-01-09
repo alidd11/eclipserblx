@@ -1,0 +1,266 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+
+const logStep = (step: string, details?: unknown) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
+};
+
+serve(async (req) => {
+  try {
+    logStep("Webhook received");
+
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET is not set");
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Get the raw body for signature verification
+    const body = await req.text();
+    const signature = req.headers.get("stripe-signature");
+
+    if (!signature) {
+      logStep("ERROR: No signature header");
+      return new Response("No signature", { status: 400 });
+    }
+
+    // Verify the webhook signature
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      logStep("Signature verified", { eventType: event.type, eventId: event.id });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logStep("ERROR: Signature verification failed", { message });
+      return new Response(`Webhook signature verification failed: ${message}`, { status: 400 });
+    }
+
+    // Handle the event
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      logStep("Processing checkout.session.completed", { sessionId: session.id });
+      
+      await processPayment(supabaseAdmin, stripe, {
+        paymentId: session.id,
+        paymentType: "checkout_session",
+        customerEmail: session.customer_details?.email || session.customer_email || "",
+        metadata: session.metadata,
+        amountTotal: session.amount_total,
+      });
+    } else if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      logStep("Processing payment_intent.succeeded", { paymentIntentId: paymentIntent.id });
+      
+      await processPayment(supabaseAdmin, stripe, {
+        paymentId: paymentIntent.id,
+        paymentType: "payment_intent",
+        customerEmail: paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "",
+        metadata: paymentIntent.metadata,
+        amountTotal: paymentIntent.amount,
+      });
+    } else {
+      logStep("Unhandled event type", { type: event.type });
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logStep("ERROR", { message });
+    return new Response(JSON.stringify({ error: message }), {
+      headers: { "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
+});
+
+interface PaymentData {
+  paymentId: string;
+  paymentType: string;
+  customerEmail: string;
+  metadata: Record<string, string> | null;
+  amountTotal: number | null;
+}
+
+async function processPayment(
+  supabase: SupabaseClient,
+  stripe: Stripe,
+  data: PaymentData
+) {
+  const { paymentId, paymentType, customerEmail, metadata, amountTotal } = data;
+  
+  logStep("Processing payment", { paymentId, customerEmail, amountTotal });
+
+  // Check if order already exists
+  const { data: existingOrder } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("payment_id", paymentId)
+    .maybeSingle();
+
+  if (existingOrder) {
+    logStep("Order already exists", { orderId: (existingOrder as { id: string }).id });
+    return;
+  }
+
+  // Parse items from metadata
+  let items: Array<{ id: string; name: string; price: number }> = [];
+  if (metadata?.items) {
+    try {
+      items = JSON.parse(metadata.items);
+      logStep("Parsed items from metadata", { itemCount: items.length });
+    } catch (e) {
+      logStep("Failed to parse items from metadata", { error: String(e) });
+    }
+  }
+
+  // If no items in metadata and it's a checkout session, try to get line items
+  if (items.length === 0 && paymentType === "checkout_session") {
+    try {
+      const lineItems = await stripe.checkout.sessions.listLineItems(paymentId);
+      items = lineItems.data.map((item: Stripe.LineItem) => ({
+        id: item.price?.product as string || "",
+        name: item.description || "Unknown Product",
+        price: (item.amount_total || 0) / 100,
+      }));
+      logStep("Retrieved line items from Stripe", { itemCount: items.length });
+    } catch (e) {
+      logStep("Failed to get line items", { error: String(e) });
+    }
+  }
+
+  // Calculate totals
+  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  const total = amountTotal ? amountTotal / 100 : subtotal;
+
+  // Get user ID from metadata or look up by email
+  let userId: string | null = metadata?.user_id || null;
+  if (!userId && customerEmail) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("email", customerEmail)
+      .maybeSingle();
+    
+    if (profile) {
+      userId = (profile as { user_id: string }).user_id;
+      logStep("Found user by email", { userId });
+    }
+  }
+
+  // Determine payment method
+  let paymentMethod = "card";
+  if (paymentType === "checkout_session") {
+    try {
+      const session = await stripe.checkout.sessions.retrieve(paymentId, {
+        expand: ["payment_intent"],
+      });
+      const pi = session.payment_intent as Stripe.PaymentIntent;
+      if (pi?.payment_method_types?.includes("paypal")) {
+        paymentMethod = "paypal";
+      }
+    } catch (e) {
+      logStep("Could not determine payment method", { error: String(e) });
+    }
+  }
+
+  // Create the order
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .insert({
+      customer_email: customerEmail,
+      user_id: userId,
+      payment_id: paymentId,
+      payment_method: paymentMethod,
+      status: "completed",
+      subtotal,
+      total,
+    })
+    .select()
+    .single();
+
+  if (orderError) {
+    logStep("ERROR creating order", { error: orderError.message });
+    throw new Error(`Failed to create order: ${orderError.message}`);
+  }
+
+  const orderId = (order as { id: string }).id;
+  logStep("Order created", { orderId });
+
+  // Create order items
+  if (items.length > 0) {
+    const orderItems = items.map((item) => ({
+      order_id: orderId,
+      product_id: item.id || null,
+      product_name: item.name,
+      price: item.price,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
+
+    if (itemsError) {
+      logStep("ERROR creating order items", { error: itemsError.message });
+    } else {
+      logStep("Order items created", { count: orderItems.length });
+    }
+  }
+
+  // Send order confirmation email
+  try {
+    const functionsUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.functions.supabase.co');
+    const response = await fetch(`${functionsUrl}/v1/send-order-confirmation`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+      },
+      body: JSON.stringify({
+        orderId,
+        customerEmail,
+        items,
+        total,
+      }),
+    });
+    logStep("Email confirmation triggered", { status: response.status });
+  } catch (e) {
+    logStep("Failed to trigger email", { error: String(e) });
+  }
+
+  // Process referral if user exists
+  if (userId) {
+    try {
+      const functionsUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.functions.supabase.co');
+      const response = await fetch(`${functionsUrl}/v1/process-referral`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({
+          userId,
+          orderId,
+          orderTotal: total,
+        }),
+      });
+      logStep("Referral processing triggered", { status: response.status });
+    } catch (e) {
+      logStep("Failed to process referral", { error: String(e) });
+    }
+  }
+
+  logStep("Payment processing complete", { orderId });
+}
