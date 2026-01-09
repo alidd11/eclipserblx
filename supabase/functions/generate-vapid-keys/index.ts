@@ -34,16 +34,18 @@ serve(async (req) => {
       ['sign', 'verify']
     );
 
-    // Export the public key in raw format
+    // Export the public key in raw format (65 bytes: 0x04 + 32 x + 32 y)
     const publicKeyRaw = await crypto.subtle.exportKey('raw', keyPair.publicKey);
     const publicKeyBase64 = arrayBufferToBase64Url(publicKeyRaw);
 
-    // Export the private key in PKCS8 format, then extract the raw 32-byte key
-    const privateKeyPkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
-    const privateKeyBytes = new Uint8Array(privateKeyPkcs8);
-    // The raw private key is the last 32 bytes of the PKCS8 structure for P-256
-    const rawPrivateKey = privateKeyBytes.slice(-32);
-    const privateKeyBase64 = arrayBufferToBase64Url(rawPrivateKey.buffer);
+    // Export the private key in JWK format and extract the 'd' parameter (32 bytes base64url)
+    const privateKeyJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+    const privateKeyBase64 = privateKeyJwk.d!; // Already base64url encoded
+
+    console.log('Generated VAPID keys:');
+    console.log('  publicKey length:', publicKeyBase64.length, '(expected 87)');
+    console.log('  privateKey length:', privateKeyBase64.length, '(expected 43)');
+    console.log('  publicKey prefix check:', new Uint8Array(publicKeyRaw)[0] === 0x04 ? 'OK (0x04)' : 'WRONG');
 
     const vapidKeys = {
       publicKey: publicKeyBase64,
@@ -54,6 +56,7 @@ serve(async (req) => {
         step2: 'Copy the publicKey value and ALSO set it as VITE_VAPID_PUBLIC_KEY secret (for client-side)',
         step3: 'Copy the privateKey value and set it as VAPID_PRIVATE_KEY secret',
         step4: 'Set VAPID_SUBJECT to your email (mailto:your@email.com) or website URL',
+        important: 'After updating secrets, users must RE-SUBSCRIBE to push notifications for changes to take effect!',
       }
     };
 
