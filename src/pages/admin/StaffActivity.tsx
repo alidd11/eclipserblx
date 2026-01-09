@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { Activity, LogIn, LogOut, MessageCircle, Ticket, Clock, User, Filter } from 'lucide-react';
+import { Activity, LogIn, LogOut, MessageCircle, Ticket, Clock, User, Filter, X } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -253,7 +254,7 @@ export default function StaffActivityPage() {
             <CardDescription>View detailed staff activity history</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex flex-wrap items-center gap-4 mb-6">
               <div className="w-48">
                 <Select value={filterType} onValueChange={setFilterType}>
                   <SelectTrigger>
@@ -285,6 +286,20 @@ export default function StaffActivityPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {(filterType !== 'all' || filterStaff !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFilterType('all');
+                    setFilterStaff('all');
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Filters
+                </Button>
+              )}
             </div>
 
             <ScrollArea className="h-[500px]">
