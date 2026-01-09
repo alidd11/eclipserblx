@@ -247,8 +247,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           {/* Mobile PWA Install Prompt */}
           {isMobile && <AdminInstallPrompt />}
           
-          <main className="flex-1 overflow-y-auto overscroll-contain bg-background">
-            <div className="p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <main className="flex-1 overflow-y-auto overscroll-contain bg-background min-h-0">
+            <div className="h-full p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
               {children}
             </div>
           </main>

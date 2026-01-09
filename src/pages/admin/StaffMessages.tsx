@@ -852,12 +852,15 @@ export default function StaffMessages() {
   return (
     <AdminLayout>
       <div 
-        className="h-[100dvh] md:h-[calc(100dvh-5rem)] flex flex-col max-w-full overflow-hidden -m-4 md:-m-6 lg:-m-8 -mt-4 md:mt-0 p-0 fixed inset-0 md:relative md:inset-auto z-10"
+        className={cn(
+          "flex flex-col max-w-full overflow-hidden",
+          // Mobile: use relative positioning within the AdminLayout flow, not fixed
+          isMobile 
+            ? "h-full -m-4 p-0" 
+            : "h-[calc(100dvh-5rem)] -m-6 lg:-m-8 relative"
+        )}
         style={{ 
-          // Prevent layout shift when mobile keyboard hides
-          minHeight: isMobile ? '100dvh' : undefined,
           WebkitOverflowScrolling: 'touch',
-          paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : undefined,
         }}
       >
         <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
@@ -1140,14 +1143,6 @@ export default function StaffMessages() {
           </CardContent>
         </Card>
       </div>
-      <style>{`
-        @media (max-width: 767px) {
-          .admin-staff-messages-wrapper > main {
-            overflow: hidden !important;
-            padding: 0 !important;
-          }
-        }
-      `}</style>
     </AdminLayout>
   );
 }
