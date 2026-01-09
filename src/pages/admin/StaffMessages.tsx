@@ -501,50 +501,60 @@ export default function StaffMessages() {
             }
 
             // Send background push notifications for mentions
-            if (allStaff) {
-              const senderProfile = profiles?.[newMsg.sender_id];
-              const senderName = senderProfile?.display_name || 'Staff Member';
-              const mentions = parseMentions(newMsg.message);
-              const groupMentions = hasGroupMention(newMsg.message);
-              
-              // Find mentioned user IDs
-              const mentionedUserIds: string[] = [];
-              
-              if (groupMentions.everyone) {
-                // Notify all staff except sender
-                allStaff.forEach(staff => {
-                  if (staff.user_id !== newMsg.sender_id) {
-                    mentionedUserIds.push(staff.user_id);
+            // Fetch staff fresh to avoid stale closure issues
+            const mentions = parseMentions(newMsg.message);
+            const groupMentions = hasGroupMention(newMsg.message);
+            
+            if (mentions.length > 0 || groupMentions.everyone || groupMentions.here) {
+              try {
+                // Fetch current staff list directly to ensure fresh data
+                const { data: staffData } = await supabase.functions.invoke('list-staff');
+                const currentStaff = (staffData?.staff ?? []) as StaffProfile[];
+                
+                if (currentStaff.length > 0) {
+                  const senderProfile = currentStaff.find(s => s.user_id === newMsg.sender_id);
+                  const senderName = senderProfile?.display_name || 'Staff Member';
+                  
+                  // Find mentioned user IDs
+                  const mentionedUserIds: string[] = [];
+                  
+                  if (groupMentions.everyone) {
+                    // Notify all staff except sender
+                    currentStaff.forEach(staff => {
+                      if (staff.user_id !== newMsg.sender_id) {
+                        mentionedUserIds.push(staff.user_id);
+                      }
+                    });
+                  } else if (groupMentions.here) {
+                    // Notify online staff except sender
+                    onlineUsers.forEach(online => {
+                      if (online.user_id !== newMsg.sender_id) {
+                        mentionedUserIds.push(online.user_id);
+                      }
+                    });
+                  } else {
+                    // Notify individually mentioned staff (use flexible matching)
+                    mentions.forEach(mentionHandle => {
+                      const mentionedStaff = currentStaff.find(s => matchesMention(s, mentionHandle));
+                      if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
+                        mentionedUserIds.push(mentionedStaff.user_id);
+                      }
+                    });
                   }
-                });
-              } else if (groupMentions.here) {
-                // Notify online staff except sender
-                onlineUsers.forEach(online => {
-                  if (online.user_id !== newMsg.sender_id) {
-                    mentionedUserIds.push(online.user_id);
-                  }
-                });
-              } else {
-                // Notify individually mentioned staff (use flexible matching)
-                mentions.forEach(mentionHandle => {
-                  const mentionedStaff = allStaff.find(s => matchesMention(s, mentionHandle));
-                  if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
-                    mentionedUserIds.push(mentionedStaff.user_id);
-                  }
-                });
-              }
 
-              // Send background push to mentioned users
-              if (mentionedUserIds.length > 0) {
-                try {
-                  await notifyStaffMention(
-                    mentionedUserIds,
-                    senderName,
-                    newMsg.message
-                  );
-                } catch (error) {
-                  console.error('Failed to send background push for mention:', error);
+                  // Send background push to mentioned users
+                  if (mentionedUserIds.length > 0) {
+                    console.log('[StaffMessages] Sending push to mentioned users:', mentionedUserIds);
+                    await notifyStaffMention(
+                      mentionedUserIds,
+                      senderName,
+                      newMsg.message
+                    );
+                    console.log('[StaffMessages] Push notification sent successfully');
+                  }
                 }
+              } catch (error) {
+                console.error('Failed to send background push for mention:', error);
               }
             }
           }
@@ -557,7 +567,7 @@ export default function StaffMessages() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned, allStaff, onlineUsers]);
+  }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned, onlineUsers]);
 
   // Update last_seen when user is active
   useEffect(() => {
