@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck } from 'lucide-react';
+import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -105,6 +105,7 @@ export default function StaffMessages() {
   const [mentionIndex, setMentionIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [staffStripCollapsed, setStaffStripCollapsed] = useState(isMobile); // Collapsed by default on mobile
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -920,19 +921,30 @@ export default function StaffMessages() {
         }}
       >
         <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
-          <CardHeader className="border-b border-border shrink-0 px-3 py-3">
+          <CardHeader className="border-b border-border shrink-0 px-3 py-2">
             <CardTitle className="flex items-center justify-between text-base">
               <div className="flex items-center gap-2 min-w-0">
                 <MessageSquare className="h-4 w-4 shrink-0" />
                 <span className="truncate">Staff Chat</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground shrink-0">
+              <button
+                type="button"
+                onClick={() => setStaffStripCollapsed(!staffStripCollapsed)}
+                className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground shrink-0 hover:text-foreground transition-colors"
+              >
                 <Circle className="h-2 w-2 fill-green-500 text-green-500" />
                 <span>{onlineUsers.length} online</span>
-              </div>
+                {isMobile && (
+                  staffStripCollapsed ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronUp className="h-3 w-3" />
+                  )
+                )}
+              </button>
             </CardTitle>
-            {/* Staff panel - shows online and last seen */}
-            {allStaff && allStaff.length > 0 && (
+            {/* Staff panel - shows online and last seen (collapsible on mobile) */}
+            {allStaff && allStaff.length > 0 && (!isMobile || !staffStripCollapsed) && (
               <ScrollArea className="max-h-24 mt-2">
                 <div className="flex flex-wrap gap-1.5">
                   {/* Online users first */}
