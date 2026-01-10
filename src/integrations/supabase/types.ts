@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_version: {
+        Row: {
+          force_update: boolean
+          id: string
+          updated_at: string
+          updated_by: string | null
+          version: string
+        }
+        Insert: {
+          force_update?: boolean
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: string
+        }
+        Update: {
+          force_update?: boolean
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       applicant_messages: {
         Row: {
           application_id: string
