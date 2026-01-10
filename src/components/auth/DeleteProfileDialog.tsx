@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 
 interface DeleteProfileDialogProps {
   open: boolean;
@@ -48,7 +48,7 @@ export function DeleteProfileDialog({
       });
 
       if (signInError) {
-        toast.error('Incorrect password. Please try again.');
+        showErrorNotification('Wrong Password', 'Please try again');
         setIsDeleting(false);
         return;
       }
@@ -56,7 +56,7 @@ export function DeleteProfileDialog({
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Unable to verify your identity.');
+        showErrorNotification('Verification Failed', 'Unable to verify your identity');
         setIsDeleting(false);
         return;
       }
@@ -115,11 +115,11 @@ export function DeleteProfileDialog({
       // Sign out the user
       await supabase.auth.signOut();
 
-      toast.success('Your account and all associated data have been deleted.');
+      showSuccessNotification('Account Deleted', 'All your data has been removed');
       onDeleted();
     } catch (error) {
       console.error('Error deleting profile:', error);
-      toast.error('Failed to delete account. Please try again or contact support.');
+      showErrorNotification('Deletion Failed', 'Please try again or contact support');
     } finally {
       setIsDeleting(false);
     }

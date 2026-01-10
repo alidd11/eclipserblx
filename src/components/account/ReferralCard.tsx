@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { showSuccessNotification } from '@/lib/nativeNotification';
 
 export function ReferralCard() {
   const { user } = useAuth();
@@ -102,7 +102,7 @@ export function ReferralCard() {
   const copyToClipboard = async (text: string, type: 'code' | 'link') => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success(`Referral ${type} copied!`);
+    showSuccessNotification('Copied!', `Referral ${type} copied to clipboard`);
     setTimeout(() => setCopied(false), 2000);
   };
 

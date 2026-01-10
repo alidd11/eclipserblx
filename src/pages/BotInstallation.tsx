@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showSuccessNotification } from '@/lib/nativeNotification';
 import { Badge } from '@/components/ui/badge';
 
 interface InstallationCode {
@@ -42,7 +42,7 @@ export default function BotInstallation() {
   const handleCopyCode = async (code: string) => {
     await navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    toast.success('Installation code copied to clipboard');
+    showSuccessNotification('Copied!', 'Installation code copied to clipboard');
     setTimeout(() => setCopiedCode(null), 2000);
   };
 

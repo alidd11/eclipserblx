@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useState } from 'react';
 
 interface OrderItem {
@@ -139,7 +139,7 @@ export default function Downloads() {
 
   const handleDownload = async (item: OrderItem) => {
     if (!item.product_id || !session?.access_token) {
-      toast.error('Unable to download');
+      showErrorNotification('Error', 'Unable to download');
       return;
     }
 
@@ -159,18 +159,18 @@ export default function Downloads() {
       if (error) throw error;
 
       if (data?.error) {
-        toast.error(data.error);
+        showErrorNotification('Download Error', data.error);
         return;
       }
 
       if (data?.downloadUrl) {
         window.open(data.downloadUrl, '_blank');
-        toast.success(`Downloading ${data.productName || 'file'}!`);
+        showSuccessNotification('Downloading!', data.productName || 'Your file is ready');
       }
     } catch (err: unknown) {
       console.error('Download error:', err);
       const message = err instanceof Error ? err.message : 'Download failed';
-      toast.error(message);
+      showErrorNotification('Download Failed', message);
     } finally {
       setDownloading(null);
     }
@@ -179,7 +179,7 @@ export default function Downloads() {
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    toast.success('Installation code copied!');
+    showSuccessNotification('Copied!', 'Installation code copied');
     setTimeout(() => setCopiedCode(null), 2000);
   };
 

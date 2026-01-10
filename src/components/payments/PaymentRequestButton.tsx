@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useStripe } from '@stripe/react-stripe-js';
 import { PaymentRequest } from '@stripe/stripe-js';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -108,11 +108,11 @@ export function PaymentRequestButton({
         }
 
         event.complete('success');
-        toast.success('Payment successful!');
+        showSuccessNotification('Payment Successful!', 'Your order is being processed');
         navigate(`/order-success?payment_intent=${data.paymentIntentId}`);
       } catch (err: any) {
         console.error('Payment error:', err);
-        toast.error(err.message || 'Payment failed');
+        showErrorNotification('Payment Failed', err.message || 'Please try again');
         event.complete('fail');
         onProcessing(false);
       }
@@ -137,7 +137,7 @@ export function PaymentRequestButton({
 
   const handleClick = () => {
     if (!email) {
-      toast.error('Please enter your email address');
+      showErrorNotification('Email Required', 'Please enter your email address');
       return;
     }
     paymentRequest.show();

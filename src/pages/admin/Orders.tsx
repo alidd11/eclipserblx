@@ -39,7 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -77,10 +77,10 @@ export default function AdminOrders() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      toast.success('Order status updated');
+      showSuccessNotification('Status Updated', 'Order status changed');
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      showErrorNotification('Update Failed', error.message);
     },
   });
 
@@ -100,10 +100,10 @@ export default function AdminOrders() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       setSelectedOrder(null);
-      toast.success('Order deleted successfully');
+      showSuccessNotification('Order Deleted', 'Order has been removed');
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      showErrorNotification('Delete Failed', error.message);
     },
   });
 

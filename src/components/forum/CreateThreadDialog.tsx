@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { ImagePlus, X, Loader2 } from 'lucide-react';
 import { forumThreadSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
@@ -80,21 +80,21 @@ export function CreateThreadDialog({
     try {
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) {
-          toast.error(`${file.name} is not an image`);
+          showErrorNotification('Invalid File', `${file.name} is not an image`);
           continue;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 5MB)`);
+          showErrorNotification('File Too Large', `${file.name} exceeds 5MB limit`);
           continue;
         }
 
         // Check for NSFW content
-        toast.info(`Checking ${file.name}...`);
+        showInfoNotification('Checking...', `Scanning ${file.name}`);
         const nsfwResult = await checkNSFW(file);
         
         if (nsfwResult.isNSFW) {
-          toast.error(`${file.name} was rejected: ${nsfwResult.reason || 'Inappropriate content detected'}`);
+          showErrorNotification('Content Rejected', `${file.name}: ${nsfwResult.reason || 'Inappropriate content'}`);
           continue;
         }
 
@@ -106,7 +106,7 @@ export function CreateThreadDialog({
           .upload(fileName, file);
 
         if (uploadError) {
-          toast.error(`Failed to upload ${file.name}`);
+          showErrorNotification('Upload Failed', `Could not upload ${file.name}`);
           continue;
         }
 
@@ -119,10 +119,10 @@ export function CreateThreadDialog({
 
       if (newImages.length > 0) {
         setImages(prev => [...prev, ...newImages]);
-        toast.success(`${newImages.length} image(s) uploaded`);
+        showSuccessNotification('Upload Complete', `${newImages.length} image(s) uploaded`);
       }
     } catch (error) {
-      toast.error('Failed to upload images');
+      showErrorNotification('Upload Error', 'Failed to upload images');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -198,7 +198,7 @@ export function CreateThreadDialog({
     onSuccess: (threadSlug) => {
       queryClient.invalidateQueries({ queryKey: ['forum-threads'] });
       queryClient.invalidateQueries({ queryKey: ['forum-thread-counts'] });
-      toast.success('Thread created successfully!');
+      showSuccessNotification('Thread Created', 'Your discussion has been posted');
       setTitle('');
       setContent('');
       setImages([]);
@@ -206,7 +206,7 @@ export function CreateThreadDialog({
       onSuccess?.(threadSlug);
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create thread');
+      showErrorNotification('Creation Failed', error instanceof Error ? error.message : 'Could not create thread');
     },
   });
 

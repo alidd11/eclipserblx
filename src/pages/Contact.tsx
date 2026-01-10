@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SITE_NAME } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import {
   Mail,
   MessageCircle,
@@ -39,7 +39,7 @@ export default function Contact() {
     });
 
     if (isValidationError(validation)) {
-      toast.error(validation.error);
+      showErrorNotification('Validation Error', validation.error);
       return;
     }
 
@@ -67,16 +67,12 @@ export default function Contact() {
         },
       }).catch(console.error);
 
-      toast.success('Message sent!', {
-        description: 'We\'ll get back to you within 24-48 hours.',
-      });
+      showSuccessNotification('Message Sent!', 'We\'ll get back to you within 24-48 hours.');
 
       setFormData({ name: '', email: user?.email || '', subject: '', message: '' });
     } catch (error) {
       console.error('Error submitting contact form:', error);
-      toast.error('Failed to send message', {
-        description: 'Please try again or use an alternative contact method.',
-      });
+      showErrorNotification('Failed to Send', 'Please try again or use an alternative contact method.');
     } finally {
       setIsSubmitting(false);
     }
