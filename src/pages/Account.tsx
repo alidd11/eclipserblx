@@ -1,11 +1,12 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBadges } from '@/hooks/useBadges';
@@ -23,12 +24,14 @@ import { SoundCustomizationCard } from '@/components/account/SoundCustomizationC
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
+
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges, newBadges, checkBadges, clearNewBadges } = useBadges();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -38,6 +41,30 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [savingUsername, setSavingUsername] = useState(false);
+
+  // Get initial tab from URL hash
+  const getInitialTab = () => {
+    const hash = location.hash.replace('#', '');
+    if (['profile', 'shopping', 'preferences', 'security'].includes(hash)) {
+      return hash;
+    }
+    return 'profile';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  // Sync tab with URL hash
+  useEffect(() => {
+    const hash = location.hash.replace('#', '');
+    if (['profile', 'shopping', 'preferences', 'security'].includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, [location.hash]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    window.history.replaceState(null, '', `#${value}`);
+  };
 
   const copyCustomerId = async () => {
     if (profile?.customer_id) {
@@ -290,7 +317,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
   return (
     <MainLayout ref={ref}>
-      <div className="container py-8 space-y-8 max-w-4xl">
+      <div className="container py-8 space-y-6 max-w-4xl">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-display font-bold">My Account</h1>
           {adminLoading ? (
@@ -306,352 +334,392 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           ) : null}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Profile Card */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Compact Profile Summary */}
+        <Card className="bg-card border-border">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-4">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
                 displayName={profile?.display_name || fallbackDisplayName || ''}
                 onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
               />
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Username</p>
-                {editingUsername ? (
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
-                        autoFocus
-                      />
-                      {newUsername.trim().length >= 2 && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {checkingUsername ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          ) : usernameAvailable === true ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : usernameAvailable === false ? (
-                            <X className="h-4 w-4 text-destructive" />
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                      <p className="text-xs text-destructive">This username is already taken</p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleSaveUsername}
-                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                      >
-                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">
-                      {profile?.display_name || fallbackDisplayName || 'Not set'}
-                      {profileLoading && (
-                        <span className="ml-2 inline-flex items-center text-xs text-muted-foreground">
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                          Loading
-                        </span>
-                      )}
-                    </p>
-                    <button
-                      onClick={startEditingUsername}
-                      className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                      title="Edit username"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{user.email}</p>
-              </div>
-              {profile?.customer_id && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Customer ID</p>
-                  <button
-                    onClick={copyCustomerId}
-                    className="flex items-center gap-2 font-mono font-medium text-primary hover:text-primary/80 transition-colors"
-                  >
-                    {profile.customer_id}
-                    {copiedId ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-lg truncate">
+                    {profile?.display_name || fallbackDisplayName}
+                  </h2>
+                  {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
-              )}
-              <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="font-medium">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Quick Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-3">
-                <Link
-                  to="/downloads"
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
-                >
-                  <Download className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-medium">My Downloads</span>
-                </Link>
-                <Link
-                  to="/products"
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
-                >
-                  <Package className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-medium">Browse Products</span>
-                </Link>
-                <Link
-                  to="/chat-history"
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
-                >
-                  <MessageSquare className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-medium">Support History</span>
-                </Link>
-                <Link
-                  to="/notifications"
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
-                >
-                  <Bell className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-medium">Notifications</span>
-                </Link>
-                <Link
-                  to="/downloads"
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
-                >
-                  <ShoppingBag className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-medium">View Orders</span>
-                </Link>
-                <button
-                  onClick={() => setShowSignOutDialog(true)}
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-destructive/10 transition-colors text-center"
-                >
-                  <LogOut className="h-6 w-6 text-destructive" />
-                  <span className="text-xs font-medium text-destructive">Sign Out</span>
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Referral Card */}
-        <ReferralCard />
-
-        {/* Email Subscriptions */}
-        <EmailSubscriptionCard />
-
-        {/* Notification Settings */}
-        <NotificationSettingsCard />
-
-        {/* Sound Customization */}
-        <SoundCustomizationCard />
-
-        {/* Saved Payment Methods */}
-        <SavedCardsCard />
-
-        {/* My Messages */}
-        <MyMessagesCard />
-
-        {/* My Purchases */}
-        <MyPurchasesCard />
-
-        {/* Badges */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              My Badges
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BadgeShowcase badges={badges} userBadges={userBadges} showAll />
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5" />
-              Order History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {ordersLoading ? (
-              <div className="text-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mt-2">Loading orders...</p>
-              </div>
-            ) : !orders || orders.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>You haven't made any orders yet.</p>
-                <Button asChild className="mt-4" variant="outline">
-                  <Link to="/products">Start Shopping</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <div key={order.id} className="p-4 rounded-lg bg-muted/50 space-y-4">
-                    {/* Order Header */}
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-mono text-sm font-medium">
-                            Order #{order.id.slice(0, 8).toUpperCase()}
-                          </p>
-                          {getStatusBadge(order.status)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(order.created_at).toLocaleDateString('en-GB', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-bold text-lg">£{Number(order.total).toFixed(2)}</p>
-                        {order.discount_amount > 0 && (
-                          <p className="text-xs text-primary">
-                            Saved £{Number(order.discount_amount).toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Order Items */}
-                    <div className="border-t border-border pt-3 space-y-2">
-                      {order.order_items?.map((item: any) => {
-                        const hasAsset = !!item.product?.asset_file_url;
-                        const isPaid = order.status === 'paid' || order.status === 'completed';
-                        
-                        return (
-                          <div 
-                            key={item.id}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/70 transition-colors"
-                          >
-                            {/* Product Image */}
-                            <div className="w-12 h-12 rounded-md overflow-hidden bg-muted shrink-0">
-                              {item.product?.images?.[0] ? (
-                                <img 
-                                  src={item.product.images[0]} 
-                                  alt={item.product_name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Package className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Product Info */}
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">{item.product_name}</p>
-                              <p className="text-xs text-muted-foreground">£{Number(item.price).toFixed(2)}</p>
-                            </div>
-                            
-                            {/* Download Button */}
-                            {isPaid && hasAsset && (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="shrink-0"
-                              >
-                                <Link to="/downloads">
-                                  <Download className="h-3.5 w-3.5 mr-1.5" />
-                                  Download
-                                </Link>
-                              </Button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Payment Info */}
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
-                      <span>
-                        Payment: {order.payment_method ? order.payment_method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Card'}
-                      </span>
-                      <span>{order.order_items?.length || 0} item(s)</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="bg-card border-destructive/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <Trash2 className="h-5 w-5" />
-              Danger Zone
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <p className="font-medium">Delete Account</p>
-                <p className="text-sm text-muted-foreground">
-                  Permanently delete your account and all associated data including downloads.
-                </p>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  {profile?.customer_id && (
+                    <button
+                      onClick={copyCustomerId}
+                      className="flex items-center gap-1 font-mono hover:text-foreground transition-colors"
+                    >
+                      {profile.customer_id}
+                      {copiedId ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  )}
+                  <span>•</span>
+                  <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
+                </div>
               </div>
               <Button
-                variant="destructive"
-                onClick={() => setShowDeleteDialog(true)}
-                className="shrink-0"
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSignOutDialog(true)}
+                className="text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Account
+                <LogOut className="h-5 w-5" />
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <Link
+            to="/downloads"
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <Download className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Downloads</span>
+          </Link>
+          <Link
+            to="/products"
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <Package className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Products</span>
+          </Link>
+          <Link
+            to="/chat-history"
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Support</span>
+          </Link>
+          <Link
+            to="/notifications"
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <Bell className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Alerts</span>
+          </Link>
+          <button
+            onClick={() => handleTabChange('shopping')}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Orders</span>
+          </button>
+          <button
+            onClick={() => handleTabChange('preferences')}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <Settings className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Settings</span>
+          </button>
+        </div>
+
+        {/* Tabbed Content */}
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="w-full grid grid-cols-4 h-auto p-1">
+            <TabsTrigger value="profile" className="flex items-center gap-2 py-2.5">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="shopping" className="flex items-center gap-2 py-2.5">
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden sm:inline">Shopping</span>
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="flex items-center gap-2 py-2.5">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Preferences</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2 py-2.5">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Security</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            {/* Profile Editing Card */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Profile Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Username</p>
+                  {editingUsername ? (
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                          className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
+                          autoFocus
+                        />
+                        {newUsername.trim().length >= 2 && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {checkingUsername ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            ) : usernameAvailable === true ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : usernameAvailable === false ? (
+                              <X className="h-4 w-4 text-destructive" />
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                      {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                        <p className="text-xs text-destructive">This username is already taken</p>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveUsername}
+                          disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                        >
+                          {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
+                      <button
+                        onClick={startEditingUsername}
+                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                        title="Edit username"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium">{user.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Member Since</p>
+                  <p className="font-medium">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Badges */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  My Badges
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BadgeShowcase badges={badges} userBadges={userBadges} showAll />
+              </CardContent>
+            </Card>
+
+            {/* Referral Card */}
+            <ReferralCard />
+          </TabsContent>
+
+          {/* Shopping Tab */}
+          <TabsContent value="shopping" className="space-y-6">
+            {/* My Purchases */}
+            <MyPurchasesCard />
+
+            {/* Order History */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingBag className="h-5 w-5" />
+                  Order History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {ordersLoading ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mt-2">Loading orders...</p>
+                  </div>
+                ) : !orders || orders.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>You haven't made any orders yet.</p>
+                    <Button asChild className="mt-4" variant="outline">
+                      <Link to="/products">Start Shopping</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <div key={order.id} className="p-4 rounded-lg bg-muted/50 space-y-4">
+                        {/* Order Header */}
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-mono text-sm font-medium">
+                                Order #{order.id.slice(0, 8).toUpperCase()}
+                              </p>
+                              {getStatusBadge(order.status)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-bold text-lg">£{Number(order.total).toFixed(2)}</p>
+                            {order.discount_amount > 0 && (
+                              <p className="text-xs text-primary">
+                                Saved £{Number(order.discount_amount).toFixed(2)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Order Items */}
+                        <div className="border-t border-border pt-3 space-y-2">
+                          {order.order_items?.map((item: any) => {
+                            const hasAsset = !!item.product?.asset_file_url;
+                            const isPaid = order.status === 'paid' || order.status === 'completed';
+                            
+                            return (
+                              <div 
+                                key={item.id}
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/70 transition-colors"
+                              >
+                                {/* Product Image */}
+                                <div className="w-12 h-12 rounded-md overflow-hidden bg-muted shrink-0">
+                                  {item.product?.images?.[0] ? (
+                                    <img 
+                                      src={item.product.images[0]} 
+                                      alt={item.product_name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Package className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Product Info */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate">{item.product_name}</p>
+                                  <p className="text-xs text-muted-foreground">£{Number(item.price).toFixed(2)}</p>
+                                </div>
+                                
+                                {/* Download Button */}
+                                {isPaid && hasAsset && (
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="outline"
+                                    className="shrink-0"
+                                  >
+                                    <Link to="/downloads">
+                                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                                      Download
+                                    </Link>
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Payment Info */}
+                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
+                          <span>
+                            Payment: {order.payment_method ? order.payment_method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Card'}
+                          </span>
+                          <span>{order.order_items?.length || 0} item(s)</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Preferences Tab */}
+          <TabsContent value="preferences" className="space-y-6">
+            {/* Email Subscriptions */}
+            <EmailSubscriptionCard />
+
+            {/* Notification Settings */}
+            <NotificationSettingsCard />
+
+            {/* Sound Customization */}
+            <SoundCustomizationCard />
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security" className="space-y-6">
+            {/* Saved Payment Methods */}
+            <SavedCardsCard />
+
+            {/* My Messages */}
+            <MyMessagesCard />
+
+            {/* Danger Zone */}
+            <Card className="bg-card border-destructive/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <Trash2 className="h-5 w-5" />
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <p className="font-medium">Delete Account</p>
+                    <p className="text-sm text-muted-foreground">
+                      Permanently delete your account and all associated data including downloads.
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Sign Out Confirmation Dialog */}
         <SignOutConfirmDialog
