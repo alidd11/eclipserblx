@@ -58,6 +58,15 @@ export default function Contact() {
 
       if (error) throw error;
 
+      // Notify staff about the new message (fire and forget)
+      supabase.functions.invoke('notify-new-contact-message', {
+        body: {
+          name: validation.data.name,
+          email: validation.data.email,
+          subject: validation.data.subject,
+        },
+      }).catch(console.error);
+
       toast.success('Message sent!', {
         description: 'We\'ll get back to you within 24-48 hours.',
       });
