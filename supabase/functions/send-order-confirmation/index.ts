@@ -48,8 +48,8 @@ function formatDate(dateString: string): string {
 }
 
 function generateTextReceipt(data: OrderConfirmationRequest): string {
-  const line = "═".repeat(50);
-  const thinLine = "─".repeat(50);
+  const line = "=".repeat(50);
+  const thinLine = "-".repeat(50);
   
   let receipt = `
 ${line}
@@ -348,7 +348,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate text receipt
     logStep("Generating receipt");
     const receiptText = generateTextReceipt(data);
-    const receiptBase64 = btoa(receiptText);
+    // Use TextEncoder for proper UTF-8 to base64 conversion
+    const encoder = new TextEncoder();
+    const receiptBytes = encoder.encode(receiptText);
+    const receiptBase64 = btoa(String.fromCharCode(...receiptBytes));
     logStep("Receipt generated successfully");
 
     // Generate email HTML
