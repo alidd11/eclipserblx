@@ -28,7 +28,7 @@ const navItems = [
   { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
   { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
   { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
-  { title: 'Settings', icon: Settings, href: '/admin/settings', roles: ['admin'] },
+  { title: 'Settings', icon: Settings, href: '/admin/settings', roles: [] },
   { title: 'Help', icon: HelpCircle, href: '/admin/help', roles: [] },
 ];
 
