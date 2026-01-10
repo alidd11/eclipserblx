@@ -3,6 +3,7 @@
  * Shows native notifications when permitted, falls back to in-app toast
  */
 import { toast } from 'sonner';
+import { playNotificationSound, type NotificationType as SoundType } from './notificationSounds';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -27,6 +28,10 @@ export function showNativeNotification(
   const canShowNative = 
     'Notification' in window && 
     Notification.permission === 'granted';
+  
+  // Play notification sound based on type
+  const soundType: SoundType = type === 'warning' ? 'warning' : type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+  playNotificationSound(soundType);
   
   if (canShowNative) {
     try {

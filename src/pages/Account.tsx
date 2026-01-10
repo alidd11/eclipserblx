@@ -19,6 +19,7 @@ import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
 import { ReferralCard } from '@/components/account/ReferralCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
+import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -478,6 +479,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Notification Settings */}
         <NotificationSettingsCard />
+
+        {/* Sound Customization */}
+        <SoundCustomizationCard />
 
         {/* My Messages */}
         <MyMessagesCard />
