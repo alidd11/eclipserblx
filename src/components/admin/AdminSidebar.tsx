@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, AlertTriangle, Tags, Ban, Gift, Key } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronLeft, ChevronRight, MessageCircle, FileText, Star, TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, AlertTriangle, Tags, Ban, Gift, Key, Inbox } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const navItems = [
   { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin'] },
   { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
   { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
+  { title: 'Contact Messages', icon: Inbox, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
   { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
   { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
   { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },

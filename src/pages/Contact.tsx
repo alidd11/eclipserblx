@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { contactFormSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
   const { user } = useAuth();
@@ -45,15 +46,31 @@ export default function Contact() {
     // Validation passed, we can proceed
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: validation.data.name,
+          email: validation.data.email,
+          subject: validation.data.subject,
+          message: validation.data.message,
+        });
 
-    toast.success('Message sent!', {
-      description: 'We\'ll get back to you within 24-48 hours.',
-    });
+      if (error) throw error;
 
-    setFormData({ name: '', email: user?.email || '', subject: '', message: '' });
-    setIsSubmitting(false);
+      toast.success('Message sent!', {
+        description: 'We\'ll get back to you within 24-48 hours.',
+      });
+
+      setFormData({ name: '', email: user?.email || '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Failed to send message', {
+        description: 'Please try again or use an alternative contact method.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactMethods = [
