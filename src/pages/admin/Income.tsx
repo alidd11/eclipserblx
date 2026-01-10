@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { showSuccessNotification, showInfoNotification } from '@/lib/nativeNotification';
+import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
 
 // Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards)
@@ -48,7 +48,7 @@ export default function AdminIncome() {
       if (elapsed >= SESSION_TIMEOUT_MS) {
         setIsVerified(false);
         setPassword('');
-        toast.info('Session expired due to inactivity. Please re-verify.');
+        showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
       }
     }, 1000);
 
@@ -75,12 +75,12 @@ export default function AdminIncome() {
       });
 
       if (error) {
-        toast.error('Incorrect password. Please try again.');
+        showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
         setIsVerified(true);
         setLastActivity(Date.now());
-        toast.success('Access granted to income analytics');
+        showSuccessNotification('Access Granted', 'Access granted to income analytics');
         
         // Log access to audit_logs
         await supabase.from('audit_logs').insert({
@@ -91,7 +91,7 @@ export default function AdminIncome() {
         });
       }
     } catch (error) {
-      toast.error('Verification failed. Please try again.');
+      showErrorNotification('Verification Failed', 'Verification failed. Please try again.');
     } finally {
       setVerifying(false);
     }
@@ -189,7 +189,7 @@ export default function AdminIncome() {
 
   const exportIncomeReport = () => {
     if (!incomeTrend) {
-      toast.error('No data to export');
+      showErrorNotification('Export Failed', 'No data to export');
       return;
     }
 
@@ -221,7 +221,7 @@ export default function AdminIncome() {
     a.download = `income-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Report exported successfully');
+    showSuccessNotification('Export Complete', 'Report exported successfully');
   };
 
   // Password verification screen
