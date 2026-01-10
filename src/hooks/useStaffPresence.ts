@@ -37,9 +37,8 @@ export function useStaffPresence() {
 
   const getCurrentUserName = useCallback(() => {
     if (currentUserProfile?.display_name) return currentUserProfile.display_name;
-    if (user?.email) return user.email.split('@')[0];
     return 'Staff Member';
-  }, [currentUserProfile, user?.email]);
+  }, [currentUserProfile]);
 
   // Initialize presence channel when user is logged in
   useEffect(() => {
