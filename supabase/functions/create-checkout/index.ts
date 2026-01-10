@@ -18,17 +18,24 @@ interface CartItem {
 interface CheckoutRequest {
   items: CartItem[];
   email?: string;
+  discountCodeId?: string;
   successUrl?: string;
   cancelUrl?: string;
 }
 
+const logStep = (step: string, details?: unknown) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    logStep("Function started");
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
@@ -38,10 +45,34 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    const { items, email, successUrl, cancelUrl }: CheckoutRequest = await req.json();
+    const { items, email, discountCodeId, successUrl, cancelUrl }: CheckoutRequest = await req.json();
+    logStep("Request received", { itemCount: items?.length, discountCodeId });
 
     if (!items || items.length === 0) {
       throw new Error("No items provided");
+    }
+
+    // Calculate subtotal
+    const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+    let discountAmount = 0;
+
+    // Apply discount if provided
+    if (discountCodeId) {
+      const { data: discount } = await supabaseClient
+        .from('discount_codes')
+        .select('*')
+        .eq('id', discountCodeId)
+        .eq('is_active', true)
+        .single();
+
+      if (discount) {
+        if (discount.discount_type === 'percentage') {
+          discountAmount = (subtotal * discount.discount_value) / 100;
+        } else {
+          discountAmount = Math.min(discount.discount_value, subtotal);
+        }
+        logStep("Discount applied", { discountAmount, type: discount.discount_type });
+      }
     }
 
     // Try to get authenticated user
@@ -55,6 +86,7 @@ serve(async (req) => {
       if (data.user) {
         userEmail = data.user.email || email;
         userId = data.user.id;
+        logStep("User authenticated", { userId });
       }
     }
 
@@ -64,11 +96,12 @@ serve(async (req) => {
       const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
+        logStep("Found existing customer", { customerId });
       }
     }
 
     // Create line items for Stripe Checkout
-    const lineItems = items.map((item) => ({
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => ({
       price_data: {
         currency: "gbp",
         product_data: {
@@ -78,7 +111,7 @@ serve(async (req) => {
             product_id: item.id,
           },
         },
-        unit_amount: Math.round(item.price * 100), // Convert to pence
+        unit_amount: Math.round(item.price * 100),
       },
       quantity: 1,
     }));
@@ -86,9 +119,8 @@ serve(async (req) => {
     // Store order info in metadata
     const origin = req.headers.get("origin") || "http://localhost:5173";
 
-    // Create Stripe Checkout Session - uses automatic payment methods based on your Stripe settings
-    // (e.g. Card, Apple Pay/Google Pay via card wallets, and PayPal if it’s enabled on the account)
-    const session = await stripe.checkout.sessions.create({
+    // Create session configuration
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : userEmail,
       customer_creation: customerId ? undefined : 'always',
@@ -103,12 +135,28 @@ serve(async (req) => {
         user_id: userId || "",
         customer_email: userEmail || "",
         items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price, category_slug: i.category_slug }))),
+        discount_code_id: discountCodeId || "",
+        discount_amount: discountAmount.toString(),
       },
       billing_address_collection: "auto",
-      allow_promotion_codes: true,
-    });
+    };
 
-    console.log("Checkout session created:", session.id);
+    // Apply discount using Stripe coupons if there's a discount
+    if (discountAmount > 0) {
+      // Create a one-time coupon for this specific discount amount
+      const coupon = await stripe.coupons.create({
+        amount_off: Math.round(discountAmount * 100),
+        currency: 'gbp',
+        duration: 'once',
+        name: 'Applied Discount',
+      });
+      sessionConfig.discounts = [{ coupon: coupon.id }];
+      logStep("Created Stripe coupon", { couponId: coupon.id, amountOff: discountAmount });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    logStep("Checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -116,7 +164,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Checkout error:", errorMessage);
+    logStep("ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

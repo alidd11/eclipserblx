@@ -144,10 +144,35 @@ serve(async (req) => {
       throw new Error(`Payment failed with status: ${paymentIntent.status}`);
     }
 
+    // Call verify-payment to create the order
+    logStep("Calling verify-payment to create order");
+    const verifyResponse = await fetch(
+      `${Deno.env.get("SUPABASE_URL")}/functions/v1/verify-payment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({ paymentIntentId: paymentIntent.id }),
+      }
+    );
+
+    if (!verifyResponse.ok) {
+      const errorText = await verifyResponse.text();
+      logStep("Order creation failed", errorText);
+      // Payment succeeded but order creation failed - this is a critical issue
+      throw new Error("Payment succeeded but order creation failed. Please contact support.");
+    }
+
+    const verifyResult = await verifyResponse.json();
+    logStep("Order created successfully", { orderId: verifyResult.orderId });
+
     return new Response(
       JSON.stringify({
         success: true,
         paymentIntentId: paymentIntent.id,
+        orderId: verifyResult.orderId,
         amount: total,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
