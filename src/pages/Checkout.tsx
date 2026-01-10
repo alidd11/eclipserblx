@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { CreditCard, Lock, ChevronLeft, Tag, X, Check, Wallet, Smartphone } from 'lucide-react';
+import { CreditCard, ChevronLeft, Tag, X, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,7 @@ import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
-import { StripeProvider } from '@/components/payments/StripeProvider';
-import { PaymentRequestButton } from '@/components/payments/PaymentRequestButton';
+import { PaymentMethodDisplay } from '@/components/payments/PaymentMethodDisplay';
 
 interface AppliedDiscount {
   id: string;
@@ -274,78 +273,21 @@ export default function Checkout() {
                 Payment
               </h2>
 
-              {/* Available Payment Methods Info */}
-              <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
-                <span className="text-xs text-muted-foreground">Accepted:</span>
-                <div className="flex items-center gap-1 text-xs">
-                  <CreditCard className="h-3 w-3" />
-                  <span>Card</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <Smartphone className="h-3 w-3" />
-                  <span>Apple Pay</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <Smartphone className="h-3 w-3" />
-                  <span>Google Pay</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <Wallet className="h-3 w-3" />
-                  <span>PayPal</span>
-                </div>
-              </div>
-              
-              <StripeProvider fallback={
-                <Button
-                  onClick={handleStripeCheckout}
-                  className="w-full h-12 gradient-button border-0"
-                  disabled={isProcessing}
-                >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  {isProcessing ? 'Processing...' : `Pay £${finalTotal.toFixed(2)}`}
-                </Button>
-              }>
-                <div className="space-y-4">
-                  {/* Native Apple Pay / Google Pay */}
-                  <PaymentRequestButton
-                    items={items.map(item => ({
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      image: item.image,
-                      category_slug: item.category_slug,
-                    }))}
-                    total={finalTotal}
-                    email={user?.email || ''}
-                    accessToken={session?.access_token}
-                    onProcessing={setIsProcessing}
-                  />
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-border" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or pay with card / PayPal</span>
-                    </div>
-                  </div>
-
-                  {/* Stripe Checkout Fallback */}
-                  <Button
-                    onClick={handleStripeCheckout}
-                    className="w-full h-12 gradient-button border-0"
-                    disabled={isProcessing}
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    {isProcessing ? 'Processing...' : `Pay £${finalTotal.toFixed(2)}`}
-                  </Button>
-
-                  <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
-                    <Lock className="h-3 w-3" />
-                    Secure payment powered by Stripe
-                  </p>
-                </div>
-              </StripeProvider>
+              <PaymentMethodDisplay
+                items={items.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  image: item.image,
+                  category_slug: item.category_slug,
+                }))}
+                total={finalTotal}
+                email={user?.email || ''}
+                accessToken={session?.access_token}
+                isProcessing={isProcessing}
+                onProcessing={setIsProcessing}
+                onCardCheckout={handleStripeCheckout}
+              />
             </div>
           </div>
         </div>
