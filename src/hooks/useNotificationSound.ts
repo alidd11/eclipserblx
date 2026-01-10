@@ -1,24 +1,5 @@
 import { useCallback, useRef } from 'react';
-
-// Simple notification sound using Web Audio API
-const createNotificationSound = () => {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-  
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-  
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-  
-  oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-  oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-  
-  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-  
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.3);
-};
+import { playNotificationSound, type NotificationType } from '@/lib/notificationSounds';
 
 // Trigger haptic feedback on mobile devices
 const triggerHapticFeedback = () => {
@@ -31,7 +12,7 @@ const triggerHapticFeedback = () => {
 export function useNotificationSound() {
   const lastPlayedRef = useRef<number>(0);
   
-  const playSound = useCallback(() => {
+  const playSound = useCallback((type: NotificationType = 'info') => {
     // Throttle to prevent rapid repeated sounds/vibrations
     const now = Date.now();
     if (now - lastPlayedRef.current < 1000) return;
@@ -41,11 +22,11 @@ export function useNotificationSound() {
     const hapticEnabled = localStorage.getItem('notification_haptic_enabled') !== 'false';
     
     // Check if sound is enabled
-    const soundEnabled = localStorage.getItem('notification_sound_enabled') !== 'false';
+    const soundEnabled = localStorage.getItem('notification-sound-enabled') !== 'false';
     
     try {
       if (soundEnabled) {
-        createNotificationSound();
+        playNotificationSound(type);
       }
       if (hapticEnabled) {
         triggerHapticFeedback();
