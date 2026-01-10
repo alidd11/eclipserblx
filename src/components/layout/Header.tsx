@@ -76,7 +76,7 @@ export const Header = memo(function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border glass-effect">
+    <header className="sticky top-0 z-50 w-full border-b border-border glass-effect pt-[env(safe-area-inset-top)]">
       <div className="container mx-auto px-4">
         <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Left side - Mobile menu + Logo */}
