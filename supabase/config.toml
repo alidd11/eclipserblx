@@ -59,3 +59,12 @@ verify_jwt = false
 
 [functions.notify-discount]
 verify_jwt = false
+
+[functions.send-contact-reply]
+verify_jwt = false
+
+[functions.process-referral]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
