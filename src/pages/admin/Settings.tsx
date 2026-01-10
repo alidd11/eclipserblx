@@ -75,6 +75,7 @@ export default function AdminSettings() {
     checkEnrollment,
     enrollBiometric,
     removeBiometric,
+    authenticateWithBiometric,
   } = useBiometricAuth();
 
   // Check biometric support and enrollment on mount
@@ -319,52 +320,27 @@ export default function AdminSettings() {
   };
 
   const handleTestBiometric = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast.error('You must be logged in to test biometric');
+      return;
+    }
     
-    const { authenticateWithBiometric } = await import('@/hooks/useBiometricAuth').then(m => {
-      const hook = m.useBiometricAuth();
-      return hook;
-    });
+    if (!biometricSupported) {
+      toast.error('Biometric authentication is not supported on this device');
+      return;
+    }
     
-    // We need to test using the current instance
-    try {
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
-      
-      const storedCredential = localStorage.getItem(`biometric_credential_${user.id}`);
-      if (!storedCredential) {
-        toast.error('No biometric credential found');
-        return;
-      }
-      
-      const credentialData = JSON.parse(storedCredential);
-      const rawIdArray = Uint8Array.from(atob(credentialData.rawId), c => c.charCodeAt(0));
-
-      const assertion = await navigator.credentials.get({
-        publicKey: {
-          challenge,
-          rpId: window.location.hostname,
-          allowCredentials: [{
-            id: rawIdArray,
-            type: 'public-key',
-            transports: ['internal'],
-          }],
-          userVerification: 'required',
-          timeout: 60000,
-        },
-      });
-
-      if (assertion) {
-        toast.success('Biometric authentication successful!');
-      } else {
-        toast.error('Biometric authentication failed');
-      }
-    } catch (error: any) {
-      if (error.name === 'NotAllowedError') {
-        toast.error('Authentication cancelled');
-      } else {
-        toast.error('Biometric test failed');
-      }
+    if (!isEnrolled) {
+      toast.error('Please enroll biometric first');
+      return;
+    }
+    
+    const result = await authenticateWithBiometric(user.id);
+    
+    if (result.success) {
+      toast.success('Biometric authentication successful!');
+    } else {
+      toast.error(result.error || 'Biometric authentication failed');
     }
   };
 
