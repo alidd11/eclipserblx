@@ -21,6 +21,7 @@ import { ReferralCard } from '@/components/account/ReferralCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
+import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
@@ -485,6 +486,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* My Messages */}
         <MyMessagesCard />
+
+        {/* My Purchases */}
+        <MyPurchasesCard />
 
         {/* Badges */}
         <Card className="bg-card border-border">
