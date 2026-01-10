@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { markAdminPWA } from '@/hooks/usePWAAdminRedirect';
+import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,6 +43,9 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
     authenticateWithBiometric,
     getStoredUserId,
   } = useBiometricAuth();
+
+  // Use admin-specific PWA manifest (for install prompt)
+  useAdminManifest();
 
   // Check biometric support on mount and mark as admin PWA
   useEffect(() => {
