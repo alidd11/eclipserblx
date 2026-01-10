@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/hooks/useCart';
+import { useBadges } from '@/hooks/useBadges';
 
 export default function OrderSuccess() {
+  const { checkBadges } = useBadges();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
@@ -58,6 +60,8 @@ export default function OrderSuccess() {
           setVerifiedOrderId(data.orderId);
           // Clear the cart after successful payment
           stableClearCart();
+          // Check for new badges after successful purchase
+          checkBadges();
         } else if (!data?.success) {
           console.error('Payment not completed:', data?.message);
         }
@@ -69,8 +73,7 @@ export default function OrderSuccess() {
     };
     
     verifyPayment();
-  }, [sessionId, paymentIntentId, orderId, stableClearCart]);
-
+  }, [sessionId, paymentIntentId, orderId, stableClearCart, checkBadges]);
   const { data: order, isLoading: isLoadingOrder } = useQuery({
     queryKey: ['order', verifiedOrderId],
     queryFn: async () => {
