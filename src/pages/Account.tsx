@@ -336,26 +336,42 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Compact Profile Summary */}
         <Card className="bg-card border-border">
-          <CardContent className="py-4">
-            <div className="flex items-center gap-4">
-              <AvatarUpload
-                userId={user.id}
-                currentAvatarUrl={profile?.avatar_url || null}
-                displayName={profile?.display_name || fallbackDisplayName || ''}
-                onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+          <CardContent className="py-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Avatar Section */}
+              <div className="flex items-center gap-4">
+                <AvatarUpload
+                  userId={user.id}
+                  currentAvatarUrl={profile?.avatar_url || null}
+                  displayName={profile?.display_name || fallbackDisplayName || ''}
+                  onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+                />
+                <div className="sm:hidden flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-semibold text-lg truncate">
+                      {profile?.display_name || fallbackDisplayName}
+                    </h2>
+                    {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Info Section */}
+              <div className="flex-1 min-w-0 space-y-2">
+                {/* Desktop username - hidden on mobile */}
+                <div className="hidden sm:flex items-center gap-2">
                   <h2 className="font-semibold text-lg truncate">
                     {profile?.display_name || fallbackDisplayName}
                   </h2>
                   {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                
+                {/* Info row */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                   {profile?.customer_id && (
                     <button
                       onClick={copyCustomerId}
-                      className="flex items-center gap-1 font-mono hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 font-mono text-xs bg-muted/50 px-2 py-1 rounded hover:bg-muted transition-colors"
                     >
                       {profile.customer_id}
                       {copiedId ? (
@@ -365,17 +381,21 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       )}
                     </button>
                   )}
-                  <span>•</span>
-                  <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
+                  <span className="text-xs">
+                    Member since {new Date(user.created_at).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
+              
+              {/* Sign Out Button */}
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => setShowSignOutDialog(true)}
-                className="text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive self-start sm:self-center"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </CardContent>
