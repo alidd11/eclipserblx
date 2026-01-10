@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { CreditCard, ChevronLeft, Tag, X, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -21,10 +21,16 @@ interface AppliedDiscount {
 export default function Checkout() {
   const { items, total } = useCart();
   const { user, session, loading } = useAuth();
+  const location = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+
+  // Reset processing state when returning from Stripe (location change)
+  useEffect(() => {
+    setIsProcessing(false);
+  }, [location.key]);
 
   const discountAmount = appliedDiscount?.amount || 0;
   const finalTotal = Math.max(0, total - discountAmount);
