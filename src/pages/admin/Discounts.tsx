@@ -75,6 +75,8 @@ export default function AdminDiscounts() {
         is_active: data.is_active,
       };
 
+      const isNewCode = !data.id;
+
       if (data.id) {
         const { error } = await supabase
           .from('discount_codes')
@@ -86,6 +88,37 @@ export default function AdminDiscounts() {
           .from('discount_codes')
           .insert(payload);
         if (error) throw error;
+      }
+
+      // Send notifications to subscribed users for new active discount codes
+      if (isNewCode && data.is_active) {
+        try {
+          // Get all users who are subscribed to discounts
+          const { data: subscribers } = await supabase
+            .from('email_subscriptions')
+            .select('user_id')
+            .eq('subscribed_to_discounts', true)
+            .not('user_id', 'is', null);
+
+          if (subscribers && subscribers.length > 0) {
+            const discountDisplay = data.discount_type === 'percentage' 
+              ? `${data.discount_value}% off` 
+              : `£${data.discount_value.toFixed(2)} off`;
+            
+            const notifications = subscribers.map(sub => ({
+              user_id: sub.user_id!,
+              title: '🏷️ New Discount Code!',
+              message: `Use code ${data.code.toUpperCase()} for ${discountDisplay} your next order!`,
+              type: 'discount',
+              link: '/products',
+            }));
+
+            await supabase.from('notifications').insert(notifications);
+          }
+        } catch (e) {
+          console.error('Failed to send discount notifications:', e);
+          // Don't throw - discount was created successfully
+        }
       }
     },
     onSuccess: () => {
