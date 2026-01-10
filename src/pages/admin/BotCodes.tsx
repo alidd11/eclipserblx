@@ -207,7 +207,7 @@ export default function AdminBotCodes() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Key className="h-4 w-4 text-muted-foreground" />
-                            <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                            <code className="text-sm font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
                               {code.installation_code}
                             </code>
                             <Button
