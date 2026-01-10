@@ -215,34 +215,20 @@ const handler = async (req: Request): Promise<Response> => {
           link: "/account",
         });
 
-        // Get customer's push subscriptions
-        const { data: subscriptions } = await supabaseAdmin
-          .from("push_subscriptions")
-          .select("*")
-          .eq("user_id", customerProfile.user_id);
+        // Send push notification using the correct format
+        await supabaseAdmin.functions.invoke("send-push-notification", {
+          body: {
+            user_ids: [customerProfile.user_id],
+            payload: {
+              title: "Support Reply",
+              body: `Staff has replied to: "${originalSubject}"`,
+              url: "/account",
+              tag: `contact-reply-${messageId}`,
+            },
+          },
+        });
 
-        if (subscriptions && subscriptions.length > 0) {
-          // Send push notification
-          const pushPayload = {
-            subscriptions: subscriptions.map((sub) => ({
-              endpoint: sub.endpoint,
-              keys: {
-                p256dh: sub.p256dh_key,
-                auth: sub.auth_key,
-              },
-            })),
-            title: "Support Reply",
-            body: `Staff has replied to: "${originalSubject}"`,
-            url: "/account",
-            tag: `contact-reply-${messageId}`,
-          };
-
-          await supabaseAdmin.functions.invoke("send-push-notification", {
-            body: pushPayload,
-          });
-
-          console.log("Push notification sent to customer:", recipientEmail);
-        }
+        console.log("Push notification sent to customer:", recipientEmail);
       }
     } catch (pushError) {
       console.error("Failed to send push notification:", pushError);
