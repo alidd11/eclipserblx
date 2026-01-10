@@ -1,33 +1,37 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
- * Dynamically switches the PWA manifest based on the current route.
- * - Admin routes (/admin/*) use manifest-admin.json
- * - All other routes use the default manifest from Vite PWA plugin
+ * Dynamically injects and switches the PWA manifest based on the current route.
+ * - Admin routes (/admin/*) use manifest-admin.json with start_url: /admin
+ * - All other routes use manifest.webmanifest with start_url: /
+ * 
+ * IMPORTANT: VitePWA manifest injection is disabled, so this hook is responsible
+ * for creating and managing the manifest link element.
  */
 export function useAdminManifest() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    const manifestLink = document.querySelector('link[rel="manifest"]');
+    const targetManifest = isAdminRoute ? '/manifest-admin.json' : '/manifest.webmanifest';
+    
+    let manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
     
     if (!manifestLink) {
       // Create manifest link if it doesn't exist
-      const link = document.createElement('link');
-      link.rel = 'manifest';
-      link.href = isAdminRoute ? '/manifest-admin.json' : '/manifest.webmanifest';
-      document.head.appendChild(link);
-    } else {
+      manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = targetManifest;
+      document.head.appendChild(manifestLink);
+      hasInitialized.current = true;
+    } else if (manifestLink.getAttribute('href') !== targetManifest) {
       // Update existing manifest link
-      const targetManifest = isAdminRoute ? '/manifest-admin.json' : '/manifest.webmanifest';
-      if (manifestLink.getAttribute('href') !== targetManifest) {
-        manifestLink.setAttribute('href', targetManifest);
-      }
+      manifestLink.setAttribute('href', targetManifest);
     }
 
-    // Also update theme-color for admin
+    // Update theme-color for admin
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', isAdminRoute ? '#7c3aed' : '#1a1a2e');
