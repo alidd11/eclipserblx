@@ -59,6 +59,14 @@ interface ContactMessage {
   notes: string | null;
 }
 
+interface ContactMessageReply {
+  id: string;
+  contact_message_id: string;
+  reply_content: string;
+  sent_by: string;
+  sent_at: string;
+}
+
 interface EmailTemplate {
   id: string;
   name: string;
@@ -170,6 +178,23 @@ export default function ContactMessages() {
     },
   });
 
+  // Fetch replies for selected message
+  const { data: replies, isLoading: repliesLoading } = useQuery({
+    queryKey: ['contact-message-replies', selectedMessage?.id],
+    queryFn: async () => {
+      if (!selectedMessage?.id) return [];
+      const { data, error } = await supabase
+        .from('contact_message_replies')
+        .select('*')
+        .eq('contact_message_id', selectedMessage.id)
+        .order('sent_at', { ascending: true });
+
+      if (error) throw error;
+      return data as ContactMessageReply[];
+    },
+    enabled: !!selectedMessage?.id,
+  });
+
   const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ContactMessage> }) => {
       const { error } = await supabase
@@ -256,6 +281,7 @@ export default function ContactMessages() {
       setSelectedMessage({ ...selectedMessage, status: 'responded' });
       setReplyContent('');
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-message-replies', selectedMessage.id] });
     } catch (error: any) {
       console.error('Error sending reply:', error);
       toast.error('Failed to send reply', {
@@ -568,6 +594,33 @@ export default function ContactMessages() {
                   <p className="text-sm text-muted-foreground mt-1">Re: {selectedMessage?.subject}</p>
                 </div>
 
+                {/* Reply History */}
+                {replies && replies.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Conversation History ({replies.length} {replies.length === 1 ? 'reply' : 'replies'})
+                    </Label>
+                    <div className="max-h-48 overflow-y-auto space-y-3 p-3 bg-muted/30 rounded-lg border">
+                      {replies.map((reply) => (
+                        <div key={reply.id} className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                            <Send className="h-3 w-3" />
+                            <span>Sent on {format(new Date(reply.sent_at), 'PPp')}</span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap line-clamp-4">{reply.reply_content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {repliesLoading && (
+                  <div className="py-2">
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
@@ -598,7 +651,7 @@ export default function ContactMessages() {
                     placeholder="Type your reply here or select a template above..."
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
-                    rows={10}
+                    rows={8}
                     className="resize-none"
                   />
                   <p className="text-xs text-muted-foreground">
@@ -623,17 +676,6 @@ export default function ContactMessages() {
                     </>
                   )}
                 </Button>
-
-                {selectedMessage?.status === 'responded' && selectedMessage.responded_at && (
-                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                    <div className="flex items-center gap-2 text-green-500">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-sm font-medium">
-                        Responded on {format(new Date(selectedMessage.responded_at), 'PPpp')}
-                      </span>
-                    </div>
-                  </div>
-                )}
               </TabsContent>
               
               <TabsContent value="notes" className="space-y-4">

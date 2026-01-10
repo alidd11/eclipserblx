@@ -118,12 +118,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    // Update the message status in the database using service role
+    // Update the message status and save the reply using service role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Save the reply to the threading table
+    const { error: replyError } = await supabaseAdmin
+      .from("contact_message_replies")
+      .insert({
+        contact_message_id: messageId,
+        reply_content: replyContent,
+        sent_by: user.id,
+        sent_at: new Date().toISOString(),
+      });
+
+    if (replyError) {
+      console.error("Failed to save reply:", replyError);
+    }
+
+    // Update message status
     const { error: updateError } = await supabaseAdmin
       .from("contact_messages")
       .update({

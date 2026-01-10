@@ -285,6 +285,41 @@ export type Database = {
           },
         ]
       }
+      contact_message_replies: {
+        Row: {
+          contact_message_id: string
+          created_at: string
+          id: string
+          reply_content: string
+          sent_at: string
+          sent_by: string
+        }
+        Insert: {
+          contact_message_id: string
+          created_at?: string
+          id?: string
+          reply_content: string
+          sent_at?: string
+          sent_by: string
+        }
+        Update: {
+          contact_message_id?: string
+          created_at?: string
+          id?: string
+          reply_content?: string
+          sent_at?: string
+          sent_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_message_replies_contact_message_id_fkey"
+            columns: ["contact_message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
