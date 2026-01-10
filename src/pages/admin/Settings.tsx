@@ -39,6 +39,9 @@ export default function AdminSettings() {
     privateKey: string;
   } | null>(null);
   
+  // Global notification toggles (admin only)
+  const [newProductNotificationsEnabled, setNewProductNotificationsEnabled] = useState(true);
+  const [discountNotificationsEnabled, setDiscountNotificationsEnabled] = useState(true);
   // Notification settings
   const { isSupported: notifSupported, permission, requestPermission } = usePushNotifications();
   const [soundEnabled, setSoundEnabled] = useState(() => {
@@ -90,30 +93,45 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['store_name', 'contact_email', 'discord_webhook_url']);
+        .in('key', ['store_name', 'contact_email', 'discord_webhook_url', 'new_product_notifications_enabled', 'discount_notifications_enabled']);
 
       if (error) throw error;
 
-      const settingsMap: Partial<StoreSettings> = {};
+      const settingsMap: Partial<StoreSettings> & { new_product_notifications_enabled?: boolean; discount_notifications_enabled?: boolean } = {};
       data?.forEach((item) => {
-        const val = typeof item.value === 'string' ? item.value.replace(/^"|"$/g, '') : String(item.value);
+        const val = typeof item.value === 'string' ? item.value.replace(/^"|"$/g, '') : item.value;
         if (item.key === 'store_name') {
-          settingsMap.store_name = val;
+          settingsMap.store_name = String(val);
         } else if (item.key === 'contact_email') {
-          settingsMap.contact_email = val;
+          settingsMap.contact_email = String(val);
         } else if (item.key === 'discord_webhook_url') {
-          settingsMap.discord_webhook_url = val;
+          settingsMap.discord_webhook_url = String(val);
+        } else if (item.key === 'new_product_notifications_enabled') {
+          settingsMap.new_product_notifications_enabled = val !== false && val !== 'false';
+        } else if (item.key === 'discount_notifications_enabled') {
+          settingsMap.discount_notifications_enabled = val !== false && val !== 'false';
         }
       });
 
-      return { ...DEFAULT_SETTINGS, ...settingsMap };
+      return { 
+        ...DEFAULT_SETTINGS, 
+        ...settingsMap,
+        new_product_notifications_enabled: settingsMap.new_product_notifications_enabled ?? true,
+        discount_notifications_enabled: settingsMap.discount_notifications_enabled ?? true,
+      };
     },
   });
 
-  // Update form when settings load
+  // Update form and notification states when settings load
   useEffect(() => {
     if (settings) {
       setFormData(settings);
+      if ('new_product_notifications_enabled' in settings) {
+        setNewProductNotificationsEnabled(settings.new_product_notifications_enabled);
+      }
+      if ('discount_notifications_enabled' in settings) {
+        setDiscountNotificationsEnabled(settings.discount_notifications_enabled);
+      }
     }
   }, [settings]);
 
@@ -198,6 +216,63 @@ export default function AdminSettings() {
       toast.success('Test notification sent');
     } else {
       toast.error('Please enable notifications first');
+    }
+  };
+
+  // Global notification toggle handlers (admin only)
+  const handleToggleNewProductNotifications = async (enabled: boolean) => {
+    try {
+      const { data: existing } = await supabase
+        .from('settings')
+        .select('id')
+        .eq('key', 'new_product_notifications_enabled')
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from('settings')
+          .update({ value: enabled })
+          .eq('key', 'new_product_notifications_enabled');
+      } else {
+        await supabase
+          .from('settings')
+          .insert({ key: 'new_product_notifications_enabled', value: enabled });
+      }
+
+      setNewProductNotificationsEnabled(enabled);
+      queryClient.invalidateQueries({ queryKey: ['store-settings'] });
+      toast.success(enabled ? 'New product notifications enabled' : 'New product notifications disabled');
+    } catch (error) {
+      console.error('Failed to update notification setting:', error);
+      toast.error('Failed to update setting');
+    }
+  };
+
+  const handleToggleDiscountNotifications = async (enabled: boolean) => {
+    try {
+      const { data: existing } = await supabase
+        .from('settings')
+        .select('id')
+        .eq('key', 'discount_notifications_enabled')
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from('settings')
+          .update({ value: enabled })
+          .eq('key', 'discount_notifications_enabled');
+      } else {
+        await supabase
+          .from('settings')
+          .insert({ key: 'discount_notifications_enabled', value: enabled });
+      }
+
+      setDiscountNotificationsEnabled(enabled);
+      queryClient.invalidateQueries({ queryKey: ['store-settings'] });
+      toast.success(enabled ? 'Discount notifications enabled' : 'Discount notifications disabled');
+    } catch (error) {
+      console.error('Failed to update notification setting:', error);
+      toast.error('Failed to update setting');
     }
   };
 
@@ -745,6 +820,46 @@ export default function AdminSettings() {
           {/* Admin-Only Settings */}
           {isAdmin && (
             <>
+              {/* Global Notification Controls */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <BellRing className="h-5 w-5 text-primary" />
+                    <CardTitle>Global Notification Controls</CardTitle>
+                  </div>
+                  <CardDescription>Enable or disable push notifications for all users</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* New Product Notifications Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>New Product Notifications</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Notify users when new products are added to the store
+                      </p>
+                    </div>
+                    <Switch
+                      checked={newProductNotificationsEnabled}
+                      onCheckedChange={handleToggleNewProductNotifications}
+                    />
+                  </div>
+
+                  {/* Discount Code Notifications Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Discount Code Notifications</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Notify subscribed users when new discount codes are created
+                      </p>
+                    </div>
+                    <Switch
+                      checked={discountNotificationsEnabled}
+                      onCheckedChange={handleToggleDiscountNotifications}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Store Information */}
               <Card className="bg-card border-border">
                 <CardHeader>

@@ -90,30 +90,23 @@ export default function AdminDiscounts() {
         if (error) throw error;
       }
 
-      // Send notifications to subscribed users for new active discount codes
+      // Send notifications via edge function for new active discount codes
       if (isNewCode && data.is_active) {
         try {
-          // Get all users who are subscribed to discounts
-          const { data: subscribers } = await supabase
-            .from('email_subscriptions')
-            .select('user_id')
-            .eq('subscribed_to_discounts', true)
-            .not('user_id', 'is', null);
-
-          if (subscribers && subscribers.length > 0) {
-            const discountDisplay = data.discount_type === 'percentage' 
-              ? `${data.discount_value}% off` 
-              : `£${data.discount_value.toFixed(2)} off`;
-            
-            const notifications = subscribers.map(sub => ({
-              user_id: sub.user_id!,
-              title: '🏷️ New Discount Code!',
-              message: `Use code ${data.code.toUpperCase()} for ${discountDisplay} your next order!`,
-              type: 'discount',
-              link: '/products',
-            }));
-
-            await supabase.from('notifications').insert(notifications);
+          const { data: result, error: notifyError } = await supabase.functions.invoke('notify-discount', {
+            body: {
+              discount_id: data.id || `new-${Date.now()}`,
+              code: data.code.toUpperCase(),
+              discount_type: data.discount_type,
+              discount_value: data.discount_value,
+              expires_at: data.expires_at,
+            },
+          });
+          
+          if (notifyError) {
+            console.error('Failed to send discount notifications:', notifyError);
+          } else {
+            console.log('Discount notifications sent:', result);
           }
         } catch (e) {
           console.error('Failed to send discount notifications:', e);
