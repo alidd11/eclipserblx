@@ -123,8 +123,8 @@ export default function OrderSuccess() {
                   <span className="font-mono">{order.id.slice(0, 8).toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Email</span>
-                  <span>{order.customer_email}</span>
+                  <span className="text-muted-foreground">Date</span>
+                  <span>{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total</span>

@@ -77,8 +77,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     if (!user) return '';
     const metaName = (user.user_metadata as any)?.display_name;
     if (typeof metaName === 'string' && metaName.trim()) return metaName.trim();
-    if (user.email) return user.email.split('@')[0];
-    return '';
+    return 'User';
   }, [user]);
 
   const { data: profile, isLoading: profileLoading } = useQuery({
