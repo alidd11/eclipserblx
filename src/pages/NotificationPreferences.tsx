@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send } from 'lucide-react';
+import { Bell, Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send, Headphones } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -24,6 +24,7 @@ export default function NotificationPreferences() {
   const [productAlerts, setProductAlerts] = useState(true);
   const [discountAlerts, setDiscountAlerts] = useState(true);
   const [forumAlerts, setForumAlerts] = useState(true);
+  const [supportReplies, setSupportReplies] = useState(true);
   const [testingPush, setTestingPush] = useState(false);
 
   // Fetch existing subscription
@@ -48,6 +49,7 @@ export default function NotificationPreferences() {
       setProductAlerts(subscription.subscribed_to_updates);
       setDiscountAlerts(subscription.subscribed_to_discounts);
       setForumAlerts(subscription.subscribed_to_newsletters);
+      setSupportReplies(subscription.subscribed_to_support_replies ?? true);
     }
   }, [subscription]);
 
@@ -56,6 +58,7 @@ export default function NotificationPreferences() {
       subscribed_to_updates: boolean;
       subscribed_to_discounts: boolean;
       subscribed_to_newsletters: boolean;
+      subscribed_to_support_replies: boolean;
     }) => {
       if (!user?.id || !user?.email) throw new Error('Not authenticated');
 
@@ -100,6 +103,7 @@ export default function NotificationPreferences() {
       subscribed_to_updates: productAlerts,
       subscribed_to_discounts: discountAlerts,
       subscribed_to_newsletters: forumAlerts,
+      subscribed_to_support_replies: supportReplies,
     });
   };
 
@@ -123,10 +127,12 @@ export default function NotificationPreferences() {
     setProductAlerts(false);
     setDiscountAlerts(false);
     setForumAlerts(false);
+    setSupportReplies(false);
     updateMutation.mutate({
       subscribed_to_updates: false,
       subscribed_to_discounts: false,
       subscribed_to_newsletters: false,
+      subscribed_to_support_replies: false,
     });
   };
 
@@ -168,7 +174,8 @@ export default function NotificationPreferences() {
   const hasChanges = subscription
     ? (productAlerts !== subscription.subscribed_to_updates ||
        discountAlerts !== subscription.subscribed_to_discounts ||
-       forumAlerts !== subscription.subscribed_to_newsletters)
+       forumAlerts !== subscription.subscribed_to_newsletters ||
+       supportReplies !== (subscription.subscribed_to_support_replies ?? true))
     : true;
 
   if (!user) {
@@ -313,6 +320,22 @@ export default function NotificationPreferences() {
                   />
                 </div>
 
+                {/* Support Reply Alerts */}
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <Headphones className="h-5 w-5 text-primary" />
+                    <div>
+                      <Label htmlFor="support-alerts" className="font-medium cursor-pointer">Support Replies</Label>
+                      <p className="text-sm text-muted-foreground">Push notifications when staff replies to your messages</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="support-alerts"
+                    checked={supportReplies}
+                    onCheckedChange={setSupportReplies}
+                  />
+                </div>
+
                 <Separator className="my-4" />
 
                 {/* Action Buttons */}
@@ -332,7 +355,7 @@ export default function NotificationPreferences() {
                   <Button
                     variant="outline"
                     onClick={handleDisableAll}
-                    disabled={updateMutation.isPending || (!productAlerts && !discountAlerts && !forumAlerts)}
+                    disabled={updateMutation.isPending || (!productAlerts && !discountAlerts && !forumAlerts && !supportReplies)}
                   >
                     <BellOff className="mr-2 h-4 w-4" />
                     Disable All Alerts
