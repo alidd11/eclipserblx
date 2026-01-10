@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2 } from 'lucide-react';
+import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ interface OrderItem {
     name: string;
     images: string[] | null;
     asset_file_url: string | null;
+    category_id: string | null;
   } | null;
 }
 
@@ -31,9 +32,34 @@ interface Order {
   order_items: OrderItem[];
 }
 
+interface BotInstallationCode {
+  id: string;
+  installation_code: string;
+  order_item_id: string;
+  is_used: boolean;
+}
+
+const BOT_CATEGORY_ID = '852838dc-adb6-4154-93fe-d1814fe46263';
+
 export default function Downloads() {
   const { user, session } = useAuth();
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // Fetch bot installation codes for the user
+  const { data: botCodes } = useQuery({
+    queryKey: ['user-bot-codes', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('bot_installation_codes')
+        .select('id, installation_code, order_item_id, is_used')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      return data as BotInstallationCode[];
+    },
+    enabled: !!user?.id,
+  });
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['user-downloads', user?.id, user?.email],
@@ -57,7 +83,8 @@ export default function Downloads() {
               id,
               name,
               images,
-              asset_file_url
+              asset_file_url,
+              category_id
             )
           )
         `)
@@ -85,7 +112,8 @@ export default function Downloads() {
                 id,
                 name,
                 images,
-                asset_file_url
+                asset_file_url,
+                category_id
               )
             )
           `)
@@ -146,6 +174,23 @@ export default function Downloads() {
     } finally {
       setDownloading(null);
     }
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast.success('Installation code copied!');
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  // Helper to check if an item is a bot product
+  const isBotProduct = (item: OrderItem) => {
+    return item.product?.category_id === BOT_CATEGORY_ID;
+  };
+
+  // Get bot code for an order item
+  const getBotCode = (orderItemId: string) => {
+    return botCodes?.find(code => code.order_item_id === orderItemId);
   };
 
   if (!user) {
@@ -223,6 +268,8 @@ export default function Downloads() {
                 {downloadableItems.map((item) => {
                   const isDownloading = downloading === item.id;
                   const hasAsset = !!item.product?.asset_file_url;
+                  const isBot = isBotProduct(item);
+                  const botCode = isBot ? getBotCode(item.id) : null;
                   
                   return (
                     <div 
@@ -237,6 +284,10 @@ export default function Downloads() {
                             alt={item.product_name}
                             className="w-full h-full object-cover"
                           />
+                        ) : isBot ? (
+                          <div className="w-full h-full flex items-center justify-center bg-blue-500/10">
+                            <Bot className="h-6 w-6 text-blue-500" />
+                          </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Package className="h-6 w-6 text-muted-foreground" />
@@ -252,36 +303,81 @@ export default function Downloads() {
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Purchased
                           </Badge>
+                          {isBot && (
+                            <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+                              <Bot className="h-3 w-3 mr-1" />
+                              Bot
+                            </Badge>
+                          )}
                           <span className="text-xs text-muted-foreground">
                             {new Date(item.orderDate).toLocaleDateString()}
                           </span>
                         </div>
+                        
+                        {/* Show installation code for bot products */}
+                        {isBot && botCode && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <Key className="h-3 w-3 text-muted-foreground" />
+                            <code className="text-xs font-mono bg-background px-2 py-1 rounded border">
+                              {botCode.installation_code}
+                            </code>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => handleCopyCode(botCode.installation_code)}
+                            >
+                              {copiedCode === botCode.installation_code ? (
+                                <CheckCircle className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </Button>
+                            {botCode.is_used && (
+                              <Badge variant="secondary" className="text-xs">Claimed</Badge>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Download Button */}
-                      <Button
-                        onClick={() => handleDownload(item)}
-                        disabled={!hasAsset || isDownloading}
-                        className="gradient-button border-0"
-                        size="sm"
-                      >
-                        {isDownloading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Preparing...
-                          </>
-                        ) : !hasAsset ? (
-                          <>
-                            <Package className="h-4 w-4 mr-2" />
-                            No file
-                          </>
-                        ) : (
-                          <>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </>
-                        )}
-                      </Button>
+                      {/* Action Button */}
+                      {isBot ? (
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
+                        >
+                          <Link to="/bot-installation">
+                            <Bot className="h-4 w-4 mr-2" />
+                            View Guide
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleDownload(item)}
+                          disabled={!hasAsset || isDownloading}
+                          className="gradient-button border-0"
+                          size="sm"
+                        >
+                          {isDownloading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Preparing...
+                            </>
+                          ) : !hasAsset ? (
+                            <>
+                              <Package className="h-4 w-4 mr-2" />
+                              No file
+                            </>
+                          ) : (
+                            <>
+                              <Download className="h-4 w-4 mr-2" />
+                              Download
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   );
                 })}
