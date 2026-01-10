@@ -312,7 +312,7 @@ async function processPayment(
     logStep("Failed to trigger email", { error: String(e) });
   }
 
-  // Create in-app notification for the user
+  // Create in-app notification and send push notification to the user
   if (userId) {
     try {
       const hasBotPurchase = items.some(item => 
@@ -327,6 +327,7 @@ async function processPayment(
         ? `Your bot purchase is complete! Your installation code is ready. Visit Downloads to view your code and installation instructions.`
         : `Your order has been confirmed. Visit Downloads to access your purchased products.`;
       
+      // Create in-app notification
       const { error: notifError } = await supabase
         .from('notifications')
         .insert({
@@ -341,6 +342,31 @@ async function processPayment(
         logStep("ERROR creating notification", { error: notifError.message });
       } else {
         logStep("In-app notification created", { userId, type: hasBotPurchase ? 'bot_purchase' : 'order' });
+      }
+
+      // Send push notification to customer
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({
+            user_ids: [userId],
+            payload: {
+              title: notificationTitle,
+              body: notificationMessage,
+              tag: `order-${orderId}`,
+              url: '/downloads',
+              requireInteraction: true,
+            },
+          }),
+        });
+        logStep("Push notification sent to customer", { status: pushResponse.status, userId });
+      } catch (pushError) {
+        logStep("Failed to send push notification", { error: String(pushError) });
       }
     } catch (e) {
       logStep("Failed to create notification", { error: String(e) });
