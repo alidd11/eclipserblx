@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '@/hooks/useCart';
 import type { SavedPaymentMethod } from '@/hooks/useSavedPaymentMethods';
 
 interface CartItem {
@@ -75,6 +76,7 @@ export function SavedCardButton({
   onProcessing,
 }: SavedCardButtonProps) {
   const navigate = useNavigate();
+  const { clearCart } = useCart();
   const [isCharging, setIsCharging] = useState(false);
 
   const handlePayWithSavedCard = async () => {
@@ -99,6 +101,8 @@ export function SavedCardButton({
       if (error) throw error;
 
       if (data?.success) {
+        // Clear the cart after successful payment
+        clearCart();
         showSuccessNotification('Payment Successful!', 'Your order is being processed');
         navigate(`/order-success?payment_intent=${data.paymentIntentId}`);
       } else {

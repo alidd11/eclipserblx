@@ -41,6 +41,8 @@ serve(async (req) => {
     let paymentId = "";
     let paymentMethod = "stripe"; // Valid values: stripe, paypal, klarna, apple_pay, google_pay
     let amountTotal = 0;
+    let discountCodeId: string | null = null;
+    let discountAmount = 0;
 
     // Handle Stripe Checkout Session
     if (sessionId) {
@@ -64,6 +66,8 @@ serve(async (req) => {
       customerEmail = session.customer_email || session.metadata?.customer_email || "";
       userId = session.metadata?.user_id || null;
       paymentId = session.id;
+      discountCodeId = session.metadata?.discount_code_id || null;
+      discountAmount = parseFloat(session.metadata?.discount_amount || "0");
       // Map Stripe payment method types to our valid values
       const pmType = session.payment_method_types?.[0];
       if (pmType === 'paypal') paymentMethod = 'paypal';
@@ -91,6 +95,8 @@ serve(async (req) => {
       customerEmail = paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "";
       userId = paymentIntent.metadata?.user_id || null;
       paymentId = paymentIntent.id;
+      discountCodeId = paymentIntent.metadata?.discount_code_id || null;
+      discountAmount = parseFloat(paymentIntent.metadata?.discount_amount || "0");
       
       // Determine payment method type - must match constraint values
       if (paymentIntent.payment_method) {
@@ -132,9 +138,26 @@ serve(async (req) => {
 
     // Calculate totals
     const subtotal = items.reduce((sum: number, item: any) => sum + item.price, 0);
-    const total = amountTotal || subtotal;
+    const total = amountTotal || (subtotal - discountAmount);
 
-    logStep("Creating order", { customerEmail, userId, subtotal, total, paymentMethod });
+    logStep("Creating order", { customerEmail, userId, subtotal, discountAmount, total, paymentMethod, discountCodeId });
+
+    // Increment discount code usage if applicable
+    if (discountCodeId) {
+      const { data: discount } = await supabaseClient
+        .from('discount_codes')
+        .select('current_uses')
+        .eq('id', discountCodeId)
+        .single();
+
+      if (discount) {
+        await supabaseClient
+          .from('discount_codes')
+          .update({ current_uses: (discount.current_uses || 0) + 1 })
+          .eq('id', discountCodeId);
+        logStep("Discount code usage incremented", { discountCodeId });
+      }
+    }
 
     // Create order
     const { data: order, error: orderError } = await supabaseClient
@@ -144,6 +167,8 @@ serve(async (req) => {
         user_id: userId || null,
         subtotal: subtotal,
         total: total,
+        discount_amount: discountAmount > 0 ? discountAmount : null,
+        discount_code_id: discountCodeId || null,
         status: "paid",
         payment_id: paymentId,
         payment_method: paymentMethod,
