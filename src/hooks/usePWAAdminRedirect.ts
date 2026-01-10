@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const ADMIN_PWA_KEY = 'eclipse_admin_pwa';
@@ -51,12 +51,17 @@ function isAdminManifest(): boolean {
  * 1. User is on the root page
  * 2. App is running in standalone mode (installed PWA)
  * 3. Either: PWA was installed from admin context OR admin manifest is active
+ * 4. This is the initial app load (not subsequent navigation)
  */
 export function usePWAAdminRedirect() {
   const navigate = useNavigate();
   const location = useLocation();
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
+    // Only redirect once per session - prevents redirect loops during navigation
+    if (hasRedirectedRef.current) return;
+
     // Check if running as installed PWA
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -67,15 +72,17 @@ export function usePWAAdminRedirect() {
     // If we're already on an admin route, mark as admin PWA
     if (location.pathname.startsWith('/admin')) {
       markAdminPWA();
+      hasRedirectedRef.current = true;
       return;
     }
 
-    // Only redirect if on root path
+    // Only redirect if on root path (initial load)
     if (location.pathname !== '/') return;
 
     // Check if this is an admin PWA installation
     if (isAdminPWA() || isAdminManifest()) {
       markAdminPWA();
+      hasRedirectedRef.current = true;
       navigate('/admin', { replace: true });
     }
   }, [location.pathname, navigate]);
