@@ -195,7 +195,7 @@ async function processPayment(
       user_id: userId,
       payment_id: paymentId,
       payment_method: paymentMethod,
-      status: "completed",
+      status: "paid",
       subtotal,
       total,
     })
