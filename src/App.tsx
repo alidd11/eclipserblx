@@ -11,6 +11,7 @@ import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
 import { IpBanCheck } from "@/components/IpBanCheck";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminPWAHandler } from "@/components/pwa/AdminPWAHandler";
 
 // Eagerly loaded - critical path
 import Index from "./pages/Index";
@@ -97,6 +98,7 @@ const App = () => (
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <IpBanCheck>
               <PWAWrapper>
+                <AdminPWAHandler />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                   <Route path="/" element={<Index />} />

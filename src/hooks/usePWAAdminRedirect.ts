@@ -38,19 +38,25 @@ export function isAdminPWA(): boolean {
 }
 
 /**
+ * Detects if the current manifest is the admin manifest
+ * by checking the manifest link href
+ */
+function isAdminManifest(): boolean {
+  const manifestLink = document.querySelector('link[rel="manifest"]');
+  return manifestLink?.getAttribute('href')?.includes('manifest-admin') || false;
+}
+
+/**
  * Hook to redirect to admin dashboard if:
  * 1. User is on the root page
- * 2. PWA was installed from admin context
- * 3. App is running in standalone mode (installed PWA)
+ * 2. App is running in standalone mode (installed PWA)
+ * 3. Either: PWA was installed from admin context OR admin manifest is active
  */
 export function usePWAAdminRedirect() {
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Only run on root path
-    if (location.pathname !== '/') return;
-
     // Check if running as installed PWA
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -58,8 +64,25 @@ export function usePWAAdminRedirect() {
 
     if (!isStandalone) return;
 
-    // Check if this is an admin PWA installation
-    if (isAdminPWA()) {
+    // If we're already on an admin route, mark as admin PWA
+    if (location.pathname.startsWith('/admin')) {
+      markAdminPWA();
+      return;
+    }
+
+    // Only redirect if on root path
+    if (location.pathname !== '/') return;
+
+    // Check if this is an admin PWA installation by:
+    // 1. Checking localStorage flag (set when visiting admin pages)
+    // 2. Checking if the current manifest is admin manifest
+    // 3. Checking URL parameters from manifest start_url
+    const urlParams = new URLSearchParams(window.location.search);
+    const isFromAdminManifest = urlParams.get('pwa') === 'admin';
+    
+    if (isAdminPWA() || isAdminManifest() || isFromAdminManifest) {
+      // Mark as admin PWA for future launches
+      markAdminPWA();
       navigate('/admin', { replace: true });
     }
   }, [location.pathname, navigate]);
