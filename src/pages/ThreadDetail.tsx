@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { cn } from '@/lib/utils';
 
 // Badge configuration for user roles
@@ -244,21 +244,21 @@ export default function ThreadDetail() {
     try {
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) {
-          toast.error(`${file.name} is not an image`);
+          showErrorNotification('Invalid File', `${file.name} is not an image`);
           continue;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 5MB)`);
+          showErrorNotification('File Too Large', `${file.name} exceeds 5MB limit`);
           continue;
         }
 
         // Check for NSFW content
-        toast.info(`Checking ${file.name}...`);
+        showInfoNotification('Checking...', `Scanning ${file.name}`);
         const nsfwResult = await checkNSFW(file);
         
         if (nsfwResult.isNSFW) {
-          toast.error(`${file.name} was rejected: ${nsfwResult.reason || 'Inappropriate content detected'}`);
+          showErrorNotification('Content Rejected', `${file.name}: ${nsfwResult.reason || 'Inappropriate content'}`);
           continue;
         }
 
@@ -270,7 +270,7 @@ export default function ThreadDetail() {
           .upload(fileName, file);
 
         if (uploadError) {
-          toast.error(`Failed to upload ${file.name}`);
+          showErrorNotification('Upload Failed', `Could not upload ${file.name}`);
           continue;
         }
 
@@ -283,10 +283,10 @@ export default function ThreadDetail() {
 
       if (newImages.length > 0) {
         setImages(prev => [...prev, ...newImages]);
-        toast.success(`${newImages.length} image(s) uploaded`);
+        showSuccessNotification('Upload Complete', `${newImages.length} image(s) uploaded`);
       }
     } catch (error) {
-      toast.error('Failed to upload images');
+      showErrorNotification('Upload Error', 'Failed to upload images');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -332,12 +332,12 @@ export default function ThreadDetail() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-posts', thread?.id] });
-      toast.success('Reply posted!');
+      showSuccessNotification('Reply Posted!', 'Your response has been added');
       setReplyContent('');
       setImages([]);
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to post reply');
+      showErrorNotification('Post Failed', error instanceof Error ? error.message : 'Could not post reply');
     },
   });
 

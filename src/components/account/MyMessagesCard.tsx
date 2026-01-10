@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ContactMessage {
@@ -90,9 +90,7 @@ export function MyMessagesCard() {
           
           if (msg?.email === user.email && payload.new.sender_type === 'staff') {
             // Staff replied - show notification
-            toast.success('New reply from support!', {
-              description: 'Staff has responded to your message.',
-            });
+            showSuccessNotification('New Reply!', 'Staff has responded to your message');
             
             // Refresh data
             queryClient.invalidateQueries({ queryKey: ['my-contact-messages'] });
@@ -134,14 +132,14 @@ export function MyMessagesCard() {
       if (updateError) throw updateError;
     },
     onSuccess: (_, { messageId }) => {
-      toast.success('Reply sent successfully');
+      showSuccessNotification('Reply Sent', 'Your message has been delivered');
       setReplyContent(prev => ({ ...prev, [messageId]: '' }));
       queryClient.invalidateQueries({ queryKey: ['my-contact-messages'] });
       queryClient.invalidateQueries({ queryKey: ['message-replies', messageId] });
     },
     onError: (error) => {
       console.error('Failed to send reply:', error);
-      toast.error('Failed to send reply');
+      showErrorNotification('Send Failed', 'Unable to send your reply');
     },
   });
 

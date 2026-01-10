@@ -13,7 +13,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { notifyTicketReply } from '@/lib/pushNotifications';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 
 interface Conversation {
   id: string;
@@ -255,7 +255,7 @@ export default function ChatHistory() {
     
     // Prevent replies to closed tickets
     if (selectedTicket.status === 'closed') {
-      toast.error('Cannot reply to a closed ticket.');
+      showErrorNotification('Ticket Closed', 'Cannot reply to a closed ticket');
       return;
     }
 
@@ -299,9 +299,9 @@ export default function ChatHistory() {
           subject: selectedTicket.subject,
         });
 
-        toast.success('Reply sent! Your ticket has been re-opened.');
+        showSuccessNotification('Reply Sent!', 'Your ticket has been re-opened');
       } else {
-        toast.success('Reply sent!');
+        showSuccessNotification('Reply Sent!', 'Your message has been delivered');
       }
 
       // Reload messages
@@ -313,7 +313,7 @@ export default function ChatHistory() {
       }, 100);
     } catch (error) {
       console.error('Error sending reply:', error);
-      toast.error('Failed to send reply. Please try again.');
+      showErrorNotification('Send Failed', 'Please try again');
       setReplyMessage(messageText);
     } finally {
       setIsSending(false);

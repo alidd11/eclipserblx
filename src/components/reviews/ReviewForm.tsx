@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useQueryClient } from '@tanstack/react-query';
 import { reviewSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
@@ -29,7 +29,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
     e.preventDefault();
     
     if (!user) {
-      toast.error('Please sign in to leave a review');
+      showErrorNotification('Sign In Required', 'Please sign in to leave a review');
       return;
     }
 
@@ -41,7 +41,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
     });
 
     if (isValidationError(validation)) {
-      toast.error(validation.error);
+      showErrorNotification('Validation Error', validation.error);
       return;
     }
 
@@ -60,7 +60,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
 
       if (error) throw error;
 
-      toast.success('Review submitted! It will be visible after approval.');
+      showSuccessNotification('Review Submitted!', 'It will be visible after approval');
       setRating(5);
       setTitle('');
       setContent('');
@@ -68,7 +68,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
       onSuccess?.();
     } catch (error) {
       console.error('Error submitting review:', error);
-      toast.error('Failed to submit review');
+      showErrorNotification('Submission Failed', 'Could not submit your review');
     } finally {
       setIsSubmitting(false);
     }

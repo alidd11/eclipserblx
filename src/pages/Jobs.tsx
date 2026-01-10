@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { jobApplicationSchema, emailCheckSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
@@ -111,14 +111,14 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
       });
     },
     onSuccess: () => {
-      toast.success('Application submitted successfully! Check your email for confirmation.');
+      showSuccessNotification('Application Submitted!', 'Check your email for confirmation');
       onSuccess();
     },
     onError: (error: Error) => {
       if (error.message === 'DUPLICATE_EMAIL') {
-        toast.error('You have already submitted an application. Only one application per person is allowed.');
+        showErrorNotification('Already Applied', 'Only one application per person is allowed');
       } else {
-        toast.error(error.message || 'Failed to submit application. Please try again.');
+        showErrorNotification('Submission Failed', error.message || 'Please try again');
       }
     },
   });
@@ -232,7 +232,7 @@ function ApplicationStatusCheck() {
     // Validate email with schema
     const validation = validateWithSchema(emailCheckSchema, { email });
     if (isValidationError(validation)) {
-      toast.error(validation.error);
+      showErrorNotification('Invalid Email', validation.error);
       return;
     }
 
@@ -250,7 +250,7 @@ function ApplicationStatusCheck() {
       if (appError) throw appError;
 
       if (!application) {
-        toast.error('No application found for this email address');
+        showErrorNotification('Not Found', 'No application found for this email');
         setApplicationData(null);
         return;
       }
@@ -281,7 +281,7 @@ function ApplicationStatusCheck() {
       }
     } catch (error) {
       console.error('Error checking status:', error);
-      toast.error('Failed to check application status');
+      showErrorNotification('Check Failed', 'Could not verify application status');
     } finally {
       setIsChecking(false);
     }

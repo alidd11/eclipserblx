@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 
 interface IpBan {
   id: string;
@@ -91,10 +91,10 @@ export default function IpBans() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ip-bans'] });
-      toast.success('IP ban removed successfully');
+      showSuccessNotification('Ban Removed', 'IP address has been unbanned');
     },
     onError: (error) => {
-      toast.error('Failed to remove ban: ' + error.message);
+      showErrorNotification('Remove Failed', error.message);
     },
   });
 

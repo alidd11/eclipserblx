@@ -3,7 +3,7 @@ import { Camera, Loader2, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 
 interface AvatarUploadProps {
   userId: string;
@@ -31,13 +31,13 @@ export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarCh
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      showErrorNotification('Invalid File', 'Please select an image file');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      showErrorNotification('File Too Large', 'Image must be less than 5MB');
       return;
     }
 
@@ -77,10 +77,10 @@ export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarCh
       if (updateError) throw updateError;
 
       onAvatarChange(publicUrl);
-      toast.success('Profile picture updated!');
+      showSuccessNotification('Profile Updated', 'Your profile picture has been changed');
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error(error.message || 'Failed to upload image');
+      showErrorNotification('Upload Failed', error.message || 'Failed to upload image');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {

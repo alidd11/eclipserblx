@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { showSuccessNotification, showInfoNotification, showNativeNotification } from '@/lib/nativeNotification';
 
 export const useServiceWorkerUpdate = () => {
   // Send message to service worker
@@ -49,19 +49,12 @@ export const useServiceWorkerUpdate = () => {
       console.log('[App] SW message received:', event.data);
       
       if (event.data?.type === 'SW_UPDATED') {
-        // Show toast offering to reload
-        toast.info('App updated!', {
-          description: 'A new version is available.',
-          action: {
-            label: 'Reload',
-            onClick: () => window.location.reload(),
-          },
-          duration: 10000,
-        });
+        // Show native notification for app update
+        showInfoNotification('App Updated!', 'A new version is available. Reload to update.');
       }
       
       if (event.data?.type === 'CACHE_CLEARED') {
-        toast.success('Cache cleared successfully');
+        showSuccessNotification('Cache Cleared', 'App cache has been refreshed');
       }
     };
 
@@ -70,18 +63,8 @@ export const useServiceWorkerUpdate = () => {
     // Check for waiting service worker on mount
     navigator.serviceWorker.getRegistration().then(registration => {
       if (registration?.waiting) {
-        // There's an update waiting, offer to reload
-        toast.info('Update available', {
-          description: 'Reload to get the latest version.',
-          action: {
-            label: 'Reload',
-            onClick: () => {
-              registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
-              window.location.reload();
-            },
-          },
-          duration: 15000,
-        });
+        // There's an update waiting
+        showInfoNotification('Update Available', 'Reload to get the latest version');
       }
     });
 

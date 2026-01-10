@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
@@ -537,7 +537,7 @@ export default function StaffMessages() {
           old.map(m => m._tempId === context.tempId ? { ...m, _status: 'failed' as const } : m)
         );
       }
-      toast.error('Failed to send message');
+      showErrorNotification('Send Failed', 'Could not send message');
     },
   });
 
@@ -650,7 +650,7 @@ export default function StaffMessages() {
             });
             // Show toast for mentions even when focused
             if (!document.hidden) {
-              toast.info(`${senderName} mentioned you in staff chat`);
+              showInfoNotification('Mentioned', `${senderName} mentioned you in staff chat`);
             }
           } else {
             sendNotification('New Staff Message', {

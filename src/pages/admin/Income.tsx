@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { toast } from 'sonner';
+import { showSuccessNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
 
 // Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards)

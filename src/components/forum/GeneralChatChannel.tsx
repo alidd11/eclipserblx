@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 
 // Badge configuration for user roles
 const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
@@ -202,10 +202,10 @@ export function GeneralChatChannel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-chat-messages'] });
-      toast.success('Message deleted');
+      showSuccessNotification('Deleted', 'Message removed');
     },
     onError: () => {
-      toast.error('Failed to delete message');
+      showErrorNotification('Error', 'Could not delete message');
     },
   });
 

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { StripeProvider } from '@/components/payments/StripeProvider';
 import { PaymentRequestButton } from '@/components/payments/PaymentRequestButton';
 
@@ -32,7 +32,7 @@ export default function Checkout() {
 
   // Redirect to login if not authenticated
   if (!loading && !user) {
-    toast.error('Please sign in to checkout');
+    showErrorNotification('Sign In Required', 'Please sign in to checkout');
     return <Navigate to="/auth" state={{ from: '/checkout' }} replace />;
   }
 
@@ -52,7 +52,7 @@ export default function Checkout() {
 
   const applyDiscount = async () => {
     if (!discountCode.trim()) {
-      toast.error('Please enter a discount code');
+      showErrorNotification('Error', 'Please enter a discount code');
       return;
     }
 
@@ -67,25 +67,25 @@ export default function Checkout() {
         .single();
 
       if (error || !discount) {
-        toast.error('Invalid discount code');
+        showErrorNotification('Invalid Code', 'This discount code is not valid');
         return;
       }
 
       // Check if expired
       if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
-        toast.error('This discount code has expired');
+        showErrorNotification('Code Expired', 'This discount code has expired');
         return;
       }
 
       // Check max uses
       if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) {
-        toast.error('This discount code has reached its usage limit');
+        showErrorNotification('Limit Reached', 'This discount code has reached its usage limit');
         return;
       }
 
       // Check minimum order
       if (discount.min_order_amount && total < discount.min_order_amount) {
-        toast.error(`Minimum order of £${discount.min_order_amount.toFixed(2)} required`);
+        showErrorNotification('Minimum Not Met', `Minimum order of £${discount.min_order_amount.toFixed(2)} required`);
         return;
       }
 
@@ -106,9 +106,9 @@ export default function Checkout() {
       });
 
       setDiscountCode('');
-      toast.success('Discount applied!');
+      showSuccessNotification('Discount Applied!', `You saved £${amount.toFixed(2)}`);
     } catch (error) {
-      toast.error('Failed to apply discount');
+      showErrorNotification('Error', 'Failed to apply discount');
     } finally {
       setIsApplyingDiscount(false);
     }
@@ -120,7 +120,7 @@ export default function Checkout() {
 
   const handleStripeCheckout = async () => {
     if (!user?.email) {
-      toast.error('Please sign in to continue');
+      showErrorNotification('Sign In Required', 'Please sign in to continue');
       return;
     }
 
@@ -153,7 +153,7 @@ export default function Checkout() {
       }
     } catch (error: any) {
       console.error('Checkout error:', error);
-      toast.error(error.message || 'Failed to start checkout. Please try again.');
+      showErrorNotification('Checkout Failed', error.message || 'Please try again.');
       setIsProcessing(false);
     }
   };
