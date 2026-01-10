@@ -597,14 +597,6 @@ export default function ContactMessages() {
                   </Select>
                 </div>
 
-                {isAdmin && (
-                  <Button asChild variant="outline" className="w-full">
-                    <a href={`mailto:${selectedMessage?.email}?subject=Re: ${selectedMessage?.subject}`}>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Reply via Email Client
-                    </a>
-                  </Button>
-                )}
               </TabsContent>
               
               <TabsContent value="reply" className="space-y-4">
