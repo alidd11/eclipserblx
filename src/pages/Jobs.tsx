@@ -96,8 +96,18 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
         if (error.code === '23505') {
           throw new Error('DUPLICATE_EMAIL');
         }
+        // Check for rate limit error (RLS policy violation)
+        if (error.code === '42501' || error.message?.includes('check_rate_limit')) {
+          throw new Error('RATE_LIMITED');
+        }
         throw error;
       }
+
+      // Record rate limit entry after successful submission
+      await supabase.rpc('record_rate_limit', {
+        p_identifier: validatedData.applicant_email,
+        p_action_type: 'job_application'
+      });
 
       // Send confirmation email (fire and forget - don't block on this)
       supabase.functions.invoke('send-application-confirmation', {
@@ -117,6 +127,8 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
     onError: (error: Error) => {
       if (error.message === 'DUPLICATE_EMAIL') {
         showErrorNotification('Already Applied', 'Only one application per person is allowed');
+      } else if (error.message === 'RATE_LIMITED') {
+        showErrorNotification('Too Many Applications', 'You can only submit 3 applications per day. Please try again tomorrow.');
       } else {
         showErrorNotification('Submission Failed', error.message || 'Please try again');
       }
