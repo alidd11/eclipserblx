@@ -19,6 +19,7 @@ import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
 import { ReferralCard } from '@/components/account/ReferralCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
+import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
@@ -477,6 +478,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Notification Settings */}
         <NotificationSettingsCard />
+
+        {/* My Messages */}
+        <MyMessagesCard />
 
         {/* Badges */}
         <Card className="bg-card border-border">
