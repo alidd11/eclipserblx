@@ -196,6 +196,59 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Failed to update message status:", updateError);
     }
 
+    // Send push notification to customer if they have an account
+    try {
+      // Find the customer's user_id by their email
+      const { data: customerProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("email", recipientEmail)
+        .single();
+
+      if (customerProfile?.user_id) {
+        // Create in-app notification
+        await supabaseAdmin.from("notifications").insert({
+          user_id: customerProfile.user_id,
+          title: "Support Reply",
+          message: `Staff has replied to your message: "${originalSubject}"`,
+          type: "support",
+          link: "/account",
+        });
+
+        // Get customer's push subscriptions
+        const { data: subscriptions } = await supabaseAdmin
+          .from("push_subscriptions")
+          .select("*")
+          .eq("user_id", customerProfile.user_id);
+
+        if (subscriptions && subscriptions.length > 0) {
+          // Send push notification
+          const pushPayload = {
+            subscriptions: subscriptions.map((sub) => ({
+              endpoint: sub.endpoint,
+              keys: {
+                p256dh: sub.p256dh_key,
+                auth: sub.auth_key,
+              },
+            })),
+            title: "Support Reply",
+            body: `Staff has replied to: "${originalSubject}"`,
+            url: "/account",
+            tag: `contact-reply-${messageId}`,
+          };
+
+          await supabaseAdmin.functions.invoke("send-push-notification", {
+            body: pushPayload,
+          });
+
+          console.log("Push notification sent to customer:", recipientEmail);
+        }
+      }
+    } catch (pushError) {
+      console.error("Failed to send push notification:", pushError);
+      // Don't fail the request if push notification fails
+    }
+
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
