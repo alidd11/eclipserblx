@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2 } from 'lucide-react';
+import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2, FileText } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,6 +58,94 @@ interface ContactMessage {
   responded_by: string | null;
   notes: string | null;
 }
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  icon: string;
+  content: string;
+}
+
+const EMAIL_TEMPLATES: EmailTemplate[] = [
+  {
+    id: 'thank-you',
+    name: 'Thank You',
+    icon: '🙏',
+    content: `Thank you for reaching out to Eclipse!
+
+We truly appreciate you taking the time to contact us. Your message is important to us, and we're glad you chose to connect.
+
+If you have any other questions or need further assistance, please don't hesitate to reach out again.
+
+Best regards,
+The Eclipse Team`,
+  },
+  {
+    id: 'support-info',
+    name: 'Support Information',
+    icon: '💡',
+    content: `Thank you for contacting Eclipse Support!
+
+We've received your inquiry and want to help you as quickly as possible. Here are some helpful resources:
+
+• Visit our FAQ page for common questions: https://eclipserblx.com/faq
+• Check our status page for any ongoing issues: https://eclipserblx.com/status
+• Browse our product documentation in the Downloads section
+
+If your issue requires further assistance, please reply to this email with additional details about your situation.
+
+Best regards,
+The Eclipse Support Team`,
+  },
+  {
+    id: 'order-help',
+    name: 'Order Assistance',
+    icon: '📦',
+    content: `Thank you for reaching out about your order!
+
+We're happy to help with any order-related questions. To assist you better, please ensure you have your order confirmation email handy.
+
+Common order inquiries:
+• Download links can be found in your account under "Downloads"
+• Bot installation codes are sent to your email after purchase
+• Refund requests are handled per our refund policy
+
+If you're experiencing any technical issues with your purchase, please let us know the specific problem and we'll get it resolved right away.
+
+Best regards,
+The Eclipse Team`,
+  },
+  {
+    id: 'follow-up',
+    name: 'Follow Up',
+    icon: '🔄',
+    content: `Hi there!
+
+We're following up on your recent inquiry to Eclipse. We hope your question has been resolved.
+
+If you're still experiencing issues or need additional help, please reply to this email and we'll prioritize your request.
+
+Your satisfaction is important to us!
+
+Best regards,
+The Eclipse Team`,
+  },
+  {
+    id: 'issue-resolved',
+    name: 'Issue Resolved',
+    icon: '✅',
+    content: `Great news!
+
+We're happy to inform you that the issue you reported has been resolved. You should now be able to proceed without any problems.
+
+If you encounter any further issues or have additional questions, please don't hesitate to reach out.
+
+Thank you for your patience and for being a valued customer!
+
+Best regards,
+The Eclipse Team`,
+  },
+];
 
 export default function ContactMessages() {
   const queryClient = useQueryClient();
@@ -440,12 +528,36 @@ export default function ContactMessages() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Quick Templates
+                  </Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {EMAIL_TEMPLATES.map((template) => (
+                      <Button
+                        key={template.id}
+                        variant="outline"
+                        size="sm"
+                        className="justify-start gap-2 h-auto py-2 px-3"
+                        onClick={() => setReplyContent(template.content)}
+                      >
+                        <span className="text-base">{template.icon}</span>
+                        <span className="text-xs truncate">{template.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Select a template to use as a starting point, then customize as needed
+                  </p>
+                </div>
+
+                <div className="space-y-2">
                   <Label>Your Reply</Label>
                   <Textarea
-                    placeholder="Type your reply here..."
+                    placeholder="Type your reply here or select a template above..."
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
-                    rows={8}
+                    rows={10}
                     className="resize-none"
                   />
                   <p className="text-xs text-muted-foreground">
