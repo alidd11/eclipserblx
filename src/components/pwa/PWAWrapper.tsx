@@ -114,7 +114,7 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed top-0 left-0 right-0 z-[100] flex justify-center pointer-events-none"
-            style={{ paddingTop: pullDistance * 0.5 }}
+            style={{ paddingTop: `calc(env(safe-area-inset-top) + ${pullDistance * 0.5}px)` }}
           >
             <div
               className="bg-primary rounded-full p-3 shadow-lg"
@@ -136,7 +136,7 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[100] bg-destructive text-destructive-foreground px-4 py-2 flex items-center justify-center gap-2 text-sm"
+            className="fixed top-0 left-0 right-0 z-[100] bg-destructive text-destructive-foreground px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-center gap-2 text-sm"
           >
             <WifiOff className="h-4 w-4" />
             You're offline. Some features may be unavailable.
