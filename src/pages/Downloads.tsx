@@ -318,7 +318,7 @@ export default function Downloads() {
                         {isBot && botCode && (
                           <div className="mt-2 flex items-center gap-2">
                             <Key className="h-3 w-3 text-muted-foreground" />
-                            <code className="text-xs font-mono bg-background px-2 py-1 rounded border">
+                            <code className="text-xs font-mono bg-background px-2 py-1 rounded border whitespace-nowrap">
                               {botCode.installation_code}
                             </code>
                             <Button
