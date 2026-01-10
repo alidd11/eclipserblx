@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.notify-new-contact-message]
 verify_jwt = false
+
+[functions.receive-contact-reply]
+verify_jwt = false

@@ -289,24 +289,30 @@ export type Database = {
         Row: {
           contact_message_id: string
           created_at: string
+          email_message_id: string | null
           id: string
           reply_content: string
+          sender_type: string
           sent_at: string
           sent_by: string
         }
         Insert: {
           contact_message_id: string
           created_at?: string
+          email_message_id?: string | null
           id?: string
           reply_content: string
+          sender_type?: string
           sent_at?: string
           sent_by: string
         }
         Update: {
           contact_message_id?: string
           created_at?: string
+          email_message_id?: string | null
           id?: string
           reply_content?: string
+          sender_type?: string
           sent_at?: string
           sent_by?: string
         }
@@ -324,6 +330,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          email_thread_id: string | null
           id: string
           message: string
           name: string
@@ -336,6 +343,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          email_thread_id?: string | null
           id?: string
           message: string
           name: string
@@ -348,6 +356,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          email_thread_id?: string | null
           id?: string
           message?: string
           name?: string
