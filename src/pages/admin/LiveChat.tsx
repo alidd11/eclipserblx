@@ -552,9 +552,12 @@ export default function AdminLiveChat() {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
 
+  // Detect if on mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
   return (
     <AdminLayout requiredRoles={['admin', 'support_agent']}>
-      <div className="h-[calc(100vh-6rem)] flex flex-col">
+      <div className="h-[calc(100dvh-6rem)] flex flex-col">
         <Card className="bg-card border-border mb-4">
           <CardHeader className="pb-2 py-3 lg:py-4">
             <CardTitle className="text-xl sm:text-2xl font-display">Live Chat</CardTitle>
@@ -796,7 +799,7 @@ export default function AdminLiveChat() {
 
                 {/* Input */}
                 {selectedConversation.status !== 'closed' && (
-                  <div className="p-2 lg:p-4 border-t border-border space-y-2">
+                  <div className="p-2 lg:p-4 border-t border-border space-y-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] lg:pb-4">
                     <input
                       type="file"
                       ref={fileInputRef}

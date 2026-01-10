@@ -155,40 +155,78 @@ export default function StaffMessages() {
   const { playSound } = useNotificationSound();
   const { sendNotification, requestPermission, permission } = usePushNotifications();
 
-  // iOS VisualViewport keyboard handling
+  // Detect platform
+  const isAndroid = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
+  const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  // Cross-platform VisualViewport keyboard handling
   useEffect(() => {
     if (!isMobile || typeof window === 'undefined') return;
     
     const viewport = window.visualViewport;
-    if (!viewport) return;
+    
+    let resizeTimeout: NodeJS.Timeout | null = null;
     
     const handleResize = () => {
-      // Calculate keyboard height by comparing window height to viewport height
-      const newKeyboardHeight = window.innerHeight - viewport.height;
-      setKeyboardHeight(Math.max(0, newKeyboardHeight));
+      // Debounce to prevent jittery layout during keyboard animation
+      if (resizeTimeout) clearTimeout(resizeTimeout);
       
-      // Scroll to bottom when keyboard opens
-      if (newKeyboardHeight > 50 && scrollRef.current) {
-        setTimeout(() => {
-          const scrollArea = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-          if (scrollArea) {
-            scrollArea.scrollTop = scrollArea.scrollHeight;
+      resizeTimeout = setTimeout(() => {
+        let newKeyboardHeight = 0;
+        
+        if (viewport) {
+          // VisualViewport approach - works on both iOS and modern Android
+          newKeyboardHeight = window.innerHeight - viewport.height;
+          
+          // On Android, also account for viewport offset
+          if (isAndroid && viewport.offsetTop > 0) {
+            newKeyboardHeight = Math.max(newKeyboardHeight, viewport.offsetTop);
           }
-        }, 100);
-      }
+        } else {
+          // Fallback: use window.innerHeight comparison with screen height
+          // This is less accurate but works on older browsers
+          const screenHeight = window.screen.height;
+          const windowHeight = window.innerHeight;
+          if (screenHeight - windowHeight > 150) {
+            newKeyboardHeight = screenHeight - windowHeight;
+          }
+        }
+        
+        setKeyboardHeight(Math.max(0, newKeyboardHeight));
+        
+        // Scroll to bottom when keyboard opens
+        // Use longer timeout for Android's slower keyboard animation
+        if (newKeyboardHeight > 50 && scrollRef.current) {
+          setTimeout(() => {
+            const scrollArea = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollArea) {
+              scrollArea.scrollTop = scrollArea.scrollHeight;
+            }
+          }, isAndroid ? 150 : 100);
+        }
+      }, isAndroid ? 50 : 16); // Debounce more on Android
     };
     
-    viewport.addEventListener('resize', handleResize);
-    viewport.addEventListener('scroll', handleResize);
+    if (viewport) {
+      viewport.addEventListener('resize', handleResize);
+      viewport.addEventListener('scroll', handleResize);
+    }
+    
+    // Also listen to window resize as fallback
+    window.addEventListener('resize', handleResize);
     
     // Initial check
     handleResize();
     
     return () => {
-      viewport.removeEventListener('resize', handleResize);
-      viewport.removeEventListener('scroll', handleResize);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (viewport) {
+        viewport.removeEventListener('resize', handleResize);
+        viewport.removeEventListener('scroll', handleResize);
+      }
+      window.removeEventListener('resize', handleResize);
     };
-  }, [isMobile]);
+  }, [isMobile, isAndroid]);
 
   // Request notification permission on mount
   useEffect(() => {
@@ -1129,14 +1167,18 @@ export default function StaffMessages() {
         className={cn(
           "flex flex-col max-w-full overflow-hidden",
           // Mobile: stretch to fill entire remaining viewport below admin header, edge-to-edge
+          // Use dvh for Android which handles keyboard resize via interactive-widget meta tag
           isMobile 
-            ? "fixed inset-x-0 z-20" 
+            ? isAndroid
+              ? "fixed inset-x-0 top-[calc(env(safe-area-inset-top)+3.5rem)] bottom-0 z-20"
+              : "fixed inset-x-0 z-20"
             : "h-[calc(100dvh-5rem)] -m-6 lg:-m-8 relative"
         )}
         style={{ 
           WebkitOverflowScrolling: 'touch',
-          // On mobile, dynamically adjust for keyboard using VisualViewport
-          ...(isMobile && {
+          // On iOS, dynamically adjust for keyboard using VisualViewport
+          // On Android with interactive-widget=resizes-content, the viewport auto-adjusts
+          ...(!isAndroid && isMobile && {
             top: 'calc(env(safe-area-inset-top) + 3.5rem)',
             bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0px',
             transition: 'bottom 0.1s ease-out',
