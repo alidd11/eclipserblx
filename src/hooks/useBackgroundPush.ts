@@ -189,7 +189,9 @@ export function useBackgroundPush() {
         const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
+          // Important: pass the Uint8Array directly for maximum browser compatibility.
+          // Cast is to satisfy TS DOM lib differences (ArrayBuffer vs SharedArrayBuffer typing).
+          applicationServerKey: applicationServerKey as unknown as BufferSource,
         });
       }
 
