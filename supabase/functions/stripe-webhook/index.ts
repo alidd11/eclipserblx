@@ -312,6 +312,41 @@ async function processPayment(
     logStep("Failed to trigger email", { error: String(e) });
   }
 
+  // Create in-app notification for the user
+  if (userId) {
+    try {
+      const hasBotPurchase = items.some(item => 
+        item.category_slug === 'bots' || item.name.toLowerCase().includes('bot')
+      );
+      
+      const notificationTitle = hasBotPurchase 
+        ? '🤖 Bot Purchase Complete!' 
+        : '🎉 Order Confirmed!';
+      
+      const notificationMessage = hasBotPurchase
+        ? `Your bot purchase is complete! Your installation code is ready. Visit Downloads to view your code and installation instructions.`
+        : `Your order has been confirmed. Visit Downloads to access your purchased products.`;
+      
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: hasBotPurchase ? 'bot_purchase' : 'order',
+          link: '/downloads',
+        });
+      
+      if (notifError) {
+        logStep("ERROR creating notification", { error: notifError.message });
+      } else {
+        logStep("In-app notification created", { userId, type: hasBotPurchase ? 'bot_purchase' : 'order' });
+      }
+    } catch (e) {
+      logStep("Failed to create notification", { error: String(e) });
+    }
+  }
+
   // Process referral if user exists
   if (userId) {
     try {
