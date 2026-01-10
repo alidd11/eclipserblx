@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
 import { useStaffPresence } from '@/hooks/useStaffPresence';
+import { useAdminManifest } from '@/hooks/useAdminManifest';
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
@@ -115,6 +116,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   
   // Track staff presence across all admin pages (keeps user "online" when navigating)
   useStaffPresence();
+  
+  // Use admin-specific PWA manifest
+  useAdminManifest();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
