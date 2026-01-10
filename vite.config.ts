@@ -47,36 +47,9 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "custom-sw.js"],
-      manifest: {
-        name: "Eclipse",
-        short_name: "Eclipse",
-        description: "Eclipse - UK Roleplay Assets",
-        theme_color: "#1a1a2e",
-        background_color: "#0a0a0f",
-        display: "standalone",
-        orientation: "portrait",
-        scope: "/",
-        start_url: "/?pwa=true",
-        icons: [
-          {
-            src: "pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
-        ],
-      },
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "custom-sw.js", "manifest.webmanifest", "manifest-admin.json"],
+      // Disable automatic manifest injection - we handle this dynamically in useAdminManifest
+      manifest: false,
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
         // Import custom service worker for push notifications
