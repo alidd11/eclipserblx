@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -65,6 +66,8 @@ export default function ContactMessages() {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<ContactMessage | null>(null);
   const [notes, setNotes] = useState('');
+  const [replyContent, setReplyContent] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['contact-messages'],
@@ -135,6 +138,44 @@ export default function ContactMessages() {
   const handleSaveNotes = (id: string) => {
     updateMutation.mutate({ id, updates: { notes } });
     toast.success('Notes saved');
+  };
+
+  const handleSendReply = async () => {
+    if (!selectedMessage || !replyContent.trim()) {
+      toast.error('Please enter a reply message');
+      return;
+    }
+
+    setIsSendingReply(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-contact-reply', {
+        body: {
+          messageId: selectedMessage.id,
+          recipientEmail: selectedMessage.email,
+          recipientName: selectedMessage.name,
+          originalSubject: selectedMessage.subject,
+          replyContent: replyContent.trim(),
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Reply sent successfully!', {
+        description: `Email sent to ${selectedMessage.email}`,
+      });
+
+      // Update local state
+      setSelectedMessage({ ...selectedMessage, status: 'responded' });
+      setReplyContent('');
+      queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+    } catch (error: any) {
+      console.error('Error sending reply:', error);
+      toast.error('Failed to send reply', {
+        description: error.message || 'Please try again',
+      });
+    } finally {
+      setIsSendingReply(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -307,6 +348,7 @@ export default function ContactMessages() {
                             onClick={() => {
                               setSelectedMessage(msg);
                               setNotes(msg.notes || '');
+                              setReplyContent('');
                               handleMarkAsRead(msg);
                             }}
                           >
@@ -332,73 +374,133 @@ export default function ContactMessages() {
 
         {/* View Message Dialog */}
         <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{selectedMessage?.subject}</DialogTitle>
               <DialogDescription>
                 From {selectedMessage?.name} ({selectedMessage?.email})
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  {selectedMessage && format(new Date(selectedMessage.created_at), 'PPpp')}
+            
+            <Tabs defaultValue="message" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="message">Message</TabsTrigger>
+                <TabsTrigger value="reply">Reply</TabsTrigger>
+                <TabsTrigger value="notes">Notes</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="message" className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    {selectedMessage && format(new Date(selectedMessage.created_at), 'PPpp')}
+                  </div>
+                  {selectedMessage && getStatusBadge(selectedMessage.status)}
                 </div>
-                {selectedMessage && getStatusBadge(selectedMessage.status)}
-              </div>
 
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="whitespace-pre-wrap">{selectedMessage?.message}</p>
-              </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="whitespace-pre-wrap">{selectedMessage?.message}</p>
+                </div>
 
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select 
-                  value={selectedMessage?.status} 
-                  onValueChange={(value) => {
-                    if (selectedMessage) {
-                      handleUpdateStatus(selectedMessage.id, value);
-                      setSelectedMessage({ ...selectedMessage, status: value });
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unread">Unread</SelectItem>
-                    <SelectItem value="read">Read</SelectItem>
-                    <SelectItem value="responded">Responded</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select 
+                    value={selectedMessage?.status} 
+                    onValueChange={(value) => {
+                      if (selectedMessage) {
+                        handleUpdateStatus(selectedMessage.id, value);
+                        setSelectedMessage({ ...selectedMessage, status: value });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unread">Unread</SelectItem>
+                      <SelectItem value="read">Read</SelectItem>
+                      <SelectItem value="responded">Responded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label>Internal Notes</Label>
-                <Textarea
-                  placeholder="Add notes about this message..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                />
+                <Button asChild variant="outline" className="w-full">
+                  <a href={`mailto:${selectedMessage?.email}?subject=Re: ${selectedMessage?.subject}`}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Reply via Email Client
+                  </a>
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="reply" className="space-y-4">
+                <div className="p-3 bg-muted/50 rounded-lg border">
+                  <p className="text-sm text-muted-foreground mb-1">Replying to:</p>
+                  <p className="font-medium">{selectedMessage?.name} &lt;{selectedMessage?.email}&gt;</p>
+                  <p className="text-sm text-muted-foreground mt-1">Re: {selectedMessage?.subject}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Your Reply</Label>
+                  <Textarea
+                    placeholder="Type your reply here..."
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    rows={8}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This will be sent as a branded email from Eclipse Support
+                  </p>
+                </div>
+
                 <Button 
-                  size="sm" 
+                  onClick={handleSendReply}
+                  disabled={isSendingReply || !replyContent.trim()}
+                  className="w-full"
+                >
+                  {isSendingReply ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Reply
+                    </>
+                  )}
+                </Button>
+
+                {selectedMessage?.status === 'responded' && selectedMessage.responded_at && (
+                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <div className="flex items-center gap-2 text-green-500">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Responded on {format(new Date(selectedMessage.responded_at), 'PPpp')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="notes" className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Internal Notes</Label>
+                  <Textarea
+                    placeholder="Add notes about this message (only visible to staff)..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={6}
+                  />
+                </div>
+                <Button 
                   onClick={() => selectedMessage && handleSaveNotes(selectedMessage.id)}
+                  variant="secondary"
                 >
                   Save Notes
                 </Button>
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t">
-                <Button asChild className="flex-1">
-                  <a href={`mailto:${selectedMessage?.email}?subject=Re: ${selectedMessage?.subject}`}>
-                    <Mail className="h-4 w-4 mr-2" />
-                    Reply via Email
-                  </a>
-                </Button>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
 
