@@ -378,7 +378,7 @@ export default function ContactMessages() {
           </CardContent>
         </Card>
 
-        {/* Messages Table */}
+        {/* Messages List */}
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
@@ -398,64 +398,105 @@ export default function ContactMessages() {
                 </p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>Subject</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>From</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredMessages?.map((msg) => (
+                        <TableRow 
+                          key={msg.id} 
+                          className={`cursor-pointer hover:bg-muted/50 ${msg.status === 'unread' ? 'bg-primary/5' : ''}`}
+                          onClick={() => {
+                            setSelectedMessage(msg);
+                            setNotes(msg.notes || '');
+                            setReplyContent('');
+                            handleMarkAsRead(msg);
+                          }}
+                        >
+                          <TableCell>{getStatusBadge(msg.status)}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{msg.name}</p>
+                              <p className="text-sm text-muted-foreground">{msg.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">{msg.subject}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 text-muted-foreground text-sm whitespace-nowrap">
+                              <Clock className="h-3 w-3" />
+                              {format(new Date(msg.created_at), 'MMM d, yyyy')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteMessage(msg);
+                              }}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card Layout */}
+                <div className="md:hidden divide-y divide-border">
                   {filteredMessages?.map((msg) => (
-                    <TableRow 
-                      key={msg.id} 
-                      className={msg.status === 'unread' ? 'bg-primary/5' : ''}
+                    <div
+                      key={msg.id}
+                      className={`p-4 cursor-pointer active:bg-muted/50 ${msg.status === 'unread' ? 'bg-primary/5' : ''}`}
+                      onClick={() => {
+                        setSelectedMessage(msg);
+                        setNotes(msg.notes || '');
+                        setReplyContent('');
+                        handleMarkAsRead(msg);
+                      }}
                     >
-                      <TableCell>{getStatusBadge(msg.status)}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{msg.name}</p>
-                          <p className="text-sm text-muted-foreground">{msg.email}</p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getStatusBadge(msg.status)}
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {format(new Date(msg.created_at), 'MMM d')}
+                            </span>
+                          </div>
+                          <p className="font-medium truncate">{msg.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{msg.email}</p>
+                          <p className="text-sm mt-1 truncate">{msg.subject}</p>
                         </div>
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate">{msg.subject}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                          <Clock className="h-3 w-3" />
-                          {format(new Date(msg.created_at), 'MMM d, yyyy')}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedMessage(msg);
-                              setNotes(msg.notes || '');
-                              setReplyContent('');
-                              handleMarkAsRead(msg);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteMessage(msg)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteMessage(msg);
+                          }}
+                          className="text-destructive hover:text-destructive shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
