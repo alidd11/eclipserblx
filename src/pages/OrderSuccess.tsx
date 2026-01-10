@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -19,14 +19,31 @@ export default function OrderSuccess() {
   
   const [verifiedOrderId, setVerifiedOrderId] = useState<string | null>(orderId);
   const [isVerifying, setIsVerifying] = useState(!!(sessionId || paymentIntentId) && !orderId);
+  
+  // Use refs to prevent multiple verification calls
+  const hasVerified = useRef(false);
+  const hasCleared = useRef(false);
 
-  // Verify payment and create order
+  // Memoize clearCart to prevent dependency issues
+  const stableClearCart = useCallback(() => {
+    if (!hasCleared.current) {
+      hasCleared.current = true;
+      clearCart();
+    }
+  }, [clearCart]);
+
+  // Verify payment and create order - only run once
   useEffect(() => {
     const verifyPayment = async () => {
-      // Skip if we already have an order ID or no payment reference
-      if (orderId || (!sessionId && !paymentIntentId)) return;
+      // Skip if already verified, have order ID, or no payment reference
+      if (hasVerified.current || orderId || (!sessionId && !paymentIntentId)) {
+        setIsVerifying(false);
+        return;
+      }
       
+      hasVerified.current = true;
       setIsVerifying(true);
+      
       try {
         const { data, error } = await supabase.functions.invoke('verify-payment', {
           body: { 
@@ -40,7 +57,7 @@ export default function OrderSuccess() {
         if (data?.success && data?.orderId) {
           setVerifiedOrderId(data.orderId);
           // Clear the cart after successful payment
-          clearCart();
+          stableClearCart();
         } else if (!data?.success) {
           console.error('Payment not completed:', data?.message);
         }
@@ -52,7 +69,7 @@ export default function OrderSuccess() {
     };
     
     verifyPayment();
-  }, [sessionId, paymentIntentId, orderId, clearCart]);
+  }, [sessionId, paymentIntentId, orderId, stableClearCart]);
 
   const { data: order, isLoading: isLoadingOrder } = useQuery({
     queryKey: ['order', verifiedOrderId],
