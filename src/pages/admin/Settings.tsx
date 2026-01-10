@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate, Key, RefreshCw, Copy } from 'lucide-react';
+import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -890,6 +891,9 @@ export default function AdminSettings() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* PWA Force Update - Admin Only */}
+              {isAdmin && <ForceUpdateCard />}
 
               {/* Discord Integration */}
               <Card className="bg-card border-border">

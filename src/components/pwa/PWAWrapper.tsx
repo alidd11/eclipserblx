@@ -2,6 +2,7 @@ import { useState, useEffect, ReactNode } from 'react';
 import { RefreshCw, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
+import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 
 interface PWAWrapperProps {
   children: ReactNode;
@@ -16,6 +17,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   
   // Initialize SW update handler (listens for updates and shows toasts)
   const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate();
+  
+  // Initialize app version check for remote forced updates
+  useAppVersionCheck();
 
   const PULL_THRESHOLD = 80;
 
