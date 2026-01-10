@@ -115,7 +115,12 @@ export function NotificationBell() {
       markAsRead(notification.id);
     }
     if (notification.link) {
-      navigate(notification.link);
+      // Prevent customers from accessing admin routes via notifications
+      // If the link is an admin route, redirect to account instead
+      const safeLink = notification.link.startsWith('/admin') 
+        ? '/account' 
+        : notification.link;
+      navigate(safeLink);
       setIsOpen(false);
     }
   };
