@@ -459,6 +459,7 @@ export type Database = {
           id: string
           subscribed_to_discounts: boolean
           subscribed_to_newsletters: boolean
+          subscribed_to_support_replies: boolean | null
           subscribed_to_updates: boolean
           updated_at: string
           user_id: string | null
@@ -469,6 +470,7 @@ export type Database = {
           id?: string
           subscribed_to_discounts?: boolean
           subscribed_to_newsletters?: boolean
+          subscribed_to_support_replies?: boolean | null
           subscribed_to_updates?: boolean
           updated_at?: string
           user_id?: string | null
@@ -479,6 +481,7 @@ export type Database = {
           id?: string
           subscribed_to_discounts?: boolean
           subscribed_to_newsletters?: boolean
+          subscribed_to_support_replies?: boolean | null
           subscribed_to_updates?: boolean
           updated_at?: string
           user_id?: string | null

@@ -206,7 +206,7 @@ const handler = async (req: Request): Promise<Response> => {
         .single();
 
       if (customerProfile?.user_id) {
-        // Create in-app notification
+        // Create in-app notification (always)
         await supabaseAdmin.from("notifications").insert({
           user_id: customerProfile.user_id,
           title: "Support Reply",
@@ -215,20 +215,34 @@ const handler = async (req: Request): Promise<Response> => {
           link: "/account",
         });
 
-        // Send push notification using the correct format
-        await supabaseAdmin.functions.invoke("send-push-notification", {
-          body: {
-            user_ids: [customerProfile.user_id],
-            payload: {
-              title: "Support Reply",
-              body: `Staff has replied to: "${originalSubject}"`,
-              url: "/account",
-              tag: `contact-reply-${messageId}`,
-            },
-          },
-        });
+        // Check if user has opted in to support reply push notifications
+        const { data: emailSub } = await supabaseAdmin
+          .from("email_subscriptions")
+          .select("subscribed_to_support_replies")
+          .eq("user_id", customerProfile.user_id)
+          .single();
 
-        console.log("Push notification sent to customer:", recipientEmail);
+        // Default to true if no subscription record exists
+        const wantsPushNotifications = emailSub?.subscribed_to_support_replies !== false;
+
+        if (wantsPushNotifications) {
+          // Send push notification using the correct format
+          await supabaseAdmin.functions.invoke("send-push-notification", {
+            body: {
+              user_ids: [customerProfile.user_id],
+              payload: {
+                title: "Support Reply",
+                body: `Staff has replied to: "${originalSubject}"`,
+                url: "/account",
+                tag: `contact-reply-${messageId}`,
+              },
+            },
+          });
+
+          console.log("Push notification sent to customer:", recipientEmail);
+        } else {
+          console.log("Customer opted out of support reply push notifications:", recipientEmail);
+        }
       }
     } catch (pushError) {
       console.error("Failed to send push notification:", pushError);
