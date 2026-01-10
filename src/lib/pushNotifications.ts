@@ -50,7 +50,7 @@ export async function notifyNewSupportTicket(
   await sendPushNotification(staffUserIds, {
     title: 'New Support Ticket',
     body: `[${priorityLabel}] ${ticket.subject}\nFrom: ${ticket.customer_email}`,
-    tag: `support-ticket-${ticket.id}`,
+    tag: `support-ticket-${ticket.id}-${Date.now()}`,
     url: '/admin/support',
     requireInteraction: ticket.priority === 'urgent',
   });
@@ -98,7 +98,7 @@ export async function notifyNewLiveChat(
     return await sendPushNotification(staffUserIds, {
       title: 'New Live Chat',
       body: `${conversation.customer_name} needs help with: ${categoryLabel}`,
-      tag: `live-chat-${conversation.id}`,
+      tag: `live-chat-${conversation.id}-${Date.now()}`,
       url: '/admin/live-chat',
       requireInteraction: true,
     });
@@ -114,7 +114,8 @@ export async function notifyNewLiveChat(
 export async function notifyNewChatMessage(
   conversationId: string,
   customerName: string,
-  messagePreview: string
+  messagePreview: string,
+  messageId?: string
 ): Promise<{ success: boolean; sent?: number; error?: string }> {
   try {
     // Get all support agents with push subscriptions
@@ -127,12 +128,17 @@ export async function notifyNewChatMessage(
       return { success: true, sent: 0 };
     }
 
-    const staffUserIds = supportAgents.map(a => a.user_id);
+    const staffUserIds = supportAgents.map((a) => a.user_id);
+
+    // Important: use a unique tag per message so iOS/Android don't collapse notifications
+    const tag = messageId
+      ? `chat-${conversationId}-${messageId}`
+      : `chat-${conversationId}-${Date.now()}`;
 
     return await sendPushNotification(staffUserIds, {
       title: `Message from ${customerName}`,
       body: messagePreview.substring(0, 100) + (messagePreview.length > 100 ? '...' : ''),
-      tag: `chat-${conversationId}`,
+      tag,
       url: '/admin/live-chat',
     });
   } catch (error) {
@@ -163,7 +169,7 @@ export async function notifyTicketReply(
     return await sendPushNotification(staffUserIds, {
       title: 'Ticket Re-opened',
       body: `Customer replied to: ${ticket.subject}`,
-      tag: `ticket-reply-${ticket.id}`,
+      tag: `ticket-reply-${ticket.id}-${Date.now()}`,
       url: '/admin/support',
       requireInteraction: true,
     });
@@ -183,7 +189,7 @@ export async function notifyNewJobApplication(
   await sendPushNotification(recruiterUserIds, {
     title: 'New Job Application',
     body: `${application.applicant_name} applied for ${application.position}`,
-    tag: `job-application-${application.id}`,
+    tag: `job-application-${application.id}-${Date.now()}`,
     url: '/admin/applications',
   });
 }
