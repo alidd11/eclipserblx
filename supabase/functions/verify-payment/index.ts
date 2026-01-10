@@ -158,7 +158,9 @@ serve(async (req) => {
 
     logStep("Order created", { orderId: order.id });
 
-    // Create order items
+    // Create order items and track bot purchases
+    const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
+    
     const orderItems = items.map((item: any) => ({
       order_id: order.id,
       product_id: item.id,
@@ -166,13 +168,49 @@ serve(async (req) => {
       price: item.price,
     }));
 
-    const { error: itemsError } = await supabaseClient
+    const { data: insertedItems, error: itemsError } = await supabaseClient
       .from("order_items")
-      .insert(orderItems);
+      .insert(orderItems)
+      .select();
 
     if (itemsError) {
       logStep("Order items error", itemsError);
       throw itemsError;
+    }
+
+    // Generate installation codes for bot purchases
+    const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const isBotPurchase = item.category_slug === 'bots' || (item.name && item.name.toLowerCase().includes('bot'));
+      
+      if (isBotPurchase && insertedItemsArray[i]) {
+        // Generate unique installation code
+        const { data: codeResult } = await supabaseClient.rpc('generate_installation_code');
+        const installationCode = codeResult as string;
+        
+        if (installationCode) {
+          const { error: codeError } = await supabaseClient
+            .from("bot_installation_codes")
+            .insert({
+              order_id: order.id,
+              order_item_id: insertedItemsArray[i].id,
+              user_id: userId,
+              installation_code: installationCode,
+              product_name: item.name,
+            });
+          
+          if (codeError) {
+            logStep("ERROR creating installation code", { error: codeError.message });
+          } else {
+            botInstallationCodes.push({
+              product_name: item.name,
+              installation_code: installationCode,
+            });
+            logStep("Installation code created", { code: installationCode, product: item.name });
+          }
+        }
+      }
     }
 
     // Send order confirmation email
@@ -197,6 +235,7 @@ serve(async (req) => {
         paymentMethod: paymentMethod,
         orderDate: order.created_at,
         hasBotPurchase: hasBotPurchase,
+        botInstallationCodes: botInstallationCodes.length > 0 ? botInstallationCodes : undefined,
       };
 
       const emailResponse = await fetch(
@@ -245,6 +284,62 @@ serve(async (req) => {
         }
       } catch (referralError) {
         logStep("Referral error (non-fatal)", referralError);
+      }
+
+      // Create in-app notification for the purchase
+      const hasBotPurchase = items.some((item: any) => 
+        item.category_slug === 'bots' || 
+        (item.name && item.name.toLowerCase().includes('bot'))
+      );
+      
+      const notificationTitle = hasBotPurchase 
+        ? '🤖 Bot Purchase Complete!' 
+        : '🎉 Order Confirmed!';
+      
+      const notificationMessage = hasBotPurchase
+        ? `Your bot purchase is complete! Your installation code is ready. Visit Downloads to view your code and installation instructions.`
+        : `Your order has been confirmed. Visit Downloads to access your purchased products.`;
+      
+      try {
+        await supabaseClient
+          .from('notifications')
+          .insert({
+            user_id: userId,
+            title: notificationTitle,
+            message: notificationMessage,
+            type: hasBotPurchase ? 'bot_purchase' : 'order',
+            link: '/downloads',
+          });
+        logStep("In-app notification created");
+      } catch (notifError) {
+        logStep("Notification error (non-fatal)", notifError);
+      }
+
+      // Send push notification
+      try {
+        await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({
+              user_ids: [userId],
+              payload: {
+                title: notificationTitle,
+                body: notificationMessage,
+                tag: `order-${order.id}`,
+                url: '/downloads',
+                requireInteraction: true,
+              },
+            }),
+          }
+        );
+        logStep("Push notification sent");
+      } catch (pushError) {
+        logStep("Push notification error (non-fatal)", pushError);
       }
     }
 
