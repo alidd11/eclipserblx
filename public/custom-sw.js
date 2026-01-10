@@ -12,7 +12,8 @@ self.addEventListener('push', (event) => {
       body: 'You have a new notification',
       icon: '/pwa-192x192.png',
       badge: '/pwa-192x192.png',
-      tag: 'eclipse-notification',
+      // Use a unique tag by default so multiple notifications are shown (some platforms collapse same-tag notifications)
+      tag: 'eclipse-' + Date.now(),
       renotify: true,
       requireInteraction: false,
       vibrate: [200, 100, 200],
