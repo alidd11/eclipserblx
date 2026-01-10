@@ -99,7 +99,7 @@ export default function AdminBotCodes() {
 
   const getStatusBadge = (code: BotInstallationCode) => {
     if (code.is_used) {
-      return <Badge variant="secondary" className="gap-1"><CheckCircle className="h-3 w-3" /> Used</Badge>;
+      return <Badge variant="secondary" className="gap-1 bg-green-500/20 text-green-600 border-green-500/30"><CheckCircle className="h-3 w-3" /> Claimed</Badge>;
     }
     if (isExpired(code.expires_at)) {
       return <Badge variant="destructive" className="gap-1"><AlertCircle className="h-3 w-3" /> Expired</Badge>;
@@ -141,10 +141,10 @@ export default function AdminBotCodes() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Used</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Claimed</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-muted-foreground">{usedCodes}</div>
+              <div className="text-2xl font-bold text-green-600">{usedCodes}</div>
             </CardContent>
           </Card>
           <Card>
