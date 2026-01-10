@@ -60,7 +60,7 @@ export function usePWAAdminRedirect() {
 
     // Check if this is an admin PWA installation
     if (isAdminPWA()) {
-      navigate('/admin/login', { replace: true });
+      navigate('/admin', { replace: true });
     }
   }, [location.pathname, navigate]);
 }
