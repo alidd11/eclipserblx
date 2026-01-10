@@ -271,19 +271,40 @@ async function processPayment(
   // Send order confirmation email
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    
+    // Format items for email template (needs product_name, not name)
+    const emailItems = items.map(item => ({
+      product_name: item.name,
+      price: item.price,
+      category_slug: item.category_slug,
+    }));
+    
+    // Check if any item is a bot purchase
+    const hasBotPurchase = items.some(item => 
+      item.category_slug === 'bots' || item.name.toLowerCase().includes('bot')
+    );
+    
+    const emailPayload = {
+      orderId,
+      customerEmail,
+      items: emailItems,
+      subtotal,
+      total,
+      paymentMethod,
+      orderDate: new Date().toISOString(),
+      hasBotPurchase,
+      botInstallationCodes: botInstallationCodes.length > 0 ? botInstallationCodes : undefined,
+    };
+    
+    logStep("Sending email with payload", { orderId, customerEmail, itemCount: emailItems.length });
+    
     const response = await fetch(`${supabaseUrl}/functions/v1/send-order-confirmation`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
       },
-      body: JSON.stringify({
-        orderId,
-        customerEmail,
-        items,
-        total,
-        botInstallationCodes: botInstallationCodes.length > 0 ? botInstallationCodes : undefined,
-      }),
+      body: JSON.stringify(emailPayload),
     });
     const responseText = await response.text();
     logStep("Email confirmation triggered", { status: response.status, response: responseText, botCodes: botInstallationCodes.length });
