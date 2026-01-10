@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate, Key, RefreshCw, Copy } from 'lucide-react';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
@@ -280,18 +281,18 @@ export default function AdminSettings() {
   const handleEnablePush = async () => {
     const result = await subscribePush();
     if (result.success) {
-      toast.success('Background push notifications enabled! You\'ll receive notifications even when the app is closed.');
+      showSuccessNotification('Push Enabled!', 'You\'ll receive notifications even when the app is closed');
     } else {
-      toast.error(result.error || 'Failed to enable push notifications. Please check browser permissions.');
+      showErrorNotification('Push Failed', result.error || 'Please check browser permissions');
     }
   };
 
   const handleDisablePush = async () => {
     const success = await unsubscribePush();
     if (success) {
-      toast.success('Background push notifications disabled');
+      showSuccessNotification('Push Disabled', 'Background notifications turned off');
     } else {
-      toast.error('Failed to disable push notifications');
+      showErrorNotification('Error', 'Failed to disable push notifications');
     }
   };
 

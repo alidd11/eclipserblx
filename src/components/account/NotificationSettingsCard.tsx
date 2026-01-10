@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 
 const SOUND_ENABLED_KEY = 'notification-sound-enabled';
 const HAPTIC_ENABLED_KEY = 'haptic-feedback-enabled';
@@ -37,21 +38,21 @@ export function NotificationSettingsCard() {
       if (isSubscribed) {
         const success = await unsubscribe();
         if (success) {
-          toast.success('Push notifications disabled');
+          showSuccessNotification('Notifications Disabled', 'Push notifications turned off');
         } else {
-          toast.error('Failed to disable push notifications');
+          showErrorNotification('Error', 'Failed to disable push notifications');
         }
       } else {
         const result = await subscribe();
         if (result.success) {
-          toast.success('Push notifications enabled!');
+          showSuccessNotification('Notifications Enabled!', 'You\'ll receive alerts for orders, messages, and updates');
         } else {
-          toast.error(result.error || 'Failed to enable push notifications');
+          showErrorNotification('Error', result.error || 'Failed to enable push notifications');
         }
       }
     } catch (error) {
       console.error('Push toggle error:', error);
-      toast.error('Failed to update notification settings');
+      showErrorNotification('Error', 'Failed to update notification settings');
     } finally {
       setIsTogglingPush(false);
     }
@@ -60,7 +61,7 @@ export function NotificationSettingsCard() {
   const handleSoundToggle = (enabled: boolean) => {
     setSoundEnabled(enabled);
     localStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
-    toast.success(enabled ? 'Sound notifications enabled' : 'Sound notifications disabled');
+    showSuccessNotification(enabled ? 'Sound Enabled' : 'Sound Disabled', 'Notification sound preference updated');
   };
 
   const handleHapticToggle = (enabled: boolean) => {
@@ -69,7 +70,7 @@ export function NotificationSettingsCard() {
     if (enabled && 'vibrate' in navigator) {
       navigator.vibrate(50);
     }
-    toast.success(enabled ? 'Haptic feedback enabled' : 'Haptic feedback disabled');
+    showSuccessNotification(enabled ? 'Haptic Enabled' : 'Haptic Disabled', 'Vibration preference updated');
   };
 
   const supportsHaptic = 'vibrate' in navigator;
