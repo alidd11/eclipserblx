@@ -115,9 +115,12 @@ export function NotificationBell() {
       markAsRead(notification.id);
     }
     if (notification.link) {
-      // Prevent customers from accessing admin routes via notifications
-      // If the link is an admin route, redirect to account instead
-      const safeLink = notification.link.startsWith('/admin') 
+      // On customer site: always redirect admin links to /account
+      // On admin site: allow admin links
+      const isOnAdminSite = location.pathname.startsWith('/admin');
+      const isAdminLink = notification.link.startsWith('/admin');
+      
+      const safeLink = (!isOnAdminSite && isAdminLink) 
         ? '/account' 
         : notification.link;
       navigate(safeLink);
