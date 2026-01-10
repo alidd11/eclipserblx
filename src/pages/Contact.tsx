@@ -56,7 +56,20 @@ export default function Contact() {
           message: validation.data.message,
         });
 
-      if (error) throw error;
+      if (error) {
+        // Check for rate limit error (RLS policy violation)
+        if (error.code === '42501' || error.message?.includes('check_rate_limit')) {
+          showErrorNotification('Too Many Requests', 'Please wait before submitting another message. Limit: 5 per hour.');
+          return;
+        }
+        throw error;
+      }
+
+      // Record rate limit entry after successful submission
+      await supabase.rpc('record_rate_limit', {
+        p_identifier: validation.data.email,
+        p_action_type: 'contact_form'
+      });
 
       // Notify staff about the new message (fire and forget)
       supabase.functions.invoke('notify-new-contact-message', {
@@ -70,9 +83,14 @@ export default function Contact() {
       showSuccessNotification('Message Sent!', 'We\'ll get back to you within 24-48 hours.');
 
       setFormData({ name: '', email: user?.email || '', subject: '', message: '' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting contact form:', error);
-      showErrorNotification('Failed to Send', 'Please try again or use an alternative contact method.');
+      // Handle rate limit error from RLS
+      if (error?.code === '42501') {
+        showErrorNotification('Too Many Requests', 'Please wait before submitting another message.');
+      } else {
+        showErrorNotification('Failed to Send', 'Please try again or use an alternative contact method.');
+      }
     } finally {
       setIsSubmitting(false);
     }
