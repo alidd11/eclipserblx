@@ -22,6 +22,7 @@ import { NotificationSettingsCard } from '@/components/account/NotificationSetti
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
+import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
@@ -483,6 +484,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Sound Customization */}
         <SoundCustomizationCard />
+
+        {/* Saved Payment Methods */}
+        <SavedCardsCard />
 
         {/* My Messages */}
         <MyMessagesCard />
