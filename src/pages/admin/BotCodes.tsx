@@ -221,7 +221,7 @@ export default function AdminBotCodes() {
                           </div>
                         </TableCell>
                         <TableCell className="font-medium">{code.product_name}</TableCell>
-                        <TableCell>{getStatusBadge(code)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{getStatusBadge(code)}</TableCell>
                         <TableCell>
                           {code.used_by ? (
                             <div className="flex items-center gap-1 text-sm">
