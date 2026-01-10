@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { markAdminPWA } from '@/hooks/usePWAAdminRedirect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,9 +43,11 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
     getStoredUserId,
   } = useBiometricAuth();
 
-  // Check biometric support on mount
+  // Check biometric support on mount and mark as admin PWA
   useEffect(() => {
     checkSupport();
+    // Mark this PWA as admin-installed so it redirects here on launch
+    markAdminPWA();
   }, [checkSupport]);
 
   // Check enrollment when we have a stored user
