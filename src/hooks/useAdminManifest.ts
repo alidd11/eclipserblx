@@ -44,5 +44,11 @@ export function useAdminManifest() {
     if (appNameMeta) {
       appNameMeta.setAttribute('content', isAdminRoute ? 'Eclipse Admin' : 'Eclipse');
     }
+
+    // Update apple-touch-icon for iOS
+    const appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (appleTouchIcon) {
+      appleTouchIcon.setAttribute('href', isAdminRoute ? '/admin-apple-touch-icon.png' : '/apple-touch-icon.png');
+    }
   }, [isAdminRoute]);
 }
