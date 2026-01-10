@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,8 +66,44 @@ export default function AdminUsers() {
   const [ipAddress, setIpAddress] = useState('');
   const [banReason, setBanReason] = useState('');
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<any>(null);
+  const [selfBanConfirmOpen, setSelfBanConfirmOpen] = useState(false);
+  const [selfBanCooldown, setSelfBanCooldown] = useState(0);
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { ip: currentAdminIp } = useCurrentIp();
+
+  // Cooldown timer for self-ban confirmation
+  useEffect(() => {
+    if (selfBanCooldown > 0) {
+      const timer = setTimeout(() => setSelfBanCooldown(selfBanCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [selfBanCooldown]);
+
+  const isSelfBan = ipAddress.trim() === currentAdminIp;
+
+  const handleBanClick = () => {
+    if (isSelfBan) {
+      // Show self-ban confirmation with 5 second cooldown
+      setSelfBanConfirmOpen(true);
+      setSelfBanCooldown(5);
+    } else {
+      ipBanMutation.mutate({ 
+        ipAddress: ipAddress.trim(), 
+        reason: banReason.trim() || undefined,
+        userId: ipBanDialogUser?.user_id 
+      });
+    }
+  };
+
+  const handleConfirmSelfBan = () => {
+    ipBanMutation.mutate({ 
+      ipAddress: ipAddress.trim(), 
+      reason: banReason.trim() || undefined,
+      userId: ipBanDialogUser?.user_id 
+    });
+    setSelfBanConfirmOpen(false);
+  };
 
   // Check if current user is the primary admin
   const { data: currentProfile } = useQuery({
@@ -517,7 +554,23 @@ export default function AdminUsers() {
                   onChange={(e) => setIpAddress(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">Enter the IP address to ban</p>
+                {currentAdminIp && (
+                  <p className="text-xs text-muted-foreground">Your current IP: <span className="font-mono text-primary">{currentAdminIp}</span></p>
+                )}
               </div>
+
+              {/* Self-ban warning */}
+              {isSelfBan && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-3">
+                  <ShieldAlert className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-destructive">Warning: Self-Ban Detected</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This is your current IP address. Banning it will lock you out of the admin dashboard.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Reason (optional)</label>
@@ -536,11 +589,7 @@ export default function AdminUsers() {
                 <Button
                   variant="destructive"
                   disabled={!ipAddress.trim() || ipBanMutation.isPending}
-                  onClick={() => ipBanMutation.mutate({ 
-                    ipAddress: ipAddress.trim(), 
-                    reason: banReason.trim() || undefined,
-                    userId: ipBanDialogUser.user_id 
-                  })}
+                  onClick={handleBanClick}
                   className="bg-orange-500 hover:bg-orange-600"
                 >
                   {ipBanMutation.isPending ? 'Banning...' : 'Ban IP'}
@@ -550,6 +599,42 @@ export default function AdminUsers() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Self-Ban Confirmation Dialog */}
+      <AlertDialog open={selfBanConfirmOpen} onOpenChange={setSelfBanConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" />
+              You Are About to Ban Your Own IP
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                <strong className="text-destructive">This will immediately lock you out</strong> of the entire site, 
+                including the admin dashboard.
+              </p>
+              <p>
+                You will need to use a VPN or different network to access the site and remove the ban.
+              </p>
+              <div className="p-3 rounded-lg bg-muted/50 font-mono text-sm">
+                IP to be banned: <span className="text-destructive">{ipAddress}</span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelfBanConfirmOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmSelfBan}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={selfBanCooldown > 0 || ipBanMutation.isPending}
+            >
+              {selfBanCooldown > 0 ? `Wait ${selfBanCooldown}s...` : 'I Understand, Ban Myself'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Account Confirmation */}
       <AlertDialog open={!!deleteConfirmUser} onOpenChange={() => setDeleteConfirmUser(null)}>
