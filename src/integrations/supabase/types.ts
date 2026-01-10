@@ -1118,6 +1118,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          identifier: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          identifier: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          identifier?: string
+        }
+        Relationships: []
+      }
       referral_rewards: {
         Row: {
           created_at: string | null
@@ -1600,6 +1621,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      check_rate_limit: {
+        Args: {
+          p_action_type: string
+          p_identifier: string
+          p_max_requests?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       generate_customer_id: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
@@ -1614,6 +1644,10 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_username_available: { Args: { username: string }; Returns: boolean }
+      record_rate_limit: {
+        Args: { p_action_type: string; p_identifier: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
