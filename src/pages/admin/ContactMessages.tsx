@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2, FileText } from 'lucide-react';
+import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2, FileText, User, Reply } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,8 +63,9 @@ interface ContactMessageReply {
   id: string;
   contact_message_id: string;
   reply_content: string;
-  sent_by: string;
+  sent_by: string | null;
   sent_at: string;
+  sender_type: 'staff' | 'customer';
 }
 
 interface EmailTemplate {
@@ -599,16 +600,34 @@ export default function ContactMessages() {
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4" />
-                      Conversation History ({replies.length} {replies.length === 1 ? 'reply' : 'replies'})
+                      Conversation History ({replies.length} {replies.length === 1 ? 'message' : 'messages'})
                     </Label>
-                    <div className="max-h-48 overflow-y-auto space-y-3 p-3 bg-muted/30 rounded-lg border">
+                    <div className="max-h-64 overflow-y-auto space-y-3 p-3 bg-muted/30 rounded-lg border">
                       {replies.map((reply) => (
-                        <div key={reply.id} className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                        <div 
+                          key={reply.id} 
+                          className={`p-3 rounded-lg border ${
+                            reply.sender_type === 'customer' 
+                              ? 'bg-secondary/30 border-secondary/50 ml-0 mr-8' 
+                              : 'bg-primary/5 border-primary/20 ml-8 mr-0'
+                          }`}
+                        >
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                            <Send className="h-3 w-3" />
-                            <span>Sent on {format(new Date(reply.sent_at), 'PPp')}</span>
+                            {reply.sender_type === 'customer' ? (
+                              <>
+                                <User className="h-3 w-3" />
+                                <span className="font-medium text-foreground">{selectedMessage?.name}</span>
+                                <span>replied on {format(new Date(reply.sent_at), 'PPp')}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-3 w-3" />
+                                <span className="font-medium text-primary">Staff</span>
+                                <span>sent on {format(new Date(reply.sent_at), 'PPp')}</span>
+                              </>
+                            )}
                           </div>
-                          <p className="text-sm whitespace-pre-wrap line-clamp-4">{reply.reply_content}</p>
+                          <p className="text-sm whitespace-pre-wrap">{reply.reply_content}</p>
                         </div>
                       ))}
                     </div>

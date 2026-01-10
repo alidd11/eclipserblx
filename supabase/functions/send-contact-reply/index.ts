@@ -60,11 +60,43 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending reply to ${recipientEmail} for message ${messageId}`);
 
-    // Send the email
+    // First, check if there's an existing thread ID for this message
+    const { data: existingMessage } = await supabaseClient
+      .from("contact_messages")
+      .select("email_thread_id")
+      .eq("id", messageId)
+      .single();
+
+    // Get the last reply's message ID for threading
+    const { data: lastReply } = await supabaseClient
+      .from("contact_message_replies")
+      .select("email_message_id")
+      .eq("contact_message_id", messageId)
+      .not("email_message_id", "is", null)
+      .order("sent_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    // Build threading headers
+    const headers: Record<string, string> = {};
+    const threadId = existingMessage?.email_thread_id;
+    const lastMessageId = lastReply?.email_message_id;
+
+    if (lastMessageId) {
+      headers["In-Reply-To"] = lastMessageId;
+      headers["References"] = threadId ? `${threadId} ${lastMessageId}` : lastMessageId;
+    } else if (threadId) {
+      headers["In-Reply-To"] = threadId;
+      headers["References"] = threadId;
+    }
+
+    // Send the email with threading headers
     const emailResponse = await resend.emails.send({
       from: "Eclipse Support <support@eclipserblx.com>",
       to: [recipientEmail],
+      reply_to: "support@eclipserblx.com",
       subject: `Re: ${originalSubject}`,
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
       html: `
         <!DOCTYPE html>
         <html>
@@ -94,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
                         <p style="color: #e4e4e7; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${replyContent}</p>
                       </div>
                       
-                      <p style="color: #a1a1aa; font-size: 14px; margin: 24px 0 0 0;">If you have any further questions, feel free to reply to this email or visit our support page.</p>
+                      <p style="color: #a1a1aa; font-size: 14px; margin: 24px 0 0 0;">If you have any further questions, feel free to reply directly to this email.</p>
                     </td>
                   </tr>
                   
@@ -124,18 +156,30 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Save the reply to the threading table
+    // Save the reply to the threading table with message ID for threading
+    const sentMessageId = emailResponse?.data?.id ? `<${emailResponse.data.id}@resend.dev>` : null;
+    
     const { error: replyError } = await supabaseAdmin
       .from("contact_message_replies")
       .insert({
         contact_message_id: messageId,
         reply_content: replyContent,
         sent_by: user.id,
+        sender_type: "staff",
+        email_message_id: sentMessageId,
         sent_at: new Date().toISOString(),
       });
 
     if (replyError) {
       console.error("Failed to save reply:", replyError);
+    }
+
+    // Update the email_thread_id if this is the first reply
+    if (sentMessageId && !existingMessage?.email_thread_id) {
+      await supabaseAdmin
+        .from("contact_messages")
+        .update({ email_thread_id: sentMessageId })
+        .eq("id", messageId);
     }
 
     // Update message status
