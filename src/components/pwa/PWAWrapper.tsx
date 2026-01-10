@@ -1,6 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { RefreshCw, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
 
 interface PWAWrapperProps {
   children: ReactNode;
@@ -12,6 +13,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
+  
+  // Initialize SW update handler (listens for updates and shows toasts)
+  const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate();
 
   const PULL_THRESHOLD = 80;
 
@@ -86,13 +90,16 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     
-    // Clear service worker cache and reload
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
-    }
+    // Clear all caches via SW and directly
+    clearAllCaches();
     
-    window.location.reload();
+    // Force SW update check
+    await forceUpdate();
+    
+    // Reload after a short delay to ensure caches are cleared
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const pullProgress = Math.min(pullDistance / PULL_THRESHOLD, 1);
