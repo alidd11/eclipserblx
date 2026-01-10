@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.notify-new-product]
 verify_jwt = false
+
+[functions.notify-discount]
+verify_jwt = false

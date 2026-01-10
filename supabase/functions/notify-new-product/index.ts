@@ -26,6 +26,24 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check if new product notifications are globally enabled
+    const { data: settingData } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'new_product_notifications_enabled')
+      .maybeSingle();
+
+    // Default to true if not set
+    const isEnabled = settingData?.value !== false && settingData?.value !== 'false';
+
+    if (!isEnabled) {
+      console.log('[notify-new-product] New product notifications are globally disabled');
+      return new Response(
+        JSON.stringify({ success: true, notified: 0, message: 'New product notifications are disabled' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { product_id, product_name, product_slug, product_price, category_name }: NewProductRequest = await req.json();
 
     if (!product_id || !product_name) {
