@@ -79,16 +79,20 @@ export default function AdminDashboard() {
     mutationFn: async () => {
       if (!user?.id) throw new Error('Not authenticated');
       
-      // Create the announcement
-      const { error } = await supabase
+      // Create the announcement (return id so push tags can be unique)
+      const { data: createdAnnouncement, error } = await supabase
         .from('staff_announcements')
         .insert({
           title: newAnnouncementTitle,
           content: newAnnouncementContent,
           priority: newAnnouncementPriority,
           created_by: user.id,
-        });
+        })
+        .select('id')
+        .single();
       if (error) throw error;
+
+      const announcementId = createdAnnouncement?.id || String(Date.now());
 
       // Send push notification for urgent/high priority announcements
       if (newAnnouncementPriority === 'urgent' || newAnnouncementPriority === 'high') {
@@ -111,7 +115,7 @@ export default function AdminDashboard() {
                 payload: {
                   title: `${priorityEmoji} ${newAnnouncementPriority.toUpperCase()}: ${newAnnouncementTitle}`,
                   body: newAnnouncementContent.substring(0, 150),
-                  tag: 'staff-announcement',
+                  tag: `staff-announcement-${announcementId}`,
                   requireInteraction: newAnnouncementPriority === 'urgent',
                 },
               },

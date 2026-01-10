@@ -607,7 +607,7 @@ export default function StaffMessages() {
           if (isMentioned) {
             sendNotification('🔔 You were mentioned!', {
               body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-              tag: 'staff-chat-mention',
+              tag: `staff-chat-mention-${newMsg.id}`,
               requireInteraction: true,
             });
             // Show toast for mentions even when focused
@@ -617,7 +617,7 @@ export default function StaffMessages() {
           } else {
             sendNotification('New Staff Message', {
               body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-              tag: 'staff-chat-message',
+              tag: `staff-chat-message-${newMsg.id}`,
             });
           }
         }

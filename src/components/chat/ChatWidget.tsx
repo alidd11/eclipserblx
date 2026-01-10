@@ -232,7 +232,7 @@ export function ChatWidget() {
               if (document.hidden) {
                 sendNotification('New message from Support', {
                   body: newMsg.message.substring(0, 100),
-                  tag: 'chat-message',
+                  tag: `chat-message-${conversationId}-${newMsg.id}`,
                 });
               }
             }
@@ -273,7 +273,7 @@ export function ChatWidget() {
             playSound();
             sendNotification('Chat closed', {
               body: 'This conversation has been closed by support.',
-              tag: 'chat-closed',
+              tag: `chat-closed-${conversationId}-${Date.now()}`,
             });
           }
         }
@@ -539,7 +539,7 @@ export function ChatWidget() {
       }
 
       // Notify support agents via push notification
-      await notifyNewChatMessage(conversationId!, customerName, messageText);
+      await notifyNewChatMessage(conversationId!, customerName, messageText, data?.id);
     } catch (error) {
       console.error('Error sending message:', error);
       // Mark as failed
@@ -598,7 +598,7 @@ export function ChatWidget() {
       }
 
       // Notify support agents via push notification
-      await notifyNewChatMessage(conversationId, customerName, `[Attachment] ${file.name}`);
+      await notifyNewChatMessage(conversationId, customerName, `[Attachment] ${file.name}`, inserted?.id);
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file');

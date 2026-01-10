@@ -252,7 +252,7 @@ export default function AdminLiveChat() {
               if (document.hidden) {
                 sendNotification('New customer message', {
                   body: `${selectedConversation.customer_name || 'Customer'}: ${newMsg.message.substring(0, 100)}`,
-                  tag: 'admin-chat-message',
+                  tag: `admin-chat-message-${newMsg.id}`,
                 });
               }
             }
