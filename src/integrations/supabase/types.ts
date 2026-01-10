@@ -1604,6 +1604,7 @@ export type Database = {
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
+      get_user_email: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
