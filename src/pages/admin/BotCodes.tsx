@@ -66,7 +66,7 @@ export default function AdminBotCodes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-bot-codes'] });
-      toast.success('Code marked as used');
+      toast.success('Code marked as claimed');
       setMarkUsedDialogOpen(false);
       setSelectedCode(null);
       setUsedByInput('');
@@ -83,7 +83,7 @@ export default function AdminBotCodes() {
 
   const handleMarkAsUsed = () => {
     if (!selectedCode || !usedByInput.trim()) {
-      toast.error('Please enter who used this code');
+      toast.error('Please enter who claimed this code');
       return;
     }
     markAsUsedMutation.mutate({ id: selectedCode.id, usedBy: usedByInput.trim() });
@@ -245,7 +245,7 @@ export default function AdminBotCodes() {
                               size="sm"
                               onClick={() => openMarkUsedDialog(code)}
                             >
-                              Mark as Used
+                              Mark as Claimed
                             </Button>
                           )}
                           {code.is_used && code.used_at && (
@@ -268,9 +268,9 @@ export default function AdminBotCodes() {
       <Dialog open={markUsedDialogOpen} onOpenChange={setMarkUsedDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark Code as Used</DialogTitle>
+            <DialogTitle>Mark Code as Claimed</DialogTitle>
             <DialogDescription>
-              Enter the Discord username or identifier of the person who used this code for installation.
+              Enter the Discord username or identifier of the person who claimed this code for installation.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -285,7 +285,7 @@ export default function AdminBotCodes() {
               <p className="text-sm text-muted-foreground">{selectedCode?.product_name}</p>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Used By *</label>
+              <label className="text-sm font-medium">Claimed By *</label>
               <Textarea
                 placeholder="Enter Discord username or customer identifier..."
                 value={usedByInput}
