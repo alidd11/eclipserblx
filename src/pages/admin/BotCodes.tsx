@@ -188,76 +188,144 @@ export default function AdminBotCodes() {
                 {searchQuery ? 'No codes found matching your search' : 'No bot installation codes yet'}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Used By</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Expires</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {codes.map((code) => (
-                      <TableRow key={code.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Key className="h-4 w-4 text-muted-foreground" />
-                            <code className="text-sm font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
-                              {code.installation_code}
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => handleCopyCode(code.installation_code)}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">{code.product_name}</TableCell>
-                        <TableCell className="whitespace-nowrap">{getStatusBadge(code)}</TableCell>
-                        <TableCell>
+              <div className="space-y-4">
+                {/* Mobile layout */}
+                <div className="md:hidden space-y-3">
+                  {codes.map((code) => (
+                    <div key={code.id} className="rounded-lg border bg-card p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Key className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <code className="text-xs font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
+                            {code.installation_code}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0"
+                            onClick={() => handleCopyCode(code.installation_code)}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <div className="shrink-0">{getStatusBadge(code)}</div>
+                      </div>
+
+                      <div className="mt-3 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium truncate">{code.product_name}</div>
                           {code.used_by ? (
-                            <div className="flex items-center gap-1 text-sm">
-                              <User className="h-3 w-3" />
-                              {code.used_by}
+                            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                              <User className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{code.used_by}</span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <div className="mt-1 text-xs text-muted-foreground">Used by: —</div>
                           )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(code.created_at), 'MMM d, yyyy')}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(code.expires_at), 'MMM d, yyyy')}
-                        </TableCell>
-                        <TableCell className="text-right">
+                        </div>
+
+                        <div className="shrink-0 text-right">
                           {!code.is_used && !isExpired(code.expires_at) && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => openMarkUsedDialog(code)}
                             >
-                              Mark as Claimed
+                              Mark Claimed
                             </Button>
                           )}
                           {code.is_used && code.used_at && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {format(new Date(code.used_at), 'MMM d, yyyy')}
                             </span>
                           )}
-                        </TableCell>
+                        </div>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span className="whitespace-nowrap">
+                          Created: {format(new Date(code.created_at), 'MMM d, yyyy')}
+                        </span>
+                        <span className="whitespace-nowrap">
+                          Expires: {format(new Date(code.expires_at), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop layout */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="whitespace-nowrap">Code</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="hidden md:table-cell whitespace-nowrap">Used By</TableHead>
+                        <TableHead className="hidden lg:table-cell whitespace-nowrap">Created</TableHead>
+                        <TableHead className="hidden lg:table-cell whitespace-nowrap">Expires</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {codes.map((code) => (
+                        <TableRow key={code.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Key className="h-4 w-4 text-muted-foreground" />
+                              <code className="text-sm font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
+                                {code.installation_code}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleCopyCode(code.installation_code)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">{code.product_name}</TableCell>
+                          <TableCell className="whitespace-nowrap">{getStatusBadge(code)}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {code.used_by ? (
+                              <div className="flex items-center gap-1 text-sm">
+                                <User className="h-3 w-3" />
+                                {code.used_by}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
+                            {format(new Date(code.created_at), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
+                            {format(new Date(code.expires_at), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
+                            {!code.is_used && !isExpired(code.expires_at) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openMarkUsedDialog(code)}
+                              >
+                                Mark as Claimed
+                              </Button>
+                            )}
+                            {code.is_used && code.used_at && (
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(code.used_at), 'MMM d, yyyy')}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
           </CardContent>
