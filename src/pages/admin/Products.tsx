@@ -243,12 +243,41 @@ export default function AdminProducts() {
         asset_file_url: data.asset_file_url || null,
       };
 
+      const isNewProduct = !data.id;
+
       if (data.id) {
         const { error } = await supabase.from('products').update(payload).eq('id', data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('products').insert(payload);
+        const { data: newProduct, error } = await supabase.from('products').insert(payload).select().single();
         if (error) throw error;
+
+        // Send push notifications for new active products
+        if (payload.is_active && newProduct) {
+          // Get category name if available
+          let categoryName: string | undefined;
+          if (payload.category_id) {
+            const category = categories?.find(c => c.id === payload.category_id);
+            categoryName = category?.name;
+          }
+
+          // Notify subscribers in background (don't await to avoid blocking UI)
+          supabase.functions.invoke('notify-new-product', {
+            body: {
+              product_id: newProduct.id,
+              product_name: payload.name,
+              product_slug: payload.slug,
+              product_price: payload.price,
+              category_name: categoryName,
+            },
+          }).then(result => {
+            if (result.error) {
+              console.error('Failed to notify subscribers:', result.error);
+            } else {
+              console.log('New product notifications sent:', result.data);
+            }
+          });
+        }
       }
     },
     onSuccess: () => {
