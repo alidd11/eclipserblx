@@ -27,9 +27,27 @@ export default function Checkout() {
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
 
-  // Reset processing state when returning from Stripe (location change)
+  // Reset processing state when coming back from Stripe (covers browser back / bfcache restore)
   useEffect(() => {
-    setIsProcessing(false);
+    const reset = () => setIsProcessing(false);
+
+    // SPA navigation (e.g., cancel_url back to /checkout)
+    reset();
+
+    const handlePageShow = () => reset();
+    const handleVisibilityChange = () => {
+      if (!document.hidden) reset();
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('focus', reset);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('focus', reset);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [location.key]);
 
   const discountAmount = appliedDiscount?.amount || 0;
