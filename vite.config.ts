@@ -49,15 +49,15 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "custom-sw.js"],
       manifest: {
-        name: "Eclipse Admin",
+        name: "Eclipse",
         short_name: "Eclipse",
-        description: "Eclipse - UK Roleplay Assets Admin Dashboard",
+        description: "Eclipse - UK Roleplay Assets",
         theme_color: "#1a1a2e",
         background_color: "#0a0a0f",
         display: "standalone",
         orientation: "portrait",
-        scope: "/admin",
-        start_url: "/admin/login",
+        scope: "/",
+        start_url: "/",
         icons: [
           {
             src: "pwa-192x192.png",

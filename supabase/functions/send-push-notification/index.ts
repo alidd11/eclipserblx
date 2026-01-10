@@ -333,6 +333,14 @@ async function createVapidJwt(
   return jwt;
 }
 
+// Detect push service type from endpoint
+function getPushServiceType(endpoint: string): 'apple' | 'fcm' | 'mozilla' | 'unknown' {
+  if (endpoint.includes('push.apple.com')) return 'apple';
+  if (endpoint.includes('fcm.googleapis.com') || endpoint.includes('android.googleapis.com')) return 'fcm';
+  if (endpoint.includes('push.services.mozilla.com')) return 'mozilla';
+  return 'unknown';
+}
+
 // Send web push notification with proper encryption
 async function sendWebPush(
   endpoint: string,
@@ -343,8 +351,12 @@ async function sendWebPush(
   vapidPrivateKey: string,
   vapidSubject: string
 ): Promise<{ success: boolean; statusCode?: number; error?: string }> {
+  const serviceType = getPushServiceType(endpoint);
+  console.log(`[Push] Sending to ${serviceType} endpoint: ${endpoint.substring(0, 60)}...`);
+  
   try {
     const plaintext = new TextEncoder().encode(JSON.stringify(payload));
+    console.log(`[Push] Payload size: ${plaintext.length} bytes`);
     
     // Encrypt the payload
     const { ciphertext, salt, localPublicKey } = await encryptPayload(
@@ -355,6 +367,7 @@ async function sendWebPush(
 
     // Build the aes128gcm body
     const body = buildAes128gcmBody(salt, localPublicKey, ciphertext);
+    console.log(`[Push] Encrypted body size: ${body.length} bytes`);
 
     // Parse the endpoint URL to get the audience (origin)
     const endpointUrl = new URL(endpoint);
@@ -363,39 +376,45 @@ async function sendWebPush(
     // Create VAPID JWT
     const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey, vapidPublicKey);
     
-    console.log('Sending push with headers:');
-    console.log('  Authorization: vapid t=<JWT>, k=<pubkey>');
-    console.log('  JWT length:', jwt.length);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/octet-stream',
+      'Content-Encoding': 'aes128gcm',
+      'Content-Length': body.length.toString(),
+      'TTL': '86400',
+      'Urgency': 'high',
+      // Use "vapid t=<JWT>, k=<KEY>" format for all services (required by Apple, works for others)
+      'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
+    };
+    
+    console.log(`[Push] Request headers: TTL=86400, Urgency=high, Content-Encoding=aes128gcm`);
     
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Encoding': 'aes128gcm',
-        'Content-Length': body.length.toString(),
-        'TTL': '86400',
-        'Urgency': 'high',
-        // Apple Push requires the "vapid t=<JWT>, k=<KEY>" format
-        'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
-      },
+      headers,
       body: toBuffer(body),
     });
 
+    const responseText = await response.text();
+    console.log(`[Push] Response: ${response.status} ${response.statusText}`);
+    
+    if (responseText) {
+      console.log(`[Push] Response body: ${responseText.substring(0, 200)}`);
+    }
+
     if (response.status === 201 || response.status === 200) {
-      console.log(`Push sent successfully to ${endpoint.substring(0, 50)}...`);
+      console.log(`[Push] SUCCESS to ${serviceType}`);
       return { success: true, statusCode: response.status };
     } else if (response.status === 404 || response.status === 410) {
       // Subscription expired or invalid
-      console.log(`Subscription expired: ${response.status}`);
+      console.log(`[Push] Subscription expired/invalid: ${response.status}`);
       return { success: false, statusCode: response.status, error: 'Subscription expired' };
     } else {
-      const errorText = await response.text();
-      console.error(`Push failed with status ${response.status}: ${errorText}`);
-      return { success: false, statusCode: response.status, error: errorText };
+      console.error(`[Push] FAILED with status ${response.status}: ${responseText}`);
+      return { success: false, statusCode: response.status, error: responseText };
     }
   } catch (err: unknown) {
     const error = err as Error;
-    console.error('Web push error:', error);
+    console.error(`[Push] Error sending to ${serviceType}:`, error.message);
     return { success: false, error: error.message };
   }
 }
