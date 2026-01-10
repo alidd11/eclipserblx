@@ -142,12 +142,25 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Download successful: user=${user.id}, product=${productId}`);
+    // Get file metadata for size
+    let fileSize: number | null = null;
+    try {
+      const headResponse = await fetch(signedUrlData.signedUrl, { method: 'HEAD' });
+      const contentLength = headResponse.headers.get('content-length');
+      if (contentLength) {
+        fileSize = parseInt(contentLength, 10);
+      }
+    } catch (e) {
+      console.log("Could not get file size:", e);
+    }
+
+    console.log(`Download successful: user=${user.id}, product=${productId}, size=${fileSize}`);
 
     return new Response(
       JSON.stringify({ 
         downloadUrl: signedUrlData.signedUrl,
-        productName: product.name
+        productName: product.name,
+        fileSize: fileSize
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -1,14 +1,24 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy } from 'lucide-react';
+import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useState } from 'react';
+
+// Format bytes to human readable size
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
 
 interface OrderItem {
   id: string;
@@ -41,9 +51,17 @@ interface BotInstallationCode {
 
 const BOT_CATEGORY_ID = '852838dc-adb6-4154-93fe-d1814fe46263';
 
+interface DownloadProgress {
+  itemId: string;
+  progress: number;
+  fileSize: number | null;
+  downloaded: number;
+}
+
 export default function Downloads() {
   const { user, session } = useAuth();
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Fetch bot installation codes for the user
@@ -144,6 +162,7 @@ export default function Downloads() {
     }
 
     setDownloading(item.id);
+    setDownloadProgress({ itemId: item.id, progress: 0, fileSize: null, downloaded: 0 });
 
     try {
       const { data, error } = await supabase.functions.invoke('download-asset', {
@@ -164,8 +183,49 @@ export default function Downloads() {
       }
 
       if (data?.downloadUrl) {
-        window.open(data.downloadUrl, '_blank');
-        showSuccessNotification('Downloading!', data.productName || 'Your file is ready');
+        const fileSize = data.fileSize || null;
+        
+        // Download with progress tracking
+        const response = await fetch(data.downloadUrl);
+        const reader = response.body?.getReader();
+        const contentLength = fileSize || parseInt(response.headers.get('content-length') || '0', 10);
+        
+        if (reader && contentLength > 0) {
+          let receivedLength = 0;
+          const chunks: BlobPart[] = [];
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            chunks.push(new Blob([value]));
+            receivedLength += value.length;
+            
+            const progress = Math.round((receivedLength / contentLength) * 100);
+            setDownloadProgress({
+              itemId: item.id,
+              progress,
+              fileSize: contentLength,
+              downloaded: receivedLength
+            });
+          }
+          
+          // Create blob and download
+          const blob = new Blob(chunks);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = data.productName || 'download';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          // Fallback to simple download
+          window.open(data.downloadUrl, '_blank');
+        }
+        
+        showSuccessNotification('Downloaded!', data.productName || 'Your file is ready');
       }
     } catch (err: unknown) {
       console.error('Download error:', err);
@@ -173,6 +233,7 @@ export default function Downloads() {
       showErrorNotification('Download Failed', message);
     } finally {
       setDownloading(null);
+      setDownloadProgress(null);
     }
   };
 
@@ -354,29 +415,39 @@ export default function Downloads() {
                           </Link>
                         </Button>
                       ) : (
-                        <Button
-                          onClick={() => handleDownload(item)}
-                          disabled={!hasAsset || isDownloading}
-                          className="gradient-button border-0"
-                          size="sm"
-                        >
-                          {isDownloading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Preparing...
-                            </>
-                          ) : !hasAsset ? (
-                            <>
-                              <Package className="h-4 w-4 mr-2" />
-                              No file
-                            </>
-                          ) : (
-                            <>
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </>
+                        <div className="flex flex-col items-end gap-2">
+                          <Button
+                            onClick={() => handleDownload(item)}
+                            disabled={!hasAsset || isDownloading}
+                            className="gradient-button border-0"
+                            size="sm"
+                          >
+                            {isDownloading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                {downloadProgress?.progress || 0}%
+                              </>
+                            ) : !hasAsset ? (
+                              <>
+                                <Package className="h-4 w-4 mr-2" />
+                                No file
+                              </>
+                            ) : (
+                              <>
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </>
+                            )}
+                          </Button>
+                          {isDownloading && downloadProgress && downloadProgress.fileSize && (
+                            <div className="w-32 space-y-1">
+                              <Progress value={downloadProgress.progress} className="h-1.5" />
+                              <p className="text-[10px] text-muted-foreground text-right">
+                                {formatFileSize(downloadProgress.downloaded)} / {formatFileSize(downloadProgress.fileSize)}
+                              </p>
+                            </div>
                           )}
-                        </Button>
+                        </div>
                       )}
                     </div>
                   );
