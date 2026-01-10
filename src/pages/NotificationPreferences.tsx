@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save } from 'lucide-react';
+import { Bell, Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
+import { sendPushNotification } from '@/lib/pushNotifications';
 
 export default function NotificationPreferences() {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ export default function NotificationPreferences() {
   const [productAlerts, setProductAlerts] = useState(true);
   const [discountAlerts, setDiscountAlerts] = useState(true);
   const [forumAlerts, setForumAlerts] = useState(true);
+  const [testingPush, setTestingPush] = useState(false);
 
   // Fetch existing subscription
   const { data: subscription, isLoading } = useQuery({
@@ -128,6 +130,41 @@ export default function NotificationPreferences() {
     });
   };
 
+  const handleTestPush = async () => {
+    if (!user?.id) return;
+    
+    setTestingPush(true);
+    try {
+      const result = await sendPushNotification([user.id], {
+        title: '🔔 Test Notification',
+        body: 'Your push notifications are working correctly!',
+        tag: `test-notification-${Date.now()}`,
+        url: '/notifications',
+      });
+      
+      if (result.success) {
+        toast({
+          title: 'Test Sent',
+          description: 'Check your device for the notification.',
+        });
+      } else {
+        toast({
+          title: 'Test Failed',
+          description: result.error || 'Could not send test notification.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send test notification.',
+        variant: 'destructive',
+      });
+    } finally {
+      setTestingPush(false);
+    }
+  };
+
   const hasChanges = subscription
     ? (productAlerts !== subscription.subscribed_to_updates ||
        discountAlerts !== subscription.subscribed_to_discounts ||
@@ -184,7 +221,7 @@ export default function NotificationPreferences() {
                     Receive instant notifications on your device
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                     <div>
                       <Label className="font-medium">Enable Push Notifications</Label>
@@ -196,6 +233,22 @@ export default function NotificationPreferences() {
                       disabled={pushLoading}
                     />
                   </div>
+                  
+                  {isSubscribed && (
+                    <Button
+                      variant="outline"
+                      onClick={handleTestPush}
+                      disabled={testingPush}
+                      className="w-full"
+                    >
+                      {testingPush ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="mr-2 h-4 w-4" />
+                      )}
+                      Send Test Notification
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
