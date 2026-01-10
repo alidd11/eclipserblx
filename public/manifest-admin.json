@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/admin?pwa=admin",
+  "start_url": "/admin",
   "id": "eclipse-admin",
   "icons": [
     {

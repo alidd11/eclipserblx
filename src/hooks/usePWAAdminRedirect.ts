@@ -73,15 +73,8 @@ export function usePWAAdminRedirect() {
     // Only redirect if on root path
     if (location.pathname !== '/') return;
 
-    // Check if this is an admin PWA installation by:
-    // 1. Checking localStorage flag (set when visiting admin pages)
-    // 2. Checking if the current manifest is admin manifest
-    // 3. Checking URL parameters from manifest start_url
-    const urlParams = new URLSearchParams(window.location.search);
-    const isFromAdminManifest = urlParams.get('pwa') === 'admin';
-    
-    if (isAdminPWA() || isAdminManifest() || isFromAdminManifest) {
-      // Mark as admin PWA for future launches
+    // Check if this is an admin PWA installation
+    if (isAdminPWA() || isAdminManifest()) {
       markAdminPWA();
       navigate('/admin', { replace: true });
     }
