@@ -91,8 +91,12 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : userEmail,
+      customer_creation: customerId ? undefined : 'always',
       line_items: lineItems,
       mode: "payment",
+      payment_intent_data: {
+        setup_future_usage: 'on_session',
+      },
       success_url: successUrl || `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${origin}/checkout`,
       metadata: {

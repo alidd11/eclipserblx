@@ -74,3 +74,9 @@ verify_jwt = false
 
 [functions.receive-contact-reply]
 verify_jwt = false
+
+[functions.list-payment-methods]
+verify_jwt = false
+
+[functions.charge-saved-method]
+verify_jwt = false

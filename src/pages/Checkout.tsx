@@ -284,6 +284,7 @@ export default function Checkout() {
                 total={finalTotal}
                 email={user?.email || ''}
                 accessToken={session?.access_token}
+                discountCodeId={appliedDiscount?.id}
                 isProcessing={isProcessing}
                 onProcessing={setIsProcessing}
                 onCardCheckout={handleStripeCheckout}

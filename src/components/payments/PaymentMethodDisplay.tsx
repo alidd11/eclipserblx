@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import { CreditCard, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { CreditCard, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePlatform } from '@/hooks/usePlatform';
+import { useSavedPaymentMethods } from '@/hooks/useSavedPaymentMethods';
 import { StripeProvider } from './StripeProvider';
 import { PaymentRequestButton } from './PaymentRequestButton';
+import { SavedCardButton } from './SavedCardButton';
 
 interface CartItem {
   id: string;
@@ -19,6 +21,7 @@ interface PaymentMethodDisplayProps {
   total: number;
   email: string;
   accessToken?: string;
+  discountCodeId?: string;
   isProcessing: boolean;
   onProcessing: (processing: boolean) => void;
   onCardCheckout: () => void;
@@ -53,35 +56,24 @@ function GooglePayLogo({ className }: { className?: string }) {
   );
 }
 
-// PayPal Logo SVG
-function PayPalLogo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 101 32" className={className}>
-      <path fill="#253B80" d="M12.237 7.996H5.12c-.408 0-.756.296-.82.698L1.567 26.61c-.047.302.185.576.492.576h3.401c.408 0 .755-.296.82-.698l.74-4.68c.063-.402.41-.698.818-.698h1.886c3.929 0 6.198-1.9 6.79-5.67.267-1.649.01-2.945-.764-3.854-.85-.997-2.353-1.59-4.513-1.59z"/>
-      <path fill="#179BD7" d="M33.194 7.996h-7.117c-.408 0-.756.296-.82.698l-2.733 17.316c-.047.302.185.576.492.576h3.606c.285 0 .528-.207.574-.488l.777-4.89c.063-.402.41-.698.818-.698h1.886c3.929 0 6.198-1.9 6.79-5.67.267-1.649.01-2.945-.764-3.854-.85-.997-2.353-1.59-4.509-1.59z"/>
-      <path fill="#253B80" d="M54.067 13.627c-.287 1.882-1.724 1.882-3.115 1.882h-.79l.555-3.511c.033-.215.22-.373.438-.373h.363c.947 0 1.841 0 2.302.54.276.322.36.8.247 1.462zm-.603-4.916h-5.243c-.363 0-.671.264-.728.62l-2.12 13.433c-.042.268.165.51.436.51h2.688c.254 0 .47-.184.51-.433l.602-3.813c.057-.356.365-.62.728-.62h1.677c3.494 0 5.511-1.69 6.038-5.04.238-1.466.01-2.616-.679-3.424-.757-.887-2.097-1.233-3.909-1.233z"/>
-      <path fill="#179BD7" d="M75.04 13.627c-.287 1.882-1.724 1.882-3.115 1.882h-.79l.555-3.511c.033-.215.22-.373.438-.373h.363c.947 0 1.841 0 2.302.54.276.322.36.8.247 1.462zm-.603-4.916h-5.243c-.363 0-.671.264-.728.62l-2.12 13.433c-.042.268.165.51.437.51h2.52c.363 0 .672-.264.728-.62l.572-3.626c.057-.356.365-.62.728-.62h1.677c3.494 0 5.511-1.69 6.038-5.04.238-1.466.01-2.616-.679-3.424-.757-.887-2.097-1.233-3.93-1.233z"/>
-      <path fill="#253B80" d="M96.396 8.711h-2.507c-.19 0-.363.113-.438.288l-5.042 7.422-2.138-7.133c-.073-.244-.296-.412-.552-.412h-2.464c-.306 0-.52.298-.42.586l4.028 11.821-3.789 5.348c-.21.295.003.705.369.705h2.504c.188 0 .36-.11.436-.281l12.156-17.549c.205-.296-.007-.695-.373-.695z"/>
-      <path fill="#179BD7" d="M101.32 7.996h-2.508c-.19 0-.363.113-.437.288l-5.042 7.422-2.138-7.133c-.073-.244-.296-.412-.552-.412h-2.464c-.306 0-.52.298-.42.586l4.028 11.821-3.789 5.348c-.21.295.003.705.37.705h2.503c.188 0 .36-.11.437-.281l12.155-17.549c.206-.296-.006-.695-.373-.695z"/>
-    </svg>
-  );
-}
-
 export function PaymentMethodDisplay({
   items,
   total,
   email,
   accessToken,
+  discountCodeId,
   isProcessing,
   onProcessing,
   onCardCheckout,
 }: PaymentMethodDisplayProps) {
   const platform = usePlatform();
+  const { paymentMethods, isLoading: isLoadingMethods } = useSavedPaymentMethods();
   const [walletAvailable, setWalletAvailable] = useState<boolean | null>(null);
+  const [showAllCards, setShowAllCards] = useState(false);
 
-  // Determine primary payment method based on platform
-  const showApplePayFirst = platform.supportsApplePay;
-  const showGooglePayFirst = platform.supportsGooglePay && !showApplePayFirst;
+  const hasSavedCards = paymentMethods.length > 0;
+  const displayedCards = showAllCards ? paymentMethods : paymentMethods.slice(0, 2);
+  const hasMoreCards = paymentMethods.length > 2;
 
   return (
     <StripeProvider fallback={
@@ -98,7 +90,64 @@ export function PaymentMethodDisplay({
       </div>
     }>
       <div className="space-y-4">
-        {/* Native Wallet Payment - Primary on mobile */}
+        {/* Saved Cards - Show first for returning customers */}
+        {isLoadingMethods ? (
+          <div className="space-y-2">
+            <Skeleton className="h-14 w-full rounded-lg" />
+          </div>
+        ) : hasSavedCards ? (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">
+              Pay with saved card
+            </p>
+            {displayedCards.map((method) => (
+              <SavedCardButton
+                key={method.id}
+                method={method}
+                items={items}
+                total={total}
+                accessToken={accessToken}
+                discountCodeId={discountCodeId}
+                isProcessing={isProcessing}
+                onProcessing={onProcessing}
+              />
+            ))}
+            {hasMoreCards && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-muted-foreground"
+                onClick={() => setShowAllCards(!showAllCards)}
+              >
+                {showAllCards ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1" />
+                    Show less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Show {paymentMethods.length - 2} more cards
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        ) : null}
+
+        {/* Divider between saved cards and other methods */}
+        {hasSavedCards && (
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-3 text-muted-foreground">Or use another method</span>
+            </div>
+          </div>
+        )}
+
+        {/* Native Wallet Payment */}
         <PaymentRequestButton
           items={items}
           total={total}
@@ -108,8 +157,8 @@ export function PaymentMethodDisplay({
           onWalletAvailable={setWalletAvailable}
         />
 
-        {/* Divider - only show if wallet is available */}
-        {walletAvailable && (
+        {/* Divider - only show if wallet is available and no saved cards */}
+        {walletAvailable && !hasSavedCards && (
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
@@ -121,33 +170,28 @@ export function PaymentMethodDisplay({
         )}
 
         {/* Card/PayPal Checkout */}
-        <div className={walletAvailable ? 'space-y-3' : ''}>
+        <div className={walletAvailable || hasSavedCards ? 'space-y-3' : ''}>
           {/* Card Payment Button */}
           <Button
             onClick={onCardCheckout}
-            variant={walletAvailable ? 'outline' : 'default'}
+            variant={walletAvailable || hasSavedCards ? 'outline' : 'default'}
             className={`w-full h-14 font-semibold text-base ${
-              walletAvailable 
+              walletAvailable || hasSavedCards
                 ? 'border-border hover:bg-muted/50' 
                 : 'gradient-button border-0'
             }`}
             disabled={isProcessing}
           >
             <CreditCard className="h-5 w-5 mr-2" />
-            {isProcessing ? 'Processing...' : walletAvailable ? 'Card or PayPal' : `Pay £${total.toFixed(2)}`}
+            {isProcessing 
+              ? 'Processing...' 
+              : hasSavedCards 
+                ? 'Add new card or PayPal'
+                : walletAvailable 
+                  ? 'Card or PayPal' 
+                  : `Pay £${total.toFixed(2)}`
+            }
           </Button>
-
-          {/* PayPal as separate option when wallet not available */}
-          {!walletAvailable && (
-            <Button
-              onClick={onCardCheckout}
-              variant="outline"
-              className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] border-0 text-white"
-              disabled={isProcessing}
-            >
-              <PayPalLogo className="h-5 w-auto" />
-            </Button>
-          )}
         </div>
 
         {/* Accepted Payment Icons - Show only relevant ones */}
