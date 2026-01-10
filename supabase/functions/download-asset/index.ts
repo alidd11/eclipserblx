@@ -38,6 +38,8 @@ serve(async (req) => {
 
     const { productId, orderItemId } = await req.json();
 
+    console.log("Download request:", { productId, orderItemId, userId: user.id, email: user.email });
+
     if (!productId) {
       return new Response(
         JSON.stringify({ error: "Product ID is required" }),
@@ -45,8 +47,14 @@ serve(async (req) => {
       );
     }
 
+    // Use service role for all admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
     // Verify user has purchased this product
-    const { data: orderItem, error: orderError } = await supabaseClient
+    const { data: orderItems, error: orderError } = await supabaseAdmin
       .from('order_items')
       .select(`
         id,
@@ -55,25 +63,33 @@ serve(async (req) => {
         orders!inner (
           id,
           user_id,
+          customer_email,
           status
         )
       `)
       .eq('product_id', productId)
-      .eq('orders.user_id', user.id)
-      .in('orders.status', ['paid', 'completed'])
-      .limit(1)
-      .maybeSingle();
+      .in('orders.status', ['paid', 'completed']);
 
-    if (orderError || !orderItem) {
-      console.error("Order verification failed:", orderError);
+    console.log("Order items found:", orderItems?.length, "Error:", orderError);
+
+    // Find an order that belongs to this user (by user_id or email)
+    const userOrder = orderItems?.find((item: any) => 
+      item.orders?.user_id === user.id || 
+      item.orders?.customer_email === user.email
+    );
+
+    if (orderError || !userOrder) {
+      console.error("Order verification failed:", { orderError, userId: user.id, email: user.email, foundItems: orderItems?.length });
       return new Response(
         JSON.stringify({ error: "You have not purchased this product" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("Found matching order:", userOrder.id);
+
     // Get product asset URL
-    const { data: product, error: productError } = await supabaseClient
+    const { data: product, error: productError } = await supabaseAdmin
       .from('products')
       .select('id, name, asset_file_url, download_count')
       .eq('id', productId)
@@ -94,12 +110,12 @@ serve(async (req) => {
     }
 
     // Log the download
-    const { error: logError } = await supabaseClient
+    const { error: logError } = await supabaseAdmin
       .from('download_logs')
       .insert({
         user_id: user.id,
         product_id: productId,
-        order_item_id: orderItemId || orderItem.id,
+        order_item_id: orderItemId || userOrder.id,
       });
 
     if (logError) {
@@ -107,12 +123,7 @@ serve(async (req) => {
       // Don't fail the download, just log the error
     }
 
-    // Use service role to access storage and increment count
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
+    // Increment download count
     await supabaseAdmin
       .from('products')
       .update({ download_count: (product.download_count || 0) + 1 })
@@ -131,7 +142,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Download logged: user=${user.id}, product=${productId}`);
+    console.log(`Download successful: user=${user.id}, product=${productId}`);
 
     return new Response(
       JSON.stringify({ 
