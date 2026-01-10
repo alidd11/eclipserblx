@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -442,6 +442,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 >
                   <MessageSquare className="h-6 w-6 text-primary" />
                   <span className="text-xs font-medium">Support History</span>
+                </Link>
+                <Link
+                  to="/notifications"
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-center"
+                >
+                  <Bell className="h-6 w-6 text-primary" />
+                  <span className="text-xs font-medium">Notifications</span>
                 </Link>
                 <Link
                   to="/downloads"
