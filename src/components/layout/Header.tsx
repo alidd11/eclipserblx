@@ -114,11 +114,13 @@ export const Header = memo(function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-0.5 sm:gap-2">
+            {/* Discord - hidden on very small screens */}
             <a
               href="https://discord.gg/d3Tq4KbNwq"
               target="_blank"
               rel="noopener noreferrer"
+              className="hidden xs:block"
             >
               <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
                 <svg
@@ -132,7 +134,8 @@ export const Header = memo(function Header() {
               </Button>
             </a>
 
-            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+            {/* Search - hidden on mobile, accessible via menu */}
+            <Button variant="ghost" size="icon" className="hidden sm:flex h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
               <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
 
