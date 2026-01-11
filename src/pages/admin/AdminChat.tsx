@@ -88,16 +88,24 @@ const matchesMention = (admin: AdminMember, mentionHandle: string): boolean => {
 };
 
 // Render message with highlighted mentions
-const renderMessageWithMentions = (message: string) => {
+const renderMessageWithMentions = (message: string, opts?: { isOwn?: boolean }) => {
+  const isOwn = !!opts?.isOwn;
   const parts = message.split(/(@[a-zA-Z0-9_]+)/g);
+
   return parts.map((part, index) => {
     if (part.startsWith('@')) {
+      // If the message bubble is already primary-colored, use primary-foreground for contrast.
+      const mentionClass = isOwn
+        ? 'text-primary-foreground font-medium bg-primary-foreground/15 rounded px-1'
+        : 'text-primary font-medium bg-primary/10 rounded px-1';
+
       return (
-        <span key={index} className="text-primary font-medium bg-primary/10 rounded px-1">
+        <span key={index} className={mentionClass}>
           {part}
         </span>
       );
     }
+
     return part;
   });
 };
@@ -788,7 +796,7 @@ function AdminChatContent() {
                                 : 'bg-muted text-foreground'
                             )}
                           >
-                            {renderMessageWithMentions(message.message)}
+                            {renderMessageWithMentions(message.message, { isOwn })}
                           </div>
                         )}
                         
