@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
 import { Resend } from 'https://esm.sh/resend@4.0.0'
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -162,6 +163,19 @@ Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
+  }
+
+  // Rate limiting: 5 requests per minute (auth endpoint - strict)
+  const clientIp = getClientIp(req);
+  const rateLimitResult = checkRateLimit({
+    ...RATE_LIMITS.AUTH,
+    identifier: clientIp,
+    action: 'custom-password-reset',
+  });
+
+  if (!rateLimitResult.allowed) {
+    console.log(`[custom-password-reset] Rate limit exceeded for IP: ${clientIp}`);
+    return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!

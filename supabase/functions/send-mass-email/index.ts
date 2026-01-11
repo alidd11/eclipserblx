@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -19,6 +20,19 @@ interface MassEmailRequest {
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting: 5 requests per minute (very expensive operation)
+  const clientIp = getClientIp(req);
+  const rateLimitResult = checkRateLimit({
+    ...RATE_LIMITS.AUTH, // Strictest limit for mass email
+    identifier: clientIp,
+    action: 'send-mass-email',
+  });
+
+  if (!rateLimitResult.allowed) {
+    console.log(`[send-mass-email] Rate limit exceeded for IP: ${clientIp}`);
+    return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
   try {
