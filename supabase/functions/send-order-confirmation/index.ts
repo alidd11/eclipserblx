@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -339,6 +340,19 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting: 30 requests per minute (write operations)
+  const clientIp = getClientIp(req);
+  const rateLimitResult = checkRateLimit({
+    ...RATE_LIMITS.WRITE,
+    identifier: clientIp,
+    action: 'send-order-confirmation',
+  });
+
+  if (!rateLimitResult.allowed) {
+    console.log(`[ORDER-CONFIRMATION] Rate limit exceeded for IP: ${clientIp}`);
+    return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
   try {
