@@ -43,18 +43,26 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     setIsStandalone(standalone);
   }, []);
 
-  // Set CSS variable for visual viewport height (for reference only)
+  // Track visual viewport height for keyboard-aware layouts
   useEffect(() => {
     const vv = window.visualViewport;
+    
     const update = () => {
       const height = vv?.height ?? window.innerHeight;
       document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
     };
+    
     update();
+    
+    // Listen to both resize and scroll events on visual viewport
+    // Scroll events fire when keyboard opens/closes on iOS
     vv?.addEventListener('resize', update);
+    vv?.addEventListener('scroll', update);
     window.addEventListener('resize', update);
+    
     return () => {
       vv?.removeEventListener('resize', update);
+      vv?.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
     };
   }, []);
@@ -281,13 +289,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
               'flex-1 min-h-0 bg-background',
               isChatPage ? 'overflow-hidden overscroll-none' : 'overflow-y-auto overscroll-contain'
             )}
+            style={isChatPage ? { height: 'calc(var(--vvh, 1vh) * 100)' } : undefined}
           >
             <div
               className={cn(
-                'h-full',
                 isChatPage
-                  ? 'p-0'
-                  : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+                  ? 'h-full p-0'
+                  : 'h-full p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
               )}
             >
               {children}
