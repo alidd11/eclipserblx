@@ -329,12 +329,21 @@ export function ChatWidget() {
     return () => clearInterval(interval);
   }, [conversationId, messagesChannelStatus]);
 
-  // Scroll to bottom on new messages
-  useEffect(() => {
+  // Scroll to bottom helper
+  const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, []);
+
+  // Auto-scroll on new messages and initial load
+  useEffect(() => {
+    // Immediate scroll
+    scrollToBottom();
+    // Delayed scroll to ensure DOM has rendered (especially on initial load)
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
+  }, [messages, scrollToBottom]);
 
   const loadExistingConversation = async () => {
     if (!user) return;
