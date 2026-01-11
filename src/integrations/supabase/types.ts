@@ -1386,6 +1386,27 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_duty_logs: {
         Row: {
           clock_in: string
