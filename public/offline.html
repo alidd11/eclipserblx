@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>Connection Issue - Eclipse</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: #fff;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      padding-top: calc(env(safe-area-inset-top) + 1.5rem);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 1.5rem);
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
+    }
+    
+    .logo svg {
+      width: 40px;
+      height: 40px;
+    }
+    
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #fff 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    
+    .tips {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+    
+    .tips-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #a855f7;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .tips ul {
+      list-style: none;
+    }
+    
+    .tips li {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      padding: 0.5rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .tips li:last-child {
+      border-bottom: none;
+    }
+    
+    .tips li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #a855f7;
+    }
+    
+    .retry-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      max-width: 280px;
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+    }
+    
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(168, 85, 247, 0.4);
+    }
+    
+    .retry-btn:active {
+      transform: translateY(0);
+    }
+    
+    .retry-btn.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .countdown {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    
+    .retry-btn.loading .spinner {
+      display: block;
+    }
+    
+    .retry-btn.loading .btn-text {
+      display: none;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 380px) {
+      h1 { font-size: 1.5rem; }
+      .logo { width: 60px; height: 60px; }
+      .logo svg { width: 30px; height: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2a7 7 0 0 0 0 20"/>
+      </svg>
+    </div>
+    
+    <h1>Connection Issue</h1>
+    <p class="subtitle">
+      We're having trouble connecting to Eclipse. This might be a temporary network issue.
+    </p>
+    
+    <div class="tips">
+      <div class="tips-title">Try these steps</div>
+      <ul>
+        <li>Switch between Wi-Fi and mobile data</li>
+        <li>Try opening in Private/Incognito mode</li>
+        <li>Clear your browser cache and cookies</li>
+        <li>Check if other sites are working</li>
+        <li>Wait a moment and try again</li>
+      </ul>
+    </div>
+    
+    <button class="retry-btn" id="retryBtn" onclick="retryConnection()">
+      <span class="btn-text">Try Again</span>
+      <div class="spinner"></div>
+    </button>
+    
+    <p class="countdown" id="countdown"></p>
+  </div>
+
+  <script>
+    let autoRetrySeconds = 30;
+    let countdownInterval = null;
+    let isRetrying = false;
+    
+    function updateCountdown() {
+      const el = document.getElementById('countdown');
+      if (autoRetrySeconds > 0) {
+        el.textContent = `Auto-retry in ${autoRetrySeconds} seconds`;
+        autoRetrySeconds--;
+      } else {
+        el.textContent = '';
+        clearInterval(countdownInterval);
+        retryConnection();
+      }
+    }
+    
+    function retryConnection() {
+      if (isRetrying) return;
+      isRetrying = true;
+      
+      const btn = document.getElementById('retryBtn');
+      btn.classList.add('loading');
+      
+      // Clear countdown
+      clearInterval(countdownInterval);
+      document.getElementById('countdown').textContent = 'Checking connection...';
+      
+      // Try to fetch the main page
+      fetch('/', { 
+        method: 'HEAD',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      })
+      .then(response => {
+        if (response.ok) {
+          // Success - reload the page
+          window.location.reload();
+        } else {
+          throw new Error('Still offline');
+        }
+      })
+      .catch(() => {
+        // Still offline - reset countdown
+        isRetrying = false;
+        btn.classList.remove('loading');
+        autoRetrySeconds = 30;
+        document.getElementById('countdown').textContent = '';
+        startCountdown();
+      });
+    }
+    
+    function startCountdown() {
+      countdownInterval = setInterval(updateCountdown, 1000);
+      updateCountdown();
+    }
+    
+    // Start auto-retry countdown
+    startCountdown();
+    
+    // Also listen for online event
+    window.addEventListener('online', () => {
+      retryConnection();
+    });
+  </script>
+</body>
+</html>

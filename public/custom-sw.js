@@ -1,8 +1,10 @@
-// Custom Service Worker for Push Notifications + Cache Busting
+// Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.0.1';
+const SW_VERSION = '1.0.2';
 const CACHE_PREFIX = 'eclipse-v';
+const OFFLINE_CACHE = 'offline-v1';
+const OFFLINE_URL = '/offline.html';
 
 // Clear old caches on activation (cache busting)
 const clearOldCaches = async () => {
@@ -197,11 +199,20 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // If no cache, try to return the index.html for SPA routing
+          
+          // Try the offline page first
+          const offlineCache = await caches.open(OFFLINE_CACHE);
+          const offlinePage = await offlineCache.match(OFFLINE_URL);
+          if (offlinePage) {
+            return offlinePage;
+          }
+          
+          // If no offline page cached, try index.html for SPA routing
           const indexCache = await caches.match('/index.html');
           if (indexCache) {
             return indexCache;
           }
+          
           // Last resort: return a basic offline response
           return new Response(
             '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title></head><body style="background:#0a0a0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;"><h1>You\'re Offline</h1><p>Please check your connection and try again.</p><button onclick="location.reload()" style="padding:10px 20px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer;">Retry</button></div></body></html>',
@@ -219,6 +230,15 @@ self.addEventListener('fetch', (event) => {
 // Log when service worker is installed
 self.addEventListener('install', (event) => {
   console.log('[Eclipse SW] Installing version:', SW_VERSION);
+  
+  // Pre-cache the offline page
+  event.waitUntil(
+    caches.open(OFFLINE_CACHE).then(cache => {
+      console.log('[Eclipse SW] Caching offline page');
+      return cache.add(OFFLINE_URL);
+    })
+  );
+  
   // Skip waiting to activate immediately
   self.skipWaiting();
 });
