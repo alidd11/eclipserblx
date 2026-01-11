@@ -274,7 +274,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             <TooltipTrigger asChild>
               <button
                 className={cn(
-                  "w-full flex items-center justify-center py-2.5 rounded-lg transition-colors",
+                  "w-full flex items-center justify-center py-2.5 rounded-lg transition-colors focus:outline-none focus-visible:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -324,7 +324,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium",
+              "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium focus:outline-none focus-visible:outline-none",
               hasActiveItem
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
