@@ -17,6 +17,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { safeStorage } from '@/lib/safeStorage';
 
 interface StoreSettings {
   store_name: string;
@@ -47,10 +48,10 @@ export default function AdminSettings() {
   // Notification settings
   const { isSupported: notifSupported, permission, requestPermission } = usePushNotifications();
   const [soundEnabled, setSoundEnabled] = useState(() => {
-    return localStorage.getItem('notification_sound_enabled') !== 'false';
+    return safeStorage.getItem('notification_sound_enabled') !== 'false';
   });
   const [hapticEnabled, setHapticEnabled] = useState(() => {
-    return localStorage.getItem('notification_haptic_enabled') !== 'false';
+    return safeStorage.getItem('notification_haptic_enabled') !== 'false';
   });
   const isHapticSupported = 'vibrate' in navigator;
   
@@ -197,13 +198,13 @@ export default function AdminSettings() {
 
   const handleToggleSound = (enabled: boolean) => {
     setSoundEnabled(enabled);
-    localStorage.setItem('notification_sound_enabled', String(enabled));
+    safeStorage.setItem('notification_sound_enabled', String(enabled));
     toast.success(enabled ? 'Notification sounds enabled' : 'Notification sounds disabled');
   };
 
   const handleToggleHaptic = (enabled: boolean) => {
     setHapticEnabled(enabled);
-    localStorage.setItem('notification_haptic_enabled', String(enabled));
+    safeStorage.setItem('notification_haptic_enabled', String(enabled));
     if (enabled && 'vibrate' in navigator) {
       navigator.vibrate(100); // Quick feedback vibration
     }
