@@ -449,7 +449,8 @@ function StaffMessagesContent() {
     handleTyping();
 
     // Check for @ mention trigger
-    const cursorPos = e.target.selectionStart || 0;
+    // NOTE: iOS PWA can briefly report selectionStart as null; fall back to end-of-input.
+    const cursorPos = e.target.selectionStart ?? value.length;
     const textBeforeCursor = value.slice(0, cursorPos);
     const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
 
@@ -465,10 +466,10 @@ function StaffMessagesContent() {
 
   // Insert mention into message
   const insertMention = (name: string) => {
-    const cursorPos = inputRef.current?.selectionStart || newMessage.length;
+    const cursorPos = inputRef.current?.selectionStart ?? newMessage.length;
     const textBeforeCursor = newMessage.slice(0, cursorPos);
     const textAfterCursor = newMessage.slice(cursorPos);
-    
+
     // Find the @ position
     const atPos = textBeforeCursor.lastIndexOf('@');
     if (atPos === -1) return;
@@ -477,7 +478,7 @@ function StaffMessagesContent() {
     setNewMessage(newText);
     setShowMentionSuggestions(false);
     setMentionFilter('');
-    
+
     // Focus back on input
     setTimeout(() => {
       inputRef.current?.focus();
