@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -68,6 +68,7 @@ const navGroups: NavGroup[] = [
     icon: MessageCircle,
     items: [
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
+      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
     ],
   },
   {
