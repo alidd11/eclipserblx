@@ -186,7 +186,12 @@ function AdminChatContent() {
   });
 
   // Fetch all admin members for @mentions
-  const { data: allAdmins = [] } = useQuery({
+  const {
+    data: allAdmins = [],
+    isLoading: isAdminsLoading,
+    error: adminsError,
+    refetch: refetchAdmins,
+  } = useQuery({
     queryKey: ['all-admin-members'],
     queryFn: async () => {
       // Get all users with admin role
@@ -194,17 +199,17 @@ function AdminChatContent() {
         .from('user_roles')
         .select('user_id')
         .eq('role', 'admin');
-      
+
       if (rolesError) throw rolesError;
       if (!adminRoles?.length) return [];
 
       const adminUserIds = adminRoles.map(r => r.user_id);
-      
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, display_name, email')
         .in('user_id', adminUserIds);
-      
+
       if (profilesError) throw profilesError;
       return (profiles || []) as AdminMember[];
     },
@@ -503,8 +508,15 @@ function AdminChatContent() {
     handleTyping();
 
     // Check for @ mention trigger
-    // NOTE: iOS PWA can briefly report selectionStart as null; fall back to end-of-input.
-    const cursorPos = e.target.selectionStart ?? value.length;
+    // Safari/iOS PWA can report selectionStart as 0 during onChange; treat that as "end" for chat.
+    const rawCursorPos = e.target.selectionStart;
+    const cursorPos =
+      rawCursorPos == null
+        ? value.length
+        : rawCursorPos === 0 && value.length > 0
+          ? value.length
+          : rawCursorPos;
+
     const textBeforeCursor = value.slice(0, cursorPos);
     const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
 
@@ -520,7 +532,14 @@ function AdminChatContent() {
 
   // Insert mention into message
   const insertMention = (name: string) => {
-    const cursorPos = inputRef.current?.selectionStart ?? newMessage.length;
+    const rawCursorPos = inputRef.current?.selectionStart;
+    const cursorPos =
+      rawCursorPos == null
+        ? newMessage.length
+        : rawCursorPos === 0 && newMessage.length > 0
+          ? newMessage.length
+          : rawCursorPos;
+
     const textBeforeCursor = newMessage.slice(0, cursorPos);
     const textAfterCursor = newMessage.slice(cursorPos);
 
@@ -824,53 +843,67 @@ function AdminChatContent() {
           {/* Message input - fixed at bottom */}
           <div className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Mention suggestions dropdown */}
-            {showMentionSuggestions && allSuggestions.length > 0 && (
-              <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50 text-foreground">
-                {allSuggestions.map((suggestion, index) => (
+            {showMentionSuggestions && (
+              <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[60]">
+                {isAdminsLoading ? (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Loading admins…</div>
+                ) : adminsError ? (
                   <button
-                    key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
-                    className={cn(
-                      'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
-                      index === mentionIndex && 'bg-accent'
-                    )}
-                    onClick={() => {
-                      const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
-                      insertMention(name);
-                    }}
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
+                    onClick={() => refetchAdmins()}
                   >
-                    {suggestion.type === 'group' ? (
-                      <>
-                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
-                          <AtSign className="h-3 w-3 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-sm">@{suggestion.name}</div>
-                          <div className="text-xs text-muted-foreground">{suggestion.description}</div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-xs bg-red-500/20 text-red-400">
-                            {(suggestion.display_name || suggestion.email.split('@')[0]).slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {suggestion.display_name || suggestion.email.split('@')[0]}
-                          </div>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30"
-                        >
-                          Admin
-                        </Badge>
-                      </>
-                    )}
+                    Couldn’t load admins. Tap to retry.
                   </button>
-                ))}
+                ) : allSuggestions.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
+                ) : (
+                  allSuggestions.map((suggestion, index) => (
+                    <button
+                      key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                      className={cn(
+                        'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                        index === mentionIndex && 'bg-accent'
+                      )}
+                      onClick={() => {
+                        const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
+                        insertMention(name);
+                      }}
+                    >
+                      {suggestion.type === 'group' ? (
+                        <>
+                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                            <AtSign className="h-3 w-3 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">@{suggestion.name}</div>
+                            <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-xs bg-red-500/20 text-red-400">
+                              {(suggestion.display_name || suggestion.email.split('@')[0]).slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {suggestion.display_name || suggestion.email.split('@')[0]}
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30"
+                          >
+                            Admin
+                          </Badge>
+                        </>
+                      )}
+                    </button>
+                  ))
+                )}
               </div>
             )}
 
