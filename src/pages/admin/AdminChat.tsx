@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { hapticTap, hapticError } from '@/lib/haptics';
 
 interface ChatMessage {
   id: string;
@@ -316,10 +317,14 @@ function AdminChatContent() {
       }
     },
     onSuccess: () => {
+      hapticTap();
       setNewMessage('');
       setSelectedFile(null);
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
+    },
+    onError: () => {
+      hapticError();
     },
   });
 
