@@ -25,6 +25,7 @@ import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
+import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -471,6 +472,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
+            {/* Eclipse+ Subscription Card */}
+            <SubscriptionCard />
+            
             {/* Profile Editing Card */}
             <Card className="bg-card border-border">
               <CardHeader>

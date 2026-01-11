@@ -43,6 +43,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Status = lazy(() => import("./pages/Status"));
 const BotInstallation = lazy(() => import("./pages/BotInstallation"));
 const NotificationPreferences = lazy(() => import("./pages/NotificationPreferences"));
+const EclipsePlus = lazy(() => import("./pages/EclipsePlus"));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -138,6 +139,7 @@ const App = () => (
                   <Route path="/status" element={<Status />} />
                   <Route path="/bot-installation" element={<BotInstallation />} />
                   <Route path="/notifications" element={<NotificationPreferences />} />
+                  <Route path="/eclipse-plus" element={<EclipsePlus />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />

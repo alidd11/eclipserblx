@@ -14,6 +14,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 const navLinks = [
   { href: '/products', label: 'Products', icon: Package },
   { href: '/categories', label: 'Categories', icon: Grid3X3 },
+  { href: '/eclipse-plus', label: 'Eclipse+', icon: Circle },
   { href: '/forum', label: 'Forum', icon: MessageSquare },
   { href: '/jobs', label: 'Jobs', icon: Briefcase },
 ];
