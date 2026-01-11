@@ -8,7 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'; import { safeStorage } from '@/lib/safeStorage';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
@@ -27,7 +27,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    const saved = safeStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
 
@@ -121,7 +121,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   useAdminManifest();
 
   useEffect(() => {
-    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
+    safeStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
   if (loading) {
