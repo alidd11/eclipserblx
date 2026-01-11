@@ -725,34 +725,50 @@ function AdminChatContent() {
                   <p className="text-sm">Start a private admin conversation!</p>
                 </div>
               ) : (
-                messages.map((message) => {
+              messages.map((message, index) => {
                   const isOwn = message.user_id === user?.id;
+                  
+                  // Check if this message should be grouped with the previous one
+                  const prevMessage = index > 0 ? messages[index - 1] : null;
+                  const isGrouped = prevMessage && 
+                    prevMessage.user_id === message.user_id &&
+                    (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime()) <= 30000;
 
                   return (
                     <div
                       key={message.id}
                       className={cn(
                         'flex gap-2 sm:gap-3 group',
-                        isOwn && 'flex-row-reverse'
+                        isOwn && 'flex-row-reverse',
+                        isGrouped && 'mt-0.5'
                       )}
+                      style={{ marginTop: isGrouped ? '2px' : undefined }}
                     >
-                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                        <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                          {getInitials(message.user_id)}
-                        </AvatarFallback>
-                      </Avatar>
+                      {/* Avatar - invisible spacer when grouped */}
+                      {isGrouped ? (
+                        <div className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0" />
+                      ) : (
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                            {getInitials(message.user_id)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
                       <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn && 'items-end')}>
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="text-xs sm:text-sm font-medium text-foreground">
-                            {getDisplayName(message.user_id)}
-                          </span>
-                          <Badge variant="outline" className="text-[10px] sm:text-xs py-0 bg-red-500/20 text-red-400 border-red-500/30">
-                            Admin
-                          </Badge>
-                          <span className="text-[10px] sm:text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
+                        {/* Header - only show for first message in group */}
+                        {!isGrouped && (
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-xs sm:text-sm font-medium text-foreground">
+                              {getDisplayName(message.user_id)}
+                            </span>
+                            <Badge variant="outline" className="text-[10px] sm:text-xs py-0 bg-red-500/20 text-red-400 border-red-500/30">
+                              Admin
+                            </Badge>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                        )}
                         
                         {/* Attachment preview */}
                         {message.attachment_url && (
