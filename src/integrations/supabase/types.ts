@@ -925,6 +925,45 @@ export type Database = {
         }
         Relationships: []
       }
+      job_channels: {
+        Row: {
+          created_at: string
+          description: string
+          display_order: number | null
+          id: string
+          is_active: boolean
+          location: string
+          requirements: string[]
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          location?: string
+          requirements?: string[]
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          location?: string
+          requirements?: string[]
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
