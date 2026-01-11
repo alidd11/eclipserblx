@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { showInfoNotification } from '@/lib/nativeNotification';
+import { safeStorage } from '@/lib/safeStorage';
 
 const LOCAL_VERSION_KEY = 'app_installed_version';
 const UPDATE_CHECK_INTERVAL = 30000; // Check every 30 seconds
@@ -16,11 +17,11 @@ export function useAppVersionCheck() {
   const isUpdatingRef = useRef(false);
 
   const getLocalVersion = useCallback(() => {
-    return localStorage.getItem(LOCAL_VERSION_KEY) || '1.0.0';
+    return safeStorage.getItem(LOCAL_VERSION_KEY) || '1.0.0';
   }, []);
 
   const setLocalVersion = useCallback((version: string) => {
-    localStorage.setItem(LOCAL_VERSION_KEY, version);
+    safeStorage.setItem(LOCAL_VERSION_KEY, version);
   }, []);
 
   const forceAppUpdate = useCallback(async () => {

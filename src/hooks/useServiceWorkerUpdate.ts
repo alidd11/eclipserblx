@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { showSuccessNotification, showInfoNotification, showNativeNotification } from '@/lib/nativeNotification';
+import { safeStorage } from '@/lib/safeStorage';
 
 export const useServiceWorkerUpdate = () => {
   // Send message to service worker
@@ -23,7 +24,7 @@ export const useServiceWorkerUpdate = () => {
     }
     
     // Clear localStorage cache markers
-    localStorage.removeItem('sw-cache-timestamp');
+    safeStorage.removeItem('sw-cache-timestamp');
   }, [sendMessageToSW]);
 
   // Force update the service worker

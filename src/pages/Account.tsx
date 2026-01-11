@@ -327,7 +327,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               Checking access…
             </Button>
           ) : isStaff ? (
-            <Button variant="outline" onClick={() => window.open('/admin', '_blank')}>
+            <Button variant="outline" onClick={() => navigate('/admin')}>
               <Shield className="h-4 w-4 mr-2" />
               Admin Dashboard
             </Button>
