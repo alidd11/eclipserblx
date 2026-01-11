@@ -1,44 +1,33 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, MessageSquare, Users, AtSign, Circle, Loader2, Check, CheckCheck, ChevronDown, ChevronUp, AlertCircle, RotateCcw, X, Wifi, WifiOff } from 'lucide-react';
+import { Send, Trash2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
-import { showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
-import { useNotificationSound } from '@/hooks/useNotificationSound';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { notifyStaffMention } from '@/lib/pushNotifications';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { formatDistanceToNow } from 'date-fns';
+import type { Database } from '@/integrations/supabase/types';
+
+type AppRole = Database['public']['Enums']['app_role'];
 
 interface ChatMessage {
   id: string;
-  sender_id: string;
-  recipient_id?: string | null;
+  user_id: string;
   message: string;
   created_at: string;
-  _status?: 'pending' | 'failed' | 'success';
-  _tempId?: string;
 }
 
-type RealtimeStatus = 'connecting' | 'connected' | 'reconnecting' | 'failed';
-
-interface MessageRead {
-  message_id: string;
-  user_id: string;
-  read_at: string;
-}
-
-interface StaffProfile {
+interface UserProfile {
   user_id: string;
   display_name: string | null;
   email: string;
-  last_seen?: string | null;
 }
 
 interface TypingUser {
@@ -46,281 +35,80 @@ interface TypingUser {
   name: string;
 }
 
-interface OnlineStaffUser {
-  user_id: string;
-  name: string;
-  typing: boolean;
-}
-
-// Convert a staff profile into a safe @mention handle (no spaces, only [a-z0-9_])
-const getMentionHandle = (profile: StaffProfile): string => {
-  const base = (profile.display_name || profile.email.split('@')[0] || 'staff').toLowerCase();
-  const handle = base
-    .replace(/[^a-z0-9_]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  return handle || 'staff';
+const roleBadges: Record<AppRole, { label: string; className: string }> = {
+  admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  product_manager: { label: 'Products', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  order_manager: { label: 'Orders', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  support_agent: { label: 'Support', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  analyst: { label: 'Analyst', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  recruiter: { label: 'Recruiter', className: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
 };
 
-// Parse @mentions from message text (keep original case for display, normalize for matching)
-const parseMentions = (text: string): string[] => {
-  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
-  const matches = text.match(mentionRegex);
-  return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
-};
-
-// Match a mention handle against a staff profile (flexible matching)
-const matchesMention = (profile: StaffProfile, mentionHandle: string): boolean => {
-  const normalizedMention = mentionHandle.toLowerCase().replace(/_/g, '');
-  const handle = getMentionHandle(profile).replace(/_/g, '');
-  const displayName = (profile.display_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const emailPrefix = profile.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-  
-  return handle === normalizedMention || 
-         displayName === normalizedMention || 
-         emailPrefix === normalizedMention ||
-         handle.includes(normalizedMention) ||
-         displayName.includes(normalizedMention);
-};
-
-// Check for group mentions
-const hasGroupMention = (text: string): { everyone: boolean; here: boolean } => {
-  const mentions = parseMentions(text);
-  return {
-    everyone: mentions.includes('everyone'),
-    here: mentions.includes('here'),
-  };
-};
-
-// Group mention options
-const GROUP_MENTIONS = [
-  { id: 'everyone', name: 'everyone', description: 'Notify all staff members' },
-  { id: 'here', name: 'here', description: 'Notify all online staff' },
-];
-
-// Merge server messages without losing local optimistic messages
-const mergeServerMessages = (prev: ChatMessage[], server: ChatMessage[]): ChatMessage[] => {
-  const merged: ChatMessage[] = [...server];
-  const byId = new Set(merged.map((m) => m.id));
-
-  const hasEquivalentOnServer = (local: ChatMessage) => {
-    if (!local._tempId) return false;
-    const localTs = new Date(local.created_at).getTime();
-    return merged.some((m) => {
-      if (m.sender_id !== local.sender_id) return false;
-      if (m.message !== local.message) return false;
-      const dt = Math.abs(new Date(m.created_at).getTime() - localTs);
-      return dt < 5 * 60 * 1000; // 5 minutes
-    });
-  };
-
-  for (const local of prev) {
-    if (byId.has(local.id)) continue;
-    if (hasEquivalentOnServer(local)) continue;
-    merged.push(local);
-    byId.add(local.id);
-  }
-
-  merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  return merged;
-};
-
-export default function StaffMessages() {
-  const queryClient = useQueryClient();
+function StaffMessagesContent() {
   const { user } = useAuth();
-  const isMobile = useIsMobile();
+  const { isAdmin } = useAdminAuth();
+  const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<OnlineStaffUser[]>([]);
-  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
-  const [mentionFilter, setMentionFilter] = useState('');
-  const [mentionIndex, setMentionIndex] = useState(0);
-  const [cursorPosition, setCursorPosition] = useState(0);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [staffStripCollapsed, setStaffStripCollapsed] = useState(isMobile); // Collapsed by default on mobile
-  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>('connecting');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const messageChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const retryAttemptRef = useRef(0);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Swipe tracking for mobile
-  const swipeStartY = useRef<number | null>(null);
-  const swipeStartX = useRef<number | null>(null);
-  
-  // Notification hooks
-  const { playSound } = useNotificationSound();
-  const { sendNotification, requestPermission, permission } = usePushNotifications();
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Detect platform
-  const isAndroid = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
-  const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  // Cross-platform VisualViewport keyboard handling
-  useEffect(() => {
-    if (!isMobile || typeof window === 'undefined') return;
-    
-    const viewport = window.visualViewport;
-    
-    let resizeTimeout: NodeJS.Timeout | null = null;
-    
-    const handleResize = () => {
-      // Debounce to prevent jittery layout during keyboard animation
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      
-      resizeTimeout = setTimeout(() => {
-        let newKeyboardHeight = 0;
-        
-        if (viewport) {
-          // VisualViewport approach - works on both iOS and modern Android
-          newKeyboardHeight = window.innerHeight - viewport.height;
-          
-          // On Android, also account for viewport offset
-          if (isAndroid && viewport.offsetTop > 0) {
-            newKeyboardHeight = Math.max(newKeyboardHeight, viewport.offsetTop);
-          }
-        } else {
-          // Fallback: use window.innerHeight comparison with screen height
-          // This is less accurate but works on older browsers
-          const screenHeight = window.screen.height;
-          const windowHeight = window.innerHeight;
-          if (screenHeight - windowHeight > 150) {
-            newKeyboardHeight = screenHeight - windowHeight;
-          }
-        }
-        
-        setKeyboardHeight(Math.max(0, newKeyboardHeight));
-        
-        // Scroll to bottom when keyboard opens
-        // Use longer timeout for Android's slower keyboard animation
-        if (newKeyboardHeight > 50 && scrollRef.current) {
-          setTimeout(() => {
-            const scrollArea = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-            if (scrollArea) {
-              scrollArea.scrollTop = scrollArea.scrollHeight;
-            }
-          }, isAndroid ? 150 : 100);
-        }
-      }, isAndroid ? 50 : 16); // Debounce more on Android
-    };
-    
-    if (viewport) {
-      viewport.addEventListener('resize', handleResize);
-      viewport.addEventListener('scroll', handleResize);
-    }
-    
-    // Also listen to window resize as fallback
-    window.addEventListener('resize', handleResize);
-    
-    // Initial check
-    handleResize();
-    
-    return () => {
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      if (viewport) {
-        viewport.removeEventListener('resize', handleResize);
-        viewport.removeEventListener('scroll', handleResize);
-      }
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [isMobile, isAndroid]);
-
-  // Request notification permission on mount
-  useEffect(() => {
-    if (permission === 'default') {
-      requestPermission();
-    }
-  }, [permission, requestPermission]);
-
-  // Fetch messages (using staff_messages table with recipient_id = null for general chat)
-  // Polling fallback when realtime is not connected
-  const { data: messages, isLoading } = useQuery({
-    queryKey: ['staff-chat'],
+  // Fetch messages
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: ['staff-chat-messages'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('staff_messages')
-        .select('id, sender_id, recipient_id, message, created_at')
-        .is('recipient_id', null)
-        .order('created_at', { ascending: false })
+        .from('staff_chat_messages')
+        .select('*')
+        .order('created_at', { ascending: true })
         .limit(100);
-
-      if (error) throw error;
-      // Fetch newest-first for efficiency, then reverse for chronological rendering.
-      return (data ?? []).reverse() as ChatMessage[];
-    },
-    select: (freshData) => {
-      const cached = queryClient.getQueryData<ChatMessage[]>(['staff-chat']);
-      if (!cached) return freshData;
-      return mergeServerMessages(cached, freshData);
-    },
-    // Polling fallback: poll every 5s when realtime is not connected
-    refetchInterval: realtimeStatus === 'connected' ? false : 5000,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
-
-  // Fetch read receipts for messages
-  const { data: messageReads } = useQuery({
-    queryKey: ['staff-message-reads', messages?.map(m => m.id)],
-    queryFn: async () => {
-      if (!messages?.length) return {};
-      const messageIds = messages.map(m => m.id).filter(id => !id.startsWith('optimistic-'));
-      
-      if (messageIds.length === 0) return {};
-      
-      const { data, error } = await supabase
-        .from('staff_message_reads')
-        .select('message_id, user_id, read_at')
-        .in('message_id', messageIds);
       
       if (error) throw error;
-      
-      // Group reads by message_id
-      const readsByMessage: Record<string, MessageRead[]> = {};
-      data?.forEach((read: MessageRead) => {
-        if (!readsByMessage[read.message_id]) {
-          readsByMessage[read.message_id] = [];
-        }
-        readsByMessage[read.message_id].push(read);
-      });
-      
-      return readsByMessage;
+      return data as ChatMessage[];
     },
-    enabled: !!messages?.length,
   });
 
-  // Fetch staff profiles
-  const { data: profiles } = useQuery({
-    queryKey: ['staff-profiles', messages?.map(m => m.sender_id)],
+  // Fetch user profiles
+  const { data: profiles = {} } = useQuery({
+    queryKey: ['staff-profiles', messages.map(m => m.user_id)],
     queryFn: async () => {
-      if (!messages?.length) return {};
-      const senderIds = [...new Set(messages.map(m => m.sender_id))];
+      if (!messages.length) return {};
+      const userIds = [...new Set(messages.map(m => m.user_id))];
       
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, display_name, email')
-        .in('user_id', senderIds);
+        .in('user_id', userIds);
       
       if (error) throw error;
       
       return Object.fromEntries(
         data.map(p => [p.user_id, p])
-      ) as Record<string, StaffProfile>;
+      ) as Record<string, UserProfile>;
     },
-    enabled: !!messages?.length,
+    enabled: messages.length > 0,
   });
 
-  // Fetch all staff members for @mentions
-  const { data: allStaff } = useQuery({
-    queryKey: ['all-staff-profiles'],
+  // Fetch user roles
+  const { data: userRoles = {} } = useQuery({
+    queryKey: ['staff-roles', messages.map(m => m.user_id)],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('list-staff');
+      if (!messages.length) return {};
+      const userIds = [...new Set(messages.map(m => m.user_id))];
+      
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+      
       if (error) throw error;
-      return (data?.staff ?? []) as StaffProfile[];
+      
+      return Object.fromEntries(
+        data.map(r => [r.user_id, r.role])
+      ) as Record<string, AppRole>;
     },
+    enabled: messages.length > 0,
   });
 
   // Fetch current user profile for presence
@@ -335,1202 +123,305 @@ export default function StaffMessages() {
         .single();
       
       if (error) return null;
-      return data as StaffProfile;
+      return data as UserProfile;
     },
     enabled: !!user?.id,
   });
 
-  // Fetch online staff count
-  const { data: onlineCount } = useQuery({
-    queryKey: ['staff-online-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('user_roles')
-        .select('user_id', { count: 'exact', head: true });
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async (message: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { error } = await supabase
+        .from('staff_chat_messages')
+        .insert({
+          user_id: user.id,
+          message: message.trim(),
+        });
       
       if (error) throw error;
-      return count || 0;
     },
-  });
-
-  // Get filtered staff for mentions (including group mentions)
-  const filteredGroupMentions = GROUP_MENTIONS.filter(g => 
-    g.name.includes(mentionFilter.toLowerCase())
-  );
-  
-  const filteredStaff = allStaff?.filter(staff => {
-    if (staff.user_id === user?.id) return false;
-    const display = (staff.display_name || staff.email.split('@')[0]).toLowerCase();
-    const handle = getMentionHandle(staff);
-    const q = mentionFilter.toLowerCase();
-    return display.includes(q) || handle.includes(q);
-  }) || [];
-
-  // Check if user is mentioned in a message (including group mentions)
-  const isUserMentioned = useCallback((message: string, userId: string): boolean => {
-    // Group mentions
-    const groupMentions = hasGroupMention(message);
-    if (groupMentions.everyone || groupMentions.here) return true;
-
-    if (!allStaff) return false;
-
-    const mentions = parseMentions(message);
-    const userProfile = allStaff.find(s => s.user_id === userId);
-    if (!userProfile) return false;
-
-    // Use flexible matching
-    return mentions.some(mentionHandle => matchesMention(userProfile, mentionHandle));
-  }, [allStaff]);
-
-  // Send message mutation
-  // Scroll to bottom helper - defined early so it can be used in mutation
-  const scrollToBottom = useCallback(
-    (options?: { smooth?: boolean; attempt?: number }) => {
-      const smooth = options?.smooth ?? false;
-      const attempt = options?.attempt ?? 0;
-      const maxAttempts = 10;
-
-      requestAnimationFrame(() => {
-        const root = scrollRef.current;
-        if (!root) {
-          if (attempt < maxAttempts) {
-            setTimeout(() => scrollToBottom({ smooth, attempt: attempt + 1 }), 50);
-          }
-          return;
-        }
-
-        const viewport = root.querySelector('[data-radix-scroll-area-viewport]') as
-          | HTMLElement
-          | null;
-
-        if (!viewport) {
-          if (attempt < maxAttempts) {
-            setTimeout(() => scrollToBottom({ smooth, attempt: attempt + 1 }), 50);
-          }
-          return;
-        }
-
-        const targetTop = viewport.scrollHeight;
-        if (smooth) {
-          viewport.scrollTo({ top: targetTop, behavior: 'smooth' });
-        } else {
-          viewport.scrollTop = targetTop;
-        }
-
-        // Verify we actually reached the bottom (Radix/iOS sometimes reflows after we set scrollTop)
-        const atBottom =
-          viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 2;
-
-        if (!atBottom && attempt < maxAttempts) {
-          setTimeout(() => scrollToBottom({ smooth, attempt: attempt + 1 }), 60);
-        }
-      });
-    },
-    []
-  );
-
-  // Remove a failed message from the cache
-  const removeFailedMessage = useCallback((tempId: string) => {
-    queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
-      old.filter(m => m._tempId !== tempId)
-    );
-  }, [queryClient]);
-
-  const sendMessageMutation = useMutation({
-    onMutate: async (messagePayload: string | { message: string; tempId: string }) => {
-      const message = typeof messagePayload === 'string' ? messagePayload : messagePayload.message;
-      const tempId = typeof messagePayload === 'string' ? `temp-${Date.now()}-${Math.random().toString(36).slice(2)}` : messagePayload.tempId;
-
-      if (!user?.id) return { previous: undefined as ChatMessage[] | undefined, tempId };
-
-      await queryClient.cancelQueries({ queryKey: ['staff-chat'] });
-      const previous = queryClient.getQueryData<ChatMessage[]>(['staff-chat']);
-
-      // Check if retrying an existing failed message
-      const isRetry = previous?.some(m => m._tempId === tempId);
-
-      if (isRetry) {
-        // Update existing message status to pending
-        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
-          old.map(m => m._tempId === tempId ? { ...m, _status: 'pending' as const } : m)
-        );
-      } else {
-        // Add new optimistic message
-        const optimistic: ChatMessage = {
-          id: `optimistic-${Date.now()}`,
-          sender_id: user.id,
-          message,
-          created_at: new Date().toISOString(),
-          _status: 'pending',
-          _tempId: tempId,
-        };
-
-        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
-          const next = [...old, optimistic];
-          return next.slice(-100);
-        });
-      }
-
-      // Scroll to bottom immediately after optimistic update
-      setTimeout(() => scrollToBottom(), 0);
-
-      return { previous, tempId };
-    },
-    mutationFn: async (messagePayload: string | { message: string; tempId: string }) => {
-      const message = typeof messagePayload === 'string' ? messagePayload : messagePayload.message;
-
-      if (!user?.id) {
-        throw new Error('You must be logged in to send messages');
-      }
-
-      const { error } = await supabase
-        .from('staff_messages')
-        .insert({
-          sender_id: user.id,
-          recipient_id: null,
-          subject: 'Staff Chat',
-          message,
-        });
-
-      if (error) {
-        console.error('Failed to send staff message:', error);
-        throw error;
-      }
-    },
-    onSuccess: (_data, _messagePayload, context) => {
+    onSuccess: () => {
       setNewMessage('');
-      setShowMentionSuggestions(false);
-
-      // Keep the optimistic message in place (prevents "disappearing" while we wait for realtime/refetch).
-      // We'll reconcile it when the server row arrives.
-      if (context?.tempId) {
-        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
-          old.map(m => m._tempId === context.tempId ? { ...m, _status: 'success' as const } : m)
-        );
-      }
-
-      // On mobile, blur to hide keyboard and prevent layout shift
-      // On desktop, keep focus for quick follow-up messages
-      if (isMobile) {
-        inputRef.current?.blur();
-      } else {
-        inputRef.current?.focus();
-      }
-
-      // Stop typing indicator when message is sent
-      if (presenceChannelRef.current && user?.id) {
-        presenceChannelRef.current.track({
-          typing: false,
-          user_id: user.id,
-          name: getCurrentUserName(),
-        });
-      }
-
-      // Ensure UI updates even if realtime isn't delivering events
-      queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
-    },
-    onError: (error, _messagePayload, context) => {
-      console.error('Send message error:', error);
-      // Mark the optimistic message as failed instead of removing it
-      if (context?.tempId) {
-        queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) =>
-          old.map(m => m._tempId === context.tempId ? { ...m, _status: 'failed' as const } : m)
-        );
-      }
-      showErrorNotification('Send Failed', 'Could not send message');
+      queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
     },
   });
 
-  // Retry a failed message
-  const retryMessage = useCallback((msg: ChatMessage) => {
-    if (!msg._tempId) return;
-    sendMessageMutation.mutate({ message: msg.message, tempId: msg._tempId });
-  }, [sendMessageMutation]);
+  // Delete message mutation
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { error } = await supabase
+        .from('staff_chat_messages')
+        .delete()
+        .eq('id', messageId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
+    },
+  });
 
-  // Get display name for current user
-  const getCurrentUserName = useCallback(() => {
-    if (!currentUserProfile) return 'Staff';
-    return currentUserProfile.display_name || 'Staff Member';
-  }, [currentUserProfile]);
-
-  // Handle typing indicator
-  const handleTyping = useCallback(() => {
-    if (!presenceChannelRef.current || !user?.id) return;
-
-    // Track that user is typing
-    presenceChannelRef.current.track({
-      typing: true,
-      user_id: user.id,
-      name: getCurrentUserName(),
-    });
-
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+  // Scroll to bottom
+  const scrollToBottom = useCallback(() => {
+    if (scrollRef.current) {
+      const scrollArea = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollArea) {
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
     }
+  }, []);
 
-    // Set timeout to stop typing indicator after 2 seconds of inactivity
-    typingTimeoutRef.current = setTimeout(() => {
-      if (presenceChannelRef.current && user?.id) {
-        presenceChannelRef.current.track({
-          typing: false,
-          user_id: user.id,
-          name: getCurrentUserName(),
-        });
-      }
-    }, 2000);
-  }, [user?.id, getCurrentUserName]);
-
-  // Real-time subscription for messages with notifications + auto-reconnect
-  useEffect(() => {
-    let isMounted = true;
-
-    const handleNewMessage = async (payload: { new: Record<string, unknown> }) => {
-      const newMsg = payload.new as { 
-        id: string; 
-        sender_id: string; 
-        recipient_id: string | null;
-        message: string; 
-        created_at: string;
-      };
-      
-      // CLIENT-SIDE FILTER: Only process general chat messages (recipient_id = null)
-      if (newMsg.recipient_id !== null) return;
-      
-      // Merge the new message into the cache instead of invalidating
-      queryClient.setQueryData<ChatMessage[]>(['staff-chat'], (old = []) => {
-        // Check if message already exists
-        if (old.some(m => m.id === newMsg.id)) return old;
-        
-        // Check for optimistic equivalent (same sender, same message, within 5 minutes)
-        const optimisticIndex =
-          old.reduce<{ idx: number; dt: number } | null>((best, m, idx) => {
-            if (!m._tempId) return best;
-            if (m.sender_id !== newMsg.sender_id) return best;
-            if (m.message !== newMsg.message) return best;
-            const dt = Math.abs(
-              new Date(m.created_at).getTime() - new Date(newMsg.created_at).getTime()
-            );
-            if (dt > 5 * 60 * 1000) return best;
-            if (!best || dt < best.dt) return { idx, dt };
-            return best;
-          }, null)?.idx ?? -1;
-        
-        if (optimisticIndex >= 0) {
-          // Replace optimistic with real message
-          const updated = [...old];
-          updated[optimisticIndex] = { ...newMsg, _status: 'success' as const };
-          return updated;
-        }
-        
-        // Add new message from other user
-        return [...old, newMsg as ChatMessage].sort((a, b) => 
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-      });
-      
-      // Handle notifications for messages from OTHER staff members (receivers)
-      if (newMsg.sender_id !== user?.id) {
-        // Check if current user is mentioned
-        const isMentioned = user?.id ? isUserMentioned(newMsg.message, user.id) : false;
-        
-        // Always play sound, but louder/different for mentions
-        playSound();
-        
-        // Send push notification if tab is not focused OR if mentioned
-        if (document.hidden || isMentioned) {
-          const senderProfile = profiles?.[newMsg.sender_id];
-          const senderName = senderProfile?.display_name || 'Staff Member';
-          
-          if (isMentioned) {
-            sendNotification('🔔 You were mentioned!', {
-              body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-              tag: `staff-chat-mention-${newMsg.id}`,
-              requireInteraction: true,
-            });
-            // Show toast for mentions even when focused
-            if (!document.hidden) {
-              showInfoNotification('Mentioned', `${senderName} mentioned you in staff chat`);
-            }
-          } else {
-            sendNotification('New Staff Message', {
-              body: `${senderName}: ${newMsg.message.substring(0, 100)}`,
-              tag: `staff-chat-message-${newMsg.id}`,
-            });
-          }
-        }
-      }
-      
-      // SENDER triggers background push notifications for mentions
-      // This ensures push is sent even if no other staff has the page open
-      if (newMsg.sender_id === user?.id) {
-        const mentions = parseMentions(newMsg.message);
-        const groupMentions = hasGroupMention(newMsg.message);
-        
-        if (mentions.length > 0 || groupMentions.everyone || groupMentions.here) {
-          try {
-            // Fetch current staff list directly to ensure fresh data
-            const { data: staffData } = await supabase.functions.invoke('list-staff');
-            const currentStaff = (staffData?.staff ?? []) as StaffProfile[];
-            
-            if (currentStaff.length > 0) {
-              const senderProfile = currentStaff.find(s => s.user_id === newMsg.sender_id);
-              const senderName = senderProfile?.display_name || 'Staff Member';
-              
-              // Find mentioned user IDs
-              const mentionedUserIds: string[] = [];
-              
-              if (groupMentions.everyone) {
-                // Notify all staff except sender
-                currentStaff.forEach(staff => {
-                  if (staff.user_id !== newMsg.sender_id) {
-                    mentionedUserIds.push(staff.user_id);
-                  }
-                });
-              } else if (groupMentions.here) {
-                // Notify online staff except sender
-                onlineUsers.forEach(online => {
-                  if (online.user_id !== newMsg.sender_id) {
-                    mentionedUserIds.push(online.user_id);
-                  }
-                });
-              } else {
-                // Notify individually mentioned staff (use flexible matching)
-                mentions.forEach(mentionHandle => {
-                  const mentionedStaff = currentStaff.find(s => matchesMention(s, mentionHandle));
-                  if (mentionedStaff && mentionedStaff.user_id !== newMsg.sender_id) {
-                    mentionedUserIds.push(mentionedStaff.user_id);
-                  }
-                });
-              }
-
-              // Send background push to mentioned users
-              if (mentionedUserIds.length > 0) {
-                console.log('[StaffMessages] Sender triggering push to mentioned users:', mentionedUserIds);
-                await notifyStaffMention(
-                  mentionedUserIds,
-                  senderName,
-                  newMsg.message
-                );
-                console.log('[StaffMessages] Push notification sent successfully');
-              }
-            }
-          } catch (error) {
-            console.error('Failed to send background push for mention:', error);
-          }
-        }
-      }
-    };
-
-    const subscribe = () => {
-      // Clean up any existing channel
-      if (messageChannelRef.current) {
-        supabase.removeChannel(messageChannelRef.current);
-        messageChannelRef.current = null;
-      }
-
-      const channelName = `staff-chat-realtime-${Date.now()}`;
-      const channel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'staff_messages',
-            // NO server-side filter - we filter client-side for reliability
-          },
-          handleNewMessage
-        )
-        .subscribe((status, err) => {
-          if (!isMounted) return;
-
-          console.log('[StaffMessages] Realtime status:', status, err);
-
-          if (status === 'SUBSCRIBED') {
-            setRealtimeStatus('connected');
-            retryAttemptRef.current = 0;
-            // Resync data after reconnect to catch any missed messages
-            queryClient.invalidateQueries({ queryKey: ['staff-chat'] });
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-            setRealtimeStatus('reconnecting');
-            
-            // Calculate backoff: 1s, 2s, 4s, 8s, ... max 30s
-            const backoffMs = Math.min(1000 * Math.pow(2, retryAttemptRef.current), 30000);
-            retryAttemptRef.current += 1;
-            
-            console.log(`[StaffMessages] Scheduling reconnect in ${backoffMs}ms (attempt ${retryAttemptRef.current})`);
-            
-            // Clean up and retry
-            if (retryTimeoutRef.current) {
-              clearTimeout(retryTimeoutRef.current);
-            }
-            retryTimeoutRef.current = setTimeout(() => {
-              if (isMounted) {
-                subscribe();
-              }
-            }, backoffMs);
-          }
-        });
-
-      messageChannelRef.current = channel;
-    };
-
-    setRealtimeStatus('connecting');
-    subscribe();
-
-    return () => {
-      isMounted = false;
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-      if (messageChannelRef.current) {
-        supabase.removeChannel(messageChannelRef.current);
-        messageChannelRef.current = null;
-      }
-    };
-  }, [queryClient, user?.id, profiles, playSound, sendNotification, isUserMentioned, onlineUsers]);
-
-  // Update last_seen when user is active
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const updateLastSeen = async () => {
-      await supabase
-        .from('profiles')
-        .update({ last_seen: new Date().toISOString() })
-        .eq('user_id', user.id);
-    };
-
-    // Update immediately on mount
-    updateLastSeen();
-
-    // Update periodically while active (every 30 seconds)
-    const interval = setInterval(updateLastSeen, 30000);
-
-    // Update on activity
-    const handleActivity = () => updateLastSeen();
-    window.addEventListener('focus', handleActivity);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', handleActivity);
-    };
-  }, [user?.id]);
-
-  // Presence channel for online + typing indicators
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const presenceChannel = supabase.channel('staff-chat-presence', {
-      config: { presence: { key: user.id } },
-    });
-
-    presenceChannel
-      .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState();
-        const typing: TypingUser[] = [];
-        const online: OnlineStaffUser[] = [];
-
-        Object.entries(state).forEach(([key, presences]) => {
-          const presence = (presences as any[])[0] || {};
-          const staffProfile = allStaff?.find(s => s.user_id === key) || profiles?.[key];
-          const name =
-            presence?.name ||
-            staffProfile?.display_name ||
-            'Staff Member';
-
-          const isTyping = !!presence?.typing;
-          online.push({ user_id: key, name, typing: isTyping });
-
-          if (key !== user.id && isTyping) {
-            typing.push({ user_id: key, name });
-          }
-        });
-
-        online.sort((a, b) => {
-          if (a.user_id === user.id) return -1;
-          if (b.user_id === user.id) return 1;
-          return a.name.localeCompare(b.name);
-        });
-
-        setOnlineUsers(online);
-        setTypingUsers(typing);
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await presenceChannel.track({
-            typing: false,
-            user_id: user.id,
-            name: getCurrentUserName(),
-          });
-        }
-      });
-
-    presenceChannelRef.current = presenceChannel;
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      supabase.removeChannel(presenceChannel);
-      presenceChannelRef.current = null;
-      setOnlineUsers([]);
-      setTypingUsers([]);
-    };
-  }, [user?.id, allStaff, profiles, getCurrentUserName]);
-
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll on new messages
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Mark messages as read when viewing
-  useEffect(() => {
-    if (!user?.id || !messages?.length) return;
-    
-    // Find messages not sent by current user and not yet read by current user
-    const unreadMessageIds = messages
-      .filter(msg => {
-        if (msg.sender_id === user.id) return false; // Skip own messages
-        if (msg.id.startsWith('optimistic-')) return false; // Skip optimistic messages
-        const reads = messageReads?.[msg.id] || [];
-        return !reads.some(r => r.user_id === user.id);
-      })
-      .map(msg => msg.id);
-    
-    if (unreadMessageIds.length === 0) return;
-    
-    // Mark messages as read
-    const markAsRead = async () => {
-      const inserts = unreadMessageIds.map(messageId => ({
-        message_id: messageId,
-        user_id: user.id,
-      }));
-      
-      const { error } = await supabase
-        .from('staff_message_reads')
-        .upsert(inserts, { onConflict: 'message_id,user_id' });
-      
-      if (error) {
-        console.error('Failed to mark messages as read:', error);
-      } else {
-        queryClient.invalidateQueries({ queryKey: ['staff-message-reads'] });
-      }
-    };
-    
-    markAsRead();
-  }, [messages, messageReads, user?.id, queryClient]);
-
-  // Real-time subscription for read receipts
+  // Real-time subscription
   useEffect(() => {
     const channel = supabase
-      .channel('staff-message-reads-realtime')
+      .channel('staff-chat-realtime')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
-          table: 'staff_message_reads',
+          table: 'staff_chat_messages',
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['staff-message-reads'] });
+          queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
         }
       )
       .subscribe();
+
+    channelRef.current = channel;
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
 
-  // Swipe down handler for mobile to navigate back
-  const handleSwipeStart = useCallback((e: React.TouchEvent) => {
-    if (!isMobile) return;
-    swipeStartY.current = e.touches[0].clientY;
-    swipeStartX.current = e.touches[0].clientX;
-  }, [isMobile]);
+  // Presence for typing indicators
+  useEffect(() => {
+    if (!user?.id || !currentUserProfile) return;
 
-  const handleSwipeEnd = useCallback((e: React.TouchEvent) => {
-    if (!isMobile || swipeStartY.current === null || swipeStartX.current === null) return;
-    
-    const deltaY = e.changedTouches[0].clientY - swipeStartY.current;
-    const deltaX = Math.abs(e.changedTouches[0].clientX - swipeStartX.current);
-    
-    // Swipe down with minimal horizontal movement to trigger sidebar
-    if (deltaY > 80 && deltaX < 50) {
-      // This will be handled by AdminLayout's left-edge swipe
-      // But we can use window.history or other navigation if needed
-    }
-    
-    swipeStartY.current = null;
-    swipeStartX.current = null;
-  }, [isMobile]);
+    const presenceChannel = supabase.channel('staff-chat-presence');
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    sendMessageMutation.mutate(newMessage.trim());
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const target = e.target;
-    setNewMessage(value);
-    
-    // Get cursor position synchronously from the event target (most reliable on desktop)
-    const cursorPos = target.selectionStart ?? value.length;
-    setCursorPosition(cursorPos);
-    
-    // Check for @mention trigger
-    const textBeforeCursor = value.slice(0, cursorPos);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-    
-    if (mentionMatch) {
-      setMentionFilter(mentionMatch[1]);
-      setShowMentionSuggestions(true);
-      setMentionIndex(0);
-    } else {
-      setShowMentionSuggestions(false);
-    }
-    
-    if (value.trim()) {
-      handleTyping();
-    }
-  };
-
-  const insertMention = (staff: StaffProfile) => {
-    // Get current cursor position from the input directly
-    const currentCursor = inputRef.current?.selectionStart || cursorPosition;
-    const textBeforeCursor = newMessage.slice(0, currentCursor);
-    const textAfterCursor = newMessage.slice(currentCursor);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-    
-    if (mentionMatch) {
-      const beforeMention = textBeforeCursor.slice(0, -mentionMatch[0].length);
-      const mentionName = getMentionHandle(staff);
-      const newText = `${beforeMention}@${mentionName} ${textAfterCursor}`;
-      setNewMessage(newText);
-      setShowMentionSuggestions(false);
-      
-      // Focus input and set cursor position after mention
-      setTimeout(() => {
-        if (inputRef.current) {
-          const newCursorPos = beforeMention.length + mentionName.length + 2;
-          inputRef.current.focus();
-          inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
-          setCursorPosition(newCursorPos);
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const typing: TypingUser[] = [];
+        
+        Object.values(state).forEach((presences: any[]) => {
+          presences.forEach((presence) => {
+            if (presence.typing && presence.user_id !== user.id) {
+              typing.push({
+                user_id: presence.user_id,
+                name: presence.name,
+              });
+            }
+          });
+        });
+        
+        setTypingUsers(typing);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({
+            user_id: user.id,
+            name: currentUserProfile.display_name || currentUserProfile.email.split('@')[0],
+            typing: false,
+          });
         }
-      }, 0);
-    }
-  };
+      });
 
-  const insertGroupMention = (mentionName: string) => {
-    // Get current cursor position from the input directly
-    const currentCursor = inputRef.current?.selectionStart || cursorPosition;
-    const textBeforeCursor = newMessage.slice(0, currentCursor);
-    const textAfterCursor = newMessage.slice(currentCursor);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [user?.id, currentUserProfile]);
+
+  // Handle typing indicator
+  const handleTyping = () => {
+    if (!user?.id || !currentUserProfile) return;
+
+    const presenceChannel = supabase.channel('staff-chat-presence');
     
-    if (mentionMatch) {
-      const beforeMention = textBeforeCursor.slice(0, -mentionMatch[0].length);
-      const newText = `${beforeMention}@${mentionName} ${textAfterCursor}`;
-      setNewMessage(newText);
-      setShowMentionSuggestions(false);
-      
-      setTimeout(() => {
-        if (inputRef.current) {
-          const newCursorPos = beforeMention.length + mentionName.length + 2;
-          inputRef.current.focus();
-          inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
-          setCursorPosition(newCursorPos);
-        }
-      }, 0);
-    }
-  };
-
-  // Total suggestions count for keyboard navigation
-  const totalSuggestions = filteredGroupMentions.length + filteredStaff.length;
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Only intercept keys if mention suggestions are shown
-    if (!showMentionSuggestions || totalSuggestions === 0) {
-      return; // Let the form handle Enter normally
-    }
-    
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setMentionIndex(prev => Math.min(prev + 1, totalSuggestions - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setMentionIndex(prev => Math.max(prev - 1, 0));
-    } else if (e.key === 'Tab') {
-      // Use Tab to select mention while keeping Enter for sending messages
-      e.preventDefault();
-      e.stopPropagation();
-      // Handle selection based on index
-      if (mentionIndex < filteredGroupMentions.length) {
-        insertGroupMention(filteredGroupMentions[mentionIndex].name);
-      } else {
-        const staffIndex = mentionIndex - filteredGroupMentions.length;
-        if (filteredStaff[staffIndex]) {
-          insertMention(filteredStaff[staffIndex]);
-        }
-      }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setShowMentionSuggestions(false);
-    }
-  };
-
-  // Render message with highlighted mentions
-  const renderMessage = (text: string, isOwnMessage: boolean = false) => {
-    const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
-
-    return parts.map((part, i) => {
-      if (part.startsWith('@')) {
-        const mentionedHandle = part.slice(1).toLowerCase();
-        const isGroupMention = mentionedHandle === 'everyone' || mentionedHandle === 'here';
-        // Use flexible matching to determine if current user is mentioned
-        const isCurrentUser = currentUserProfile ? matchesMention(currentUserProfile, mentionedHandle) : false;
-
-        return (
-          <span
-            key={i}
-            className={cn(
-              'font-semibold px-1 rounded',
-              isGroupMention
-                ? 'text-destructive bg-destructive/15'
-                : isOwnMessage
-                  ? 'text-primary-foreground underline decoration-primary-foreground/50'
-                  : isCurrentUser
-                    ? 'text-primary bg-primary/15'
-                    : 'text-primary'
-            )}
-          >
-            {part}
-          </span>
-        );
-      }
-      return part;
+    presenceChannel.track({
+      user_id: user.id,
+      name: currentUserProfile.display_name || currentUserProfile.email.split('@')[0],
+      typing: true,
     });
-  };
 
-  const getInitials = (profile: StaffProfile | undefined) => {
-    if (!profile) return '?';
-    if (profile.display_name) {
-      return profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
-    return 'SM';
+
+    typingTimeoutRef.current = setTimeout(() => {
+      presenceChannel.track({
+        user_id: user.id,
+        name: currentUserProfile.display_name || currentUserProfile.email.split('@')[0],
+        typing: false,
+      });
+    }, 2000);
   };
 
-  const getName = (senderId: string) => {
-    const profile = profiles?.[senderId];
-    return profile?.display_name || 'Staff Member';
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
+    sendMessageMutation.mutate(newMessage);
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    
-    if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatLastSeen = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    // Show "Offline" if more than 1 hour ago
-    if (diffHours >= 1) return 'Offline';
-    if (diffMins < 1) return 'Just now';
-    return `${diffMins}m ago`;
+  const getDisplayName = (userId: string) => {
+    const profile = profiles[userId];
+    return profile?.display_name || profile?.email?.split('@')[0] || 'Staff';
   };
 
-  const getTypingText = () => {
-    if (typingUsers.length === 0) return null;
-    if (typingUsers.length === 1) return `${typingUsers[0].name} is typing...`;
-    if (typingUsers.length === 2) return `${typingUsers[0].name} and ${typingUsers[1].name} are typing...`;
-    return `${typingUsers[0].name} and ${typingUsers.length - 1} others are typing...`;
+  const getInitials = (userId: string) => {
+    const name = getDisplayName(userId);
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const canDeleteMessage = (messageUserId: string) => {
+    return isAdmin || messageUserId === user?.id;
   };
 
   return (
-    <AdminLayout>
-      <div 
-        className={cn(
-          "flex flex-col max-w-full overflow-hidden",
-          // Mobile: stretch to fill entire remaining viewport below admin header, edge-to-edge
-          // Use dvh for Android which handles keyboard resize via interactive-widget meta tag
-          isMobile 
-            ? isAndroid
-              ? "fixed inset-x-0 top-[calc(env(safe-area-inset-top)+3.5rem)] bottom-0 z-20"
-              : "fixed inset-x-0 z-20"
-            : "h-[calc(100dvh-5rem)] -m-6 lg:-m-8 relative"
-        )}
-        style={{ 
-          WebkitOverflowScrolling: 'touch',
-          // On iOS, dynamically adjust for keyboard using VisualViewport
-          // On Android with interactive-widget=resizes-content, the viewport auto-adjusts
-          ...(!isAndroid && isMobile && {
-            top: 'calc(env(safe-area-inset-top) + 3.5rem)',
-            bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0px',
-            transition: 'bottom 0.1s ease-out',
-          }),
-        }}
-      >
-        <Card className="flex-1 flex flex-col overflow-hidden rounded-none md:rounded-lg md:m-4 lg:m-6 bg-background border-0 md:border">
-          <CardHeader className="border-b border-border shrink-0 px-3 py-2">
-            <CardTitle className="flex items-center justify-between text-base">
-              <div className="flex items-center gap-2 min-w-0">
-                <MessageSquare className="h-4 w-4 shrink-0" />
-                <span className="truncate">Staff Chat</span>
-                {/* Realtime connection status indicator */}
-                {realtimeStatus === 'connected' ? (
-                  <span className="flex items-center gap-1 text-[10px] text-green-600 dark:text-green-400">
-                    <Wifi className="h-3 w-3" />
-                    <span className="hidden sm:inline">Live</span>
-                  </span>
-                ) : realtimeStatus === 'reconnecting' ? (
-                  <span className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 animate-pulse">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="hidden sm:inline">Reconnecting...</span>
-                  </span>
-                ) : realtimeStatus === 'connecting' ? (
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="hidden sm:inline">Connecting...</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-[10px] text-destructive">
-                    <WifiOff className="h-3 w-3" />
-                    <span className="hidden sm:inline">Offline (polling)</span>
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setStaffStripCollapsed(!staffStripCollapsed)}
-                className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground shrink-0 hover:text-foreground transition-colors"
-              >
-                <Circle className="h-2 w-2 fill-green-500 text-green-500" />
-                <span>{onlineUsers.length} online</span>
-                {isMobile && (
-                  staffStripCollapsed ? (
-                    <ChevronDown className="h-3 w-3" />
-                  ) : (
-                    <ChevronUp className="h-3 w-3" />
-                  )
-                )}
-              </button>
-            </CardTitle>
-            {/* Staff panel - shows online and last seen (collapsible on mobile) */}
-            {allStaff && allStaff.length > 0 && (!isMobile || !staffStripCollapsed) && (
-              <ScrollArea className="max-h-24 mt-2">
-                <div className="flex flex-wrap gap-1.5">
-                  {/* Online users first */}
-                  {onlineUsers.map((staff) => (
-                    <div
-                      key={staff.user_id}
-                      className={cn(
-                        "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs shrink-0",
-                        staff.user_id === user?.id
-                          ? "bg-primary/15 text-primary"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      <Circle className={cn(
-                        "h-1.5 w-1.5 shrink-0",
-                        staff.typing
-                          ? "fill-yellow-500 text-yellow-500 animate-pulse"
-                          : "fill-green-500 text-green-500"
-                      )} />
-                      <span className="truncate max-w-[60px]">
-                        {staff.user_id === user?.id ? 'You' : staff.name}
-                      </span>
-                      {staff.typing && staff.user_id !== user?.id && (
-                        <span className="text-[10px] text-muted-foreground">typing</span>
-                      )}
-                    </div>
-                  ))}
-                  {/* Offline users with last seen - sorted by most recently active */}
-                  {allStaff
-                    .filter(staff => !onlineUsers.some(o => o.user_id === staff.user_id))
-                    .sort((a, b) => {
-                      const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
-                      const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
-                      return bTime - aTime; // Most recent first
-                    })
-                    .map((staff) => {
-                      const lastSeenText = staff.last_seen ? formatLastSeen(staff.last_seen) : 'Never';
-                      const isOffline = lastSeenText === 'Offline' || lastSeenText === 'Never';
-                      
-                      return (
-                        <div
-                          key={staff.user_id}
-                          className={cn(
-                            "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-opacity shrink-0",
-                            isOffline 
-                              ? "bg-muted/30 text-muted-foreground/50 opacity-60" 
-                              : "bg-muted/50 text-muted-foreground"
-                          )}
-                          title={`Last seen: ${lastSeenText}`}
-                        >
-                          <Circle className={cn(
-                            "h-1.5 w-1.5 shrink-0",
-                            isOffline
-                              ? "fill-muted-foreground/20 text-muted-foreground/20"
-                              : "fill-amber-500/70 text-amber-500/70"
-                          )} />
-                          <span className={cn(
-                            "truncate max-w-[50px]",
-                            isOffline && "opacity-70"
-                          )}>
-                            {staff.display_name || 'Staff Member'}
-                          </span>
-                          <span className={cn(
-                            "text-[10px]",
-                            isOffline ? "opacity-50" : "opacity-80"
-                          )}>{lastSeenText}</span>
-                        </div>
-                      );
-                    })}
-                </div>
-              </ScrollArea>
-            )}
-          </CardHeader>
-          
-          <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-3" ref={scrollRef}>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Staff Chat</h1>
+          <p className="text-muted-foreground">Real-time communication with your team</p>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Users className="h-4 w-4" />
+          <span className="text-sm">Team Chat</span>
+        </div>
+      </div>
+
+      <Card className="bg-card/50 backdrop-blur border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            Live Chat
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <ScrollArea ref={scrollRef} className="h-[500px] px-4">
+            <div className="space-y-4 py-4">
               {isLoading ? (
-                <p className="text-center text-muted-foreground py-8">Loading messages...</p>
-              ) : messages?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-12">
-                  <MessageSquare className="h-10 w-10 mb-3 opacity-50" />
-                  <p className="text-sm">No messages yet</p>
-                  <p className="text-xs">Start the conversation!</p>
+                <div className="text-center text-muted-foreground py-8">
+                  Loading messages...
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  No messages yet. Start the conversation!
                 </div>
               ) : (
-                <div className="space-y-3 pb-8 md:pb-4">
-                  {messages?.map((msg, index) => {
-                    const isOwn = msg.sender_id === user?.id;
-                    const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
-                    const profile = profiles?.[msg.sender_id];
-                    const isPending = msg._status === 'pending';
-                    const isFailed = msg._status === 'failed';
-                    const isOptimistic = isPending || isFailed || !!msg._tempId;
-                    
-                    // Get read receipts for this message (only show for own messages)
-                    const reads = messageReads?.[msg.id] || [];
-                    const othersWhoRead = reads.filter(r => r.user_id !== user?.id);
-                    const hasBeenRead = othersWhoRead.length > 0;
-                    
-                    return (
-                      <div
-                        key={msg.id}
-                        className={cn(
-                          "flex gap-2",
-                          isOwn && "flex-row-reverse",
-                          isPending && "opacity-70"
-                        )}
-                      >
-                        {showAvatar ? (
-                          <Avatar className="h-7 w-7 shrink-0">
-                            <AvatarFallback className="text-xs bg-primary/20">
-                              {getInitials(profile)}
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="w-7 shrink-0" />
-                        )}
-                        <div className={cn(
-                          "flex flex-col min-w-0 max-w-[75%]",
-                          isOwn && "items-end"
-                        )}>
-                          {showAvatar && (
-                            <span className="text-xs text-muted-foreground mb-0.5">
-                              {isOwn ? 'You' : getName(msg.sender_id)}
-                            </span>
+                messages.map((message) => {
+                  const isOwn = message.user_id === user?.id;
+                  const role = userRoles[message.user_id];
+                  const roleBadge = role ? roleBadges[role] : null;
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        'flex gap-3 group',
+                        isOwn && 'flex-row-reverse'
+                      )}
+                    >
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                          {getInitials(message.user_id)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className={cn('flex flex-col max-w-[70%]', isOwn && 'items-end')}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-foreground">
+                            {getDisplayName(message.user_id)}
+                          </span>
+                          {roleBadge && (
+                            <Badge variant="outline" className={cn('text-xs py-0', roleBadge.className)}>
+                              {roleBadge.label}
+                            </Badge>
                           )}
-                          <div className={cn(
-                            "rounded-2xl px-3 py-2",
-                            isOwn 
-                              ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                              : "bg-muted rounded-tl-sm",
-                            isFailed && "bg-destructive/20 text-destructive-foreground"
-                          )}>
-                            <p className="text-sm whitespace-pre-wrap break-words">{renderMessage(msg.message, isOwn)}</p>
-                          </div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-[10px] text-muted-foreground">
-                              {formatTime(msg.created_at)}
-                            </span>
-                            {isPending && (
-                              <Loader2 className="h-2.5 w-2.5 animate-spin text-muted-foreground" />
-                            )}
-                            {isFailed && (
-                              <div className="flex items-center gap-1 text-destructive">
-                                <AlertCircle className="h-3 w-3" />
-                                <span className="text-[10px]">Failed</span>
-                                <button 
-                                  type="button"
-                                  onClick={() => retryMessage(msg)} 
-                                  className="flex items-center gap-0.5 text-[10px] hover:underline"
-                                >
-                                  <RotateCcw className="h-2.5 w-2.5" />
-                                  Retry
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={() => msg._tempId && removeFailedMessage(msg._tempId)} 
-                                  className="flex items-center gap-0.5 text-[10px] hover:underline"
-                                >
-                                  <X className="h-2.5 w-2.5" />
-                                  Remove
-                                </button>
-                              </div>
-                            )}
-                            {/* Read receipts - only show for own messages */}
-                            {isOwn && !isOptimistic && (
-                              <div className="flex items-center" title={hasBeenRead ? `Read by ${othersWhoRead.length} staff` : 'Sent'}>
-                                {hasBeenRead ? (
-                                  <CheckCheck className="h-3 w-3 text-primary" />
-                                ) : (
-                                  <Check className="h-3 w-3 text-muted-foreground" />
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                          </span>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </ScrollArea>
-
-            {/* Typing Indicator */}
-            {typingUsers.length > 0 && (
-              <div className="px-3 py-1.5 border-t border-border/50 shrink-0">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex gap-0.5">
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <span className="truncate">{getTypingText()}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Input */}
-            <div
-              className={cn(
-                "border-t border-border shrink-0 relative",
-                isMobile
-                  ? keyboardHeight > 0
-                    ? "px-3 py-2" // Keyboard open: no safe-area padding needed
-                    : "px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]" // Keyboard closed: add safe-area
-                  : "p-3"
-              )}
-            >
-              {/* Mention suggestions dropdown */}
-              {showMentionSuggestions && totalSuggestions > 0 && (
-                <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden z-50 max-w-full">
-                  <div className="p-1 max-h-40 overflow-y-auto">
-                    <div className="px-2 py-1 text-xs text-muted-foreground flex items-center gap-1">
-                      <AtSign className="h-3 w-3 shrink-0" />
-                      Mention someone
-                    </div>
-                    
-                    {/* Group mentions */}
-                    {filteredGroupMentions.map((group, index) => (
-                      <button
-                        key={group.id}
-                        type="button"
-                        onClick={() => insertGroupMention(group.name)}
-                        className={cn(
-                          "w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors",
-                          index === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
-                        )}
-                      >
-                        <div className="h-5 w-5 rounded-full bg-destructive/15 flex items-center justify-center shrink-0">
-                          <Users className="h-3 w-3 text-destructive" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-destructive">@{group.name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{group.description}</p>
-                        </div>
-                      </button>
-                    ))}
-                    
-                    {/* Divider if both groups and staff exist */}
-                    {filteredGroupMentions.length > 0 && filteredStaff.length > 0 && (
-                      <div className="border-t border-border my-1" />
-                    )}
-                    
-                    {/* Individual staff members */}
-                    {filteredStaff.slice(0, 6).map((staff, index) => {
-                      const actualIndex = filteredGroupMentions.length + index;
-                      return (
-                        <button
-                          key={staff.user_id}
-                          type="button"
-                          onClick={() => insertMention(staff)}
+                        <div
                           className={cn(
-                            "w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors",
-                            actualIndex === mentionIndex ? "bg-accent" : "hover:bg-accent/50"
+                            'rounded-lg px-3 py-2 text-sm',
+                            isOwn
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-foreground'
                           )}
                         >
-                          <Avatar className="h-5 w-5 shrink-0">
-                            <AvatarFallback className="text-[10px] bg-primary/20">
-                              {getInitials(staff)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate">
-                              {staff.display_name || 'Staff Member'}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                          {message.message}
+                        </div>
+                        {canDeleteMessage(message.user_id) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity mt-1"
+                            onClick={() => deleteMessageMutation.mutate(message.id)}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               )}
-              
-              <form onSubmit={handleSend}>
-                <div className="flex gap-2">
-                  <Input
-                    ref={inputRef}
-                    value={newMessage}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Message... @ to mention"
-                    className="flex-1 h-9 text-sm"
-                    disabled={sendMessageMutation.isPending}
-                  />
-                  <Button 
-                    type="submit" 
-                    size="icon"
-                    className="h-9 w-9 shrink-0"
-                    disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </form>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </ScrollArea>
+
+          {/* Typing indicator */}
+          {typingUsers.length > 0 && (
+            <div className="px-4 py-2 text-sm text-muted-foreground">
+              {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+            </div>
+          )}
+
+          {/* Message input */}
+          <div className="p-4 border-t border-border/50">
+            <div className="flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  handleTyping();
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSend}
+                disabled={!newMessage.trim() || sendMessageMutation.isPending}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function StaffMessages() {
+  return (
+    <AdminLayout>
+      <StaffMessagesContent />
     </AdminLayout>
   );
 }

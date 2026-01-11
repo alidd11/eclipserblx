@@ -67,8 +67,7 @@ const navGroups: NavGroup[] = [
     title: 'Communications',
     icon: MessageCircle,
     items: [
-      { title: 'Staff Chat', icon: MessageCircle, href: '/admin/staff-chat', roles: [] },
-      { title: 'Staff Messages', icon: Mail, href: '/admin/staff-messages', roles: [] },
+      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
       { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
       { title: 'Contact Messages', icon: Inbox, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
     ],
