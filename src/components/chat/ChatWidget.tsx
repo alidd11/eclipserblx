@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw, AlertCircle } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw, AlertCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useDropZone } from '@/hooks/useDropZone';
 import { notifyNewLiveChat, notifyNewChatMessage } from '@/lib/pushNotifications';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -556,7 +557,13 @@ export function ChatWidget() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !conversationId) return;
+    if (file) {
+      processFileUpload(file);
+    }
+  };
+
+  const processFileUpload = useCallback(async (file: File) => {
+    if (!conversationId) return;
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
@@ -609,7 +616,20 @@ export function ChatWidget() {
         fileInputRef.current.value = '';
       }
     }
-  };
+  }, [conversationId, user, customerName]);
+
+  // Drag and drop support
+  const { isDragOver, dragProps } = useDropZone({
+    onDrop: (files) => {
+      if (files[0]) {
+        processFileUpload(files[0]);
+      }
+    },
+    accept: ['image/*', '.pdf', '.doc', '.docx', '.txt'],
+    maxSize: 5 * 1024 * 1024,
+    maxFiles: 1,
+    disabled: isUploading || !conversationId || !hasStarted,
+  });
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -653,10 +673,21 @@ export function ChatWidget() {
   return (
     <div
       className={cn(
-        'fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-2xl z-[9999] flex flex-col transition-all duration-200',
-        isMinimized ? 'h-14' : 'h-[500px]'
+        'fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-2xl z-[9999] flex flex-col transition-all duration-200 relative',
+        isMinimized ? 'h-14' : 'h-[500px]',
+        isDragOver && hasStarted && 'border-primary border-2 bg-primary/5'
       )}
+      {...(hasStarted ? dragProps : {})}
     >
+      {/* Drag overlay */}
+      {isDragOver && hasStarted && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-primary">
+            <Upload className="h-10 w-10 animate-bounce" />
+            <span className="text-sm font-medium">Drop file here</span>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-muted/50 rounded-t-xl">
         <div className="flex items-center gap-2">

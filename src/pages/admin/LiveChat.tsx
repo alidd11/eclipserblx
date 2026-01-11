@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle, Upload } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useDropZone } from '@/hooks/useDropZone';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 
@@ -444,7 +445,13 @@ export default function AdminLiveChat() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !selectedConversation || !user) return;
+    if (file) {
+      processFileUpload(file);
+    }
+  };
+
+  const processFileUpload = useCallback(async (file: File) => {
+    if (!selectedConversation || !user) return;
 
     if (file.size > 5 * 1024 * 1024) {
       alert('File size must be less than 5MB');
@@ -499,7 +506,20 @@ export default function AdminLiveChat() {
         fileInputRef.current.value = '';
       }
     }
-  };
+  }, [selectedConversation, user]);
+
+  // Drag and drop support for file uploads
+  const { isDragOver: isChatDragOver, dragProps: chatDragProps } = useDropZone({
+    onDrop: (files) => {
+      if (files[0]) {
+        processFileUpload(files[0]);
+      }
+    },
+    accept: ['image/*', '.pdf', '.doc', '.docx', '.txt'],
+    maxSize: 5 * 1024 * 1024,
+    maxFiles: 1,
+    disabled: isUploading || !selectedConversation,
+  });
 
   const closeConversation = async () => {
     if (!selectedConversation || !user) return;
@@ -643,10 +663,23 @@ export default function AdminLiveChat() {
           </div>
 
           {/* Chat Area - Full width on mobile, flex-1 on desktop */}
-          <div className={cn(
-            "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0",
-            selectedConversation ? "block" : "hidden lg:flex"
-          )}>
+          <div 
+            className={cn(
+              "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 relative transition-colors",
+              selectedConversation ? "block" : "hidden lg:flex",
+              isChatDragOver && "border-primary border-2 bg-primary/5"
+            )}
+            {...(selectedConversation ? chatDragProps : {})}
+          >
+            {/* Drag overlay */}
+            {isChatDragOver && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg pointer-events-none">
+                <div className="flex flex-col items-center gap-2 text-primary">
+                  <Upload className="h-12 w-12 animate-bounce" />
+                  <span className="text-lg font-medium">Drop file here</span>
+                </div>
+              </div>
+            )}
             {selectedConversation ? (
               <>
                 {/* Chat Header */}
