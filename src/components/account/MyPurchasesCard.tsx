@@ -46,7 +46,7 @@ export function MyPurchasesCard() {
               slug,
               images,
               asset_file_url,
-              categories (name)
+              category:categories (name)
             )
           )
         `)
@@ -69,7 +69,7 @@ export function MyPurchasesCard() {
       if (user?.email) {
         const { data: emailOrders, error: emailError } = await supabase
           .from('orders')
-          .select(`
+        .select(`
             id,
             created_at,
             order_items (
@@ -82,7 +82,7 @@ export function MyPurchasesCard() {
                 slug,
                 images,
                 asset_file_url,
-                categories (name)
+                category:categories (name)
               )
             )
           `)
@@ -115,7 +115,7 @@ export function MyPurchasesCard() {
           name: product?.name || item.product_name,
           images: product?.images || null,
           slug: product?.slug || item.product_id,
-          category_name: product?.categories?.name || null,
+          category_name: product?.category?.name || null,
           asset_file_url: product?.asset_file_url || null,
           order_item_id: item.id,
           purchased_at: item.order_created_at,
