@@ -514,7 +514,7 @@ function StaffMessagesContent() {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            Live Chat
+            Staff Chat
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
