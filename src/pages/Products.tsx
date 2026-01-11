@@ -17,6 +17,7 @@ export default function Products() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const categorySlug = searchParams.get('category');
+  const featuredOnly = searchParams.get('featured') === 'true';
   const [search, setSearch] = useState('');
   const [categoriesOpen, setCategoriesOpen] = useState(false);
 
@@ -38,7 +39,7 @@ export default function Products() {
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products', categorySlug, search],
+    queryKey: ['products', categorySlug, search, featuredOnly],
     queryFn: async () => {
       let query = supabase
         .from('products')
@@ -51,6 +52,10 @@ export default function Products() {
         if (category) {
           query = query.eq('category_id', category.id);
         }
+      }
+
+      if (featuredOnly) {
+        query = query.eq('is_featured', true);
       }
 
       if (search) {
@@ -77,13 +82,13 @@ export default function Products() {
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary/80" />
               <h1 className="text-lg font-display text-foreground">
-                {activeCategory ? activeCategory.name : 'All Products'}
+                {featuredOnly ? 'Featured Products' : activeCategory ? activeCategory.name : 'All Products'}
               </h1>
             </div>
 
             {/* Description */}
             <p className="text-sm text-muted-foreground">
-              {activeCategory?.description || 'Browse our collection of premium roleplay assets'}
+              {featuredOnly ? 'Discover our handpicked premium assets' : activeCategory?.description || 'Browse our collection of premium roleplay assets'}
             </p>
 
             {/* Search & Categories Row */}

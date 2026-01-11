@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, MessageSquare, Eye, Pin, Lock, ImagePlus, X, Loader2, Crown, Shield, Wrench, Briefcase, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -590,7 +590,7 @@ export default function ThreadDetail() {
           </Card>
         ) : (
           <Card className="gaming-card p-4 mt-6 text-center text-muted-foreground">
-            <a href="/auth" className="text-primary hover:underline">Sign in</a> to reply to this thread.
+            <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to reply to this thread.
           </Card>
         )}
       </div>

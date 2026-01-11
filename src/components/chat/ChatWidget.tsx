@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -411,7 +412,7 @@ export function ChatWidget() {
     // Live chat requires authentication (RLS enforces user-scoped access)
     if (!user) {
       alert('Please sign in to start live chat.');
-      window.location.href = '/auth';
+      navigate('/auth');
       return;
     }
 
@@ -750,12 +751,12 @@ export function ChatWidget() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <a href="/faq" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
+                  <Link to="/faq" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
                     View FAQ
-                  </a>
-                  <a href="/forum" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
+                  </Link>
+                  <Link to="/forum" className="flex-1 inline-flex items-center justify-center gap-1 text-xs text-primary hover:underline font-medium py-2 px-3 rounded-md bg-primary/10">
                     Submit Ticket
-                  </a>
+                  </Link>
                 </div>
               </div>
             </ScrollArea>

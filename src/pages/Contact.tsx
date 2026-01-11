@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -289,9 +290,9 @@ export default function Contact() {
           <p>{SITE_NAME} • United Kingdom</p>
           <p className="mt-1">
             For legal matters, please refer to our{' '}
-            <a href="/terms" className="text-primary hover:underline">Terms of Service</a>,{' '}
-            <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>, and{' '}
-            <a href="/refunds" className="text-primary hover:underline">Refund Policy</a>.
+            <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>,{' '}
+            <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>, and{' '}
+            <Link to="/refunds" className="text-primary hover:underline">Refund Policy</Link>.
           </p>
         </div>
       </div>
