@@ -38,9 +38,11 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
     checkIpBan();
   }, []);
 
-  // Show nothing while checking (brief moment)
+  // Show minimal loading state while checking (prevents null response in PWA/Safari)
   if (isChecking) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background" />
+    );
   }
 
   // Show banned screen if IP is banned
