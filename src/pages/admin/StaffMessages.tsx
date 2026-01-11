@@ -620,7 +620,7 @@ function StaffMessagesContent() {
                           </AvatarFallback>
                         </Avatar>
                       )}
-                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn && 'items-end')}>
+                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
                         {/* Header - only show for first message in group */}
                         {!isGrouped && (
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
