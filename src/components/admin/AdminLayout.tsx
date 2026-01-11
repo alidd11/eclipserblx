@@ -1,5 +1,5 @@
 import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -8,7 +8,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils'; import { safeStorage } from '@/lib/safeStorage';
+import { cn } from '@/lib/utils';
+import { safeStorage } from '@/lib/safeStorage';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
@@ -23,6 +24,10 @@ interface AdminLayoutProps {
 export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) {
   const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const isChatPage =
+    location.pathname === '/admin/chat' || location.pathname === '/admin/staff-messages';
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -36,6 +41,33 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const standalone = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
+  }, []);
+
+  // Keep a reliable keyboard inset for iOS/standalone PWAs (CSS var)
+  useEffect(() => {
+    const vv = window.visualViewport;
+
+    const update = () => {
+      const height = vv?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
+
+      const keyboardInset = vv
+        ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+        : 0;
+      document.documentElement.style.setProperty('--keyboard-inset', `${keyboardInset}px`);
+    };
+
+    update();
+
+    vv?.addEventListener('resize', update);
+    vv?.addEventListener('scroll', update);
+    window.addEventListener('resize', update);
+
+    return () => {
+      vv?.removeEventListener('resize', update);
+      vv?.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   const handleRefresh = async () => {
@@ -255,8 +287,20 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           {/* Mobile PWA Install Prompt */}
           {isMobile && <AdminInstallPrompt />}
           
-          <main className="flex-1 overflow-y-auto overscroll-contain bg-background min-h-0">
-            <div className="h-full p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <main
+            className={cn(
+              'flex-1 min-h-0 bg-background',
+              isChatPage ? 'overflow-hidden overscroll-none' : 'overflow-y-auto overscroll-contain'
+            )}
+          >
+            <div
+              className={cn(
+                'h-full',
+                isChatPage
+                  ? 'p-0'
+                  : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+              )}
+            >
               {children}
             </div>
           </main>
