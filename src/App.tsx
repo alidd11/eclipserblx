@@ -13,6 +13,7 @@ import { IpBanCheck } from "@/components/IpBanCheck";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminPWAHandler } from "@/components/pwa/AdminPWAHandler";
 import { AdminManifestHandler } from "@/components/pwa/AdminManifestHandler";
+import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 
 // Eagerly loaded - critical path
 import Index from "./pages/Index";
@@ -92,15 +93,16 @@ function PageLoader() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <IpBanCheck>
-              <PWAWrapper>
+  <ConnectionErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <IpBanCheck>
+                <PWAWrapper>
                 <AdminManifestHandler />
                 <AdminPWAHandler />
                 <Suspense fallback={<PageLoader />}>
@@ -155,16 +157,17 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
-                {/* Keep global widgets mounted even while routes are loading */}
-                <ChatWidget />
-                <InstallPrompt />
-              </PWAWrapper>
-            </IpBanCheck>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+                  {/* Keep global widgets mounted even while routes are loading */}
+                  <ChatWidget />
+                  <InstallPrompt />
+                </PWAWrapper>
+              </IpBanCheck>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ConnectionErrorBoundary>
 );
 
 export default App;
