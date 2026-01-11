@@ -191,9 +191,25 @@ self.addEventListener('fetch', (event) => {
           });
           return response;
         })
-        .catch(() => {
+        .catch(async () => {
           // Fallback to cache if network fails
-          return caches.match(event.request);
+          const cachedResponse = await caches.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // If no cache, try to return the index.html for SPA routing
+          const indexCache = await caches.match('/index.html');
+          if (indexCache) {
+            return indexCache;
+          }
+          // Last resort: return a basic offline response
+          return new Response(
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title></head><body style="background:#0a0a0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;"><h1>You\'re Offline</h1><p>Please check your connection and try again.</p><button onclick="location.reload()" style="padding:10px 20px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer;">Retry</button></div></body></html>',
+            { 
+              status: 200, 
+              headers: { 'Content-Type': 'text/html' } 
+            }
+          );
         })
     );
   }
