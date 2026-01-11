@@ -349,6 +349,7 @@ function StaffMessagesContent() {
     if (!user?.id || !currentUserProfile) return;
 
     const presenceChannel = supabase.channel('staff-chat-presence');
+    presenceChannelRef.current = presenceChannel;
 
     presenceChannel
       .on('presence', { event: 'sync' }, () => {
@@ -379,17 +380,19 @@ function StaffMessagesContent() {
       });
 
     return () => {
+      presenceChannelRef.current = null;
       supabase.removeChannel(presenceChannel);
     };
   }, [user?.id, currentUserProfile]);
 
-  // Handle typing indicator
-  const handleTyping = () => {
-    if (!user?.id || !currentUserProfile) return;
+  // Presence channel ref for typing
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-    const presenceChannel = supabase.channel('staff-chat-presence');
-    
-    presenceChannel.track({
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (!user?.id || !currentUserProfile || !presenceChannelRef.current) return;
+
+    presenceChannelRef.current.track({
       user_id: user.id,
       name: currentUserProfile.display_name || currentUserProfile.email.split('@')[0],
       typing: true,
@@ -400,16 +403,18 @@ function StaffMessagesContent() {
     }
 
     typingTimeoutRef.current = setTimeout(() => {
-      presenceChannel.track({
-        user_id: user.id,
-        name: currentUserProfile.display_name || currentUserProfile.email.split('@')[0],
-        typing: false,
-      });
+      if (presenceChannelRef.current) {
+        presenceChannelRef.current.track({
+          user_id: user.id,
+          name: currentUserProfile.display_name || currentUserProfile.email.split('@')[0],
+          typing: false,
+        });
+      }
     }, 2000);
-  };
+  }, [user?.id, currentUserProfile]);
 
   // Handle input change with mention detection
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNewMessage(value);
     handleTyping();
@@ -427,7 +432,7 @@ function StaffMessagesContent() {
       setShowMentionSuggestions(false);
       setMentionFilter('');
     }
-  };
+  }, [handleTyping]);
 
   // Insert mention into message
   const insertMention = (name: string) => {
@@ -497,7 +502,7 @@ function StaffMessagesContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Staff Messages</h1>
+          <h1 className="text-3xl font-bold text-foreground">Staff Messages</h1>
           <p className="text-muted-foreground">Real-time communication with your team • Use @mentions to notify</p>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
