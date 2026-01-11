@@ -107,12 +107,18 @@ const GROUP_MENTIONS = [
   { id: 'everyone', name: 'everyone', description: 'Notify all admins' },
 ];
 
+interface OnlineAdmin {
+  user_id: string;
+  name: string;
+}
+
 function AdminChatContent() {
   const { user } = useAuth();
   const { isAdmin, loading } = useAdminAuth();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [onlineAdmins, setOnlineAdmins] = useState<OnlineAdmin[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
@@ -384,7 +390,7 @@ function AdminChatContent() {
     };
   }, [queryClient, isAdmin]);
 
-  // Presence for typing indicators
+  // Presence for typing indicators and online admins
   useEffect(() => {
     if (!user?.id || !currentUserProfile || !isAdmin) return;
 
@@ -395,9 +401,18 @@ function AdminChatContent() {
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.presenceState();
         const typing: TypingUser[] = [];
+        const online: OnlineAdmin[] = [];
         
         Object.values(state).forEach((presences: any[]) => {
           presences.forEach((presence) => {
+            // Track all online admins
+            if (presence.user_id && presence.name) {
+              online.push({
+                user_id: presence.user_id,
+                name: presence.name,
+              });
+            }
+            // Track typing admins (excluding self)
             if (presence.typing && presence.user_id !== user.id) {
               typing.push({
                 user_id: presence.user_id,
@@ -407,6 +422,12 @@ function AdminChatContent() {
           });
         });
         
+        // Dedupe online admins by user_id
+        const uniqueOnline = online.filter((admin, index, arr) => 
+          arr.findIndex(a => a.user_id === admin.user_id) === index
+        );
+        
+        setOnlineAdmins(uniqueOnline);
         setTypingUsers(typing);
       })
       .subscribe(async (status) => {
@@ -602,9 +623,39 @@ function AdminChatContent() {
           <h1 className="text-xl sm:text-3xl font-bold text-foreground">Admin Chat</h1>
           <p className="text-xs sm:text-base text-muted-foreground">Private channel for administrators only</p>
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Shield className="h-4 w-4" />
-          <span className="text-sm">Admins Only</span>
+        <div className="flex items-center gap-3">
+          {/* Online admins indicator */}
+          {onlineAdmins.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {onlineAdmins.slice(0, 4).map((admin) => (
+                  <div
+                    key={admin.user_id}
+                    className="h-6 w-6 rounded-full bg-green-500/20 border-2 border-background flex items-center justify-center"
+                    title={admin.name}
+                  >
+                    <span className="text-[10px] font-medium text-green-400">
+                      {admin.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+                {onlineAdmins.length > 4 && (
+                  <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                    <span className="text-[10px] font-medium text-muted-foreground">
+                      +{onlineAdmins.length - 4}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-green-400 font-medium">
+                {onlineAdmins.length} online
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Shield className="h-4 w-4" />
+            <span className="text-sm hidden sm:inline">Admins Only</span>
+          </div>
         </div>
       </div>
 
