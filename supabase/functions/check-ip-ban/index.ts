@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,10 +14,19 @@ Deno.serve(async (req) => {
 
   try {
     // Get client IP from headers (Supabase/Cloudflare provides this)
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
-      || req.headers.get('x-real-ip') 
-      || req.headers.get('cf-connecting-ip')
-      || 'unknown';
+    const clientIp = getClientIp(req);
+
+    // Rate limit check - prevent DDoS on this endpoint
+    const rateLimitResult = checkRateLimit({
+      ...RATE_LIMITS.READ,
+      identifier: clientIp,
+      action: 'check-ip-ban',
+    });
+
+    if (!rateLimitResult.allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIp}`);
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     console.log(`Checking IP ban for: ${clientIp}`);
 
@@ -59,7 +69,13 @@ Deno.serve(async (req) => {
     console.log(`IP ${clientIp} is not banned`);
     return new Response(
       JSON.stringify({ banned: false, ip: clientIp }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        } 
+      }
     );
 
   } catch (error) {

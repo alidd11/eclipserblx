@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,10 +29,19 @@ Deno.serve(async (req) => {
 
   try {
     // Get client IP from headers
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
-      || req.headers.get('x-real-ip') 
-      || req.headers.get('cf-connecting-ip')
-      || 'unknown';
+    const clientIp = getClientIp(req);
+
+    // Rate limit check - prevent DDoS on auth endpoints
+    const rateLimitResult = checkRateLimit({
+      ...RATE_LIMITS.AUTH,
+      identifier: clientIp,
+      action: 'check-vpn',
+    });
+
+    if (!rateLimitResult.allowed) {
+      console.log(`Rate limit exceeded for VPN check: ${clientIp}`);
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     console.log(`Checking VPN status for IP: ${clientIp}`);
 
