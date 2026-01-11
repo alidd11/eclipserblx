@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -63,13 +63,20 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'communications',
-    title: 'Communications',
+    id: 'staff-comms',
+    title: 'Staff Communications',
     icon: MessageCircle,
     items: [
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
+    ],
+  },
+  {
+    id: 'customer-comms',
+    title: 'Customer Support',
+    icon: Headphones,
+    items: [
       { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
-      { title: 'Contact Messages', icon: Inbox, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
+      { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
       { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'] },
     ],
   },
