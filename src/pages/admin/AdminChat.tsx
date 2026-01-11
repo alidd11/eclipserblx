@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Trash2, Shield, Users } from 'lucide-react';
+import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,11 +14,13 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Navigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface ChatMessage {
   id: string;
   user_id: string;
   message: string;
+  attachment_url: string | null;
   created_at: string;
 }
 
@@ -33,14 +35,34 @@ interface TypingUser {
   name: string;
 }
 
+// Helper to check if URL is an image
+const isImageUrl = (url: string): boolean => {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+  const lowerUrl = url.toLowerCase();
+  return imageExtensions.some(ext => lowerUrl.includes(ext));
+};
+
+// Helper to get file name from URL
+const getFileName = (url: string): string => {
+  try {
+    const parts = url.split('/');
+    return decodeURIComponent(parts[parts.length - 1].split('?')[0]);
+  } catch {
+    return 'attachment';
+  }
+};
+
 function AdminChatContent() {
   const { user } = useAuth();
   const { isAdmin, loading } = useAdminAuth();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -99,22 +121,47 @@ function AdminChatContent() {
     enabled: !!user?.id,
   });
 
+  // Upload file to storage
+  const uploadFile = async (file: File): Promise<string | null> => {
+    if (!user?.id) return null;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('admin-chat-attachments')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw uploadError;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('admin-chat-attachments')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  };
+
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async (message: string) => {
+    mutationFn: async ({ message, attachmentUrl }: { message: string; attachmentUrl: string | null }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       const { error } = await supabase
         .from('admin_chat_messages' as any)
         .insert({
           user_id: user.id,
-          message: message.trim(),
+          message: message.trim() || (attachmentUrl ? '📎 Attachment' : ''),
+          attachment_url: attachmentUrl,
         });
       
       if (error) throw error;
     },
     onSuccess: () => {
       setNewMessage('');
+      setSelectedFile(null);
       queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
     },
   });
@@ -247,9 +294,40 @@ function AdminChatContent() {
     handleTyping();
   }, [handleTyping]);
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
-    sendMessageMutation.mutate(newMessage);
+  // Handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File too large', { description: 'Maximum file size is 10MB' });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!newMessage.trim() && !selectedFile) return;
+
+    setIsUploading(true);
+    try {
+      let attachmentUrl: string | null = null;
+      
+      if (selectedFile) {
+        attachmentUrl = await uploadFile(selectedFile);
+      }
+
+      await sendMessageMutation.mutateAsync({ 
+        message: newMessage, 
+        attachmentUrl 
+      });
+    } catch (error) {
+      console.error('Send error:', error);
+      toast.error('Failed to send message');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -310,7 +388,7 @@ function AdminChatContent() {
         </CardHeader>
         <CardContent className="p-0">
           {/* Messages area - responsive height */}
-          <ScrollArea ref={scrollRef} className="h-[calc(100vh-320px)] sm:h-[500px] px-3 sm:px-4">
+          <ScrollArea ref={scrollRef} className="h-[calc(100vh-380px)] sm:h-[500px] px-3 sm:px-4">
             <div className="space-y-4 py-4">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
@@ -351,16 +429,53 @@ function AdminChatContent() {
                             {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                           </span>
                         </div>
-                        <div
-                          className={cn(
-                            'rounded-lg px-3 py-2 text-sm break-words',
-                            isOwn
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-foreground'
-                          )}
-                        >
-                          {message.message}
-                        </div>
+                        
+                        {/* Attachment preview */}
+                        {message.attachment_url && (
+                          <div className="mb-2">
+                            {isImageUrl(message.attachment_url) ? (
+                              <a 
+                                href={message.attachment_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <img 
+                                  src={message.attachment_url} 
+                                  alt="Attachment" 
+                                  className="max-w-full max-h-64 rounded-lg border border-border/50 hover:opacity-90 transition-opacity"
+                                />
+                              </a>
+                            ) : (
+                              <a
+                                href={message.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/50 hover:bg-muted transition-colors"
+                              >
+                                <FileText className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm truncate max-w-[150px] sm:max-w-[200px]">
+                                  {getFileName(message.attachment_url)}
+                                </span>
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Message text */}
+                        {message.message && message.message !== '📎 Attachment' && (
+                          <div
+                            className={cn(
+                              'rounded-lg px-3 py-2 text-sm break-words',
+                              isOwn
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-foreground'
+                            )}
+                          >
+                            {message.message}
+                          </div>
+                        )}
+                        
                         <Button
                           variant="ghost"
                           size="icon"
@@ -384,9 +499,54 @@ function AdminChatContent() {
             </div>
           )}
 
+          {/* Selected file preview */}
+          {selectedFile && (
+            <div className="px-3 sm:px-4 py-2 border-t border-border/50">
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                {selectedFile.type.startsWith('image/') ? (
+                  <Image className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {(selectedFile.size / 1024).toFixed(1)} KB
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setSelectedFile(null)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Message input - responsive */}
           <div className="p-3 sm:p-4 border-t border-border/50">
             <div className="flex gap-2">
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+              />
+              
+              {/* Attachment button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="flex-shrink-0"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+
               <Input
                 ref={inputRef}
                 value={newMessage}
@@ -394,14 +554,19 @@ function AdminChatContent() {
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
                 className="flex-1 text-sm sm:text-base"
+                disabled={isUploading}
               />
               <Button
                 onClick={handleSend}
-                disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
                 size="icon"
                 className="flex-shrink-0"
               >
-                <Send className="h-4 w-4" />
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
