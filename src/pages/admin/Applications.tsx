@@ -205,6 +205,7 @@ export default function AdminApplications() {
     reviewing: applications?.filter(a => a.status === 'reviewing').length || 0,
     accepted: applications?.filter(a => a.status === 'accepted').length || 0,
     rejected: applications?.filter(a => a.status === 'rejected').length || 0,
+    closed: applications?.filter(a => a.status === 'closed').length || 0,
   };
 
   const getStatusBadge = (status: string) => {
@@ -217,6 +218,8 @@ export default function AdminApplications() {
         return <Badge variant="secondary" className="bg-green-500/20 text-green-400"><CheckCircle className="h-3 w-3 mr-1" />Accepted</Badge>;
       case 'rejected':
         return <Badge variant="secondary" className="bg-red-500/20 text-red-400"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+      case 'closed':
+        return <Badge variant="secondary" className="bg-muted text-muted-foreground">Closed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -347,6 +350,7 @@ export default function AdminApplications() {
                   <SelectItem value="reviewing">Reviewing</SelectItem>
                   <SelectItem value="accepted">Accepted</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -542,7 +546,7 @@ export default function AdminApplications() {
                   <div className="space-y-2">
                     <Label>Update Status</Label>
                     <div className="flex gap-2 flex-wrap">
-                      {['pending', 'reviewing', 'accepted', 'rejected'].map((status) => (
+                      {['pending', 'reviewing', 'accepted', 'rejected', 'closed'].map((status) => (
                         <Button
                           key={status}
                           variant={selectedApplication.status === status ? 'default' : 'outline'}
@@ -551,16 +555,21 @@ export default function AdminApplications() {
                             updateStatusMutation.mutate({ 
                               id: selectedApplication.id, 
                               status,
-                              notes 
+                              notes,
+                              sendEmail: status !== 'closed' // Don't send email for closed status
                             });
                             setSelectedApplication({ ...selectedApplication, status, notes });
                           }}
                           disabled={updateStatusMutation.isPending}
+                          className={status === 'closed' ? 'text-muted-foreground' : ''}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </Button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Note: "Closed" will not send an email to the applicant.
+                    </p>
                   </div>
                 </TabsContent>
 

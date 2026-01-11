@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdminPWAHandler } from "@/components/pwa/AdminPWAHandler";
 import { AdminManifestHandler } from "@/components/pwa/AdminManifestHandler";
 import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
+import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 
 // Eagerly loaded - critical path
 import Index from "./pages/Index";
@@ -67,6 +68,8 @@ const AdminIpBans = lazy(() => import("./pages/admin/IpBans"));
 const AdminReferrals = lazy(() => import("./pages/admin/Referrals"));
 const AdminBotCodes = lazy(() => import("./pages/admin/BotCodes"));
 const AdminContactMessages = lazy(() => import("./pages/admin/ContactMessages"));
+const AdminForumReports = lazy(() => import("./pages/admin/ForumReports"));
+const AdminArchivedApplications = lazy(() => import("./pages/admin/ArchivedApplications"));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -106,6 +109,7 @@ const App = () => (
                 <PWAWrapper>
                 <AdminManifestHandler />
                 <AdminPWAHandler />
+                <PWARouteRestorer />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                   <Route path="/" element={<Index />} />
@@ -155,6 +159,8 @@ const App = () => (
                   <Route path="/admin/referrals" element={<AdminReferrals />} />
                   <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
                   <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
+                  <Route path="/admin/forum-reports" element={<AdminForumReports />} />
+                  <Route path="/admin/archived-applications" element={<AdminArchivedApplications />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
