@@ -5,7 +5,7 @@
   "theme_color": "#1a1a2e",
   "background_color": "#0a0a0f",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/",
   "start_url": "/",
   "id": "eclipse-customer",
