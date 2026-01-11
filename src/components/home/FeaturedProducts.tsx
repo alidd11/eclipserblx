@@ -178,6 +178,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                       image={currentProduct.images?.[0]}
                       category={currentProduct.categories?.name}
                       categorySlug={currentProduct.categories?.slug}
+                      categoryId={currentProduct.category_id}
                       isFeatured={currentProduct.is_featured}
                     />
                   </div>

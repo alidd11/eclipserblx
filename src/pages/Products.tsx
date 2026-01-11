@@ -184,6 +184,7 @@ export default function Products() {
                   image={product.images?.[0]}
                   category={product.categories?.name}
                   categorySlug={product.categories?.slug}
+                  categoryId={product.category_id}
                   isFeatured={product.is_featured}
                 />
               ))}

@@ -1,8 +1,9 @@
 import { memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart, Check, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
+import { useSubscription, BOT_CATEGORY_ID, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
@@ -13,12 +14,17 @@ interface ProductCardProps {
   image?: string;
   category?: string;
   categorySlug?: string;
+  categoryId?: string;
   isFeatured?: boolean;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, isFeatured }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, categoryId, isFeatured }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
+  const { isSubscribed, isEligibleForDiscount, getMemberPrice } = useSubscription();
   const inCart = isInCart(id);
+  
+  const showMemberPrice = isSubscribed && isEligibleForDiscount(categoryId);
+  const memberPrice = getMemberPrice(price, categoryId);
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -71,9 +77,23 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
           </h3>
 
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-            <span className="text-sm font-bold text-foreground whitespace-nowrap">
-              £{price.toFixed(2)}
-            </span>
+            <div className="flex flex-col">
+              {showMemberPrice ? (
+                <>
+                  <span className="text-sm font-bold text-primary whitespace-nowrap flex items-center gap-1">
+                    <Crown className="h-3 w-3" />
+                    £{memberPrice.toFixed(2)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground line-through">
+                    £{price.toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <span className="text-sm font-bold text-foreground whitespace-nowrap">
+                  £{price.toFixed(2)}
+                </span>
+              )}
+            </div>
             
             <Button
               size="sm"
