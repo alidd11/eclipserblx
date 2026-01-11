@@ -580,7 +580,7 @@ function StaffMessagesContent() {
         <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Messages area - fills available space */}
           <ScrollArea ref={scrollRef} className="flex-1 px-3 sm:px-4">
-            <div className="space-y-4 py-4">
+            <div className="py-4 flex flex-col">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
                   Loading messages...
@@ -607,9 +607,8 @@ function StaffMessagesContent() {
                       className={cn(
                         'flex gap-2 sm:gap-3 group',
                         isOwn && 'flex-row-reverse',
-                        isGrouped && 'mt-0.5'
+                        isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
                       )}
-                      style={{ marginTop: isGrouped ? '2px' : undefined }}
                     >
                       {/* Avatar - invisible spacer when grouped */}
                       {isGrouped ? (
