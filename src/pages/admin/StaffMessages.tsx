@@ -14,6 +14,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
+import { hapticTap, hapticError } from '@/lib/haptics';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -285,9 +286,13 @@ function StaffMessagesContent() {
       await sendMentionNotifications(message.trim(), user.id);
     },
     onSuccess: () => {
+      hapticTap();
       setNewMessage('');
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
+    },
+    onError: () => {
+      hapticError();
     },
   });
 

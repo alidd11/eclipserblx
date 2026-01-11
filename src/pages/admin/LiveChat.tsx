@@ -22,6 +22,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useDropZone } from '@/hooks/useDropZone';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
+import { hapticTap, hapticError } from '@/lib/haptics';
 
 const CANNED_RESPONSES = [
   {
@@ -418,6 +419,7 @@ export default function AdminLiveChat() {
 
       // Replace optimistic message with real one
       if (data) {
+        hapticTap();
         setMessages((prev) =>
           prev.map((m) => (m._tempId === tempId ? { ...data, _status: 'sent' } : m))
         );
@@ -432,6 +434,7 @@ export default function AdminLiveChat() {
       if (updateError) throw updateError;
     } catch (error) {
       console.error('Error sending message:', error);
+      hapticError();
       // Mark as failed
       setMessages((prev) =>
         prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'failed' } : m))

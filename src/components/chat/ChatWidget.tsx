@@ -22,6 +22,7 @@ import { notifyNewLiveChat, notifyNewChatMessage } from '@/lib/pushNotifications
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { hapticTap, hapticError } from '@/lib/haptics';
 
 type MessageStatus = 'pending' | 'sent' | 'failed';
 
@@ -535,6 +536,7 @@ export function ChatWidget() {
 
       // Replace optimistic message with real one
       if (data) {
+        hapticTap();
         setMessages((prev) =>
           prev.map((m) => (m._tempId === tempId ? { ...data, _status: 'sent' } : m))
         );
@@ -544,6 +546,7 @@ export function ChatWidget() {
       await notifyNewChatMessage(conversationId!, customerName, messageText, data?.id);
     } catch (error) {
       console.error('Error sending message:', error);
+      hapticError();
       // Mark as failed
       setMessages((prev) =>
         prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'failed' } : m))
