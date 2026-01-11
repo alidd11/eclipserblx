@@ -825,16 +825,16 @@ function AdminChatContent() {
           )}
 
           {/* Message input - fixed at bottom */}
-          <div className="p-3 sm:p-4 border-t border-border/50 flex-shrink-0 relative">
+          <div className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && allSuggestions.length > 0 && (
-              <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+              <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50 text-foreground">
                 {allSuggestions.map((suggestion, index) => (
                   <button
                     key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
                     className={cn(
-                      'w-full px-3 py-2 flex items-center gap-2 text-left hover:bg-muted transition-colors text-sm',
-                      index === mentionIndex && 'bg-muted'
+                      'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                      index === mentionIndex && 'bg-accent'
                     )}
                     onClick={() => {
                       const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
@@ -843,9 +843,13 @@ function AdminChatContent() {
                   >
                     {suggestion.type === 'group' ? (
                       <>
-                        <AtSign className="h-4 w-4 text-primary" />
-                        <span className="font-medium">@{suggestion.name}</span>
-                        <span className="text-muted-foreground text-xs ml-auto">{suggestion.description}</span>
+                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                          <AtSign className="h-3 w-3 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">@{suggestion.name}</div>
+                          <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                        </div>
                       </>
                     ) : (
                       <>
@@ -854,9 +858,16 @@ function AdminChatContent() {
                             {(suggestion.display_name || suggestion.email.split('@')[0]).slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{suggestion.display_name || suggestion.email.split('@')[0]}</span>
-                        <span className="text-muted-foreground text-xs">@{getMentionHandle(suggestion)}</span>
-                        <Badge variant="outline" className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30">
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {suggestion.display_name || suggestion.email.split('@')[0]}
+                          </div>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30"
+                        >
                           Admin
                         </Badge>
                       </>
@@ -875,7 +886,7 @@ function AdminChatContent() {
                 className="hidden"
                 accept="image/*,.pdf,.doc,.docx,.txt,.zip"
               />
-              
+
               {/* Attachment button */}
               <Button
                 variant="outline"
@@ -893,19 +904,19 @@ function AdminChatContent() {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Type @ to mention admins..."
-                className="flex-1 text-sm sm:text-base"
+                className="flex-1 text-sm sm:text-base text-foreground"
                 disabled={isUploading}
               />
               <Button
                 onClick={handleSend}
                 disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
                 size="icon"
-                className="flex-shrink-0 bg-primary hover:bg-primary/90"
+                className="flex-shrink-0"
               >
                 {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4 text-primary-foreground" />
+                  <Send className="h-4 w-4" />
                 )}
               </Button>
             </div>
