@@ -5,6 +5,7 @@ import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
 import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
 import { useSwipePrevent } from '@/hooks/useSwipePrevent';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { toast } from 'sonner';
 
 interface PWAWrapperProps {
@@ -29,6 +30,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   // Prevent swipe navigation in PWA
   useSwipePrevent();
+
+  // Dynamic theme color for PWA
+  useThemeColor();
 
   const PULL_THRESHOLD = 80;
 

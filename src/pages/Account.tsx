@@ -21,6 +21,7 @@ import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCar
 import { ReferralCard } from '@/components/account/ReferralCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
+import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
@@ -693,6 +694,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-6">
+            {/* Theme Settings */}
+            <ThemeSettingsCard />
+
             {/* Email Subscriptions */}
             <EmailSubscriptionCard />
 
