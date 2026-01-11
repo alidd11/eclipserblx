@@ -510,15 +510,15 @@ function StaffMessagesContent() {
         </div>
       </div>
 
-      <Card className="bg-card/50 backdrop-blur border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
+      <Card className="bg-card/50 backdrop-blur border-border/50 relative">
+        <CardHeader className="pb-3 px-3 sm:px-6">
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             Staff Chat
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea ref={scrollRef} className="h-[500px] px-4">
+          <ScrollArea ref={scrollRef} className="h-[calc(100vh-380px)] sm:h-[500px] px-3 sm:px-4">
             <div className="space-y-4 py-4">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
@@ -538,32 +538,32 @@ function StaffMessagesContent() {
                     <div
                       key={message.id}
                       className={cn(
-                        'flex gap-3 group',
+                        'flex gap-2 sm:gap-3 group',
                         isOwn && 'flex-row-reverse'
                       )}
                     >
-                      <Avatar className="h-8 w-8 flex-shrink-0">
+                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
                         <AvatarFallback className="bg-primary/20 text-primary text-xs">
                           {getInitials(message.user_id)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={cn('flex flex-col max-w-[70%]', isOwn && 'items-end')}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-foreground">
+                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn && 'items-end')}>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-xs sm:text-sm font-medium text-foreground">
                             {getDisplayName(message.user_id)}
                           </span>
                           {roleBadge && (
-                            <Badge variant="outline" className={cn('text-xs py-0', roleBadge.className)}>
+                            <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
                               {roleBadge.label}
                             </Badge>
                           )}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                           </span>
                         </div>
                         <div
                           className={cn(
-                            'rounded-lg px-3 py-2 text-sm',
+                            'rounded-lg px-3 py-2 text-sm break-words',
                             isOwn
                               ? 'bg-primary text-primary-foreground'
                               : 'bg-muted text-foreground'
