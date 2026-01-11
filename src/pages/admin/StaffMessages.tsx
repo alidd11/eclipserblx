@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Trash2, Users } from 'lucide-react';
+import { Send, Trash2, Users, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +30,13 @@ interface UserProfile {
   email: string;
 }
 
+interface StaffMember {
+  user_id: string;
+  display_name: string | null;
+  email: string;
+  role?: AppRole;
+}
+
 interface TypingUser {
   user_id: string;
   name: string;
@@ -44,13 +51,65 @@ const roleBadges: Record<AppRole, { label: string; className: string }> = {
   recruiter: { label: 'Recruiter', className: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
 };
 
+// Parse @mentions from message text
+const parseMentions = (text: string): string[] => {
+  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+  const matches = text.match(mentionRegex);
+  return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
+};
+
+// Get mention handle from staff member
+const getMentionHandle = (staff: StaffMember): string => {
+  const base = (staff.display_name || staff.email.split('@')[0] || 'staff').toLowerCase();
+  return base.replace(/[^a-z0-9_]+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'staff';
+};
+
+// Check if a mention matches a staff member
+const matchesMention = (staff: StaffMember, mentionHandle: string): boolean => {
+  const normalizedMention = mentionHandle.toLowerCase().replace(/_/g, '');
+  const handle = getMentionHandle(staff).replace(/_/g, '');
+  const displayName = (staff.display_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const emailPrefix = staff.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  return handle === normalizedMention || 
+         displayName === normalizedMention || 
+         emailPrefix === normalizedMention ||
+         handle.includes(normalizedMention) ||
+         displayName.includes(normalizedMention);
+};
+
+// Render message with highlighted mentions
+const renderMessageWithMentions = (message: string) => {
+  const parts = message.split(/(@[a-zA-Z0-9_]+)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('@')) {
+      return (
+        <span key={index} className="text-primary font-medium bg-primary/10 rounded px-1">
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+};
+
+// Group mention options
+const GROUP_MENTIONS = [
+  { id: 'everyone', name: 'everyone', description: 'Notify all staff members' },
+  { id: 'here', name: 'here', description: 'Notify all online staff' },
+];
+
 function StaffMessagesContent() {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState('');
+  const [mentionIndex, setMentionIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
@@ -128,6 +187,85 @@ function StaffMessagesContent() {
     enabled: !!user?.id,
   });
 
+  // Fetch all staff members for @mentions
+  const { data: allStaff = [] } = useQuery({
+    queryKey: ['all-staff-members'],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('list-staff');
+      if (error) throw error;
+      return (data?.staff ?? []) as StaffMember[];
+    },
+  });
+
+  // Filtered staff for mentions
+  const filteredGroupMentions = GROUP_MENTIONS.filter(g => 
+    g.name.includes(mentionFilter.toLowerCase())
+  );
+  
+  const filteredStaff = allStaff.filter(staff => {
+    if (staff.user_id === user?.id) return false;
+    const display = (staff.display_name || staff.email.split('@')[0]).toLowerCase();
+    const handle = getMentionHandle(staff);
+    const q = mentionFilter.toLowerCase();
+    return display.includes(q) || handle.includes(q);
+  });
+
+  // Combined suggestions
+  const allSuggestions = [
+    ...filteredGroupMentions.map(g => ({ type: 'group' as const, ...g })),
+    ...filteredStaff.map(s => ({ type: 'staff' as const, ...s })),
+  ];
+
+  // Send push notification to mentioned users
+  const sendMentionNotifications = async (message: string, senderId: string) => {
+    const mentions = parseMentions(message);
+    if (mentions.length === 0) return;
+
+    const senderProfile = currentUserProfile;
+    const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Someone';
+
+    // Check for group mentions
+    const hasEveryone = mentions.includes('everyone');
+    const hasHere = mentions.includes('here');
+
+    let targetUserIds: string[] = [];
+
+    if (hasEveryone || hasHere) {
+      // Notify all staff except sender
+      targetUserIds = allStaff
+        .filter(s => s.user_id !== senderId)
+        .map(s => s.user_id);
+    } else {
+      // Find specific mentioned users
+      targetUserIds = allStaff
+        .filter(staff => {
+          if (staff.user_id === senderId) return false;
+          return mentions.some(mention => matchesMention(staff, mention));
+        })
+        .map(s => s.user_id);
+    }
+
+    if (targetUserIds.length === 0) return;
+
+    try {
+      await supabase.functions.invoke('send-push-notification', {
+        body: {
+          user_ids: targetUserIds,
+          payload: {
+            title: `${senderName} mentioned you`,
+            body: message.length > 100 ? message.substring(0, 100) + '...' : message,
+            tag: `staff-mention-${Date.now()}`,
+            url: '/admin/staff-messages',
+            requireInteraction: true,
+          },
+        },
+      });
+      console.log('Mention notifications sent to', targetUserIds.length, 'users');
+    } catch (err) {
+      console.error('Failed to send mention notifications:', err);
+    }
+  };
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -141,9 +279,13 @@ function StaffMessagesContent() {
         });
       
       if (error) throw error;
+
+      // Send notifications to mentioned users
+      await sendMentionNotifications(message.trim(), user.id);
     },
     onSuccess: () => {
       setNewMessage('');
+      setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
     },
   });
@@ -266,13 +408,72 @@ function StaffMessagesContent() {
     }, 2000);
   };
 
+  // Handle input change with mention detection
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+    handleTyping();
+
+    // Check for @ mention trigger
+    const cursorPos = e.target.selectionStart || 0;
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
+
+    if (mentionMatch) {
+      setShowMentionSuggestions(true);
+      setMentionFilter(mentionMatch[1]);
+      setMentionIndex(0);
+    } else {
+      setShowMentionSuggestions(false);
+      setMentionFilter('');
+    }
+  };
+
+  // Insert mention into message
+  const insertMention = (name: string) => {
+    const cursorPos = inputRef.current?.selectionStart || newMessage.length;
+    const textBeforeCursor = newMessage.slice(0, cursorPos);
+    const textAfterCursor = newMessage.slice(cursorPos);
+    
+    // Find the @ position
+    const atPos = textBeforeCursor.lastIndexOf('@');
+    if (atPos === -1) return;
+
+    const newText = textBeforeCursor.slice(0, atPos) + `@${name} ` + textAfterCursor;
+    setNewMessage(newText);
+    setShowMentionSuggestions(false);
+    setMentionFilter('');
+    
+    // Focus back on input
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+
   const handleSend = () => {
     if (!newMessage.trim()) return;
     sendMessageMutation.mutate(newMessage);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (showMentionSuggestions && allSuggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionIndex((prev) => (prev + 1) % allSuggestions.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionIndex((prev) => (prev - 1 + allSuggestions.length) % allSuggestions.length);
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        const selected = allSuggestions[mentionIndex];
+        if (selected) {
+          const name = selected.type === 'group' ? selected.name : getMentionHandle(selected);
+          insertMention(name);
+        }
+      } else if (e.key === 'Escape') {
+        setShowMentionSuggestions(false);
+      }
+    } else if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -296,8 +497,8 @@ function StaffMessagesContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Staff Chat</h1>
-          <p className="text-muted-foreground">Real-time communication with your team</p>
+          <h1 className="text-3xl font-bold text-white">Staff Messages</h1>
+          <p className="text-muted-foreground">Real-time communication with your team • Use @mentions to notify</p>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="h-4 w-4" />
@@ -364,7 +565,7 @@ function StaffMessagesContent() {
                               : 'bg-muted text-foreground'
                           )}
                         >
-                          {message.message}
+                          {renderMessageWithMentions(message.message)}
                         </div>
                         {canDeleteMessage(message.user_id) && (
                           <Button
@@ -391,17 +592,62 @@ function StaffMessagesContent() {
             </div>
           )}
 
-          {/* Message input */}
-          <div className="p-4 border-t border-border/50">
+          {/* Message input with mention suggestions */}
+          <div className="p-4 border-t border-border/50 relative">
+            {/* Mention suggestions dropdown */}
+            {showMentionSuggestions && allSuggestions.length > 0 && (
+              <div className="absolute bottom-full left-4 right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                {allSuggestions.map((suggestion, index) => (
+                  <button
+                    key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                    className={cn(
+                      'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                      index === mentionIndex && 'bg-accent'
+                    )}
+                    onClick={() => {
+                      const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
+                      insertMention(name);
+                    }}
+                  >
+                    {suggestion.type === 'group' ? (
+                      <>
+                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                          <AtSign className="h-3 w-3 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">@{suggestion.name}</div>
+                          <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                            {(suggestion.display_name || suggestion.email)[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-sm">
+                            @{getMentionHandle(suggestion)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {suggestion.display_name || suggestion.email.split('@')[0]}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex gap-2">
               <Input
+                ref={inputRef}
                 value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value);
-                  handleTyping();
-                }}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Type a message..."
+                placeholder="Type a message... Use @ to mention"
                 className="flex-1"
               />
               <Button
