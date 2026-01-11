@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload } from 'lucide-react';
+import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +31,12 @@ interface UserProfile {
   email: string;
 }
 
+interface AdminMember {
+  user_id: string;
+  display_name: string | null;
+  email: string;
+}
+
 interface TypingUser {
   user_id: string;
   name: string;
@@ -53,6 +59,53 @@ const getFileName = (url: string): string => {
   }
 };
 
+// Parse @mentions from message text
+const parseMentions = (text: string): string[] => {
+  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+  const matches = text.match(mentionRegex);
+  return matches ? matches.map(m => m.slice(1).toLowerCase()) : [];
+};
+
+// Get mention handle from admin member
+const getMentionHandle = (admin: AdminMember): string => {
+  const base = (admin.display_name || admin.email.split('@')[0] || 'admin').toLowerCase();
+  return base.replace(/[^a-z0-9_]+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'admin';
+};
+
+// Check if a mention matches an admin member
+const matchesMention = (admin: AdminMember, mentionHandle: string): boolean => {
+  const normalizedMention = mentionHandle.toLowerCase().replace(/_/g, '');
+  const handle = getMentionHandle(admin).replace(/_/g, '');
+  const displayName = (admin.display_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const emailPrefix = admin.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  return handle === normalizedMention || 
+         displayName === normalizedMention || 
+         emailPrefix === normalizedMention ||
+         handle.includes(normalizedMention) ||
+         displayName.includes(normalizedMention);
+};
+
+// Render message with highlighted mentions
+const renderMessageWithMentions = (message: string) => {
+  const parts = message.split(/(@[a-zA-Z0-9_]+)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('@')) {
+      return (
+        <span key={index} className="text-primary font-medium bg-primary/10 rounded px-1">
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+};
+
+// Group mention options
+const GROUP_MENTIONS = [
+  { id: 'everyone', name: 'everyone', description: 'Notify all admins' },
+];
+
 function AdminChatContent() {
   const { user } = useAuth();
   const { isAdmin, loading } = useAdminAuth();
@@ -61,6 +114,9 @@ function AdminChatContent() {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState('');
+  const [mentionIndex, setMentionIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,6 +178,100 @@ function AdminChatContent() {
     enabled: !!user?.id,
   });
 
+  // Fetch all admin members for @mentions
+  const { data: allAdmins = [] } = useQuery({
+    queryKey: ['all-admin-members'],
+    queryFn: async () => {
+      // Get all users with admin role
+      const { data: adminRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      
+      if (rolesError) throw rolesError;
+      if (!adminRoles?.length) return [];
+
+      const adminUserIds = adminRoles.map(r => r.user_id);
+      
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .in('user_id', adminUserIds);
+      
+      if (profilesError) throw profilesError;
+      return (profiles || []) as AdminMember[];
+    },
+    enabled: isAdmin,
+  });
+
+  // Filtered admins for mentions
+  const filteredGroupMentions = GROUP_MENTIONS.filter(g => 
+    g.name.includes(mentionFilter.toLowerCase())
+  );
+  
+  const filteredAdmins = allAdmins.filter(admin => {
+    if (admin.user_id === user?.id) return false;
+    const display = (admin.display_name || admin.email.split('@')[0]).toLowerCase();
+    const handle = getMentionHandle(admin);
+    const q = mentionFilter.toLowerCase();
+    return display.includes(q) || handle.includes(q);
+  });
+
+  // Combined suggestions
+  const allSuggestions = [
+    ...filteredGroupMentions.map(g => ({ type: 'group' as const, ...g })),
+    ...filteredAdmins.map(a => ({ type: 'admin' as const, ...a })),
+  ];
+
+  // Send push notification to mentioned admins
+  const sendMentionNotifications = async (message: string, senderId: string) => {
+    const mentions = parseMentions(message);
+    if (mentions.length === 0) return;
+
+    const senderProfile = currentUserProfile;
+    const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Someone';
+
+    // Check for group mentions
+    const hasEveryone = mentions.includes('everyone');
+
+    let targetUserIds: string[] = [];
+
+    if (hasEveryone) {
+      // Notify all admins except sender
+      targetUserIds = allAdmins
+        .filter(a => a.user_id !== senderId)
+        .map(a => a.user_id);
+    } else {
+      // Find specific mentioned admins
+      targetUserIds = allAdmins
+        .filter(admin => {
+          if (admin.user_id === senderId) return false;
+          return mentions.some(mention => matchesMention(admin, mention));
+        })
+        .map(a => a.user_id);
+    }
+
+    if (targetUserIds.length === 0) return;
+
+    try {
+      await supabase.functions.invoke('send-push-notification', {
+        body: {
+          user_ids: targetUserIds,
+          payload: {
+            title: `${senderName} mentioned you in Admin Chat`,
+            body: message.length > 100 ? message.substring(0, 100) + '...' : message,
+            tag: `admin-chat-mention-${Date.now()}`,
+            url: '/admin/chat',
+            requireInteraction: true,
+          },
+        },
+      });
+      console.log('Admin mention notifications sent to', targetUserIds.length, 'users');
+    } catch (err) {
+      console.error('Failed to send admin mention notifications:', err);
+    }
+  };
+
   // Upload file to storage
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!user?.id) return null;
@@ -159,10 +309,16 @@ function AdminChatContent() {
         });
       
       if (error) throw error;
+
+      // Send notifications to mentioned admins
+      if (message.trim()) {
+        await sendMentionNotifications(message.trim(), user.id);
+      }
     },
     onSuccess: () => {
       setNewMessage('');
       setSelectedFile(null);
+      setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
     },
   });
@@ -289,11 +445,47 @@ function AdminChatContent() {
     }, 2000);
   }, [user?.id, currentUserProfile]);
 
-  // Handle input change
+  // Handle input change with mention detection
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
+    const value = e.target.value;
+    setNewMessage(value);
     handleTyping();
+
+    // Check for @ mention trigger
+    const cursorPos = e.target.selectionStart || 0;
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
+
+    if (mentionMatch) {
+      setShowMentionSuggestions(true);
+      setMentionFilter(mentionMatch[1]);
+      setMentionIndex(0);
+    } else {
+      setShowMentionSuggestions(false);
+      setMentionFilter('');
+    }
   }, [handleTyping]);
+
+  // Insert mention into message
+  const insertMention = (name: string) => {
+    const cursorPos = inputRef.current?.selectionStart || newMessage.length;
+    const textBeforeCursor = newMessage.slice(0, cursorPos);
+    const textAfterCursor = newMessage.slice(cursorPos);
+    
+    // Find the @ position
+    const atPos = textBeforeCursor.lastIndexOf('@');
+    if (atPos === -1) return;
+
+    const newText = textBeforeCursor.slice(0, atPos) + `@${name} ` + textAfterCursor;
+    setNewMessage(newText);
+    setShowMentionSuggestions(false);
+    setMentionFilter('');
+    
+    // Focus back on input
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
 
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,7 +542,24 @@ function AdminChatContent() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (showMentionSuggestions && allSuggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionIndex((prev) => (prev + 1) % allSuggestions.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionIndex((prev) => (prev - 1 + allSuggestions.length) % allSuggestions.length);
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        const selected = allSuggestions[mentionIndex];
+        if (selected) {
+          const name = selected.type === 'group' ? selected.name : getMentionHandle(selected);
+          insertMention(name);
+        }
+      } else if (e.key === 'Escape') {
+        setShowMentionSuggestions(false);
+      }
+    } else if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -510,7 +719,7 @@ function AdminChatContent() {
                                 : 'bg-muted text-foreground'
                             )}
                           >
-                            {message.message}
+                            {renderMessageWithMentions(message.message)}
                           </div>
                         )}
                         
@@ -563,7 +772,47 @@ function AdminChatContent() {
           )}
 
           {/* Message input - fixed at bottom */}
-          <div className="p-3 sm:p-4 border-t border-border/50 flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="p-3 sm:p-4 border-t border-border/50 flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] relative">
+            {/* Mention suggestions dropdown */}
+            {showMentionSuggestions && allSuggestions.length > 0 && (
+              <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                {allSuggestions.map((suggestion, index) => (
+                  <button
+                    key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                    className={cn(
+                      'w-full px-3 py-2 flex items-center gap-2 text-left hover:bg-muted transition-colors text-sm',
+                      index === mentionIndex && 'bg-muted'
+                    )}
+                    onClick={() => {
+                      const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
+                      insertMention(name);
+                    }}
+                  >
+                    {suggestion.type === 'group' ? (
+                      <>
+                        <AtSign className="h-4 w-4 text-primary" />
+                        <span className="font-medium">@{suggestion.name}</span>
+                        <span className="text-muted-foreground text-xs ml-auto">{suggestion.description}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs bg-red-500/20 text-red-400">
+                            {(suggestion.display_name || suggestion.email.split('@')[0]).slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{suggestion.display_name || suggestion.email.split('@')[0]}</span>
+                        <span className="text-muted-foreground text-xs">@{getMentionHandle(suggestion)}</span>
+                        <Badge variant="outline" className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30">
+                          Admin
+                        </Badge>
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex gap-2">
               {/* Hidden file input */}
               <input
@@ -590,7 +839,7 @@ function AdminChatContent() {
                 value={newMessage}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Type a message..."
+                placeholder="Type @ to mention admins..."
                 className="flex-1 text-sm sm:text-base"
                 disabled={isUploading}
               />
