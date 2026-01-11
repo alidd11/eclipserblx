@@ -55,6 +55,7 @@ const navGroups: NavGroup[] = [
     icon: Package,
     items: [
       { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
+      { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
       { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
       { title: 'Referrals', icon: Gift, href: '/admin/referrals', roles: ['admin'] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
@@ -62,21 +63,21 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'engagement',
-    title: 'Customer Engagement',
+    id: 'communications',
+    title: 'Communications',
     icon: MessageCircle,
     items: [
-      { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
-      { title: 'Live Chat', icon: MessageCircle, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
+      { title: 'Staff Chat', icon: MessageCircle, href: '/admin/staff-chat', roles: [] },
+      { title: 'Staff Messages', icon: Mail, href: '/admin/staff-messages', roles: [] },
+      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
       { title: 'Contact Messages', icon: Inbox, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
     ],
   },
   {
     id: 'team',
-    title: 'Team & Recruitment',
+    title: 'Recruitment',
     icon: FileText,
     items: [
-      { title: 'Staff Messages', icon: Mail, href: '/admin/staff-messages', roles: [] },
       { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
     ],
   },
