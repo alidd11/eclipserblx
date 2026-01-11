@@ -639,6 +639,66 @@ export type Database = {
           },
         ]
       }
+      forum_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          post_id: string | null
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          staff_response: string | null
+          status: string
+          thread_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          post_id?: string | null
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          staff_response?: string | null
+          status?: string
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          staff_response?: string | null
+          status?: string
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_reports_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "forum_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_threads: {
         Row: {
           category_id: string
@@ -795,6 +855,7 @@ export type Database = {
           discord_username: string | null
           experience: string | null
           id: string
+          is_open: boolean
           message: string
           notes: string | null
           portfolio_url: string | null
@@ -811,6 +872,7 @@ export type Database = {
           discord_username?: string | null
           experience?: string | null
           id?: string
+          is_open?: boolean
           message: string
           notes?: string | null
           portfolio_url?: string | null
@@ -827,6 +889,7 @@ export type Database = {
           discord_username?: string | null
           experience?: string | null
           id?: string
+          is_open?: boolean
           message?: string
           notes?: string | null
           portfolio_url?: string | null
@@ -1598,6 +1661,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_ip_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

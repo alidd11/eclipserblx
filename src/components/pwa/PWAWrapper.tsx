@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
 import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
+import { useSwipePrevent } from '@/hooks/useSwipePrevent';
 import { toast } from 'sonner';
 
 interface PWAWrapperProps {
@@ -25,6 +26,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   
   // Network quality monitoring
   const { status, isOffline, isDegraded, justRecovered, forceCheck } = useNetworkQuality();
+
+  // Prevent swipe navigation in PWA
+  useSwipePrevent();
 
   const PULL_THRESHOLD = 80;
 

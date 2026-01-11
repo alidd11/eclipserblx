@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -46,6 +46,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
+      { title: 'Referrals', icon: Gift, href: '/admin/referrals', roles: ['admin'] },
       { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', roles: ['admin'] },
     ],
   },
@@ -57,7 +58,6 @@ const navGroups: NavGroup[] = [
       { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
       { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
       { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
-      { title: 'Referrals', icon: Gift, href: '/admin/referrals', roles: ['admin'] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
       { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin'] },
     ],
@@ -70,6 +70,7 @@ const navGroups: NavGroup[] = [
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
       { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
       { title: 'Contact Messages', icon: Inbox, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
+      { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'] },
     ],
   },
   {
@@ -78,6 +79,7 @@ const navGroups: NavGroup[] = [
     icon: FileText,
     items: [
       { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
+      { title: 'Archived', icon: Archive, href: '/admin/archived-applications', roles: ['admin'] },
     ],
   },
   {
