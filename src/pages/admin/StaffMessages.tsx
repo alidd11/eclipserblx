@@ -507,9 +507,9 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden px-3 sm:px-4">
       {/* Header */}
-      <div className="flex items-center justify-between px-1 py-2 sm:py-4 flex-shrink-0">
+      <div className="flex items-center justify-between py-2 sm:py-4 flex-shrink-0">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold text-foreground">Staff Messages</h1>
           <p className="text-xs sm:text-base text-muted-foreground">Real-time communication with your team • Use @mentions to notify</p>
