@@ -381,7 +381,10 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
+    <div
+      className="flex flex-col overflow-hidden"
+      style={{ height: 'calc(100% - var(--keyboard-inset, 0px))' }}
+    >
       {/* Header - responsive */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1 py-2 sm:py-4 flex-shrink-0">
         <div>

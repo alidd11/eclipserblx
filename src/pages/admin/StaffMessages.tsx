@@ -498,7 +498,10 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
+    <div
+      className="flex flex-col overflow-hidden"
+      style={{ height: 'calc(100% - var(--keyboard-inset, 0px))' }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-1 py-2 sm:py-4 flex-shrink-0">
         <div>
