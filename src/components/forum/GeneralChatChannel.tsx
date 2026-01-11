@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Crown, Shield, Wrench, Briefcase, Trash2, SmilePlus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -569,7 +570,7 @@ export function GeneralChatChannel() {
           </form>
         ) : (
           <div className="text-center text-muted-foreground text-sm py-2">
-            <a href="/auth" className="text-primary hover:underline">Sign in</a> to join the conversation
+            <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to join the conversation
           </div>
         )}
       </div>
