@@ -43,56 +43,19 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     setIsStandalone(standalone);
   }, []);
 
-  // Keep a reliable keyboard inset for iOS/standalone PWAs (CSS var)
+  // Set CSS variable for visual viewport height (for reference only)
   useEffect(() => {
     const vv = window.visualViewport;
-    let debounceTimer: NodeJS.Timeout | null = null;
-
     const update = () => {
       const height = vv?.height ?? window.innerHeight;
       document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
-
-      // Calculate keyboard inset with a threshold to handle small discrepancies
-      // iOS sometimes has minor differences even when keyboard is closed
-      const rawInset = vv
-        ? window.innerHeight - vv.height - vv.offsetTop
-        : 0;
-      
-      // Only set keyboard inset if it's significant (> 50px threshold)
-      // This prevents small rounding errors or safe area differences from causing issues
-      const keyboardInset = rawInset > 50 ? rawInset : 0;
-      document.documentElement.style.setProperty('--keyboard-inset', `${keyboardInset}px`);
     };
-
-    // Debounced update to handle rapid viewport changes during keyboard animation
-    const debouncedUpdate = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(update, 50);
-    };
-
-    // Also listen for focus/blur to ensure reset when input loses focus
-    const handleFocusOut = (e: FocusEvent) => {
-      // When focus leaves an input, ensure keyboard inset resets after a delay
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        setTimeout(() => {
-          document.documentElement.style.setProperty('--keyboard-inset', '0px');
-        }, 300);
-      }
-    };
-
     update();
-
-    vv?.addEventListener('resize', debouncedUpdate);
-    vv?.addEventListener('scroll', debouncedUpdate);
-    window.addEventListener('resize', debouncedUpdate);
-    document.addEventListener('focusout', handleFocusOut);
-
+    vv?.addEventListener('resize', update);
+    window.addEventListener('resize', update);
     return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      vv?.removeEventListener('resize', debouncedUpdate);
-      vv?.removeEventListener('scroll', debouncedUpdate);
-      window.removeEventListener('resize', debouncedUpdate);
-      document.removeEventListener('focusout', handleFocusOut);
+      vv?.removeEventListener('resize', update);
+      window.removeEventListener('resize', update);
     };
   }, []);
 
