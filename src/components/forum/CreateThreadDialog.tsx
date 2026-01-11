@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Dialog, 
@@ -13,9 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useDropZone } from '@/hooks/useDropZone';
 import { showSuccessNotification, showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
-import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { ImagePlus, X, Loader2, Upload } from 'lucide-react';
 import { forumThreadSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
+import { cn } from '@/lib/utils';
 
 interface CreateThreadDialogProps {
   open: boolean;
@@ -70,15 +72,14 @@ export function CreateThreadDialog({
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || !user) return;
+  const processImages = useCallback(async (files: File[]) => {
+    if (!user) return;
 
     setUploading(true);
     const newImages: string[] = [];
 
     try {
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         if (!file.type.startsWith('image/')) {
           showErrorNotification('Invalid File', `${file.name} is not an image`);
           continue;
@@ -87,6 +88,12 @@ export function CreateThreadDialog({
         if (file.size > 5 * 1024 * 1024) {
           showErrorNotification('File Too Large', `${file.name} exceeds 5MB limit`);
           continue;
+        }
+
+        // Check max images
+        if (images.length + newImages.length >= 6) {
+          showErrorNotification('Limit Reached', 'Maximum 6 images allowed');
+          break;
         }
 
         // Check for NSFW content
@@ -129,7 +136,22 @@ export function CreateThreadDialog({
         fileInputRef.current.value = '';
       }
     }
+  }, [user, images.length]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    processImages(Array.from(files));
   };
+
+  // Drag and drop support
+  const { isDragOver, dragProps } = useDropZone({
+    onDrop: processImages,
+    accept: ['image/*'],
+    maxSize: 5 * 1024 * 1024,
+    maxFiles: 6 - images.length,
+    disabled: uploading || !showImageUpload || images.length >= 6,
+  });
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
@@ -281,39 +303,54 @@ export function CreateThreadDialog({
                 </div>
               )}
 
-              {/* Upload button */}
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading || images.length >= 6}
-                  className="w-full"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <ImagePlus className="h-4 w-4 mr-2" />
-                      Add Images {images.length > 0 && `(${images.length}/6)`}
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Max 6 images, 5MB each
-                </p>
+              {/* Upload area with drag-drop */}
+              <div
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-4 transition-colors",
+                  isDragOver ? "border-primary bg-primary/5" : "border-border"
+                )}
+                {...dragProps}
+              >
+                {isDragOver ? (
+                  <div className="flex flex-col items-center gap-2 text-primary py-4">
+                    <Upload className="h-8 w-8 animate-bounce" />
+                    <span className="text-sm font-medium">Drop images here</span>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading || images.length >= 6}
+                      className="w-full"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <ImagePlus className="h-4 w-4 mr-2" />
+                          Add Images {images.length > 0 && `(${images.length}/6)`}
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      Drag & drop or click to upload. Max 6 images, 5MB each
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           )}

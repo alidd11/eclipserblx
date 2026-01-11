@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2 } from 'lucide-react';
+import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useDropZone } from '@/hooks/useDropZone';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Navigate } from 'react-router-dom';
@@ -298,14 +299,32 @@ function AdminChatContent() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File too large', { description: 'Maximum file size is 10MB' });
-        return;
-      }
-      setSelectedFile(file);
+      processFile(file);
     }
   };
+
+  // Process file (shared by file input and drag-drop)
+  const processFile = useCallback((file: File) => {
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large', { description: 'Maximum file size is 10MB' });
+      return;
+    }
+    setSelectedFile(file);
+  }, []);
+
+  // Drag and drop support
+  const { isDragOver, dragProps } = useDropZone({
+    onDrop: (files) => {
+      if (files[0]) {
+        processFile(files[0]);
+      }
+    },
+    accept: ['image/*', '.pdf', '.doc', '.docx', '.txt', '.zip'],
+    maxSize: 10 * 1024 * 1024,
+    maxFiles: 1,
+    disabled: isUploading,
+  });
 
   const handleSend = async () => {
     if (!newMessage.trim() && !selectedFile) return;
@@ -375,7 +394,22 @@ function AdminChatContent() {
         </div>
       </div>
 
-      <Card className="bg-card/50 backdrop-blur border-border/50">
+      <Card 
+        className={cn(
+          "bg-card/50 backdrop-blur border-border/50 relative transition-colors",
+          isDragOver && "border-primary border-2 bg-primary/5"
+        )}
+        {...dragProps}
+      >
+        {/* Drag overlay */}
+        {isDragOver && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg pointer-events-none">
+            <div className="flex flex-col items-center gap-2 text-primary">
+              <Upload className="h-12 w-12 animate-bounce" />
+              <span className="text-lg font-medium">Drop file here</span>
+            </div>
+          </div>
+        )}
         <CardHeader className="pb-3 px-3 sm:px-6">
           <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
