@@ -112,6 +112,7 @@ function StaffMessagesContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery({
@@ -385,8 +386,6 @@ function StaffMessagesContent() {
     };
   }, [user?.id, currentUserProfile]);
 
-  // Presence channel ref for typing
-  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Handle typing indicator
   const handleTyping = useCallback(() => {
