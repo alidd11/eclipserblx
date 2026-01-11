@@ -617,45 +617,20 @@ function AdminChatContent() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Header - responsive */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1 py-2 sm:py-4 flex-shrink-0">
+      {/* Header */}
+      <div className="flex items-center justify-between px-1 py-2 sm:py-4 flex-shrink-0">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold text-foreground">Admin Chat</h1>
-          <p className="text-xs sm:text-base text-muted-foreground">Private channel for administrators only</p>
+          <p className="text-xs sm:text-base text-muted-foreground">
+            Private channel for administrators only • Use @mentions to notify
+            {onlineAdmins.length > 0 && (
+              <span className="text-green-400 ml-2">• {onlineAdmins.length} online</span>
+            )}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Online admins indicator */}
-          {onlineAdmins.length > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {onlineAdmins.slice(0, 4).map((admin) => (
-                  <div
-                    key={admin.user_id}
-                    className="h-6 w-6 rounded-full bg-green-500/20 border-2 border-background flex items-center justify-center"
-                    title={admin.name}
-                  >
-                    <span className="text-[10px] font-medium text-green-400">
-                      {admin.name.slice(0, 1).toUpperCase()}
-                    </span>
-                  </div>
-                ))}
-                {onlineAdmins.length > 4 && (
-                  <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      +{onlineAdmins.length - 4}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span className="text-xs text-green-400 font-medium">
-                {onlineAdmins.length} online
-              </span>
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm hidden sm:inline">Admins Only</span>
-          </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Shield className="h-4 w-4" />
+          <span className="text-sm hidden sm:inline">Admins Only</span>
         </div>
       </div>
 
