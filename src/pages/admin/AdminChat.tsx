@@ -654,11 +654,7 @@ function AdminChatContent() {
         <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 flex-shrink-0">
           <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            Live Chat
-            <Badge variant="outline" className="ml-2 text-xs bg-red-500/20 text-red-400 border-red-500/30">
-              <Shield className="h-3 w-3 mr-1" />
-              Admin
-            </Badge>
+            Admin Chat
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -688,7 +684,7 @@ function AdminChatContent() {
                       )}
                     >
                       <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                        <AvatarFallback className="bg-red-500/20 text-red-400 text-xs">
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs">
                           {getInitials(message.user_id)}
                         </AvatarFallback>
                       </Avatar>
@@ -878,8 +874,8 @@ function AdminChatContent() {
                 value={newMessage}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Type @ to mention admins..."
-                className="flex-1 text-sm sm:text-base text-foreground"
+                placeholder="Type a message... Use @ to mention"
+                className="flex-1"
                 disabled={isUploading}
               />
               <Button
