@@ -498,27 +498,30 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-1 py-2 sm:py-4 flex-shrink-0">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Staff Messages</h1>
-          <p className="text-muted-foreground">Real-time communication with your team • Use @mentions to notify</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Staff Messages</h1>
+          <p className="text-xs sm:text-base text-muted-foreground">Real-time communication with your team • Use @mentions to notify</p>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="h-4 w-4" />
-          <span className="text-sm">Team Chat</span>
+          <span className="text-sm hidden sm:inline">Team Chat</span>
         </div>
       </div>
 
-      <Card className="bg-card/50 backdrop-blur border-border/50 relative">
-        <CardHeader className="pb-3 px-3 sm:px-6">
+      {/* Chat Card - fills remaining space */}
+      <Card className="bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden">
+        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 flex-shrink-0">
           <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             Staff Chat
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea ref={scrollRef} className="h-[calc(100vh-380px)] sm:h-[500px] px-3 sm:px-4">
+        <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* Messages area - fills available space */}
+          <ScrollArea ref={scrollRef} className="flex-1 px-3 sm:px-4">
             <div className="space-y-4 py-4">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
@@ -591,16 +594,16 @@ function StaffMessagesContent() {
 
           {/* Typing indicator */}
           {typingUsers.length > 0 && (
-            <div className="px-4 py-2 text-sm text-muted-foreground">
+            <div className="px-3 sm:px-4 py-2 text-sm text-muted-foreground flex-shrink-0">
               {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
             </div>
           )}
 
-          {/* Message input with mention suggestions */}
-          <div className="p-4 border-t border-border/50 relative">
+          {/* Message input with mention suggestions - fixed at bottom */}
+          <div className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && allSuggestions.length > 0 && (
-              <div className="absolute bottom-full left-4 right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
                 {allSuggestions.map((suggestion, index) => (
                   <button
                     key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}

@@ -381,12 +381,12 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="flex flex-col h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
       {/* Header - responsive */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1 py-2 sm:py-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Admin Chat</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Private channel for administrators only</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Admin Chat</h1>
+          <p className="text-xs sm:text-base text-muted-foreground">Private channel for administrators only</p>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Shield className="h-4 w-4" />
@@ -394,9 +394,10 @@ function AdminChatContent() {
         </div>
       </div>
 
+      {/* Chat Card - fills remaining space */}
       <Card 
         className={cn(
-          "bg-card/50 backdrop-blur border-border/50 relative transition-colors",
+          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors",
           isDragOver && "border-primary border-2 bg-primary/5"
         )}
         {...dragProps}
@@ -410,7 +411,7 @@ function AdminChatContent() {
             </div>
           </div>
         )}
-        <CardHeader className="pb-3 px-3 sm:px-6">
+        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 flex-shrink-0">
           <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             Live Chat
@@ -420,9 +421,9 @@ function AdminChatContent() {
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          {/* Messages area - responsive height */}
-          <ScrollArea ref={scrollRef} className="h-[calc(100vh-380px)] sm:h-[500px] px-3 sm:px-4">
+        <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* Messages area - fills available space */}
+          <ScrollArea ref={scrollRef} className="flex-1 px-3 sm:px-4">
             <div className="space-y-4 py-4">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
@@ -528,14 +529,14 @@ function AdminChatContent() {
 
           {/* Typing indicator */}
           {typingUsers.length > 0 && (
-            <div className="px-3 sm:px-4 py-2 text-sm text-muted-foreground">
+            <div className="px-3 sm:px-4 py-2 text-sm text-muted-foreground flex-shrink-0">
               {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
             </div>
           )}
 
           {/* Selected file preview */}
           {selectedFile && (
-            <div className="px-3 sm:px-4 py-2 border-t border-border/50">
+            <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
               <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
                 {selectedFile.type.startsWith('image/') ? (
                   <Image className="h-4 w-4 text-muted-foreground" />
@@ -558,8 +559,8 @@ function AdminChatContent() {
             </div>
           )}
 
-          {/* Message input - responsive */}
-          <div className="p-3 sm:p-4 border-t border-border/50">
+          {/* Message input - fixed at bottom */}
+          <div className="p-3 sm:p-4 border-t border-border/50 flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <div className="flex gap-2">
               {/* Hidden file input */}
               <input
