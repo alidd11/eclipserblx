@@ -1,13 +1,15 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Crown } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
+import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
 import { useCart } from '@/hooks/useCart';
+import { useSubscription, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
@@ -16,6 +18,7 @@ export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
+  const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, canClaimFree } = useSubscription();
   const [selectedImage, setSelectedImage] = useState(0);
 
   const handleRefresh = useCallback(async () => {
@@ -88,6 +91,10 @@ export default function ProductDetail() {
 
   const inCart = isInCart(product.id);
   const images = product.images?.length ? product.images : [null];
+  
+  const showMemberPrice = isSubscribed && isEligibleForDiscount(product.category_id);
+  const memberPrice = getMemberPrice(product.price, product.category_id);
+  const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id);
 
   const handleAddToCart = () => {
     if (!inCart) {
@@ -211,13 +218,35 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-                <div className="text-4xl font-bold text-primary">£{product.price.toFixed(2)}</div>
+                <div className="space-y-1">
+                  {showMemberPrice ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="text-4xl font-bold text-primary flex items-center gap-2">
+                          <Crown className="h-6 w-6" />
+                          £{memberPrice.toFixed(2)}
+                        </span>
+                        <Badge className="bg-primary/10 text-primary border-primary/20">
+                          {ECLIPSE_PLUS_DISCOUNT}% off
+                        </Badge>
+                      </div>
+                      <p className="text-lg text-muted-foreground line-through">£{product.price.toFixed(2)}</p>
+                    </>
+                  ) : (
+                    <div className="text-4xl font-bold text-primary">£{product.price.toFixed(2)}</div>
+                  )}
+                </div>
 
                 {product.description && (
                   <div 
                     className="prose prose-invert prose-sm max-w-none text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0 [&>p:empty]:h-4 [&>h2]:text-foreground [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:mt-6 [&>h2]:mb-3 [&>h3]:text-foreground [&>h3]:text-base [&>h3]:font-medium [&>h3]:mt-5 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>hr]:border-border [&>hr]:my-6 [&_br]:block [&_br]:content-[''] [&_br]:mt-4"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
+                )}
+
+                {/* Free Claim for Eclipse+ Members */}
+                {canClaimThisProduct && (
+                  <FreeProductClaim productId={product.id} productName={product.name} />
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-4">
