@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Briefcase, MapPin, Clock, Send, CheckCircle, AlertCircle, Mail, MessageSquare } from 'lucide-react';
+import { Briefcase, MapPin, Clock, Send, CheckCircle, AlertCircle, Mail, MessageSquare, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,40 +14,16 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { MainLayout } from '@/components/layout/MainLayout';
 import { jobApplicationSchema, emailCheckSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 
-const jobOpenings = [
-  {
-    id: 1,
-    title: 'Livery Designer',
-    type: 'Freelance',
-    location: 'Remote',
-    description: 'Create high-quality UK emergency service liveries for Roblox vehicles. Experience with Photoshop or similar required.',
-    requirements: ['Proficient in Photoshop/GIMP', 'Knowledge of UK emergency services', 'Portfolio of previous work', 'Attention to detail'],
-  },
-  {
-    id: 2,
-    title: 'Lua Script Developer',
-    type: 'Contract',
-    location: 'Remote',
-    description: 'Develop and maintain Lua scripts for Roblox roleplay servers. Focus on vehicle systems, MDT, and emergency services functionality.',
-    requirements: ['Strong Lua programming skills', 'Experience with Roblox Studio', 'Understanding of FiveM/Roblox RP mechanics', 'Git version control'],
-  },
-  {
-    id: 3,
-    title: 'Community Moderator',
-    type: 'Volunteer',
-    location: 'Remote',
-    description: 'Help maintain our Discord community, assist customers with questions, and ensure a positive environment for all members.',
-    requirements: ['Active Discord presence', 'Excellent communication skills', 'Previous moderation experience', 'Availability across UK timezone'],
-  },
-  {
-    id: 4,
-    title: '3D Vehicle Modeler',
-    type: 'Freelance',
-    location: 'Remote',
-    description: 'Create detailed 3D vehicle models optimized for Roblox. Focus on UK police, ambulance, and fire service vehicles.',
-    requirements: ['Blender or Maya proficiency', 'Experience with low-poly modeling', 'Understanding of Roblox import requirements', 'Texture mapping skills'],
-  },
-];
+interface JobChannel {
+  id: string;
+  title: string;
+  type: string;
+  location: string;
+  description: string;
+  requirements: string[];
+  is_active: boolean;
+  display_order: number;
+}
 
 interface ApplicationFormData {
   position: string;
@@ -377,6 +353,21 @@ function ApplicationStatusCheck() {
 export default function Jobs() {
   const [openDialog, setOpenDialog] = useState<string | null>(null);
 
+  // Fetch job channels from database
+  const { data: jobOpenings = [], isLoading } = useQuery({
+    queryKey: ['job-channels-public'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('job_channels')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      
+      if (error) throw error;
+      return data as JobChannel[];
+    },
+  });
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12">
@@ -403,6 +394,16 @@ export default function Jobs() {
         </motion.div>
 
         {/* Job Listings */}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : jobOpenings.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No open positions at the moment. Check back soon!</p>
+          </div>
+        ) : (
         <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
           {jobOpenings.map((job, index) => (
             <motion.div
@@ -465,6 +466,7 @@ export default function Jobs() {
             </motion.div>
           ))}
         </div>
+        )}
 
         {/* Benefits Section */}
         <motion.div
