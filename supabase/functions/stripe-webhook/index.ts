@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rateLimit.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+};
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -8,6 +14,20 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 serve(async (req) => {
+  // Rate limiting: 120 requests per minute (high volume from Stripe)
+  const clientIp = getClientIp(req);
+  const rateLimitResult = checkRateLimit({
+    maxRequests: 120,
+    windowMs: 60000,
+    identifier: clientIp,
+    action: 'stripe-webhook',
+  });
+
+  if (!rateLimitResult.allowed) {
+    logStep("Rate limit exceeded", { ip: clientIp });
+    return rateLimitResponse(rateLimitResult, corsHeaders);
+  }
+
   try {
     logStep("Webhook received");
 
