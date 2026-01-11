@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client'; import { safeStorage } from '@/lib/safeStorage';
 
 interface BiometricCredential {
   credentialId: string;
@@ -31,7 +31,7 @@ export function useBiometricAuth() {
 
   // Check if user has enrolled biometrics
   const checkEnrollment = useCallback((userId: string) => {
-    const stored = localStorage.getItem(`biometric_credential_${userId}`);
+    const stored = safeStorage.getItem(`biometric_credential_${userId}`);
     const enrolled = !!stored;
     setIsEnrolled(enrolled);
     return enrolled;
@@ -86,7 +86,7 @@ export function useBiometricAuth() {
         userId,
       };
 
-      localStorage.setItem(`biometric_credential_${userId}`, JSON.stringify(credentialData));
+      safeStorage.setItem(`biometric_credential_${userId}`, JSON.stringify(credentialData));
       setIsEnrolled(true);
 
       return { success: true };
@@ -102,7 +102,7 @@ export function useBiometricAuth() {
   const authenticateWithBiometric = useCallback(async (userId: string) => {
     if (!isSupported) return { success: false, error: 'Biometric not supported' };
 
-    const storedCredential = localStorage.getItem(`biometric_credential_${userId}`);
+    const storedCredential = safeStorage.getItem(`biometric_credential_${userId}`);
     if (!storedCredential) {
       return { success: false, error: 'No biometric credential found' };
     }
@@ -152,15 +152,15 @@ export function useBiometricAuth() {
 
   // Remove biometric enrollment
   const removeBiometric = useCallback((userId: string) => {
-    localStorage.removeItem(`biometric_credential_${userId}`);
+    safeStorage.removeItem(`biometric_credential_${userId}`);
     setIsEnrolled(false);
   }, []);
 
   // Get stored user ID for biometric login
   const getStoredUserId = useCallback(() => {
     // Look for any stored biometric credential
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < safeStorage.getLength(); i++) {
+      const key = safeStorage.key(i);
       if (key?.startsWith('biometric_credential_')) {
         const userId = key.replace('biometric_credential_', '');
         return userId;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Download, Smartphone, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile'; import { safeStorage } from '@/lib/safeStorage';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -40,7 +40,7 @@ export function AdminInstallPrompt() {
     setIsiOSDevice(isIOS());
 
     // Check if dismissed recently (within 3 days for admin)
-    const dismissedAt = localStorage.getItem('admin-pwa-prompt-dismissed');
+    const dismissedAt = safeStorage.getItem('admin-pwa-prompt-dismissed');
     if (dismissedAt) {
       const daysSinceDismissed = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60 * 24);
       if (daysSinceDismissed < 3) {
@@ -89,7 +89,7 @@ export function AdminInstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('admin-pwa-prompt-dismissed', Date.now().toString());
+    safeStorage.setItem('admin-pwa-prompt-dismissed', Date.now().toString());
   };
 
   if (isInstalled || !showPrompt || !isMobile) return null;
