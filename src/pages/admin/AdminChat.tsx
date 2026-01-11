@@ -825,7 +825,7 @@ function AdminChatContent() {
           )}
 
           {/* Message input - fixed at bottom */}
-          <div className="p-3 sm:p-4 border-t border-border/50 flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] relative">
+          <div className="p-3 sm:p-4 border-t border-border/50 flex-shrink-0 relative">
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && allSuggestions.length > 0 && (
               <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
@@ -900,12 +900,12 @@ function AdminChatContent() {
                 onClick={handleSend}
                 disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
                 size="icon"
-                className="flex-shrink-0"
+                className="flex-shrink-0 bg-primary hover:bg-primary/90"
               >
                 {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-4 w-4 text-primary-foreground" />
                 )}
               </Button>
             </div>
