@@ -330,6 +330,27 @@ function StaffMessagesContent() {
     return () => clearTimeout(timeoutId);
   }, [messages, scrollToBottom]);
 
+  // Keep the newest messages visible when the iOS keyboard opens/closes (PWA)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    let raf = 0;
+    const handleViewportChange = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => scrollToBottom());
+    };
+
+    vv.addEventListener('resize', handleViewportChange);
+    vv.addEventListener('scroll', handleViewportChange);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      vv.removeEventListener('resize', handleViewportChange);
+      vv.removeEventListener('scroll', handleViewportChange);
+    };
+  }, [scrollToBottom]);
+
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
@@ -612,7 +633,7 @@ function StaffMessagesContent() {
           <div className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && allSuggestions.length > 0 && (
-              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50 text-foreground">
                 {allSuggestions.map((suggestion, index) => (
                   <button
                     key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
@@ -663,6 +684,7 @@ function StaffMessagesContent() {
                 value={newMessage}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
+                onFocus={() => setTimeout(scrollToBottom, 0)}
                 placeholder="Type a message... Use @ to mention"
                 className="flex-1"
               />

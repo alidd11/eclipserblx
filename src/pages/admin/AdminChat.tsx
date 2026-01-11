@@ -368,6 +368,27 @@ function AdminChatContent() {
     return () => clearTimeout(timeoutId);
   }, [messages, scrollToBottom]);
 
+  // Keep the newest messages visible when the iOS keyboard opens/closes (PWA)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    let raf = 0;
+    const handleViewportChange = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => scrollToBottom());
+    };
+
+    vv.addEventListener('resize', handleViewportChange);
+    vv.addEventListener('scroll', handleViewportChange);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      vv.removeEventListener('resize', handleViewportChange);
+      vv.removeEventListener('scroll', handleViewportChange);
+    };
+  }, [scrollToBottom]);
+
   // Real-time subscription
   useEffect(() => {
     if (!isAdmin) return;
@@ -878,6 +899,7 @@ function AdminChatContent() {
                 value={newMessage}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
+                onFocus={() => setTimeout(scrollToBottom, 0)}
                 placeholder="Type a message... Use @ to mention"
                 className="flex-1"
                 disabled={isUploading}

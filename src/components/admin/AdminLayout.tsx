@@ -49,7 +49,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     
     const update = () => {
       const height = vv?.height ?? window.innerHeight;
+      const offsetTop = vv?.offsetTop ?? 0;
       document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
+      document.documentElement.style.setProperty('--vv-top', `${offsetTop}px`);
     };
     
     update();
@@ -193,7 +195,20 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="fixed inset-0 flex bg-background overflow-hidden">
+      <div
+        className={cn(
+          'fixed flex bg-background overflow-hidden',
+          isChatPage ? 'left-0 right-0 top-0' : 'inset-0'
+        )}
+        style={
+          isChatPage
+            ? {
+                height: 'calc(var(--vvh, 1vh) * 100)',
+                transform: 'translateY(var(--vv-top, 0px))',
+              }
+            : undefined
+        }
+      >
         {/* Desktop Sidebar */}
         {!isMobile && (
           <AdminSidebar 
@@ -289,7 +304,6 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
               'flex-1 min-h-0 bg-background',
               isChatPage ? 'overflow-hidden overscroll-none' : 'overflow-y-auto overscroll-contain'
             )}
-            style={isChatPage ? { height: 'calc(var(--vvh, 1vh) * 100)' } : undefined}
           >
             <div
               className={cn(
