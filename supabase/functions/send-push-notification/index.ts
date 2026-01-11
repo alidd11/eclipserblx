@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -422,6 +423,19 @@ async function sendWebPush(
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting: 60 requests per minute (internal API calls)
+  const clientIp = getClientIp(req);
+  const rateLimitResult = checkRateLimit({
+    ...RATE_LIMITS.API,
+    identifier: clientIp,
+    action: 'send-push-notification',
+  });
+
+  if (!rateLimitResult.allowed) {
+    console.log(`[Push] Rate limit exceeded for IP: ${clientIp}`);
+    return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
   try {
