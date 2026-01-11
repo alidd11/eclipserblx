@@ -190,7 +190,12 @@ function StaffMessagesContent() {
   });
 
   // Fetch all staff members for @mentions
-  const { data: allStaff = [] } = useQuery({
+  const {
+    data: allStaff = [],
+    isLoading: isStaffLoading,
+    error: staffError,
+    refetch: refetchStaff,
+  } = useQuery({
     queryKey: ['all-staff-members'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('list-staff');
@@ -449,8 +454,15 @@ function StaffMessagesContent() {
     handleTyping();
 
     // Check for @ mention trigger
-    // NOTE: iOS PWA can briefly report selectionStart as null; fall back to end-of-input.
-    const cursorPos = e.target.selectionStart ?? value.length;
+    // Safari/iOS PWA can report selectionStart as 0 during onChange; treat that as "end" for chat.
+    const rawCursorPos = e.target.selectionStart;
+    const cursorPos =
+      rawCursorPos == null
+        ? value.length
+        : rawCursorPos === 0 && value.length > 0
+          ? value.length
+          : rawCursorPos;
+
     const textBeforeCursor = value.slice(0, cursorPos);
     const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
 
@@ -466,7 +478,14 @@ function StaffMessagesContent() {
 
   // Insert mention into message
   const insertMention = (name: string) => {
-    const cursorPos = inputRef.current?.selectionStart ?? newMessage.length;
+    const rawCursorPos = inputRef.current?.selectionStart;
+    const cursorPos =
+      rawCursorPos == null
+        ? newMessage.length
+        : rawCursorPos === 0 && newMessage.length > 0
+          ? newMessage.length
+          : rawCursorPos;
+
     const textBeforeCursor = newMessage.slice(0, cursorPos);
     const textAfterCursor = newMessage.slice(cursorPos);
 
@@ -633,49 +652,61 @@ function StaffMessagesContent() {
           {/* Message input with mention suggestions - fixed at bottom */}
           <div className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Mention suggestions dropdown */}
-            {showMentionSuggestions && allSuggestions.length > 0 && (
-              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50 text-foreground">
-                {allSuggestions.map((suggestion, index) => (
+            {showMentionSuggestions && (
+              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[60]">
+                {isStaffLoading ? (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Loading team…</div>
+                ) : staffError ? (
                   <button
-                    key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
-                    className={cn(
-                      'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
-                      index === mentionIndex && 'bg-accent'
-                    )}
-                    onClick={() => {
-                      const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
-                      insertMention(name);
-                    }}
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
+                    onClick={() => refetchStaff()}
                   >
-                    {suggestion.type === 'group' ? (
-                      <>
-                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
-                          <AtSign className="h-3 w-3 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-sm">@{suggestion.name}</div>
-                          <div className="text-xs text-muted-foreground">{suggestion.description}</div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                            {(suggestion.display_name || suggestion.email)[0].toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-sm">
-                            @{getMentionHandle(suggestion)}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {suggestion.display_name || suggestion.email.split('@')[0]}
-                          </div>
-                        </div>
-                      </>
-                    )}
+                    Couldn’t load team members. Tap to retry.
                   </button>
-                ))}
+                ) : allSuggestions.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
+                ) : (
+                  allSuggestions.map((suggestion, index) => (
+                    <button
+                      key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                      className={cn(
+                        'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                        index === mentionIndex && 'bg-accent'
+                      )}
+                      onClick={() => {
+                        const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
+                        insertMention(name);
+                      }}
+                    >
+                      {suggestion.type === 'group' ? (
+                        <>
+                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                            <AtSign className="h-3 w-3 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">@{suggestion.name}</div>
+                            <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                              {(suggestion.display_name || suggestion.email)[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {suggestion.display_name || suggestion.email.split('@')[0]}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </button>
+                  ))
+                )}
               </div>
             )}
 
