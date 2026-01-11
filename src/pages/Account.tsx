@@ -366,12 +366,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 
-                {/* Info row */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                {/* Info rows - stacked */}
+                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                   {profile?.customer_id && (
                     <button
                       onClick={copyCustomerId}
-                      className="flex items-center gap-1.5 font-mono text-xs bg-muted/50 px-2 py-1 rounded hover:bg-muted transition-colors"
+                      className="flex items-center gap-1.5 font-mono text-xs bg-muted/50 px-2 py-1 rounded hover:bg-muted transition-colors w-fit"
                     >
                       {profile.customer_id}
                       {copiedId ? (
