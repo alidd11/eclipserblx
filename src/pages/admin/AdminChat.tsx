@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { KeyboardDebugOverlay } from '@/components/admin/KeyboardDebugOverlay';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -685,6 +686,7 @@ function AdminChatContent() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4">
+      <KeyboardDebugOverlay />
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
         <div>
