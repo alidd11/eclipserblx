@@ -234,6 +234,26 @@ async function processPayment(
   const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
   
   if (items.length > 0) {
+    // Fetch product details to get category info for bot detection
+    const productIds = items.map(item => item.id).filter(Boolean);
+    let productCategories: Record<string, string> = {};
+    
+    if (productIds.length > 0) {
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, category_id, categories(slug)")
+        .in("id", productIds);
+      
+      if (products) {
+        for (const p of products as unknown as Array<{ id: string; category_id: string; categories: { slug: string } | null }>) {
+          if (p.categories?.slug) {
+            productCategories[p.id] = p.categories.slug;
+          }
+        }
+      }
+      logStep("Fetched product categories", { productCategories });
+    }
+    
     const orderItems = items.map((item) => ({
       order_id: orderId,
       product_id: item.id || null,
@@ -255,7 +275,16 @@ async function processPayment(
       const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
       for (let i = 0; i < items.length; i++) {
         const item = items[i] as { id: string; name: string; price: number; category_slug?: string };
-        const isBotPurchase = item.category_slug === 'bots' || item.name.toLowerCase().includes('bot');
+        // Check category from metadata, database lookup, or name fallback
+        const dbCategorySlug = item.id ? productCategories[item.id] : undefined;
+        const isBotPurchase = item.category_slug === 'bots' || dbCategorySlug === 'bots' || item.name.toLowerCase().includes('bot');
+        
+        logStep("Checking if bot purchase", { 
+          product: item.name, 
+          metadataSlug: item.category_slug, 
+          dbSlug: dbCategorySlug, 
+          isBotPurchase 
+        });
         
         if (isBotPurchase && insertedItemsArray[i]) {
           // Generate unique installation code
