@@ -155,16 +155,23 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // Delay slightly to let iOS settle, then force recovery
       window.setTimeout(() => {
         const activeEl = document.activeElement;
-        const isInputFocused = activeEl && (
-          activeEl.tagName === 'INPUT' || 
-          activeEl.tagName === 'TEXTAREA' || 
-          (activeEl as HTMLElement).isContentEditable
-        );
+        const isInputFocused =
+          !!activeEl &&
+          (activeEl.tagName === 'INPUT' ||
+            activeEl.tagName === 'TEXTAREA' ||
+            (activeEl as HTMLElement).isContentEditable);
         // Only recover if we truly left all inputs
         if (!isInputFocused) {
+          // Force full height recovery
           html.style.setProperty('--vvh', `${window.innerHeight}px`);
+          // Also reset safe-bottom for chat pages
+          if (isChatPage) {
+            html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
+            html.dataset.chatKeyboard = 'closed';
+          }
         }
       }, 100);
+      // Also run sync for additional delayed passes
       sync();
     };
 
