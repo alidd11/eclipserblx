@@ -367,7 +367,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   return (
     <aside className={cn(
       "border-r border-border bg-card flex flex-col transition-all duration-300 shrink-0",
-      isMobileDrawer ? "h-full w-full pb-[env(safe-area-inset-bottom)]" : "h-screen sticky top-0",
+      isMobileDrawer ? "h-full w-full" : "h-screen sticky top-0",
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
     )}>
       {/* Header */}
