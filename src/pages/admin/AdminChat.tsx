@@ -684,7 +684,7 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4">
+    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4 pb-[env(safe-area-inset-bottom)] sm:pb-0">
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
         <div>
@@ -705,7 +705,7 @@ function AdminChatContent() {
       {/* Chat Card - fills remaining space, flush edge-to-edge on mobile */}
       <Card 
         className={cn(
-          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 border-b-0 sm:border-x sm:border-b sm:mb-4",
+          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 sm:border-x sm:border-b sm:mb-4",
           isDragOver && "border-primary border-2 bg-primary/5"
         )}
         {...dragProps}
@@ -885,7 +885,7 @@ function AdminChatContent() {
           {/* Message input - stays in flex flow, browser handles keyboard resize */}
           <div 
             ref={inputBarRef}
-            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-card/95 backdrop-blur-sm"
+            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card/95 backdrop-blur-sm"
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
