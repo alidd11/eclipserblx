@@ -765,7 +765,7 @@ function StaffMessagesContent() {
                 onKeyDown={handleKeyDown}
                 onFocus={() => setTimeout(scrollToBottom, 100)}
                 placeholder="Type a message... Use @ to mention"
-                className="flex-1"
+                className="flex-1 min-w-0"
               />
               <Button
                 onClick={handleSend}
