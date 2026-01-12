@@ -90,26 +90,50 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // iOS PWA/Safari can keep `position: fixed` anchored to the layout viewport,
   // which makes chat UIs not move up with the keyboard.
   // We use this var to size the fixed admin shell so it truly shrinks when the keyboard opens.
+  //
+  // iOS PWA is notoriously flaky about firing visualViewport events when the keyboard closes,
+  // so for chat pages we also run a lightweight sync loop.
   useEffect(() => {
-    const vv = window.visualViewport;
+    const html = document.documentElement;
 
     const setVars = () => {
+      const vv = window.visualViewport;
       const height = vv?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty('--vvh', `${height}px`);
+      html.style.setProperty('--vvh', `${height}px`);
     };
 
-    setVars();
+    const timeouts: number[] = [];
+    const sync = () => {
+      setVars();
+      // Run a few delayed passes to catch iOS keyboard animation + late viewport settling
+      timeouts.push(window.setTimeout(setVars, 50));
+      timeouts.push(window.setTimeout(setVars, 150));
+      timeouts.push(window.setTimeout(setVars, 300));
+    };
 
-    vv?.addEventListener('resize', setVars);
-    vv?.addEventListener('scroll', setVars);
-    window.addEventListener('resize', setVars);
+    const vv = window.visualViewport;
+
+    sync();
+
+    vv?.addEventListener('resize', sync);
+    vv?.addEventListener('scroll', sync);
+    window.addEventListener('resize', sync);
+    window.addEventListener('orientationchange', sync);
+    document.addEventListener('visibilitychange', sync);
+
+    // Extra hardening for chat pages: poll a bit to ensure --vvh recovers after keyboard close
+    const interval = isChatPage ? window.setInterval(setVars, 400) : undefined;
 
     return () => {
-      vv?.removeEventListener('resize', setVars);
-      vv?.removeEventListener('scroll', setVars);
-      window.removeEventListener('resize', setVars);
+      timeouts.forEach((t) => window.clearTimeout(t));
+      if (interval) window.clearInterval(interval);
+      vv?.removeEventListener('resize', sync);
+      vv?.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+      window.removeEventListener('orientationchange', sync);
+      document.removeEventListener('visibilitychange', sync);
     };
-  }, []);
+  }, [isChatPage]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
