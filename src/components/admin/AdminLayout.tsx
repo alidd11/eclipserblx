@@ -93,10 +93,23 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   //
   // iOS PWA is notoriously flaky about firing visualViewport events when the keyboard closes,
   // so for chat pages we also run a lightweight sync loop.
+  // Keep a CSS var in sync with the *visual* viewport height (chat pages only).
+  //
+  // IMPORTANT: This is intentionally scoped to chat pages.
+  // If `--vvh` ever gets stuck at a reduced value (iOS keyboard quirks), it can leave a visible
+  // “grey strip” at the bottom of non-chat admin pages. Limiting this logic prevents that.
   useEffect(() => {
     const html = document.documentElement;
+
+    // Hard reset whenever we are NOT on a chat page (extra safety)
+    if (!isChatPage) {
+      html.style.removeProperty('--vvh');
+      html.style.removeProperty('--chat-safe-bottom');
+      delete html.dataset.chatKeyboard;
+      return;
+    }
+
     let rafId = 0;
-    let lastActiveElement: Element | null = null;
 
     const setVars = () => {
       // ALWAYS get fresh visualViewport reference - it can change
@@ -117,33 +130,25 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // 1. Significant difference between layout and visual viewport
       // 2. AND an input element is focused
       // 3. OR visualViewport has a non-zero offsetTop (iOS quirk)
-      const keyboardOpen = isInputFocused && (Math.abs(innerH - vvHeight) > 50 || vvOffsetTop > 10);
+      const keyboardOpen =
+        isInputFocused && (Math.abs(innerH - vvHeight) > 50 || vvOffsetTop > 10);
 
       // When keyboard is open, use visualViewport (minus offsetTop for iOS scroll offset);
       // when closed, ALWAYS use innerHeight to ensure full recovery
-      const height = keyboardOpen ? (vvHeight - vvOffsetTop) : innerH;
+      const height = keyboardOpen ? vvHeight - vvOffsetTop : innerH;
       html.style.setProperty('--vvh', `${height}px`);
 
-      // iOS PWA quirk: `env(safe-area-inset-bottom)` can effectively behave like a large
-      // keyboard inset on some devices, which pushes our bottom bars up and reveals a "grey gap".
-      // For chat pages, clamp safe-bottom while the keyboard is open.
-      if (isChatPage) {
-        html.style.setProperty(
-          '--chat-safe-bottom',
-          keyboardOpen ? '0px' : 'env(safe-area-inset-bottom)'
-        );
-        html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
-      } else {
-        html.style.removeProperty('--chat-safe-bottom');
-        delete html.dataset.chatKeyboard;
-      }
+      // Clamp safe-bottom while the keyboard is open.
+      html.style.setProperty(
+        '--chat-safe-bottom',
+        keyboardOpen ? '0px' : 'env(safe-area-inset-bottom)'
+      );
+      html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
 
     // Force iOS to recalculate viewport by triggering a tiny scroll + reflow
     const forceViewportRecalc = () => {
-      // Force scroll to top to reset any iOS viewport offset
       window.scrollTo(0, 0);
-      // Force layout reflow by reading a layout property
       void document.documentElement.offsetHeight;
     };
 
@@ -158,15 +163,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         window.setTimeout(setVars, 500);
       });
     };
-    
+
     // Aggressive recovery on blur - when input loses focus, immediately reset to full height
-    const handleBlur = (e: FocusEvent) => {
-      lastActiveElement = e.target as Element;
-      
-      // Immediately force scroll reset to help iOS recalculate
+    const handleBlur = () => {
       forceViewportRecalc();
-      
-      // Multiple recovery passes with increasing delays for iOS keyboard animation
+
       const recoverHeight = () => {
         const activeEl = document.activeElement;
         const isInputFocused =
@@ -174,28 +175,21 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           (activeEl.tagName === 'INPUT' ||
             activeEl.tagName === 'TEXTAREA' ||
             (activeEl as HTMLElement).isContentEditable);
-        // Only recover if we truly left all inputs
+
         if (!isInputFocused) {
-          // Force scroll reset again
           forceViewportRecalc();
-          // Force full height recovery using innerHeight (NOT visualViewport which may be stale)
           html.style.setProperty('--vvh', `${window.innerHeight}px`);
-          // Also reset safe-bottom for chat pages
-          if (isChatPage) {
-            html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
-            html.dataset.chatKeyboard = 'closed';
-          }
+          html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
+          html.dataset.chatKeyboard = 'closed';
         }
       };
-      
-      // Run recovery at multiple intervals to catch iOS keyboard dismiss animation
+
       window.setTimeout(recoverHeight, 50);
       window.setTimeout(recoverHeight, 100);
       window.setTimeout(recoverHeight, 200);
       window.setTimeout(recoverHeight, 350);
       window.setTimeout(recoverHeight, 500);
-      
-      // Also run sync for additional delayed passes
+
       sync();
     };
 
@@ -210,31 +204,31 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     document.addEventListener('focusout', handleBlur);
 
     // Extra hardening for chat pages: poll frequently to ensure --vvh recovers after keyboard close
-    // Also run forceViewportRecalc periodically to catch stuck states
-    const interval = isChatPage ? window.setInterval(() => {
+    const interval = window.setInterval(() => {
       setVars();
-      // If no input is focused but we're still at reduced height, force recovery
+
       const activeEl = document.activeElement;
       const isInputFocused =
         !!activeEl &&
         (activeEl.tagName === 'INPUT' ||
           activeEl.tagName === 'TEXTAREA' ||
           (activeEl as HTMLElement).isContentEditable);
+
       if (!isInputFocused) {
         const currentVvh = parseInt(html.style.getPropertyValue('--vvh') || '0', 10);
         if (currentVvh > 0 && currentVvh < window.innerHeight - 20) {
-          // We're stuck at a reduced height - force recovery
           forceViewportRecalc();
           html.style.setProperty('--vvh', `${window.innerHeight}px`);
           html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
           html.dataset.chatKeyboard = 'closed';
         }
       }
-    }, 100) : undefined;
+    }, 100);
 
     return () => {
       cancelAnimationFrame(rafId);
-      if (interval) window.clearInterval(interval);
+      window.clearInterval(interval);
+
       vv?.removeEventListener('resize', sync);
       vv?.removeEventListener('scroll', sync);
       window.removeEventListener('resize', sync);
@@ -242,16 +236,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       document.removeEventListener('focusin', sync);
       document.removeEventListener('focusout', handleBlur);
 
-      // Force final recovery before cleanup
+      // Final recovery + cleanup
       forceViewportRecalc();
       html.style.setProperty('--vvh', `${window.innerHeight}px`);
-
-      // Clean up chat-only vars
       html.style.removeProperty('--chat-safe-bottom');
       delete html.dataset.chatKeyboard;
-
-      // CRITICAL: Reset --vvh to full viewport height when leaving chat pages
-      // This prevents the grey gap issue when keyboard was open during navigation
       html.style.removeProperty('--vvh');
     };
   }, [isChatPage]);
@@ -384,10 +373,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     <TooltipProvider delayDuration={0}>
       <div
         className={cn(
-          'fixed top-0 left-0 right-0 flex overflow-hidden',
-          isChatPage ? 'bg-card' : 'bg-background'
+          'fixed flex overflow-hidden',
+          isChatPage ? 'top-0 left-0 right-0 bg-card' : 'inset-0 bg-background'
         )}
-        style={{ height: 'var(--vvh, 100dvh)' }}
+        style={isChatPage ? { height: 'var(--vvh, 100dvh)' } : undefined}
       >
         {/* Desktop Sidebar */}
         {!isMobile && (
