@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
+import { Send, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
+import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -364,7 +365,61 @@ function AdminChatContent() {
       if (error) throw error;
     },
     onSuccess: () => {
+      hapticTap();
       queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
+    },
+  });
+
+  // Fetch reactions for all messages
+  const { data: reactions = [] } = useQuery({
+    queryKey: ['admin-chat-reactions', messages.map(m => m.id)],
+    queryFn: async () => {
+      if (!messages.length) return [];
+      const messageIds = messages.map(m => m.id);
+      
+      const { data, error } = await supabase
+        .from('admin_chat_reactions' as any)
+        .select('*')
+        .in('message_id', messageIds);
+      
+      if (error) throw error;
+      return (data || []) as unknown as ChatReaction[];
+    },
+    enabled: messages.length > 0 && isAdmin,
+  });
+
+  // Add reaction mutation
+  const addReactionMutation = useMutation({
+    mutationFn: async ({ messageId, emoji }: { messageId: string; emoji: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { error } = await supabase
+        .from('admin_chat_reactions' as any)
+        .insert({
+          message_id: messageId,
+          user_id: user.id,
+          emoji,
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-chat-reactions'] });
+    },
+  });
+
+  // Remove reaction mutation
+  const removeReactionMutation = useMutation({
+    mutationFn: async (reactionId: string) => {
+      const { error } = await supabase
+        .from('admin_chat_reactions' as any)
+        .delete()
+        .eq('id', reactionId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-chat-reactions'] });
     },
   });
 
@@ -430,7 +485,7 @@ function AdminChatContent() {
     };
   }, [isKeyboardVisible, scrollToBottom]);
 
-  // Real-time subscription
+  // Real-time subscription for messages and reactions
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -445,6 +500,17 @@ function AdminChatContent() {
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'admin_chat_reactions',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-chat-reactions'] });
         }
       )
       .subscribe();
@@ -856,14 +922,16 @@ function AdminChatContent() {
                           </div>
                         )}
                         
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity mt-1"
-                          onClick={() => deleteMessageMutation.mutate(message.id)}
-                        >
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </Button>
+                        <ChatMessageActions
+                          messageId={message.id}
+                          isOwn={isOwn}
+                          canDelete={true}
+                          reactions={reactions.filter(r => r.message_id === message.id)}
+                          currentUserId={user?.id || ''}
+                          onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
+                          onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
+                          onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
+                        />
                       </div>
                     </div>
                   );
