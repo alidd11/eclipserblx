@@ -670,7 +670,7 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden px-0 sm:px-4">
+    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4">
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
         <div>
