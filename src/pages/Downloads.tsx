@@ -52,6 +52,7 @@ interface BotInstallationCode {
   discord_invite: string | null;
   discord_guild_name: string | null;
   discord_guild_icon: string | null;
+  discord_member_count: number | null;
 }
 
 const BOT_CATEGORY_ID = '852838dc-adb6-4154-93fe-d1814fe46263';
@@ -80,7 +81,7 @@ export default function Downloads() {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('bot_installation_codes')
-        .select('id, installation_code, order_item_id, is_used, discord_invite, discord_guild_name, discord_guild_icon')
+        .select('id, installation_code, order_item_id, is_used, discord_invite, discord_guild_name, discord_guild_icon, discord_member_count')
         .eq('user_id', user.id);
       if (error) throw error;
       return data as BotInstallationCode[];
@@ -134,7 +135,8 @@ export default function Downloads() {
         .update({ 
           discord_invite: trimmed,
           discord_guild_name: validationResult.guildName || null,
-          discord_guild_icon: validationResult.guildIcon || null
+          discord_guild_icon: validationResult.guildIcon || null,
+          discord_member_count: validationResult.memberCount || null
         })
         .eq('id', codeId)
         .eq('user_id', user?.id);
@@ -143,7 +145,8 @@ export default function Downloads() {
       
       return { 
         guildName: validationResult.guildName,
-        guildIcon: validationResult.guildIcon
+        guildIcon: validationResult.guildIcon,
+        memberCount: validationResult.memberCount
       };
     },
     onSuccess: (data) => {
@@ -570,7 +573,7 @@ export default function Downloads() {
                                 </div>
                               ) : botCode.discord_invite ? (
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/30">
+                                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-indigo-500/10 border border-indigo-500/30">
                                     {botCode.discord_guild_icon ? (
                                       <img 
                                         src={botCode.discord_guild_icon} 
@@ -582,9 +585,16 @@ export default function Downloads() {
                                         <ExternalLink className="h-3 w-3 text-indigo-500" />
                                       </div>
                                     )}
-                                    <span className="text-xs font-medium text-indigo-500">
-                                      {botCode.discord_guild_name || 'Discord server linked'}
-                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="text-xs font-medium text-indigo-500">
+                                        {botCode.discord_guild_name || 'Discord server linked'}
+                                      </span>
+                                      {botCode.discord_member_count && (
+                                        <span className="text-[10px] text-indigo-400">
+                                          {botCode.discord_member_count.toLocaleString()} members
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                   <Button
                                     variant="ghost"
