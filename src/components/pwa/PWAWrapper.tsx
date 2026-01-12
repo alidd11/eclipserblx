@@ -7,6 +7,7 @@ import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
 import { useSwipePrevent } from '@/hooks/useSwipePrevent';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useOrientationLock } from '@/hooks/useOrientationLock';
 import { toast } from 'sonner';
 
 interface PWAWrapperProps {
@@ -34,6 +35,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   // Prevent swipe navigation in PWA
   useSwipePrevent();
+
+  // Lock orientation to portrait in PWA
+  useOrientationLock();
 
   // Dynamic theme color for PWA
   useThemeColor();
