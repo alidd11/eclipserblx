@@ -46,12 +46,25 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // Track visual viewport height for keyboard-aware layouts
   useEffect(() => {
     const vv = window.visualViewport;
+    let lastHeight = vv?.height ?? window.innerHeight;
     
     const update = () => {
       const height = vv?.height ?? window.innerHeight;
-      const offsetTop = vv?.offsetTop ?? 0;
+      const windowHeight = window.innerHeight;
+      
+      // Detect keyboard closing: height increased significantly
+      const keyboardClosing = height > lastHeight + 50;
+      
+      // If keyboard is closing or viewport matches window, reset offset to 0
+      // This prevents the "stuck up" issue after keyboard dismissal
+      const offsetTop = (keyboardClosing || Math.abs(height - windowHeight) < 50) 
+        ? 0 
+        : (vv?.offsetTop ?? 0);
+      
       document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
       document.documentElement.style.setProperty('--vv-top', `${offsetTop}px`);
+      
+      lastHeight = height;
     };
     
     update();
@@ -68,6 +81,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       window.removeEventListener('resize', update);
     };
   }, []);
+
+  // Reset viewport when inputs lose focus (keyboard closes)
+  useEffect(() => {
+    if (!isMobile || !isChatPage) return;
+    
+    const handleFocusOut = (e: FocusEvent) => {
+      // Check if new focus target is also an input
+      const relatedTarget = e.relatedTarget as HTMLElement | null;
+      const isInputFocused = relatedTarget?.tagName === 'INPUT' || 
+                             relatedTarget?.tagName === 'TEXTAREA';
+      
+      if (!isInputFocused) {
+        // No input focused anymore - keyboard closed
+        // Delay to allow keyboard animation to complete
+        setTimeout(() => {
+          document.documentElement.style.setProperty('--vv-top', '0px');
+          window.scrollTo(0, 0);
+        }, 150);
+      }
+    };
+    
+    document.addEventListener('focusout', handleFocusOut);
+    return () => document.removeEventListener('focusout', handleFocusOut);
+  }, [isMobile, isChatPage]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
