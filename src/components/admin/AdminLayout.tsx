@@ -44,36 +44,28 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   }, []);
 
   // Track visual viewport height for keyboard-aware layouts
+  // We always set --vvh so the chat container can be sized reliably across iOS Safari/PWA.
+  // When the keyboard is closed we pin --vv-top to 0 to avoid "stuck" offsets.
   useEffect(() => {
     const vv = window.visualViewport;
-    
+
     const update = () => {
-      if (!vv) return;
-      
-      const vvHeight = vv.height;
+      const height = vv?.height ?? window.innerHeight;
       const windowHeight = window.innerHeight;
-      
-      // Check if keyboard is likely open (visual viewport significantly smaller than window)
-      const keyboardOpen = windowHeight - vvHeight > 100;
-      
-      if (keyboardOpen) {
-        // Keyboard is open - use visual viewport dimensions
-        document.documentElement.style.setProperty('--vvh', `${vvHeight * 0.01}px`);
-        document.documentElement.style.setProperty('--vv-top', `${vv.offsetTop}px`);
-      } else {
-        // Keyboard is closed - clear custom values to use CSS defaults (1dvh)
-        document.documentElement.style.removeProperty('--vvh');
-        document.documentElement.style.setProperty('--vv-top', '0px');
-      }
+
+      // Keyboard is likely open if the visible viewport is significantly smaller
+      const keyboardOpen = windowHeight - height > 100;
+
+      document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
+      document.documentElement.style.setProperty('--vv-top', keyboardOpen ? `${vv?.offsetTop ?? 0}px` : '0px');
     };
-    
+
     update();
-    
-    // Listen to both resize and scroll events on visual viewport
+
     vv?.addEventListener('resize', update);
     vv?.addEventListener('scroll', update);
     window.addEventListener('resize', update);
-    
+
     return () => {
       vv?.removeEventListener('resize', update);
       vv?.removeEventListener('scroll', update);
@@ -86,22 +78,29 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // visual jumping on mobile. The visualViewport API handles positioning naturally.
   useEffect(() => {
     if (!isMobile || !isChatPage) return;
-    
+
+    const syncViewportVars = () => {
+      const vv = window.visualViewport;
+      const height = vv?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
+      document.documentElement.style.setProperty('--vv-top', '0px');
+    };
+
     const handleFocusOut = (e: FocusEvent) => {
       // Check if new focus target is also an input
       const relatedTarget = e.relatedTarget as HTMLElement | null;
-      const isInputFocused = relatedTarget?.tagName === 'INPUT' || 
-                             relatedTarget?.tagName === 'TEXTAREA';
-      
+      const isInputFocused = relatedTarget?.tagName === 'INPUT' ||
+        relatedTarget?.tagName === 'TEXTAREA';
+
       if (!isInputFocused) {
-        // No input focused anymore - keyboard closed
-        // Only reset the CSS variable, let visualViewport handle the rest naturally
-        setTimeout(() => {
-          document.documentElement.style.setProperty('--vv-top', '0px');
-        }, 150);
+        // Keyboard is closing. iOS sometimes misses a final visualViewport resize,
+        // so we sync a few times during the dismissal animation.
+        setTimeout(syncViewportVars, 120);
+        setTimeout(syncViewportVars, 260);
+        setTimeout(syncViewportVars, 520);
       }
     };
-    
+
     document.addEventListener('focusout', handleFocusOut);
     return () => document.removeEventListener('focusout', handleFocusOut);
   }, [isMobile, isChatPage]);
@@ -233,14 +232,15 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   return (
     <TooltipProvider delayDuration={0}>
       <div
-        className="fixed inset-0 flex bg-background overflow-hidden"
+        className={cn(
+          'fixed flex bg-background overflow-hidden',
+          isChatPage ? 'left-0 right-0 top-0' : 'inset-0'
+        )}
         style={
           isChatPage
             ? {
-                // Use visual viewport height for keyboard-aware sizing
-                // Falls back to 100dvh when --vvh isn't set or keyboard is closed
-                height: 'calc(var(--vvh, 1dvh) * 100)',
-                transform: 'translateY(var(--vv-top, 0px))',
+                // Always rely on --vvh (kept up to date by visualViewport)
+                height: 'calc(var(--vvh, 1vh) * 100)',
               }
             : undefined
         }
