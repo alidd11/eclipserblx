@@ -97,41 +97,41 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     const html = document.documentElement;
 
     const setVars = () => {
+      // ALWAYS get fresh visualViewport reference - it can change
       const vv = window.visualViewport;
       const height = vv?.height ?? window.innerHeight;
       html.style.setProperty('--vvh', `${height}px`);
     };
 
-    const timeouts: number[] = [];
     const sync = () => {
       setVars();
       // Run a few delayed passes to catch iOS keyboard animation + late viewport settling
-      timeouts.push(window.setTimeout(setVars, 50));
-      timeouts.push(window.setTimeout(setVars, 150));
-      timeouts.push(window.setTimeout(setVars, 300));
+      window.setTimeout(setVars, 50);
+      window.setTimeout(setVars, 150);
+      window.setTimeout(setVars, 300);
     };
-
-    const vv = window.visualViewport;
 
     sync();
 
+    const vv = window.visualViewport;
     vv?.addEventListener('resize', sync);
     vv?.addEventListener('scroll', sync);
     window.addEventListener('resize', sync);
     window.addEventListener('orientationchange', sync);
-    document.addEventListener('visibilitychange', sync);
+    document.addEventListener('focusin', sync);
+    document.addEventListener('focusout', sync);
 
-    // Extra hardening for chat pages: poll a bit to ensure --vvh recovers after keyboard close
-    const interval = isChatPage ? window.setInterval(setVars, 400) : undefined;
+    // Extra hardening for chat pages: poll frequently to ensure --vvh recovers after keyboard close
+    const interval = isChatPage ? window.setInterval(setVars, 200) : undefined;
 
     return () => {
-      timeouts.forEach((t) => window.clearTimeout(t));
       if (interval) window.clearInterval(interval);
       vv?.removeEventListener('resize', sync);
       vv?.removeEventListener('scroll', sync);
       window.removeEventListener('resize', sync);
       window.removeEventListener('orientationchange', sync);
-      document.removeEventListener('visibilitychange', sync);
+      document.removeEventListener('focusin', sync);
+      document.removeEventListener('focusout', sync);
     };
   }, [isChatPage]);
 
