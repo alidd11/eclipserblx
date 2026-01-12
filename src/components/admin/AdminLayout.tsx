@@ -103,24 +103,38 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const vv = window.visualViewport;
       const vvHeight = vv?.height ?? window.innerHeight;
       const innerH = window.innerHeight;
-      
+
       // Check if any input is currently focused
       const activeEl = document.activeElement;
-      const isInputFocused = activeEl && (
-        activeEl.tagName === 'INPUT' || 
-        activeEl.tagName === 'TEXTAREA' || 
-        (activeEl as HTMLElement).isContentEditable
-      );
-      
+      const isInputFocused =
+        !!activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          (activeEl as HTMLElement).isContentEditable);
+
       // Detect if keyboard is likely open:
       // 1. Significant difference between layout and visual viewport
       // 2. AND an input element is focused
       const keyboardOpen = isInputFocused && Math.abs(innerH - vvHeight) > 50;
-      
+
       // When keyboard is open, use visualViewport; when closed, ALWAYS use innerHeight
       // This ensures we recover to full height when keyboard closes
       const height = keyboardOpen ? vvHeight : innerH;
       html.style.setProperty('--vvh', `${height}px`);
+
+      // iOS PWA quirk: `env(safe-area-inset-bottom)` can effectively behave like a large
+      // keyboard inset on some devices, which pushes our bottom bars up and reveals a "grey gap".
+      // For chat pages, clamp safe-bottom while the keyboard is open.
+      if (isChatPage) {
+        html.style.setProperty(
+          '--chat-safe-bottom',
+          keyboardOpen ? '0px' : 'env(safe-area-inset-bottom)'
+        );
+        html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
+      } else {
+        html.style.removeProperty('--chat-safe-bottom');
+        delete html.dataset.chatKeyboard;
+      }
     };
 
     const sync = () => {
@@ -176,7 +190,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       window.removeEventListener('orientationchange', sync);
       document.removeEventListener('focusin', sync);
       document.removeEventListener('focusout', handleBlur);
-      
+
+      // Clean up chat-only vars
+      html.style.removeProperty('--chat-safe-bottom');
+      delete html.dataset.chatKeyboard;
+
       // CRITICAL: Reset --vvh to full viewport height when leaving chat pages
       // This prevents the grey gap issue when keyboard was open during navigation
       html.style.removeProperty('--vvh');
