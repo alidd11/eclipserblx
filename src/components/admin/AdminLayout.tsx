@@ -96,20 +96,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   useEffect(() => {
     const html = document.documentElement;
     let rafId = 0;
+    let lastActiveElement: Element | null = null;
 
     const setVars = () => {
       // ALWAYS get fresh visualViewport reference - it can change
       const vv = window.visualViewport;
-      // Use the LARGER of visualViewport.height and innerHeight when keyboard is closed
-      // to prevent getting stuck at keyboard-open height
       const vvHeight = vv?.height ?? window.innerHeight;
       const innerH = window.innerHeight;
       
-      // Detect if keyboard is likely open (significant difference between layout and visual viewport)
-      const keyboardOpen = Math.abs(innerH - vvHeight) > 100;
+      // Check if any input is currently focused
+      const activeEl = document.activeElement;
+      const isInputFocused = activeEl && (
+        activeEl.tagName === 'INPUT' || 
+        activeEl.tagName === 'TEXTAREA' || 
+        (activeEl as HTMLElement).isContentEditable
+      );
       
-      // When keyboard is open, use visualViewport; when closed, use the max to recover
-      const height = keyboardOpen ? vvHeight : Math.max(vvHeight, innerH);
+      // Detect if keyboard is likely open:
+      // 1. Significant difference between layout and visual viewport
+      // 2. AND an input element is focused
+      const keyboardOpen = isInputFocused && Math.abs(innerH - vvHeight) > 50;
+      
+      // When keyboard is open, use visualViewport; when closed, ALWAYS use innerHeight
+      // This ensures we recover to full height when keyboard closes
+      const height = keyboardOpen ? vvHeight : innerH;
       html.style.setProperty('--vvh', `${height}px`);
     };
 
@@ -124,6 +134,25 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         window.setTimeout(setVars, 500);
       });
     };
+    
+    // Aggressive recovery on blur - when input loses focus, immediately reset to full height
+    const handleBlur = (e: FocusEvent) => {
+      lastActiveElement = e.target as Element;
+      // Delay slightly to let iOS settle, then force recovery
+      window.setTimeout(() => {
+        const activeEl = document.activeElement;
+        const isInputFocused = activeEl && (
+          activeEl.tagName === 'INPUT' || 
+          activeEl.tagName === 'TEXTAREA' || 
+          (activeEl as HTMLElement).isContentEditable
+        );
+        // Only recover if we truly left all inputs
+        if (!isInputFocused) {
+          html.style.setProperty('--vvh', `${window.innerHeight}px`);
+        }
+      }, 100);
+      sync();
+    };
 
     sync();
 
@@ -133,7 +162,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     window.addEventListener('resize', sync);
     window.addEventListener('orientationchange', sync);
     document.addEventListener('focusin', sync);
-    document.addEventListener('focusout', sync);
+    document.addEventListener('focusout', handleBlur);
 
     // Extra hardening for chat pages: poll frequently to ensure --vvh recovers after keyboard close
     const interval = isChatPage ? window.setInterval(setVars, 100) : undefined;
@@ -146,7 +175,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       window.removeEventListener('resize', sync);
       window.removeEventListener('orientationchange', sync);
       document.removeEventListener('focusin', sync);
-      document.removeEventListener('focusout', sync);
+      document.removeEventListener('focusout', handleBlur);
       
       // CRITICAL: Reset --vvh to full viewport height when leaving chat pages
       // This prevents the grey gap issue when keyboard was open during navigation
