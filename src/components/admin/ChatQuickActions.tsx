@@ -89,7 +89,7 @@ export function ChatQuickActions({
           <div className="relative">
             <AtSign className="h-4 w-4 text-muted-foreground" />
             {onlineCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-3 w-3 flex items-center justify-center bg-green-500 text-[8px] text-white font-bold rounded-full">
+              <span className="absolute -top-1 -right-1 h-3 w-3 flex items-center justify-center bg-success text-success-foreground text-[8px] font-bold rounded-full">
                 {onlineCount > 9 ? '9+' : onlineCount}
               </span>
             )}
