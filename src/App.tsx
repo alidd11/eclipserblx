@@ -69,6 +69,7 @@ const AdminSubscribers = lazy(() => import("./pages/admin/Subscribers"));
 const AdminIpBans = lazy(() => import("./pages/admin/IpBans"));
 const AdminReferrals = lazy(() => import("./pages/admin/Referrals"));
 const AdminBotCodes = lazy(() => import("./pages/admin/BotCodes"));
+const AdminBotRequests = lazy(() => import("./pages/admin/BotRequests"));
 const AdminContactMessages = lazy(() => import("./pages/admin/ContactMessages"));
 const AdminForumReports = lazy(() => import("./pages/admin/ForumReports"));
 const AdminArchivedApplications = lazy(() => import("./pages/admin/ArchivedApplications"));
@@ -163,6 +164,7 @@ const App = () => (
                   <Route path="/admin/ip-bans" element={<AdminIpBans />} />
                   <Route path="/admin/referrals" element={<AdminReferrals />} />
                   <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
+                  <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
                   <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
                   <Route path="/admin/forum-reports" element={<AdminForumReports />} />
                   <Route path="/admin/archived-applications" element={<AdminArchivedApplications />} />
