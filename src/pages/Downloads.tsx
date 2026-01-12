@@ -68,6 +68,7 @@ export default function Downloads() {
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [editingDiscord, setEditingDiscord] = useState<string | null>(null);
+  const [validatingDiscord, setValidatingDiscord] = useState(false);
   const [discordInput, setDiscordInput] = useState('');
 
   // Fetch bot installation codes for the user
@@ -88,27 +89,58 @@ export default function Downloads() {
   // Mutation to update discord invite
   const updateDiscordMutation = useMutation({
     mutationFn: async ({ codeId, discordInvite }: { codeId: string; discordInvite: string }) => {
-      // Basic validation for Discord invite link
       const trimmed = discordInvite.trim();
-      if (trimmed && !trimmed.match(/^https?:\/\/(discord\.(gg|com\/invite)|discordapp\.com\/invite)\//i)) {
+      
+      // Allow clearing the invite
+      if (!trimmed) {
+        const { error } = await supabase
+          .from('bot_installation_codes')
+          .update({ discord_invite: null })
+          .eq('id', codeId)
+          .eq('user_id', user?.id);
+        if (error) throw error;
+        return;
+      }
+      
+      // Basic format validation
+      if (!trimmed.match(/^https?:\/\/(discord\.(gg|com\/invite)|discordapp\.com\/invite)\//i)) {
         throw new Error('Please enter a valid Discord invite link');
       }
       
+      // Validate that the invite is permanent via edge function
+      setValidatingDiscord(true);
+      const { data: validationResult, error: validationError } = await supabase.functions.invoke('validate-discord-invite', {
+        body: { inviteUrl: trimmed },
+      });
+      setValidatingDiscord(false);
+      
+      if (validationError) {
+        throw new Error('Failed to validate invite link');
+      }
+      
+      if (!validationResult.valid) {
+        throw new Error(validationResult.error || 'Invalid invite link');
+      }
+      
+      // Save the validated invite
       const { error } = await supabase
         .from('bot_installation_codes')
-        .update({ discord_invite: trimmed || null })
+        .update({ discord_invite: trimmed })
         .eq('id', codeId)
         .eq('user_id', user?.id);
       
       if (error) throw error;
+      
+      return { guildName: validationResult.guildName };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-bot-codes'] });
-      toast.success('Discord invite saved!');
+      toast.success(data?.guildName ? `Discord server "${data.guildName}" linked!` : 'Discord invite saved!');
       setEditingDiscord(null);
       setDiscordInput('');
     },
     onError: (error: any) => {
+      setValidatingDiscord(false);
       toast.error(error.message || 'Failed to save Discord invite');
     },
   });
@@ -483,39 +515,45 @@ export default function Downloads() {
                           {isBot && botCode && (
                             <div className="space-y-2 pt-1">
                               {editingDiscord === botCode.id ? (
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    placeholder="https://discord.gg/your-invite"
-                                    value={discordInput}
-                                    onChange={(e) => setDiscordInput(e.target.value)}
-                                    className="flex-1 text-sm h-8"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 px-2"
-                                    onClick={() => {
-                                      setEditingDiscord(null);
-                                      setDiscordInput('');
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    className="h-8 px-2"
-                                    onClick={() => updateDiscordMutation.mutate({ 
-                                      codeId: botCode.id, 
-                                      discordInvite: discordInput 
-                                    })}
-                                    disabled={updateDiscordMutation.isPending}
-                                  >
-                                    {updateDiscordMutation.isPending ? (
-                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ) : (
-                                      <Save className="h-3.5 w-3.5" />
-                                    )}
-                                  </Button>
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      placeholder="https://discord.gg/your-invite"
+                                      value={discordInput}
+                                      onChange={(e) => setDiscordInput(e.target.value)}
+                                      className="flex-1 text-sm h-8"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 px-2"
+                                      onClick={() => {
+                                        setEditingDiscord(null);
+                                        setDiscordInput('');
+                                      }}
+                                      disabled={updateDiscordMutation.isPending}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      className="h-8 px-2"
+                                      onClick={() => updateDiscordMutation.mutate({ 
+                                        codeId: botCode.id, 
+                                        discordInvite: discordInput 
+                                      })}
+                                      disabled={updateDiscordMutation.isPending}
+                                    >
+                                      {updateDiscordMutation.isPending ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <Save className="h-3.5 w-3.5" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    ⚠️ Must be a permanent invite (never expires, unlimited uses)
+                                  </p>
                                 </div>
                               ) : botCode.discord_invite ? (
                                 <div className="flex items-center gap-2 flex-wrap">
