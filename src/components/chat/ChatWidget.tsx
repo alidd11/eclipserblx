@@ -862,6 +862,11 @@ export function ChatWidget() {
                     onChange={(e) => setIssueDescription(e.target.value)}
                     rows={3}
                     className="resize-none text-sm"
+                    autoComplete="off"
+                    style={{ 
+                      WebkitUserSelect: 'text',
+                      userSelect: 'text',
+                    }}
                   />
                 </div>
                 
@@ -1053,6 +1058,13 @@ export function ChatWidget() {
                         handleTyping();
                       }}
                       onKeyPress={handleKeyPress}
+                      className="flex-1"
+                      autoComplete="off"
+                      autoCorrect="on"
+                      style={{ 
+                        WebkitUserSelect: 'text',
+                        userSelect: 'text',
+                      }}
                     />
                     <Button
                       size="icon"
