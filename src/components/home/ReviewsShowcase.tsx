@@ -18,6 +18,9 @@ interface Review {
   created_at: string;
   user_id: string;
   product_id: string | null;
+  is_external: boolean | null;
+  external_source: string | null;
+  external_reviewer_name: string | null;
   profiles: { display_name: string | null } | null;
   products: { name: string } | null;
 }
@@ -40,6 +43,9 @@ export function ReviewsShowcase() {
           created_at,
           user_id,
           product_id,
+          is_external,
+          external_source,
+          external_reviewer_name,
           products:product_id(name)
         `)
         .eq('is_approved', true)
@@ -49,18 +55,22 @@ export function ReviewsShowcase() {
 
       if (error) throw error;
 
-      // Fetch profiles separately
-      const userIds = reviewsData?.map(r => r.user_id) || [];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name')
-        .in('user_id', userIds);
+      // Fetch profiles for non-external reviews
+      const userIds = reviewsData?.filter(r => !r.is_external).map(r => r.user_id) || [];
+      const { data: profiles } = userIds.length > 0 
+        ? await supabase
+            .from('profiles')
+            .select('user_id, display_name')
+            .in('user_id', userIds)
+        : { data: [] };
 
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      const profileMap = new Map<string, { user_id: string; display_name: string | null }>(
+        profiles?.map(p => [p.user_id, p] as [string, { user_id: string; display_name: string | null }]) || []
+      );
 
       return reviewsData?.map(review => ({
         ...review,
-        profiles: profileMap.get(review.user_id) || null,
+        profiles: review.is_external ? null : (profileMap.get(review.user_id) || null),
       })) as Review[];
     },
   });
@@ -136,9 +146,16 @@ export function ReviewsShowcase() {
 
                   <div className="mt-auto pt-4 border-t border-border">
                     <p className="font-medium text-sm">
-                      {review.profiles?.display_name || 'Anonymous'}
+                      {review.is_external 
+                        ? review.external_reviewer_name || 'Anonymous'
+                        : review.profiles?.display_name || 'Anonymous'}
                     </p>
-                    {review.products?.name && (
+                    {review.is_external && review.external_source && (
+                      <p className="text-xs text-muted-foreground">
+                        via {review.external_source}
+                      </p>
+                    )}
+                    {!review.is_external && review.products?.name && (
                       <p className="text-xs text-muted-foreground">
                         Reviewed: {review.products.name}
                       </p>
