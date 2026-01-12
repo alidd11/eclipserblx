@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -60,6 +60,7 @@ const navGroups: NavGroup[] = [
       { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
       { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
+      { title: 'Bot Requests', icon: Bell, href: '/admin/bot-requests', roles: ['admin'] },
       { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin'] },
     ],
   },
