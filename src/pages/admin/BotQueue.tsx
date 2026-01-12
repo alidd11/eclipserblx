@@ -136,12 +136,41 @@ export default function BotQueue() {
     };
   }, [queryClient]);
 
+  // Send status update email
+  const sendStatusEmail = async (request: BotInstallationCode, status: BotStatus) => {
+    if (!request.profile?.email) {
+      console.log('[BotQueue] No customer email found, skipping notification');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('send-bot-status-update', {
+        body: {
+          customerEmail: request.profile.email,
+          productName: request.product_name,
+          installationCode: request.installation_code,
+          status: status,
+          discordGuildName: request.discord_guild_name || undefined,
+        },
+      });
+
+      if (error) {
+        console.error('[BotQueue] Failed to send status email:', error);
+      } else {
+        console.log('[BotQueue] Status email sent successfully');
+      }
+    } catch (err) {
+      console.error('[BotQueue] Error sending status email:', err);
+    }
+  };
+
   // Update status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status, additionalFields = {} }: { 
+    mutationFn: async ({ id, status, additionalFields = {}, request }: { 
       id: string; 
       status: BotStatus;
       additionalFields?: Record<string, any>;
+      request?: BotInstallationCode;
     }) => {
       const updateData: Record<string, any> = { status, ...additionalFields };
       
@@ -159,6 +188,12 @@ export default function BotQueue() {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Send email notification for status changes
+      const targetRequest = request || selectedRequest;
+      if (targetRequest && ['verified', 'installing', 'completed'].includes(status)) {
+        await sendStatusEmail(targetRequest, status);
+      }
 
       // If verified, notify admins via admin chat
       if (status === 'verified' && selectedRequest) {
@@ -338,7 +373,7 @@ export default function BotQueue() {
               <Button 
                 size="sm" 
                 className="flex-1"
-                onClick={() => updateStatusMutation.mutate({ id: request.id, status: 'installing' })}
+                onClick={() => updateStatusMutation.mutate({ id: request.id, status: 'installing', request })}
                 disabled={updateStatusMutation.isPending}
               >
                 <Play className="h-4 w-4 mr-1" />
@@ -349,7 +384,7 @@ export default function BotQueue() {
               <Button 
                 size="sm" 
                 className="flex-1"
-                onClick={() => updateStatusMutation.mutate({ id: request.id, status: 'completed' })}
+                onClick={() => updateStatusMutation.mutate({ id: request.id, status: 'completed', request })}
                 disabled={updateStatusMutation.isPending}
               >
                 <Check className="h-4 w-4 mr-1" />
