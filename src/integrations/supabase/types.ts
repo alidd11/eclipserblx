@@ -175,6 +175,7 @@ export type Database = {
           discord_guild_icon: string | null
           discord_guild_name: string | null
           discord_invite: string | null
+          discord_member_count: number | null
           expires_at: string
           id: string
           installation_code: string
@@ -194,6 +195,7 @@ export type Database = {
           discord_guild_icon?: string | null
           discord_guild_name?: string | null
           discord_invite?: string | null
+          discord_member_count?: number | null
           expires_at?: string
           id?: string
           installation_code: string
@@ -213,6 +215,7 @@ export type Database = {
           discord_guild_icon?: string | null
           discord_guild_name?: string | null
           discord_invite?: string | null
+          discord_member_count?: number | null
           expires_at?: string
           id?: string
           installation_code?: string

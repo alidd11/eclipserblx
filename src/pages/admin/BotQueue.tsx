@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Clock, CheckCircle2, Loader2, Package, User, AlertCircle,
-  Play, Check, Eye, EyeOff, ShieldCheck, ExternalLink
+  Play, Check, Eye, EyeOff, ShieldCheck, ExternalLink, Users
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -37,6 +37,9 @@ interface BotInstallationCode {
   processed_at: string | null;
   status: BotStatus;
   discord_invite: string | null;
+  discord_guild_name: string | null;
+  discord_guild_icon: string | null;
+  discord_member_count: number | null;
   profile?: {
     customer_id: string | null;
     display_name: string | null;
@@ -266,17 +269,43 @@ export default function BotQueue() {
             </div>
           )}
 
-          {/* Discord Invite Link */}
+          {/* Discord Server Info */}
           {request.discord_invite && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
-              onClick={() => window.open(request.discord_invite!, '_blank')}
-            >
-              <ExternalLink className="h-3.5 w-3.5 mr-2" />
-              Join Discord Server
-            </Button>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2 rounded-md bg-indigo-500/10 border border-indigo-500/30">
+                {request.discord_guild_icon ? (
+                  <img 
+                    src={request.discord_guild_icon} 
+                    alt={request.discord_guild_name || 'Server'} 
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-indigo-500/30 flex items-center justify-center">
+                    <ExternalLink className="h-4 w-4 text-indigo-500" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-indigo-500 truncate">
+                    {request.discord_guild_name || 'Discord server'}
+                  </p>
+                  {request.discord_member_count && (
+                    <p className="text-xs text-indigo-400 flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {request.discord_member_count.toLocaleString()} members
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
+                onClick={() => window.open(request.discord_invite!, '_blank')}
+              >
+                <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                Join Server
+              </Button>
+            </div>
           )}
 
           {!request.discord_invite && request.status !== 'completed' && (
@@ -510,6 +539,30 @@ export default function BotQueue() {
                   <div className="pt-2 border-t border-border">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-muted-foreground">Discord Server</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/30 mb-2">
+                      {selectedRequest.discord_guild_icon ? (
+                        <img 
+                          src={selectedRequest.discord_guild_icon} 
+                          alt={selectedRequest.discord_guild_name || 'Server'} 
+                          className="w-10 h-10 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-indigo-500/30 flex items-center justify-center">
+                          <ExternalLink className="h-5 w-5 text-indigo-500" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-indigo-500 truncate">
+                          {selectedRequest.discord_guild_name || 'Discord server'}
+                        </p>
+                        {selectedRequest.discord_member_count && (
+                          <p className="text-sm text-indigo-400 flex items-center gap-1">
+                            <Users className="h-3.5 w-3.5" />
+                            {selectedRequest.discord_member_count.toLocaleString()} members
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <Button
                       variant="outline"
