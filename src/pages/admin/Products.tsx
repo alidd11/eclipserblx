@@ -372,42 +372,36 @@ export default function AdminProducts() {
               ) : (
                 products?.map((product) => (
                   <Card key={product.id} className="bg-muted/30 border-border overflow-hidden">
-                    <CardContent className="p-3 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {product.images?.[0] ? (
                             <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm font-medium">
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-lg font-medium">
                               {product.name.charAt(0)}
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{product.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{product.categories?.name || 'Uncategorized'}</p>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div>
+                            <p className="font-medium text-base leading-tight">{product.name}</p>
+                            <p className="text-sm text-muted-foreground">{product.categories?.name || 'Uncategorized'}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {product.is_active ? (
+                              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs px-2 py-0.5 hover:bg-green-500/20">Active</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">Inactive</Badge>
+                            )}
+                            {product.is_featured && (
+                              <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-xs px-2 py-0.5 hover:bg-yellow-500/20">Featured</Badge>
+                            )}
+                          </div>
                         </div>
-                        <span className="font-bold text-primary text-sm whitespace-nowrap">£{product.price.toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex gap-1.5 flex-wrap">
-                          {product.is_active ? (
-                            <Badge variant="outline" className="text-green-500 border-green-500/30 text-xs px-2 py-0.5">Active</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">Inactive</Badge>
-                          )}
-                          {product.is_featured && (
-                            <Badge variant="outline" className="text-primary border-primary/30 text-xs px-2 py-0.5">Featured</Badge>
-                          )}
-                        </div>
-                        <div className="flex gap-1 flex-shrink-0">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(product)} className="h-9 w-9 touch-manipulation active:scale-95">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id)} className="h-9 w-9 touch-manipulation active:scale-95">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(product)} className="h-10 w-10 touch-manipulation active:scale-95 flex-shrink-0">
+                          <Pencil className="h-4 w-4 text-muted-foreground" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
