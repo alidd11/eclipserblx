@@ -6,6 +6,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -378,14 +379,19 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </div>
               
               {/* Sign Out Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSignOutDialog(true)}
-                className="text-muted-foreground hover:text-destructive shrink-0"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowSignOutDialog(true)}
+                    className="text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Sign Out</TooltipContent>
+              </Tooltip>
             </div>
           </CardContent>
         </Card>
