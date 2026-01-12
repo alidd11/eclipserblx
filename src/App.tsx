@@ -175,10 +175,10 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
-                  {/* Keep global widgets mounted even while routes are loading */}
-                  <ChatWidget />
                   <InstallPrompt />
                 </PWAWrapper>
+                {/* ChatWidget rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
+                <ChatWidget />
               </IpBanCheck>
             </BrowserRouter>
           </TooltipProvider>
