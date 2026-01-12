@@ -195,7 +195,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   return (
     <TooltipProvider delayDuration={0}>
       <div
-        className="fixed top-0 left-0 right-0 flex bg-background overflow-hidden"
+        className={cn(
+          'fixed top-0 left-0 right-0 flex overflow-hidden',
+          isChatPage ? 'bg-card' : 'bg-background'
+        )}
         style={{ height: 'var(--vvh, 100dvh)' }}
       >
         {/* Desktop Sidebar */}
