@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Key, CheckCircle, Clock, Copy, AlertCircle, User } from 'lucide-react';
+import { Search, Key, CheckCircle, Clock, Copy, AlertCircle, User, IdCard, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useAuth } from '@/hooks/useAuth';
 
 interface BotInstallationCode {
   id: string;
@@ -25,9 +26,21 @@ interface BotInstallationCode {
   order_id: string;
   order_item_id: string;
   user_id: string | null;
+  processed_by: string | null;
+  processed_at: string | null;
+  customer_profile?: {
+    customer_id: string | null;
+    display_name: string | null;
+    email: string;
+  } | null;
+  processor_profile?: {
+    display_name: string | null;
+    email: string;
+  } | null;
 }
 
 export default function AdminBotCodes() {
+  const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCode, setSelectedCode] = useState<BotInstallationCode | null>(null);
@@ -48,7 +61,48 @@ export default function AdminBotCodes() {
 
       const { data, error } = await query.limit(100);
       if (error) throw error;
-      return data as BotInstallationCode[];
+      
+      // Fetch customer profiles
+      const userIds = data?.filter(c => c.user_id).map(c => c.user_id) || [];
+      let customerMap: Record<string, { customer_id: string | null; display_name: string | null; email: string }> = {};
+      
+      if (userIds.length > 0) {
+        const { data: customers } = await supabase
+          .from('profiles')
+          .select('user_id, customer_id, display_name, email')
+          .in('user_id', userIds);
+        
+        if (customers) {
+          customerMap = customers.reduce((acc, p) => {
+            acc[p.user_id] = { customer_id: p.customer_id, display_name: p.display_name, email: p.email };
+            return acc;
+          }, {} as Record<string, { customer_id: string | null; display_name: string | null; email: string }>);
+        }
+      }
+      
+      // Fetch processor profiles
+      const processedByIds = data?.filter(c => c.processed_by).map(c => c.processed_by) || [];
+      let processorMap: Record<string, { display_name: string | null; email: string }> = {};
+      
+      if (processedByIds.length > 0) {
+        const { data: processors } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email')
+          .in('user_id', processedByIds);
+        
+        if (processors) {
+          processorMap = processors.reduce((acc, p) => {
+            acc[p.user_id] = { display_name: p.display_name, email: p.email };
+            return acc;
+          }, {} as Record<string, { display_name: string | null; email: string }>);
+        }
+      }
+      
+      return data?.map(code => ({
+        ...code,
+        customer_profile: code.user_id ? customerMap[code.user_id] : null,
+        processor_profile: code.processed_by ? processorMap[code.processed_by] : null
+      })) as BotInstallationCode[];
     },
   });
 
@@ -60,6 +114,8 @@ export default function AdminBotCodes() {
           is_used: true,
           used_by: usedBy,
           used_at: new Date().toISOString(),
+          processed_by: currentUser?.id,
+          processed_at: new Date().toISOString(),
         })
         .eq('id', id);
       if (error) throw error;
@@ -192,7 +248,7 @@ export default function AdminBotCodes() {
                 {/* Mobile layout */}
                 <div className="md:hidden space-y-3">
                   {codes.map((code) => (
-                    <div key={code.id} className="rounded-lg border bg-card p-3">
+                    <div key={code.id} className="rounded-lg border bg-card p-3 space-y-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <Key className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -211,16 +267,42 @@ export default function AdminBotCodes() {
                         <div className="shrink-0">{getStatusBadge(code)}</div>
                       </div>
 
-                      <div className="mt-3 flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">{code.product_name}</div>
+                      <div className="text-sm font-medium truncate">{code.product_name}</div>
+
+                      {/* Customer Info Card */}
+                      {code.customer_profile && (
+                        <div className="bg-muted/50 rounded-md p-2 space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <IdCard className="h-3 w-3" />
+                            Customer Info
+                          </div>
+                          <div className="text-xs">
+                            <span className="font-mono font-medium">{code.customer_profile.customer_id || 'N/A'}</span>
+                            {code.customer_profile.display_name && (
+                              <span className="text-muted-foreground ml-2">({code.customer_profile.display_name})</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Claimed By / Processed By */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 space-y-1">
                           {code.used_by ? (
-                            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <User className="h-3 w-3 shrink-0" />
-                              <span className="truncate">{code.used_by}</span>
+                              <span className="truncate">Claimed: {code.used_by}</span>
                             </div>
                           ) : (
-                            <div className="mt-1 text-xs text-muted-foreground">Used by: —</div>
+                            <div className="text-xs text-muted-foreground">Claimed by: —</div>
+                          )}
+                          {code.processor_profile && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Shield className="h-3 w-3 shrink-0" />
+                              <span className="truncate">
+                                Processed by: {code.processor_profile.display_name || code.processor_profile.email}
+                              </span>
+                            </div>
                           )}
                         </div>
 
@@ -242,7 +324,7 @@ export default function AdminBotCodes() {
                         </div>
                       </div>
 
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t pt-2">
                         <span className="whitespace-nowrap">
                           Created: {format(new Date(code.created_at), 'MMM d, yyyy')}
                         </span>
@@ -261,10 +343,11 @@ export default function AdminBotCodes() {
                       <TableRow>
                         <TableHead className="whitespace-nowrap">Code</TableHead>
                         <TableHead>Product</TableHead>
+                        <TableHead className="whitespace-nowrap">Customer ID</TableHead>
                         <TableHead className="whitespace-nowrap">Status</TableHead>
-                        <TableHead className="hidden md:table-cell whitespace-nowrap">Used By</TableHead>
+                        <TableHead className="whitespace-nowrap">Claimed By</TableHead>
+                        <TableHead className="whitespace-nowrap">Processed By</TableHead>
                         <TableHead className="hidden lg:table-cell whitespace-nowrap">Created</TableHead>
-                        <TableHead className="hidden lg:table-cell whitespace-nowrap">Expires</TableHead>
                         <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -288,8 +371,18 @@ export default function AdminBotCodes() {
                             </div>
                           </TableCell>
                           <TableCell className="font-medium">{code.product_name}</TableCell>
+                          <TableCell>
+                            {code.customer_profile ? (
+                              <div className="flex items-center gap-1.5 text-sm">
+                                <IdCard className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="font-mono">{code.customer_profile.customer_id || 'N/A'}</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">{getStatusBadge(code)}</TableCell>
-                          <TableCell className="hidden md:table-cell">
+                          <TableCell>
                             {code.used_by ? (
                               <div className="flex items-center gap-1 text-sm">
                                 <User className="h-3 w-3" />
@@ -299,11 +392,18 @@ export default function AdminBotCodes() {
                               <span className="text-muted-foreground">—</span>
                             )}
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
-                            {format(new Date(code.created_at), 'MMM d, yyyy')}
+                          <TableCell>
+                            {code.processor_profile ? (
+                              <div className="flex items-center gap-1 text-sm">
+                                <Shield className="h-3 w-3 text-primary" />
+                                <span>{code.processor_profile.display_name || code.processor_profile.email}</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
-                            {format(new Date(code.expires_at), 'MMM d, yyyy')}
+                            {format(new Date(code.created_at), 'MMM d, yyyy')}
                           </TableCell>
                           <TableCell className="text-right whitespace-nowrap">
                             {!code.is_used && !isExpired(code.expires_at) && (
@@ -352,6 +452,30 @@ export default function AdminBotCodes() {
               <p className="text-sm font-medium">Product</p>
               <p className="text-sm text-muted-foreground">{selectedCode?.product_name}</p>
             </div>
+            {selectedCode?.customer_profile && (
+              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                <p className="text-sm font-medium flex items-center gap-1.5">
+                  <IdCard className="h-4 w-4" />
+                  Customer Info
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Customer ID:</span>
+                    <span className="ml-1 font-mono">{selectedCode.customer_profile.customer_id || 'N/A'}</span>
+                  </div>
+                  {selectedCode.customer_profile.display_name && (
+                    <div>
+                      <span className="text-muted-foreground">Name:</span>
+                      <span className="ml-1">{selectedCode.customer_profile.display_name}</span>
+                    </div>
+                  )}
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Email:</span>
+                    <span className="ml-1">{selectedCode.customer_profile.email}</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Claimed By *</label>
               <Textarea
