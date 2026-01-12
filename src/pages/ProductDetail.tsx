@@ -145,7 +145,7 @@ export default function ProductDetail() {
           {/* Images */}
           <div className="space-y-4">
             <div 
-              className="aspect-video gaming-card overflow-hidden select-none relative"
+              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20"
               onContextMenu={(e) => e.preventDefault()}
             >
               {images[selectedImage] ? (
@@ -154,14 +154,14 @@ export default function ProductDetail() {
                     src={images[selectedImage]}
                     controls
                     controlsList="nodownload"
-                    className="w-full h-full object-cover pointer-events-auto"
+                    className="w-full h-full object-contain pointer-events-auto"
                     onContextMenu={(e) => e.preventDefault()}
                   />
                 ) : (
                   <img
                     src={images[selectedImage]}
                     alt={product.name}
-                    className="w-full h-full object-cover pointer-events-none"
+                    className="w-full h-full object-contain pointer-events-none"
                     draggable={false}
                   />
                 )
