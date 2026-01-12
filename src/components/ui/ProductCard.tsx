@@ -91,38 +91,22 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             {name}
           </h3>
 
-          {/* Price section */}
+          {/* Price section - always show both prices */}
           <div className="flex flex-col gap-0.5 mt-auto pt-1">
-            {hasMemberDiscount ? (
-              <>
-                {/* Original price crossed out */}
-                <span className="text-[10px] text-muted-foreground line-through leading-none">
-                  £{price.toFixed(2)}
-                </span>
-                {/* Member price + discount badge */}
-                <div className="flex items-center gap-1">
-                  <span className={cn(
-                    "text-sm font-bold whitespace-nowrap leading-none",
-                    isSubscribed ? "text-amber-400" : "text-primary"
-                  )}>
-                    £{memberPrice.toFixed(2)}
-                  </span>
-                  <span className={cn(
-                    "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none",
-                    isSubscribed 
-                      ? "bg-amber-500/20 text-amber-400" 
-                      : "bg-primary/10 text-primary"
-                  )}>
-                    <Sparkles className="h-2 w-2 flex-shrink-0" />
-                    {discountPercent}%
-                  </span>
-                </div>
-              </>
-            ) : (
-              <span className="text-sm font-bold text-foreground whitespace-nowrap leading-none">
-                £{price.toFixed(2)}
+            {/* Normal price */}
+            <span className="text-[10px] text-muted-foreground leading-none">
+              £{price.toFixed(2)}
+            </span>
+            {/* Member price + discount badge */}
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-bold whitespace-nowrap leading-none text-amber-400">
+                £{memberPrice.toFixed(2)}
               </span>
-            )}
+              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
+                <Sparkles className="h-2 w-2 flex-shrink-0" />
+                {discountPercent}%
+              </span>
+            </div>
           </div>
 
           {/* Add to cart button - separate row */}
