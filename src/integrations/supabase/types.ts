@@ -181,6 +181,7 @@ export type Database = {
           processed_at: string | null
           processed_by: string | null
           product_name: string
+          status: string | null
           used_at: string | null
           used_by: string | null
           user_id: string | null
@@ -196,6 +197,7 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           product_name: string
+          status?: string | null
           used_at?: string | null
           used_by?: string | null
           user_id?: string | null
@@ -211,6 +213,7 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           product_name?: string
+          status?: string | null
           used_at?: string | null
           used_by?: string | null
           user_id?: string | null
