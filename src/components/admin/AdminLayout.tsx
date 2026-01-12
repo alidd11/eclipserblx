@@ -239,8 +239,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         style={
           isChatPage
             ? {
-                // Always rely on --vvh (kept up to date by visualViewport)
-                height: 'calc(var(--vvh, 1vh) * 100)',
+                // Use visual viewport height + safe-area so the chat surface is truly flush
+                // with the physical bottom edge (iOS home-indicator area).
+                height: 'calc(var(--vvh, 1vh) * 100 + env(safe-area-inset-bottom))',
               }
             : undefined
         }
