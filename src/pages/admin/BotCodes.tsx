@@ -271,15 +271,15 @@ export default function AdminBotCodes() {
 
                       {/* Customer Info Card */}
                       {code.customer_profile && (
-                        <div className="bg-muted/50 rounded-md p-2 space-y-1">
+                        <div className="bg-muted/50 rounded-md p-2 space-y-1.5">
                           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                             <IdCard className="h-3 w-3" />
                             Customer Info
                           </div>
-                          <div className="text-xs">
-                            <span className="font-mono font-medium">{code.customer_profile.customer_id || 'N/A'}</span>
+                          <div className="text-xs space-y-0.5">
+                            <div className="font-mono font-medium">{code.customer_profile.customer_id || 'N/A'}</div>
                             {code.customer_profile.display_name && (
-                              <span className="text-muted-foreground ml-2">({code.customer_profile.display_name})</span>
+                              <div className="text-muted-foreground">{code.customer_profile.display_name}</div>
                             )}
                           </div>
                         </div>
