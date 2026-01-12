@@ -60,8 +60,7 @@ const navGroups: NavGroup[] = [
       { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
       { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
-      { title: 'Bot Requests', icon: Bell, href: '/admin/bot-requests', roles: ['admin'] },
-      { title: 'Bot Codes', icon: Key, href: '/admin/bot-codes', roles: ['admin'] },
+      { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
     ],
   },
   {
