@@ -337,9 +337,6 @@ export default function StaffActivityPage() {
                             {activity.details.customer_name && (
                               <span>Customer: {activity.details.customer_name}</span>
                             )}
-                            {activity.details.customer_email && !activity.details.customer_name && (
-                              <span>Customer: {activity.details.customer_email}</span>
-                            )}
                             {activity.details.subject && (
                               <span>Subject: {activity.details.subject}</span>
                             )}

@@ -47,17 +47,6 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
-// Helper to mask email addresses
-const maskEmail = (email: string) => {
-  const [local, domain] = email.split('@');
-  if (!domain) return '••••@••••';
-  const maskedLocal = local.length > 2 ? local[0] + '•'.repeat(local.length - 2) + local[local.length - 1] : '••';
-  const domainParts = domain.split('.');
-  const maskedDomain = domainParts[0].length > 2 
-    ? domainParts[0][0] + '•'.repeat(domainParts[0].length - 2) + domainParts[0][domainParts[0].length - 1]
-    : '••';
-  return `${maskedLocal}@${maskedDomain}.${domainParts.slice(1).join('.')}`;
-};
 
 interface ContactMessage {
   id: string;
@@ -180,8 +169,8 @@ export default function ContactMessages() {
   const [replyContent, setReplyContent] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
 
-  // Helper to display email based on role
-  const displayEmail = (email: string) => isAdmin ? email : maskEmail(email);
+  // Staff should only see customer name, not email
+  const displayCustomerInfo = (msg: ContactMessage) => msg.name;
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['contact-messages'],
@@ -292,7 +281,7 @@ export default function ContactMessages() {
       if (error) throw error;
 
       toast.success('Reply sent successfully!', {
-        description: `Email sent to ${selectedMessage.email}`,
+        description: `Email sent to ${selectedMessage.name}`,
       });
 
       // Update local state
@@ -470,8 +459,7 @@ export default function ContactMessages() {
                           <TableCell>{getStatusBadge(msg.status)}</TableCell>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{msg.name}</p>
-                              <p className="text-sm text-muted-foreground">{displayEmail(msg.email)}</p>
+                              <p className="font-medium">{displayCustomerInfo(msg)}</p>
                             </div>
                           </TableCell>
                           <TableCell className="max-w-[200px] truncate">{msg.subject}</TableCell>
@@ -522,7 +510,6 @@ export default function ContactMessages() {
                             </span>
                           </div>
                           <p className="font-medium truncate">{msg.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{displayEmail(msg.email)}</p>
                           <p className="text-sm mt-1 truncate">{msg.subject}</p>
                         </div>
                         <Button
@@ -551,7 +538,7 @@ export default function ContactMessages() {
             <DialogHeader>
               <DialogTitle>{selectedMessage?.subject}</DialogTitle>
               <DialogDescription>
-                From {selectedMessage?.name} ({selectedMessage?.email ? displayEmail(selectedMessage.email) : ''})
+                From {selectedMessage?.name}
               </DialogDescription>
             </DialogHeader>
             
@@ -602,7 +589,7 @@ export default function ContactMessages() {
               <TabsContent value="reply" className="space-y-4">
                 <div className="p-3 bg-muted/50 rounded-lg border">
                   <p className="text-sm text-muted-foreground mb-1">Replying to:</p>
-                  <p className="font-medium">{selectedMessage?.name} &lt;{selectedMessage?.email ? displayEmail(selectedMessage.email) : ''}&gt;</p>
+                  <p className="font-medium">{selectedMessage?.name}</p>
                   <p className="text-sm text-muted-foreground mt-1">Re: {selectedMessage?.subject}</p>
                 </div>
 

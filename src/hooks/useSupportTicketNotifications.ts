@@ -47,7 +47,7 @@ export function useSupportTicketNotifications() {
             : 'Medium';
           
           sendNotification('New Support Ticket', {
-            body: `[${priorityLabel}] ${newTicket.subject}\nFrom: ${newTicket.customer_email}`,
+            body: `[${priorityLabel}] ${newTicket.subject}`,
             tag: `support-ticket-${newTicket.id}`,
           });
 
