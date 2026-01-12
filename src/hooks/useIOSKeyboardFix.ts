@@ -19,10 +19,18 @@ export function useIOSKeyboardFix() {
   // Detect iOS and PWA on mount
   useEffect(() => {
     const ua = navigator.userAgent;
-    isIOSRef.current = /iPad|iPhone|iPod/.test(ua) || 
+    isIOSRef.current = /iPad|iPhone|iPod/.test(ua) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     isPWARef.current = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
+
+    // IMPORTANT: initialize the baseline BEFORE the first focus/keyboard resize.
+    // If we wait until the first visualViewport resize, the baseline can be captured
+    // while the keyboard is already open, which makes keyboard detection fail.
+    const vv = window.visualViewport;
+    if (vv && isIOSRef.current && isPWARef.current) {
+      baseViewportHeightRef.current = vv.height;
+    }
   }, []);
 
   // Calculate input bar position based on visual viewport
@@ -30,10 +38,23 @@ export function useIOSKeyboardFix() {
     const vv = window.visualViewport;
     if (!vv) return;
 
-    // In iOS PWA standalone, `window.innerHeight` can change along with the keyboard.
-    // Using an initial visualViewport height baseline is more reliable.
+    const active = document.activeElement as HTMLElement | null;
+    const isTextInputFocused =
+      !!active &&
+      (active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        active.getAttribute('contenteditable') === 'true');
+
+    // Baseline strategy:
+    // - baseline should represent the "largest" visualViewport height we see when the
+    //   keyboard is NOT shown.
+    // - if the first measurement happens while keyboard is open, detection fails.
+    //   that's why we initialize baseline on mount (above), and only grow it when
+    //   no text input is focused.
     if (baseViewportHeightRef.current === null) {
       baseViewportHeightRef.current = vv.height;
+    } else if (!isTextInputFocused) {
+      baseViewportHeightRef.current = Math.max(baseViewportHeightRef.current, vv.height);
     }
 
     const baseline = baseViewportHeightRef.current ?? vv.height;
@@ -48,11 +69,6 @@ export function useIOSKeyboardFix() {
     } else {
       setIsKeyboardVisible(false);
       setInputBarTop(null);
-
-      // If the viewport grew (e.g. after dismissal), refresh the baseline
-      if (vv.height > baseline + 20) {
-        baseViewportHeightRef.current = vv.height;
-      }
     }
   }, []);
 
@@ -80,6 +96,9 @@ export function useIOSKeyboardFix() {
 
     vv.addEventListener('resize', handleResize);
     vv.addEventListener('scroll', handleScroll);
+
+    // Initial measurement (critical on iOS PWA; events aren't always fired reliably)
+    handleResize();
 
     return () => {
       vv.removeEventListener('resize', handleResize);
