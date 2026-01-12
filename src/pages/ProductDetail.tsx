@@ -1,12 +1,13 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
+import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -21,6 +22,7 @@ export default function ProductDetail() {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['product', slug] });
@@ -145,8 +147,14 @@ export default function ProductDetail() {
           {/* Images */}
           <div className="space-y-4">
             <div 
-              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20"
+              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group"
               onContextMenu={(e) => e.preventDefault()}
+              onClick={() => {
+                const currentImg = images[selectedImage];
+                if (currentImg && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(currentImg)) {
+                  setIsZoomOpen(true);
+                }
+              }}
             >
               {images[selectedImage] ? (
                 /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) ? (
@@ -154,14 +162,15 @@ export default function ProductDetail() {
                     src={images[selectedImage]}
                     controls
                     controlsList="nodownload"
-                    className="w-full h-full object-contain pointer-events-auto"
+                    className="w-full h-full object-contain pointer-events-auto cursor-default"
                     onContextMenu={(e) => e.preventDefault()}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
                   <img
                     src={images[selectedImage]}
                     alt={product.name}
-                    className="w-full h-full object-contain pointer-events-none"
+                    className="w-full h-full object-contain pointer-events-none transition-transform duration-300 group-hover:scale-[1.02]"
                     draggable={false}
                   />
                 )
@@ -170,6 +179,15 @@ export default function ProductDetail() {
                   <span className="text-6xl font-display font-bold text-muted-foreground/30">
                     {product.name.charAt(0)}
                   </span>
+                </div>
+              )}
+              
+              {/* Zoom hint */}
+              {images[selectedImage] && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) && (
+                <div className="absolute top-3 right-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-black/60 rounded-full p-2">
+                    <ZoomIn className="h-5 w-5 text-white" />
+                  </div>
                 </div>
               )}
               
@@ -216,6 +234,16 @@ export default function ProductDetail() {
                 </span>
               </div>
             </div>
+            
+            {/* Zoom Modal */}
+            {images[selectedImage] && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) && (
+              <ImageZoomModal
+                src={images[selectedImage]}
+                alt={product.name}
+                isOpen={isZoomOpen}
+                onClose={() => setIsZoomOpen(false)}
+              />
+            )}
             
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
