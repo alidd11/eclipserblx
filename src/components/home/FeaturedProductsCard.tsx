@@ -1,19 +1,20 @@
 import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useSubscription, BOT_CATEGORY_ID } from '@/hooks/useSubscription';
 
 export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-
+  const { isSubscribed, getMemberPrice, getDiscountPercent } = useSubscription();
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products-card'],
     queryFn: async () => {
@@ -194,9 +195,28 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
                       </h3>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="font-display font-bold text-lg text-primary">
-                        £{Number(currentProduct.price).toFixed(2)}
-                      </span>
+                      <div className="flex flex-col">
+                        {isSubscribed ? (
+                          <>
+                            <span className="text-xs text-muted-foreground line-through">
+                              £{Number(currentProduct.price).toFixed(2)}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-display font-bold text-lg text-amber-500">
+                                £{getMemberPrice(currentProduct.price, currentProduct.category_id).toFixed(2)}
+                              </span>
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[10px] font-bold">
+                                <Crown className="h-2.5 w-2.5" />
+                                {getDiscountPercent(currentProduct.category_id)}% OFF
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <span className="font-display font-bold text-lg text-primary">
+                            £{Number(currentProduct.price).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         View <ArrowRight className="h-3 w-3" />
                       </span>
