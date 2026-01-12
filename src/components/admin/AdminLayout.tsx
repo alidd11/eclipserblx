@@ -503,8 +503,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           <main
             className={cn(
               'flex-1 min-h-0',
-              isChatPage ? 'overflow-hidden overscroll-none bg-card' : 'overflow-y-auto overscroll-contain bg-background'
+              isChatPage 
+                ? 'overflow-hidden overscroll-none bg-card' 
+                : 'overflow-y-auto bg-background'
             )}
+            style={!isChatPage ? { WebkitOverflowScrolling: 'touch' } : undefined}
           >
             <div
               className={cn(

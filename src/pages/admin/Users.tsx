@@ -292,7 +292,7 @@ export default function AdminUsers() {
 
   return (
     <AdminLayout requiredRoles={['admin']}>
-      <div className="space-y-6">
+      <div className="space-y-6 min-h-0">
         <div>
           <h1 className="text-3xl font-display font-bold">Users & Roles</h1>
           <p className="text-muted-foreground">Manage user accounts and permissions</p>
@@ -389,7 +389,7 @@ export default function AdminUsers() {
         </div>
 
         {/* Mobile Card View */}
-        <div className="md:hidden space-y-3">
+        <div className="md:hidden space-y-3 pb-4">
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : profiles?.length === 0 ? (
