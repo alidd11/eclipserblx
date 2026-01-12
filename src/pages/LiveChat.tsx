@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,6 +51,7 @@ const ISSUE_CATEGORIES = [
 const LiveChatPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { playSound } = useNotificationSound();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -128,6 +130,10 @@ const LiveChatPage = () => {
             return [...prev, newMsg];
           });
           scrollToBottom();
+          // Play sound for agent messages
+          if (newMsg.sender_type === 'agent') {
+            playSound('info');
+          }
         }
       )
       .subscribe();

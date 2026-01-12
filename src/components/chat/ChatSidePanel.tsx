@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatPanel } from '@/hooks/useChatPanel';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -53,6 +54,7 @@ export function ChatSidePanel() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isOpen, closeChat } = useChatPanel();
+  const { playSound } = useNotificationSound();
   const [isMinimized, setIsMinimized] = useState(false);
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -137,6 +139,10 @@ export function ChatSidePanel() {
             return [...prev, newMsg];
           });
           scrollToBottom();
+          // Play sound for agent messages
+          if (newMsg.sender_type === 'agent') {
+            playSound('info');
+          }
         }
       )
       .subscribe();
