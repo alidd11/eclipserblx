@@ -78,36 +78,36 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             {name}
           </h3>
 
-          <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-            <div className="flex flex-col min-w-0">
+          <div className="flex items-end justify-between gap-2 mt-auto pt-1">
+            <div className="flex flex-col min-w-0 gap-0.5">
               {/* Regular price - show as main if subscribed and eligible, or as crossed-out if showing member price */}
               {hasMemberDiscount ? (
                 <>
                   {/* Show regular price crossed out */}
-                  <span className="text-xs text-muted-foreground line-through">
+                  <span className="text-[10px] text-muted-foreground line-through leading-none">
                     £{price.toFixed(2)}
                   </span>
                   {/* Member price with indicator */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
                     <span className={cn(
-                      "text-sm font-bold whitespace-nowrap",
+                      "text-sm font-bold whitespace-nowrap leading-none",
                       isSubscribed ? "text-amber-400" : "text-primary"
                     )}>
                       £{memberPrice.toFixed(2)}
                     </span>
                     <span className={cn(
-                      "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium",
+                      "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none",
                       isSubscribed 
                         ? "bg-amber-500/20 text-amber-400" 
                         : "bg-primary/10 text-primary"
                     )}>
-                      <Sparkles className="h-2.5 w-2.5" />
-                      <span className="hidden xs:inline">{ECLIPSE_PLUS_DISCOUNT}%</span>
+                      <Sparkles className="h-2 w-2 flex-shrink-0" />
+                      {ECLIPSE_PLUS_DISCOUNT}%
                     </span>
                   </div>
                 </>
               ) : (
-                <span className="text-sm font-bold text-foreground whitespace-nowrap">
+                <span className="text-sm font-bold text-foreground whitespace-nowrap leading-none">
                   £{price.toFixed(2)}
                 </span>
               )}
