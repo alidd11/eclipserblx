@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { KeyboardDebugOverlay } from '@/components/admin/KeyboardDebugOverlay';
+import { ChatQuickActions } from '@/components/admin/ChatQuickActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -775,6 +776,13 @@ function StaffMessagesContent() {
               </Button>
             </div>
           </div>
+          
+          {/* Quick Actions Tab Bar */}
+          <ChatQuickActions 
+            variant="staff" 
+            onMentionInsert={insertMention}
+            onlineCount={typingUsers.length}
+          />
         </CardContent>
       </Card>
     </div>
