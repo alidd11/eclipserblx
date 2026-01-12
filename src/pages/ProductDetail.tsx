@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Crown } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -93,8 +93,9 @@ export default function ProductDetail() {
   const inCart = isInCart(product.id);
   const images = product.images?.length ? product.images : [null];
   
-  const showMemberPrice = isSubscribed && isEligibleForDiscount(product.category_id);
+  const isEligible = isEligibleForDiscount(product.category_id);
   const memberPrice = getMemberPrice(product.price, product.category_id);
+  const hasMemberDiscount = isEligible && memberPrice < product.price;
   const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id);
 
   const handleAddToCart = () => {
@@ -219,22 +220,46 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-                <div className="space-y-1">
-                  {showMemberPrice ? (
+                <div className="space-y-2">
+                  {/* Always show member pricing for eligible products */}
+                  {hasMemberDiscount ? (
                     <>
-                      <div className="flex items-center gap-2">
-                        <span className="text-4xl font-bold text-primary flex items-center gap-2">
-                          <Crown className="h-6 w-6" />
+                      {/* Regular price crossed out */}
+                      <p className="text-lg text-muted-foreground line-through">
+                        £{product.price.toFixed(2)}
+                      </p>
+                      {/* Member price prominently displayed */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className={cn(
+                          "text-4xl font-bold flex items-center gap-2",
+                          isSubscribed ? "text-amber-400" : "text-primary"
+                        )}>
+                          <Sparkles className="h-6 w-6" />
                           £{memberPrice.toFixed(2)}
                         </span>
-                        <Badge className="bg-primary/10 text-primary border-primary/20">
-                          {ECLIPSE_PLUS_DISCOUNT}% off
+                        <Badge className={cn(
+                          isSubscribed 
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
+                            : "bg-primary/10 text-primary border-primary/20"
+                        )}>
+                          {ECLIPSE_PLUS_DISCOUNT}% off with Eclipse+
                         </Badge>
                       </div>
-                      <p className="text-lg text-muted-foreground line-through">£{product.price.toFixed(2)}</p>
+                      {/* Call to action for non-subscribers */}
+                      {!isSubscribed && (
+                        <Link 
+                          to="/eclipse-plus" 
+                          className="inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                          Join Eclipse+ to unlock this price
+                        </Link>
+                      )}
                     </>
                   ) : (
-                    <div className="text-4xl font-bold text-primary">£{product.price.toFixed(2)}</div>
+                    <div className="text-4xl font-bold text-primary">
+                      £{product.price.toFixed(2)}
+                    </div>
                   )}
                 </div>
 

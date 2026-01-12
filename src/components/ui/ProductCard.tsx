@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Crown } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription, BOT_CATEGORY_ID, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
@@ -23,8 +23,10 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
   const { isSubscribed, isEligibleForDiscount, getMemberPrice } = useSubscription();
   const inCart = isInCart(id);
   
-  const showMemberPrice = isSubscribed && isEligibleForDiscount(categoryId);
+  // Always show member price for eligible products (non-bot)
+  const isEligible = isEligibleForDiscount(categoryId);
   const memberPrice = getMemberPrice(price, categoryId);
+  const hasMemberDiscount = isEligible && memberPrice < price;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,16 +79,32 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
           </h3>
 
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-            <div className="flex flex-col">
-              {showMemberPrice ? (
+            <div className="flex flex-col min-w-0">
+              {/* Regular price - show as main if subscribed and eligible, or as crossed-out if showing member price */}
+              {hasMemberDiscount ? (
                 <>
-                  <span className="text-sm font-bold text-primary whitespace-nowrap flex items-center gap-1">
-                    <Crown className="h-3 w-3" />
-                    £{memberPrice.toFixed(2)}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground line-through">
+                  {/* Show regular price crossed out */}
+                  <span className="text-xs text-muted-foreground line-through">
                     £{price.toFixed(2)}
                   </span>
+                  {/* Member price with indicator */}
+                  <div className="flex items-center gap-1">
+                    <span className={cn(
+                      "text-sm font-bold whitespace-nowrap",
+                      isSubscribed ? "text-amber-400" : "text-primary"
+                    )}>
+                      £{memberPrice.toFixed(2)}
+                    </span>
+                    <span className={cn(
+                      "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium",
+                      isSubscribed 
+                        ? "bg-amber-500/20 text-amber-400" 
+                        : "bg-primary/10 text-primary"
+                    )}>
+                      <Sparkles className="h-2.5 w-2.5" />
+                      <span className="hidden xs:inline">{ECLIPSE_PLUS_DISCOUNT}%</span>
+                    </span>
+                  </div>
                 </>
               ) : (
                 <span className="text-sm font-bold text-foreground whitespace-nowrap">
