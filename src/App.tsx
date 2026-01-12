@@ -6,7 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
+import { ChatPanelProvider } from "@/hooks/useChatPanel";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { ChatSidePanel } from "@/components/chat/ChatSidePanel";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
 import { IpBanCheck } from "@/components/IpBanCheck";
@@ -107,12 +109,13 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <IpBanCheck>
-                <PWAWrapper>
+          <ChatPanelProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <IpBanCheck>
+                  <PWAWrapper>
                 <AdminManifestHandler />
                 <AdminPWAHandler />
                 <PWARouteRestorer />
@@ -177,13 +180,15 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
-                  <InstallPrompt />
-                </PWAWrapper>
-                {/* ChatWidget rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
-                <ChatWidget />
-              </IpBanCheck>
-            </BrowserRouter>
-          </TooltipProvider>
+                    <InstallPrompt />
+                  </PWAWrapper>
+                  {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
+                  <ChatWidget />
+                  <ChatSidePanel />
+                </IpBanCheck>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ChatPanelProvider>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
