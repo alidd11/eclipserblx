@@ -43,8 +43,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     setIsStandalone(standalone);
   }, []);
 
-  // NOTE: Removed complex --vvh viewport tracking. 
-  // Chat pages now use 100dvh + CSS-based positioning for iOS keyboard handling.
+  // Keep a CSS var in sync with the *visual* viewport height.
+  // iOS PWA/Safari can keep `position: fixed` anchored to the layout viewport,
+  // which makes chat UIs not move up with the keyboard.
+  // We use this var to size the fixed admin shell so it truly shrinks when the keyboard opens.
+  useEffect(() => {
+    const vv = window.visualViewport;
+
+    const setVars = () => {
+      const height = vv?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty('--vvh', `${height}px`);
+    };
+
+    setVars();
+
+    vv?.addEventListener('resize', setVars);
+    vv?.addEventListener('scroll', setVars);
+    window.addEventListener('resize', setVars);
+
+    return () => {
+      vv?.removeEventListener('resize', setVars);
+      vv?.removeEventListener('scroll', setVars);
+      window.removeEventListener('resize', setVars);
+    };
+  }, []);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -172,7 +194,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="fixed inset-0 flex bg-background overflow-hidden">
+      <div
+        className="fixed top-0 left-0 right-0 flex bg-background overflow-hidden"
+        style={{ height: 'var(--vvh, 100dvh)' }}
+      >
         {/* Desktop Sidebar */}
         {!isMobile && (
           <AdminSidebar 
