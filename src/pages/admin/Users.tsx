@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -60,6 +60,7 @@ const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
 export default function AdminUsers() {
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<AppRole | 'all' | 'customer'>('all');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<AppRole | ''>('');
   const [ipBanDialogUser, setIpBanDialogUser] = useState<any>(null);
@@ -290,6 +291,19 @@ export default function AdminUsers() {
     return true;
   };
 
+  // Filter profiles by role
+  const filteredProfiles = profiles?.filter((profile) => {
+    if (roleFilter === 'all') return true;
+    
+    const roles = getUserRoles(profile.user_id);
+    
+    if (roleFilter === 'customer') {
+      return roles.length === 0;
+    }
+    
+    return roles.some(r => r.role === roleFilter);
+  });
+
   return (
     <AdminLayout requiredRoles={['admin']}>
       <div className="space-y-6 min-h-0">
@@ -298,14 +312,32 @@ export default function AdminUsers() {
           <p className="text-muted-foreground">Manage user accounts and permissions</p>
         </div>
 
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by customer ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-card"
-          />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by customer ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-card"
+            />
+          </div>
+          
+          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as AppRole | 'all' | 'customer')}>
+            <SelectTrigger className="w-full sm:w-[180px] bg-card">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Filter by role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Users</SelectItem>
+              <SelectItem value="customer">Customers Only</SelectItem>
+              {ROLES.map((role) => (
+                <SelectItem key={role.value} value={role.value}>
+                  {role.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Desktop Table View */}
@@ -325,14 +357,14 @@ export default function AdminUsers() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : profiles?.length === 0 ? (
+              ) : filteredProfiles?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                    No users found
+                    {roleFilter !== 'all' ? 'No users found with this role' : 'No users found'}
                   </TableCell>
                 </TableRow>
               ) : (
-                profiles?.map((profile) => {
+                filteredProfiles?.map((profile) => {
                   const roles = getUserRoles(profile.user_id);
                   return (
                     <TableRow key={profile.id}>
@@ -392,10 +424,12 @@ export default function AdminUsers() {
         <div className="md:hidden space-y-3 pb-4">
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
-          ) : profiles?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No users found</div>
+          ) : filteredProfiles?.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {roleFilter !== 'all' ? 'No users found with this role' : 'No users found'}
+            </div>
           ) : (
-            profiles?.map((profile) => {
+            filteredProfiles?.map((profile) => {
               const roles = getUserRoles(profile.user_id);
               return (
                 <div key={profile.id} className="rounded-lg border border-border bg-card p-4 space-y-3">
