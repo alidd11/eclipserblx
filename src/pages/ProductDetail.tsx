@@ -115,25 +115,25 @@ export default function ProductDetail() {
   return (
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="container py-8 space-y-8">
+        <div className="container py-8 space-y-8 overflow-x-hidden">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-          <span>/</span>
-          <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
+          <Link to="/" className="hover:text-foreground transition-colors flex-shrink-0">Home</Link>
+          <span className="flex-shrink-0">/</span>
+          <Link to="/products" className="hover:text-foreground transition-colors flex-shrink-0">Products</Link>
           {product.categories && (
             <>
-              <span>/</span>
+              <span className="flex-shrink-0">/</span>
               <Link 
                 to={`/products?category=${product.categories.slug}`}
-                className="hover:text-foreground transition-colors"
+                className="hover:text-foreground transition-colors flex-shrink-0"
               >
                 {product.categories.name}
               </Link>
             </>
           )}
-          <span>/</span>
-          <span className="text-foreground">{product.name}</span>
+          <span className="flex-shrink-0">/</span>
+          <span className="text-foreground truncate">{product.name}</span>
         </nav>
 
         <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
