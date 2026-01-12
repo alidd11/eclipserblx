@@ -109,9 +109,28 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       return;
     }
 
+    // IMPORTANT: We schedule multiple setTimeout passes to handle iOS keyboard animation.
+    // If those timeouts fire after navigating away, they can re-apply --vvh and cause the
+    // bottom “grey strip” to persist on non-chat pages. Track + cancel everything.
+    let disposed = false;
     let rafId = 0;
+    const timeoutIds: number[] = [];
+
+    const schedule = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        if (!disposed) fn();
+      }, ms);
+      timeoutIds.push(id);
+    };
+
+    const clearScheduled = () => {
+      timeoutIds.forEach((id) => window.clearTimeout(id));
+      timeoutIds.length = 0;
+    };
 
     const setVars = () => {
+      if (disposed) return;
+
       // ALWAYS get fresh visualViewport reference - it can change
       const vv = window.visualViewport;
       const vvHeight = vv?.height ?? window.innerHeight;
@@ -153,22 +172,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     };
 
     const sync = () => {
+      if (disposed) return;
+
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
+        if (disposed) return;
+
         setVars();
         // Run a few delayed passes to catch iOS keyboard animation + late viewport settling
-        window.setTimeout(setVars, 50);
-        window.setTimeout(setVars, 150);
-        window.setTimeout(setVars, 300);
-        window.setTimeout(setVars, 500);
+        schedule(setVars, 50);
+        schedule(setVars, 150);
+        schedule(setVars, 300);
+        schedule(setVars, 500);
       });
     };
 
     // Aggressive recovery on blur - when input loses focus, immediately reset to full height
     const handleBlur = () => {
+      if (disposed) return;
+
       forceViewportRecalc();
 
       const recoverHeight = () => {
+        if (disposed) return;
+
         const activeEl = document.activeElement;
         const isInputFocused =
           !!activeEl &&
@@ -184,11 +211,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         }
       };
 
-      window.setTimeout(recoverHeight, 50);
-      window.setTimeout(recoverHeight, 100);
-      window.setTimeout(recoverHeight, 200);
-      window.setTimeout(recoverHeight, 350);
-      window.setTimeout(recoverHeight, 500);
+      schedule(recoverHeight, 50);
+      schedule(recoverHeight, 100);
+      schedule(recoverHeight, 200);
+      schedule(recoverHeight, 350);
+      schedule(recoverHeight, 500);
 
       sync();
     };
@@ -205,6 +232,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
     // Extra hardening for chat pages: poll frequently to ensure --vvh recovers after keyboard close
     const interval = window.setInterval(() => {
+      if (disposed) return;
+
       setVars();
 
       const activeEl = document.activeElement;
@@ -226,7 +255,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     }, 100);
 
     return () => {
+      disposed = true;
+
       cancelAnimationFrame(rafId);
+      clearScheduled();
       window.clearInterval(interval);
 
       vv?.removeEventListener('resize', sync);
