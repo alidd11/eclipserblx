@@ -46,31 +46,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // Track visual viewport height for keyboard-aware layouts
   useEffect(() => {
     const vv = window.visualViewport;
-    let lastHeight = vv?.height ?? window.innerHeight;
     
     const update = () => {
-      const height = vv?.height ?? window.innerHeight;
+      if (!vv) return;
+      
+      const vvHeight = vv.height;
       const windowHeight = window.innerHeight;
       
-      // Detect keyboard closing: height increased significantly
-      const keyboardClosing = height > lastHeight + 50;
+      // Check if keyboard is likely open (visual viewport significantly smaller than window)
+      const keyboardOpen = windowHeight - vvHeight > 100;
       
-      // If keyboard is closing or viewport matches window, reset offset to 0
-      // This prevents the "stuck up" issue after keyboard dismissal
-      const offsetTop = (keyboardClosing || Math.abs(height - windowHeight) < 50) 
-        ? 0 
-        : (vv?.offsetTop ?? 0);
-      
-      document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
-      document.documentElement.style.setProperty('--vv-top', `${offsetTop}px`);
-      
-      lastHeight = height;
+      if (keyboardOpen) {
+        // Keyboard is open - use visual viewport dimensions
+        document.documentElement.style.setProperty('--vvh', `${vvHeight * 0.01}px`);
+        document.documentElement.style.setProperty('--vv-top', `${vv.offsetTop}px`);
+      } else {
+        // Keyboard is closed - clear custom values to use CSS defaults (1dvh)
+        document.documentElement.style.removeProperty('--vvh');
+        document.documentElement.style.setProperty('--vv-top', '0px');
+      }
     };
     
     update();
     
     // Listen to both resize and scroll events on visual viewport
-    // Scroll events fire when keyboard opens/closes on iOS
     vv?.addEventListener('resize', update);
     vv?.addEventListener('scroll', update);
     window.addEventListener('resize', update);
@@ -234,14 +233,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   return (
     <TooltipProvider delayDuration={0}>
       <div
-        className={cn(
-          'fixed flex bg-background overflow-hidden',
-          isChatPage ? 'left-0 right-0 top-0' : 'inset-0'
-        )}
+        className="fixed inset-0 flex bg-background overflow-hidden"
         style={
           isChatPage
             ? {
-                height: 'calc(var(--vvh, 1vh) * 100)',
+                // Use visual viewport height for keyboard-aware sizing
+                // Falls back to 100dvh when --vvh isn't set or keyboard is closed
+                height: 'calc(var(--vvh, 1dvh) * 100)',
                 transform: 'translateY(var(--vv-top, 0px))',
               }
             : undefined
