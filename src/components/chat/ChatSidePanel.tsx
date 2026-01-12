@@ -338,6 +338,7 @@ export function ChatSidePanel() {
             'fixed top-0 right-0 h-[100dvh] bg-background border-l border-border shadow-xl z-[100] flex flex-col',
             isMinimized ? 'w-16' : 'w-full sm:w-96'
           )}
+          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-muted/50">
