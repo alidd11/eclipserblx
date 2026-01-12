@@ -95,20 +95,34 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // so for chat pages we also run a lightweight sync loop.
   useEffect(() => {
     const html = document.documentElement;
+    let rafId = 0;
 
     const setVars = () => {
       // ALWAYS get fresh visualViewport reference - it can change
       const vv = window.visualViewport;
-      const height = vv?.height ?? window.innerHeight;
+      // Use the LARGER of visualViewport.height and innerHeight when keyboard is closed
+      // to prevent getting stuck at keyboard-open height
+      const vvHeight = vv?.height ?? window.innerHeight;
+      const innerH = window.innerHeight;
+      
+      // Detect if keyboard is likely open (significant difference between layout and visual viewport)
+      const keyboardOpen = Math.abs(innerH - vvHeight) > 100;
+      
+      // When keyboard is open, use visualViewport; when closed, use the max to recover
+      const height = keyboardOpen ? vvHeight : Math.max(vvHeight, innerH);
       html.style.setProperty('--vvh', `${height}px`);
     };
 
     const sync = () => {
-      setVars();
-      // Run a few delayed passes to catch iOS keyboard animation + late viewport settling
-      window.setTimeout(setVars, 50);
-      window.setTimeout(setVars, 150);
-      window.setTimeout(setVars, 300);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setVars();
+        // Run a few delayed passes to catch iOS keyboard animation + late viewport settling
+        window.setTimeout(setVars, 50);
+        window.setTimeout(setVars, 150);
+        window.setTimeout(setVars, 300);
+        window.setTimeout(setVars, 500);
+      });
     };
 
     sync();
@@ -122,9 +136,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     document.addEventListener('focusout', sync);
 
     // Extra hardening for chat pages: poll frequently to ensure --vvh recovers after keyboard close
-    const interval = isChatPage ? window.setInterval(setVars, 200) : undefined;
+    const interval = isChatPage ? window.setInterval(setVars, 100) : undefined;
 
     return () => {
+      cancelAnimationFrame(rafId);
       if (interval) window.clearInterval(interval);
       vv?.removeEventListener('resize', sync);
       vv?.removeEventListener('scroll', sync);
