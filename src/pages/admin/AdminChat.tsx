@@ -686,7 +686,7 @@ function AdminChatContent() {
       {/* Chat Card - fills remaining space, flush edge-to-edge on mobile */}
       <Card 
         className={cn(
-          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 sm:border-x sm:mb-4",
+          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 border-b-0 sm:border-x sm:border-b sm:mb-4",
           isDragOver && "border-primary border-2 bg-primary/5"
         )}
         {...dragProps}

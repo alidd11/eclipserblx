@@ -232,19 +232,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   return (
     <TooltipProvider delayDuration={0}>
       <div
-        className={cn(
-          'fixed flex bg-background overflow-hidden',
-          isChatPage ? 'left-0 right-0 top-0' : 'inset-0'
-        )}
-        style={
-          isChatPage
-            ? {
-                // Use visual viewport height + safe-area so the chat surface is truly flush
-                // with the physical bottom edge (iOS home-indicator area).
-                height: 'calc(var(--vvh, 1vh) * 100 + env(safe-area-inset-bottom))',
-              }
-            : undefined
-        }
+        className="fixed inset-0 flex bg-background overflow-hidden"
       >
         {/* Desktop Sidebar */}
         {!isMobile && (
