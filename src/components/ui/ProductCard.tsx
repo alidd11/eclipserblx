@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
-import { useSubscription, BOT_CATEGORY_ID, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
+import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
@@ -20,12 +20,13 @@ interface ProductCardProps {
 
 export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, categoryId, isFeatured }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
-  const { isSubscribed, isEligibleForDiscount, getMemberPrice } = useSubscription();
+  const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
   
-  // Always show member price for eligible products (non-bot)
+  // Always show member price for eligible products
   const isEligible = isEligibleForDiscount(categoryId);
   const memberPrice = getMemberPrice(price, categoryId);
+  const discountPercent = getDiscountPercent(categoryId);
   const hasMemberDiscount = isEligible && memberPrice < price;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
@@ -86,7 +87,7 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
                 <span className="text-[10px] text-muted-foreground line-through leading-none">
                   £{price.toFixed(2)}
                 </span>
-                {/* Member price + 30% badge */}
+                {/* Member price + discount badge */}
                 <div className="flex items-center gap-1">
                   <span className={cn(
                     "text-sm font-bold whitespace-nowrap leading-none",
@@ -101,7 +102,7 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
                       : "bg-primary/10 text-primary"
                   )}>
                     <Sparkles className="h-2 w-2 flex-shrink-0" />
-                    {ECLIPSE_PLUS_DISCOUNT}%
+                    {discountPercent}%
                   </span>
                 </div>
               </>
