@@ -195,27 +195,21 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
                       </h3>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        {isSubscribed ? (
-                          <>
-                            <span className="text-xs text-muted-foreground line-through">
-                              £{Number(currentProduct.price).toFixed(2)}
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-display font-bold text-lg text-amber-500">
-                                £{getMemberPrice(currentProduct.price, currentProduct.category_id).toFixed(2)}
-                              </span>
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[10px] font-bold">
-                                <Crown className="h-2.5 w-2.5" />
-                                {getDiscountPercent(currentProduct.category_id)}% OFF
-                              </span>
-                            </div>
-                          </>
-                        ) : (
-                          <span className="font-display font-bold text-lg text-primary">
-                            £{Number(currentProduct.price).toFixed(2)}
+                      <div className="flex flex-col gap-0.5">
+                        {/* Normal price */}
+                        <span className="text-xs text-muted-foreground">
+                          £{Number(currentProduct.price).toFixed(2)}
+                        </span>
+                        {/* Member price */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-display font-bold text-sm text-amber-500">
+                            £{getMemberPrice(currentProduct.price, currentProduct.category_id).toFixed(2)}
                           </span>
-                        )}
+                          <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[9px] font-bold">
+                            <Crown className="h-2 w-2" />
+                            {getDiscountPercent(currentProduct.category_id)}%
+                          </span>
+                        </div>
                       </div>
                       <span className="text-xs text-muted-foreground flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         View <ArrowRight className="h-3 w-3" />
