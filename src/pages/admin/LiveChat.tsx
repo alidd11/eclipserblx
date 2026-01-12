@@ -643,23 +643,25 @@ export default function AdminLiveChat() {
   
   return (
     <AdminLayout requiredRoles={['admin', 'support_agent']}>
-      <div className="h-[calc(100dvh-6rem)] flex flex-col">
-        <Card className="bg-card border-border mb-4">
-          <CardHeader className="pb-2 py-3 lg:py-4">
-            <CardTitle className="text-xl sm:text-2xl font-display">Live Chat</CardTitle>
-            <p className="text-muted-foreground text-sm">Respond to customer inquiries in real-time</p>
+      <div className="h-full flex flex-col min-h-0 overflow-hidden p-3 lg:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        {/* Header Card - compact on mobile */}
+        <Card className="bg-card border-border mb-3 shrink-0">
+          <CardHeader className="pb-2 py-2.5 lg:py-4">
+            <CardTitle className="text-lg sm:text-2xl font-display">Live Chat</CardTitle>
+            <p className="text-muted-foreground text-xs sm:text-sm">Respond to customer inquiries in real-time</p>
           </CardHeader>
         </Card>
 
-        <div className="h-[calc(100%-5rem)] flex gap-4">
+        {/* Main content area - fills remaining space */}
+        <div className="flex-1 flex gap-3 lg:gap-4 min-h-0 overflow-hidden">
           {/* Conversations List - Hidden on mobile when chat selected */}
           <div className={cn(
-            "border border-border rounded-lg bg-card overflow-hidden flex-shrink-0 w-full lg:w-80 xl:w-96",
-            selectedConversation ? "hidden lg:block" : "block"
+            "border border-border rounded-lg bg-card flex flex-col overflow-hidden shrink-0 w-full lg:w-80 xl:w-96 min-h-0",
+            selectedConversation ? "hidden lg:flex" : "flex"
           )}>
-            <div className="p-3 lg:p-4 border-b border-border bg-muted/50">
+            <div className="p-2.5 lg:p-4 border-b border-border bg-muted/50 shrink-0">
               <Tabs value={chatFilter} onValueChange={(v) => setChatFilter(v as 'active' | 'closed')}>
-                <TabsList className="w-full h-8">
+                <TabsList className="w-full h-9">
                   <TabsTrigger value="active" className="flex-1 text-xs">Active</TabsTrigger>
                   <TabsTrigger value="closed" className="flex-1 text-xs">
                     <Archive className="h-3 w-3 mr-1" />
@@ -668,7 +670,7 @@ export default function AdminLiveChat() {
                 </TabsList>
               </Tabs>
             </div>
-            <ScrollArea className="h-[calc(100%-4rem)]">
+            <ScrollArea className="flex-1 min-h-0">
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
               ) : conversations.filter(c => chatFilter === 'active' ? c.status !== 'closed' : c.status === 'closed').length === 0 ? (
@@ -731,8 +733,8 @@ export default function AdminLiveChat() {
           {/* Chat Area - Full width on mobile, flex-1 on desktop */}
           <div 
             className={cn(
-              "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 relative transition-colors",
-              selectedConversation ? "block" : "hidden lg:flex",
+              "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 min-h-0 relative transition-colors",
+              selectedConversation ? "flex" : "hidden lg:flex",
               isChatDragOver && "border-primary border-2 bg-primary/5"
             )}
             {...(selectedConversation ? chatDragProps : {})}
@@ -866,7 +868,7 @@ export default function AdminLiveChat() {
                 )}
 
                 {/* Messages */}
-                <ScrollArea className="flex-1 p-3 lg:p-4" ref={scrollRef}>
+                <ScrollArea className="flex-1 min-h-0 p-3 lg:p-4" ref={scrollRef}>
                   <div className="space-y-3 lg:space-y-4">
                     {messages.map((msg) => (
                       <div
