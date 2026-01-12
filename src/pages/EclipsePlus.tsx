@@ -5,8 +5,9 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { useSubscription, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
+import { useSubscription, ECLIPSE_PLUS_DISCOUNT, ECLIPSE_PLUS_BOT_DISCOUNT } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
+import { Bot } from 'lucide-react';
 
 const features = [
   {
@@ -16,8 +17,13 @@ const features = [
   },
   {
     icon: Percent,
-    title: `${ECLIPSE_PLUS_DISCOUNT}% Off All Purchases`,
-    description: 'Save on every purchase you make. Discount applies to all products except bots.',
+    title: `${ECLIPSE_PLUS_DISCOUNT}% Off Products`,
+    description: 'Save on every purchase you make. Discount automatically applies at checkout.',
+  },
+  {
+    icon: Bot,
+    title: `${ECLIPSE_PLUS_BOT_DISCOUNT}% Off Bots`,
+    description: 'Even bigger savings on all bot products with your Eclipse+ membership.',
   },
   {
     icon: Sparkles,
@@ -32,8 +38,8 @@ const faqs = [
     answer: 'You can claim any single product each month, except for bot products. There\'s no price limit - choose any eligible product regardless of its value.',
   },
   {
-    question: 'Does the discount apply to everything?',
-    answer: `The ${ECLIPSE_PLUS_DISCOUNT}% discount applies to all products except bot products. The discount is automatically applied at checkout when you're logged in.`,
+    question: 'What discounts do I get?',
+    answer: `You get ${ECLIPSE_PLUS_DISCOUNT}% off all regular products and an even bigger ${ECLIPSE_PLUS_BOT_DISCOUNT}% off all bot products! Discounts are automatically applied at checkout when you're logged in.`,
   },
   {
     question: 'When does my free product refresh?',
@@ -106,8 +112,8 @@ export default function EclipsePlus() {
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join Eclipse+ and enjoy a free product every month plus {ECLIPSE_PLUS_DISCOUNT}% off all your purchases. 
-            The ultimate membership for our community.
+            Join Eclipse+ and enjoy a free product every month, {ECLIPSE_PLUS_DISCOUNT}% off all products, 
+            and {ECLIPSE_PLUS_BOT_DISCOUNT}% off bots. The ultimate membership for our community.
           </p>
         </div>
 
@@ -157,7 +163,11 @@ export default function EclipsePlus() {
               </li>
               <li className="flex items-start gap-3">
                 <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>{ECLIPSE_PLUS_DISCOUNT}% off all purchases (excluding bots)</span>
+                <span>{ECLIPSE_PLUS_DISCOUNT}% off all products</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <span>{ECLIPSE_PLUS_BOT_DISCOUNT}% off all bot products</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -222,7 +232,7 @@ export default function EclipsePlus() {
         </Card>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature) => (
             <Card key={feature.title} className="text-center">
               <CardContent className="pt-6">
