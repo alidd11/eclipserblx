@@ -705,7 +705,7 @@ export default function AdminLiveChat() {
             )}
             {selectedConversation ? (
               <>
-                {/* Chat Header */}
+{/* Chat Header */}
                 <div className="p-3 lg:p-4 border-b border-border bg-muted/50 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <Button 
@@ -716,11 +716,13 @@ export default function AdminLiveChat() {
                     >
                       <ArrowLeft className="h-4 w-4" />
                     </Button>
-                    <div className="min-w-0">
+                    <div className="min-w-0 space-y-1">
+                      {/* Row 1: Name */}
+                      <h3 className="font-semibold text-sm lg:text-base truncate">
+                        {selectedConversation.customer_name || 'Anonymous'}
+                      </h3>
+                      {/* Row 2: Customer ID & Category badges */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-sm lg:text-base truncate">
-                          {selectedConversation.customer_name || 'Anonymous'}
-                        </h3>
                         {selectedConversation.user_id && customerProfiles[selectedConversation.user_id]?.customer_id && (
                           <Badge variant="secondary" className="text-[10px] lg:text-xs font-mono shrink-0">
                             {customerProfiles[selectedConversation.user_id].customer_id}
@@ -738,8 +740,9 @@ export default function AdminLiveChat() {
                           </Badge>
                         )}
                       </div>
+                      {/* Row 3: Email (staff-only) */}
                       {selectedConversation.customer_email && (
-                        <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                        <p className="text-xs text-muted-foreground truncate">
                           {selectedConversation.customer_email}
                         </p>
                       )}
