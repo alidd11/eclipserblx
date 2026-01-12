@@ -49,7 +49,7 @@ export async function notifyNewSupportTicket(
 
   await sendPushNotification(staffUserIds, {
     title: 'New Support Ticket',
-    body: `[${priorityLabel}] ${ticket.subject}\nFrom: ${ticket.customer_email}`,
+    body: `[${priorityLabel}] ${ticket.subject}`,
     tag: `support-ticket-${ticket.id}-${Date.now()}`,
     url: '/admin/support',
     requireInteraction: ticket.priority === 'urgent',

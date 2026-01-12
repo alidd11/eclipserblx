@@ -61,14 +61,59 @@ export default function AdminOrders() {
         .select(`*, order_items(*, products(name))`)
         .order('created_at', { ascending: false });
 
-      if (search) query = query.ilike('customer_email', `%${search}%`);
       if (statusFilter !== 'all') query = query.eq('status', statusFilter);
 
       const { data, error } = await query;
       if (error) throw error;
+      
+      // If searching, filter by user's customer_id from profiles
+      if (search && data) {
+        // Get all user_ids from orders
+        const userIds = data.filter(o => o.user_id).map(o => o.user_id);
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, customer_id')
+            .in('user_id', userIds);
+          
+          const customerIdMap = new Map(profiles?.map(p => [p.user_id, p.customer_id]) || []);
+          
+          return data.filter(order => {
+            const customerId = order.user_id ? customerIdMap.get(order.user_id) : null;
+            return customerId?.toLowerCase().includes(search.toLowerCase()) ||
+                   order.id.toLowerCase().includes(search.toLowerCase());
+          });
+        }
+      }
+      
       return data;
     },
   });
+  
+  // Fetch customer IDs for orders
+  const orderUserIds = orders?.filter(o => o.user_id).map(o => o.user_id) || [];
+  const { data: customerProfiles } = useQuery({
+    queryKey: ['order-customer-profiles', orderUserIds],
+    queryFn: async () => {
+      if (orderUserIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, customer_id')
+        .in('user_id', orderUserIds);
+      if (error) throw error;
+      const map: Record<string, string | null> = {};
+      data?.forEach(p => { map[p.user_id] = p.customer_id; });
+      return map;
+    },
+    enabled: orderUserIds.length > 0,
+  });
+  
+  const getCustomerId = (order: any) => {
+    if (order.user_id && customerProfiles?.[order.user_id]) {
+      return customerProfiles[order.user_id];
+    }
+    return order.id.slice(0, 8).toUpperCase();
+  };
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -139,7 +184,7 @@ export default function AdminOrders() {
               <div className="relative w-full sm:max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by email..."
+                  placeholder="Search by Customer ID..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 bg-background"
@@ -172,7 +217,7 @@ export default function AdminOrders() {
                       {getStatusBadge(order.status)}
                     </div>
                     <div className="text-sm">
-                      <p className="text-muted-foreground truncate">{order.customer_email}</p>
+                      <p className="text-muted-foreground truncate font-mono">{getCustomerId(order)}</p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</span>
@@ -219,7 +264,7 @@ export default function AdminOrders() {
                         <TableCell className="font-mono text-sm">
                           {order.id.slice(0, 8).toUpperCase()}
                         </TableCell>
-                        <TableCell>{order.customer_email}</TableCell>
+                        <TableCell className="font-mono">{getCustomerId(order)}</TableCell>
                         <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>£{order.total.toFixed(2)}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
@@ -252,8 +297,8 @@ export default function AdminOrders() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Customer</p>
-                  <p className="font-medium">{selectedOrder.customer_email}</p>
+                  <p className="text-muted-foreground">Customer ID</p>
+                  <p className="font-medium font-mono">{getCustomerId(selectedOrder)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Date</p>
