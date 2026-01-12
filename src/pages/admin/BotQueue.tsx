@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Clock, CheckCircle2, Loader2, Package, User, AlertCircle,
-  Play, Check, Eye, EyeOff, ShieldCheck
+  Play, Check, Eye, EyeOff, ShieldCheck, ExternalLink
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -36,6 +36,7 @@ interface BotInstallationCode {
   processed_by: string | null;
   processed_at: string | null;
   status: BotStatus;
+  discord_invite: string | null;
   profile?: {
     customer_id: string | null;
     display_name: string | null;
@@ -265,6 +266,25 @@ export default function BotQueue() {
             </div>
           )}
 
+          {/* Discord Invite Link */}
+          {request.discord_invite && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
+              onClick={() => window.open(request.discord_invite!, '_blank')}
+            >
+              <ExternalLink className="h-3.5 w-3.5 mr-2" />
+              Join Discord Server
+            </Button>
+          )}
+
+          {!request.discord_invite && request.status !== 'completed' && (
+            <div className="text-xs text-muted-foreground italic">
+              No Discord invite provided
+            </div>
+          )}
+
           {/* Expired warning */}
           {isExpired && (
             <div className="flex items-center gap-1.5 text-xs text-destructive">
@@ -482,6 +502,31 @@ export default function BotQueue() {
                         {selectedRequest.installation_code}
                       </code>
                     )}
+                  </div>
+                )}
+
+                {/* Discord invite link */}
+                {selectedRequest.discord_invite && (
+                  <div className="pt-2 border-t border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-muted-foreground">Discord Server</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
+                      onClick={() => window.open(selectedRequest.discord_invite!, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Join Discord Server
+                    </Button>
+                  </div>
+                )}
+
+                {!selectedRequest.discord_invite && (
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-sm text-muted-foreground italic">
+                      Customer has not provided a Discord invite link yet.
+                    </p>
                   </div>
                 )}
               </div>

@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 // Format bytes to human readable size
 const formatFileSize = (bytes: number): string => {
@@ -47,6 +49,7 @@ interface BotInstallationCode {
   installation_code: string;
   order_item_id: string;
   is_used: boolean;
+  discord_invite: string | null;
 }
 
 const BOT_CATEGORY_ID = '852838dc-adb6-4154-93fe-d1814fe46263';
@@ -60,9 +63,12 @@ interface DownloadProgress {
 
 export default function Downloads() {
   const { user, session } = useAuth();
+  const queryClient = useQueryClient();
   const [downloading, setDownloading] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [editingDiscord, setEditingDiscord] = useState<string | null>(null);
+  const [discordInput, setDiscordInput] = useState('');
 
   // Fetch bot installation codes for the user
   const { data: botCodes } = useQuery({
@@ -71,12 +77,40 @@ export default function Downloads() {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('bot_installation_codes')
-        .select('id, installation_code, order_item_id, is_used')
+        .select('id, installation_code, order_item_id, is_used, discord_invite')
         .eq('user_id', user.id);
       if (error) throw error;
       return data as BotInstallationCode[];
     },
     enabled: !!user?.id,
+  });
+
+  // Mutation to update discord invite
+  const updateDiscordMutation = useMutation({
+    mutationFn: async ({ codeId, discordInvite }: { codeId: string; discordInvite: string }) => {
+      // Basic validation for Discord invite link
+      const trimmed = discordInvite.trim();
+      if (trimmed && !trimmed.match(/^https?:\/\/(discord\.(gg|com\/invite)|discordapp\.com\/invite)\//i)) {
+        throw new Error('Please enter a valid Discord invite link');
+      }
+      
+      const { error } = await supabase
+        .from('bot_installation_codes')
+        .update({ discord_invite: trimmed || null })
+        .eq('id', codeId)
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-bot-codes'] });
+      toast.success('Discord invite saved!');
+      setEditingDiscord(null);
+      setDiscordInput('');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to save Discord invite');
+    },
   });
 
   const { data: orders, isLoading } = useQuery({
@@ -441,6 +475,79 @@ export default function Downloads() {
                               </Button>
                               {botCode.is_used && (
                                 <Badge variant="secondary" className="text-xs">Claimed</Badge>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Discord invite for bot products */}
+                          {isBot && botCode && (
+                            <div className="space-y-2 pt-1">
+                              {editingDiscord === botCode.id ? (
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    placeholder="https://discord.gg/your-invite"
+                                    value={discordInput}
+                                    onChange={(e) => setDiscordInput(e.target.value)}
+                                    className="flex-1 text-sm h-8"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 px-2"
+                                    onClick={() => {
+                                      setEditingDiscord(null);
+                                      setDiscordInput('');
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => updateDiscordMutation.mutate({ 
+                                      codeId: botCode.id, 
+                                      discordInvite: discordInput 
+                                    })}
+                                    disabled={updateDiscordMutation.isPending}
+                                  >
+                                    {updateDiscordMutation.isPending ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <Save className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </div>
+                              ) : botCode.discord_invite ? (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant="outline" className="text-xs bg-indigo-500/10 text-indigo-500 border-indigo-500/30">
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    Discord linked
+                                  </Badge>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 text-xs px-2"
+                                    onClick={() => {
+                                      setEditingDiscord(botCode.id);
+                                      setDiscordInput(botCode.discord_invite || '');
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
+                                  onClick={() => {
+                                    setEditingDiscord(botCode.id);
+                                    setDiscordInput('');
+                                  }}
+                                >
+                                  <ExternalLink className="h-3 w-3 mr-1.5" />
+                                  Add Discord Invite
+                                </Button>
                               )}
                             </div>
                           )}
