@@ -740,8 +740,8 @@ export default function AdminLiveChat() {
                           </Badge>
                         )}
                       </div>
-                      {/* Row 3: Email (staff-only) */}
-                      {selectedConversation.customer_email && (
+                      {/* Row 3: Email (primary admin only) */}
+                      {selectedConversation.customer_email && user?.email === 'alicanimir1@gmail.com' && (
                         <p className="text-xs text-muted-foreground truncate">
                           {selectedConversation.customer_email}
                         </p>
