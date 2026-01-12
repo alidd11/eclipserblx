@@ -43,6 +43,23 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     setIsStandalone(standalone);
   }, []);
 
+  // On iOS PWAs, if *anything* ever renders outside our fixed shell (overscroll/rounding/viewport jitter),
+  // the html/body background is what shows through. Force it to match chat pages to prevent grey gaps.
+  useEffect(() => {
+    if (!isChatPage) return;
+
+    const prevHtmlBg = document.documentElement.style.backgroundColor;
+    const prevBodyBg = document.body.style.backgroundColor;
+
+    document.documentElement.style.backgroundColor = 'hsl(var(--card))';
+    document.body.style.backgroundColor = 'hsl(var(--card))';
+
+    return () => {
+      document.documentElement.style.backgroundColor = prevHtmlBg;
+      document.body.style.backgroundColor = prevBodyBg;
+    };
+  }, [isChatPage]);
+
   // Keep a CSS var in sync with the *visual* viewport height.
   // iOS PWA/Safari can keep `position: fixed` anchored to the layout viewport,
   // which makes chat UIs not move up with the keyboard.

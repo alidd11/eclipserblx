@@ -9,8 +9,8 @@ export function useThemeColor() {
 
   useEffect(() => {
     const themeColor = resolvedTheme === 'light' ? LIGHT_THEME_COLOR : DARK_THEME_COLOR;
-    
-    // Update meta theme-color
+
+    // Update meta theme-color (browser UI)
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', themeColor);
@@ -22,8 +22,8 @@ export function useThemeColor() {
       metaTileColor.setAttribute('content', themeColor);
     }
 
-    // Update body background for safe areas
-    document.documentElement.style.backgroundColor = themeColor;
-    document.body.style.backgroundColor = themeColor;
+    // For in-app safe areas, prefer our design tokens (matches Tailwind theme)
+    document.documentElement.style.backgroundColor = 'hsl(var(--background))';
+    document.body.style.backgroundColor = 'hsl(var(--background))';
   }, [resolvedTheme]);
 }
