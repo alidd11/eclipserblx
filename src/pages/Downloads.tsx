@@ -50,6 +50,8 @@ interface BotInstallationCode {
   order_item_id: string;
   is_used: boolean;
   discord_invite: string | null;
+  discord_guild_name: string | null;
+  discord_guild_icon: string | null;
 }
 
 const BOT_CATEGORY_ID = '852838dc-adb6-4154-93fe-d1814fe46263';
@@ -78,7 +80,7 @@ export default function Downloads() {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('bot_installation_codes')
-        .select('id, installation_code, order_item_id, is_used, discord_invite')
+        .select('id, installation_code, order_item_id, is_used, discord_invite, discord_guild_name, discord_guild_icon')
         .eq('user_id', user.id);
       if (error) throw error;
       return data as BotInstallationCode[];
@@ -95,7 +97,11 @@ export default function Downloads() {
       if (!trimmed) {
         const { error } = await supabase
           .from('bot_installation_codes')
-          .update({ discord_invite: null })
+          .update({ 
+            discord_invite: null,
+            discord_guild_name: null,
+            discord_guild_icon: null
+          })
           .eq('id', codeId)
           .eq('user_id', user?.id);
         if (error) throw error;
@@ -122,16 +128,23 @@ export default function Downloads() {
         throw new Error(validationResult.error || 'Invalid invite link');
       }
       
-      // Save the validated invite
+      // Save the validated invite with guild info
       const { error } = await supabase
         .from('bot_installation_codes')
-        .update({ discord_invite: trimmed })
+        .update({ 
+          discord_invite: trimmed,
+          discord_guild_name: validationResult.guildName || null,
+          discord_guild_icon: validationResult.guildIcon || null
+        })
         .eq('id', codeId)
         .eq('user_id', user?.id);
       
       if (error) throw error;
       
-      return { guildName: validationResult.guildName };
+      return { 
+        guildName: validationResult.guildName,
+        guildIcon: validationResult.guildIcon
+      };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-bot-codes'] });
@@ -557,10 +570,22 @@ export default function Downloads() {
                                 </div>
                               ) : botCode.discord_invite ? (
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge variant="outline" className="text-xs bg-indigo-500/10 text-indigo-500 border-indigo-500/30">
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    Discord linked
-                                  </Badge>
+                                  <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/30">
+                                    {botCode.discord_guild_icon ? (
+                                      <img 
+                                        src={botCode.discord_guild_icon} 
+                                        alt={botCode.discord_guild_name || 'Server'} 
+                                        className="w-5 h-5 rounded-full"
+                                      />
+                                    ) : (
+                                      <div className="w-5 h-5 rounded-full bg-indigo-500/30 flex items-center justify-center">
+                                        <ExternalLink className="h-3 w-3 text-indigo-500" />
+                                      </div>
+                                    )}
+                                    <span className="text-xs font-medium text-indigo-500">
+                                      {botCode.discord_guild_name || 'Discord server linked'}
+                                    </span>
+                                  </div>
                                   <Button
                                     variant="ghost"
                                     size="sm"
