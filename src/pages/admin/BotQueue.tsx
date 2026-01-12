@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Clock, CheckCircle2, Loader2, Package, User, AlertCircle,
-  Play, Check, Eye, EyeOff, ShieldCheck, ExternalLink, Users
+  Play, Check, Eye, EyeOff, ShieldCheck, ExternalLink, Users, Copy
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -553,13 +553,25 @@ export default function BotQueue() {
                   <div className="pt-2 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Installation Code</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowCode(!showCode)}
-                      >
-                        {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowCode(!showCode)}
+                        >
+                          {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedRequest.installation_code);
+                            toast.success('Code copied to clipboard');
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     {showCode && (
                       <code className="block mt-1 p-2 bg-background rounded text-sm font-mono whitespace-nowrap">
@@ -629,6 +641,13 @@ export default function BotQueue() {
                     value={enteredCode}
                     onChange={(e) => setEnteredCode(e.target.value.toUpperCase())}
                     className="font-mono"
+                    onFocus={(e) => {
+                      if (isMobile) {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }
+                    }}
                   />
                 </div>
               )}
