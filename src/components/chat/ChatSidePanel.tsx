@@ -69,7 +69,7 @@ export function ChatSidePanel() {
   const panelRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [hasEntered, setHasEntered] = useState(false);
+  
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -338,17 +338,9 @@ export function ChatSidePanel() {
     setIsDragging(false);
   };
 
-  // Track when panel has fully entered
-  const handleAnimationComplete = () => {
-    if (!hasEntered) {
-      setHasEntered(true);
-    }
-  };
-
-  // Reset hasEntered when panel closes
+  // Reset isMinimized when panel closes
   useEffect(() => {
     if (!isOpen) {
-      setHasEntered(false);
       setIsMinimized(false);
     }
   }, [isOpen]);
@@ -364,13 +356,10 @@ export function ChatSidePanel() {
             y: isMinimized ? 'calc(100dvh - 60px)' : isDragging ? dragY : 0
           }}
           exit={{ x: '100%', y: 0 }}
-          onAnimationComplete={handleAnimationComplete}
           transition={
             isDragging 
               ? { duration: 0 } 
-              : hasEntered
-                ? { type: 'spring', damping: 30, stiffness: 300, y: { type: 'spring', damping: 30, stiffness: 300 } }
-                : { type: 'spring', damping: 25, stiffness: 200 }
+              : { type: 'spring', damping: 25, stiffness: 200 }
           }
           drag={!isMinimized ? 'y' : false}
           dragConstraints={{ top: 0, bottom: 0 }}
