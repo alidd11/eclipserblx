@@ -312,8 +312,8 @@ export default function AdminUsers() {
           <p className="text-muted-foreground">Manage user accounts and permissions</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 max-w-sm">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by customer ID..."
@@ -324,13 +324,13 @@ export default function AdminUsers() {
           </div>
           
           <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as AppRole | 'all' | 'customer')}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-card">
-              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Filter by role" />
+            <SelectTrigger className="w-[140px] sm:w-[180px] bg-card shrink-0">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
+              <SelectValue placeholder="Filter" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Users</SelectItem>
-              <SelectItem value="customer">Customers Only</SelectItem>
+              <SelectItem value="customer">Customers</SelectItem>
               {ROLES.map((role) => (
                 <SelectItem key={role.value} value={role.value}>
                   {role.label}
