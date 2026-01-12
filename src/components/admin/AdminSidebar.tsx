@@ -398,7 +398,9 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   return (
     <aside className={cn(
       "bg-card flex flex-col transition-all duration-300 shrink-0",
-      isMobileDrawer ? "h-full w-full border-0" : "h-screen sticky top-0 border-r border-border",
+      isMobileDrawer 
+        ? "h-full w-full border-0 max-h-[100dvh]" 
+        : "h-screen sticky top-0 border-r border-border",
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
     )}>
       {/* Header */}
@@ -422,7 +424,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {filteredGroups.map(renderGroup)}
 
         {/* Sign Out - inline with nav items on mobile for visibility */}
