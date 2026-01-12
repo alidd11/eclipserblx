@@ -667,13 +667,12 @@ export function ChatWidget() {
     return (
       <Button
         type="button"
-        onClick={openChat}
-        onTouchEnd={(e) => {
-          // iOS Safari: ensure touch reliably opens the widget
-          e.preventDefault();
+        onClick={(e) => {
+          e.stopPropagation();
           openChat();
         }}
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full gradient-button shadow-lg z-[9999] touch-manipulation cursor-pointer"
+        style={{ WebkitTapHighlightColor: 'transparent' }}
         size="icon"
         aria-label="Open live chat"
       >
