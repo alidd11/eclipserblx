@@ -571,7 +571,7 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4 pb-[env(safe-area-inset-bottom)] sm:pb-0">
+    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4">
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
         <div>
@@ -694,7 +694,7 @@ function StaffMessagesContent() {
           {/* Message input with mention suggestions - stays in flex flow */}
           <div 
             ref={inputBarRef}
-            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card/95 backdrop-blur-sm"
+            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card/95 backdrop-blur-sm pb-[max(0.75rem,env(safe-area-inset-bottom))]"
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
