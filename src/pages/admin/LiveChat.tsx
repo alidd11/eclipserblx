@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle, Upload, Copy, Check } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle, Upload, Copy, Check, ShoppingBag, ChevronUp } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -162,6 +162,9 @@ export default function AdminLiveChat() {
   const [customerTyping, setCustomerTyping] = useState(false);
   const [chatFilter, setChatFilter] = useState<'active' | 'closed'>('active');
   const [customerProfiles, setCustomerProfiles] = useState<Record<string, { customer_id: string | null }>>({});
+  const [customerOrders, setCustomerOrders] = useState<Array<{ id: string; total: number; status: string; created_at: string; items: Array<{ product_name: string; price: number }> }>>([]);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -229,8 +232,15 @@ export default function AdminLiveChat() {
 
     // Prevent cross-conversation message bleed during refetch merges.
     setMessages([]);
+    setCustomerOrders([]);
+    setShowOrderHistory(false);
     loadMessages(selectedConversation.id);
     setCustomerTyping(false);
+    
+    // Load customer orders if user_id exists
+    if (selectedConversation.user_id) {
+      loadCustomerOrders(selectedConversation.user_id);
+    }
 
     // Messages channel
     const messagesChannel = supabase
@@ -386,6 +396,39 @@ export default function AdminLiveChat() {
     if (data) {
       setMessages((prev) => mergeServerMessages(prev, data as Message[]));
     }
+  };
+
+  const loadCustomerOrders = async (userId: string) => {
+    setLoadingOrders(true);
+    const { data } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        total,
+        status,
+        created_at,
+        order_items (
+          product_name,
+          price
+        )
+      `)
+      .eq('user_id', userId)
+      .in('status', ['paid', 'completed'])
+      .order('created_at', { ascending: false })
+      .limit(5);
+    
+    if (data) {
+      setCustomerOrders(data.map(order => ({
+        id: order.id,
+        total: order.total,
+        status: order.status,
+        created_at: order.created_at,
+        items: order.order_items || []
+      })));
+    } else {
+      setCustomerOrders([]);
+    }
+    setLoadingOrders(false);
   };
 
   const sendMessage = async (retryTempId?: string) => {
@@ -770,6 +813,57 @@ export default function AdminLiveChat() {
                     </Button>
                   )}
                 </div>
+
+                {/* Order History Collapsible */}
+                {selectedConversation.user_id && (
+                  <div className="border-b border-border">
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderHistory(!showOrderHistory)}
+                      className="w-full px-3 lg:px-4 py-2 flex items-center justify-between text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        <span>Order History ({customerOrders.length})</span>
+                      </div>
+                      {showOrderHistory ? (
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      ) : (
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                    {showOrderHistory && (
+                      <div className="px-3 lg:px-4 pb-3 space-y-2">
+                        {loadingOrders ? (
+                          <div className="flex items-center justify-center py-3">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : customerOrders.length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-2">No orders found</p>
+                        ) : (
+                          customerOrders.map((order) => (
+                            <div key={order.id} className="bg-muted/50 rounded-md p-2 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium">
+                                  £{order.total.toFixed(2)}
+                                </span>
+                                <Badge variant="outline" className="text-[10px]">
+                                  {order.status}
+                                </Badge>
+                              </div>
+                              <div className="text-[10px] text-muted-foreground">
+                                {format(new Date(order.created_at), 'dd MMM yyyy')}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground truncate">
+                                {order.items.map(i => i.product_name).join(', ')}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Messages */}
                 <ScrollArea className="flex-1 p-3 lg:p-4" ref={scrollRef}>
