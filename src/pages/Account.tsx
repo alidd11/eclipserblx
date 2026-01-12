@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBadges } from '@/hooks/useBadges';
+import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
@@ -32,6 +33,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges, newBadges, checkBadges, clearNewBadges } = useBadges();
+  const { isSubscribed } = useSubscription();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -352,10 +354,16 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               
               {/* Info Section */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-semibold text-base sm:text-lg break-words">
                     {profile?.display_name || fallbackDisplayName}
                   </h2>
+                  {isSubscribed && (
+                    <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 shrink-0">
+                      <Sparkles className="h-3 w-3" />
+                      <span className="text-[10px] font-semibold">Eclipse+</span>
+                    </Badge>
+                  )}
                   {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />}
                 </div>
                 
