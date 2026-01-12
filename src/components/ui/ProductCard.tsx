@@ -16,12 +16,16 @@ interface ProductCardProps {
   categorySlug?: string;
   categoryId?: string;
   isFeatured?: boolean;
+  createdAt?: string;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, categoryId, isFeatured }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, categoryId, isFeatured, createdAt }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
+  
+  // Check if product is new (within last 3 days)
+  const isNew = createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
   // Always show member price for eligible products
   const isEligible = isEligibleForDiscount(categoryId);
@@ -60,11 +64,19 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             </div>
           )}
           
-          {isFeatured && (
-            <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[10px] font-medium bg-primary text-primary-foreground rounded">
-              Featured
-            </div>
-          )}
+          {/* Badges */}
+          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+            {isFeatured && (
+              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-primary text-primary-foreground rounded">
+                Featured
+              </div>
+            )}
+            {isNew && !isFeatured && (
+              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500 text-white rounded">
+                New
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content */}

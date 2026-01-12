@@ -254,6 +254,7 @@ export default function Products() {
                   categorySlug={product.categories?.slug}
                   categoryId={product.category_id}
                   isFeatured={product.is_featured}
+                  createdAt={product.created_at}
                 />
               ))}
             </div>
