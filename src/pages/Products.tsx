@@ -144,9 +144,9 @@ export default function Products() {
             </p>
 
             {/* Search, Sort & Categories Row */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
               {/* Search Bar */}
-              <div className="relative flex-1 min-w-[150px]">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                 <Input
                   placeholder="Search products..."
@@ -158,9 +158,9 @@ export default function Products() {
 
               {/* Sort Dropdown */}
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                <SelectTrigger className="w-auto min-w-[130px] h-9 text-sm bg-muted/30 border-border/50">
-                  <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                  <SelectValue />
+                <SelectTrigger className="w-auto h-9 text-sm bg-muted/30 border-border/50 gap-1.5 px-2.5">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                  <span className="hidden sm:inline"><SelectValue /></span>
                 </SelectTrigger>
                 <SelectContent>
                   {sortOptions.map((option) => (
@@ -173,11 +173,10 @@ export default function Products() {
 
               {/* Categories Filter */}
               <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md bg-muted/30 hover:bg-muted/50 h-9">
-                  <Filter className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{activeCategory ? activeCategory.name : 'All Categories'}</span>
-                  <span className="sm:hidden">Filter</span>
-                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+                <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-2.5 py-2 rounded-md bg-muted/30 hover:bg-muted/50 h-9">
+                  <Filter className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline truncate max-w-[100px]">{activeCategory ? activeCategory.name : 'Filter'}</span>
+                  <ChevronDown className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
               </Collapsible>
             </div>
