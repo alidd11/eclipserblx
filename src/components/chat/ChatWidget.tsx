@@ -680,7 +680,7 @@ export function ChatWidget() {
     return (
       <button
         type="button"
-        onClick={() => openChat()}
+        onClick={() => navigate('/support/chat')}
         className="fixed h-14 w-14 rounded-full gradient-button shadow-lg z-[9999] touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
         style={{ 
           WebkitTapHighlightColor: 'transparent',
