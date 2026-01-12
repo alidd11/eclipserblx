@@ -62,6 +62,8 @@ const LiveChatPage = () => {
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -142,15 +144,41 @@ const LiveChatPage = () => {
       })
       .subscribe();
 
+    // Store ref for customer typing broadcast
+    typingChannelRef.current = typingChannel;
+
     return () => {
+      typingChannelRef.current = null;
       supabase.removeChannel(channel);
       supabase.removeChannel(typingChannel);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [conversation?.id, scrollToBottom]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Handle customer typing broadcast
+  const handleTyping = useCallback(() => {
+    const channel = typingChannelRef.current;
+    if (!channel) return;
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Broadcast typing status
+    channel.track({ typing: true, role: 'customer' });
+
+    // Stop typing after 2 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      channel.track({ typing: false, role: 'customer' });
+    }, 2000);
+  }, []);
 
   const loadMessages = async (conversationId: string) => {
     const { data, error } = await supabase
@@ -501,7 +529,10 @@ const LiveChatPage = () => {
                   </Button>
                   <Input
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      handleTyping();
+                    }}
                     onKeyPress={handleKeyPress}
                     placeholder="Type a message..."
                     className="flex-1"
