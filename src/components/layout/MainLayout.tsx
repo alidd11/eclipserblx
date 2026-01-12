@@ -9,9 +9,9 @@ interface MainLayoutProps {
 export const MainLayout = forwardRef<HTMLDivElement, MainLayoutProps>(
   function MainLayout({ children }, ref) {
     return (
-      <div ref={ref} className="min-h-[100dvh] flex flex-col">
+      <div ref={ref} className="min-h-[100dvh] flex flex-col bg-background overscroll-contain">
         <Header />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto overscroll-contain">{children}</main>
         <Footer />
       </div>
     );

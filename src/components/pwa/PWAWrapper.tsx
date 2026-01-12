@@ -181,11 +181,14 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
       {/* Content with pull offset */}
       <div
+        className="bg-background overscroll-contain"
         style={{
           transform: isStandalone && pullDistance > 0 ? `translateY(${pullDistance * 0.3}px)` : undefined,
           transition: !isPulling ? 'transform 0.2s ease-out' : undefined,
           // Add padding when showing banners
           paddingTop: (isOffline || isDegraded) ? 'calc(env(safe-area-inset-top) + 2.5rem)' : undefined,
+          // Ensure background extends behind safe areas
+          minHeight: '100dvh',
         }}
       >
         {children}
