@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Hook for handling iOS PWA keyboard behavior.
  * 
- * In iOS PWA standalone mode, the visualViewport API can be unreliable.
- * This hook provides a simpler approach:
+ * IMPORTANT: When running in Capacitor native mode, this hook is disabled
+ * because Capacitor's native keyboard plugin handles everything automatically.
+ * 
+ * In iOS PWA standalone mode (web), the visualViewport API can be unreliable.
+ * This hook provides a workaround:
  * - Detects when an input is focused
  * - Provides state to allow the input bar to use absolute positioning
  * - Uses visualViewport to calculate the correct position above the keyboard
@@ -14,10 +18,20 @@ export function useIOSKeyboardFix() {
   const [inputBarTop, setInputBarTop] = useState<number | null>(null);
   const isIOSRef = useRef(false);
   const isPWARef = useRef(false);
+  const isNativeRef = useRef(false);
   const baseViewportHeightRef = useRef<number | null>(null);
 
-  // Detect iOS and PWA on mount
+  // Detect iOS, PWA, and Native mode on mount
   useEffect(() => {
+    // Check if running in Capacitor native mode - if so, skip all workarounds
+    isNativeRef.current = Capacitor.isNativePlatform();
+    
+    if (isNativeRef.current) {
+      // Native mode: Capacitor Keyboard plugin handles everything automatically
+      console.log('[useIOSKeyboardFix] Running in native mode - keyboard handling delegated to Capacitor');
+      return;
+    }
+    
     const ua = navigator.userAgent;
     isIOSRef.current = /iPad|iPhone|iPod/.test(ua) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -25,8 +39,6 @@ export function useIOSKeyboardFix() {
       (window.navigator as any).standalone === true;
 
     // IMPORTANT: initialize the baseline BEFORE the first focus/keyboard resize.
-    // If we wait until the first visualViewport resize, the baseline can be captured
-    // while the keyboard is already open, which makes keyboard detection fail.
     const vv = window.visualViewport;
     if (vv && isIOSRef.current && isPWARef.current) {
       baseViewportHeightRef.current = vv.height;
@@ -74,7 +86,10 @@ export function useIOSKeyboardFix() {
 
   // Listen to visual viewport changes
   useEffect(() => {
-    // Only apply this fix for iOS PWA
+    // Skip all workarounds in native mode - Capacitor handles it
+    if (isNativeRef.current) return;
+    
+    // Only apply this fix for iOS PWA (web)
     if (!isIOSRef.current || !isPWARef.current) {
       return;
     }
@@ -108,6 +123,9 @@ export function useIOSKeyboardFix() {
 
   // Handle focus events to detect keyboard state
   useEffect(() => {
+    // Skip in native mode
+    if (isNativeRef.current) return;
+    
     if (!isIOSRef.current || !isPWARef.current) {
       return;
     }
@@ -148,5 +166,6 @@ export function useIOSKeyboardFix() {
     isKeyboardVisible,
     inputBarTop,
     isIOSPWA: isIOSRef.current && isPWARef.current,
+    isNative: isNativeRef.current,
   };
 }
