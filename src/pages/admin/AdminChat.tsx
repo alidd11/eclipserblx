@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useDropZone } from '@/hooks/useDropZone';
 import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
+import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Navigate } from 'react-router-dom';
@@ -148,6 +149,13 @@ function AdminChatContent() {
 
   // iOS keyboard fix for PWA - now only provides visibility state for scroll behavior
   const { isKeyboardVisible } = useIOSKeyboardFix();
+
+  // Mark messages as read when component mounts
+  useEffect(() => {
+    if (user) {
+      markChatAsRead('admin', user.id);
+    }
+  }, [user]);
 
   // Fetch messages from admin_chat_messages
   const { data: messages = [], isLoading } = useQuery({

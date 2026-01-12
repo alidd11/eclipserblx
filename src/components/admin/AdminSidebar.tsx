@@ -16,6 +16,7 @@ import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
+import { useChatNotifications } from '@/hooks/useChatNotifications';
 
 interface NavItem {
   title: string;
@@ -131,6 +132,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const chatNotifications = useChatNotifications();
   
   // Initialize open groups from localStorage or default to all open
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -203,12 +205,41 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     const isActive = location.pathname === item.href || 
       (item.href === '/admin' && location.pathname === '/admin');
 
+    // Determine notification status for chat items
+    let hasMention = false;
+    let hasUnread = false;
+    
+    if (item.href === '/admin/staff-messages') {
+      hasMention = chatNotifications.staffMessagesMention;
+      hasUnread = chatNotifications.staffMessagesUnread && !hasMention;
+    } else if (item.href === '/admin/admin-chat') {
+      hasMention = chatNotifications.adminChatMention;
+      hasUnread = chatNotifications.adminChatUnread && !hasMention;
+    }
+
+    const NotificationDot = () => {
+      if (hasMention) {
+        return (
+          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-card animate-pulse" />
+        );
+      }
+      if (hasUnread) {
+        return (
+          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-yellow-500 ring-2 ring-card" />
+        );
+      }
+      return null;
+    };
+
     const LinkContent = (
       <>
-        <item.icon className={cn(
-          "h-4 w-4 shrink-0 transition-all",
-          isActive ? "stroke-[2.5]" : "stroke-[1.5]"
-        )} />
+        <div className="relative shrink-0">
+          <item.icon className={cn(
+            "h-4 w-4 transition-all",
+            isActive ? "stroke-[2.5]" : "stroke-[1.5]"
+          )} />
+          <NotificationDot />
+        </div>
         {!isCollapsed && (
           <span className="min-w-0 truncate leading-none">{item.title}</span>
         )}
