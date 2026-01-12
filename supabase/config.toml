@@ -83,3 +83,21 @@ verify_jwt = false
 
 [functions.delete-payment-method]
 verify_jwt = false
+
+[functions.send-bot-status-update]
+verify_jwt = false
+
+[functions.validate-discord-invite]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.create-subscription-checkout]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.claim-free-product]
+verify_jwt = false
