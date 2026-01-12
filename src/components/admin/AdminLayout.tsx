@@ -290,8 +290,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           
           <main
             className={cn(
-              'flex-1 min-h-0 bg-background',
-              isChatPage ? 'overflow-hidden overscroll-none' : 'overflow-y-auto overscroll-contain'
+              'flex-1 min-h-0',
+              isChatPage ? 'overflow-hidden overscroll-none bg-card' : 'overflow-y-auto overscroll-contain bg-background'
             )}
           >
             <div
