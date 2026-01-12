@@ -4,7 +4,7 @@ import { useChatPanel } from '@/hooks/useChatPanel';
 
 export function ChatWidget() {
   const location = useLocation();
-  const { toggleChat, isOpen } = useChatPanel();
+  const { toggleChat, isOpen, unreadCount } = useChatPanel();
   
   // Hide the chat widget on admin pages only
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -26,6 +26,11 @@ export function ChatWidget() {
       aria-label={isOpen ? "Close live chat" : "Open live chat"}
     >
       <MessageCircle className="h-6 w-6 text-white" />
+      {unreadCount > 0 && !isOpen && (
+        <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center animate-pulse">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      )}
     </button>
   );
 }
