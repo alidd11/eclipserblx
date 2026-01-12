@@ -1412,8 +1412,11 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          external_reviewer_name: string | null
+          external_source: string | null
           id: string
           is_approved: boolean | null
+          is_external: boolean | null
           is_featured: boolean | null
           product_id: string | null
           rating: number
@@ -1424,8 +1427,11 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          external_reviewer_name?: string | null
+          external_source?: string | null
           id?: string
           is_approved?: boolean | null
+          is_external?: boolean | null
           is_featured?: boolean | null
           product_id?: string | null
           rating: number
@@ -1436,8 +1442,11 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          external_reviewer_name?: string | null
+          external_source?: string | null
           id?: string
           is_approved?: boolean | null
+          is_external?: boolean | null
           is_featured?: boolean | null
           product_id?: string | null
           rating?: number
