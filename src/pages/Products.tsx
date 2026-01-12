@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Filter, Search, ChevronDown, Package } from 'lucide-react';
+import { Filter, Search, ChevronDown, Package, ArrowUpDown } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
+
+type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
 export default function Products() {
   const queryClient = useQueryClient();
@@ -20,6 +23,7 @@ export default function Products() {
   const featuredOnly = searchParams.get('featured') === 'true';
   const [search, setSearch] = useState('');
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('smart');
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -39,7 +43,7 @@ export default function Products() {
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products', categorySlug, search, featuredOnly],
+    queryKey: ['products', categorySlug, search, featuredOnly, sortBy],
     queryFn: async () => {
       let query = supabase
         .from('products')
@@ -64,37 +68,58 @@ export default function Products() {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Sort products: Featured first, then new (within 3 days), then by popularity
+      // Sort products based on selected sort option
       const now = new Date();
       const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
       
       const sorted = (data || []).sort((a, b) => {
-        // Featured products first
-        if (a.is_featured && !b.is_featured) return -1;
-        if (!a.is_featured && b.is_featured) return 1;
-        
-        // Among non-featured, new products (within 3 days) come next
-        const aIsNew = new Date(a.created_at) > threeDaysAgo;
-        const bIsNew = new Date(b.created_at) > threeDaysAgo;
-        
-        if (aIsNew && !bIsNew) return -1;
-        if (!aIsNew && bIsNew) return 1;
-        
-        // If both are new, sort by newest first
-        if (aIsNew && bIsNew) {
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        switch (sortBy) {
+          case 'newest':
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          case 'oldest':
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          case 'price-low':
+            return a.price - b.price;
+          case 'price-high':
+            return b.price - a.price;
+          case 'popularity':
+            return (b.download_count || 0) - (a.download_count || 0);
+          case 'smart':
+          default:
+            // Featured products first
+            if (a.is_featured && !b.is_featured) return -1;
+            if (!a.is_featured && b.is_featured) return 1;
+            
+            // Among non-featured, new products (within 3 days) come next
+            const aIsNew = new Date(a.created_at) > threeDaysAgo;
+            const bIsNew = new Date(b.created_at) > threeDaysAgo;
+            
+            if (aIsNew && !bIsNew) return -1;
+            if (!aIsNew && bIsNew) return 1;
+            
+            // If both are new, sort by newest first
+            if (aIsNew && bIsNew) {
+              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            }
+            
+            // Otherwise, sort by popularity (download_count)
+            return (b.download_count || 0) - (a.download_count || 0);
         }
-        
-        // Otherwise, sort by popularity (download_count)
-        const aPopularity = a.download_count || 0;
-        const bPopularity = b.download_count || 0;
-        return bPopularity - aPopularity;
       });
       
       return sorted;
     },
     enabled: categories !== undefined || !categorySlug,
   });
+
+  const sortOptions = [
+    { value: 'smart', label: 'Smart Sort' },
+    { value: 'popularity', label: 'Most Popular' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+    { value: 'price-low', label: 'Price: Low to High' },
+    { value: 'price-high', label: 'Price: High to Low' },
+  ];
 
   const activeCategory = categories?.find(c => c.slug === categorySlug);
 
@@ -118,10 +143,10 @@ export default function Products() {
               {featuredOnly ? 'Discover our handpicked premium assets' : activeCategory?.description || 'Browse our collection of premium roleplay assets'}
             </p>
 
-            {/* Search & Categories Row */}
-            <div className="flex items-center gap-3">
+            {/* Search, Sort & Categories Row */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {/* Search Bar */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-[150px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                 <Input
                   placeholder="Search products..."
@@ -131,11 +156,27 @@ export default function Products() {
                 />
               </div>
 
+              {/* Sort Dropdown */}
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <SelectTrigger className="w-auto min-w-[130px] h-9 text-sm bg-muted/30 border-border/50">
+                  <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               {/* Categories Filter */}
               <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md bg-muted/30 hover:bg-muted/50">
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md bg-muted/30 hover:bg-muted/50 h-9">
                   <Filter className="h-3.5 w-3.5" />
-                  <span>{activeCategory ? activeCategory.name : 'All Categories'}</span>
+                  <span className="hidden sm:inline">{activeCategory ? activeCategory.name : 'All Categories'}</span>
+                  <span className="sm:hidden">Filter</span>
                   <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
               </Collapsible>
