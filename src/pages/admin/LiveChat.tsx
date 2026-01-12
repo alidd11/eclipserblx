@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle, Upload } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle, Upload, Copy, Check } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -724,9 +724,25 @@ export default function AdminLiveChat() {
                       {/* Row 2: Customer ID & Category badges */}
                       <div className="flex items-center gap-2 flex-wrap">
                         {selectedConversation.user_id && customerProfiles[selectedConversation.user_id]?.customer_id && (
-                          <Badge variant="secondary" className="text-[10px] lg:text-xs font-mono shrink-0">
-                            {customerProfiles[selectedConversation.user_id].customer_id}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="text-[10px] lg:text-xs font-mono shrink-0">
+                              {customerProfiles[selectedConversation.user_id].customer_id}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 shrink-0"
+                              onClick={() => {
+                                const customerId = customerProfiles[selectedConversation.user_id!]?.customer_id;
+                                if (customerId) {
+                                  navigator.clipboard.writeText(customerId);
+                                  hapticTap();
+                                }
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
                         )}
                         {selectedConversation.issue_category && (
                           <Badge 
