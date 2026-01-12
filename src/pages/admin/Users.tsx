@@ -416,10 +416,11 @@ export default function AdminUsers() {
                         Joined {new Date(profile.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       <Button 
                         variant="outline" 
-                        size="sm" 
+                        size="icon"
+                        className="h-10 w-10"
                         onClick={() => setSelectedUser(profile)}
                       >
                         <Shield className="h-4 w-4" />
@@ -427,9 +428,9 @@ export default function AdminUsers() {
                       {isAdmin && (
                         <Button 
                           variant="outline" 
-                          size="sm" 
+                          size="icon"
+                          className="h-10 w-10 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
                           onClick={() => setIpBanDialogUser(profile)}
-                          className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
                         >
                           <Ban className="h-4 w-4" />
                         </Button>
@@ -437,9 +438,9 @@ export default function AdminUsers() {
                       {canDeleteUser(profile) && (
                         <Button 
                           variant="outline" 
-                          size="sm" 
+                          size="icon"
+                          className="h-10 w-10 text-destructive border-destructive/50 hover:bg-destructive/10"
                           onClick={() => setDeleteConfirmUser(profile)}
-                          className="text-destructive border-destructive/30 hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
