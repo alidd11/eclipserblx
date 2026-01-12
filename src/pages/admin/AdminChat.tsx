@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
+import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,7 @@ interface ChatMessage {
   message: string;
   attachment_url: string | null;
   created_at: string;
+  reply_to_id: string | null;
 }
 
 interface UserProfile {
@@ -128,6 +130,7 @@ function AdminChatContent() {
   const { isAdmin, loading } = useAdminAuth();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
+  const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [onlineAdmins, setOnlineAdmins] = useState<OnlineAdmin[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -324,7 +327,7 @@ function AdminChatContent() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async ({ message, attachmentUrl }: { message: string; attachmentUrl: string | null }) => {
+    mutationFn: async ({ message, attachmentUrl, replyToId }: { message: string; attachmentUrl: string | null; replyToId: string | null }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       const { error } = await supabase
@@ -333,6 +336,7 @@ function AdminChatContent() {
           user_id: user.id,
           message: message.trim() || (attachmentUrl ? '📎 Attachment' : ''),
           attachment_url: attachmentUrl,
+          reply_to_id: replyToId,
         });
       
       if (error) throw error;
@@ -346,6 +350,7 @@ function AdminChatContent() {
       hapticTap();
       setNewMessage('');
       setSelectedFile(null);
+      setReplyToMessage(null);
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
     },
@@ -712,7 +717,8 @@ function AdminChatContent() {
 
       await sendMessageMutation.mutateAsync({ 
         message: newMessage, 
-        attachmentUrl 
+        attachmentUrl,
+        replyToId: replyToMessage?.id || null
       });
     } catch (error) {
       console.error('Send error:', error);
@@ -721,6 +727,19 @@ function AdminChatContent() {
       setIsUploading(false);
     }
   };
+
+  const handleReply = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message) {
+      setReplyToMessage(message);
+      inputRef.current?.focus();
+    }
+  };
+
+  // Create a map of messages for easy lookup
+  const messagesMap = useMemo(() => {
+    return Object.fromEntries(messages.map(m => [m.id, m]));
+  }, [messages]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (showMentionSuggestions && allSuggestions.length > 0) {
@@ -908,6 +927,16 @@ function AdminChatContent() {
                           </div>
                         )}
 
+                        {/* Quoted message if replying */}
+                        {message.reply_to_id && messagesMap[message.reply_to_id] && (
+                          <QuotedMessage
+                            message={messagesMap[message.reply_to_id].message}
+                            senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
+                            isCompact
+                            className="mb-1 max-w-full"
+                          />
+                        )}
+
                         {/* Message text */}
                         {message.message && message.message !== '📎 Attachment' && (
                           <div
@@ -931,6 +960,7 @@ function AdminChatContent() {
                           onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
                           onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
                           onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
+                          onReply={handleReply}
                         />
                       </div>
                     </div>
@@ -969,6 +999,17 @@ function AdminChatContent() {
                   <X className="h-3 w-3" />
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Reply preview */}
+          {replyToMessage && (
+            <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
+              <QuotedMessage
+                message={replyToMessage.message}
+                senderName={getDisplayName(replyToMessage.user_id)}
+                onClear={() => setReplyToMessage(null)}
+              />
             </div>
           )}
 

@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Users, AtSign } from 'lucide-react';
+import { Send, Users, AtSign, X } from 'lucide-react';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
+import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ interface ChatMessage {
   user_id: string;
   message: string;
   created_at: string;
+  reply_to_id: string | null;
 }
 
 interface UserProfile {
@@ -116,6 +118,7 @@ function StaffMessagesContent() {
   const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
+  const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
@@ -290,7 +293,7 @@ function StaffMessagesContent() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async (message: string) => {
+    mutationFn: async ({ message, replyToId }: { message: string; replyToId: string | null }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       const { error } = await supabase
@@ -298,6 +301,7 @@ function StaffMessagesContent() {
         .insert({
           user_id: user.id,
           message: message.trim(),
+          reply_to_id: replyToId,
         });
       
       if (error) throw error;
@@ -308,6 +312,7 @@ function StaffMessagesContent() {
     onSuccess: () => {
       hapticTap();
       setNewMessage('');
+      setReplyToMessage(null);
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
     },
@@ -616,8 +621,21 @@ function StaffMessagesContent() {
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
-    sendMessageMutation.mutate(newMessage);
+    sendMessageMutation.mutate({ message: newMessage, replyToId: replyToMessage?.id || null });
   };
+
+  const handleReply = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message) {
+      setReplyToMessage(message);
+      inputRef.current?.focus();
+    }
+  };
+
+  // Create a map of messages for easy lookup
+  const messagesMap = useMemo(() => {
+    return Object.fromEntries(messages.map(m => [m.id, m]));
+  }, [messages]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (showMentionSuggestions && allSuggestions.length > 0) {
@@ -744,6 +762,15 @@ function StaffMessagesContent() {
                             </span>
                           </div>
                         )}
+                        {/* Quoted message if replying */}
+                        {message.reply_to_id && messagesMap[message.reply_to_id] && (
+                          <QuotedMessage
+                            message={messagesMap[message.reply_to_id].message}
+                            senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
+                            isCompact
+                            className="mb-1 max-w-full"
+                          />
+                        )}
                         <div
                           className={cn(
                             'rounded-lg px-3 py-2 text-sm break-words',
@@ -763,6 +790,7 @@ function StaffMessagesContent() {
                           onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
                           onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
                           onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
+                          onReply={handleReply}
                         />
                       </div>
                     </div>
@@ -776,6 +804,17 @@ function StaffMessagesContent() {
           {typingUsers.length > 0 && (
             <div className="px-3 sm:px-4 py-2 text-sm text-muted-foreground flex-shrink-0">
               {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+            </div>
+          )}
+
+          {/* Reply preview */}
+          {replyToMessage && (
+            <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
+              <QuotedMessage
+                message={replyToMessage.message}
+                senderName={getDisplayName(replyToMessage.user_id)}
+                onClear={() => setReplyToMessage(null)}
+              />
             </div>
           )}
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreHorizontal, Trash2, SmilePlus } from 'lucide-react';
+import { MoreHorizontal, Trash2, SmilePlus, Reply } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -34,6 +34,7 @@ interface ChatMessageActionsProps {
   onAddReaction: (messageId: string, emoji: string) => void;
   onRemoveReaction: (reactionId: string) => void;
   onDelete: (messageId: string) => void;
+  onReply?: (messageId: string) => void;
   isOwnBubble?: boolean;
 }
 
@@ -46,6 +47,7 @@ export function ChatMessageActions({
   onAddReaction,
   onRemoveReaction,
   onDelete,
+  onReply,
   isOwnBubble = false,
 }: ChatMessageActionsProps) {
   const [isReactionOpen, setIsReactionOpen] = useState(false);
@@ -117,6 +119,20 @@ export function ChatMessageActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="w-40">
+          {/* Reply option */}
+          {onReply && (
+            <DropdownMenuItem
+              onClick={() => {
+                hapticTap();
+                onReply(messageId);
+              }}
+              className="cursor-pointer"
+            >
+              <Reply className="h-4 w-4 mr-2" />
+              Reply
+            </DropdownMenuItem>
+          )}
+
           {/* Reaction picker */}
           <Popover open={isReactionOpen} onOpenChange={setIsReactionOpen}>
             <PopoverTrigger asChild>
