@@ -10,6 +10,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
@@ -118,9 +119,13 @@ function StaffMessagesContent() {
   const [mentionIndex, setMentionIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputBarRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  // iOS keyboard fix for PWA
+  const { isKeyboardVisible, inputBarTop } = useIOSKeyboardFix();
 
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery({
@@ -552,7 +557,7 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4">
+    <div className="h-[100dvh] flex flex-col overflow-hidden px-0 sm:px-4">
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
         <div>
@@ -673,7 +678,21 @@ function StaffMessagesContent() {
           )}
 
           {/* Message input with mention suggestions - fixed at bottom */}
-          <div className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div 
+            ref={inputBarRef}
+            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-card/95 backdrop-blur-sm"
+            style={
+              isKeyboardVisible && inputBarTop !== null
+                ? {
+                    position: 'fixed',
+                    left: 0,
+                    right: 0,
+                    top: inputBarTop - (inputBarRef.current?.offsetHeight || 60),
+                    zIndex: 100,
+                  }
+                : undefined
+            }
+          >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
               <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[60]">
