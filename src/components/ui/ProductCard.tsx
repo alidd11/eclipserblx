@@ -64,6 +64,34 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             </div>
           )}
           
+          {/* Watermark overlay */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="relative w-12 h-12 opacity-50">
+              <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_4px_rgba(168,85,247,0.4)]">
+                <circle 
+                  cx="50" cy="50" r="45" 
+                  fill="none" 
+                  stroke="rgba(168,85,247,0.8)" 
+                  strokeWidth="4"
+                />
+                <ellipse 
+                  cx="50" cy="50" 
+                  rx="28" ry="28" 
+                  fill="none" 
+                  stroke="rgba(168,85,247,0.6)" 
+                  strokeWidth="3"
+                />
+              </svg>
+            </div>
+          </div>
+          
+          {/* Corner watermark */}
+          <div className="absolute bottom-1.5 right-1.5 pointer-events-none">
+            <span className="text-[8px] font-display font-bold text-white/70 tracking-wider drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              ECLIPSE
+            </span>
+          </div>
+          
           {/* Badges */}
           <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
             {isFeatured && (

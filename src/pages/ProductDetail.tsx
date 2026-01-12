@@ -145,7 +145,7 @@ export default function ProductDetail() {
           {/* Images */}
           <div className="space-y-4">
             <div 
-              className="aspect-video gaming-card overflow-hidden select-none"
+              className="aspect-video gaming-card overflow-hidden select-none relative"
               onContextMenu={(e) => e.preventDefault()}
             >
               {images[selectedImage] ? (
@@ -172,6 +172,49 @@ export default function ProductDetail() {
                   </span>
                 </div>
               )}
+              
+              {/* Watermark overlay */}
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="relative w-32 h-32 opacity-40">
+                  <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">
+                    {/* Outer ring */}
+                    <circle 
+                      cx="50" cy="50" r="45" 
+                      fill="none" 
+                      stroke="url(#watermark-gradient)" 
+                      strokeWidth="3"
+                    />
+                    {/* Inner eclipse shape */}
+                    <ellipse 
+                      cx="50" cy="50" 
+                      rx="30" ry="30" 
+                      fill="none" 
+                      stroke="url(#watermark-gradient)" 
+                      strokeWidth="2"
+                    />
+                    {/* Eclipse crescent */}
+                    <path 
+                      d="M 65 50 A 20 20 0 1 1 65 50.01" 
+                      fill="url(#watermark-gradient)" 
+                      opacity="0.6"
+                      transform="translate(-10, 0)"
+                    />
+                    <defs>
+                      <linearGradient id="watermark-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#a855f7" />
+                        <stop offset="100%" stopColor="#7c3aed" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Corner watermark text */}
+              <div className="absolute bottom-3 right-3 pointer-events-none">
+                <span className="text-sm font-display font-bold text-white/60 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  ECLIPSE
+                </span>
+              </div>
             </div>
             
             {images.length > 1 && (
