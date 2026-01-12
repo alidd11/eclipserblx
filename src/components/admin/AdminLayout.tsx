@@ -43,84 +43,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     setIsStandalone(standalone);
   }, []);
 
-  // Track visual viewport height for keyboard-aware layouts
-  // We always set --vvh so the chat container can be sized reliably across iOS Safari/PWA.
-  // When the keyboard is closed we pin --vv-top to 0 to avoid "stuck" offsets.
-  useEffect(() => {
-    const vv = window.visualViewport;
-
-    const update = () => {
-      const height = vv?.height ?? window.innerHeight;
-      const windowHeight = window.innerHeight;
-
-      // Keyboard is likely open if the visible viewport is significantly smaller
-      const keyboardOpen = windowHeight - height > 100;
-
-      document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
-      document.documentElement.style.setProperty(
-        '--vv-top',
-        keyboardOpen ? `${vv?.offsetTop ?? 0}px` : '0px'
-      );
-    };
-
-    const scheduleUpdate = () => {
-      // iOS PWA can report stale values immediately on focus changes.
-      // Re-sample a couple times during the keyboard animation.
-      setTimeout(update, 0);
-      setTimeout(update, 120);
-      setTimeout(update, 260);
-    };
-
-    update();
-
-    vv?.addEventListener('resize', scheduleUpdate);
-    vv?.addEventListener('scroll', scheduleUpdate);
-    window.addEventListener('resize', scheduleUpdate);
-    window.addEventListener('orientationchange', scheduleUpdate);
-    document.addEventListener('focusin', scheduleUpdate);
-    document.addEventListener('focusout', scheduleUpdate);
-
-    return () => {
-      vv?.removeEventListener('resize', scheduleUpdate);
-      vv?.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
-      window.removeEventListener('orientationchange', scheduleUpdate);
-      document.removeEventListener('focusin', scheduleUpdate);
-      document.removeEventListener('focusout', scheduleUpdate);
-    };
-  }, []);
-
-  // Reset viewport CSS variable when inputs lose focus (keyboard closes)
-  // NOTE: We intentionally do NOT call window.scrollTo() here as it causes
-  // visual jumping on mobile. The visualViewport API handles positioning naturally.
-  useEffect(() => {
-    if (!isMobile || !isChatPage) return;
-
-    const syncViewportVars = () => {
-      const vv = window.visualViewport;
-      const height = vv?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
-      document.documentElement.style.setProperty('--vv-top', '0px');
-    };
-
-    const handleFocusOut = (e: FocusEvent) => {
-      // Check if new focus target is also an input
-      const relatedTarget = e.relatedTarget as HTMLElement | null;
-      const isInputFocused = relatedTarget?.tagName === 'INPUT' ||
-        relatedTarget?.tagName === 'TEXTAREA';
-
-      if (!isInputFocused) {
-        // Keyboard is closing. iOS sometimes misses a final visualViewport resize,
-        // so we sync a few times during the dismissal animation.
-        setTimeout(syncViewportVars, 120);
-        setTimeout(syncViewportVars, 260);
-        setTimeout(syncViewportVars, 520);
-      }
-    };
-
-    document.addEventListener('focusout', handleFocusOut);
-    return () => document.removeEventListener('focusout', handleFocusOut);
-  }, [isMobile, isChatPage]);
+  // NOTE: Removed complex --vvh viewport tracking. 
+  // Chat pages now use 100dvh + CSS-based positioning for iOS keyboard handling.
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -248,21 +172,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div
-        className={cn(
-          'fixed flex bg-background overflow-hidden',
-          isMobile ? 'left-0 right-0 top-0' : 'inset-0'
-        )}
-        style={
-          isMobile
-            ? {
-                // Use the visual viewport height so the layout actually resizes with the keyboard
-                // in iOS PWA (standalone) mode.
-                height: 'calc(var(--vvh, 1vh) * 100)',
-              }
-            : undefined
-        }
-      >
+      <div className="fixed inset-0 flex bg-background overflow-hidden">
         {/* Desktop Sidebar */}
         {!isMobile && (
           <AdminSidebar 
