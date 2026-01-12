@@ -385,23 +385,34 @@ function AdminChatContent() {
   }, [messages, scrollToBottom]);
 
   // Keep the newest messages visible when the iOS keyboard opens/closes (PWA)
+  // Only respond to significant viewport changes (keyboard open/close), not scroll events
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
 
+    let lastHeight = vv.height;
     let raf = 0;
-    const handleViewportChange = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => scrollToBottom());
+
+    const handleViewportResize = () => {
+      // Only scroll if viewport height changed significantly (keyboard open/close)
+      const heightDelta = Math.abs(vv.height - lastHeight);
+      if (heightDelta > 50) {
+        lastHeight = vv.height;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          // Reset any document scroll iOS might have caused
+          window.scrollTo(0, 0);
+          scrollToBottom();
+        });
+      }
     };
 
-    vv.addEventListener('resize', handleViewportChange);
-    vv.addEventListener('scroll', handleViewportChange);
+    vv.addEventListener('resize', handleViewportResize);
+    // Removed scroll listener - it causes conflicts with iOS auto-scroll
 
     return () => {
       cancelAnimationFrame(raf);
-      vv.removeEventListener('resize', handleViewportChange);
-      vv.removeEventListener('scroll', handleViewportChange);
+      vv.removeEventListener('resize', handleViewportResize);
     };
   }, [scrollToBottom]);
 
@@ -686,7 +697,7 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4 pb-0 bg-card">
+    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4 pb-0 bg-card overscroll-contain">
       <KeyboardDebugOverlay />
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
@@ -728,7 +739,7 @@ function AdminChatContent() {
             Admin Chat
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
+        <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden overscroll-none">
           {/* Messages area - fills available space with native scroll */}
           <div 
             ref={scrollRef} 
@@ -981,7 +992,14 @@ function AdminChatContent() {
                 value={newMessage}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                onFocus={() => setTimeout(scrollToBottom, 100)}
+                onFocus={() => {
+                  // Prevent iOS from scrolling the document to show the input
+                  // Reset any scroll and then scroll our messages container
+                  requestAnimationFrame(() => {
+                    window.scrollTo(0, 0);
+                    scrollToBottom();
+                  });
+                }}
                 placeholder="Type a message... Use @ to mention"
                 className="flex-1 min-w-0"
                 disabled={isUploading}

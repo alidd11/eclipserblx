@@ -45,18 +45,44 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   // On iOS PWAs, if *anything* ever renders outside our fixed shell (overscroll/rounding/viewport jitter),
   // the html/body background is what shows through. Force it to match chat pages to prevent grey gaps.
+  // ALSO lock document scroll to prevent iOS auto-scroll-to-input behavior.
   useEffect(() => {
     if (!isChatPage) return;
 
-    const prevHtmlBg = document.documentElement.style.backgroundColor;
-    const prevBodyBg = document.body.style.backgroundColor;
+    const html = document.documentElement;
+    const body = document.body;
 
-    document.documentElement.style.backgroundColor = 'hsl(var(--card))';
-    document.body.style.backgroundColor = 'hsl(var(--card))';
+    // Save previous styles
+    const prevHtmlBg = html.style.backgroundColor;
+    const prevBodyBg = body.style.backgroundColor;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlPosition = html.style.position;
+    const prevBodyPosition = body.style.position;
+    const prevHtmlWidth = html.style.width;
+    const prevBodyWidth = body.style.width;
+
+    // Set background color to match chat
+    html.style.backgroundColor = 'hsl(var(--card))';
+    body.style.backgroundColor = 'hsl(var(--card))';
+
+    // Lock document scroll to prevent iOS from scrolling page when focusing input
+    html.style.overflow = 'hidden';
+    html.style.position = 'fixed';
+    html.style.width = '100%';
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.width = '100%';
 
     return () => {
-      document.documentElement.style.backgroundColor = prevHtmlBg;
-      document.body.style.backgroundColor = prevBodyBg;
+      html.style.backgroundColor = prevHtmlBg;
+      body.style.backgroundColor = prevBodyBg;
+      html.style.overflow = prevHtmlOverflow;
+      html.style.position = prevHtmlPosition;
+      html.style.width = prevHtmlWidth;
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.width = prevBodyWidth;
     };
   }, [isChatPage]);
 
