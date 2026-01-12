@@ -64,7 +64,7 @@ const supportCategories = [
 const quickLinks = [
   { icon: MessageCircle, label: 'Live Chat', description: 'Chat with our support team', action: 'chat' },
   { icon: FileQuestion, label: 'FAQ', description: 'Browse common questions', href: '/faq' },
-  { icon: Users, label: 'Discord', description: 'Join our community', href: 'https://discord.gg/d3Tq4KbNwq', external: true },
+  { icon: Users, label: 'Discord', description: 'Join our community', href: 'https://discord.gg/EmQnXwv6VZ', external: true },
 ];
 
 export default function Support() {

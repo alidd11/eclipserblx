@@ -371,44 +371,46 @@ export default function AdminProducts() {
                 <p className="text-center py-8 text-muted-foreground">No products found</p>
               ) : (
                 products?.map((product) => (
-                  <div key={product.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded bg-muted overflow-hidden flex-shrink-0">
-                        {product.images?.[0] ? (
-                          <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                            {product.name.charAt(0)}
-                          </div>
-                        )}
+                  <Card key={product.id} className="bg-muted/30 border-border overflow-hidden">
+                    <CardContent className="p-3 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                          {product.images?.[0] ? (
+                            <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm font-medium">
+                              {product.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{product.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{product.categories?.name || 'Uncategorized'}</p>
+                        </div>
+                        <span className="font-bold text-primary text-sm whitespace-nowrap">£{product.price.toFixed(2)}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{product.name}</p>
-                        <p className="text-xs text-muted-foreground">{product.categories?.name || 'Uncategorized'}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex gap-1.5 flex-wrap">
+                          {product.is_active ? (
+                            <Badge variant="outline" className="text-green-500 border-green-500/30 text-xs px-2 py-0.5">Active</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">Inactive</Badge>
+                          )}
+                          {product.is_featured && (
+                            <Badge variant="outline" className="text-primary border-primary/30 text-xs px-2 py-0.5">Featured</Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(product)} className="h-9 w-9 touch-manipulation active:scale-95">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id)} className="h-9 w-9 touch-manipulation active:scale-95">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
-                      <span className="font-bold text-primary">£{product.price.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-2">
-                        {product.is_active ? (
-                          <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
-                        )}
-                        {product.is_featured && (
-                          <Badge variant="outline" className="text-primary border-primary/30">Featured</Badge>
-                        )}
-                      </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(product)} className="h-8 w-8">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id)} className="h-8 w-8">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))
               )}
             </div>

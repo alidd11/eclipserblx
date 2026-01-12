@@ -218,7 +218,7 @@ export default function RefundPolicy() {
             <p className="text-muted-foreground">
               If you have any questions about this Refund Policy, please contact us through our{' '}
               <a 
-                href="https://discord.gg/d3Tq4KbNwq" 
+                href="https://discord.gg/EmQnXwv6VZ" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
