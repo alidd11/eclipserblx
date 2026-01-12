@@ -339,37 +339,26 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         {/* Compact Profile Summary */}
         <Card className="bg-card border-border">
           <CardContent className="py-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              {/* Avatar Section */}
-              <div className="flex items-center gap-4">
-                <AvatarUpload
-                  userId={user.id}
-                  currentAvatarUrl={profile?.avatar_url || null}
-                  displayName={profile?.display_name || fallbackDisplayName || ''}
-                  onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
-                />
-                <div className="sm:hidden flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-lg truncate">
-                      {profile?.display_name || fallbackDisplayName}
-                    </h2>
-                    {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-start sm:items-center gap-4">
+              {/* Avatar */}
+              <AvatarUpload
+                userId={user.id}
+                currentAvatarUrl={profile?.avatar_url || null}
+                displayName={profile?.display_name || fallbackDisplayName || ''}
+                onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+              />
               
               {/* Info Section */}
-              <div className="flex-1 min-w-0 space-y-2">
-                {/* Desktop username - hidden on mobile */}
-                <div className="hidden sm:flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
                   <h2 className="font-semibold text-lg truncate">
                     {profile?.display_name || fallbackDisplayName}
                   </h2>
                   {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 
-                {/* Info rows - stacked */}
-                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                {/* Customer ID & Member since - horizontal on desktop, stacked on mobile */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                   {profile?.customer_id && (
                     <button
                       onClick={copyCustomerId}
@@ -394,7 +383,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSignOutDialog(true)}
-                className="text-muted-foreground hover:text-destructive self-start sm:self-center"
+                className="text-muted-foreground hover:text-destructive shrink-0"
               >
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
@@ -718,36 +707,36 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
             {/* My Messages */}
             <MyMessagesCard />
-
-            {/* Danger Zone */}
-            <Card className="bg-card border-destructive/30">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-destructive">
-                  <Trash2 className="h-5 w-5" />
-                  Danger Zone
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <p className="font-medium">Delete Account</p>
-                    <p className="text-sm text-muted-foreground">
-                      Permanently delete your account and all associated data including downloads.
-                    </p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Danger Zone - Always visible at bottom of page */}
+        <Card className="bg-card border-destructive/30 mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="font-medium">Delete Account</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and all associated data including downloads.
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="shrink-0"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Sign Out Confirmation Dialog */}
         <SignOutConfirmDialog
