@@ -719,7 +719,7 @@ function AdminChatContent() {
       {/* Chat Card - fills remaining space, flush edge-to-edge on mobile */}
       <Card 
         className={cn(
-          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 sm:border-x border-b-0 sm:border-b sm:mb-4",
+          "bg-card sm:bg-card/50 sm:backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 sm:border-x border-b-0 sm:border-b sm:mb-4",
           isDragOver && "border-primary border-2 bg-primary/5"
         )}
         {...dragProps}
@@ -899,7 +899,7 @@ function AdminChatContent() {
           {/* Message input - stays in flex flow, browser handles keyboard resize */}
           <div 
             ref={inputBarRef}
-            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card/95 backdrop-blur-sm"
+            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card sm:bg-card/95 sm:backdrop-blur-sm"
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
