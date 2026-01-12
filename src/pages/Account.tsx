@@ -338,31 +338,31 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Compact Profile Summary */}
         <Card className="bg-card border-border">
-          <CardContent className="py-5">
-            <div className="flex items-start sm:items-center gap-4">
-              {/* Avatar */}
+          <CardContent className="py-4 px-4 sm:px-6">
+            <div className="flex items-center gap-4">
+              {/* Avatar - compact mode */}
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
                 displayName={profile?.display_name || fallbackDisplayName || ''}
                 onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+                compact
               />
               
               {/* Info Section */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-semibold text-lg truncate">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-base sm:text-lg break-words">
                     {profile?.display_name || fallbackDisplayName}
                   </h2>
-                  {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />}
                 </div>
                 
-                {/* Customer ID & Member since - horizontal on desktop, stacked on mobile */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                   {profile?.customer_id && (
                     <button
                       onClick={copyCustomerId}
-                      className="flex items-center gap-1.5 font-mono text-xs bg-muted/50 px-2 py-1 rounded hover:bg-muted transition-colors w-fit"
+                      className="flex items-center gap-1 font-mono bg-muted/50 px-1.5 py-0.5 rounded hover:bg-muted transition-colors"
                     >
                       {profile.customer_id}
                       {copiedId ? (
@@ -372,21 +372,19 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       )}
                     </button>
                   )}
-                  <span className="text-xs">
-                    Member since {new Date(user.created_at).toLocaleDateString()}
-                  </span>
+                  <span className="text-muted-foreground/60">•</span>
+                  <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
               
               {/* Sign Out Button */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => setShowSignOutDialog(true)}
                 className="text-muted-foreground hover:text-destructive shrink-0"
               >
-                <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Sign Out</span>
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </CardContent>
