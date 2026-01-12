@@ -527,9 +527,17 @@ function StaffMessagesContent() {
 
     // Find the @ position
     const atPos = textBeforeCursor.lastIndexOf('@');
-    if (atPos === -1) return;
-
-    const newText = textBeforeCursor.slice(0, atPos) + `@${name} ` + textAfterCursor;
+    
+    let newText: string;
+    if (atPos === -1) {
+      // Quick action: no @ in text, just append the mention
+      const prefix = newMessage.length > 0 && !newMessage.endsWith(' ') ? ' ' : '';
+      newText = newMessage + prefix + `@${name} `;
+    } else {
+      // Autocomplete: replace from @ position
+      newText = textBeforeCursor.slice(0, atPos) + `@${name} ` + textAfterCursor;
+    }
+    
     setNewMessage(newText);
     setShowMentionSuggestions(false);
     setMentionFilter('');
