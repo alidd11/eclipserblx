@@ -2,7 +2,12 @@ import { useEffect, useCallback, useRef } from 'react';
 import { showSuccessNotification, showInfoNotification, showNativeNotification } from '@/lib/nativeNotification';
 import { safeStorage } from '@/lib/safeStorage';
 
-export const useServiceWorkerUpdate = () => {
+interface UseServiceWorkerUpdateOptions {
+  showNotifications?: boolean;
+}
+
+export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = {}) => {
+  const { showNotifications = true } = options;
   const didReloadRef = useRef(false);
 
   // Send message to service worker
@@ -51,12 +56,12 @@ export const useServiceWorkerUpdate = () => {
     const handleMessage = (event: MessageEvent) => {
       console.log('[App] SW message received:', event.data);
 
-      if (event.data?.type === 'SW_UPDATED') {
+      if (event.data?.type === 'SW_UPDATED' && showNotifications) {
         // Show native notification for app update
         showInfoNotification('App Updated!', 'A new version is available. Reload to update.');
       }
 
-      if (event.data?.type === 'CACHE_CLEARED') {
+      if (event.data?.type === 'CACHE_CLEARED' && showNotifications) {
         showSuccessNotification('Cache Cleared', 'App cache has been refreshed');
       }
     };
@@ -65,7 +70,7 @@ export const useServiceWorkerUpdate = () => {
 
     // Check for waiting service worker on mount
     navigator.serviceWorker.getRegistration().then((registration) => {
-      if (registration?.waiting) {
+      if (registration?.waiting && showNotifications) {
         // There's an update waiting
         showInfoNotification('Update Available', 'Reload to get the latest version');
       }
@@ -86,7 +91,7 @@ export const useServiceWorkerUpdate = () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
-  }, []);
+  }, [showNotifications]);
 
   return {
     clearAllCaches,

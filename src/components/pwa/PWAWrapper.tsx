@@ -1,4 +1,5 @@
 import { useState, useEffect, ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { RefreshCw, WifiOff, Wifi, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
@@ -13,17 +14,20 @@ interface PWAWrapperProps {
 }
 
 export function PWAWrapper({ children }: PWAWrapperProps) {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   const [isStandalone, setIsStandalone] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
   const [hasShownRecoveryToast, setHasShownRecoveryToast] = useState(false);
   
-  // Initialize SW update handler (listens for updates and shows toasts)
-  const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate();
+  // Initialize SW update handler - only show notifications on admin routes
+  const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate({ showNotifications: isAdminRoute });
   
-  // Initialize app version check for remote forced updates
-  useAppVersionCheck();
+  // Initialize app version check for remote forced updates - only show notifications on admin routes
+  useAppVersionCheck({ showNotifications: isAdminRoute });
   
   // Network quality monitoring
   const { status, isOffline, isDegraded, justRecovered, forceCheck } = useNetworkQuality();
