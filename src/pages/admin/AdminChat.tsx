@@ -140,8 +140,8 @@ function AdminChatContent() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // iOS keyboard fix for PWA
-  const { isKeyboardVisible, inputBarTop } = useIOSKeyboardFix();
+  // iOS keyboard fix for PWA - now only provides visibility state for scroll behavior
+  const { isKeyboardVisible } = useIOSKeyboardFix();
 
   // Fetch messages from admin_chat_messages
   const { data: messages = [], isLoading } = useQuery({
@@ -403,7 +403,7 @@ function AdminChatContent() {
     };
   }, [scrollToBottom]);
 
-  // Extra reliability: when our keyboard-fix state changes, force scroll to latest.
+  // Extra reliability: when keyboard state changes, force scroll to latest.
   useEffect(() => {
     if (!isKeyboardVisible) return;
 
@@ -415,7 +415,7 @@ function AdminChatContent() {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
     };
-  }, [isKeyboardVisible, inputBarTop, scrollToBottom]);
+  }, [isKeyboardVisible, scrollToBottom]);
 
   // Real-time subscription
   useEffect(() => {
@@ -730,10 +730,7 @@ function AdminChatContent() {
           <div 
             ref={scrollRef} 
             className="flex-1 px-3 sm:px-4 overflow-y-auto overscroll-contain"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              paddingBottom: isKeyboardVisible ? (inputBarRef.current?.offsetHeight || 60) + 16 : undefined,
-            }}
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             <div className="py-4 flex flex-col">
               {isLoading ? (
@@ -885,21 +882,10 @@ function AdminChatContent() {
             </div>
           )}
 
-          {/* Message input - fixed at bottom */}
+          {/* Message input - stays in flex flow, browser handles keyboard resize */}
           <div 
             ref={inputBarRef}
             className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-card/95 backdrop-blur-sm"
-            style={
-              isKeyboardVisible && inputBarTop !== null
-                ? {
-                    position: 'fixed',
-                    left: 0,
-                    right: 0,
-                    top: inputBarTop - (inputBarRef.current?.offsetHeight || 60),
-                    zIndex: 100,
-                  }
-                : undefined
-            }
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
