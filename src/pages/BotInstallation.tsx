@@ -184,7 +184,7 @@ export default function BotInstallation() {
                         </Link>
                       </Button>
                       <Button variant="outline" asChild>
-                        <a href="https://discord.gg/lovable-dev" target="_blank" rel="noopener noreferrer">
+                        <a href="https://discord.gg/EmQnXwv6VZ" target="_blank" rel="noopener noreferrer">
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Discord Support
                           <ExternalLink className="h-3 w-3 ml-2" />

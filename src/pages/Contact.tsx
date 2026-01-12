@@ -187,7 +187,7 @@ export default function Contact() {
             <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <a
-                  href="https://discord.gg/d3Tq4KbNwq"
+                  href="https://discord.gg/EmQnXwv6VZ"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-3"
@@ -207,7 +207,7 @@ export default function Contact() {
                       <ExternalLink className="w-3 h-3" />
                     </h3>
                     <p className="text-sm text-muted-foreground">Join for quick support</p>
-                    <p className="text-sm font-medium text-[#5865F2] mt-1">discord.gg/d3Tq4KbNwq</p>
+                    <p className="text-sm font-medium text-[#5865F2] mt-1">discord.gg/EmQnXwv6VZ</p>
                   </div>
                 </a>
               </CardContent>

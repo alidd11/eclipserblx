@@ -278,7 +278,7 @@ export default function TermsOfService() {
             <p className="text-muted-foreground">
               If you have any questions about these Terms of Service, please contact us through our{' '}
               <a 
-                href="https://discord.gg/d3Tq4KbNwq" 
+                href="https://discord.gg/EmQnXwv6VZ" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"

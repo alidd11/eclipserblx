@@ -118,7 +118,7 @@ export const Header = memo(function Header() {
           <div className="flex items-center gap-0.5 sm:gap-2">
             {/* Discord - hidden on very small screens */}
             <a
-              href="https://discord.gg/d3Tq4KbNwq"
+              href="https://discord.gg/EmQnXwv6VZ"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden xs:block"
@@ -203,7 +203,7 @@ export const Header = memo(function Header() {
             
             {/* Discord Link */}
             <a
-              href="https://discord.gg/d3Tq4KbNwq"
+              href="https://discord.gg/EmQnXwv6VZ"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors touch-manipulation"
