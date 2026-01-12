@@ -128,25 +128,25 @@ export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarCh
           </AvatarFallback>
         </Avatar>
         
-        {/* Drag overlay */}
+        {/* Drag overlay - only show when dragging, not as default state */}
         {isDragOver && (
           <div className="absolute inset-0 rounded-full bg-primary/20 flex items-center justify-center">
             <Upload className={`${compact ? 'h-4 w-4' : 'h-6 w-6'} text-primary animate-bounce`} />
           </div>
         )}
         
-        {/* Upload button */}
-        <Button
-          size="icon"
-          variant="secondary"
-          className={`absolute bottom-0 right-0 ${compact ? 'h-5 w-5' : 'h-7 w-7'} rounded-full shadow-md pointer-events-none`}
-        >
-          {isUploading ? (
-            <Loader2 className={`${compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'} animate-spin`} />
-          ) : (
-            <Camera className={`${compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}`} />
-          )}
-        </Button>
+        {/* Upload indicator - small camera badge, only visible on hover/when not dragging */}
+        {!isDragOver && (
+          <div
+            className={`absolute bottom-0 right-0 ${compact ? 'h-5 w-5' : 'h-7 w-7'} rounded-full shadow-md bg-secondary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity`}
+          >
+            {isUploading ? (
+              <Loader2 className={`${compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'} animate-spin`} />
+            ) : (
+              <Camera className={`${compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}`} />
+            )}
+          </div>
+        )}
       </div>
       <input
         ref={fileInputRef}

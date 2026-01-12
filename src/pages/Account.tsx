@@ -359,22 +359,27 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />}
                 </div>
                 
-                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+                <div className="flex flex-col gap-1 mt-1 text-xs text-muted-foreground">
                   {profile?.customer_id && (
-                    <button
-                      onClick={copyCustomerId}
-                      className="flex items-center gap-1 font-mono bg-muted/50 px-1.5 py-0.5 rounded hover:bg-muted transition-colors"
-                    >
-                      {profile.customer_id}
-                      {copiedId ? (
-                        <Check className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/70">Customer ID :</span>
+                      <button
+                        onClick={copyCustomerId}
+                        className="flex items-center gap-1 font-mono bg-muted/50 px-1.5 py-0.5 rounded hover:bg-muted transition-colors"
+                      >
+                        {profile.customer_id}
+                        {copiedId ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </button>
+                    </div>
                   )}
-                  <span className="text-muted-foreground/60">•</span>
-                  <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground/70">Member Since :</span>
+                    <span>{new Date(user.created_at).toLocaleDateString()}</span>
+                  </div>
                 </div>
               </div>
               
