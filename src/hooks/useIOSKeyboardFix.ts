@@ -1,21 +1,25 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 
 /**
- * Hook for handling iOS PWA keyboard behavior.
+ * Simplified iOS keyboard hook for PWA environments.
  * 
- * IMPORTANT: When running in Capacitor native mode, this hook is disabled
- * because Capacitor's native keyboard plugin handles everything automatically.
+ * This hook now uses a CSS-first approach that relies on the browser's native
+ * `interactive-widget=resizes-content` viewport behavior (set in index.html).
  * 
- * In iOS PWA standalone mode (web), the visualViewport API can be unreliable.
- * This hook provides a workaround:
- * - Detects when an input is focused
- * - Provides state to allow the input bar to use absolute positioning
- * - Uses visualViewport to calculate the correct position above the keyboard
+ * The browser automatically shrinks the viewport when the keyboard appears,
+ * and a properly structured flex layout will keep the input bar visible.
+ * 
+ * This hook only provides:
+ * - isKeyboardVisible: For triggering scroll-to-bottom behavior
+ * - isIOSPWA: For conditional styling if needed
+ * - isNative: To detect Capacitor native mode
+ * 
+ * IMPORTANT: The input bar should remain in normal flex flow (not position: fixed).
+ * The parent container should use h-[100dvh] or equivalent to fill the dynamic viewport.
  */
 export function useIOSKeyboardFix() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [inputBarTop, setInputBarTop] = useState<number | null>(null);
   const isIOSRef = useRef(false);
   const isPWARef = useRef(false);
   const isNativeRef = useRef(false);
@@ -23,11 +27,10 @@ export function useIOSKeyboardFix() {
 
   // Detect iOS, PWA, and Native mode on mount
   useEffect(() => {
-    // Check if running in Capacitor native mode - if so, skip all workarounds
+    // Check if running in Capacitor native mode - if so, skip workarounds
     isNativeRef.current = Capacitor.isNativePlatform();
     
     if (isNativeRef.current) {
-      // Native mode: Capacitor Keyboard plugin handles everything automatically
       console.log('[useIOSKeyboardFix] Running in native mode - keyboard handling delegated to Capacitor');
       return;
     }
@@ -38,104 +41,70 @@ export function useIOSKeyboardFix() {
     isPWARef.current = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
 
-    // IMPORTANT: initialize the baseline BEFORE the first focus/keyboard resize.
+    // Initialize baseline viewport height
     const vv = window.visualViewport;
-    if (vv && isIOSRef.current && isPWARef.current) {
+    if (vv) {
       baseViewportHeightRef.current = vv.height;
     }
   }, []);
 
-  // Calculate input bar position based on visual viewport
-  const updatePosition = useCallback(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const active = document.activeElement as HTMLElement | null;
-    const isTextInputFocused =
-      !!active &&
-      (active.tagName === 'INPUT' ||
-        active.tagName === 'TEXTAREA' ||
-        active.getAttribute('contenteditable') === 'true');
-
-    // Baseline strategy:
-    // - baseline should represent the "largest" visualViewport height we see when the
-    //   keyboard is NOT shown.
-    // - if the first measurement happens while keyboard is open, detection fails.
-    //   that's why we initialize baseline on mount (above), and only grow it when
-    //   no text input is focused.
-    if (baseViewportHeightRef.current === null) {
-      baseViewportHeightRef.current = vv.height;
-    } else if (!isTextInputFocused) {
-      baseViewportHeightRef.current = Math.max(baseViewportHeightRef.current, vv.height);
-    }
-
-    const baseline = baseViewportHeightRef.current ?? vv.height;
-    const keyboardHeight = Math.max(0, baseline - vv.height);
-
-    // Consider keyboard open if there's a significant difference
-    if (keyboardHeight > 80) {
-      setIsKeyboardVisible(true);
-      // Position the input bar at the bottom edge of the visual viewport
-      // vv.offsetTop accounts for any scroll offset
-      setInputBarTop(vv.offsetTop + vv.height);
-    } else {
-      setIsKeyboardVisible(false);
-      setInputBarTop(null);
-    }
-  }, []);
-
-  // Listen to visual viewport changes
-  useEffect(() => {
-    // Skip all workarounds in native mode - Capacitor handles it
-    if (isNativeRef.current) return;
-    
-    // Only apply this fix for iOS PWA (web)
-    if (!isIOSRef.current || !isPWARef.current) {
-      return;
-    }
-
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const handleResize = () => {
-      // Schedule multiple updates to handle iOS animation delays
-      updatePosition();
-      setTimeout(updatePosition, 50);
-      setTimeout(updatePosition, 150);
-      setTimeout(updatePosition, 300);
-    };
-
-    const handleScroll = () => {
-      updatePosition();
-    };
-
-    vv.addEventListener('resize', handleResize);
-    vv.addEventListener('scroll', handleScroll);
-
-    // Initial measurement (critical on iOS PWA; events aren't always fired reliably)
-    handleResize();
-
-    return () => {
-      vv.removeEventListener('resize', handleResize);
-      vv.removeEventListener('scroll', handleScroll);
-    };
-  }, [updatePosition]);
-
-  // Handle focus events to detect keyboard state
+  // Track keyboard visibility based on viewport changes
   useEffect(() => {
     // Skip in native mode
     if (isNativeRef.current) return;
     
-    if (!isIOSRef.current || !isPWARef.current) {
-      return;
-    }
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const checkKeyboardState = () => {
+      // Update baseline when no text input is focused (keyboard closed)
+      const active = document.activeElement as HTMLElement | null;
+      const isTextInputFocused =
+        !!active &&
+        (active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          active.getAttribute('contenteditable') === 'true');
+
+      if (baseViewportHeightRef.current === null) {
+        baseViewportHeightRef.current = vv.height;
+      } else if (!isTextInputFocused) {
+        baseViewportHeightRef.current = Math.max(baseViewportHeightRef.current, vv.height);
+      }
+
+      const baseline = baseViewportHeightRef.current ?? vv.height;
+      const keyboardHeight = Math.max(0, baseline - vv.height);
+
+      // Keyboard is open if there's a significant height difference
+      setIsKeyboardVisible(keyboardHeight > 80);
+    };
+
+    const handleResize = () => {
+      checkKeyboardState();
+      // Schedule delayed checks for iOS animation
+      setTimeout(checkKeyboardState, 100);
+      setTimeout(checkKeyboardState, 300);
+    };
+
+    vv.addEventListener('resize', handleResize);
+    
+    // Initial check
+    checkKeyboardState();
+
+    return () => {
+      vv.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Handle focus events for additional keyboard detection
+  useEffect(() => {
+    // Skip in native mode
+    if (isNativeRef.current) return;
 
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        // Delay to allow keyboard animation
-        setTimeout(updatePosition, 100);
-        setTimeout(updatePosition, 300);
+        // Assume keyboard will open
+        setTimeout(() => setIsKeyboardVisible(true), 100);
       }
     };
 
@@ -145,11 +114,7 @@ export function useIOSKeyboardFix() {
         relatedTarget?.tagName === 'TEXTAREA';
 
       if (!isStillFocused) {
-        // Reset after keyboard dismissal animation
-        setTimeout(() => {
-          setIsKeyboardVisible(false);
-          setInputBarTop(null);
-        }, 100);
+        setTimeout(() => setIsKeyboardVisible(false), 100);
       }
     };
 
@@ -160,11 +125,10 @@ export function useIOSKeyboardFix() {
       document.removeEventListener('focusin', handleFocusIn);
       document.removeEventListener('focusout', handleFocusOut);
     };
-  }, [updatePosition]);
+  }, []);
 
   return {
     isKeyboardVisible,
-    inputBarTop,
     isIOSPWA: isIOSRef.current && isPWARef.current,
     isNative: isNativeRef.current,
   };
