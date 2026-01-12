@@ -57,19 +57,36 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const keyboardOpen = windowHeight - height > 100;
 
       document.documentElement.style.setProperty('--vvh', `${height * 0.01}px`);
-      document.documentElement.style.setProperty('--vv-top', keyboardOpen ? `${vv?.offsetTop ?? 0}px` : '0px');
+      document.documentElement.style.setProperty(
+        '--vv-top',
+        keyboardOpen ? `${vv?.offsetTop ?? 0}px` : '0px'
+      );
+    };
+
+    const scheduleUpdate = () => {
+      // iOS PWA can report stale values immediately on focus changes.
+      // Re-sample a couple times during the keyboard animation.
+      setTimeout(update, 0);
+      setTimeout(update, 120);
+      setTimeout(update, 260);
     };
 
     update();
 
-    vv?.addEventListener('resize', update);
-    vv?.addEventListener('scroll', update);
-    window.addEventListener('resize', update);
+    vv?.addEventListener('resize', scheduleUpdate);
+    vv?.addEventListener('scroll', scheduleUpdate);
+    window.addEventListener('resize', scheduleUpdate);
+    window.addEventListener('orientationchange', scheduleUpdate);
+    document.addEventListener('focusin', scheduleUpdate);
+    document.addEventListener('focusout', scheduleUpdate);
 
     return () => {
-      vv?.removeEventListener('resize', update);
-      vv?.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
+      vv?.removeEventListener('resize', scheduleUpdate);
+      vv?.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      window.removeEventListener('orientationchange', scheduleUpdate);
+      document.removeEventListener('focusin', scheduleUpdate);
+      document.removeEventListener('focusout', scheduleUpdate);
     };
   }, []);
 
@@ -232,7 +249,19 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   return (
     <TooltipProvider delayDuration={0}>
       <div
-        className="fixed inset-0 flex bg-background overflow-hidden"
+        className={cn(
+          'fixed flex bg-background overflow-hidden',
+          isMobile ? 'left-0 right-0 top-0' : 'inset-0'
+        )}
+        style={
+          isMobile
+            ? {
+                // Use the visual viewport height so the layout actually resizes with the keyboard
+                // in iOS PWA (standalone) mode.
+                height: 'calc(var(--vvh, 1vh) * 100)',
+              }
+            : undefined
+        }
       >
         {/* Desktop Sidebar */}
         {!isMobile && (
