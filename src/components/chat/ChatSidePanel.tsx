@@ -69,6 +69,7 @@ export function ChatSidePanel() {
   const panelRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [hasEntered, setHasEntered] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -337,18 +338,40 @@ export function ChatSidePanel() {
     setIsDragging(false);
   };
 
+  // Track when panel has fully entered
+  const handleAnimationComplete = () => {
+    if (!hasEntered) {
+      setHasEntered(true);
+    }
+  };
+
+  // Reset hasEntered when panel closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasEntered(false);
+      setIsMinimized(false);
+    }
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           ref={panelRef}
-          initial={{ x: '100%' }}
+          initial={{ x: '100%', y: 0 }}
           animate={{ 
             x: 0,
             y: isMinimized ? 'calc(100dvh - 60px)' : isDragging ? dragY : 0
           }}
-          exit={{ x: '100%' }}
-          transition={isDragging ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 200 }}
+          exit={{ x: '100%', y: 0 }}
+          onAnimationComplete={handleAnimationComplete}
+          transition={
+            isDragging 
+              ? { duration: 0 } 
+              : hasEntered
+                ? { type: 'spring', damping: 30, stiffness: 300, y: { type: 'spring', damping: 30, stiffness: 300 } }
+                : { type: 'spring', damping: 25, stiffness: 200 }
+          }
           drag={!isMinimized ? 'y' : false}
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={{ top: 0, bottom: 0.5 }}
@@ -364,7 +387,7 @@ export function ChatSidePanel() {
             isMinimized ? 'w-full sm:w-96 cursor-pointer' : 'w-full sm:w-96'
           )}
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
-          onClick={isMinimized ? () => setIsMinimized(false) : undefined}
+          onClick={isMinimized ? (e) => { e.stopPropagation(); setIsMinimized(false); } : undefined}
         >
           {/* Swipe indicator */}
           {!isMinimized && (
