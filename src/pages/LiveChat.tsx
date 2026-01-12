@@ -130,14 +130,15 @@ const LiveChatPage = () => {
       )
       .subscribe();
 
-    // Typing indicator channel
+    // Typing indicator channel - uses presence to match admin's broadcast
     const typingChannel = supabase
-      .channel(`typing_${conversation.id}`)
-      .on('broadcast', { event: 'typing' }, ({ payload }) => {
-        if (payload.sender_type === 'agent') {
-          setIsAgentTyping(true);
-          setTimeout(() => setIsAgentTyping(false), 3000);
-        }
+      .channel(`typing-${conversation.id}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = typingChannel.presenceState();
+        const isTyping = Object.values(state).some((presences: any) =>
+          presences.some((p: any) => p.typing && p.role === 'agent')
+        );
+        setIsAgentTyping(isTyping);
       })
       .subscribe();
 
