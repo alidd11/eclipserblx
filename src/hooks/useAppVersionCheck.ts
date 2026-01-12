@@ -14,7 +14,12 @@ interface AppVersion {
   updated_at: string;
 }
 
-export function useAppVersionCheck() {
+interface UseAppVersionCheckOptions {
+  showNotifications?: boolean;
+}
+
+export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
+  const { showNotifications = true } = options;
   const isUpdatingRef = useRef(false);
 
   /**
@@ -65,8 +70,10 @@ export function useAppVersionCheck() {
 
     console.log('[AppVersion] Force update triggered');
 
-    // Show notification
-    showInfoNotification('Update Available', 'Applying update...');
+    // Show notification only if enabled
+    if (showNotifications) {
+      showInfoNotification('Update Available', 'Applying update...');
+    }
 
     try {
       // If localStorage is blocked, persist the next version via URL for the reload.
@@ -110,7 +117,7 @@ export function useAppVersionCheck() {
       console.error('[AppVersion] Update failed:', error);
       isUpdatingRef.current = false;
     }
-  }, []);
+  }, [showNotifications]);
 
   const checkForUpdate = useCallback(async () => {
     try {

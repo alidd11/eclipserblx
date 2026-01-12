@@ -10,7 +10,7 @@ interface SectionWrapperProps {
 export function SectionWrapper({ children, className, as: Component = 'section' }: SectionWrapperProps) {
   return (
     <Component className={cn('pb-8', className)}>
-      <div className="mx-auto w-full max-w-4xl px-4">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {children}
       </div>
     </Component>
