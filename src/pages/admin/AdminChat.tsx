@@ -4,7 +4,6 @@ import { Send, Trash2, Shield, Users, Paperclip, X, Image, FileText, Loader2, Up
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -362,13 +361,10 @@ function AdminChatContent() {
     },
   });
 
-  // Scroll to bottom
+  // Scroll to bottom (native scroll)
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
-      const scrollArea = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollArea) {
-        scrollArea.scrollTop = scrollArea.scrollHeight;
-      }
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, []);
 
@@ -711,8 +707,8 @@ function AdminChatContent() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* Messages area - fills available space */}
-          <ScrollArea ref={scrollRef} className="flex-1 px-3 sm:px-4">
+          {/* Messages area - fills available space with native scroll */}
+          <div ref={scrollRef} className="flex-1 px-3 sm:px-4 overflow-y-auto overscroll-contain">
             <div className="py-4 flex flex-col">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
@@ -829,7 +825,7 @@ function AdminChatContent() {
                 })
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Typing indicator */}
           {typingUsers.length > 0 && (
