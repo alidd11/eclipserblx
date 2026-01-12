@@ -79,29 +79,32 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
           </h3>
 
           <div className="flex items-end justify-between gap-2 mt-auto pt-1">
-            <div className="min-w-0">
-              {/* Regular price - show as main if subscribed and eligible, or as crossed-out if showing member price */}
+            <div className="flex flex-col gap-0.5 min-w-0">
               {hasMemberDiscount ? (
-                <div className="flex items-center gap-1.5">
+                <>
+                  {/* Original price crossed out on its own line */}
                   <span className="text-[10px] text-muted-foreground line-through leading-none">
                     £{price.toFixed(2)}
                   </span>
-                  <span className={cn(
-                    "text-sm font-bold whitespace-nowrap leading-none",
-                    isSubscribed ? "text-amber-400" : "text-primary"
-                  )}>
-                    £{memberPrice.toFixed(2)}
-                  </span>
-                  <span className={cn(
-                    "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none",
-                    isSubscribed 
-                      ? "bg-amber-500/20 text-amber-400" 
-                      : "bg-primary/10 text-primary"
-                  )}>
-                    <Sparkles className="h-2 w-2 flex-shrink-0" />
-                    {ECLIPSE_PLUS_DISCOUNT}%
-                  </span>
-                </div>
+                  {/* Member price + 30% badge on new line */}
+                  <div className="flex items-center gap-1">
+                    <span className={cn(
+                      "text-sm font-bold whitespace-nowrap leading-none",
+                      isSubscribed ? "text-amber-400" : "text-primary"
+                    )}>
+                      £{memberPrice.toFixed(2)}
+                    </span>
+                    <span className={cn(
+                      "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none",
+                      isSubscribed 
+                        ? "bg-amber-500/20 text-amber-400" 
+                        : "bg-primary/10 text-primary"
+                    )}>
+                      <Sparkles className="h-2 w-2 flex-shrink-0" />
+                      {ECLIPSE_PLUS_DISCOUNT}%
+                    </span>
+                  </div>
+                </>
               ) : (
                 <span className="text-sm font-bold text-foreground whitespace-nowrap leading-none">
                   £{price.toFixed(2)}
