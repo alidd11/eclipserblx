@@ -172,6 +172,8 @@ export type Database = {
       bot_installation_codes: {
         Row: {
           created_at: string
+          discord_guild_icon: string | null
+          discord_guild_name: string | null
           discord_invite: string | null
           expires_at: string
           id: string
@@ -189,6 +191,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discord_guild_icon?: string | null
+          discord_guild_name?: string | null
           discord_invite?: string | null
           expires_at?: string
           id?: string
@@ -206,6 +210,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discord_guild_icon?: string | null
+          discord_guild_name?: string | null
           discord_invite?: string | null
           expires_at?: string
           id?: string
