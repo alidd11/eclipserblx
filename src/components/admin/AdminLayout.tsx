@@ -147,6 +147,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       window.removeEventListener('orientationchange', sync);
       document.removeEventListener('focusin', sync);
       document.removeEventListener('focusout', sync);
+      
+      // CRITICAL: Reset --vvh to full viewport height when leaving chat pages
+      // This prevents the grey gap issue when keyboard was open during navigation
+      html.style.removeProperty('--vvh');
     };
   }, [isChatPage]);
 
