@@ -44,8 +44,7 @@ export default function Products() {
       let query = supabase
         .from('products')
         .select(`*, categories(name, slug)`)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .eq('is_active', true);
 
       if (categorySlug) {
         const category = categories?.find(c => c.slug === categorySlug);
@@ -64,7 +63,35 @@ export default function Products() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      
+      // Sort products: Featured first, then new (within 3 days), then by popularity
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+      
+      const sorted = (data || []).sort((a, b) => {
+        // Featured products first
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+        
+        // Among non-featured, new products (within 3 days) come next
+        const aIsNew = new Date(a.created_at) > threeDaysAgo;
+        const bIsNew = new Date(b.created_at) > threeDaysAgo;
+        
+        if (aIsNew && !bIsNew) return -1;
+        if (!aIsNew && bIsNew) return 1;
+        
+        // If both are new, sort by newest first
+        if (aIsNew && bIsNew) {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        
+        // Otherwise, sort by popularity (download_count)
+        const aPopularity = a.download_count || 0;
+        const bPopularity = b.download_count || 0;
+        return bPopularity - aPopularity;
+      });
+      
+      return sorted;
     },
     enabled: categories !== undefined || !categorySlug,
   });
