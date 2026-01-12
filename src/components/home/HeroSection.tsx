@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Zap, Shield, Star } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Shield, Star, Percent, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
 import { FeaturedProductsCard } from './FeaturedProductsCard';
 import { SectionWrapper } from './SectionWrapper';
 import { motion } from 'framer-motion';
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden">
@@ -122,14 +127,49 @@ export function HeroSection() {
                     <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary to-violet-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
                   </Button>
                 </Link>
-                <Link to="/eclipse-plus">
-                  <Button size="lg" variant="outline" className="relative group text-lg px-10 py-6 border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-amber-600/10 hover:from-amber-500/20 hover:to-amber-600/20 hover:border-amber-500 transition-all duration-300 hover:scale-105 shadow-lg shadow-amber-500/10">
-                    <span className="flex items-center gap-2 text-amber-400">
-                      <Sparkles className="h-5 w-5" />
-                      Eclipse+
-                    </span>
-                  </Button>
-                </Link>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link to="/eclipse-plus">
+                        <Button size="lg" variant="outline" className="relative group text-lg px-10 py-6 border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-amber-600/10 hover:from-amber-500/20 hover:to-amber-600/20 hover:border-amber-500 transition-all duration-300 hover:scale-105 shadow-xl shadow-amber-500/20 hover:shadow-2xl hover:shadow-amber-500/40 overflow-hidden">
+                          <span className="relative z-10 flex items-center gap-2 text-amber-400">
+                            <Sparkles className="h-5 w-5 animate-pulse" />
+                            Eclipse+
+                          </span>
+                          {/* Animated glow effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/20 to-amber-500/0 animate-[shimmer_2s_ease-in-out_infinite] bg-[length:200%_100%]" />
+                          {/* Button glow on hover */}
+                          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+                        </Button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="w-64 p-4 bg-card/95 backdrop-blur-sm border-amber-500/30">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-amber-400 font-semibold">
+                          <Sparkles className="h-4 w-4" />
+                          Eclipse+ Benefits
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Percent className="h-4 w-4 text-emerald-400" />
+                            <span>30% off all products</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Gift className="h-4 w-4 text-violet-400" />
+                            <span>1 free product monthly</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Star className="h-4 w-4 text-amber-400" />
+                            <span>Exclusive member badge</span>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                          Only £4.99/month
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </motion.div>
             </div>
           </div>
