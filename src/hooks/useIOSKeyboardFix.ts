@@ -14,6 +14,7 @@ export function useIOSKeyboardFix() {
   const [inputBarTop, setInputBarTop] = useState<number | null>(null);
   const isIOSRef = useRef(false);
   const isPWARef = useRef(false);
+  const baseViewportHeightRef = useRef<number | null>(null);
 
   // Detect iOS and PWA on mount
   useEffect(() => {
@@ -29,19 +30,29 @@ export function useIOSKeyboardFix() {
     const vv = window.visualViewport;
     if (!vv) return;
 
-    const windowHeight = window.innerHeight;
-    const viewportHeight = vv.height;
-    const keyboardHeight = windowHeight - viewportHeight;
+    // In iOS PWA standalone, `window.innerHeight` can change along with the keyboard.
+    // Using an initial visualViewport height baseline is more reliable.
+    if (baseViewportHeightRef.current === null) {
+      baseViewportHeightRef.current = vv.height;
+    }
+
+    const baseline = baseViewportHeightRef.current ?? vv.height;
+    const keyboardHeight = Math.max(0, baseline - vv.height);
 
     // Consider keyboard open if there's a significant difference
-    if (keyboardHeight > 100) {
+    if (keyboardHeight > 80) {
       setIsKeyboardVisible(true);
-      // Position the input bar at the top of the keyboard
+      // Position the input bar at the bottom edge of the visual viewport
       // vv.offsetTop accounts for any scroll offset
-      setInputBarTop(vv.offsetTop + viewportHeight);
+      setInputBarTop(vv.offsetTop + vv.height);
     } else {
       setIsKeyboardVisible(false);
       setInputBarTop(null);
+
+      // If the viewport grew (e.g. after dismissal), refresh the baseline
+      if (vv.height > baseline + 20) {
+        baseViewportHeightRef.current = vv.height;
+      }
     }
   }, []);
 
