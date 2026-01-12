@@ -290,49 +290,78 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const isEdgeSwipe = useRef(false);
-  const hasPrevented = useRef(false);
 
-  // Handle swipe from left edge to open sidebar (maximum sensitivity)
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    const touch = e.touches[0];
-    touchStartX.current = touch.clientX;
-    touchStartY.current = touch.clientY;
-    hasPrevented.current = false;
-    // Mark as edge swipe if starting near left edge (expanded zone to 100px for easier trigger)
-    isEdgeSwipe.current = touch.clientX < 100;
-  }, []);
+  const EDGE_SWIPE_ZONE_PX = 100;
+  const OPEN_SWIPE_MIN_X = 12;
+  const HORIZONTAL_LOCK_RATIO = 1.1;
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    // Always prevent browser back gesture when swiping from left edge on PWA
-    if (isEdgeSwipe.current && touchStartX.current !== null) {
+  // Handle swipe from left edge to open sidebar (high sensitivity, but scroll-safe)
+  const handleTouchStart = useCallback(
+    (e: TouchEvent) => {
+      // When the drawer is open, do NOT treat touches as an "edge swipe".
+      // This prevents us from blocking vertical scrolling inside the sidebar.
+      if (mobileOpen) {
+        isEdgeSwipe.current = false;
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
+
+      const touch = e.touches[0];
+      touchStartX.current = touch.clientX;
+      touchStartY.current = touch.clientY;
+
+      // Mark as edge swipe if starting near left edge (expanded zone)
+      isEdgeSwipe.current = touch.clientX < EDGE_SWIPE_ZONE_PX;
+    },
+    [mobileOpen]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      // Only intercept gestures when the drawer is CLOSED.
+      if (mobileOpen) return;
+      if (!isEdgeSwipe.current || touchStartX.current === null || touchStartY.current === null) return;
+
       const touch = e.touches[0];
       const deltaX = touch.clientX - touchStartX.current;
-      // Immediately prevent any rightward swipe from the left edge
-      if (deltaX > 0) {
-        e.preventDefault();
-        e.stopPropagation();
-        hasPrevented.current = true;
-      }
-    }
-  }, []);
+      const deltaY = Math.abs(touch.clientY - touchStartY.current);
 
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
-    
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartX.current;
-    const deltaY = Math.abs(touch.clientY - touchStartY.current);
-    
-    // Ultra-high sensitivity: 10px threshold, 100px edge zone, allow more vertical movement
-    if (touchStartX.current < 100 && deltaX > 10 && deltaY < 200 && !mobileOpen) {
-      setMobileOpen(true);
-    }
-    
-    touchStartX.current = null;
-    touchStartY.current = null;
-    isEdgeSwipe.current = false;
-    hasPrevented.current = false;
-  }, [mobileOpen]);
+      const isMostlyHorizontal = Math.abs(deltaX) > deltaY * HORIZONTAL_LOCK_RATIO;
+
+      // Prevent browser back gesture only for a deliberate rightward swipe
+      if (deltaX > 0 && Math.abs(deltaX) > 10 && isMostlyHorizontal) {
+        e.preventDefault();
+      }
+    },
+    [mobileOpen]
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      if (touchStartX.current === null || touchStartY.current === null) return;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX.current;
+      const deltaY = Math.abs(touch.clientY - touchStartY.current);
+
+      const isMostlyHorizontal = Math.abs(deltaX) > deltaY * HORIZONTAL_LOCK_RATIO;
+
+      if (
+        touchStartX.current < EDGE_SWIPE_ZONE_PX &&
+        deltaX > OPEN_SWIPE_MIN_X &&
+        isMostlyHorizontal &&
+        !mobileOpen
+      ) {
+        setMobileOpen(true);
+      }
+
+      touchStartX.current = null;
+      touchStartY.current = null;
+      isEdgeSwipe.current = false;
+    },
+    [mobileOpen]
+  );
 
   // Add edge swipe listener for mobile - capture phase to intercept before browser
   useEffect(() => {
@@ -431,14 +460,22 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                 onTouchStart={(e) => {
                   const touch = e.touches[0];
                   (e.currentTarget as any)._touchStartX = touch.clientX;
+                  (e.currentTarget as any)._touchStartY = touch.clientY;
                 }}
                 onTouchEnd={(e) => {
-                  const touchStartX = (e.currentTarget as any)._touchStartX;
-                  const touchEndX = e.changedTouches[0].clientX;
-                  const swipeDistance = touchStartX - touchEndX;
-                  
-                  // Higher sensitivity: 30px threshold to close (was 50px)
-                  if (swipeDistance > 30) {
+                  const touchStartX = (e.currentTarget as any)._touchStartX as number | undefined;
+                  const touchStartY = (e.currentTarget as any)._touchStartY as number | undefined;
+                  if (touchStartX == null || touchStartY == null) return;
+
+                  const touchEnd = e.changedTouches[0];
+                  const deltaX = touchEnd.clientX - touchStartX;
+                  const deltaY = Math.abs(touchEnd.clientY - touchStartY);
+
+                  const swipeLeft = -deltaX;
+                  const isMostlyHorizontal = Math.abs(deltaX) > deltaY * 1.1;
+
+                  // Higher sensitivity: 30px threshold to close, but avoid closing on vertical scroll
+                  if (swipeLeft > 30 && isMostlyHorizontal) {
                     setMobileOpen(false);
                   }
                 }}
