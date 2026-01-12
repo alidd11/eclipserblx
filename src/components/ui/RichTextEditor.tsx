@@ -4,6 +4,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { Bold, Italic, List, ListOrdered, Heading2, Undo, Redo, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { useEffect } from 'react';
 
 interface RichTextEditorProps {
@@ -27,7 +28,8 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write your de
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      // Sanitize HTML output to prevent XSS attacks
+      onChange(sanitizeHtml(editor.getHTML()));
     },
     editorProps: {
       attributes: {
