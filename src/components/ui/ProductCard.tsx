@@ -78,62 +78,62 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             {name}
           </h3>
 
-          <div className="flex items-end justify-between gap-2 mt-auto pt-1">
-            <div className="flex flex-col gap-0.5 min-w-0">
-              {hasMemberDiscount ? (
-                <>
-                  {/* Original price crossed out on its own line */}
-                  <span className="text-[10px] text-muted-foreground line-through leading-none">
-                    £{price.toFixed(2)}
-                  </span>
-                  {/* Member price + 30% badge on new line */}
-                  <div className="flex items-center gap-1">
-                    <span className={cn(
-                      "text-sm font-bold whitespace-nowrap leading-none",
-                      isSubscribed ? "text-amber-400" : "text-primary"
-                    )}>
-                      £{memberPrice.toFixed(2)}
-                    </span>
-                    <span className={cn(
-                      "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none",
-                      isSubscribed 
-                        ? "bg-amber-500/20 text-amber-400" 
-                        : "bg-primary/10 text-primary"
-                    )}>
-                      <Sparkles className="h-2 w-2 flex-shrink-0" />
-                      {ECLIPSE_PLUS_DISCOUNT}%
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <span className="text-sm font-bold text-foreground whitespace-nowrap leading-none">
+          {/* Price section */}
+          <div className="flex flex-col gap-0.5 mt-auto pt-1">
+            {hasMemberDiscount ? (
+              <>
+                {/* Original price crossed out */}
+                <span className="text-[10px] text-muted-foreground line-through leading-none">
                   £{price.toFixed(2)}
                 </span>
-              )}
-            </div>
-            
-            <Button
-              size="sm"
-              variant={inCart ? "secondary" : "default"}
-              className={cn(
-                "h-7 px-2 text-xs flex-shrink-0",
-                !inCart && "gradient-button border-0"
-              )}
-              onClick={handleAddToCart}
-            >
-              {inCart ? (
-                <>
-                  <Check className="h-3 w-3 mr-0.5" />
-                  <span className="hidden sm:inline">Added</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="h-3 w-3 mr-0.5" />
-                  <span className="hidden sm:inline">Add</span>
-                </>
-              )}
-            </Button>
+                {/* Member price + 30% badge */}
+                <div className="flex items-center gap-1">
+                  <span className={cn(
+                    "text-sm font-bold whitespace-nowrap leading-none",
+                    isSubscribed ? "text-amber-400" : "text-primary"
+                  )}>
+                    £{memberPrice.toFixed(2)}
+                  </span>
+                  <span className={cn(
+                    "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none",
+                    isSubscribed 
+                      ? "bg-amber-500/20 text-amber-400" 
+                      : "bg-primary/10 text-primary"
+                  )}>
+                    <Sparkles className="h-2 w-2 flex-shrink-0" />
+                    {ECLIPSE_PLUS_DISCOUNT}%
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span className="text-sm font-bold text-foreground whitespace-nowrap leading-none">
+                £{price.toFixed(2)}
+              </span>
+            )}
           </div>
+
+          {/* Add to cart button - separate row */}
+          <Button
+            size="sm"
+            variant={inCart ? "secondary" : "default"}
+            className={cn(
+              "h-8 w-full text-xs mt-2",
+              !inCart && "gradient-button border-0"
+            )}
+            onClick={handleAddToCart}
+          >
+            {inCart ? (
+              <>
+                <Check className="h-3.5 w-3.5 mr-1" />
+                Added to Cart
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-3.5 w-3.5 mr-1" />
+                Add to Cart
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </Link>
