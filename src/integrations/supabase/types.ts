@@ -178,6 +178,8 @@ export type Database = {
           is_used: boolean
           order_id: string
           order_item_id: string
+          processed_at: string | null
+          processed_by: string | null
           product_name: string
           used_at: string | null
           used_by: string | null
@@ -191,6 +193,8 @@ export type Database = {
           is_used?: boolean
           order_id: string
           order_item_id: string
+          processed_at?: string | null
+          processed_by?: string | null
           product_name: string
           used_at?: string | null
           used_by?: string | null
@@ -204,6 +208,8 @@ export type Database = {
           is_used?: boolean
           order_id?: string
           order_item_id?: string
+          processed_at?: string | null
+          processed_by?: string | null
           product_name?: string
           used_at?: string | null
           used_by?: string | null
