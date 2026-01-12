@@ -3,11 +3,12 @@ import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
-// Bot category ID - products in this category are excluded from discounts and free claims
+// Bot category ID - products in this category get a higher discount
 export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
 
-// Eclipse+ discount percentage for non-bot products
-export const ECLIPSE_PLUS_DISCOUNT = 30;
+// Eclipse+ discount percentages
+export const ECLIPSE_PLUS_DISCOUNT = 30; // Standard discount for non-bot products
+export const ECLIPSE_PLUS_BOT_DISCOUNT = 35; // Higher discount for bot products
 
 interface SubscriptionState {
   isSubscribed: boolean;
@@ -171,16 +172,22 @@ export function useSubscription() {
 
   // Calculate member price for a product
   const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null): number => {
-    // Bot products don't get the discount
+    // Bot products get a higher discount (35%)
     if (categoryId === BOT_CATEGORY_ID) {
-      return originalPrice;
+      return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
     }
+    // Other products get standard discount (30%)
     return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
   }, []);
 
-  // Check if a product is eligible for the discount
-  const isEligibleForDiscount = useCallback((categoryId?: string | null): boolean => {
-    return categoryId !== BOT_CATEGORY_ID;
+  // Check if a product is eligible for the discount (all products now eligible)
+  const isEligibleForDiscount = useCallback((_categoryId?: string | null): boolean => {
+    return true; // All products are now eligible
+  }, []);
+
+  // Get the discount percentage for a product category
+  const getDiscountPercent = useCallback((categoryId?: string | null): number => {
+    return categoryId === BOT_CATEGORY_ID ? ECLIPSE_PLUS_BOT_DISCOUNT : ECLIPSE_PLUS_DISCOUNT;
   }, []);
 
   // Check if a product is eligible for free claim
@@ -195,6 +202,7 @@ export function useSubscription() {
     openCustomerPortal,
     claimFreeProduct,
     getMemberPrice,
+    getDiscountPercent,
     isEligibleForDiscount,
     isEligibleForFreeClaim,
   };

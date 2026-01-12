@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
 import { useCart } from '@/hooks/useCart';
-import { useSubscription, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
+import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -19,7 +19,7 @@ export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
-  const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, canClaimFree } = useSubscription();
+  const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
   const [selectedImage, setSelectedImage] = useState(0);
 
   const handleRefresh = useCallback(async () => {
@@ -95,6 +95,7 @@ export default function ProductDetail() {
   
   const isEligible = isEligibleForDiscount(product.category_id);
   const memberPrice = getMemberPrice(product.price, product.category_id);
+  const discountPercent = getDiscountPercent(product.category_id);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
   const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id);
 
@@ -242,7 +243,7 @@ export default function ProductDetail() {
                             ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
                             : "bg-primary/10 text-primary border-primary/20"
                         )}>
-                          {ECLIPSE_PLUS_DISCOUNT}% off with Eclipse+
+                          {discountPercent}% off with Eclipse+
                         </Badge>
                       </div>
                       {/* Call to action for non-subscribers */}
