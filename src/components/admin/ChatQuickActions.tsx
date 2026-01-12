@@ -67,7 +67,7 @@ export function ChatQuickActions({
 
   return (
     <div className="border-t border-border/30 bg-card pb-[max(env(safe-area-inset-bottom),8px)]">
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-around px-2 py-1">
         {actions.map((action) => (
           <button
             key={action.id}

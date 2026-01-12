@@ -907,7 +907,7 @@ function AdminChatContent() {
           {/* Message input - stays in flex flow, browser handles keyboard resize */}
           <div 
             ref={inputBarRef}
-            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card sm:bg-card/95 sm:backdrop-blur-sm"
+            className="px-3 py-2 sm:px-4 sm:py-3 border-t border-border/50 relative flex-shrink-0 bg-card sm:bg-card/95 sm:backdrop-blur-sm"
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
