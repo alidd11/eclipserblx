@@ -297,7 +297,7 @@ export default function Downloads() {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = data.productName || 'download';
+          a.download = data.fileName || data.productName || 'download';
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
