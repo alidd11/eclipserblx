@@ -685,7 +685,7 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4">
+    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4 sm:pb-0 pb-[env(safe-area-inset-bottom)]" style={{ backgroundColor: 'var(--card)' }}>
       <KeyboardDebugOverlay />
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
@@ -887,7 +887,7 @@ function AdminChatContent() {
           {/* Message input - stays in flex flow, browser handles keyboard resize */}
           <div 
             ref={inputBarRef}
-            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card/95 backdrop-blur-sm pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+            className="p-3 sm:p-4 border-t border-border/50 relative flex-shrink-0 bg-card/95 backdrop-blur-sm"
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
