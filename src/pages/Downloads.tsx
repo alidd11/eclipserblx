@@ -335,120 +335,168 @@ export default function Downloads() {
                   return (
                     <div 
                       key={`${item.orderId}-${item.id}`} 
-                      className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                      className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
                     >
-                      {/* Product Image */}
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                        {item.product?.images?.[0] ? (
-                          <img 
-                            src={item.product.images[0]} 
-                            alt={item.product_name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : isBot ? (
-                          <div className="w-full h-full flex items-center justify-center bg-blue-500/10">
-                            <Bot className="h-6 w-6 text-blue-500" />
-                          </div>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{item.product_name}</p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Purchased
-                          </Badge>
-                          {isBot && (
-                            <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">
-                              <Bot className="h-3 w-3 mr-1" />
-                              Bot
-                            </Badge>
+                      <div className="flex items-start gap-4">
+                        {/* Product Image */}
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                          {item.product?.images?.[0] ? (
+                            <img 
+                              src={item.product.images[0]} 
+                              alt={item.product_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : isBot ? (
+                            <div className="w-full h-full flex items-center justify-center bg-blue-500/10">
+                              <Bot className="h-6 w-6 text-blue-500" />
+                            </div>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-6 w-6 text-muted-foreground" />
+                            </div>
                           )}
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(item.orderDate).toLocaleDateString()}
-                          </span>
                         </div>
-                        
-                        {/* Show installation code for bot products */}
-                        {isBot && botCode && (
-                          <div className="mt-2 flex items-center gap-2">
-                            <Key className="h-3 w-3 text-muted-foreground" />
-                            <code className="text-xs font-mono bg-background px-2 py-1 rounded border whitespace-nowrap">
-                              {botCode.installation_code}
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => handleCopyCode(botCode.installation_code)}
-                            >
-                              {copiedCode === botCode.installation_code ? (
-                                <CheckCircle className="h-3 w-3 text-green-500" />
-                              ) : (
-                                <Copy className="h-3 w-3" />
-                              )}
-                            </Button>
-                            {botCode.is_used && (
-                              <Badge variant="secondary" className="text-xs">Claimed</Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Action Button */}
-                      {isBot ? (
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="sm"
-                          className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
-                        >
-                          <Link to="/bot-installation">
-                            <Bot className="h-4 w-4 mr-2" />
-                            View Guide
-                          </Link>
-                        </Button>
-                      ) : (
-                        <div className="flex flex-col items-end gap-2">
-                          <Button
-                            onClick={() => handleDownload(item)}
-                            disabled={!hasAsset || isDownloading}
-                            className="gradient-button border-0"
-                            size="sm"
-                          >
-                            {isDownloading ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                {downloadProgress?.progress || 0}%
-                              </>
-                            ) : !hasAsset ? (
-                              <>
-                                <Package className="h-4 w-4 mr-2" />
-                                No file
-                              </>
-                            ) : (
-                              <>
-                                <Download className="h-4 w-4 mr-2" />
-                                Download
-                              </>
-                            )}
-                          </Button>
-                          {isDownloading && downloadProgress && downloadProgress.fileSize && (
-                            <div className="w-32 space-y-1">
+                        {/* Product Info */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{item.product_name}</p>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30 text-xs">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Purchased
+                                </Badge>
+                                {isBot && (
+                                  <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30 text-xs">
+                                    <Bot className="h-3 w-3 mr-1" />
+                                    Bot
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground mt-1 block">
+                                {new Date(item.orderDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                            
+                            {/* Action Button - Desktop */}
+                            <div className="hidden sm:block flex-shrink-0">
+                              {isBot ? (
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
+                                >
+                                  <Link to="/bot-installation">
+                                    <Bot className="h-4 w-4 mr-2" />
+                                    View Guide
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <Button
+                                  onClick={() => handleDownload(item)}
+                                  disabled={!hasAsset || isDownloading}
+                                  className="gradient-button border-0"
+                                  size="sm"
+                                >
+                                  {isDownloading ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      {downloadProgress?.progress || 0}%
+                                    </>
+                                  ) : !hasAsset ? (
+                                    <>
+                                      <Package className="h-4 w-4 mr-2" />
+                                      No file
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Download
+                                    </>
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Show installation code for bot products */}
+                          {isBot && botCode && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <code className="text-xs font-mono bg-background px-2 py-1 rounded border whitespace-nowrap">
+                                {botCode.installation_code}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => handleCopyCode(botCode.installation_code)}
+                              >
+                                {copiedCode === botCode.installation_code ? (
+                                  <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                              {botCode.is_used && (
+                                <Badge variant="secondary" className="text-xs">Claimed</Badge>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Download progress */}
+                          {!isBot && isDownloading && downloadProgress && downloadProgress.fileSize && (
+                            <div className="w-full max-w-[200px] space-y-1">
                               <Progress value={downloadProgress.progress} className="h-1.5" />
-                              <p className="text-[10px] text-muted-foreground text-right">
+                              <p className="text-[10px] text-muted-foreground">
                                 {formatFileSize(downloadProgress.downloaded)} / {formatFileSize(downloadProgress.fileSize)}
                               </p>
                             </div>
                           )}
+                          
+                          {/* Action Button - Mobile */}
+                          <div className="sm:hidden pt-2">
+                            {isBot ? (
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10 w-full"
+                              >
+                                <Link to="/bot-installation">
+                                  <Bot className="h-4 w-4 mr-2" />
+                                  View Guide
+                                </Link>
+                              </Button>
+                            ) : (
+                              <Button
+                                onClick={() => handleDownload(item)}
+                                disabled={!hasAsset || isDownloading}
+                                className="gradient-button border-0 w-full"
+                                size="sm"
+                              >
+                                {isDownloading ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    {downloadProgress?.progress || 0}%
+                                  </>
+                                ) : !hasAsset ? (
+                                  <>
+                                    <Package className="h-4 w-4 mr-2" />
+                                    No file
+                                  </>
+                                ) : (
+                                  <>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Download
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   );
                 })}
