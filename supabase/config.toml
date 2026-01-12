@@ -101,3 +101,6 @@ verify_jwt = false
 
 [functions.claim-free-product]
 verify_jwt = false
+
+[functions.verify-chat-code]
+verify_jwt = false

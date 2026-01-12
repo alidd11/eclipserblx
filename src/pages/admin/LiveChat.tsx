@@ -23,6 +23,7 @@ import { useDropZone } from '@/hooks/useDropZone';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { hapticTap, hapticError } from '@/lib/haptics';
+import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
 
 const CANNED_RESPONSES = [
   {
@@ -108,6 +109,13 @@ interface Conversation {
 
 type MessageStatus = 'pending' | 'sent' | 'failed';
 
+interface SecureData {
+  verified: boolean;
+  masked_code: string;
+  product_name?: string;
+  code_id?: string;
+}
+
 interface Message {
   id: string;
   message: string;
@@ -115,6 +123,9 @@ interface Message {
   sender_id: string | null;
   created_at: string;
   attachment_url: string | null;
+  message_type?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  secure_data?: any;
   // Optimistic UI fields
   _status?: MessageStatus;
   _tempId?: string;
@@ -770,43 +781,53 @@ export default function AdminLiveChat() {
                             <AlertCircle className="h-3 w-3 text-destructive" />
                           )}
                         </div>
-                        <div
-                          className={cn(
-                            'max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4',
-                            msg.sender_type === 'agent'
-                              ? 'bg-primary text-primary-foreground'
-                              : msg.sender_type === 'system'
-                              ? 'bg-muted text-muted-foreground italic text-sm'
-                              : 'bg-muted text-foreground',
-                            msg._status === 'pending' && 'opacity-70',
-                            msg._status === 'failed' && 'bg-destructive/20 border border-destructive/40'
-                          )}
-                        >
-                          {msg.attachment_url && (
-                            <div className="mb-2">
-                              {isImageUrl(msg.attachment_url) ? (
-                                <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
-                                  <img 
-                                    src={msg.attachment_url} 
-                                    alt="Attachment" 
-                                    className="max-w-full rounded max-h-40 object-cover"
-                                  />
-                                </a>
-                              ) : (
-                                <a 
-                                  href={msg.attachment_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-xs underline"
-                                >
-                                  <Paperclip className="h-3 w-3" />
-                                  {msg.message}
-                                </a>
-                              )}
-                            </div>
-                          )}
-                          {!msg.attachment_url && <p className="text-sm lg:text-base">{msg.message}</p>}
-                        </div>
+                        {/* Code verification message */}
+                        {msg.message_type === 'code_verification' && msg.secure_data ? (
+                          <div className="max-w-[85%] lg:max-w-[70%]">
+                            <CodeVerificationMessage 
+                              secureData={msg.secure_data as SecureData} 
+                              isStaffView={true}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={cn(
+                              'max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4',
+                              msg.sender_type === 'agent'
+                                ? 'bg-primary text-primary-foreground'
+                                : msg.sender_type === 'system'
+                                ? 'bg-muted text-muted-foreground italic text-sm'
+                                : 'bg-muted text-foreground',
+                              msg._status === 'pending' && 'opacity-70',
+                              msg._status === 'failed' && 'bg-destructive/20 border border-destructive/40'
+                            )}
+                          >
+                            {msg.attachment_url && (
+                              <div className="mb-2">
+                                {isImageUrl(msg.attachment_url) ? (
+                                  <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
+                                    <img 
+                                      src={msg.attachment_url} 
+                                      alt="Attachment" 
+                                      className="max-w-full rounded max-h-40 object-cover"
+                                    />
+                                  </a>
+                                ) : (
+                                  <a 
+                                    href={msg.attachment_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-xs underline"
+                                  >
+                                    <Paperclip className="h-3 w-3" />
+                                    {msg.message}
+                                  </a>
+                                )}
+                              </div>
+                            )}
+                            {!msg.attachment_url && <p className="text-sm lg:text-base">{msg.message}</p>}
+                          </div>
+                        )}
                         {/* Retry/Remove for failed messages */}
                         {msg._status === 'failed' && msg._tempId && (
                           <div className="flex items-center gap-2 mt-1">
