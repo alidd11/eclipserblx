@@ -279,9 +279,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                   }
                 }}
               >
-                {/* Drag Handle */}
-                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1 opacity-40">
-                  <div className="w-1 h-8 bg-muted-foreground/60 rounded-full" />
+                {/* Drag Handle - Enhanced visibility with animation */}
+                <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-0.5 opacity-50 active:opacity-80 transition-opacity">
+                  <div className="w-1.5 h-12 bg-muted-foreground/70 rounded-full shadow-sm" />
                 </div>
                 <AdminSidebar 
                   collapsed={false} 
@@ -300,8 +300,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             className="fixed left-0 top-[calc(50%+env(safe-area-inset-top))] -translate-y-1/2 z-30 flex items-center"
             onClick={() => setMobileOpen(true)}
           >
-            <div className="w-1 h-16 bg-primary/40 rounded-r-full shadow-lg shadow-primary/20 transition-all duration-300 hover:w-1.5 hover:bg-primary/60 active:bg-primary/80">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-24 -ml-1" />
+            <div className="w-1.5 h-20 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 rounded-r-full shadow-lg shadow-primary/30 transition-all duration-300 hover:w-2 hover:bg-primary/60 active:scale-x-150 active:bg-primary/80 animate-pulse">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-28 -ml-1" />
             </div>
           </div>
         )}

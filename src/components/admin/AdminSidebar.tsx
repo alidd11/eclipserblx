@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { safeStorage } from '@/lib/safeStorage';
+import { hapticTap } from '@/lib/haptics';
 
 interface NavItem {
   title: string;
@@ -172,10 +173,12 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   };
 
   const handleNavClick = () => {
+    hapticTap();
     onNavigate?.();
   };
 
   const toggleGroup = (groupId: string) => {
+    hapticTap();
     setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
   };
 
@@ -202,7 +205,10 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
     const LinkContent = (
       <>
-        <item.icon className="h-4 w-4 shrink-0" />
+        <item.icon className={cn(
+          "h-4 w-4 shrink-0 transition-all",
+          isActive ? "stroke-[2.5]" : "stroke-[1.5]"
+        )} />
         {!isCollapsed && (
           <span className="min-w-0 truncate leading-none">{item.title}</span>
         )}
@@ -210,7 +216,8 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     );
 
     const linkClassName = cn(
-      "rounded-lg transition-colors text-sm font-medium",
+      "rounded-lg text-sm font-medium select-none",
+      "transition-all duration-100 active:scale-[0.97] active:opacity-90",
       isCollapsed
         ? "flex items-center justify-center py-2.5"
         : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
@@ -274,14 +281,19 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             <TooltipTrigger asChild>
               <button
                 className={cn(
-                  "w-full flex items-center justify-center py-2.5 rounded-lg transition-colors focus:outline-none focus-visible:outline-none",
+                  "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
+                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                  "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
-                <group.icon className="h-4 w-4" />
+                <group.icon className={cn(
+                  "h-4 w-4 transition-all",
+                  hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
+                )} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="p-0">
@@ -324,14 +336,19 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium focus:outline-none focus-visible:outline-none",
+              "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium select-none",
+              "transition-all duration-100 active:scale-[0.98] active:opacity-90",
+              "focus:outline-none focus-visible:outline-none",
               hasActiveItem
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
-            <group.icon className="h-4 w-4 shrink-0" />
-            <span className="flex-1 text-left truncate">{group.title}</span>
+            <group.icon className={cn(
+              "h-4 w-4 shrink-0 transition-all",
+              hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
+            )} />
+            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{group.title}</span>
             <ChevronDown 
               className={cn(
                 "h-4 w-4 shrink-0 transition-transform duration-200",
@@ -374,7 +391,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto">
+      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
         {filteredGroups.map(renderGroup)}
 
         {/* Sign Out - inline with nav items on mobile for visibility */}
@@ -382,8 +399,11 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg px-3 py-2.5 mt-2"
-            onClick={() => setShowSignOutDialog(true)}
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg px-3 py-2.5 mt-2 active:scale-[0.97] active:opacity-90 transition-all duration-100"
+            onClick={() => {
+              hapticTap();
+              setShowSignOutDialog(true);
+            }}
           >
             <LogOut className="h-4 w-4 shrink-0" />
             <span className="ml-3">Sign Out</span>
