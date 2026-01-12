@@ -66,6 +66,9 @@ export function ChatSidePanel() {
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -326,48 +329,84 @@ export function ChatSidePanel() {
 
   if (!isOpen) return null;
 
+  const handleDragEnd = () => {
+    if (dragY > 100) {
+      setIsMinimized(true);
+    }
+    setDragY(0);
+    setIsDragging(false);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          ref={panelRef}
           initial={{ x: '100%' }}
-          animate={{ x: 0 }}
+          animate={{ 
+            x: 0,
+            y: isMinimized ? 'calc(100dvh - 60px)' : isDragging ? dragY : 0
+          }}
           exit={{ x: '100%' }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          transition={isDragging ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 200 }}
+          drag={!isMinimized ? 'y' : false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.5 }}
+          onDrag={(_, info) => {
+            if (info.offset.y > 0) {
+              setIsDragging(true);
+              setDragY(info.offset.y);
+            }
+          }}
+          onDragEnd={handleDragEnd}
           className={cn(
-            'fixed top-0 right-0 h-[100dvh] bg-background border-l border-border shadow-xl z-[100] flex flex-col',
-            isMinimized ? 'w-16' : 'w-full sm:w-96'
+            'fixed top-0 right-0 h-[100dvh] bg-background border-l border-border shadow-xl z-[100] flex flex-col touch-none',
+            isMinimized ? 'w-full sm:w-96 cursor-pointer' : 'w-full sm:w-96'
           )}
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+          onClick={isMinimized ? () => setIsMinimized(false) : undefined}
         >
+          {/* Swipe indicator */}
+          {!isMinimized && (
+            <div className="flex justify-center py-2 sm:hidden">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-muted/50">
-            {!isMinimized && (
-              <div className="flex items-center gap-2">
+            {isMinimized ? (
+              <div className="flex items-center gap-2 w-full">
                 <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
                 <span className="font-medium text-sm">Live Support</span>
+                <span className="text-xs text-muted-foreground ml-auto">Tap to expand</span>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="font-medium text-sm">Live Support</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setIsMinimized(true)}
+                  >
+                    <Minimize2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={closeChat}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
             )}
-            <div className={cn("flex items-center gap-1", isMinimized && "mx-auto")}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setIsMinimized(!isMinimized)}
-              >
-                {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-              </Button>
-              {!isMinimized && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={closeChat}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
           </div>
 
           {/* Content */}
