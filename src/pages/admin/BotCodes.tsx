@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -9,10 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Key, CheckCircle, Clock, Copy, AlertCircle, User, IdCard, Shield } from 'lucide-react';
+import { Search, Key, CheckCircle, Clock, Copy, AlertCircle, User, IdCard, Shield, Loader2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface BotInstallationCode {
   id: string;
@@ -41,11 +42,24 @@ interface BotInstallationCode {
 
 export default function AdminBotCodes() {
   const { user: currentUser } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCode, setSelectedCode] = useState<BotInstallationCode | null>(null);
   const [markUsedDialogOpen, setMarkUsedDialogOpen] = useState(false);
   const [usedByInput, setUsedByInput] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top of dialog when it opens
+  useEffect(() => {
+    if (markUsedDialogOpen && dialogContentRef.current) {
+      setTimeout(() => {
+        dialogContentRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+      }, 50);
+    }
+  }, [markUsedDialogOpen]);
 
   const { data: codes, isLoading } = useQuery({
     queryKey: ['admin-bot-codes', searchQuery],
@@ -106,8 +120,24 @@ export default function AdminBotCodes() {
     },
   });
 
+  // Get current user's profile for the admin message
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['current-user-profile', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name, email')
+        .eq('user_id', currentUser.id)
+        .single();
+      return data;
+    },
+    enabled: !!currentUser?.id,
+  });
+
   const markAsUsedMutation = useMutation({
-    mutationFn: async ({ id, usedBy }: { id: string; usedBy: string }) => {
+    mutationFn: async ({ id, usedBy, code }: { id: string; usedBy: string; code: BotInstallationCode }) => {
+      // Update the bot code - mark as processed but set used_by to indicate pending admin action
       const { error } = await supabase
         .from('bot_installation_codes')
         .update({
@@ -119,13 +149,43 @@ export default function AdminBotCodes() {
         })
         .eq('id', id);
       if (error) throw error;
+
+      // Send message to admin chat
+      const staffName = currentUserProfile?.display_name || currentUserProfile?.email || 'Staff';
+      const customerName = code.customer_profile?.display_name || 'Unknown';
+      const customerId = code.customer_profile?.customer_id || 'N/A';
+      
+      const adminMessage = `🤖 **Bot Installation Request - Pending**\n\n` +
+        `**Product:** ${code.product_name}\n` +
+        `**Customer ID:** ${customerId}\n` +
+        `**Customer Name:** ${customerName}\n` +
+        `**Claimed By:** ${usedBy}\n` +
+        `**Verified By:** ${staffName}\n` +
+        `**Time:** ${format(new Date(), 'MMM d, yyyy h:mm a')}\n\n` +
+        `_Awaiting admin installation._`;
+
+      // Insert into admin chat
+      const { error: chatError } = await supabase
+        .from('admin_chat_messages')
+        .insert({
+          user_id: currentUser?.id,
+          message: adminMessage,
+        });
+      
+      if (chatError) {
+        console.error('Failed to send admin notification:', chatError);
+        // Don't throw - the main operation succeeded
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-bot-codes'] });
-      toast.success('Code marked as claimed');
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-bot-requests'] });
+      toast.success('Code verified and sent to admin for installation');
       setMarkUsedDialogOpen(false);
       setSelectedCode(null);
       setUsedByInput('');
+      setVerificationCode('');
+      setIsCodeVerified(false);
     },
     onError: (error) => {
       toast.error('Failed to update code: ' + error.message);
@@ -137,17 +197,35 @@ export default function AdminBotCodes() {
     toast.success('Code copied to clipboard');
   };
 
+  const handleVerifyCode = () => {
+    if (!selectedCode) return;
+    
+    if (verificationCode.trim().toUpperCase() === selectedCode.installation_code.toUpperCase()) {
+      setIsCodeVerified(true);
+      toast.success('Code verified successfully');
+    } else {
+      toast.error('Code does not match. Please try again.');
+      setVerificationCode('');
+    }
+  };
+
   const handleMarkAsUsed = () => {
     if (!selectedCode || !usedByInput.trim()) {
       toast.error('Please enter who claimed this code');
       return;
     }
-    markAsUsedMutation.mutate({ id: selectedCode.id, usedBy: usedByInput.trim() });
+    if (!isCodeVerified) {
+      toast.error('Please verify the code first');
+      return;
+    }
+    markAsUsedMutation.mutate({ id: selectedCode.id, usedBy: usedByInput.trim(), code: selectedCode });
   };
 
   const openMarkUsedDialog = (code: BotInstallationCode) => {
     setSelectedCode(code);
     setUsedByInput('');
+    setVerificationCode('');
+    setIsCodeVerified(false);
     setMarkUsedDialogOpen(true);
   };
 
@@ -252,17 +330,23 @@ export default function AdminBotCodes() {
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <Key className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <code className="text-xs font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
-                            {code.installation_code}
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 shrink-0"
-                            onClick={() => handleCopyCode(code.installation_code)}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
+                          {isAdmin ? (
+                            <>
+                              <code className="text-xs font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
+                                {code.installation_code}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0"
+                                onClick={() => handleCopyCode(code.installation_code)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Hidden</span>
+                          )}
                         </div>
                         <div className="shrink-0">{getStatusBadge(code)}</div>
                       </div>
@@ -357,17 +441,23 @@ export default function AdminBotCodes() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Key className="h-4 w-4 text-muted-foreground" />
-                              <code className="text-sm font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
-                                {code.installation_code}
-                              </code>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => handleCopyCode(code.installation_code)}
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
+                              {isAdmin ? (
+                                <>
+                                  <code className="text-sm font-mono bg-muted px-2 py-1 rounded whitespace-nowrap">
+                                    {code.installation_code}
+                                  </code>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => handleCopyCode(code.installation_code)}
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">Hidden</span>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="font-medium">{code.product_name}</TableCell>
@@ -434,66 +524,104 @@ export default function AdminBotCodes() {
 
       {/* Mark as Used Dialog */}
       <Dialog open={markUsedDialogOpen} onOpenChange={setMarkUsedDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>Mark Code as Claimed</DialogTitle>
             <DialogDescription>
-              Enter the Discord username or identifier of the person who claimed this code for installation.
+              Verify the installation code and enter the customer identifier.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Installation Code</p>
-              <code className="block text-sm font-mono bg-muted px-3 py-2 rounded">
-                {selectedCode?.installation_code}
-              </code>
-            </div>
+          <div 
+            ref={dialogContentRef}
+            className="flex-1 overflow-y-auto space-y-4 py-4 px-1"
+          >
             <div className="space-y-2">
               <p className="text-sm font-medium">Product</p>
               <p className="text-sm text-muted-foreground">{selectedCode?.product_name}</p>
             </div>
+
             {selectedCode?.customer_profile && (
               <div className="bg-muted/50 rounded-lg p-3 space-y-2">
                 <p className="text-sm font-medium flex items-center gap-1.5">
                   <IdCard className="h-4 w-4" />
                   Customer Info
                 </p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="space-y-1.5 text-sm">
                   <div>
                     <span className="text-muted-foreground">Customer ID:</span>
-                    <span className="ml-1 font-mono">{selectedCode.customer_profile.customer_id || 'N/A'}</span>
+                    <span className="ml-2 font-mono">{selectedCode.customer_profile.customer_id || 'N/A'}</span>
                   </div>
                   {selectedCode.customer_profile.display_name && (
                     <div>
                       <span className="text-muted-foreground">Name:</span>
-                      <span className="ml-1">{selectedCode.customer_profile.display_name}</span>
+                      <span className="ml-2">{selectedCode.customer_profile.display_name}</span>
                     </div>
                   )}
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">Email:</span>
-                    <span className="ml-1">{selectedCode.customer_profile.email}</span>
-                  </div>
                 </div>
               </div>
             )}
+
+            {/* Code Verification Step */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Claimed By *</label>
-              <Textarea
-                placeholder="Enter Discord username or customer identifier..."
-                value={usedByInput}
-                onChange={(e) => setUsedByInput(e.target.value)}
-              />
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                Verify Installation Code *
+              </label>
+              {isCodeVerified ? (
+                <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-md">
+                  <ShieldCheck className="h-5 w-5 text-green-600" />
+                  <span className="text-sm text-green-600 font-medium">Code Verified</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Enter the installation code to verify..."
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
+                    className="font-mono"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleVerifyCode}
+                    disabled={!verificationCode.trim()}
+                    className="w-full"
+                  >
+                    Verify Code
+                  </Button>
+                </div>
+              )}
             </div>
+
+            {/* Claimed By Input - Only show after verification */}
+            {isCodeVerified && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Claimed By *</label>
+                <Textarea
+                  placeholder="Enter Discord username or customer identifier..."
+                  value={usedByInput}
+                  onChange={(e) => setUsedByInput(e.target.value)}
+                />
+              </div>
+            )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="shrink-0 pt-4 border-t">
             <Button variant="outline" onClick={() => setMarkUsedDialogOpen(false)}>
               Cancel
             </Button>
             <Button
               onClick={handleMarkAsUsed}
-              disabled={markAsUsedMutation.isPending || !usedByInput.trim()}
+              disabled={markAsUsedMutation.isPending || !usedByInput.trim() || !isCodeVerified}
             >
-              {markAsUsedMutation.isPending ? 'Saving...' : 'Confirm'}
+              {markAsUsedMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send to Admin'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
