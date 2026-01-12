@@ -956,14 +956,7 @@ function AdminChatContent() {
                 value={newMessage}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                onFocus={() => setTimeout(scrollToBottom, 0)}
-                onBlur={() => {
-                  // Force viewport reset after keyboard closes on iOS
-                  setTimeout(() => {
-                    document.documentElement.style.setProperty('--vv-top', '0px');
-                    window.scrollTo(0, 0);
-                  }, 100);
-                }}
+                onFocus={() => setTimeout(scrollToBottom, 100)}
                 placeholder="Type a message... Use @ to mention"
                 className="flex-1"
                 disabled={isUploading}
