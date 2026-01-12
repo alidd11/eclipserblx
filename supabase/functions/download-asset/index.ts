@@ -109,6 +109,10 @@ serve(async (req) => {
       );
     }
 
+    // Extract file extension from asset URL
+    const assetUrl = product.asset_file_url;
+    const fileExtension = assetUrl.includes('.') ? assetUrl.substring(assetUrl.lastIndexOf('.')) : '';
+
     // Log the download
     const { error: logError } = await supabaseAdmin
       .from('download_logs')
@@ -156,10 +160,15 @@ serve(async (req) => {
 
     console.log(`Download successful: user=${user.id}, product=${productId}, size=${fileSize}`);
 
+    // Create filename with proper extension
+    const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
+    const fileName = fileExtension ? `${sanitizedName}${fileExtension}` : sanitizedName;
+
     return new Response(
       JSON.stringify({ 
         downloadUrl: signedUrlData.signedUrl,
         productName: product.name,
+        fileName: fileName,
         fileSize: fileSize
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
