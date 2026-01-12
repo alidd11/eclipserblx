@@ -678,27 +678,27 @@ export function ChatWidget() {
 
   if (!isOpen) {
     return (
-      <Button
+      <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          openChat();
+        onClick={() => openChat()}
+        className="fixed h-14 w-14 rounded-full gradient-button shadow-lg z-[9999] touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
+        style={{ 
+          WebkitTapHighlightColor: 'transparent',
+          bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 0.5rem)',
+          right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 0.5rem)',
         }}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full gradient-button shadow-lg z-[9999] touch-manipulation cursor-pointer"
-        style={{ WebkitTapHighlightColor: 'transparent' }}
-        size="icon"
         aria-label="Open live chat"
       >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
+        <MessageCircle className="h-6 w-6 text-white" />
+      </button>
     );
   }
 
   return (
     <div
       className={cn(
-        'fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-2xl z-[9999] flex flex-col transition-all duration-200 relative',
-        isMinimized ? 'h-14' : 'h-[500px]',
+        'fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-card border border-border rounded-xl shadow-2xl z-[9999] flex flex-col transition-all duration-200 relative',
+        isMinimized ? 'h-14' : 'max-h-[min(500px,calc(100dvh-2rem))] h-[500px]',
         isDragOver && hasStarted && 'border-primary border-2 bg-primary/5'
       )}
       {...(hasStarted ? dragProps : {})}
