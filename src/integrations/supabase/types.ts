@@ -323,6 +323,8 @@ export type Database = {
           created_at: string
           id: string
           message: string
+          message_type: string | null
+          secure_data: Json | null
           sender_id: string | null
           sender_type: string
         }
@@ -332,6 +334,8 @@ export type Database = {
           created_at?: string
           id?: string
           message: string
+          message_type?: string | null
+          secure_data?: Json | null
           sender_id?: string | null
           sender_type: string
         }
@@ -341,6 +345,8 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string
+          message_type?: string | null
+          secure_data?: Json | null
           sender_id?: string | null
           sender_type?: string
         }

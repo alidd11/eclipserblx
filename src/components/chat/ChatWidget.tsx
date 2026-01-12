@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw, AlertCircle, Upload } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Paperclip, Loader2, History, RefreshCw, AlertCircle, Upload, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,8 +23,17 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { hapticTap, hapticError } from '@/lib/haptics';
+import { SecureCodeInput } from './SecureCodeInput';
+import { CodeVerificationMessage } from './CodeVerificationMessage';
 
 type MessageStatus = 'pending' | 'sent' | 'failed';
+
+interface SecureData {
+  verified: boolean;
+  masked_code: string;
+  product_name?: string;
+  code_id?: string;
+}
 
 interface Message {
   id: string;
@@ -33,6 +42,9 @@ interface Message {
   sender_id: string | null;
   created_at: string;
   attachment_url?: string | null;
+  message_type?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  secure_data?: any;
   // Optimistic UI fields (not in DB)
   _status?: MessageStatus;
   _tempId?: string;
@@ -99,6 +111,7 @@ export function ChatWidget() {
   const [messagesChannelStatus, setMessagesChannelStatus] = useState<string>('');
   const [isRefreshingMessages, setIsRefreshingMessages] = useState(false);
   const [realtimeNonce, setRealtimeNonce] = useState(0);
+  const [showSecureCodeDialog, setShowSecureCodeDialog] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -899,43 +912,54 @@ export function ChatWidget() {
                           <AlertCircle className="h-3 w-3 text-destructive" />
                         )}
                       </div>
-                      <div
-                        className={cn(
-                          'max-w-[80%] rounded-lg px-3 py-2 text-sm',
-                          msg.sender_type === 'customer'
-                            ? 'bg-primary text-primary-foreground'
-                            : msg.sender_type === 'system'
-                            ? 'bg-muted text-muted-foreground italic'
-                            : 'bg-muted text-foreground',
-                          msg._status === 'pending' && 'opacity-70',
-                          msg._status === 'failed' && 'bg-destructive/20 border border-destructive/40'
-                        )}
-                      >
-                        {msg.attachment_url && (
-                          <div className="mb-2">
-                            {isImageUrl(msg.attachment_url) ? (
-                              <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
-                                <img 
-                                  src={msg.attachment_url} 
-                                  alt="Attachment" 
-                                  className="max-w-full rounded max-h-32 object-cover"
-                                />
-                              </a>
-                            ) : (
-                              <a 
-                                href={msg.attachment_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs underline"
-                              >
-                                <Paperclip className="h-3 w-3" />
-                                {msg.message}
-                              </a>
-                            )}
-                          </div>
-                        )}
-                        {!msg.attachment_url && msg.message}
-                      </div>
+                      
+                      {/* Code verification message */}
+                      {msg.message_type === 'code_verification' && msg.secure_data ? (
+                        <div className="max-w-[85%]">
+                          <CodeVerificationMessage 
+                            secureData={msg.secure_data as SecureData} 
+                            isStaffView={false}
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={cn(
+                            'max-w-[80%] rounded-lg px-3 py-2 text-sm',
+                            msg.sender_type === 'customer'
+                              ? 'bg-primary text-primary-foreground'
+                              : msg.sender_type === 'system'
+                              ? 'bg-muted text-muted-foreground italic'
+                              : 'bg-muted text-foreground',
+                            msg._status === 'pending' && 'opacity-70',
+                            msg._status === 'failed' && 'bg-destructive/20 border border-destructive/40'
+                          )}
+                        >
+                          {msg.attachment_url && (
+                            <div className="mb-2">
+                              {isImageUrl(msg.attachment_url) ? (
+                                <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
+                                  <img 
+                                    src={msg.attachment_url} 
+                                    alt="Attachment" 
+                                    className="max-w-full rounded max-h-32 object-cover"
+                                  />
+                                </a>
+                              ) : (
+                                <a 
+                                  href={msg.attachment_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-xs underline"
+                                >
+                                  <Paperclip className="h-3 w-3" />
+                                  {msg.message}
+                                </a>
+                              )}
+                            </div>
+                          )}
+                          {!msg.attachment_url && msg.message}
+                        </div>
+                      )}
                       {/* Retry/Remove for failed messages */}
                       {msg._status === 'failed' && msg._tempId && (
                         <div className="flex items-center gap-2 mt-1">
@@ -1001,6 +1025,16 @@ export function ChatWidget() {
                       type="button"
                       size="icon"
                       variant="ghost"
+                      onClick={() => setShowSecureCodeDialog(true)}
+                      className="flex-shrink-0"
+                      title="Verify installation code"
+                    >
+                      <Shield className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploading}
                       className="flex-shrink-0"
@@ -1034,6 +1068,21 @@ export function ChatWidget() {
             </>
           )}
         </>
+      )}
+
+      {/* Secure Code Input Dialog */}
+      {conversationId && (
+        <SecureCodeInput
+          open={showSecureCodeDialog}
+          onOpenChange={setShowSecureCodeDialog}
+          conversationId={conversationId}
+          onSuccess={() => {
+            // Refresh messages to show the verification
+            if (conversationId) {
+              loadMessages(conversationId);
+            }
+          }}
+        />
       )}
     </div>
   );
