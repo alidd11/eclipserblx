@@ -102,6 +102,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // ALWAYS get fresh visualViewport reference - it can change
       const vv = window.visualViewport;
       const vvHeight = vv?.height ?? window.innerHeight;
+      const vvOffsetTop = vv?.offsetTop ?? 0;
       const innerH = window.innerHeight;
 
       // Check if any input is currently focused
@@ -115,11 +116,12 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // Detect if keyboard is likely open:
       // 1. Significant difference between layout and visual viewport
       // 2. AND an input element is focused
-      const keyboardOpen = isInputFocused && Math.abs(innerH - vvHeight) > 50;
+      // 3. OR visualViewport has a non-zero offsetTop (iOS quirk)
+      const keyboardOpen = isInputFocused && (Math.abs(innerH - vvHeight) > 50 || vvOffsetTop > 10);
 
-      // When keyboard is open, use visualViewport; when closed, ALWAYS use innerHeight
-      // This ensures we recover to full height when keyboard closes
-      const height = keyboardOpen ? vvHeight : innerH;
+      // When keyboard is open, use visualViewport (minus offsetTop for iOS scroll offset);
+      // when closed, ALWAYS use innerHeight to ensure full recovery
+      const height = keyboardOpen ? (vvHeight - vvOffsetTop) : innerH;
       html.style.setProperty('--vvh', `${height}px`);
 
       // iOS PWA quirk: `env(safe-area-inset-bottom)` can effectively behave like a large
@@ -137,6 +139,14 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       }
     };
 
+    // Force iOS to recalculate viewport by triggering a tiny scroll + reflow
+    const forceViewportRecalc = () => {
+      // Force scroll to top to reset any iOS viewport offset
+      window.scrollTo(0, 0);
+      // Force layout reflow by reading a layout property
+      void document.documentElement.offsetHeight;
+    };
+
     const sync = () => {
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
@@ -152,8 +162,12 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     // Aggressive recovery on blur - when input loses focus, immediately reset to full height
     const handleBlur = (e: FocusEvent) => {
       lastActiveElement = e.target as Element;
-      // Delay slightly to let iOS settle, then force recovery
-      window.setTimeout(() => {
+      
+      // Immediately force scroll reset to help iOS recalculate
+      forceViewportRecalc();
+      
+      // Multiple recovery passes with increasing delays for iOS keyboard animation
+      const recoverHeight = () => {
         const activeEl = document.activeElement;
         const isInputFocused =
           !!activeEl &&
@@ -162,7 +176,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             (activeEl as HTMLElement).isContentEditable);
         // Only recover if we truly left all inputs
         if (!isInputFocused) {
-          // Force full height recovery
+          // Force scroll reset again
+          forceViewportRecalc();
+          // Force full height recovery using innerHeight (NOT visualViewport which may be stale)
           html.style.setProperty('--vvh', `${window.innerHeight}px`);
           // Also reset safe-bottom for chat pages
           if (isChatPage) {
@@ -170,7 +186,15 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             html.dataset.chatKeyboard = 'closed';
           }
         }
-      }, 100);
+      };
+      
+      // Run recovery at multiple intervals to catch iOS keyboard dismiss animation
+      window.setTimeout(recoverHeight, 50);
+      window.setTimeout(recoverHeight, 100);
+      window.setTimeout(recoverHeight, 200);
+      window.setTimeout(recoverHeight, 350);
+      window.setTimeout(recoverHeight, 500);
+      
       // Also run sync for additional delayed passes
       sync();
     };
@@ -186,7 +210,27 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     document.addEventListener('focusout', handleBlur);
 
     // Extra hardening for chat pages: poll frequently to ensure --vvh recovers after keyboard close
-    const interval = isChatPage ? window.setInterval(setVars, 100) : undefined;
+    // Also run forceViewportRecalc periodically to catch stuck states
+    const interval = isChatPage ? window.setInterval(() => {
+      setVars();
+      // If no input is focused but we're still at reduced height, force recovery
+      const activeEl = document.activeElement;
+      const isInputFocused =
+        !!activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          (activeEl as HTMLElement).isContentEditable);
+      if (!isInputFocused) {
+        const currentVvh = parseInt(html.style.getPropertyValue('--vvh') || '0', 10);
+        if (currentVvh > 0 && currentVvh < window.innerHeight - 20) {
+          // We're stuck at a reduced height - force recovery
+          forceViewportRecalc();
+          html.style.setProperty('--vvh', `${window.innerHeight}px`);
+          html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
+          html.dataset.chatKeyboard = 'closed';
+        }
+      }
+    }, 100) : undefined;
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -197,6 +241,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       window.removeEventListener('orientationchange', sync);
       document.removeEventListener('focusin', sync);
       document.removeEventListener('focusout', handleBlur);
+
+      // Force final recovery before cleanup
+      forceViewportRecalc();
+      html.style.setProperty('--vvh', `${window.innerHeight}px`);
 
       // Clean up chat-only vars
       html.style.removeProperty('--chat-safe-bottom');
