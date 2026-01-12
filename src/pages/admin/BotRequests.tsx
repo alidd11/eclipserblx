@@ -1,13 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Bell, Clock, Key, IdCard, User, Mail, Package } from 'lucide-react';
+import { Bell, Clock, Key, IdCard, User, Mail, Package, Wifi, WifiOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface PendingBotRequest {
   id: string;
@@ -24,6 +26,8 @@ interface PendingBotRequest {
 }
 
 export default function AdminBotRequests() {
+  const queryClient = useQueryClient();
+
   const { data: pendingRequests, isLoading } = useQuery({
     queryKey: ['admin-pending-bot-requests'],
     queryFn: async () => {
@@ -59,8 +63,44 @@ export default function AdminBotRequests() {
         customer_profile: code.user_id ? customerMap[code.user_id] : null
       })) as PendingBotRequest[];
     },
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
+
+  // Real-time subscription for new bot codes
+  useEffect(() => {
+    const channel = supabase
+      .channel('bot-requests-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'bot_installation_codes'
+        },
+        (payload) => {
+          console.log('New bot code received:', payload);
+          toast.info('New Bot Request', {
+            description: `New installation request for ${payload.new.product_name}`,
+          });
+          queryClient.invalidateQueries({ queryKey: ['admin-pending-bot-requests'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bot_installation_codes'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-pending-bot-requests'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const pendingCount = pendingRequests?.length ?? 0;
 
