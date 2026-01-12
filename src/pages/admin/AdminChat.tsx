@@ -708,7 +708,11 @@ function AdminChatContent() {
         </CardHeader>
         <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Messages area - fills available space with native scroll */}
-          <div ref={scrollRef} className="flex-1 px-3 sm:px-4 overflow-y-auto overscroll-contain">
+          <div 
+            ref={scrollRef} 
+            className="flex-1 px-3 sm:px-4 overflow-y-auto overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             <div className="py-4 flex flex-col">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
