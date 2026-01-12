@@ -365,6 +365,20 @@ function StaffMessagesContent() {
     };
   }, [scrollToBottom]);
 
+  // Extra reliability: when our keyboard-fix state changes, force scroll to latest.
+  useEffect(() => {
+    if (!isKeyboardVisible) return;
+
+    scrollToBottom();
+    const t1 = window.setTimeout(scrollToBottom, 100);
+    const t2 = window.setTimeout(scrollToBottom, 250);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [isKeyboardVisible, inputBarTop, scrollToBottom]);
+
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
@@ -583,7 +597,10 @@ function StaffMessagesContent() {
           <div 
             ref={scrollRef} 
             className="flex-1 px-3 sm:px-4 overflow-y-auto overscroll-contain"
-            style={{ WebkitOverflowScrolling: 'touch' }}
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              paddingBottom: isKeyboardVisible ? (inputBarRef.current?.offsetHeight || 60) + 16 : undefined,
+            }}
           >
             <div className="py-4 flex flex-col">
               {isLoading ? (
