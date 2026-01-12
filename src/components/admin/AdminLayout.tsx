@@ -321,17 +321,17 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     (e: TouchEvent) => {
       // Only intercept gestures when the drawer is CLOSED.
       if (mobileOpen) return;
-      if (!isEdgeSwipe.current || touchStartX.current === null || touchStartY.current === null) return;
+      if (!isEdgeSwipe.current || touchStartX.current === null) return;
 
       const touch = e.touches[0];
       const deltaX = touch.clientX - touchStartX.current;
-      const deltaY = Math.abs(touch.clientY - touchStartY.current);
 
-      const isMostlyHorizontal = Math.abs(deltaX) > deltaY * HORIZONTAL_LOCK_RATIO;
-
-      // Prevent browser back gesture only for a deliberate rightward swipe
-      if (deltaX > 0 && Math.abs(deltaX) > 10 && isMostlyHorizontal) {
+      // IMMEDIATELY prevent any rightward movement from the left edge.
+      // This stops iOS from interpreting it as a back gesture BEFORE the
+      // browser can act on it. We use stopPropagation to be extra safe.
+      if (deltaX > 0) {
         e.preventDefault();
+        e.stopPropagation();
       }
     },
     [mobileOpen]
