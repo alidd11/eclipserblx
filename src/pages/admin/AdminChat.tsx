@@ -665,7 +665,7 @@ function AdminChatContent() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-3 sm:px-4">
+    <div className="h-full flex flex-col overflow-hidden px-3 sm:px-4 pb-0">
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 flex-shrink-0">
         <div>
@@ -683,10 +683,10 @@ function AdminChatContent() {
         </div>
       </div>
 
-      {/* Chat Card - fills remaining space */}
+      {/* Chat Card - fills remaining space, flush to bottom */}
       <Card 
         className={cn(
-          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors",
+          "bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors mb-0",
           isDragOver && "border-primary border-2 bg-primary/5"
         )}
         {...dragProps}

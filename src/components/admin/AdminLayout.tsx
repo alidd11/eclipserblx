@@ -82,7 +82,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     };
   }, []);
 
-  // Reset viewport when inputs lose focus (keyboard closes)
+  // Reset viewport CSS variable when inputs lose focus (keyboard closes)
+  // NOTE: We intentionally do NOT call window.scrollTo() here as it causes
+  // visual jumping on mobile. The visualViewport API handles positioning naturally.
   useEffect(() => {
     if (!isMobile || !isChatPage) return;
     
@@ -94,10 +96,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       
       if (!isInputFocused) {
         // No input focused anymore - keyboard closed
-        // Delay to allow keyboard animation to complete
+        // Only reset the CSS variable, let visualViewport handle the rest naturally
         setTimeout(() => {
           document.documentElement.style.setProperty('--vv-top', '0px');
-          window.scrollTo(0, 0);
         }, 150);
       }
     };

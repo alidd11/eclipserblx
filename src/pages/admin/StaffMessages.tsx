@@ -552,7 +552,7 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-3 sm:px-4">
+    <div className="h-full flex flex-col overflow-hidden px-3 sm:px-4 pb-0">
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 flex-shrink-0">
         <div>
@@ -565,8 +565,8 @@ function StaffMessagesContent() {
         </div>
       </div>
 
-      {/* Chat Card - fills remaining space */}
-      <Card className="bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden">
+      {/* Chat Card - fills remaining space, flush to bottom */}
+      <Card className="bg-card/50 backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden mb-0">
         <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 flex-shrink-0">
           <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
