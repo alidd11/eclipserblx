@@ -110,7 +110,7 @@ export function HeroSection() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
-                className="flex items-center justify-center pt-2"
+                className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2"
               >
                 <Link to="/products">
                   <Button size="lg" className="relative group gradient-button border-0 text-lg px-10 py-6 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
@@ -120,6 +120,14 @@ export function HeroSection() {
                     </span>
                     {/* Button glow */}
                     <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary to-violet-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+                  </Button>
+                </Link>
+                <Link to="/eclipse-plus">
+                  <Button size="lg" variant="outline" className="relative group text-lg px-10 py-6 border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-amber-600/10 hover:from-amber-500/20 hover:to-amber-600/20 hover:border-amber-500 transition-all duration-300 hover:scale-105 shadow-lg shadow-amber-500/10">
+                    <span className="flex items-center gap-2 text-amber-400">
+                      <Sparkles className="h-5 w-5" />
+                      Eclipse+
+                    </span>
                   </Button>
                 </Link>
               </motion.div>
