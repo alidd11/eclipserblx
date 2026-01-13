@@ -301,7 +301,7 @@ export default function StaffProfile() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6 max-w-4xl mx-auto pb-8">
         {/* Back Button */}
         <Button variant="ghost" size="sm" asChild>
           <Link to="/admin/staff-directory">
