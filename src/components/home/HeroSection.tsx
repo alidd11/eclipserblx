@@ -63,12 +63,12 @@ export function HeroSection() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
-                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                  <span className="relative inline-block">
+                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight whitespace-nowrap">
+                  <span className="relative inline">
                     Inspiring Your Innovation
                     <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                   </span>
-                  <Zap className="inline-block ml-3 h-6 w-6 md:h-8 md:w-8 text-amber-400 animate-pulse" />
+                  <Zap className="inline ml-2 h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-amber-400 animate-pulse align-middle" />
                 </h1>
               </motion.div>
 
@@ -79,8 +79,8 @@ export function HeroSection() {
                 transition={{ delay: 0.4, duration: 0.5 }}
                 className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
               >
-                Professional vehicle liveries, powerful scripts, stunning 3D models, and sleek UI kits.{' '}
-                <span className="text-foreground font-medium">Everything you need</span> to create an immersive roleplay experience.
+                Vehicle liveries, scripts, 3D models, UI kits, and Discord bots.{' '}
+                <span className="text-foreground font-medium">Premium digital assets</span> for FiveM, Roblox, and more.
               </motion.p>
 
               {/* Trust indicators */}
