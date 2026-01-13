@@ -12,16 +12,6 @@ interface Review {
   display_name: string;
 }
 
-const FAKE_NAMES = [
-  'Alex M.', 'Jordan T.', 'Sam K.', 'Riley P.', 'Casey W.',
-  'Morgan L.', 'Taylor S.', 'Jamie R.', 'Drew H.', 'Quinn B.',
-  'Avery C.', 'Blake N.', 'Cameron D.', 'Dakota F.', 'Emery G.',
-  'Finley J.', 'Harper V.', 'Hayden X.', 'Jesse Y.', 'Kendall Z.',
-  'Logan A.', 'Mason E.', 'Noah I.', 'Oakley O.', 'Parker U.',
-  'Peyton Q.', 'Reese S.', 'River T.', 'Rowan W.', 'Sage M.',
-  'Sawyer K.', 'Skyler L.', 'Spencer N.', 'Sydney P.', 'Tatum R.',
-];
-
 const SWIPE_THRESHOLD = 50;
 
 export const ReviewCard = memo(function ReviewCard() {
@@ -40,7 +30,9 @@ export const ReviewCard = memo(function ReviewCard() {
           rating,
           title,
           content,
-          user_id
+          user_id,
+          is_external,
+          external_reviewer_name
         `)
         .eq('is_approved', true)
         .order('created_at', { ascending: false })
@@ -48,29 +40,33 @@ export const ReviewCard = memo(function ReviewCard() {
 
       if (error) throw error;
 
-      const userIds = reviewsData?.map(r => r.user_id) || [];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name')
-        .in('user_id', userIds);
+      // Get profiles for non-external reviews
+      const nonExternalUserIds = reviewsData
+        ?.filter(r => !r.is_external && r.user_id)
+        .map(r => r.user_id) || [];
+      
+      const { data: profiles } = nonExternalUserIds.length > 0
+        ? await supabase
+            .from('profiles')
+            .select('user_id, display_name')
+            .in('user_id', nonExternalUserIds)
+        : { data: [] };
 
-      // Shuffle fake names deterministically based on review ID for consistency
-      const shuffledNames = [...FAKE_NAMES].sort((a, b) => {
-        const hash = (str: string) => str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        return hash(a) - hash(b);
-      });
+      const profileMap = new Map<string, string | null>(profiles?.map(p => [p.user_id, p.display_name] as [string, string | null]) || []);
 
       return reviewsData?.map((review) => {
-        // Use review ID to pick a consistent random name
-        const idHash = review.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const nameIndex = idHash % shuffledNames.length;
+        // For external reviews, use the external_reviewer_name
+        // For regular reviews, use the profile display_name or fallback
+        const displayName = review.is_external 
+          ? (review.external_reviewer_name || 'Anonymous')
+          : (profileMap.get(review.user_id) || 'Customer');
         
         return {
           id: review.id,
           rating: review.rating,
           title: review.title,
           content: review.content,
-          display_name: shuffledNames[nameIndex],
+          display_name: displayName,
         };
       }) as Review[];
     },
