@@ -62,7 +62,7 @@ export function ChatWidget() {
         <MessageCircle className="h-6 w-6 text-primary-foreground" aria-hidden="true" />
         <span
           aria-hidden="true"
-          className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full ring-2 ring-background bg-success"
+          className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background bg-success"
         />
         {unreadCount > 0 && !isOpen && (
           <span className="absolute -top-1 -right-1 h-6 min-w-6 px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center animate-pulse">
