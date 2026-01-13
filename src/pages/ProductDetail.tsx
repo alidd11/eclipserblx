@@ -28,6 +28,7 @@ export default function ProductDetail() {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const isMobile = useIsMobile();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Hide swipe hint after first interaction or after 3 seconds
   useEffect(() => {
@@ -127,7 +128,6 @@ export default function ProductDetail() {
   const inCart = isInCart(product.id);
   // Sort media to show videos first
   const images = product.images?.length ? sortMediaVideosFirst(product.images) : [null];
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const isEligible = isEligibleForDiscount(product.category_id);
   const memberPrice = getMemberPrice(product.price, product.category_id);
