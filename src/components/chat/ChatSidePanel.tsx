@@ -71,8 +71,6 @@ export function ChatSidePanel() {
   const panelRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -364,13 +362,6 @@ export function ChatSidePanel() {
 
   if (!isOpen) return null;
 
-  const handleDragEnd = () => {
-    if (dragY > 100) {
-      setIsMinimized(true);
-    }
-    setDragY(0);
-    setIsDragging(false);
-  };
 
   // Reset isMinimized when panel closes
   useEffect(() => {
@@ -384,71 +375,52 @@ export function ChatSidePanel() {
       {isOpen && (
         <motion.div
           ref={panelRef}
-          initial={{ x: '100%', y: 0 }}
-          animate={{ 
-            x: 0,
-            y: isMinimized ? 'calc(100dvh - 60px)' : isDragging ? dragY : 0
-          }}
-          exit={{ x: '100%', y: 0 }}
-          transition={
-            isDragging 
-              ? { duration: 0 } 
-              : { type: 'spring', damping: 25, stiffness: 200 }
-          }
-          drag={!isMinimized ? 'y' : false}
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0, bottom: 0.5 }}
-          onDrag={(_, info) => {
-            if (info.offset.y > 0) {
-              setIsDragging(true);
-              setDragY(info.offset.y);
-            }
-          }}
-          onDragEnd={handleDragEnd}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className={cn(
-            'fixed top-0 right-0 h-[100dvh] bg-background border-l border-border shadow-xl z-[100] flex flex-col touch-none',
-            isMinimized ? 'w-full sm:w-96 cursor-pointer' : 'w-full sm:w-96'
+            'fixed bg-background border border-border rounded-xl shadow-2xl z-[9998] flex flex-col overflow-hidden',
+            isMinimized 
+              ? 'w-72 h-12' 
+              : 'w-[calc(100vw-2rem)] sm:w-96 h-[min(500px,70dvh)]'
           )}
-          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+          style={{ 
+            bottom: 'max(5rem, env(safe-area-inset-bottom, 0px) + 5rem)',
+            right: 'max(1rem, env(safe-area-inset-right, 0px) + 0.5rem)',
+          }}
           onClick={isMinimized ? (e) => { e.stopPropagation(); setIsMinimized(false); } : undefined}
         >
-          {/* Swipe indicator */}
-          {!isMinimized && (
-            <div className="flex justify-center py-2 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
-            </div>
-          )}
-
           {/* Header */}
-          <div className="flex items-center justify-between p-3 border-b bg-muted/50">
+          <div className="flex items-center justify-between p-2 border-b bg-muted/50 shrink-0">
             {isMinimized ? (
-              <div className="flex items-center gap-2 w-full">
-                <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="font-medium text-sm">Live Support</span>
-                <span className="text-xs text-muted-foreground ml-auto">Tap to expand</span>
+              <div className="flex items-center gap-2 w-full cursor-pointer">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="font-medium text-xs">Live Support</span>
+                <Maximize2 className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
               </div>
             ) : (
               <>
                 <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="font-medium text-sm">Live Support</span>
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="font-medium text-xs">Live Support</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-7 w-7"
                     onClick={() => setIsMinimized(true)}
                   >
-                    <Minimize2 className="h-4 w-4" />
+                    <Minimize2 className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-7 w-7"
                     onClick={closeChat}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </>
