@@ -58,14 +58,20 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       html.style.removeProperty('overflow');
       html.style.removeProperty('overflow-x');
       html.style.removeProperty('position');
+      html.style.removeProperty('top');
+      html.style.removeProperty('bottom');
       html.style.removeProperty('width');
+      html.style.removeProperty('height');
       html.style.removeProperty('max-width');
       html.style.removeProperty('left');
       html.style.removeProperty('right');
       body.style.removeProperty('overflow');
       body.style.removeProperty('overflow-x');
       body.style.removeProperty('position');
+      body.style.removeProperty('top');
+      body.style.removeProperty('bottom');
       body.style.removeProperty('width');
+      body.style.removeProperty('height');
       body.style.removeProperty('max-width');
       body.style.removeProperty('left');
       body.style.removeProperty('right');
@@ -76,21 +82,29 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     html.style.backgroundColor = 'hsl(var(--card))';
     body.style.backgroundColor = 'hsl(var(--card))';
 
-    // Lock document scroll to prevent iOS from scrolling page when focusing input
+    // Lock document scroll to prevent iOS from scrolling page when focusing input.
+    // Use full-viewport fixed positioning to avoid any uncovered "grey strip" near safe-areas,
+    // and to ensure dialog overlays (Sheet) cover the entire screen reliably.
     html.style.overflow = 'hidden';
     html.style.overflowX = 'hidden';
     html.style.position = 'fixed';
+    html.style.top = '0';
+    html.style.bottom = '0';
     html.style.left = '0';
     html.style.right = '0';
     html.style.width = '100%';
+    html.style.height = '100%';
     html.style.maxWidth = '100%';
 
     body.style.overflow = 'hidden';
     body.style.overflowX = 'hidden';
     body.style.position = 'fixed';
+    body.style.top = '0';
+    body.style.bottom = '0';
     body.style.left = '0';
     body.style.right = '0';
     body.style.width = '100%';
+    body.style.height = '100%';
     body.style.maxWidth = '100%';
 
     return () => {
@@ -100,14 +114,20 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       html.style.removeProperty('overflow');
       html.style.removeProperty('overflow-x');
       html.style.removeProperty('position');
+      html.style.removeProperty('top');
+      html.style.removeProperty('bottom');
       html.style.removeProperty('width');
+      html.style.removeProperty('height');
       html.style.removeProperty('max-width');
       html.style.removeProperty('left');
       html.style.removeProperty('right');
       body.style.removeProperty('overflow');
       body.style.removeProperty('overflow-x');
       body.style.removeProperty('position');
+      body.style.removeProperty('top');
+      body.style.removeProperty('bottom');
       body.style.removeProperty('width');
+      body.style.removeProperty('height');
       body.style.removeProperty('max-width');
       body.style.removeProperty('left');
       body.style.removeProperty('right');
