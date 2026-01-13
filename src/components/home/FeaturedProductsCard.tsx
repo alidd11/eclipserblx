@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useRef } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSubscription, BOT_CATEGORY_ID } from '@/hooks/useSubscription';
 
-export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
+export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function FeaturedProductsCard(_, ref) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
@@ -250,4 +250,4 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
       </div>
     </div>
   );
-});
+}));

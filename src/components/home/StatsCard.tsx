@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, forwardRef } from 'react';
 import { Package, Download, Users, TrendingUp, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,7 +36,7 @@ const AnimatedValue = memo(function AnimatedValue({ value, suffix = '+' }: { val
   );
 });
 
-export const StatsCard = memo(function StatsCard() {
+export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, ref) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const { data: stats } = useQuery({
@@ -183,4 +183,4 @@ export const StatsCard = memo(function StatsCard() {
       </div>
     </div>
   );
-});
+}));
