@@ -65,7 +65,7 @@ export function HeroSection() {
               >
                 <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
                   <span className="relative inline-block">
-                    Power Your Server
+                    Inspiring Your Innovation
                     <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                   </span>
                   <br />
