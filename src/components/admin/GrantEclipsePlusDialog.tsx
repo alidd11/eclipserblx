@@ -39,7 +39,9 @@ const DURATION_OPTIONS = [
   { value: '1', label: '1 Day' },
   { value: '3', label: '3 Days' },
   { value: '7', label: '1 Week' },
-  { value: '14', label: '2 Weeks (Maximum)' },
+  { value: '14', label: '2 Weeks' },
+  { value: '21', label: '3 Weeks' },
+  { value: '28', label: '4 Weeks (Maximum)' },
 ];
 
 export function GrantEclipsePlusDialog({
