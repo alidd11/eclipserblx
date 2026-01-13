@@ -56,11 +56,19 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       html.style.removeProperty('background-color');
       body.style.removeProperty('background-color');
       html.style.removeProperty('overflow');
+      html.style.removeProperty('overflow-x');
       html.style.removeProperty('position');
       html.style.removeProperty('width');
+      html.style.removeProperty('max-width');
+      html.style.removeProperty('left');
+      html.style.removeProperty('right');
       body.style.removeProperty('overflow');
+      body.style.removeProperty('overflow-x');
       body.style.removeProperty('position');
       body.style.removeProperty('width');
+      body.style.removeProperty('max-width');
+      body.style.removeProperty('left');
+      body.style.removeProperty('right');
       return;
     }
 
@@ -70,22 +78,39 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
     // Lock document scroll to prevent iOS from scrolling page when focusing input
     html.style.overflow = 'hidden';
+    html.style.overflowX = 'hidden';
     html.style.position = 'fixed';
+    html.style.left = '0';
+    html.style.right = '0';
     html.style.width = '100%';
+    html.style.maxWidth = '100%';
+
     body.style.overflow = 'hidden';
+    body.style.overflowX = 'hidden';
     body.style.position = 'fixed';
+    body.style.left = '0';
+    body.style.right = '0';
     body.style.width = '100%';
+    body.style.maxWidth = '100%';
 
     return () => {
       // Clean removal instead of restoring potentially empty strings
       html.style.removeProperty('background-color');
       body.style.removeProperty('background-color');
       html.style.removeProperty('overflow');
+      html.style.removeProperty('overflow-x');
       html.style.removeProperty('position');
       html.style.removeProperty('width');
+      html.style.removeProperty('max-width');
+      html.style.removeProperty('left');
+      html.style.removeProperty('right');
       body.style.removeProperty('overflow');
+      body.style.removeProperty('overflow-x');
       body.style.removeProperty('position');
       body.style.removeProperty('width');
+      body.style.removeProperty('max-width');
+      body.style.removeProperty('left');
+      body.style.removeProperty('right');
     };
   }, [isChatPage]);
 
@@ -447,7 +472,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     <TooltipProvider delayDuration={0}>
       <div
         className={cn(
-          'fixed flex overflow-hidden',
+          'fixed flex overflow-hidden overflow-x-hidden w-full max-w-full min-w-0',
           isChatPage ? 'top-0 left-0 right-0 bg-card' : 'inset-0 bg-background'
         )}
         style={isChatPage ? { height: 'var(--vvh, 100dvh)' } : undefined}
@@ -519,7 +544,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             </div>
           </div>
         )}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-x-hidden">
           {isMobile && (
             <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -552,7 +577,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           
           <main
             className={cn(
-              'flex-1 min-h-0',
+              'flex-1 min-h-0 min-w-0 max-w-full overflow-x-hidden',
               isChatPage 
                 ? 'overflow-hidden overscroll-none bg-card' 
                 : 'overflow-y-auto bg-background'
@@ -561,6 +586,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           >
             <div
               className={cn(
+                'min-w-0 max-w-full overflow-x-hidden',
                 isChatPage
                   ? 'h-full p-0'
                   : 'h-full p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
