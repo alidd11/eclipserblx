@@ -888,7 +888,7 @@ function AdminChatContent() {
                     <div
                       key={message.id}
                       className={cn(
-                        'flex gap-2 sm:gap-3 group',
+                        'flex gap-2 sm:gap-3 group min-w-0 max-w-full',
                         isOwn && 'flex-row-reverse',
                         isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
                       )}
@@ -903,10 +903,10 @@ function AdminChatContent() {
                           </AvatarFallback>
                         </Avatar>
                       )}
-                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
+                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%] min-w-0', isOwn ? 'items-end' : 'items-start')}>
                         {/* Header - only show for first message in group */}
                         {!isGrouped && (
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0 max-w-full">
                             <span className="text-xs sm:text-sm font-medium text-foreground">
                               {getDisplayName(message.user_id)}
                             </span>
@@ -921,18 +921,18 @@ function AdminChatContent() {
                         
                         {/* Attachment preview */}
                         {message.attachment_url && (
-                          <div className="mb-2">
+                          <div className="mb-2 max-w-full min-w-0">
                             {isImageUrl(message.attachment_url) ? (
                               <a 
                                 href={message.attachment_url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="block"
+                                className="block max-w-full"
                               >
                                 <img 
                                   src={message.attachment_url} 
                                   alt="Attachment" 
-                                  className="max-w-full max-h-64 rounded-lg border border-border/50 hover:opacity-90 transition-opacity"
+                                  className="block max-w-full max-h-64 rounded-lg border border-border/50 hover:opacity-90 transition-opacity object-contain"
                                 />
                               </a>
                             ) : (
@@ -940,10 +940,10 @@ function AdminChatContent() {
                                 href={message.attachment_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/50 hover:bg-muted transition-colors"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/50 hover:bg-muted transition-colors max-w-full min-w-0 overflow-hidden"
                               >
-                                <FileText className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm truncate max-w-[150px] sm:max-w-[200px]">
+                                <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm truncate min-w-0 max-w-[150px] sm:max-w-[200px]">
                                   {getFileName(message.attachment_url)}
                                 </span>
                               </a>
@@ -965,7 +965,7 @@ function AdminChatContent() {
                         {message.message && message.message !== '📎 Attachment' && (
                           <div
                             className={cn(
-                              'rounded-lg px-3 py-2 text-sm break-words',
+                              'rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words max-w-full',
                               isOwn
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted text-foreground'
@@ -1004,13 +1004,13 @@ function AdminChatContent() {
           {/* Selected file preview */}
           {selectedFile && (
             <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
-              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg min-w-0 overflow-hidden">
                 {selectedFile.type.startsWith('image/') ? (
-                  <Image className="h-4 w-4 text-muted-foreground" />
+                  <Image className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 ) : (
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 )}
-                <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                <span className="text-sm truncate flex-1 min-w-0">{selectedFile.name}</span>
                 <span className="text-xs text-muted-foreground">
                   {(selectedFile.size / 1024).toFixed(1)} KB
                 </span>
