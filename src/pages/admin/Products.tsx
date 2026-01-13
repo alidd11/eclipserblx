@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -60,6 +62,12 @@ interface ProductForm {
   asset_file_url: string;
 }
 
+interface MassEditForm {
+  category_id: string | null;
+  is_active: boolean | null;
+  is_featured: boolean | null;
+}
+
 const emptyForm: ProductForm = {
   name: '',
   slug: '',
@@ -70,6 +78,12 @@ const emptyForm: ProductForm = {
   is_featured: false,
   images: '',
   asset_file_url: '',
+};
+
+const emptyMassEditForm: MassEditForm = {
+  category_id: null,
+  is_active: null,
+  is_featured: null,
 };
 
 export default function AdminProducts() {
@@ -83,6 +97,13 @@ export default function AdminProducts() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  
+  // Mass edit state
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [isMassEditOpen, setIsMassEditOpen] = useState(false);
+  const [massEditForm, setMassEditForm] = useState<MassEditForm>(emptyMassEditForm);
+  const [massDeleteOpen, setMassDeleteOpen] = useState(false);
+  
   const queryClient = useQueryClient();
 
   const sensors = useSensors(
@@ -306,6 +327,44 @@ export default function AdminProducts() {
     },
   });
 
+  // Mass edit mutation
+  const massEditMutation = useMutation({
+    mutationFn: async ({ ids, updates }: { ids: string[]; updates: Partial<{ category_id: string; is_active: boolean; is_featured: boolean }> }) => {
+      const { error } = await supabase
+        .from('products')
+        .update(updates)
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      setIsMassEditOpen(false);
+      setMassEditForm(emptyMassEditForm);
+      setSelectedProducts(new Set());
+      toast.success(`${variables.ids.length} products updated`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
+  // Mass delete mutation
+  const massDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from('products').delete().in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: (_, ids) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      setMassDeleteOpen(false);
+      setSelectedProducts(new Set());
+      toast.success(`${ids.length} products deleted`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
   const openEdit = (product: any) => {
     setForm({
       id: product.id,
@@ -336,6 +395,48 @@ export default function AdminProducts() {
     saveMutation.mutate(form);
   };
 
+  // Selection helpers
+  const toggleProductSelection = (id: string) => {
+    setSelectedProducts(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!products) return;
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(products.map(p => p.id)));
+    }
+  };
+
+  const handleMassEditSubmit = () => {
+    const updates: Partial<{ category_id: string; is_active: boolean; is_featured: boolean }> = {};
+    if (massEditForm.category_id !== null) {
+      updates.category_id = massEditForm.category_id;
+    }
+    if (massEditForm.is_active !== null) {
+      updates.is_active = massEditForm.is_active;
+    }
+    if (massEditForm.is_featured !== null) {
+      updates.is_featured = massEditForm.is_featured;
+    }
+    
+    if (Object.keys(updates).length === 0) {
+      toast.error('Please select at least one field to update');
+      return;
+    }
+    
+    massEditMutation.mutate({ ids: Array.from(selectedProducts), updates });
+  };
+
   return (
     <AdminLayout requiredRoles={['admin', 'product_manager']}>
       <div className="space-y-6">
@@ -353,27 +454,92 @@ export default function AdminProducts() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-background"
-              />
+            {/* Search and Mass Edit Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="relative flex-1 sm:max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10 bg-background"
+                />
+              </div>
+              
+              {/* Mass edit actions - visible when products are selected */}
+              {selectedProducts.size > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary" className="text-sm py-1">
+                    {selectedProducts.size} selected
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMassEditForm(emptyMassEditForm);
+                      setIsMassEditOpen(true);
+                    }}
+                  >
+                    <Edit3 className="h-4 w-4 mr-2" />
+                    Edit Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMassDeleteOpen(true)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Selected
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedProducts(new Set())}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Mobile Card View */}
             <div className="block md:hidden space-y-3">
+              {/* Select All for Mobile */}
+              {products && products.length > 0 && (
+                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
+                  <Checkbox
+                    checked={selectedProducts.size === products.length && products.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                    id="select-all-mobile"
+                  />
+                  <Label htmlFor="select-all-mobile" className="text-sm text-muted-foreground cursor-pointer">
+                    Select all products
+                  </Label>
+                </div>
+              )}
+              
               {isLoading ? (
                 <p className="text-center py-8 text-muted-foreground">Loading...</p>
               ) : products?.length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">No products found</p>
               ) : (
                 products?.map((product) => (
-                  <Card key={product.id} className="bg-muted/30 border-border overflow-hidden">
+                  <Card 
+                    key={product.id} 
+                    className={`bg-muted/30 border-border overflow-hidden transition-colors ${
+                      selectedProducts.has(product.id) ? 'ring-2 ring-primary' : ''
+                    }`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
+                        {/* Checkbox */}
+                        <Checkbox
+                          checked={selectedProducts.has(product.id)}
+                          onCheckedChange={() => toggleProductSelection(product.id)}
+                          className="mt-1 flex-shrink-0"
+                        />
                         <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {product.images?.[0] ? (
                             <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
@@ -414,6 +580,12 @@ export default function AdminProducts() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={products && products.length > 0 && selectedProducts.size === products.length}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead>Product</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
@@ -424,15 +596,24 @@ export default function AdminProducts() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
                     </TableRow>
                   ) : products?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No products found</TableCell>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No products found</TableCell>
                     </TableRow>
                   ) : (
                     products?.map((product) => (
-                      <TableRow key={product.id}>
+                      <TableRow 
+                        key={product.id}
+                        className={selectedProducts.has(product.id) ? 'bg-primary/5' : ''}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedProducts.has(product.id)}
+                            onCheckedChange={() => toggleProductSelection(product.id)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded bg-muted overflow-hidden">
@@ -731,6 +912,152 @@ export default function AdminProducts() {
               className="bg-destructive hover:bg-destructive/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mass Edit Dialog */}
+      <Dialog open={isMassEditOpen} onOpenChange={setIsMassEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit {selectedProducts.size} Products</DialogTitle>
+            <DialogDescription>
+              Select the fields you want to update. Only changed fields will be applied.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Category */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="mass-category-toggle"
+                  checked={massEditForm.category_id !== null}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setMassEditForm({ ...massEditForm, category_id: '' });
+                    } else {
+                      setMassEditForm({ ...massEditForm, category_id: null });
+                    }
+                  }}
+                />
+                <Label htmlFor="mass-category-toggle" className="font-medium">Change Category</Label>
+              </div>
+              {massEditForm.category_id !== null && (
+                <Select 
+                  value={massEditForm.category_id} 
+                  onValueChange={(v) => setMassEditForm({ ...massEditForm, category_id: v })}
+                >
+                  <SelectTrigger className="ml-6">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* Active Status */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="mass-active-toggle"
+                  checked={massEditForm.is_active !== null}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setMassEditForm({ ...massEditForm, is_active: true });
+                    } else {
+                      setMassEditForm({ ...massEditForm, is_active: null });
+                    }
+                  }}
+                />
+                <Label htmlFor="mass-active-toggle" className="font-medium">Change Active Status</Label>
+              </div>
+              {massEditForm.is_active !== null && (
+                <div className="flex items-center gap-2 ml-6">
+                  <Switch
+                    id="mass-active"
+                    checked={massEditForm.is_active}
+                    onCheckedChange={(v) => setMassEditForm({ ...massEditForm, is_active: v })}
+                  />
+                  <Label htmlFor="mass-active">
+                    {massEditForm.is_active ? 'Active' : 'Inactive'}
+                  </Label>
+                </div>
+              )}
+            </div>
+
+            {/* Featured Status */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="mass-featured-toggle"
+                  checked={massEditForm.is_featured !== null}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setMassEditForm({ ...massEditForm, is_featured: true });
+                    } else {
+                      setMassEditForm({ ...massEditForm, is_featured: null });
+                    }
+                  }}
+                />
+                <Label htmlFor="mass-featured-toggle" className="font-medium">Change Featured Status</Label>
+              </div>
+              {massEditForm.is_featured !== null && (
+                <div className="flex items-center gap-2 ml-6">
+                  <Switch
+                    id="mass-featured"
+                    checked={massEditForm.is_featured}
+                    onCheckedChange={(v) => setMassEditForm({ ...massEditForm, is_featured: v })}
+                  />
+                  <Label htmlFor="mass-featured">
+                    {massEditForm.is_featured ? 'Featured' : 'Not Featured'}
+                  </Label>
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMassEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleMassEditSubmit} 
+              disabled={massEditMutation.isPending}
+            >
+              {massEditMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                `Update ${selectedProducts.size} Products`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mass Delete Confirmation */}
+      <AlertDialog open={massDeleteOpen} onOpenChange={setMassDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedProducts.size} Products?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete all selected products.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => massDeleteMutation.mutate(Array.from(selectedProducts))}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={massDeleteMutation.isPending}
+            >
+              {massDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedProducts.size} Products`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
