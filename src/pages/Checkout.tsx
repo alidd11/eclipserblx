@@ -183,7 +183,7 @@ export default function Checkout() {
 
   return (
     <MainLayout>
-      <div className="container py-8 max-w-4xl space-y-8">
+      <div className="container py-8 max-w-4xl space-y-8 overflow-x-hidden">
         <Link to="/cart" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" />
           Back to Cart
