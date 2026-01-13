@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
+import { ReactNode, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
@@ -44,47 +44,51 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   }, []);
 
   // On iOS PWAs, if *anything* ever renders outside our fixed shell (overscroll/rounding/viewport jitter),
-  // the html/body background is what shows through. Force it to match chat pages to prevent grey gaps.
-  // ALSO lock document scroll to prevent iOS auto-scroll-to-input behavior.
-  useEffect(() => {
+  // the html/body background is what shows through. For chat pages we lock the document and match the
+  // background to the chat surface.
+  //
+  // IMPORTANT: We must *restore* the previous inline styles when leaving chat pages.
+  // Removing properties can accidentally wipe the global theme background set elsewhere.
+  useLayoutEffect(() => {
+    if (!isChatPage) return;
+
     const html = document.documentElement;
     const body = document.body;
 
-    // ALWAYS ensure clean state when NOT on chat page
-    if (!isChatPage) {
-      // Immediately reset any lingering chat page styles
-      html.style.removeProperty('background-color');
-      body.style.removeProperty('background-color');
-      html.style.removeProperty('overflow');
-      html.style.removeProperty('overflow-x');
-      html.style.removeProperty('position');
-      html.style.removeProperty('top');
-      html.style.removeProperty('bottom');
-      html.style.removeProperty('width');
-      html.style.removeProperty('height');
-      html.style.removeProperty('max-width');
-      html.style.removeProperty('left');
-      html.style.removeProperty('right');
-      body.style.removeProperty('overflow');
-      body.style.removeProperty('overflow-x');
-      body.style.removeProperty('position');
-      body.style.removeProperty('top');
-      body.style.removeProperty('bottom');
-      body.style.removeProperty('width');
-      body.style.removeProperty('height');
-      body.style.removeProperty('max-width');
-      body.style.removeProperty('left');
-      body.style.removeProperty('right');
-      return;
-    }
+    const prev = {
+      html: {
+        backgroundColor: html.style.backgroundColor,
+        overflow: html.style.overflow,
+        overflowX: html.style.overflowX,
+        position: html.style.position,
+        top: html.style.top,
+        bottom: html.style.bottom,
+        left: html.style.left,
+        right: html.style.right,
+        width: html.style.width,
+        height: html.style.height,
+        maxWidth: html.style.maxWidth,
+      },
+      body: {
+        backgroundColor: body.style.backgroundColor,
+        overflow: body.style.overflow,
+        overflowX: body.style.overflowX,
+        position: body.style.position,
+        top: body.style.top,
+        bottom: body.style.bottom,
+        left: body.style.left,
+        right: body.style.right,
+        width: body.style.width,
+        height: body.style.height,
+        maxWidth: body.style.maxWidth,
+      },
+    };
 
-    // Set background color to match chat
+    // Match chat surface behind safe-areas to avoid "grey strip" flashes
     html.style.backgroundColor = 'hsl(var(--card))';
     body.style.backgroundColor = 'hsl(var(--card))';
 
-    // Lock document scroll to prevent iOS from scrolling page when focusing input.
-    // Use full-viewport fixed positioning to avoid any uncovered "grey strip" near safe-areas,
-    // and to ensure dialog overlays (Sheet) cover the entire screen reliably.
+    // Lock document scroll to prevent iOS auto-scroll / rubber-banding behind our fixed chat shell
     html.style.overflow = 'hidden';
     html.style.overflowX = 'hidden';
     html.style.position = 'fixed';
@@ -108,29 +112,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     body.style.maxWidth = '100%';
 
     return () => {
-      // Clean removal instead of restoring potentially empty strings
-      html.style.removeProperty('background-color');
-      body.style.removeProperty('background-color');
-      html.style.removeProperty('overflow');
-      html.style.removeProperty('overflow-x');
-      html.style.removeProperty('position');
-      html.style.removeProperty('top');
-      html.style.removeProperty('bottom');
-      html.style.removeProperty('width');
-      html.style.removeProperty('height');
-      html.style.removeProperty('max-width');
-      html.style.removeProperty('left');
-      html.style.removeProperty('right');
-      body.style.removeProperty('overflow');
-      body.style.removeProperty('overflow-x');
-      body.style.removeProperty('position');
-      body.style.removeProperty('top');
-      body.style.removeProperty('bottom');
-      body.style.removeProperty('width');
-      body.style.removeProperty('height');
-      body.style.removeProperty('max-width');
-      body.style.removeProperty('left');
-      body.style.removeProperty('right');
+      // Restore prior styles (fallback to theme background if previously unset)
+      html.style.backgroundColor = prev.html.backgroundColor || 'hsl(var(--background))';
+      html.style.overflow = prev.html.overflow;
+      html.style.overflowX = prev.html.overflowX;
+      html.style.position = prev.html.position;
+      html.style.top = prev.html.top;
+      html.style.bottom = prev.html.bottom;
+      html.style.left = prev.html.left;
+      html.style.right = prev.html.right;
+      html.style.width = prev.html.width;
+      html.style.height = prev.html.height;
+      html.style.maxWidth = prev.html.maxWidth;
+
+      body.style.backgroundColor = prev.body.backgroundColor || 'hsl(var(--background))';
+      body.style.overflow = prev.body.overflow;
+      body.style.overflowX = prev.body.overflowX;
+      body.style.position = prev.body.position;
+      body.style.top = prev.body.top;
+      body.style.bottom = prev.body.bottom;
+      body.style.left = prev.body.left;
+      body.style.right = prev.body.right;
+      body.style.width = prev.body.width;
+      body.style.height = prev.body.height;
+      body.style.maxWidth = prev.body.maxWidth;
     };
   }, [isChatPage]);
 
