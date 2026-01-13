@@ -849,7 +849,7 @@ function StaffMessagesContent() {
           >
             {/* Mention suggestions dropdown */}
             {showMentionSuggestions && (
-              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[60]">
+              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[100]">
                 {isStaffLoading ? (
                   <div className="px-3 py-2 text-sm text-muted-foreground">Loading team…</div>
                 ) : staffError ? (
