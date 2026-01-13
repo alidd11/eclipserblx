@@ -22,8 +22,24 @@ export function useSwipePrevent() {
     let touchStartY = 0;
     let isLeftEdge = false;
     let isRightEdge = false;
+    let isExemptStart = false;
+
+    const isGestureExemptTarget = (target: EventTarget | null) => {
+      const el = target as Element | null;
+      return !!el?.closest?.('[data-gesture-exempt="true"]');
+    };
 
     const handleTouchStart = (e: TouchEvent) => {
+      // Allow gestures / taps on exempt UI (e.g. chat widget in corner)
+      isExemptStart = isGestureExemptTarget(e.target);
+      if (isExemptStart) {
+        touchStartX = 0;
+        touchStartY = 0;
+        isLeftEdge = false;
+        isRightEdge = false;
+        return;
+      }
+
       const x = e.touches[0].clientX;
       touchStartX = x;
       touchStartY = e.touches[0].clientY;
@@ -32,6 +48,7 @@ export function useSwipePrevent() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (isExemptStart) return;
       if (!touchStartX) return;
       if (!isLeftEdge && !isRightEdge) return;
 
@@ -52,6 +69,7 @@ export function useSwipePrevent() {
       touchStartY = 0;
       isLeftEdge = false;
       isRightEdge = false;
+      isExemptStart = false;
     };
 
     // Use capture phase to intercept before any other handlers

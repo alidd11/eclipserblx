@@ -307,6 +307,15 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         return;
       }
 
+      // Allow exempt UI to receive gestures/taps without sidebar edge-swipe interference
+      const target = e.target as Element | null;
+      if (target?.closest?.('[data-gesture-exempt="true"]')) {
+        isEdgeSwipe.current = false;
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
+
       const touch = e.touches[0];
       touchStartX.current = touch.clientX;
       touchStartY.current = touch.clientY;
