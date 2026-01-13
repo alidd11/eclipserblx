@@ -116,20 +116,16 @@ export default function ProductDetail() {
   };
 
   const handleSwipeLeft = useCallback(() => {
-    if (images.length > 1) {
-      setSelectedImage((prev) => (prev + 1) % images.length);
-    }
+    setSelectedImage((prev) => (prev + 1) % images.length);
   }, [images.length]);
 
   const handleSwipeRight = useCallback(() => {
-    if (images.length > 1) {
-      setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
-    }
+    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
   const swipeHandlers = useSwipeGesture({
-    onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRight,
+    onSwipeLeft: images.length > 1 ? handleSwipeLeft : undefined,
+    onSwipeRight: images.length > 1 ? handleSwipeRight : undefined,
     minSwipeDistance: 50,
   });
 
