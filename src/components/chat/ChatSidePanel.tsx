@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Send, Paperclip, Loader2, ShieldCheck, Minimize2, Maximize2 } from 'lucide-react';
+import { X, Send, Paperclip, Loader2, ShieldCheck, Minimize2, Maximize2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SecureCodeInput } from './SecureCodeInput';
@@ -50,10 +50,38 @@ const ISSUE_CATEGORIES = [
   { value: 'other', label: 'Other' },
 ];
 
+// Opening hours configuration
+const OPENING_HOURS: Record<number, { open: number; close: number } | null> = {
+  0: null, // Sunday - Closed
+  1: { open: 9, close: 19 }, // Monday 9am-7pm
+  2: { open: 9, close: 19 }, // Tuesday 9am-7pm
+  3: { open: 9, close: 19 }, // Wednesday 9am-7pm
+  4: { open: 9, close: 19 }, // Thursday 9am-7pm
+  5: { open: 9, close: 19 }, // Friday 9am-7pm
+  6: { open: 9, close: 19 }, // Saturday 9am-7pm
+};
+
+function formatTime(h: number) {
+  const period = h >= 12 ? 'pm' : 'am';
+  const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${displayHour}${period}`;
+}
+
+function getOpeningStatus() {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const todayHours = OPENING_HOURS[day];
+  const isOpen = todayHours ? hour >= todayHours.open && hour < todayHours.close : false;
+  return { isOpen };
+}
+
 export function ChatSidePanel() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isOpen, closeChat } = useChatPanel();
+  
+  console.log('[ChatSidePanel] Render - isOpen:', isOpen, 'authLoading:', authLoading, 'user:', !!user);
   const { playSound } = useNotificationSound();
   const [isMinimized, setIsMinimized] = useState(false);
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -436,8 +464,22 @@ export function ChatSidePanel() {
                 </div>
               ) : !conversation ? (
                 // Start conversation form
-                <div className="flex-1 overflow-auto p-4 space-y-4">
-                  <div className="space-y-2">
+                <div className="flex-1 overflow-auto p-3 space-y-3">
+                  {/* Opening Hours */}
+                  <div className="bg-muted/50 rounded-lg p-2.5 space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>Opening Hours</span>
+                      <span className={`ml-auto h-1.5 w-1.5 rounded-full ${getOpeningStatus().isOpen ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                      <span className="text-[10px]">{getOpeningStatus().isOpen ? 'Open' : 'Closed'}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+                      <span>Mon-Sat: {formatTime(9)} - {formatTime(19)}</span>
+                      <span>Sun: Closed</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5">
                     <Label htmlFor="panel-category" className="text-sm">What can we help you with?</Label>
                     <Select value={issueCategory} onValueChange={setIssueCategory}>
                       <SelectTrigger id="panel-category" className="h-9">
