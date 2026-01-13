@@ -93,6 +93,7 @@ export function ChatSidePanel() {
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showSecureInput, setShowSecureInput] = useState(false);
+  const [customerProfile, setCustomerProfile] = useState<{ display_name: string | null; customer_id: string | null } | null>(null);
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -112,13 +113,25 @@ export function ChatSidePanel() {
     }
   }, [user, authLoading, isOpen, closeChat, navigate]);
 
-  // Load existing conversation
+  // Load existing conversation and profile
   useEffect(() => {
     if (authLoading || !user || !isOpen) return;
 
-    const loadConversation = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       try {
+        // Load profile for display name and customer ID
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, customer_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profile) {
+          setCustomerProfile(profile);
+        }
+
+        // Load existing conversation
         const { data: existingConv, error } = await supabase
           .from('chat_conversations')
           .select('*')
@@ -141,7 +154,7 @@ export function ChatSidePanel() {
       }
     };
 
-    loadConversation();
+    loadData();
   }, [user, authLoading, isOpen]);
 
   // Subscribe to real-time messages
@@ -484,6 +497,27 @@ export function ChatSidePanel() {
               ) : !conversation ? (
                 // Start conversation form
                 <div className="flex-1 overflow-auto p-3 space-y-3">
+                  {/* Customer Info Card */}
+                  {customerProfile && (
+                    <div className="bg-muted/50 rounded-lg p-2.5 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-sm">
+                          {(customerProfile.display_name || user?.email)?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {customerProfile.display_name || user?.email?.split('@')[0] || 'Customer'}
+                          </p>
+                          {customerProfile.customer_id && (
+                            <p className="text-[10px] text-muted-foreground font-mono">
+                              {customerProfile.customer_id}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
                     <Label htmlFor="panel-category" className="text-sm">What can we help you with?</Label>
                     <Select value={issueCategory} onValueChange={setIssueCategory}>
