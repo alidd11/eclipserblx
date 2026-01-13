@@ -5,7 +5,7 @@ import {
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
   AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard
 } from 'lucide-react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -275,14 +275,13 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     return (
       <Tooltip key={item.href}>
         <TooltipTrigger asChild>
-          <NavLink
+          <Link
             to={item.href}
-            end={item.href === '/admin'}
             onClick={handleNavClick}
             className={linkClassName}
           >
             {LinkContent}
-          </NavLink>
+          </Link>
         </TooltipTrigger>
         <TooltipContent side="right">{item.title}</TooltipContent>
       </Tooltip>
