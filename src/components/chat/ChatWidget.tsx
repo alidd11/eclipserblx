@@ -94,7 +94,7 @@ export function ChatWidget() {
           <MessageCircle className="h-6 w-6 text-primary-foreground" aria-hidden="true" />
           <span
             aria-hidden="true"
-            className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full ring-2 ring-background bg-warning"
+            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background bg-warning"
           />
           <span className="sr-only">Support closed - view hours</span>
         </button>
