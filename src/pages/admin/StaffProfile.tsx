@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,19 +8,58 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   ArrowLeft, 
   Shield, 
   Calendar, 
   User, 
-  Mail, 
   Clock, 
   Briefcase,
   Award,
-  IdCard
+  IdCard,
+  StickyNote,
+  Plus,
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { toast } from 'sonner';
+
+interface StaffNote {
+  id: string;
+  staff_user_id: string;
+  author_id: string;
+  content: string;
+  note_type: string;
+  created_at: string;
+  updated_at: string;
+  author_name?: string;
+}
+
+const NOTE_TYPES = [
+  { value: 'general', label: 'General' },
+  { value: 'performance', label: 'Performance' },
+  { value: 'feedback', label: 'Feedback' },
+  { value: 'warning', label: 'Warning' },
+  { value: 'commendation', label: 'Commendation' },
+];
+
+const NOTE_TYPE_COLORS: Record<string, string> = {
+  general: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  performance: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  feedback: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  warning: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  commendation: 'bg-green-500/20 text-green-400 border-green-500/30',
+};
 
 type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
@@ -43,8 +83,13 @@ const ROLE_LABELS: Record<AppRole, string> = {
 
 export default function StaffProfile() {
   const { userId } = useParams<{ userId: string }>();
-  const { hasRole, loading: authLoading } = useAdminAuth();
+  const { hasRole, user, loading: authLoading } = useAdminAuth();
   const isAdmin = hasRole('admin');
+  const queryClient = useQueryClient();
+  
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [newNoteType, setNewNoteType] = useState('general');
+  const [isAddingNote, setIsAddingNote] = useState(false);
 
   // Fetch staff profile details
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -131,6 +176,96 @@ export default function StaffProfile() {
     },
     enabled: !!userId && isAdmin,
   });
+
+  // Fetch staff notes
+  const { data: staffNotes = [], isLoading: notesLoading } = useQuery<StaffNote[]>({
+    queryKey: ['staff-notes', userId],
+    queryFn: async (): Promise<StaffNote[]> => {
+      const { data, error } = await supabase
+        .from('staff_notes')
+        .select('*')
+        .eq('staff_user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (!data || data.length === 0) return [];
+
+      // Get author names
+      const authorIds = [...new Set(data.map(n => n.author_id))];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('user_id', authorIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name]));
+
+      return data.map(note => ({
+        id: note.id,
+        staff_user_id: note.staff_user_id,
+        author_id: note.author_id,
+        content: note.content,
+        note_type: note.note_type ?? 'general',
+        created_at: note.created_at,
+        updated_at: note.updated_at,
+        author_name: profileMap.get(note.author_id) || 'Unknown',
+      }));
+    },
+    enabled: !!userId && isAdmin,
+  });
+
+  // Add note mutation
+  const addNoteMutation = useMutation({
+    mutationFn: async ({ content, noteType }: { content: string; noteType: string }) => {
+      const { error } = await supabase
+        .from('staff_notes')
+        .insert({
+          staff_user_id: userId,
+          author_id: user?.id,
+          content,
+          note_type: noteType,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-notes', userId] });
+      setNewNoteContent('');
+      setNewNoteType('general');
+      setIsAddingNote(false);
+      toast.success('Note added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add note: ' + error.message);
+    },
+  });
+
+  // Delete note mutation
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (noteId: string) => {
+      const { error } = await supabase
+        .from('staff_notes')
+        .delete()
+        .eq('id', noteId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-notes', userId] });
+      toast.success('Note deleted');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete note: ' + error.message);
+    },
+  });
+
+  const handleAddNote = () => {
+    if (!newNoteContent.trim()) {
+      toast.error('Please enter note content');
+      return;
+    }
+    addNoteMutation.mutate({ content: newNoteContent.trim(), noteType: newNoteType });
+  };
 
   if (authLoading || profileLoading) {
     return (
@@ -331,6 +466,130 @@ export default function StaffProfile() {
                     <span className="text-xs text-muted-foreground">
                       Assigned {format(new Date(created_at), 'MMM d, yyyy')}
                     </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Internal Notes Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Internal Notes
+            </CardTitle>
+            {!isAddingNote && (
+              <Button size="sm" onClick={() => setIsAddingNote(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Note
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Add Note Form */}
+            {isAddingNote && (
+              <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
+                <div className="flex gap-2">
+                  <Select value={newNoteType} onValueChange={setNewNoteType}>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {NOTE_TYPES.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Textarea
+                  placeholder="Enter your note..."
+                  value={newNoteContent}
+                  onChange={(e) => setNewNoteContent(e.target.value)}
+                  rows={3}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsAddingNote(false);
+                      setNewNoteContent('');
+                      setNewNoteType('general');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleAddNote}
+                    disabled={addNoteMutation.isPending}
+                  >
+                    {addNoteMutation.isPending && (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    )}
+                    Save Note
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Notes List */}
+            {notesLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map(i => (
+                  <div key={i} className="animate-pulse p-4 rounded-lg bg-muted/30">
+                    <div className="h-4 w-24 bg-muted rounded mb-2" />
+                    <div className="h-3 w-full bg-muted rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : staffNotes.length === 0 ? (
+              <div className="text-center py-8">
+                <StickyNote className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No notes yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Add internal notes for performance tracking
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {staffNotes.map(note => (
+                  <div
+                    key={note.id}
+                    className="p-4 rounded-lg border border-border/50 bg-muted/20"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${NOTE_TYPE_COLORS[note.note_type] || NOTE_TYPE_COLORS.general}`}
+                        >
+                          {NOTE_TYPES.find(t => t.value === note.note_type)?.label || 'General'}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          by {note.author_name}
+                        </span>
+                      </div>
+                      {note.author_id === user?.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => deleteNoteMutation.mutate(note.id)}
+                          disabled={deleteNoteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}
+                    </p>
                   </div>
                 ))}
               </div>
