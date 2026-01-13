@@ -54,7 +54,7 @@ export function ChatWidget() {
         className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
         style={{
           WebkitTapHighlightColor: 'transparent',
-          bottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 0.5rem)',
+          bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
           right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
         }}
         aria-label={isOpen ? 'Close live chat' : 'Open live chat'}
@@ -86,7 +86,7 @@ export function ChatWidget() {
           className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
           style={{
             WebkitTapHighlightColor: 'transparent',
-            bottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 0.5rem)',
+            bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
           }}
           aria-label="View support hours"
@@ -105,7 +105,7 @@ export function ChatWidget() {
         <div
           className="fixed z-[9999] bg-card border border-border rounded-xl shadow-xl p-4 w-72"
           style={{
-            bottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 0.5rem)',
+            bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
           }}
         >
