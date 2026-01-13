@@ -14,7 +14,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 
 export default function ProductDetail() {
@@ -112,6 +112,7 @@ export default function ProductDetail() {
   }
 
   const inCart = isInCart(product.id);
+  const images = product.images?.length ? product.images : [null];
 
   const isEligible = isEligibleForDiscount(product.category_id);
   const memberPrice = getMemberPrice(product.price, product.category_id);
