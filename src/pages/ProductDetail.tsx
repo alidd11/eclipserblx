@@ -14,7 +14,8 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -114,6 +115,24 @@ export default function ProductDetail() {
     }
   };
 
+  const handleSwipeLeft = useCallback(() => {
+    if (images.length > 1) {
+      setSelectedImage((prev) => (prev + 1) % images.length);
+    }
+  }, [images.length]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (images.length > 1) {
+      setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+    }
+  }, [images.length]);
+
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight,
+    minSwipeDistance: 50,
+  });
+
   return (
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
@@ -147,7 +166,7 @@ export default function ProductDetail() {
           {/* Images */}
           <div className="space-y-4 min-w-0">
             <div 
-              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full"
+              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y"
               onContextMenu={(e) => e.preventDefault()}
               onClick={() => {
                 const currentImg = images[selectedImage];
@@ -155,6 +174,7 @@ export default function ProductDetail() {
                   setIsZoomOpen(true);
                 }
               }}
+              {...swipeHandlers}
             >
               {images[selectedImage] ? (
                 /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) ? (
