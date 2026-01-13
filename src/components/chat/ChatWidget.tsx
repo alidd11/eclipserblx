@@ -44,22 +44,11 @@ export function ChatWidget() {
     return null;
   }
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('[ChatWidget] Button clicked, isOpen:', isOpen);
-    toggleChat();
-  };
-
   return (
     <button
       type="button"
-      onClick={handleClick}
-      onTouchEnd={(e) => {
-        e.preventDefault();
-        console.log('[ChatWidget] Touch end, isOpen:', isOpen);
-        toggleChat();
-      }}
+      data-gesture-exempt="true"
+      onClick={toggleChat}
       className="fixed rounded-xl gradient-button shadow-lg z-[9999] touch-manipulation cursor-pointer flex flex-col items-start gap-2 p-3 active:scale-95 transition-transform"
       style={{ 
         WebkitTapHighlightColor: 'transparent',

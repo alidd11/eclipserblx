@@ -80,8 +80,8 @@ export function ChatSidePanel() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isOpen, closeChat } = useChatPanel();
-  
-  console.log('[ChatSidePanel] Render - isOpen:', isOpen, 'authLoading:', authLoading, 'user:', !!user);
+  const openingStatus = getOpeningStatus();
+
   const { playSound } = useNotificationSound();
   const [isMinimized, setIsMinimized] = useState(false);
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -403,6 +403,7 @@ export function ChatSidePanel() {
       {isOpen && (
         <motion.div
           ref={panelRef}
+          data-gesture-exempt="true"
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -423,15 +424,37 @@ export function ChatSidePanel() {
           <div className="flex items-center justify-between p-2 border-b bg-muted/50 shrink-0">
             {isMinimized ? (
               <div className="flex items-center gap-2 w-full cursor-pointer">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <div
+                  className={cn(
+                    'h-2 w-2 rounded-full animate-pulse',
+                    openingStatus.isOpen ? 'bg-green-500' : 'bg-yellow-500'
+                  )}
+                />
                 <span className="font-medium text-xs">Live Support</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {openingStatus.isOpen ? 'Open' : 'Closed'}
+                </span>
                 <Maximize2 className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="font-medium text-xs">Live Support</span>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'h-2 w-2 rounded-full animate-pulse',
+                        openingStatus.isOpen ? 'bg-green-500' : 'bg-yellow-500'
+                      )}
+                    />
+                    <span className="font-medium text-xs">Live Support</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {openingStatus.isOpen ? 'Open' : 'Closed'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                    <Clock className="h-3 w-3" />
+                    <span>Mon–Sat {formatTime(9)}–{formatTime(19)} • Sun closed</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-0.5">
                   <Button
@@ -470,8 +493,13 @@ export function ChatSidePanel() {
                     <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span>Opening Hours</span>
-                      <span className={`ml-auto h-1.5 w-1.5 rounded-full ${getOpeningStatus().isOpen ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                      <span className="text-[10px]">{getOpeningStatus().isOpen ? 'Open' : 'Closed'}</span>
+                      <span
+                        className={cn(
+                          'ml-auto h-1.5 w-1.5 rounded-full',
+                          openingStatus.isOpen ? 'bg-green-500' : 'bg-yellow-500'
+                        )}
+                      />
+                      <span className="text-[10px]">{openingStatus.isOpen ? 'Open' : 'Closed'}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
                       <span>Mon-Sat: {formatTime(9)} - {formatTime(19)}</span>
