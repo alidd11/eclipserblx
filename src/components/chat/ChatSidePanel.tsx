@@ -388,7 +388,7 @@ export function ChatSidePanel() {
     setShowSecureInput(false);
   };
 
-  if (!isOpen) return null;
+  
 
 
   // Reset isMinimized when panel closes
