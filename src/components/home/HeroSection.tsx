@@ -68,13 +68,7 @@ export function HeroSection() {
                     Inspiring Your Innovation
                     <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                   </span>
-                  <br />
-                  <span className="relative inline-block mt-2">
-                    <span className="bg-gradient-to-r from-primary via-violet-400 to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_3s_ease-in-out_infinite]">
-                      With Eclipse
-                    </span>
-                    <Zap className="absolute -right-8 -top-2 h-6 w-6 text-amber-400 animate-pulse" />
-                  </span>
+                  <Zap className="inline-block ml-3 h-6 w-6 md:h-8 md:w-8 text-amber-400 animate-pulse" />
                 </h1>
               </motion.div>
 
