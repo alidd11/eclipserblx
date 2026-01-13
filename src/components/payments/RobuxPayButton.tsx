@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { ROBLOX_GAME_URL } from "@/lib/constants";
+import { useRobloxGameUrl } from "@/hooks/useRobloxGameUrl";
 
 interface RobuxPayButtonProps {
   className?: string;
 }
 
 export function RobuxPayButton({ className }: RobuxPayButtonProps) {
+  const { robloxUrl } = useRobloxGameUrl();
+
   const handleClick = () => {
-    window.open(ROBLOX_GAME_URL, "_blank", "noopener,noreferrer");
+    window.open(robloxUrl, "_blank", "noopener,noreferrer");
   };
 
   return (

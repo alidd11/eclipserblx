@@ -23,12 +23,14 @@ interface StoreSettings {
   store_name: string;
   contact_email: string;
   discord_webhook_url: string;
+  roblox_game_url: string;
 }
 
 const DEFAULT_SETTINGS: StoreSettings = {
   store_name: 'Eclipse',
   contact_email: '',
   discord_webhook_url: '',
+  roblox_game_url: '',
 };
 
 export default function AdminSettings() {
@@ -97,7 +99,7 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['store_name', 'contact_email', 'discord_webhook_url', 'new_product_notifications_enabled', 'discount_notifications_enabled']);
+        .in('key', ['store_name', 'contact_email', 'discord_webhook_url', 'roblox_game_url', 'new_product_notifications_enabled', 'discount_notifications_enabled']);
 
       if (error) throw error;
 
@@ -110,6 +112,8 @@ export default function AdminSettings() {
           settingsMap.contact_email = String(val);
         } else if (item.key === 'discord_webhook_url') {
           settingsMap.discord_webhook_url = String(val);
+        } else if (item.key === 'roblox_game_url') {
+          settingsMap.roblox_game_url = String(val);
         } else if (item.key === 'new_product_notifications_enabled') {
           settingsMap.new_product_notifications_enabled = val !== false && val !== 'false';
         } else if (item.key === 'discount_notifications_enabled') {
@@ -892,7 +896,29 @@ export default function AdminSettings() {
                 </CardContent>
               </Card>
 
-              {/* Payment Settings */}
+              {/* Roblox Integration */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle>Roblox Integration</CardTitle>
+                  <CardDescription>Configure Robux payment redirect</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="robloxGameUrl">Roblox Game URL</Label>
+                    <Input
+                      id="robloxGameUrl"
+                      value={formData.roblox_game_url}
+                      onChange={(e) => handleChange('roblox_game_url', e.target.value)}
+                      placeholder="https://www.roblox.com/games/YOUR_GAME_ID"
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter the URL of your Roblox game where customers can purchase products with Robux.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle>Payment Settings</CardTitle>
