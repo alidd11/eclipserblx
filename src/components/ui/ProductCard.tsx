@@ -1,6 +1,6 @@
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, Play } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -26,7 +26,6 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
   
   // Get the first media prioritizing video
   const displayMedia = getFirstMediaPrioritizeVideo(images) || image;
@@ -49,14 +48,12 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
   }, [inCart, addItem, id, name, price, displayMedia, slug, categorySlug]);
 
   const handleMouseEnter = useCallback(() => {
-    setIsHovering(true);
     if (videoRef.current && isVideo) {
       videoRef.current.play().catch(() => {});
     }
   }, [isVideo]);
 
   const handleMouseLeave = useCallback(() => {
-    setIsHovering(false);
     if (videoRef.current && isVideo) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -78,25 +75,15 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
         <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
           {displayMedia ? (
             isVideo ? (
-              <>
-                <video
-                  ref={videoRef}
-                  src={displayMedia}
-                  muted
-                  loop
-                  playsInline
-                  autoPlay
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                {/* Play indicator */}
-                {!isHovering && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center">
-                      <Play className="h-5 w-5 text-white ml-0.5" fill="white" />
-                    </div>
-                  </div>
-                )}
-              </>
+              <video
+                ref={videoRef}
+                src={displayMedia}
+                muted
+                loop
+                playsInline
+                autoPlay
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
             ) : (
               <img
                 src={displayMedia}
@@ -113,27 +100,6 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
               </span>
             </div>
           )}
-          
-          {/* Watermark overlay */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="relative w-12 h-12 opacity-50">
-              <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_4px_rgba(168,85,247,0.4)]">
-                <circle 
-                  cx="50" cy="50" r="45" 
-                  fill="none" 
-                  stroke="rgba(168,85,247,0.8)" 
-                  strokeWidth="4"
-                />
-                <ellipse 
-                  cx="50" cy="50" 
-                  rx="28" ry="28" 
-                  fill="none" 
-                  stroke="rgba(168,85,247,0.6)" 
-                  strokeWidth="3"
-                />
-              </svg>
-            </div>
-          </div>
           
           {/* Corner watermark */}
           <div className="absolute bottom-1.5 right-1.5 pointer-events-none">
