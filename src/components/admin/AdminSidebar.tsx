@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -99,6 +99,7 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
+      { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
     ],
