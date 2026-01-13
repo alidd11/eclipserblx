@@ -377,91 +377,93 @@ export default function AdminIncome() {
               </Card>
             </div>
 
-            {/* 30-Day Gross Trend Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>30-Day Gross Revenue Trend</CardTitle>
-                <CardDescription>Daily gross revenue over the past 30 days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px] w-full">
-                  <ChartContainer
-                    config={{
-                      total: {
-                        label: "Gross Revenue",
-                        color: "hsl(var(--primary))",
-                      },
-                    }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis
-                          dataKey="displayDate"
-                          tick={{ fontSize: 12 }}
-                          className="text-muted-foreground"
-                          tickLine={false}
-                          axisLine={false}
-                          interval="preserveStartEnd"
-                        />
-                        <YAxis
-                          tickFormatter={(value) => `£${value}`}
-                          tick={{ fontSize: 12 }}
-                          className="text-muted-foreground"
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <ChartTooltip
-                          content={
-                            <ChartTooltipContent
-                              formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Gross Revenue']}
-                            />
-                          }
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="total"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth={2}
-                          dot={false}
-                          activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-              </CardContent>
-            </Card>
+            {/* 30-Day Gross Trend Chart with Statistics */}
+            <div className="grid gap-4 lg:grid-cols-[1fr,280px]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>30-Day Gross Revenue Trend</CardTitle>
+                  <CardDescription>Daily gross revenue over the past 30 days</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px] w-full">
+                    <ChartContainer
+                      config={{
+                        total: {
+                          label: "Gross Revenue",
+                          color: "hsl(var(--primary))",
+                        },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis
+                            dataKey="displayDate"
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                          />
+                          <YAxis
+                            tickFormatter={(value) => `£${value}`}
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <ChartTooltip
+                            content={
+                              <ChartTooltipContent
+                                formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Gross Revenue']}
+                              />
+                            }
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="total"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Gross Statistics Summary */}
-            {incomeTrend && (
-              <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">30-Day Total (Gross)</p>
-                    <p className="text-3xl font-bold text-primary">
-                      £{incomeTrend.reduce((sum, day) => sum + day.total, 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">Daily Average (Gross)</p>
-                    <p className="text-3xl font-bold">
-                      £{(incomeTrend.reduce((sum, day) => sum + day.total, 0) / 30).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">Best Day (30d)</p>
-                    <p className="text-3xl font-bold text-green-500">
-                      £{Math.max(...incomeTrend.map((day) => day.total), 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+              {/* Gross Statistics Summary - Side Panel */}
+              {incomeTrend && (
+                <div className="flex flex-col gap-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">30-Day Total (Gross)</p>
+                      <p className="text-3xl font-bold text-primary">
+                        £{incomeTrend.reduce((sum, day) => sum + day.total, 0).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Daily Average (Gross)</p>
+                      <p className="text-3xl font-bold">
+                        £{(incomeTrend.reduce((sum, day) => sum + day.total, 0) / 30).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Best Day (30d)</p>
+                      <p className="text-3xl font-bold text-green-500">
+                        £{Math.max(...incomeTrend.map((day) => day.total), 0).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* Net Earnings Tab */}
@@ -544,99 +546,101 @@ export default function AdminIncome() {
               </Card>
             </div>
 
-            {/* 30-Day Net Trend Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>30-Day Net Earnings Trend</CardTitle>
-                <CardDescription>Daily net earnings after Stripe fees over the past 30 days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px] w-full">
-                  <ChartContainer
-                    config={{
-                      net: {
-                        label: "Net Earnings",
-                        color: "hsl(142 76% 36%)",
-                      },
-                    }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis
-                          dataKey="displayDate"
-                          tick={{ fontSize: 12 }}
-                          className="text-muted-foreground"
-                          tickLine={false}
-                          axisLine={false}
-                          interval="preserveStartEnd"
-                        />
-                        <YAxis
-                          tickFormatter={(value) => `£${value}`}
-                          tick={{ fontSize: 12 }}
-                          className="text-muted-foreground"
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <ChartTooltip
-                          content={
-                            <ChartTooltipContent
-                              formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Net Earnings']}
-                            />
-                          }
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="net"
-                          stroke="hsl(142 76% 36%)"
-                          strokeWidth={2}
-                          dot={false}
-                          activeDot={{ r: 6, fill: "hsl(142 76% 36%)" }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-              </CardContent>
-            </Card>
+            {/* 30-Day Net Trend Chart with Statistics */}
+            <div className="grid gap-4 lg:grid-cols-[1fr,280px]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>30-Day Net Earnings Trend</CardTitle>
+                  <CardDescription>Daily net earnings after Stripe fees over the past 30 days</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px] w-full">
+                    <ChartContainer
+                      config={{
+                        net: {
+                          label: "Net Earnings",
+                          color: "hsl(142 76% 36%)",
+                        },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis
+                            dataKey="displayDate"
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                          />
+                          <YAxis
+                            tickFormatter={(value) => `£${value}`}
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <ChartTooltip
+                            content={
+                              <ChartTooltipContent
+                                formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Net Earnings']}
+                              />
+                            }
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="net"
+                            stroke="hsl(142 76% 36%)"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: "hsl(142 76% 36%)" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Net Statistics Summary */}
-            {incomeTrend && (
-              <div className="grid gap-4 md:grid-cols-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">30-Day Net Total</p>
-                    <p className="text-3xl font-bold text-green-600">
-                      £{incomeTrend.reduce((sum, day) => sum + day.net, 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">30-Day Fees</p>
-                    <p className="text-3xl font-bold text-red-500">
-                      £{incomeTrend.reduce((sum, day) => sum + day.fees, 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">Daily Average (Net)</p>
-                    <p className="text-3xl font-bold">
-                      £{(incomeTrend.reduce((sum, day) => sum + day.net, 0) / 30).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground">Best Day Net (30d)</p>
-                    <p className="text-3xl font-bold text-green-500">
-                      £{Math.max(...incomeTrend.map((day) => day.net), 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+              {/* Net Statistics Summary - Side Panel */}
+              {incomeTrend && (
+                <div className="flex flex-col gap-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">30-Day Net Total</p>
+                      <p className="text-3xl font-bold text-green-600">
+                        £{incomeTrend.reduce((sum, day) => sum + day.net, 0).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">30-Day Fees</p>
+                      <p className="text-3xl font-bold text-red-500">
+                        £{incomeTrend.reduce((sum, day) => sum + day.fees, 0).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Daily Average (Net)</p>
+                      <p className="text-3xl font-bold">
+                        £{(incomeTrend.reduce((sum, day) => sum + day.net, 0) / 30).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Best Day Net (30d)</p>
+                      <p className="text-3xl font-bold text-green-500">
+                        £{Math.max(...incomeTrend.map((day) => day.net), 0).toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
