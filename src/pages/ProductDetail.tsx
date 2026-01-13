@@ -117,9 +117,9 @@ export default function ProductDetail() {
   return (
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="container py-8 space-y-8 overflow-x-hidden">
+        <div className="container py-8 space-y-8 overflow-x-hidden max-w-full">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto scrollbar-hide max-w-full">
           <Link to="/" className="hover:text-foreground transition-colors flex-shrink-0">Home</Link>
           <span className="flex-shrink-0">/</span>
           <Link to="/products" className="hover:text-foreground transition-colors flex-shrink-0">Products</Link>
@@ -135,7 +135,7 @@ export default function ProductDetail() {
             </>
           )}
           <span className="flex-shrink-0">/</span>
-          <span className="text-foreground truncate">{product.name}</span>
+          <span className="text-foreground truncate max-w-[150px] sm:max-w-none">{product.name}</span>
         </nav>
 
         <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -143,11 +143,11 @@ export default function ProductDetail() {
           Back to Products
         </Link>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-full">
           {/* Images */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             <div 
-              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group"
+              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full"
               onContextMenu={(e) => e.preventDefault()}
               onClick={() => {
                 const currentImg = images[selectedImage];
