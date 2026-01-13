@@ -10,6 +10,7 @@ interface Review {
   title: string | null;
   content: string;
   display_name: string;
+  external_source: string | null;
 }
 
 const SWIPE_THRESHOLD = 50;
@@ -32,7 +33,8 @@ export const ReviewCard = memo(function ReviewCard() {
           content,
           user_id,
           is_external,
-          external_reviewer_name
+          external_reviewer_name,
+          external_source
         `)
         .eq('is_approved', true)
         .order('created_at', { ascending: false })
@@ -67,6 +69,7 @@ export const ReviewCard = memo(function ReviewCard() {
           title: review.title,
           content: review.content,
           display_name: displayName,
+          external_source: review.is_external ? review.external_source : null,
         };
       }) as Review[];
     },
@@ -211,6 +214,11 @@ export const ReviewCard = memo(function ReviewCard() {
                 <p className="text-xs font-medium text-primary">
                   {currentReview.display_name}
                 </p>
+                {currentReview.external_source && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    via {currentReview.external_source}
+                  </span>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
