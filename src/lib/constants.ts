@@ -1,6 +1,7 @@
 export const SITE_NAME = "Eclipse";
 export const SITE_DESCRIPTION = "Premium Roblox assets for your roleplay servers";
 export const DISCORD_URL = "https://discord.gg/EmQnXwv6VZ";
+export const ROBLOX_GAME_URL = "https://www.roblox.com/games/YOUR_GAME_ID";
 
 export const CATEGORIES = [
   { name: "Vehicle Liveries", slug: "vehicle-liveries", icon: "Car" },

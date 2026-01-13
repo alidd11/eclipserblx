@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
+import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
@@ -361,33 +362,40 @@ export default function ProductDetail() {
                   <FreeProductClaim productId={product.id} productName={product.name} />
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "flex-1 h-14 text-lg",
-                      !inCart && "gradient-button border-0"
-                    )}
-                    variant={inCart ? "secondary" : "default"}
-                    onClick={handleAddToCart}
-                  >
-                    {inCart ? (
-                      <>
-                        <Check className="h-5 w-5 mr-2" />
-                        Added to Cart
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingCart className="h-5 w-5 mr-2" />
-                        Add to Cart
-                      </>
-                    )}
-                  </Button>
-                  
-                  {inCart && (
-                    <Button size="lg" asChild className="h-14">
-                      <Link to="/cart">View Cart</Link>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      size="lg"
+                      className={cn(
+                        "flex-1 h-14 text-lg",
+                        !inCart && "gradient-button border-0"
+                      )}
+                      variant={inCart ? "secondary" : "default"}
+                      onClick={handleAddToCart}
+                    >
+                      {inCart ? (
+                        <>
+                          <Check className="h-5 w-5 mr-2" />
+                          Added to Cart
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="h-5 w-5 mr-2" />
+                          Add to Cart
+                        </>
+                      )}
                     </Button>
+                    
+                    {inCart && (
+                      <Button size="lg" asChild className="h-14">
+                        <Link to="/cart">View Cart</Link>
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Robux payment option - exclude bots category */}
+                  {product.categories?.slug !== 'bots' && (
+                    <RobuxPayButton />
                   )}
                 </div>
               </CardContent>
