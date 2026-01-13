@@ -39,7 +39,7 @@ export function ChatWidget() {
       type="button"
       data-gesture-exempt="true"
       onClick={toggleChat}
-      className="fixed relative z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
+      className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
       style={{
         WebkitTapHighlightColor: 'transparent',
         bottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 0.5rem)',
