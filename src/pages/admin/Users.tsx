@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -44,6 +44,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
+import { GrantEclipsePlusDialog } from '@/components/admin/GrantEclipsePlusDialog';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -68,6 +69,7 @@ export default function AdminUsers() {
   const [banReason, setBanReason] = useState('');
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<any>(null);
   const [selfBanConfirmOpen, setSelfBanConfirmOpen] = useState(false);
+  const [grantEclipsePlusUser, setGrantEclipsePlusUser] = useState<any>(null);
   const [selfBanCooldown, setSelfBanCooldown] = useState(0);
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -391,14 +393,25 @@ export default function AdminUsers() {
                             Roles
                           </Button>
                           {isAdmin && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => setIpBanDialogUser(profile)}
-                              className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
-                            >
-                              <Ban className="h-4 w-4" />
-                            </Button>
+                            <>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setGrantEclipsePlusUser(profile)}
+                                className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
+                                title="Grant Eclipse+"
+                              >
+                                <Sparkles className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setIpBanDialogUser(profile)}
+                                className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                              >
+                                <Ban className="h-4 w-4" />
+                              </Button>
+                            </>
                           )}
                           {canDeleteUser(profile) && (
                             <Button 
@@ -460,14 +473,25 @@ export default function AdminUsers() {
                         <Shield className="h-4 w-4" />
                       </Button>
                       {isAdmin && (
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="h-10 w-10 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
-                          onClick={() => setIpBanDialogUser(profile)}
-                        >
-                          <Ban className="h-4 w-4" />
-                        </Button>
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            className="h-10 w-10 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
+                            onClick={() => setGrantEclipsePlusUser(profile)}
+                            title="Grant Eclipse+"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            className="h-10 w-10 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
+                            onClick={() => setIpBanDialogUser(profile)}
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
                       {canDeleteUser(profile) && (
                         <Button 
@@ -701,6 +725,16 @@ export default function AdminUsers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Grant Eclipse+ Dialog */}
+      <GrantEclipsePlusDialog
+        open={!!grantEclipsePlusUser}
+        onOpenChange={() => setGrantEclipsePlusUser(null)}
+        targetUser={grantEclipsePlusUser}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
+        }}
+      />
     </AdminLayout>
   );
 }

@@ -1890,6 +1890,9 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
+          grant_reason: string | null
+          granted_at: string | null
+          granted_by: string | null
           id: string
           status: string
           stripe_customer_id: string | null
@@ -1901,6 +1904,9 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          grant_reason?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
           id?: string
           status?: string
           stripe_customer_id?: string | null
@@ -1912,6 +1918,9 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          grant_reason?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
           id?: string
           status?: string
           stripe_customer_id?: string | null
