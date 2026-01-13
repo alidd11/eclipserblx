@@ -47,20 +47,22 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // the html/body background is what shows through. Force it to match chat pages to prevent grey gaps.
   // ALSO lock document scroll to prevent iOS auto-scroll-to-input behavior.
   useEffect(() => {
-    if (!isChatPage) return;
-
     const html = document.documentElement;
     const body = document.body;
 
-    // Save previous styles
-    const prevHtmlBg = html.style.backgroundColor;
-    const prevBodyBg = body.style.backgroundColor;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    const prevHtmlPosition = html.style.position;
-    const prevBodyPosition = body.style.position;
-    const prevHtmlWidth = html.style.width;
-    const prevBodyWidth = body.style.width;
+    // ALWAYS ensure clean state when NOT on chat page
+    if (!isChatPage) {
+      // Immediately reset any lingering chat page styles
+      html.style.removeProperty('background-color');
+      body.style.removeProperty('background-color');
+      html.style.removeProperty('overflow');
+      html.style.removeProperty('position');
+      html.style.removeProperty('width');
+      body.style.removeProperty('overflow');
+      body.style.removeProperty('position');
+      body.style.removeProperty('width');
+      return;
+    }
 
     // Set background color to match chat
     html.style.backgroundColor = 'hsl(var(--card))';
@@ -75,14 +77,15 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     body.style.width = '100%';
 
     return () => {
-      html.style.backgroundColor = prevHtmlBg;
-      body.style.backgroundColor = prevBodyBg;
-      html.style.overflow = prevHtmlOverflow;
-      html.style.position = prevHtmlPosition;
-      html.style.width = prevHtmlWidth;
-      body.style.overflow = prevBodyOverflow;
-      body.style.position = prevBodyPosition;
-      body.style.width = prevBodyWidth;
+      // Clean removal instead of restoring potentially empty strings
+      html.style.removeProperty('background-color');
+      body.style.removeProperty('background-color');
+      html.style.removeProperty('overflow');
+      html.style.removeProperty('position');
+      html.style.removeProperty('width');
+      body.style.removeProperty('overflow');
+      body.style.removeProperty('position');
+      body.style.removeProperty('width');
     };
   }, [isChatPage]);
 
@@ -271,12 +274,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       document.removeEventListener('focusin', sync);
       document.removeEventListener('focusout', handleBlur);
 
-      // Final recovery + cleanup
-      forceViewportRecalc();
-      html.style.setProperty('--vvh', `${window.innerHeight}px`);
+      // Ensure complete cleanup - remove all chat-related CSS variables
+      html.style.removeProperty('--vvh');
       html.style.removeProperty('--chat-safe-bottom');
       delete html.dataset.chatKeyboard;
-      html.style.removeProperty('--vvh');
     };
   }, [isChatPage]);
 
