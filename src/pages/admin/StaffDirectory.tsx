@@ -7,17 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Users, Clock, Shield, IdCard } from 'lucide-react';
+import { Search, Users, Clock, Shield, IdCard, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
 interface StaffMember {
   user_id: string;
   display_name: string | null;
-  email: string;
   avatar_url: string | null;
   staff_id: string | null;
   customer_id: string | null;
@@ -75,10 +74,10 @@ export default function StaffDirectory() {
 
       if (userIds.length === 0) return [];
 
-      // Get profiles for these users
+      // Get profiles for these users - exclude email for privacy
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email, avatar_url, staff_id, customer_id, created_at')
+        .select('user_id, display_name, avatar_url, staff_id, customer_id, created_at')
         .in('user_id', userIds);
 
       if (profilesError) throw profilesError;
@@ -91,7 +90,6 @@ export default function StaffDirectory() {
         staffMap.set(profile.user_id, {
           user_id: profile.user_id,
           display_name: profile.display_name,
-          email: profile.email,
           avatar_url: profile.avatar_url,
           staff_id: profile.staff_id,
           customer_id: profile.customer_id,
@@ -101,7 +99,7 @@ export default function StaffDirectory() {
       });
 
       return Array.from(staffMap.values()).sort((a, b) => 
-        (a.display_name || a.email).localeCompare(b.display_name || b.email)
+        (a.display_name || 'Unknown').localeCompare(b.display_name || 'Unknown')
       );
     },
     enabled: isAdmin,
@@ -138,11 +136,11 @@ export default function StaffDirectory() {
     enabled: isAdmin,
   });
 
-  // Filter staff members based on search
+  // Filter staff members based on search (no email search for privacy)
   const filteredStaff = staffMembers.filter(member =>
     (member.display_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (member.staff_id?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    (member.staff_id?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (member.customer_id?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   if (authLoading) {
@@ -195,7 +193,7 @@ export default function StaffDirectory() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name, email, or staff ID..."
+                placeholder="Search by name or staff ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -231,49 +229,49 @@ export default function StaffDirectory() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredStaff.map(member => (
-                  <Card key={member.user_id} className="hover:border-primary/50 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={member.avatar_url || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                            {(member.display_name || member.email).slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
-                            {member.display_name || member.email.split('@')[0]}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {member.email}
-                          </p>
-                          
-                          {/* Staff ID */}
-                          {member.staff_id && (
-                            <div className="mt-2 flex items-center gap-1.5">
-                              <Shield className="h-3.5 w-3.5 text-primary" />
-                              <span className="text-xs font-mono font-medium text-primary">
-                                {member.staff_id}
-                              </span>
-                            </div>
-                          )}
+                  <Link key={member.user_id} to={`/admin/staff/${member.user_id}`}>
+                    <Card className="hover:border-primary/50 transition-colors cursor-pointer group">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src={member.avatar_url || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                              {(member.display_name || 'U').slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">
+                              {member.display_name || 'Unknown User'}
+                            </p>
+                            
+                            {/* Staff ID */}
+                            {member.staff_id && (
+                              <div className="mt-1 flex items-center gap-1.5">
+                                <Shield className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-xs font-mono font-medium text-primary">
+                                  {member.staff_id}
+                                </span>
+                              </div>
+                            )}
 
-                          {/* Roles */}
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {member.roles.map(role => (
-                              <Badge
-                                key={role}
-                                variant="outline"
-                                className={`text-[10px] px-1.5 py-0 ${ROLE_COLORS[role]}`}
-                              >
-                                {ROLE_LABELS[role]}
-                              </Badge>
-                            ))}
+                            {/* Roles */}
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {member.roles.map(role => (
+                                <Badge
+                                  key={role}
+                                  variant="outline"
+                                  className={`text-[10px] px-1.5 py-0 ${ROLE_COLORS[role]}`}
+                                >
+                                  {ROLE_LABELS[role]}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}
