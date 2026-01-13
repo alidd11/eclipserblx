@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useCallback, useRef, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, Play } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSubscription, BOT_CATEGORY_ID } from '@/hooks/useSubscription';
+import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 
 export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function FeaturedProductsCard(_, ref) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -164,19 +165,46 @@ export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function Fea
                 className="absolute inset-0"
               >
                 <Link to={`/products/${currentProduct.slug}`} className="flex gap-3 h-full">
-                  {/* Product image */}
+                  {/* Product image/video */}
                   <div className="relative w-24 h-full flex-shrink-0 rounded-xl overflow-hidden border border-white/10">
-                    {currentProduct.images?.[0] ? (
-                      <img 
-                        src={currentProduct.images[0]} 
-                        alt={currentProduct.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted/30 flex items-center justify-center">
-                        <ShoppingBag className="h-6 w-6 text-muted-foreground/50" />
-                      </div>
-                    )}
+                    {(() => {
+                      const displayMedia = getFirstMediaPrioritizeVideo(currentProduct.images);
+                      const isVideo = isVideoUrl(displayMedia);
+                      
+                      if (displayMedia) {
+                        if (isVideo) {
+                          return (
+                            <>
+                              <video 
+                                src={displayMedia} 
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+                                  <Play className="h-3 w-3 text-white ml-0.5" fill="white" />
+                                </div>
+                              </div>
+                            </>
+                          );
+                        }
+                        return (
+                          <img 
+                            src={displayMedia} 
+                            alt={currentProduct.name}
+                            className="w-full h-full object-cover"
+                          />
+                        );
+                      }
+                      return (
+                        <div className="w-full h-full bg-muted/30 flex items-center justify-center">
+                          <ShoppingBag className="h-6 w-6 text-muted-foreground/50" />
+                        </div>
+                      );
+                    })()}
                     {currentProduct.is_featured && (
                       <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-amber-500/90 text-[10px] font-bold text-black">
                         HOT

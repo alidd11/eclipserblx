@@ -14,7 +14,8 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { useState, useCallback, useEffect } from 'react';
+import { sortMediaVideosFirst, isVideoUrl } from '@/lib/mediaUtils';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -124,7 +125,9 @@ export default function ProductDetail() {
   }
 
   const inCart = isInCart(product.id);
-  const images = product.images?.length ? product.images : [null];
+  // Sort media to show videos first
+  const images = product.images?.length ? sortMediaVideosFirst(product.images) : [null];
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const isEligible = isEligibleForDiscount(product.category_id);
   const memberPrice = getMemberPrice(product.price, product.category_id);
@@ -189,9 +192,14 @@ export default function ProductDetail() {
               {...swipeHandlers}
             >
               {images[selectedImage] ? (
-                /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) ? (
+                isVideoUrl(images[selectedImage]) ? (
                   <video
+                    ref={videoRef}
                     src={images[selectedImage]}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                     controls
                     controlsList="nodownload"
                     className="w-full h-full object-contain pointer-events-auto cursor-default"
@@ -215,7 +223,7 @@ export default function ProductDetail() {
               )}
               
               {/* Zoom hint */}
-              {images[selectedImage] && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) && (
+              {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
                 <div className="absolute top-3 right-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="bg-black/60 rounded-full p-2">
                     <ZoomIn className="h-5 w-5 text-white" />
@@ -257,7 +265,7 @@ export default function ProductDetail() {
             </div>
             
             {/* Zoom Modal */}
-            {images[selectedImage] && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(images[selectedImage]) && (
+            {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
               <ImageZoomModal
                 src={images[selectedImage]}
                 alt={product.name}
@@ -269,7 +277,7 @@ export default function ProductDetail() {
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {images.map((img, i) => {
-                  const isVideo = img && /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(img);
+                  const isVideo = isVideoUrl(img);
                   return (
                     <button
                       key={i}

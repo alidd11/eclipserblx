@@ -1,10 +1,11 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
+import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 
 interface ProductCardProps {
   id: string;
@@ -12,6 +13,7 @@ interface ProductCardProps {
   slug: string;
   price: number;
   image?: string;
+  images?: string[];
   category?: string;
   categorySlug?: string;
   categoryId?: string;
@@ -19,10 +21,16 @@ interface ProductCardProps {
   createdAt?: string;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, category, categorySlug, categoryId, isFeatured, createdAt }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  
+  // Get the first media prioritizing video
+  const displayMedia = getFirstMediaPrioritizeVideo(images) || image;
+  const isVideo = isVideoUrl(displayMedia);
   
   // Check if product is new (within last 3 days)
   const isNew = createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
@@ -36,26 +44,68 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!inCart) {
-      addItem({ id, name, price, image, slug, category_slug: categorySlug });
+      addItem({ id, name, price, image: displayMedia || undefined, slug, category_slug: categorySlug });
     }
-  }, [inCart, addItem, id, name, price, image, slug, categorySlug]);
+  }, [inCart, addItem, id, name, price, displayMedia, slug, categorySlug]);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovering(true);
+    if (videoRef.current && isVideo) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isVideo]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovering(false);
+    if (videoRef.current && isVideo) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [isVideo]);
 
   return (
-    <Link to={`/products/${slug}`} className="group block h-full">
+    <Link 
+      to={`/products/${slug}`} 
+      className="group block h-full"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <div className={cn(
         "gaming-card-hover overflow-hidden h-full flex flex-col",
         isFeatured && "ring-1 ring-primary/50"
       )}>
-        {/* Image */}
+        {/* Image/Video */}
         <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
-          {image ? (
-            <img
-              src={image}
-              alt={name}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+          {displayMedia ? (
+            isVideo ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src={displayMedia}
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                {/* Play indicator */}
+                {!isHovering && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center">
+                      <Play className="h-5 w-5 text-white ml-0.5" fill="white" />
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <img
+                src={displayMedia}
+                alt={name}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            )
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
               <span className="text-2xl font-display font-bold text-muted-foreground/30">
