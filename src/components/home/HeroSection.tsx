@@ -80,7 +80,7 @@ export function HeroSection() {
                 className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
               >
                 Vehicle liveries, scripts, 3D models, UI kits, and Discord bots.{' '}
-                <span className="text-foreground font-medium">Premium digital assets</span> for FiveM, Roblox, and more.
+                <span className="text-foreground font-medium">Premium digital assets</span> to power your projects.
               </motion.p>
 
               {/* Trust indicators */}
