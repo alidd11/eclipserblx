@@ -109,6 +109,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       return;
     }
 
+    // IMMEDIATELY set --vvh on mount to prevent layout jump
+    html.style.setProperty('--vvh', `${window.innerHeight}px`);
+
     // IMPORTANT: We schedule multiple setTimeout passes to handle iOS keyboard animation.
     // If those timeouts fire after navigating away, they can re-apply --vvh and cause the
     // bottom “grey strip” to persist on non-chat pages. Track + cancel everything.

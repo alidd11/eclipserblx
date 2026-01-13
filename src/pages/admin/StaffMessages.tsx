@@ -446,17 +446,30 @@ function StaffMessagesContent() {
     };
   }, [scrollToBottom]);
 
-  // Extra reliability: when keyboard state changes, force scroll to latest.
+  // Extra reliability: when keyboard state changes, force scroll to latest with aggressive scroll lock
   useEffect(() => {
     if (!isKeyboardVisible) return;
 
-    scrollToBottom();
-    const t1 = window.setTimeout(scrollToBottom, 100);
-    const t2 = window.setTimeout(scrollToBottom, 250);
+    // Aggressively reset document scroll during keyboard animation to prevent iOS auto-scroll
+    const lockScroll = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    // Lock scroll position during keyboard opening animation
+    lockScroll();
+    const lockInterval = setInterval(lockScroll, 16);
+
+    // Stop after keyboard animation completes (~350ms) and scroll to bottom
+    const cleanup = setTimeout(() => {
+      clearInterval(lockInterval);
+      scrollToBottom();
+    }, 350);
 
     return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
+      clearInterval(lockInterval);
+      window.clearTimeout(cleanup);
     };
   }, [isKeyboardVisible, scrollToBottom]);
 
@@ -684,7 +697,10 @@ function StaffMessagesContent() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden px-0 sm:px-4 pb-0 bg-card overscroll-contain">
+      <div 
+        className="h-full flex flex-col overflow-hidden overflow-x-hidden px-0 sm:px-4 pb-0 bg-card overscroll-contain"
+        style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}
+      >
       <KeyboardDebugOverlay />
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
@@ -708,11 +724,11 @@ function StaffMessagesContent() {
         </CardHeader>
         <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden overscroll-none">
           {/* Messages area - fills available space with native scroll */}
-          <div 
-            ref={scrollRef} 
-            className="flex-1 px-3 sm:px-4 overflow-y-auto overscroll-contain"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
+        <div 
+          ref={scrollRef} 
+          className="flex-1 px-3 sm:px-4 overflow-y-auto overflow-x-hidden overscroll-contain"
+          style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+        >
             <div className="py-4 flex flex-col">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">
