@@ -38,8 +38,10 @@ import {
   StickyNote,
   Plus,
   Trash2,
-  Loader2
+  Loader2,
+  FileText
 } from 'lucide-react';
+import { StaffDocuments } from '@/components/admin/StaffDocuments';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { toast } from 'sonner';
@@ -607,6 +609,13 @@ export default function StaffProfile() {
             )}
           </CardContent>
         </Card>
+
+        {/* Staff Documents Section */}
+        <StaffDocuments
+          staffUserId={userId!}
+          currentUserId={user?.id || ''}
+          isAdmin={isAdmin}
+        />
       </div>
 
       {/* Delete Note Confirmation Dialog */}
