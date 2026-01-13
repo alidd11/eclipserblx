@@ -1774,6 +1774,36 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_notes: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          note_type: string | null
+          staff_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          note_type?: string | null
+          staff_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          note_type?: string | null
+          staff_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscription_free_claims: {
         Row: {
           claim_period: string
