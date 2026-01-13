@@ -451,10 +451,6 @@ export function ChatSidePanel() {
                       {openingStatus.isOpen ? 'Open' : 'Closed'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                    <Clock className="h-3 w-3" />
-                    <span>Mon–Sat {formatTime(9)}–{formatTime(19)} • Sun closed</span>
-                  </div>
                 </div>
                 <div className="flex items-center gap-0.5">
                   <Button
@@ -488,32 +484,13 @@ export function ChatSidePanel() {
               ) : !conversation ? (
                 // Start conversation form
                 <div className="flex-1 overflow-auto p-3 space-y-3">
-                  {/* Opening Hours */}
-                  <div className="bg-muted/50 rounded-lg p-2.5 space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>Opening Hours</span>
-                      <span
-                        className={cn(
-                          'ml-auto h-1.5 w-1.5 rounded-full',
-                          openingStatus.isOpen ? 'bg-green-500' : 'bg-yellow-500'
-                        )}
-                      />
-                      <span className="text-[10px]">{openingStatus.isOpen ? 'Open' : 'Closed'}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
-                      <span>Mon-Sat: {formatTime(9)} - {formatTime(19)}</span>
-                      <span>Sun: Closed</span>
-                    </div>
-                  </div>
-                  
                   <div className="space-y-1.5">
                     <Label htmlFor="panel-category" className="text-sm">What can we help you with?</Label>
                     <Select value={issueCategory} onValueChange={setIssueCategory}>
                       <SelectTrigger id="panel-category" className="h-9">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[10000]" position="popper" sideOffset={4}>
                         {ISSUE_CATEGORIES.map(cat => (
                           <SelectItem key={cat.value} value={cat.value}>
                             {cat.label}
