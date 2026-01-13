@@ -61,6 +61,24 @@ export default function ProductDetail() {
     enabled: !!product?.category_id,
   });
 
+  const handleSwipeLeft = useCallback(() => {
+    if (!product?.images?.length) return;
+    const count = product.images.length;
+    setSelectedImage((prev) => (prev + 1) % count);
+  }, [product?.images?.length]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (!product?.images?.length) return;
+    const count = product.images.length;
+    setSelectedImage((prev) => (prev - 1 + count) % count);
+  }, [product?.images?.length]);
+
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: (product?.images?.length || 0) > 1 ? handleSwipeLeft : undefined,
+    onSwipeRight: (product?.images?.length || 0) > 1 ? handleSwipeRight : undefined,
+    minSwipeDistance: 50,
+  });
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -94,8 +112,7 @@ export default function ProductDetail() {
   }
 
   const inCart = isInCart(product.id);
-  const images = product.images?.length ? product.images : [null];
-  
+
   const isEligible = isEligibleForDiscount(product.category_id);
   const memberPrice = getMemberPrice(product.price, product.category_id);
   const discountPercent = getDiscountPercent(product.category_id);
@@ -114,20 +131,6 @@ export default function ProductDetail() {
       });
     }
   };
-
-  const handleSwipeLeft = useCallback(() => {
-    setSelectedImage((prev) => (prev + 1) % images.length);
-  }, [images.length]);
-
-  const handleSwipeRight = useCallback(() => {
-    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
-  }, [images.length]);
-
-  const swipeHandlers = useSwipeGesture({
-    onSwipeLeft: images.length > 1 ? handleSwipeLeft : undefined,
-    onSwipeRight: images.length > 1 ? handleSwipeRight : undefined,
-    minSwipeDistance: 50,
-  });
 
   return (
     <MainLayout>
