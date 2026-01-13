@@ -14,8 +14,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -24,6 +25,15 @@ export default function ProductDetail() {
   const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const isMobile = useIsMobile();
+
+  // Hide swipe hint after first interaction or after 3 seconds
+  useEffect(() => {
+    if (!showSwipeHint) return;
+    const timer = setTimeout(() => setShowSwipeHint(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showSwipeHint]);
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['product', slug] });
@@ -65,12 +75,14 @@ export default function ProductDetail() {
     if (!product?.images?.length) return;
     const count = product.images.length;
     setSelectedImage((prev) => (prev + 1) % count);
+    setShowSwipeHint(false);
   }, [product?.images?.length]);
 
   const handleSwipeRight = useCallback(() => {
     if (!product?.images?.length) return;
     const count = product.images.length;
     setSelectedImage((prev) => (prev - 1 + count) % count);
+    setShowSwipeHint(false);
   }, [product?.images?.length]);
 
   const swipeHandlers = useSwipeGesture({
@@ -253,6 +265,37 @@ export default function ProductDetail() {
                   ECLIPSE
                 </span>
               </div>
+              
+              {/* Pagination dots */}
+              {images.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none">
+                  {images.map((_, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-200",
+                        selectedImage === i 
+                          ? "bg-primary w-4" 
+                          : "bg-white/50"
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+              
+              {/* Swipe hint overlay - mobile only */}
+              {isMobile && images.length > 1 && showSwipeHint && (
+                <div 
+                  className="absolute inset-0 flex items-center justify-center bg-black/40 animate-fade-in pointer-events-none"
+                  onAnimationEnd={() => {}}
+                >
+                  <div className="flex items-center gap-3 text-white/90">
+                    <ChevronLeft className="h-6 w-6 animate-pulse" />
+                    <span className="text-sm font-medium">Swipe to browse</span>
+                    <ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Zoom Modal */}
