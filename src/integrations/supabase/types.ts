@@ -1255,6 +1255,7 @@ export type Database = {
           id: string
           last_seen: string | null
           referral_code: string | null
+          staff_id: string | null
           updated_at: string
           user_id: string
         }
@@ -1267,6 +1268,7 @@ export type Database = {
           id?: string
           last_seen?: string | null
           referral_code?: string | null
+          staff_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1279,6 +1281,7 @@ export type Database = {
           id?: string
           last_seen?: string | null
           referral_code?: string | null
+          staff_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1685,6 +1688,33 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_id_logs: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          notes: string | null
+          staff_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          notes?: string | null
+          staff_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          notes?: string | null
+          staff_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_message_reads: {
         Row: {
           id: string
@@ -2004,6 +2034,7 @@ export type Database = {
       generate_customer_id: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      generate_staff_id: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       has_role: {
