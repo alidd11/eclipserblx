@@ -249,6 +249,7 @@ export default function Products() {
                   slug={product.slug}
                   price={product.price}
                   image={product.images?.[0]}
+                  images={product.images}
                   category={product.categories?.name}
                   categorySlug={product.categories?.slug}
                   categoryId={product.category_id}
