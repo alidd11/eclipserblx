@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +38,16 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
+const DOCUMENT_CATEGORIES = [
+  { value: 'general', label: 'General', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
+  { value: 'contract', label: 'Contract', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  { value: 'id_verification', label: 'ID Verification', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  { value: 'performance', label: 'Performance Review', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  { value: 'training', label: 'Training', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  { value: 'certification', label: 'Certification', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  { value: 'other', label: 'Other', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+];
+
 interface StaffDocument {
   id: string;
   staff_user_id: string;
@@ -39,6 +57,7 @@ interface StaffDocument {
   file_type: string | null;
   file_size: number | null;
   description: string | null;
+  category: string | null;
   created_at: string;
   uploader_name?: string;
 }
@@ -66,10 +85,15 @@ const formatFileSize = (bytes: number | null) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+const getCategoryInfo = (category: string | null) => {
+  return DOCUMENT_CATEGORIES.find(c => c.value === category) || DOCUMENT_CATEGORIES[0];
+};
+
 export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDocumentsProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('general');
   const [isUploading, setIsUploading] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<StaffDocument | null>(null);
 
@@ -130,6 +154,7 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
           file_type: file.type,
           file_size: file.size,
           description: description.trim() || null,
+          category: category,
         });
 
       if (dbError) {
@@ -141,6 +166,7 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-documents', staffUserId] });
       setDescription('');
+      setCategory('general');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -228,15 +254,32 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
         <CardContent className="space-y-4">
           {/* Upload Section */}
           <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Input
-                id="description"
-                placeholder="e.g., Employment contract, ID verification..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={isUploading}
-              />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select value={category} onValueChange={setCategory} disabled={isUploading}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DOCUMENT_CATEGORIES.map(cat => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (optional)</Label>
+                <Input
+                  id="description"
+                  placeholder="e.g., Signed on Jan 2024..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={isUploading}
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -295,16 +338,22 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
             <div className="space-y-2">
               {documents.map(doc => {
                 const FileIcon = getFileIcon(doc.file_type);
+                const categoryInfo = getCategoryInfo(doc.category);
                 return (
                   <div
                     key={doc.id}
                     className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/20"
                   >
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <FileIcon className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{doc.file_name}</p>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="font-medium text-sm truncate">{doc.file_name}</p>
+                        <Badge variant="outline" className={`text-xs shrink-0 ${categoryInfo.color}`}>
+                          {categoryInfo.label}
+                        </Badge>
+                      </div>
                       {doc.description && (
                         <p className="text-xs text-muted-foreground truncate">{doc.description}</p>
                       )}

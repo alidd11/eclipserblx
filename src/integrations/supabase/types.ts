@@ -1660,6 +1660,7 @@ export type Database = {
       }
       staff_documents: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
           file_name: string
@@ -1671,6 +1672,7 @@ export type Database = {
           uploaded_by: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
           file_name: string
@@ -1682,6 +1684,7 @@ export type Database = {
           uploaded_by: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
           file_name?: string
