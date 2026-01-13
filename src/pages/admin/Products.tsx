@@ -66,6 +66,10 @@ interface MassEditForm {
   category_id: string | null;
   is_active: boolean | null;
   is_featured: boolean | null;
+  price_adjustment_enabled: boolean;
+  price_adjustment_type: 'percentage' | 'fixed';
+  price_adjustment_value: string;
+  price_adjustment_direction: 'increase' | 'decrease';
 }
 
 const emptyForm: ProductForm = {
@@ -84,6 +88,10 @@ const emptyMassEditForm: MassEditForm = {
   category_id: null,
   is_active: null,
   is_featured: null,
+  price_adjustment_enabled: false,
+  price_adjustment_type: 'percentage',
+  price_adjustment_value: '',
+  price_adjustment_direction: 'increase',
 };
 
 export default function AdminProducts() {
@@ -329,12 +337,60 @@ export default function AdminProducts() {
 
   // Mass edit mutation
   const massEditMutation = useMutation({
-    mutationFn: async ({ ids, updates }: { ids: string[]; updates: Partial<{ category_id: string; is_active: boolean; is_featured: boolean }> }) => {
-      const { error } = await supabase
-        .from('products')
-        .update(updates)
-        .in('id', ids);
-      if (error) throw error;
+    mutationFn: async ({ 
+      ids, 
+      updates, 
+      priceAdjustment 
+    }: { 
+      ids: string[]; 
+      updates: Partial<{ category_id: string; is_active: boolean; is_featured: boolean }>; 
+      priceAdjustment?: { type: 'percentage' | 'fixed'; value: number; direction: 'increase' | 'decrease' };
+    }) => {
+      // If we have regular updates, apply them
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase
+          .from('products')
+          .update(updates)
+          .in('id', ids);
+        if (error) throw error;
+      }
+      
+      // If we have price adjustments, we need to update each product individually
+      if (priceAdjustment) {
+        // Fetch current prices
+        const { data: productsData, error: fetchError } = await supabase
+          .from('products')
+          .select('id, price')
+          .in('id', ids);
+        
+        if (fetchError) throw fetchError;
+        
+        // Calculate and apply new prices
+        for (const product of productsData || []) {
+          let newPrice = product.price;
+          
+          if (priceAdjustment.type === 'percentage') {
+            const adjustment = product.price * (priceAdjustment.value / 100);
+            newPrice = priceAdjustment.direction === 'increase' 
+              ? product.price + adjustment 
+              : product.price - adjustment;
+          } else {
+            newPrice = priceAdjustment.direction === 'increase'
+              ? product.price + priceAdjustment.value
+              : product.price - priceAdjustment.value;
+          }
+          
+          // Ensure price doesn't go below 0
+          newPrice = Math.max(0, Math.round(newPrice * 100) / 100);
+          
+          const { error: updateError } = await supabase
+            .from('products')
+            .update({ price: newPrice })
+            .eq('id', product.id);
+          
+          if (updateError) throw updateError;
+        }
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -429,12 +485,27 @@ export default function AdminProducts() {
       updates.is_featured = massEditForm.is_featured;
     }
     
-    if (Object.keys(updates).length === 0) {
+    // Build price adjustment if enabled
+    let priceAdjustment: { type: 'percentage' | 'fixed'; value: number; direction: 'increase' | 'decrease' } | undefined;
+    if (massEditForm.price_adjustment_enabled && massEditForm.price_adjustment_value) {
+      const value = parseFloat(massEditForm.price_adjustment_value);
+      if (isNaN(value) || value <= 0) {
+        toast.error('Please enter a valid price adjustment value');
+        return;
+      }
+      priceAdjustment = {
+        type: massEditForm.price_adjustment_type,
+        value,
+        direction: massEditForm.price_adjustment_direction,
+      };
+    }
+    
+    if (Object.keys(updates).length === 0 && !priceAdjustment) {
       toast.error('Please select at least one field to update');
       return;
     }
     
-    massEditMutation.mutate({ ids: Array.from(selectedProducts), updates });
+    massEditMutation.mutate({ ids: Array.from(selectedProducts), updates, priceAdjustment });
   };
 
   return (
@@ -1016,6 +1087,97 @@ export default function AdminProducts() {
                   <Label htmlFor="mass-featured">
                     {massEditForm.is_featured ? 'Featured' : 'Not Featured'}
                   </Label>
+                </div>
+              )}
+            </div>
+            {/* Price Adjustment */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="mass-price-toggle"
+                  checked={massEditForm.price_adjustment_enabled}
+                  onCheckedChange={(checked) => {
+                    setMassEditForm({ 
+                      ...massEditForm, 
+                      price_adjustment_enabled: !!checked,
+                      price_adjustment_value: checked ? massEditForm.price_adjustment_value : ''
+                    });
+                  }}
+                />
+                <Label htmlFor="mass-price-toggle" className="font-medium">Adjust Prices</Label>
+              </div>
+              {massEditForm.price_adjustment_enabled && (
+                <div className="ml-6 space-y-3">
+                  {/* Direction: Increase or Decrease */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={massEditForm.price_adjustment_direction === 'increase' ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setMassEditForm({ ...massEditForm, price_adjustment_direction: 'increase' })}
+                    >
+                      Increase
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={massEditForm.price_adjustment_direction === 'decrease' ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setMassEditForm({ ...massEditForm, price_adjustment_direction: 'decrease' })}
+                    >
+                      Decrease
+                    </Button>
+                  </div>
+                  
+                  {/* Type: Percentage or Fixed */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={massEditForm.price_adjustment_type === 'percentage' ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setMassEditForm({ ...massEditForm, price_adjustment_type: 'percentage' })}
+                    >
+                      Percentage (%)
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={massEditForm.price_adjustment_type === 'fixed' ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setMassEditForm({ ...massEditForm, price_adjustment_type: 'fixed' })}
+                    >
+                      Fixed Amount (£)
+                    </Button>
+                  </div>
+                  
+                  {/* Value Input */}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step={massEditForm.price_adjustment_type === 'percentage' ? '1' : '0.01'}
+                      min="0"
+                      placeholder={massEditForm.price_adjustment_type === 'percentage' ? 'e.g. 10' : 'e.g. 5.00'}
+                      value={massEditForm.price_adjustment_value}
+                      onChange={(e) => setMassEditForm({ ...massEditForm, price_adjustment_value: e.target.value })}
+                      className="flex-1"
+                    />
+                    <span className="text-muted-foreground text-sm w-8">
+                      {massEditForm.price_adjustment_type === 'percentage' ? '%' : '£'}
+                    </span>
+                  </div>
+                  
+                  {/* Preview text */}
+                  {massEditForm.price_adjustment_value && (
+                    <p className="text-xs text-muted-foreground">
+                      Will {massEditForm.price_adjustment_direction} all selected product prices by{' '}
+                      {massEditForm.price_adjustment_type === 'percentage' 
+                        ? `${massEditForm.price_adjustment_value}%`
+                        : `£${parseFloat(massEditForm.price_adjustment_value || '0').toFixed(2)}`
+                      }
+                    </p>
+                  )}
                 </div>
               )}
             </div>
