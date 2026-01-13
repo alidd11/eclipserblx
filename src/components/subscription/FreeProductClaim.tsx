@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Gift, Loader2, Check, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -27,6 +28,7 @@ export function FreeProductClaim({
   categoryId,
   onClaimed 
 }: FreeProductClaimProps) {
+  const navigate = useNavigate();
   const { 
     isSubscribed, 
     canClaimFree, 
@@ -69,13 +71,15 @@ export function FreeProductClaim({
         description: `"${productName}" has been added to your downloads for free.`,
       });
       onClaimed?.();
+      setShowConfirm(false);
+      // Redirect to downloads page after successful claim
+      navigate('/downloads');
     } catch (error) {
       toast({
         title: 'Claim Failed',
         description: error instanceof Error ? error.message : 'Failed to claim product',
         variant: 'destructive',
       });
-    } finally {
       setIsClaiming(false);
       setShowConfirm(false);
     }

@@ -359,7 +359,11 @@ export default function ProductDetail() {
 
                 {/* Free Claim for Eclipse+ Members */}
                 {canClaimThisProduct && (
-                  <FreeProductClaim productId={product.id} productName={product.name} />
+                  <FreeProductClaim 
+                    productId={product.id} 
+                    productName={product.name} 
+                    categoryId={product.category_id}
+                  />
                 )}
 
                 <div className="flex flex-col gap-4">
