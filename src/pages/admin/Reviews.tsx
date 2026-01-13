@@ -71,6 +71,7 @@ const emptyExternalForm: ExternalReviewForm = {
 const sourceOptions = [
   'Trustpilot',
   'Google Reviews',
+  'ClearlyDev',
   'Discord',
   'Twitter/X',
   'Reddit',
