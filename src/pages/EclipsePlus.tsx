@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Crown, Check, Gift, Percent, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Crown, Check, Gift, Percent, Sparkles, Loader2, AlertCircle, Calendar, Clock, XCircle } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, ECLIPSE_PLUS_DISCOUNT, ECLIPSE_PLUS_BOT_DISCOUNT } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import { Bot } from 'lucide-react';
+import { differenceInDays, differenceInHours, format } from 'date-fns';
 
 const features = [
   {
@@ -59,12 +62,35 @@ export default function EclipsePlus() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isSubscribed, subscriptionEnd, isLoading, subscribe, openCustomerPortal } = useSubscription();
+  const { isSubscribed, subscriptionEnd, canClaimFree, claimedThisMonth, isLoading, subscribe, openCustomerPortal } = useSubscription();
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const wasCanceled = searchParams.get('canceled') === 'true';
+
+  // Calculate days remaining
+  const subscriptionInfo = useMemo(() => {
+    if (!subscriptionEnd) return null;
+    
+    const endDate = new Date(subscriptionEnd);
+    const now = new Date();
+    const daysLeft = differenceInDays(endDate, now);
+    const hoursLeft = differenceInHours(endDate, now);
+    
+    // Calculate progress (assuming 30-day billing cycle)
+    const totalDays = 30;
+    const daysUsed = totalDays - daysLeft;
+    const progressPercent = Math.max(0, Math.min(100, (daysUsed / totalDays) * 100));
+    
+    return {
+      endDate,
+      daysLeft: Math.max(0, daysLeft),
+      hoursLeft: Math.max(0, hoursLeft),
+      progressPercent,
+      formattedDate: format(endDate, 'MMMM d, yyyy'),
+    };
+  }, [subscriptionEnd]);
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -133,66 +159,77 @@ export default function EclipsePlus() {
           </div>
         )}
 
-        {/* Pricing Card */}
-        <Card className={cn(
-          "relative overflow-hidden max-w-md mx-auto",
-          isSubscribed && "ring-2 ring-primary"
-        )}>
-          {isSubscribed && (
-            <div className="absolute top-4 right-4 px-3 py-1 text-xs font-semibold bg-primary text-primary-foreground rounded-full">
-              Your Plan
-            </div>
-          )}
-          
-          <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-              <Crown className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <CardTitle className="text-2xl">Eclipse+</CardTitle>
-            <div className="mt-4">
-              <span className="text-4xl font-bold">£4.99</span>
-              <span className="text-muted-foreground">/month</span>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>1 free product every month (excluding bots)</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>{ECLIPSE_PLUS_DISCOUNT}% off all products</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>{ECLIPSE_PLUS_BOT_DISCOUNT}% off all bot products</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>Early access to new products</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>Priority customer support</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span>Cancel anytime</span>
-              </li>
-            </ul>
-
-            {isLoading ? (
-              <Button className="w-full" disabled>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading...
-              </Button>
-            ) : isSubscribed ? (
+        {/* Subscribed Status Card */}
+        {isSubscribed && subscriptionInfo && (
+          <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-primary">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/60" />
+            
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                <Crown className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <CardTitle className="text-2xl">Eclipse+ Active</CardTitle>
+                <Badge className="bg-primary text-primary-foreground">Member</Badge>
+              </div>
+              <p className="text-muted-foreground mt-2">You're enjoying all the premium benefits!</p>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {/* Subscription Progress */}
               <div className="space-y-3">
-                <div className="text-center text-sm text-muted-foreground">
-                  Renews on {subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString() : 'N/A'}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Billing cycle progress</span>
+                  <span className="font-medium">{Math.round(subscriptionInfo.progressPercent)}%</span>
                 </div>
+                <Progress value={subscriptionInfo.progressPercent} className="h-2" />
+              </div>
+
+              {/* Time Remaining */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-muted/50 text-center">
+                  <Clock className="h-5 w-5 mx-auto mb-2 text-primary" />
+                  <div className="text-2xl font-bold">
+                    {subscriptionInfo.daysLeft > 0 ? subscriptionInfo.daysLeft : subscriptionInfo.hoursLeft}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {subscriptionInfo.daysLeft > 0 ? 'days remaining' : 'hours remaining'}
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/50 text-center">
+                  <Calendar className="h-5 w-5 mx-auto mb-2 text-primary" />
+                  <div className="text-sm font-medium">{subscriptionInfo.formattedDate}</div>
+                  <div className="text-xs text-muted-foreground">renewal date</div>
+                </div>
+              </div>
+
+              {/* Free Product Status */}
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    canClaimFree ? "bg-primary/10" : "bg-muted"
+                  )}>
+                    <Gift className={cn("h-5 w-5", canClaimFree ? "text-primary" : "text-muted-foreground")} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">Monthly Free Product</div>
+                    <div className="text-sm text-muted-foreground">
+                      {canClaimFree ? 'Available to claim!' : 'Claimed this month'}
+                    </div>
+                  </div>
+                  {canClaimFree ? (
+                    <Button asChild size="sm" className="gradient-button border-0">
+                      <Link to="/products">Claim Now</Link>
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary">Claimed</Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2">
                 <Button 
                   variant="outline" 
                   className="w-full"
@@ -205,31 +242,95 @@ export default function EclipsePlus() {
                       Opening...
                     </>
                   ) : (
-                    'Manage Subscription'
+                    <>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Manage Subscription
+                    </>
                   )}
                 </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-muted-foreground hover:text-destructive"
+                  onClick={handleManageSubscription}
+                  disabled={isOpeningPortal}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Cancel Subscription
+                </Button>
               </div>
-            ) : (
-              <Button 
-                className="w-full gradient-button border-0 h-12 text-lg"
-                onClick={handleSubscribe}
-                disabled={isSubscribing}
-              >
-                {isSubscribing ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Redirecting...
-                  </>
-                ) : (
-                  <>
-                    <Crown className="h-5 w-5 mr-2" />
-                    Subscribe Now
-                  </>
-                )}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pricing Card for Non-Subscribers */}
+        {!isSubscribed && (
+          <Card className="relative overflow-hidden max-w-md mx-auto">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                <Crown className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <CardTitle className="text-2xl">Eclipse+</CardTitle>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">£4.99</span>
+                <span className="text-muted-foreground">/month</span>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>1 free product every month (excluding bots)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>{ECLIPSE_PLUS_DISCOUNT}% off all products</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>{ECLIPSE_PLUS_BOT_DISCOUNT}% off all bot products</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>Early access to new products</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>Priority customer support</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>Cancel anytime</span>
+                </li>
+              </ul>
+
+              {isLoading ? (
+                <Button className="w-full" disabled>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
+                </Button>
+              ) : (
+                <Button 
+                  className="w-full gradient-button border-0 h-12 text-lg"
+                  onClick={handleSubscribe}
+                  disabled={isSubscribing}
+                >
+                  {isSubscribing ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Redirecting...
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="h-5 w-5 mr-2" />
+                      Subscribe Now
+                    </>
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Features */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
