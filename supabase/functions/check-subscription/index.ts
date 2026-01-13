@@ -45,17 +45,63 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    // Find customer by email
+    // First check for admin-granted subscription in local database
+    const { data: localSub } = await supabaseClient
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    // If there's a locally granted subscription (no stripe_subscription_id means admin-granted)
+    if (localSub && !localSub.stripe_subscription_id && localSub.current_period_end) {
+      const periodEnd = new Date(localSub.current_period_end);
+      
+      // Check if the granted subscription is still valid
+      if (periodEnd > new Date()) {
+        logStep("Found admin-granted subscription", { 
+          userId: user.id, 
+          endDate: localSub.current_period_end,
+          grantedBy: localSub.granted_by,
+          grantReason: localSub.grant_reason
+        });
+
+        // Check if user has claimed their free product this month
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const { data: claim } = await supabaseClient
+          .from('subscription_free_claims')
+          .select('id, product_id')
+          .eq('user_id', user.id)
+          .eq('claim_period', currentMonth)
+          .maybeSingle();
+
+        return new Response(JSON.stringify({
+          subscribed: true,
+          subscriptionEnd: localSub.current_period_end,
+          subscriptionId: null,
+          canClaimFree: !claim,
+          claimedThisMonth: !!claim,
+          claimedProductId: claim?.product_id || null,
+          grantedBy: localSub.granted_by,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      } else {
+        // Admin-granted subscription has expired
+        logStep("Admin-granted subscription expired", { userId: user.id });
+        await supabaseClient
+          .from('subscriptions')
+          .update({ status: 'inactive' })
+          .eq('user_id', user.id);
+      }
+    }
+
+    // Find customer by email in Stripe
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
-      
-      // Update local subscription record if exists
-      await supabaseClient
-        .from('subscriptions')
-        .update({ status: 'inactive' })
-        .eq('user_id', user.id);
 
       return new Response(JSON.stringify({ 
         subscribed: false,
@@ -88,12 +134,7 @@ serve(async (req) => {
     });
 
     if (!eclipsePlusSub) {
-      logStep("No active Eclipse+ subscription");
-      
-      await supabaseClient
-        .from('subscriptions')
-        .update({ status: 'inactive' })
-        .eq('user_id', user.id);
+      logStep("No active Eclipse+ subscription in Stripe");
 
       return new Response(JSON.stringify({ 
         subscribed: false,
