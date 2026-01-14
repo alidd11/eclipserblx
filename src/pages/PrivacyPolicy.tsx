@@ -52,6 +52,7 @@ export default function PrivacyPolicy() {
               <li>Account credentials (securely hashed)</li>
               <li>Purchase and order history</li>
               <li>Download records</li>
+              <li>Subscription status (e.g., Eclipse+ membership)</li>
             </ul>
 
             <h3 className="font-semibold text-lg mt-6 mb-3">Payment Information</h3>
