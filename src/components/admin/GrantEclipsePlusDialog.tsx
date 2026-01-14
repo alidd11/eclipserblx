@@ -182,6 +182,21 @@ export function GrantEclipsePlusDialog({
         console.log('Push notification not sent (user may not have subscribed):', pushError);
       }
 
+      // Step 7: Send Discord webhook if user has Discord linked
+      try {
+        await supabase.functions.invoke('send-discord-webhook', {
+          body: {
+            user_id: targetUser.user_id,
+            event: 'subscription_activated',
+            subscription_end: endDate.toISOString(),
+            granted_by_admin: true,
+          },
+        });
+        console.log('Discord webhook sent for Eclipse+ grant');
+      } catch (discordError) {
+        console.log('Discord webhook not sent (user may not have Discord linked):', discordError);
+      }
+
       toast.success(
         `Eclipse+ granted to ${targetUser.display_name || targetUser.email} for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''}`
       );

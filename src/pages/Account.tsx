@@ -27,6 +27,7 @@ import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
+import { DiscordLinkCard } from '@/components/account/DiscordLinkCard';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
@@ -122,7 +123,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, display_name, avatar_url, customer_id, created_at, updated_at')
+        .select('user_id, email, display_name, avatar_url, customer_id, discord_id, discord_username, created_at, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -572,6 +573,15 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 <BadgeShowcase badges={badges} userBadges={userBadges} showAll />
               </CardContent>
             </Card>
+
+            {/* Discord Link Card */}
+            <DiscordLinkCard
+              userId={user.id}
+              currentDiscordId={profile?.discord_id || null}
+              currentDiscordUsername={profile?.discord_username || null}
+              hasEclipsePlus={isSubscribed}
+              onUpdate={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+            />
 
             {/* Referral Card */}
             <ReferralCard />
