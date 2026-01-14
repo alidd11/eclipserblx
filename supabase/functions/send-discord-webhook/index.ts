@@ -6,16 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface WebhookPayload {
-  event: 'subscription_activated' | 'subscription_deactivated';
-  discord_id: string;
-  user_email: string;
-  customer_id?: string;
-  subscription_end?: string;
-  granted_by_admin: boolean;
-  timestamp: string;
-}
-
 function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[send-discord-webhook] ${step}${detailsStr}`);
@@ -28,13 +18,18 @@ serve(async (req) => {
   }
 
   try {
-    const webhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
-    const webhookSecret = Deno.env.get("DISCORD_WEBHOOK_SECRET");
+    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const guildId = Deno.env.get("DISCORD_GUILD_ID");
+    const roleId = Deno.env.get("DISCORD_ROLE_ID");
 
-    if (!webhookUrl || !webhookSecret) {
-      logStep("ERROR: Missing Discord webhook configuration");
+    if (!botToken || !guildId || !roleId) {
+      logStep("ERROR: Missing Discord configuration", {
+        hasBotToken: !!botToken,
+        hasGuildId: !!guildId,
+        hasRoleId: !!roleId,
+      });
       return new Response(
-        JSON.stringify({ error: "Discord webhook not configured" }),
+        JSON.stringify({ error: "Discord not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -101,78 +96,108 @@ serve(async (req) => {
       );
     }
 
-    // Build the webhook payload
-    const timestamp = new Date().toISOString();
-    const payload: WebhookPayload = {
-      event,
-      discord_id: profile.discord_id,
-      user_email: profile.email,
-      customer_id: profile.customer_id || undefined,
-      subscription_end: subscription_end || undefined,
-      granted_by_admin,
-      timestamp,
-    };
-
-    logStep("Sending webhook", { discord_id: profile.discord_id, event });
-
-    // Generate HMAC signature
-    const signedPayload = `${Math.floor(Date.now() / 1000)}.${JSON.stringify(payload)}`;
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      "raw",
-      encoder.encode(webhookSecret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-    const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(signedPayload));
-    const signature = Array.from(new Uint8Array(signatureBuffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    const unixTimestamp = Math.floor(Date.now() / 1000).toString();
-
-    // Send the webhook
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Eclipse-Signature': signature,
-        'X-Eclipse-Timestamp': unixTimestamp,
-      },
-      body: JSON.stringify(payload),
+    // Construct Discord API URL for role management
+    const discordApiUrl = `https://discord.com/api/v10/guilds/${guildId}/members/${profile.discord_id}/roles/${roleId}`;
+    
+    // Use PUT to add role, DELETE to remove role
+    const method = event === 'subscription_activated' ? 'PUT' : 'DELETE';
+    
+    logStep("Calling Discord API", { 
+      discord_id: profile.discord_id, 
+      event, 
+      method,
+      url: discordApiUrl 
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      logStep("Webhook request failed", { 
-        status: response.status, 
-        error: errorText 
+    const discordResponse = await fetch(discordApiUrl, {
+      method,
+      headers: {
+        'Authorization': `Bot ${botToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Discord returns 204 No Content on success
+    if (discordResponse.status === 204) {
+      logStep("Discord role updated successfully", { 
+        discord_id: profile.discord_id, 
+        event,
+        action: event === 'subscription_activated' ? 'added' : 'removed'
       });
-      
+
       return new Response(
         JSON.stringify({ 
-          success: false, 
-          error: "Webhook delivery failed",
-          status: response.status,
-          details: errorText
+          success: true, 
+          message: `Discord role ${event === 'subscription_activated' ? 'assigned' : 'removed'} successfully`,
+          discord_id: profile.discord_id
         }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    logStep("Webhook sent successfully", { 
-      discord_id: profile.discord_id, 
-      event 
+    // Handle specific Discord API errors
+    const errorText = await discordResponse.text();
+    let errorJson;
+    try {
+      errorJson = JSON.parse(errorText);
+    } catch {
+      errorJson = { message: errorText };
+    }
+
+    logStep("Discord API error", { 
+      status: discordResponse.status, 
+      error: errorJson,
+      discord_id: profile.discord_id
     });
 
+    // Specific error messages for common cases
+    if (discordResponse.status === 404) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "User not found in Discord server. They must join the server first.",
+          discord_id: profile.discord_id,
+          code: "USER_NOT_IN_GUILD"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (discordResponse.status === 403) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Bot lacks permission to manage this role. Check role hierarchy.",
+          discord_id: profile.discord_id,
+          code: "MISSING_PERMISSIONS"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (discordResponse.status === 429) {
+      const retryAfter = discordResponse.headers.get('Retry-After') || '5';
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Rate limited by Discord. Retry after ${retryAfter} seconds.`,
+          discord_id: profile.discord_id,
+          code: "RATE_LIMITED",
+          retry_after: parseInt(retryAfter)
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Generic error for other cases
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        message: `Discord webhook sent for ${event}`,
-        discord_id: profile.discord_id
+        success: false, 
+        error: errorJson.message || "Discord API error",
+        discord_id: profile.discord_id,
+        status: discordResponse.status
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
