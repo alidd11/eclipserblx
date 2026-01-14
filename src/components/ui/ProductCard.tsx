@@ -135,22 +135,31 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             {name}
           </h3>
 
-          {/* Price section - always show both prices */}
+          {/* Price section - show both prices only if eligible for discount */}
           <div className="flex flex-col gap-0.5 mt-auto pt-1">
-            {/* Normal price */}
-            <span className="text-[10px] text-muted-foreground leading-none">
-              £{price.toFixed(2)}
-            </span>
-            {/* Member price + discount badge */}
-            <div className="flex items-center gap-1">
-              <span className="text-sm font-bold whitespace-nowrap leading-none text-amber-400">
-                £{memberPrice.toFixed(2)}
+            {hasMemberDiscount ? (
+              <>
+                {/* Normal price */}
+                <span className="text-[10px] text-muted-foreground leading-none line-through">
+                  £{price.toFixed(2)}
+                </span>
+                {/* Member price + discount badge */}
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-bold whitespace-nowrap leading-none text-amber-400">
+                    £{memberPrice.toFixed(2)}
+                  </span>
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
+                    <Sparkles className="h-2 w-2 flex-shrink-0" />
+                    {discountPercent}%
+                  </span>
+                </div>
+              </>
+            ) : (
+              /* Single price for Eclipse Savers or non-discountable products */
+              <span className="text-sm font-bold whitespace-nowrap leading-none text-foreground">
+                £{price.toFixed(2)}
               </span>
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
-                <Sparkles className="h-2 w-2 flex-shrink-0" />
-                {discountPercent}%
-              </span>
-            </div>
+            )}
           </div>
 
           {/* Add to cart button - separate row */}

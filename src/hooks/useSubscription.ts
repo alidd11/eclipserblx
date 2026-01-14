@@ -6,6 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 // Bot category ID - products in this category get a higher discount
 export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
 
+// Eclipse Savers category ID - products in this category do NOT get Eclipse+ discounts
+export const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
+
 // Eclipse+ discount percentages
 export const ECLIPSE_PLUS_DISCOUNT = 30; // Standard discount for non-bot products
 export const ECLIPSE_PLUS_BOT_DISCOUNT = 35; // Higher discount for bot products
@@ -172,6 +175,10 @@ export function useSubscription() {
 
   // Calculate member price for a product
   const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null): number => {
+    // Eclipse Savers products do NOT get any discount
+    if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) {
+      return originalPrice;
+    }
     // Bot products get a higher discount (35%)
     if (categoryId === BOT_CATEGORY_ID) {
       return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
@@ -180,19 +187,23 @@ export function useSubscription() {
     return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
   }, []);
 
-  // Check if a product is eligible for the discount (all products now eligible)
-  const isEligibleForDiscount = useCallback((_categoryId?: string | null): boolean => {
-    return true; // All products are now eligible
+  // Check if a product is eligible for the discount
+  const isEligibleForDiscount = useCallback((categoryId?: string | null): boolean => {
+    // Eclipse Savers products are NOT eligible for discounts
+    return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);
 
   // Get the discount percentage for a product category
   const getDiscountPercent = useCallback((categoryId?: string | null): number => {
+    // Eclipse Savers get 0% discount
+    if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) return 0;
     return categoryId === BOT_CATEGORY_ID ? ECLIPSE_PLUS_BOT_DISCOUNT : ECLIPSE_PLUS_DISCOUNT;
   }, []);
 
   // Check if a product is eligible for free claim
   const isEligibleForFreeClaim = useCallback((categoryId?: string | null): boolean => {
-    return categoryId !== BOT_CATEGORY_ID;
+    // Neither Bots nor Eclipse Savers are eligible for free claims
+    return categoryId !== BOT_CATEGORY_ID && categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);
 
   return {

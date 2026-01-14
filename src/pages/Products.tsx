@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Filter, Search, ChevronDown, Package, ArrowUpDown } from 'lucide-react';
+import { Filter, Search, ChevronDown, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
@@ -16,14 +16,19 @@ import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
+// 4 rows with 4 columns = 16 products per page on desktop
+const PRODUCTS_PER_PAGE = 16;
+
 export default function Products() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const categorySlug = searchParams.get('category');
   const featuredOnly = searchParams.get('featured') === 'true';
+  const pageParam = searchParams.get('page');
   const [search, setSearch] = useState('');
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('smart');
+  const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -215,56 +220,190 @@ export default function Products() {
         </Card>
 
         {/* Products Grid */}
-        <div>
-          {isLoading ? (
-            <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="gaming-card animate-pulse">
-                  <div className="aspect-video bg-muted" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-4 bg-muted rounded w-1/4" />
-                    <div className="h-5 bg-muted rounded w-3/4" />
-                    <div className="h-8 bg-muted rounded w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : products?.length === 0 ? (
-            <div className="text-center py-16 space-y-4">
-              <p className="text-xl text-muted-foreground">No products found</p>
-              <Button variant="outline" onClick={() => {
-                setSearch('');
-                setSearchParams({});
-              }}>
-                Clear filters
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {products?.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  slug={product.slug}
-                  price={product.price}
-                  image={product.images?.[0]}
-                  images={product.images}
-                  category={product.categories?.name}
-                  categorySlug={product.categories?.slug}
-                  categoryId={product.category_id}
-                  isFeatured={product.is_featured}
-                  createdAt={product.created_at}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductsGrid 
+          products={products}
+          isLoading={isLoading}
+          currentPage={currentPage}
+          search={search}
+          setSearch={setSearch}
+          searchParams={searchParams}
+          setSearchParams={setSearchParams}
+          categorySlug={categorySlug}
+          featuredOnly={featuredOnly}
+        />
 
         {/* Featured Products Card */}
         <FeaturedProductsCard />
         </div>
       </PullToRefresh>
     </MainLayout>
+  );
+}
+
+// Extracted component for products grid with pagination
+interface ProductsGridProps {
+  products: any[] | undefined;
+  isLoading: boolean;
+  currentPage: number;
+  search: string;
+  setSearch: (value: string) => void;
+  searchParams: URLSearchParams;
+  setSearchParams: (params: URLSearchParams | Record<string, string>, options?: { replace?: boolean }) => void;
+  categorySlug: string | null;
+  featuredOnly: boolean;
+}
+
+function ProductsGrid({ 
+  products, 
+  isLoading, 
+  currentPage, 
+  search, 
+  setSearch, 
+  searchParams, 
+  setSearchParams,
+  categorySlug,
+  featuredOnly
+}: ProductsGridProps) {
+  // Calculate pagination
+  const totalProducts = products?.length ?? 0;
+  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const paginatedProducts = products?.slice(startIndex, endIndex) ?? [];
+
+  const goToPage = (page: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (page === 1) {
+      newParams.delete('page');
+    } else {
+      newParams.set('page', page.toString());
+    }
+    setSearchParams(newParams, { replace: true });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        {[...Array(PRODUCTS_PER_PAGE)].map((_, i) => (
+          <div key={i} className="gaming-card animate-pulse">
+            <div className="aspect-video bg-muted" />
+            <div className="p-4 space-y-3">
+              <div className="h-4 bg-muted rounded w-1/4" />
+              <div className="h-5 bg-muted rounded w-3/4" />
+              <div className="h-8 bg-muted rounded w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (products?.length === 0) {
+    return (
+      <div className="text-center py-16 space-y-4">
+        <p className="text-xl text-muted-foreground">No products found</p>
+        <Button variant="outline" onClick={() => {
+          setSearch('');
+          const newParams = new URLSearchParams();
+          setSearchParams(newParams);
+        }}>
+          Clear filters
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        {paginatedProducts.map((product) => (
+          <ProductCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            slug={product.slug}
+            price={product.price}
+            image={product.images?.[0]}
+            images={product.images}
+            category={product.categories?.name}
+            categorySlug={product.categories?.slug}
+            categoryId={product.category_id}
+            isFeatured={product.is_featured}
+            createdAt={product.created_at}
+          />
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Previous</span>
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+              // Show first, last, current, and adjacent pages
+              const showPage = 
+                page === 1 || 
+                page === totalPages || 
+                Math.abs(page - currentPage) <= 1;
+              
+              const showEllipsis = 
+                (page === 2 && currentPage > 3) ||
+                (page === totalPages - 1 && currentPage < totalPages - 2);
+
+              if (showEllipsis && !showPage) {
+                return (
+                  <span key={page} className="px-2 text-muted-foreground">
+                    ...
+                  </span>
+                );
+              }
+
+              if (!showPage) return null;
+
+              return (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => goToPage(page)}
+                  className="min-w-[36px]"
+                >
+                  {page}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="gap-1"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Page info */}
+      {totalPages > 1 && (
+        <p className="text-center text-sm text-muted-foreground">
+          Showing {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} products
+        </p>
+      )}
+    </div>
   );
 }
