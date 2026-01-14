@@ -1,12 +1,12 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -27,7 +27,8 @@ import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
-import { DiscordLinkCard } from '@/components/account/DiscordLinkCard';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
@@ -47,6 +48,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [savingUsername, setSavingUsername] = useState(false);
+  
+  // Discord link state
+  const [discordId, setDiscordId] = useState('');
+  const [discordUsername, setDiscordUsername] = useState('');
+  const [isLinkingDiscord, setIsLinkingDiscord] = useState(false);
+  const [isUnlinkingDiscord, setIsUnlinkingDiscord] = useState(false);
 
   // Get initial tab from URL hash
   const getInitialTab = () => {
@@ -558,6 +565,153 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                     {new Date(user.created_at).toLocaleDateString()}
                   </p>
                 </div>
+                
+                {/* Discord Section - Integrated */}
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                      </svg>
+                      <p className="text-sm text-muted-foreground">Discord Account</p>
+                    </div>
+                    {profile?.discord_id && isSubscribed && (
+                      <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-xs">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Role Active
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {profile?.discord_id ? (
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#5865F2]/20 flex items-center justify-center">
+                          <Link2 className="w-4 h-4 text-[#5865F2]" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {profile?.discord_username || 'Discord User'}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {profile.discord_id}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          setIsUnlinkingDiscord(true);
+                          try {
+                            if (isSubscribed && profile?.discord_id) {
+                              try {
+                                await supabase.functions.invoke('send-discord-webhook', {
+                                  body: { user_id: user.id, event: 'subscription_deactivated', granted_by_admin: false },
+                                });
+                              } catch (e) { console.error('Webhook error:', e); }
+                            }
+                            const { error } = await supabase.from('profiles').update({ discord_id: null, discord_username: null }).eq('user_id', user.id);
+                            if (error) throw error;
+                            queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                          } catch (error) {
+                            console.error('Failed to unlink Discord:', error);
+                          } finally {
+                            setIsUnlinkingDiscord(false);
+                          }
+                        }}
+                        disabled={isUnlinkingDiscord}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        {isUnlinkingDiscord ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="discord-id" className="text-xs">Discord User ID</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="max-w-xs">
+                                <p className="text-sm">
+                                  <strong>How to find your Discord ID:</strong><br />
+                                  1. Open Discord Settings<br />
+                                  2. Go to Advanced → Enable Developer Mode<br />
+                                  3. Right-click your username → Copy User ID
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <Input
+                          id="discord-id"
+                          placeholder="e.g., 123456789012345678"
+                          value={discordId}
+                          onChange={(e) => setDiscordId(e.target.value)}
+                          className="font-mono h-9"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="discord-username" className="text-xs">
+                          Discord Username <span className="text-muted-foreground">(optional)</span>
+                        </Label>
+                        <Input
+                          id="discord-username"
+                          placeholder="e.g., username or @username"
+                          value={discordUsername}
+                          onChange={(e) => setDiscordUsername(e.target.value)}
+                          className="h-9"
+                        />
+                      </div>
+                      <Button
+                        onClick={async () => {
+                          if (!discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())) return;
+                          setIsLinkingDiscord(true);
+                          try {
+                            const { error } = await supabase.from('profiles').update({
+                              discord_id: discordId.trim(),
+                              discord_username: discordUsername.trim() || null,
+                            }).eq('user_id', user.id);
+                            if (error) throw error;
+                            if (isSubscribed) {
+                              try {
+                                await supabase.functions.invoke('send-discord-webhook', {
+                                  body: { user_id: user.id, event: 'subscription_activated', granted_by_admin: false },
+                                });
+                              } catch (e) { console.error('Webhook error:', e); }
+                            }
+                            setDiscordId('');
+                            setDiscordUsername('');
+                            queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                          } catch (error) {
+                            console.error('Failed to link Discord:', error);
+                          } finally {
+                            setIsLinkingDiscord(false);
+                          }
+                        }}
+                        disabled={isLinkingDiscord || !discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())}
+                        size="sm"
+                        className="w-full bg-[#5865F2] hover:bg-[#4752C4]"
+                      >
+                        {isLinkingDiscord ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Link2 className="w-4 h-4 mr-2" />}
+                        Link Discord Account
+                      </Button>
+                      <a
+                        href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        How to find your Discord User ID
+                      </a>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -574,14 +728,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </CardContent>
             </Card>
 
-            {/* Discord Link Card */}
-            <DiscordLinkCard
-              userId={user.id}
-              currentDiscordId={profile?.discord_id || null}
-              currentDiscordUsername={profile?.discord_username || null}
-              hasEclipsePlus={isSubscribed}
-              onUpdate={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
-            />
 
             {/* Referral Card */}
             <ReferralCard />
