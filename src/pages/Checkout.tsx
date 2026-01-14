@@ -41,16 +41,22 @@ export default function Checkout() {
         memberPrice: isSubscribed && eligible ? memberPrice : item.price,
         hasEclipseDiscount: isSubscribed && eligible,
         discountPercent: getDiscountPercent(item.category_id),
+        // Calculate potential savings for non-members
+        potentialMemberPrice: eligible ? memberPrice : item.price,
       };
     });
 
     const memberSubtotal = itemsWithMemberPricing.reduce((sum, item) => sum + item.memberPrice, 0);
     const eclipseDiscount = isSubscribed ? total - memberSubtotal : 0;
+    
+    // Calculate potential savings for non-members
+    const potentialMemberSubtotal = itemsWithMemberPricing.reduce((sum, item) => sum + item.potentialMemberPrice, 0);
+    const potentialSavings = !isSubscribed ? total - potentialMemberSubtotal : 0;
 
-    return { itemsWithMemberPricing, memberSubtotal, eclipseDiscount };
+    return { itemsWithMemberPricing, memberSubtotal, eclipseDiscount, potentialSavings };
   };
 
-  const { itemsWithMemberPricing, memberSubtotal, eclipseDiscount } = calculateMemberPricing();
+  const { itemsWithMemberPricing, memberSubtotal, eclipseDiscount, potentialSavings } = calculateMemberPricing();
 
   // Reset processing state when coming back from Stripe (covers browser back / bfcache restore)
   useEffect(() => {
@@ -304,6 +310,28 @@ export default function Checkout() {
                 Receipt will be sent to: <span className="font-medium text-foreground">{user?.email}</span>
               </p>
             </div>
+
+            {/* Eclipse+ Upsell for non-members */}
+            {!isSubscribed && potentialSavings > 0 && (
+              <Link 
+                to="/eclipse-plus" 
+                className="block p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-full bg-amber-500/20">
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-400">
+                      You could save £{potentialSavings.toFixed(2)} with Eclipse+
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Get up to 35% off all products + 1 free item monthly for just £4.99/mo
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
           </div>
 
             {/* Discount & Payment */}
