@@ -13,11 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
-// 4 rows with 4 columns = 16 products per page on desktop
-const PRODUCTS_PER_PAGE = 16;
+// 4 rows: 16 products on desktop (4 cols), 12 on mobile (3 cols)
+const PRODUCTS_PER_PAGE_DESKTOP = 16;
+const PRODUCTS_PER_PAGE_MOBILE = 12;
 
 export default function Products() {
   const queryClient = useQueryClient();
@@ -220,7 +222,7 @@ export default function Products() {
         </Card>
 
         {/* Products Grid */}
-        <ProductsGrid 
+        <ProductsGridWrapper 
           products={products}
           isLoading={isLoading}
           currentPage={currentPage}
@@ -240,6 +242,13 @@ export default function Products() {
   );
 }
 
+// Wrapper to use the mobile hook at component level
+function ProductsGridWrapper(props: Omit<ProductsGridProps, 'productsPerPage'>) {
+  const isMobile = useIsMobile();
+  const productsPerPage = isMobile ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
+  return <ProductsGrid {...props} productsPerPage={productsPerPage} />;
+}
+
 // Extracted component for products grid with pagination
 interface ProductsGridProps {
   products: any[] | undefined;
@@ -251,6 +260,7 @@ interface ProductsGridProps {
   setSearchParams: (params: URLSearchParams | Record<string, string>, options?: { replace?: boolean }) => void;
   categorySlug: string | null;
   featuredOnly: boolean;
+  productsPerPage: number;
 }
 
 function ProductsGrid({ 
@@ -262,13 +272,14 @@ function ProductsGrid({
   searchParams, 
   setSearchParams,
   categorySlug,
-  featuredOnly
+  featuredOnly,
+  productsPerPage
 }: ProductsGridProps) {
   // Calculate pagination
   const totalProducts = products?.length ?? 0;
-  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = startIndex + productsPerPage;
   const paginatedProducts = products?.slice(startIndex, endIndex) ?? [];
 
   const goToPage = (page: number) => {
@@ -285,7 +296,7 @@ function ProductsGrid({
   if (isLoading) {
     return (
       <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        {[...Array(PRODUCTS_PER_PAGE)].map((_, i) => (
+        {[...Array(productsPerPage)].map((_, i) => (
           <div key={i} className="gaming-card animate-pulse">
             <div className="aspect-video bg-muted" />
             <div className="p-4 space-y-3">
