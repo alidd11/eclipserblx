@@ -1,12 +1,27 @@
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowRight, ShieldCheck, Zap, CreditCard } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowRight, ShieldCheck, Zap, CreditCard, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export default function Cart() {
   const { items, removeItem, clearCart, total } = useCart();
+  const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
+
+  // Calculate Eclipse+ discount
+  const calculateMemberTotal = () => {
+    if (!isSubscribed) return total;
+    return items.reduce((sum, item) => {
+      const memberPrice = getMemberPrice(item.price, item.category_id);
+      return sum + memberPrice;
+    }, 0);
+  };
+
+  const memberTotal = calculateMemberTotal();
+  const eclipseDiscount = isSubscribed ? total - memberTotal : 0;
 
   if (items.length === 0) {
     return (
@@ -53,38 +68,58 @@ export default function Cart() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {items.map((item) => (
-                <div key={item.id} className="p-4 rounded-lg bg-muted/50 flex gap-4">
-                  <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                    {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-xl font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1">
-                      {item.name}
-                    </Link>
-                    <p className="text-muted-foreground text-sm">Digital Product • Instant Delivery</p>
-                  </div>
+              {items.map((item) => {
+                const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id);
+                const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id) : item.price;
+                const discountPercent = getDiscountPercent(item.category_id);
+                
+                return (
+                  <div key={item.id} className="p-4 rounded-lg bg-muted/50 flex gap-4">
+                    <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-xl font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1">
+                        {item.name}
+                      </Link>
+                      <p className="text-muted-foreground text-sm">Digital Product • Instant Delivery</p>
+                    </div>
 
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-lg">£{item.price.toFixed(2)}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeItem(item.id)}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        {hasDiscount ? (
+                          <>
+                            <span className="font-bold text-lg text-primary">£{memberPrice.toFixed(2)}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground line-through">£{item.price.toFixed(2)}</span>
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-amber-500/20 text-amber-400 border-0">
+                                -{discountPercent}%
+                              </Badge>
+                            </div>
+                          </>
+                        ) : (
+                          <span className="font-bold text-lg">£{item.price.toFixed(2)}</span>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeItem(item.id)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
 
@@ -99,15 +134,33 @@ export default function Cart() {
                   <span className="text-muted-foreground">Subtotal ({items.length} items)</span>
                   <span>£{total.toFixed(2)}</span>
                 </div>
+                
+                {isSubscribed && eclipseDiscount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Sparkles className="h-3 w-3 text-amber-400" />
+                      Eclipse+ Discount
+                    </span>
+                    <span className="text-primary">-£{eclipseDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Discount</span>
+                  <span className="text-muted-foreground">Discount Code</span>
                   <span>£0.00</span>
                 </div>
+                
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>£{total.toFixed(2)}</span>
+                    <span>£{memberTotal.toFixed(2)}</span>
                   </div>
+                  {isSubscribed && eclipseDiscount > 0 && (
+                    <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
+                      <Sparkles className="h-3 w-3" />
+                      You're saving £{eclipseDiscount.toFixed(2)} with Eclipse+!
+                    </p>
+                  )}
                 </div>
               </div>
 

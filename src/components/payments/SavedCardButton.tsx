@@ -11,8 +11,10 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
   image?: string;
   category_slug?: string;
+  category_id?: string;
 }
 
 interface SavedCardButtonProps {

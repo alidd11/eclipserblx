@@ -8,6 +8,7 @@ interface CartItem {
   image?: string;
   slug: string;
   category_slug?: string;
+  category_id?: string; // Added for Eclipse+ discount eligibility
 }
 
 interface CartContextType {
