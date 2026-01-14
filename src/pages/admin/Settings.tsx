@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate, Key, RefreshCw, Copy } from 'lucide-react';
+import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate, Key, RefreshCw, Copy, Webhook, Send } from 'lucide-react';
 import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -42,6 +42,12 @@ export default function AdminSettings() {
   const [generatedVapidKeys, setGeneratedVapidKeys] = useState<{
     publicKey: string;
     privateKey: string;
+  } | null>(null);
+  const [isTestingDiscordWebhook, setIsTestingDiscordWebhook] = useState(false);
+  const [discordWebhookTestResult, setDiscordWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
   } | null>(null);
   
   // Global notification toggles (admin only)
@@ -893,6 +899,125 @@ export default function AdminSettings() {
                       className="bg-background"
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Discord Role Webhook Test */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Webhook className="h-5 w-5 text-primary" />
+                    <CardTitle>Discord Role Integration Test</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Test the Eclipse+ role webhook to verify your Discord bot is receiving events correctly
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg space-y-2">
+                    <p>This will send a test <code className="bg-background px-1 rounded">subscription_activated</code> webhook to your configured Discord bot endpoint.</p>
+                    <p>Make sure your bot is running and listening at the URL stored in <code className="bg-background px-1 rounded">DISCORD_WEBHOOK_URL</code>.</p>
+                  </div>
+                  
+                  <Button
+                    onClick={async () => {
+                      if (!user?.id) {
+                        toast.error('You must be logged in');
+                        return;
+                      }
+                      
+                      setIsTestingDiscordWebhook(true);
+                      setDiscordWebhookTestResult(null);
+                      
+                      try {
+                        const { data, error } = await supabase.functions.invoke('send-discord-webhook', {
+                          body: {
+                            user_id: user.id,
+                            event: 'subscription_activated',
+                            granted_by_admin: true,
+                          },
+                        });
+                        
+                        if (error) {
+                          setDiscordWebhookTestResult({
+                            success: false,
+                            message: 'Function invocation failed',
+                            details: error.message,
+                          });
+                          toast.error('Webhook test failed');
+                        } else if (data?.skipped) {
+                          setDiscordWebhookTestResult({
+                            success: false,
+                            message: 'Webhook skipped',
+                            details: data.message || 'User has not linked their Discord account',
+                          });
+                          toast.warning('Webhook skipped - no Discord ID linked');
+                        } else if (data?.success) {
+                          setDiscordWebhookTestResult({
+                            success: true,
+                            message: 'Webhook sent successfully!',
+                            details: `Sent to Discord ID: ${data.discord_id}`,
+                          });
+                          toast.success('Webhook test sent successfully!');
+                        } else {
+                          setDiscordWebhookTestResult({
+                            success: false,
+                            message: data?.error || 'Unknown error',
+                            details: data?.details,
+                          });
+                          toast.error('Webhook test failed');
+                        }
+                      } catch (err: any) {
+                        console.error('Discord webhook test error:', err);
+                        setDiscordWebhookTestResult({
+                          success: false,
+                          message: 'Request failed',
+                          details: err.message,
+                        });
+                        toast.error('Failed to test webhook');
+                      } finally {
+                        setIsTestingDiscordWebhook(false);
+                      }
+                    }}
+                    variant="outline"
+                    className="w-full"
+                    disabled={isTestingDiscordWebhook}
+                  >
+                    {isTestingDiscordWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Test Webhook
+                  </Button>
+                  
+                  {discordWebhookTestResult && (
+                    <div className={`p-3 rounded-lg ${
+                      discordWebhookTestResult.success 
+                        ? 'bg-green-500/10 border border-green-500/30' 
+                        : 'bg-red-500/10 border border-red-500/30'
+                    }`}>
+                      <div className="flex items-start gap-2">
+                        {discordWebhookTestResult.success ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                        )}
+                        <div className="space-y-1">
+                          <p className={`text-sm font-medium ${
+                            discordWebhookTestResult.success ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {discordWebhookTestResult.message}
+                          </p>
+                          {discordWebhookTestResult.details && (
+                            <p className="text-xs text-muted-foreground">
+                              {discordWebhookTestResult.details}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
