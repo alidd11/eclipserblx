@@ -145,6 +145,7 @@ export default function ProductDetail() {
         image: product.images?.[0],
         slug: product.slug,
         category_slug: product.categories?.slug,
+        category_id: product.category_id,
       });
     }
   };

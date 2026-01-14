@@ -12,8 +12,10 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
   image?: string;
   category_slug?: string;
+  category_id?: string;
 }
 
 interface CheckoutRequest {
@@ -22,6 +24,8 @@ interface CheckoutRequest {
   discountCodeId?: string;
   successUrl?: string;
   cancelUrl?: string;
+  eclipseDiscount?: number;
+  isEclipseMember?: boolean;
 }
 
 const logStep = (step: string, details?: unknown) => {
@@ -59,8 +63,8 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    const { items, email, discountCodeId, successUrl, cancelUrl }: CheckoutRequest = await req.json();
-    logStep("Request received", { itemCount: items?.length, discountCodeId });
+    const { items, email, discountCodeId, successUrl, cancelUrl, eclipseDiscount, isEclipseMember }: CheckoutRequest = await req.json();
+    logStep("Request received", { itemCount: items?.length, discountCodeId, isEclipseMember, eclipseDiscount });
 
     if (!items || items.length === 0) {
       throw new Error("No items provided");
@@ -148,9 +152,11 @@ serve(async (req) => {
       metadata: {
         user_id: userId || "",
         customer_email: userEmail || "",
-        items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price, category_slug: i.category_slug }))),
+        items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price, originalPrice: i.originalPrice, category_slug: i.category_slug, category_id: i.category_id }))),
         discount_code_id: discountCodeId || "",
         discount_amount: discountAmount.toString(),
+        eclipse_discount: (eclipseDiscount || 0).toString(),
+        is_eclipse_member: isEclipseMember ? "true" : "false",
       },
       billing_address_collection: "auto",
     };
