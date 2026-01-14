@@ -158,6 +158,30 @@ export function GrantEclipsePlusDialog({
         },
       });
 
+      // Step 5: Create in-app notification for the user
+      await supabase.from('notifications').insert({
+        user_id: targetUser.user_id,
+        type: 'subscription',
+        title: 'Eclipse+ Membership Activated! ✨',
+        message: `You've been granted Eclipse+ membership for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''}. Enjoy up to 35% off products and 1 free item monthly!`,
+        link: '/eclipse-plus',
+      });
+
+      // Step 6: Send push notification
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            userId: targetUser.user_id,
+            title: 'Eclipse+ Activated! ✨',
+            body: `You've been granted Eclipse+ for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''}. Enjoy member discounts!`,
+            url: '/eclipse-plus',
+            tag: `eclipse-plus-granted-${targetUser.user_id}-${Date.now()}`,
+          },
+        });
+      } catch (pushError) {
+        console.log('Push notification not sent (user may not have subscribed):', pushError);
+      }
+
       toast.success(
         `Eclipse+ granted to ${targetUser.display_name || targetUser.email} for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''}`
       );
