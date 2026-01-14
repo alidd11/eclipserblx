@@ -144,7 +144,14 @@ export function useSubscription() {
       if (data.error) throw new Error(data.error);
       
       if (data.url) {
-        window.open(data.url, '_blank');
+        // In iOS PWA standalone mode, window.open() is blocked - use location.href instead
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                            (window.navigator as any).standalone === true;
+        if (isStandalone) {
+          window.location.href = data.url;
+        } else {
+          window.open(data.url, '_blank');
+        }
       }
     } catch (error) {
       console.error('Error opening customer portal:', error);

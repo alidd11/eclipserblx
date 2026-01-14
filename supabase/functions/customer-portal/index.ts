@@ -42,15 +42,25 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    // Find customer by email
+    // Find customer by email, or create one if none exists (e.g., admin-granted subscriptions)
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
+    let customerId: string;
     if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user");
+      // Create a new Stripe customer for admin-granted subscribers
+      logStep("No Stripe customer found, creating one");
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          user_id: user.id,
+        },
+      });
+      customerId = newCustomer.id;
+      logStep("Created new Stripe customer", { customerId });
+    } else {
+      customerId = customers.data[0].id;
+      logStep("Found Stripe customer", { customerId });
     }
-
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
 
     const origin = req.headers.get("origin") || "https://eclipse.lovable.app";
     
