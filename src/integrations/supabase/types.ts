@@ -1454,6 +1454,63 @@ export type Database = {
           },
         ]
       }
+      review_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string | null
+          product_name: string
+          reminder_1h_sent: boolean
+          reminder_24h_sent: boolean
+          reminder_72h_sent: boolean
+          review_submitted: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_name: string
+          reminder_1h_sent?: boolean
+          reminder_24h_sent?: boolean
+          reminder_72h_sent?: boolean
+          review_submitted?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          reminder_1h_sent?: boolean
+          reminder_24h_sent?: boolean
+          reminder_72h_sent?: boolean
+          review_submitted?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_reminders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_reminders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           content: string
