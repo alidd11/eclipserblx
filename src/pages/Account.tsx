@@ -369,15 +369,30 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Profile Details - Unified card with all identity info */}
         <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Details
-            </CardTitle>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="h-5 w-5" />
+                Profile Details
+              </CardTitle>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowSignOutDialog(true)}
+                    className="text-muted-foreground hover:text-destructive h-8 w-8"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Sign Out</TooltipContent>
+              </Tooltip>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-5">
             {/* Avatar and basic info */}
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
@@ -386,165 +401,144 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 compact
               />
               
-              <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex-1 min-w-0">
                 {/* Username */}
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Username</p>
-                  {editingUsername ? (
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={newUsername}
-                          onChange={(e) => setNewUsername(e.target.value)}
-                          className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
-                          autoFocus
-                        />
-                        {newUsername.trim().length >= 2 && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {checkingUsername ? (
-                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                            ) : usernameAvailable === true ? (
-                              <Check className="h-4 w-4 text-green-500" />
-                            ) : usernameAvailable === false ? (
-                              <X className="h-4 w-4 text-destructive" />
-                            ) : null}
-                          </div>
-                        )}
-                      </div>
-                      {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                        <p className="text-xs text-destructive">This username is already taken</p>
+                {editingUsername ? (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
+                        autoFocus
+                      />
+                      {newUsername.trim().length >= 2 && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingUsername ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : usernameAvailable === true ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="h-4 w-4 text-destructive" />
+                          ) : null}
+                        </div>
                       )}
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={handleSaveUsername}
-                          disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                        >
-                          {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
+                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                      <p className="text-xs text-destructive">This username is already taken</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveUsername}
+                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                      >
+                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-base">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
                       <button
                         onClick={startEditingUsername}
                         className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                         title="Edit username"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3 w-3" />
                       </button>
                       {isSubscribed && (
-                        <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 shrink-0">
-                          <Sparkles className="h-3 w-3" />
-                          <span className="text-[10px] font-semibold">Eclipse+</span>
+                        <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
+                          <Sparkles className="h-2.5 w-2.5" />
+                          Eclipse+
                         </Badge>
                       )}
-                      {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />}
+                      {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                     </div>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{user.email}</p>
-                </div>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                  </div>
+                )}
               </div>
-              
-              {/* Sign Out Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowSignOutDialog(true)}
-                    className="text-muted-foreground hover:text-destructive shrink-0"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Sign Out</TooltipContent>
-              </Tooltip>
             </div>
 
             {/* Customer ID and Member Since row */}
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border">
+            <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-muted/30">
               {profile?.customer_id && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Customer ID</p>
+                  <p className="text-xs text-muted-foreground mb-1">Customer ID</p>
                   <button
                     onClick={copyCustomerId}
-                    className="flex items-center gap-1.5 font-mono text-sm bg-muted/50 px-2 py-1 rounded hover:bg-muted transition-colors"
+                    className="flex items-center gap-1.5 font-mono text-sm hover:text-primary transition-colors"
                   >
                     {profile.customer_id}
                     {copiedId ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
+                      <Check className="h-3 w-3 text-green-500" />
                     ) : (
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Copy className="h-3 w-3 text-muted-foreground" />
                     )}
                   </button>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Member Since</p>
-                <p className="font-medium">{new Date(user.created_at).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground mb-1">Member Since</p>
+                <p className="text-sm font-medium">{new Date(user.created_at).toLocaleDateString()}</p>
               </div>
             </div>
             
             {/* Discord Section */}
-            <div className="pt-4 border-t border-border">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
                 <svg className="w-4 h-4 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
                 </svg>
-                <p className="text-sm font-medium">Discord Integration</p>
+                <p className="text-xs font-medium text-muted-foreground">Discord Integration</p>
               </div>
               
               {profile?.discord_id ? (
-                <div className="flex items-center justify-between p-3 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
                     {discordAvatar?.avatar_url ? (
                       <img 
                         src={discordAvatar.avatar_url} 
                         alt="Discord Avatar" 
-                        className="w-9 h-9 rounded-full object-cover"
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-[#5865F2]/30"
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-[#5865F2] flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <div className="w-8 h-8 rounded-full bg-[#5865F2] flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
                         </svg>
                       </div>
                     )}
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <p className="font-medium text-sm truncate">
-                          {profile?.discord_username || 'Discord Linked'}
+                          {profile?.discord_username || 'Connected'}
                         </p>
                         {isSubscribed && (
-                          <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[10px] px-1.5 py-0 h-4 shrink-0">
-                            <Sparkles className="w-2.5 h-2.5 mr-0.5" />
+                          <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] px-1.5 py-0 h-4">
+                            <Sparkles className="w-2 h-2 mr-0.5" />
                             Role Active
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground font-mono truncate">
+                      <p className="text-[10px] text-muted-foreground font-mono truncate">
                         {profile.discord_id}
                       </p>
                     </div>
                   </div>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={async () => {
                       setIsUnlinkingDiscord(true);
                       try {
@@ -558,6 +552,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                         const { error } = await supabase.from('profiles').update({ discord_id: null, discord_username: null }).eq('user_id', user.id);
                         if (error) throw error;
                         queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                        queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
                       } catch (error) {
                         console.error('Failed to unlink Discord:', error);
                       } finally {
@@ -565,94 +560,81 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       }
                     }}
                     disabled={isUnlinkingDiscord}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                   >
-                    {isUnlinkingDiscord ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                    {isUnlinkingDiscord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Unlink className="w-3.5 h-3.5" />}
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="discord-id-top" className="text-xs">Discord User ID</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="max-w-xs">
-                            <p className="text-sm">
-                              <strong>How to find your Discord ID:</strong><br />
-                              1. Open Discord Settings<br />
-                              2. Go to Advanced → Enable Developer Mode<br />
-                              3. Right-click your username → Copy User ID
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Discord User ID"
+                        value={discordId}
+                        onChange={(e) => setDiscordId(e.target.value)}
+                        className="font-mono h-8 text-xs"
+                      />
                     </div>
-                    <Input
-                      id="discord-id-top"
-                      placeholder="e.g., 123456789012345678"
-                      value={discordId}
-                      onChange={(e) => setDiscordId(e.target.value)}
-                      className="font-mono h-9"
-                    />
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Username (optional)"
+                        value={discordUsername}
+                        onChange={(e) => setDiscordUsername(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="discord-username-top" className="text-xs">
-                      Discord Username <span className="text-muted-foreground">(optional)</span>
-                    </Label>
-                    <Input
-                      id="discord-username-top"
-                      placeholder="e.g., username or @username"
-                      value={discordUsername}
-                      onChange={(e) => setDiscordUsername(e.target.value)}
-                      className="h-9"
-                    />
-                  </div>
-                  <Button
-                    onClick={async () => {
-                      if (!discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())) return;
-                      setIsLinkingDiscord(true);
-                      try {
-                        const { error } = await supabase.from('profiles').update({
-                          discord_id: discordId.trim(),
-                          discord_username: discordUsername.trim() || null,
-                        }).eq('user_id', user.id);
-                        if (error) throw error;
-                        if (isSubscribed) {
-                          try {
-                            await supabase.functions.invoke('send-discord-webhook', {
-                              body: { user_id: user.id, event: 'subscription_activated', granted_by_admin: false },
-                            });
-                          } catch (e) { console.error('Webhook error:', e); }
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={async () => {
+                        if (!discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())) return;
+                        setIsLinkingDiscord(true);
+                        try {
+                          const { error } = await supabase.from('profiles').update({
+                            discord_id: discordId.trim(),
+                            discord_username: discordUsername.trim() || null,
+                          }).eq('user_id', user.id);
+                          if (error) throw error;
+                          if (isSubscribed) {
+                            try {
+                              await supabase.functions.invoke('send-discord-webhook', {
+                                body: { user_id: user.id, event: 'subscription_activated', granted_by_admin: false },
+                              });
+                            } catch (e) { console.error('Webhook error:', e); }
+                          }
+                          setDiscordId('');
+                          setDiscordUsername('');
+                          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                        } catch (error) {
+                          console.error('Failed to link Discord:', error);
+                        } finally {
+                          setIsLinkingDiscord(false);
                         }
-                        setDiscordId('');
-                        setDiscordUsername('');
-                        queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-                      } catch (error) {
-                        console.error('Failed to link Discord:', error);
-                      } finally {
-                        setIsLinkingDiscord(false);
-                      }
-                    }}
-                    disabled={isLinkingDiscord || !discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())}
-                    size="sm"
-                    className="w-full bg-[#5865F2] hover:bg-[#4752C4]"
-                  >
-                    {isLinkingDiscord ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Link2 className="w-4 h-4 mr-2" />}
-                    Link Discord Account
-                  </Button>
-                  <a
-                    href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    How to find your Discord User ID
-                  </a>
+                      }}
+                      disabled={isLinkingDiscord || !discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())}
+                      size="sm"
+                      className="h-8 bg-[#5865F2] hover:bg-[#4752C4] text-xs"
+                    >
+                      {isLinkingDiscord ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Link2 className="w-3 h-3 mr-1.5" />}
+                      Link
+                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <HelpCircle className="w-4 h-4" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent>How to find your Discord ID</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
               )}
             </div>
