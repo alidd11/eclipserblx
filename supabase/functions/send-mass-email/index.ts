@@ -17,6 +17,34 @@ interface MassEmailRequest {
   content: string;
 }
 
+// HTML escape function to prevent XSS/HTML injection
+function escapeHtml(text: string): string {
+  const htmlEntities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
+}
+
+// Check for dangerous patterns in input
+function containsDangerousPatterns(text: string): boolean {
+  const dangerousPatterns = [
+    /<script[^>]*>.*?<\/script>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi, // event handlers like onclick=, onload=
+    /<iframe/gi,
+    /<object/gi,
+    /<embed/gi,
+    /<form/gi,
+    /data:/gi, // data URLs
+  ];
+  
+  return dangerousPatterns.some(pattern => pattern.test(text));
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -89,6 +117,37 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Validate input lengths
+    if (subject.length > 200) {
+      return new Response(
+        JSON.stringify({ error: "Subject must be less than 200 characters" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (content.length > 10000) {
+      return new Response(
+        JSON.stringify({ error: "Content must be less than 10000 characters" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check for dangerous patterns (defense in depth - even for admins)
+    if (containsDangerousPatterns(subject) || containsDangerousPatterns(content)) {
+      console.warn(`[send-mass-email] Dangerous patterns detected in email from admin ${user.id}`);
+      return new Response(
+        JSON.stringify({ error: "Content contains potentially dangerous code patterns. Please use plain text only." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Sanitize the subject and content to prevent HTML injection
+    const sanitizedSubject = escapeHtml(subject);
+    const sanitizedContent = content
+      .split('\n')
+      .map(line => `<p style="margin: 0 0 16px 0;">${escapeHtml(line)}</p>`)
+      .join('');
+
     // Format the content as HTML with Eclipse Purple & Obsidian branding
     const htmlContent = `
 <!DOCTYPE html>
@@ -96,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${subject}</title>
+  <title>${sanitizedSubject}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
@@ -129,9 +188,9 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Content -->
           <tr>
             <td style="padding: 32px 40px;">
-              <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 20px 0; font-weight: 600; font-family: Georgia, serif;">${subject}</h2>
+              <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 20px 0; font-weight: 600; font-family: Georgia, serif;">${sanitizedSubject}</h2>
               <div style="color: #a3a3a3; font-size: 15px; line-height: 1.7;">
-                ${content.split('\n').map(line => `<p style="margin: 0 0 16px 0;">${line}</p>`).join('')}
+                ${sanitizedContent}
               </div>
             </td>
           </tr>
