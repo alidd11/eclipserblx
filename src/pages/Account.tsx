@@ -365,8 +365,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           ) : null}
         </div>
 
-        {/* Eclipse+ Subscription Card - Moved to top */}
-        <SubscriptionCard />
+        {/* Profile Details - Unified card with all identity info */}
 
         {/* Profile Details - Unified card with all identity info */}
         <Card className="bg-card border-border">
@@ -659,6 +658,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Eclipse+ Subscription Card */}
+        <SubscriptionCard />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
