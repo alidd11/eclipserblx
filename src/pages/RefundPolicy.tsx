@@ -149,6 +149,24 @@ export default function RefundPolicy() {
             </ul>
           </section>
 
+          {/* Eclipse+ Subscriptions */}
+          <section>
+            <h2 className="font-display text-2xl font-bold mb-4">Eclipse+ Membership Refunds</h2>
+            <p className="text-muted-foreground mb-4">
+              Eclipse+ subscriptions are recurring monthly payments. Regarding refunds:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+              <li>You may cancel your subscription at any time to prevent future charges</li>
+              <li>Refunds for subscription payments are not provided once the billing period has started</li>
+              <li>Products claimed for free using Eclipse+ benefits cannot be refunded separately</li>
+              <li>Eclipse+ discounts applied at checkout represent the final price and are non-refundable as separate items</li>
+            </ul>
+            <p className="text-muted-foreground mt-4">
+              <strong>Note:</strong> Eclipse+ membership discounts cannot be combined with promotional 
+              discount codes. When Eclipse+ discounts are applied, no additional promotional codes can be used.
+            </p>
+          </section>
+
           {/* How to Request */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">

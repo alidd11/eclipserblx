@@ -46,7 +46,15 @@ const faqItems = [
       },
       {
         question: 'Do you offer discount codes?',
-        answer: 'Yes, we occasionally offer discount codes. You can apply these at checkout to receive a discount on your order.',
+        answer: 'Yes, we occasionally offer discount codes. You can apply these at checkout to receive a discount on your order. However, discount codes cannot be combined with Eclipse+ membership discounts.',
+      },
+      {
+        question: 'What is Eclipse+ and what discounts does it offer?',
+        answer: 'Eclipse+ is our premium membership (£4.99/month) that provides 30% off standard products and 35% off Bots, plus one free product claim per month. Eclipse+ discounts are automatically applied at checkout and cannot be combined with promotional discount codes. Products in the "Eclipse Savers" category are already discounted and excluded from Eclipse+ benefits.',
+      },
+      {
+        question: 'Can I use a discount code with my Eclipse+ membership?',
+        answer: 'No, Eclipse+ membership discounts cannot be combined with promotional discount codes. When Eclipse+ discounts are applied to your order, the discount code field will not be available. This ensures you always receive the best possible discount automatically.',
       },
     ],
   },

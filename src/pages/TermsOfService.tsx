@@ -133,10 +133,23 @@ export default function TermsOfService() {
               All prices are displayed in GBP (£) and include VAT where applicable. We reserve 
               the right to change prices at any time, but changes will not affect orders already placed.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Payment is processed securely through Stripe. We do not store your full payment 
               card details. By making a purchase, you confirm that you are authorized to use 
               the payment method provided.
+            </p>
+
+            <h3 className="font-semibold text-lg mt-6 mb-3">Eclipse+ Membership Discounts</h3>
+            <p className="text-muted-foreground mb-4">
+              Eclipse+ members receive automatic discounts on eligible products (30% on standard products, 
+              35% on Bots). These discounts are applied at checkout and <strong>cannot be combined with 
+              promotional discount codes</strong>. When an Eclipse+ discount is applied, the discount code 
+              field will not be available. Products in the "Eclipse Savers" category are excluded from 
+              Eclipse+ discounts.
+            </p>
+            <p className="text-muted-foreground">
+              Eclipse+ members also receive one free product claim per month from eligible categories 
+              (excluding Bots and Eclipse Savers).
             </p>
           </section>
 

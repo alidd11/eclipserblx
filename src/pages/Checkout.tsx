@@ -306,54 +306,57 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* Discount & Payment */}
-          <div className="space-y-6">
-            <div className="gaming-card p-6 space-y-4">
-              <h2 className="text-xl font-display font-bold flex items-center gap-2">
-                <Tag className="h-5 w-5" />
-                Discount Code
-              </h2>
-              
-              {appliedDiscount ? (
-                <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="font-mono font-medium">{appliedDiscount.code}</span>
-                    <span className="text-sm text-muted-foreground">
-                      ({appliedDiscount.discount_type === 'percentage' 
-                        ? `${appliedDiscount.discount_value}% off` 
-                        : `£${appliedDiscount.discount_value.toFixed(2)} off`})
-                    </span>
+            {/* Discount & Payment */}
+            <div className="space-y-6">
+            {/* Only show discount code section if Eclipse+ discount is NOT applied */}
+            {!(isSubscribed && eclipseDiscount > 0) && (
+              <div className="gaming-card p-6 space-y-4">
+                <h2 className="text-xl font-display font-bold flex items-center gap-2">
+                  <Tag className="h-5 w-5" />
+                  Discount Code
+                </h2>
+                
+                {appliedDiscount ? (
+                  <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary" />
+                      <span className="font-mono font-medium">{appliedDiscount.code}</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({appliedDiscount.discount_type === 'percentage' 
+                          ? `${appliedDiscount.discount_value}% off` 
+                          : `£${appliedDiscount.discount_value.toFixed(2)} off`})
+                      </span>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={removeDiscount}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={removeDiscount}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Input
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                    placeholder="Enter code"
-                    className="bg-background uppercase"
-                    onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={applyDiscount}
-                    disabled={isApplyingDiscount}
-                  >
-                    {isApplyingDiscount ? 'Applying...' : 'Apply'}
-                  </Button>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                      placeholder="Enter code"
+                      className="bg-background uppercase"
+                      onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={applyDiscount}
+                      disabled={isApplyingDiscount}
+                    >
+                      {isApplyingDiscount ? 'Applying...' : 'Apply'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="gaming-card p-6 space-y-4">
               <h2 className="text-xl font-display font-bold flex items-center gap-2">
