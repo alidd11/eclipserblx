@@ -1250,6 +1250,8 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           customer_id: string | null
+          discord_id: string | null
+          discord_username: string | null
           display_name: string | null
           email: string
           id: string
@@ -1263,6 +1265,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
           display_name?: string | null
           email: string
           id?: string
@@ -1276,6 +1280,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
           display_name?: string | null
           email?: string
           id?: string
