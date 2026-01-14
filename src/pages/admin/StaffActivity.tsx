@@ -66,9 +66,21 @@ export default function StaffActivityPage() {
     setSearchParams(params, { replace: true });
   }, [filterType, filterStaff, setSearchParams]);
 
-  // Fetch staff activity with profiles
+  // Fetch admin user IDs to exclude them from activity logs
+  const { data: adminUserIds = [] } = useQuery({
+    queryKey: ['admin-user-ids'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      return data?.map(r => r.user_id) ?? [];
+    },
+  });
+
+  // Fetch staff activity with profiles (excluding admins)
   const { data: activities, isLoading, refetch } = useQuery({
-    queryKey: ['staff-activity', filterType, filterStaff],
+    queryKey: ['staff-activity', filterType, filterStaff, adminUserIds],
     queryFn: async () => {
       let query = supabase
         .from('staff_activity')
@@ -86,8 +98,11 @@ export default function StaffActivityPage() {
       const { data, error } = await query;
       if (error) throw error;
 
+      // Filter out admin activities
+      const filteredData = (data ?? []).filter(a => !adminUserIds.includes(a.user_id));
+
       // Fetch profiles for all unique user_ids
-      const userIds = [...new Set(data?.map(a => a.user_id) ?? [])];
+      const userIds = [...new Set(filteredData.map(a => a.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, email')
@@ -95,30 +110,37 @@ export default function StaffActivityPage() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
 
-      return (data ?? []).map(activity => ({
+      return filteredData.map(activity => ({
         ...activity,
         profile: profileMap.get(activity.user_id),
       })) as StaffActivityRecord[];
     },
+    enabled: adminUserIds.length > 0 || adminUserIds !== undefined,
   });
 
-  // Fetch staff list for filter
+  // Fetch staff list for filter (excluding admins)
   const { data: staffList } = useQuery({
-    queryKey: ['staff-list-for-filter'],
+    queryKey: ['staff-list-for-filter', adminUserIds],
     queryFn: async () => {
       const { data: roles } = await supabase
         .from('user_roles')
-        .select('user_id');
+        .select('user_id, role');
       
-      const userIds = [...new Set(roles?.map(r => r.user_id) ?? [])];
+      // Get non-admin user IDs
+      const nonAdminUserIds = [...new Set(
+        roles?.filter(r => r.role !== 'admin').map(r => r.user_id) ?? []
+      )].filter(id => !adminUserIds.includes(id));
+      
+      if (nonAdminUserIds.length === 0) return [];
       
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, email')
-        .in('user_id', userIds);
+        .in('user_id', nonAdminUserIds);
 
       return profiles ?? [];
     },
+    enabled: adminUserIds.length > 0 || adminUserIds !== undefined,
   });
 
   // Stats for today

@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Users, Clock, Shield, IdCard, ChevronRight } from 'lucide-react';
+import { Search, Users, Clock, Shield, IdCard, ChevronRight, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate, Link } from 'react-router-dom';
@@ -229,9 +230,9 @@ export default function StaffDirectory() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredStaff.map(member => (
-                  <Link key={member.user_id} to={`/admin/staff/${member.user_id}`}>
-                    <Card className="hover:border-primary/50 transition-colors cursor-pointer group">
-                      <CardContent className="p-4">
+                  <Card key={member.user_id} className="hover:border-primary/50 transition-colors">
+                    <CardContent className="p-4">
+                      <Link to={`/admin/staff/${member.user_id}`}>
                         <div className="flex items-start gap-3">
                           <Avatar className="h-12 w-12">
                             <AvatarImage src={member.avatar_url || undefined} />
@@ -267,11 +268,22 @@ export default function StaffDirectory() {
                               ))}
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <ChevronRight className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                      </Link>
+                      {/* Activity Button - Only show for non-admin staff */}
+                      {!member.roles.includes('admin') && (
+                        <div className="mt-3 pt-3 border-t border-border/50">
+                          <Link to={`/admin/staff-activity?staff=${member.user_id}`}>
+                            <Button variant="outline" size="sm" className="w-full gap-2">
+                              <Activity className="h-4 w-4" />
+                              View Activity
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
