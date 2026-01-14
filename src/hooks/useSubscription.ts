@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import type { Session } from '@supabase/supabase-js';
 
 // Bot category ID - products in this category get a higher discount
 export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
@@ -25,7 +26,7 @@ interface SubscriptionState {
 }
 
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const queryClient = useQueryClient();
   const [state, setState] = useState<SubscriptionState>({
     isSubscribed: false,
@@ -56,7 +57,11 @@ export function useSubscription() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`,
+        } : undefined,
+      });
       
       if (error) {
         throw error;
@@ -84,7 +89,7 @@ export function useSubscription() {
         error: error instanceof Error ? error.message : 'Failed to check subscription',
       }));
     }
-  }, [user]);
+  }, [user, session]);
 
   // Check subscription on mount and when user changes
   useEffect(() => {
@@ -105,7 +110,11 @@ export function useSubscription() {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-subscription-checkout');
+      const { data, error } = await supabase.functions.invoke('create-subscription-checkout', {
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`,
+        } : undefined,
+      });
       
       if (error) throw error;
       if (data.error) throw new Error(data.error);
@@ -117,7 +126,7 @@ export function useSubscription() {
       console.error('Error creating subscription checkout:', error);
       throw error;
     }
-  }, [user]);
+  }, [user, session]);
 
   const openCustomerPortal = useCallback(async () => {
     if (!user) {
@@ -125,7 +134,11 @@ export function useSubscription() {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`,
+        } : undefined,
+      });
       
       if (error) throw error;
       if (data.error) throw new Error(data.error);
@@ -137,7 +150,7 @@ export function useSubscription() {
       console.error('Error opening customer portal:', error);
       throw error;
     }
-  }, [user]);
+  }, [user, session]);
 
   const claimFreeProduct = useCallback(async (productId: string) => {
     if (!user) {
@@ -155,6 +168,9 @@ export function useSubscription() {
     try {
       const { data, error } = await supabase.functions.invoke('claim-free-product', {
         body: { productId },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`,
+        } : undefined,
       });
       
       if (error) throw error;
@@ -171,7 +187,7 @@ export function useSubscription() {
       console.error('Error claiming free product:', error);
       throw error;
     }
-  }, [user, state.isSubscribed, state.canClaimFree, checkSubscription, queryClient]);
+  }, [user, session, state.isSubscribed, state.canClaimFree, checkSubscription, queryClient]);
 
   // Calculate member price for a product
   const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null): number => {
