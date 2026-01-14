@@ -1,6 +1,6 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,10 @@ import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -22,14 +24,18 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
+  const { user } = useAuth();
   const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const isMobile = useIsMobile();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const reviewSectionRef = useRef<HTMLDivElement>(null);
 
   // Hide swipe hint after first interaction or after 3 seconds
   useEffect(() => {
@@ -38,9 +44,12 @@ export default function ProductDetail() {
     return () => clearTimeout(timer);
   }, [showSwipeHint]);
 
+
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['product', slug] });
     await queryClient.invalidateQueries({ queryKey: ['related-products'] });
+    await queryClient.invalidateQueries({ queryKey: ['product-reviews', slug] });
+    await queryClient.invalidateQueries({ queryKey: ['user-has-purchased'] });
   }, [queryClient, slug]);
 
   const { data: product, isLoading } = useQuery({
@@ -73,6 +82,98 @@ export default function ProductDetail() {
     },
     enabled: !!product?.category_id,
   });
+
+  // Check if user has purchased this product
+  const { data: hasPurchased } = useQuery({
+    queryKey: ['user-has-purchased', product?.id, user?.id],
+    queryFn: async () => {
+      if (!product?.id || !user?.id) return false;
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('id, orders!inner(user_id, status)')
+        .eq('product_id', product.id)
+        .eq('orders.user_id', user.id)
+        .in('orders.status', ['paid', 'completed'])
+        .limit(1);
+      if (error) {
+        console.error('Error checking purchase:', error);
+        return false;
+      }
+      return (data?.length || 0) > 0;
+    },
+    enabled: !!product?.id && !!user?.id,
+  });
+
+  // Check if user has already reviewed this product
+  const { data: existingReview } = useQuery({
+    queryKey: ['user-existing-review', product?.id, user?.id],
+    queryFn: async () => {
+      if (!product?.id || !user?.id) return null;
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('product_id', product.id)
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+      if (error) {
+        console.error('Error checking review:', error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!product?.id && !!user?.id,
+  });
+
+  // Fetch approved reviews for this product
+  const { data: productReviews } = useQuery({
+    queryKey: ['product-reviews', product?.id],
+    queryFn: async () => {
+      if (!product?.id) return [];
+      
+      // First get reviews
+      const { data: reviews, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', product.id)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) {
+        console.error('Error fetching reviews:', error);
+        return [];
+      }
+
+      if (!reviews || reviews.length === 0) return [];
+
+      // Get unique user IDs and fetch profiles
+      const userIds = [...new Set(reviews.map(r => r.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      // Merge reviews with profiles
+      return reviews.map(review => ({
+        ...review,
+        profile: profileMap.get(review.user_id) || null,
+      }));
+    },
+    enabled: !!product?.id,
+  });
+
+  // Scroll to reviews section if hash is #reviews
+  useEffect(() => {
+    if (location.hash === '#reviews' && reviewSectionRef.current && product) {
+      setTimeout(() => {
+        reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setShowReviewForm(true);
+      }, 500);
+    }
+  }, [location.hash, product]);
 
   const handleSwipeLeft = useCallback(() => {
     if (!product?.images?.length) return;
@@ -434,7 +535,138 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* Reviews Section */}
+        <div ref={reviewSectionRef} id="reviews" className="scroll-mt-8">
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Customer Reviews
+                </CardTitle>
+                {hasPurchased && !existingReview && user && (
+                  <Button 
+                    onClick={() => setShowReviewForm(!showReviewForm)}
+                    variant={showReviewForm ? "outline" : "default"}
+                    size="sm"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    {showReviewForm ? 'Cancel' : 'Write a Review'}
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Review Form - only show if user purchased and hasn't reviewed */}
+              {showReviewForm && hasPurchased && !existingReview && user && (
+                <div className="border-b border-border pb-6">
+                  <ReviewForm 
+                    productId={product.id} 
+                    productName={product.name}
+                    onSuccess={() => {
+                      setShowReviewForm(false);
+                      queryClient.invalidateQueries({ queryKey: ['product-reviews', product.id] });
+                      queryClient.invalidateQueries({ queryKey: ['user-existing-review', product.id, user.id] });
+                      // Mark review reminder as submitted
+                      supabase
+                        .from('review_reminders')
+                        .update({ review_submitted: true })
+                        .eq('user_id', user.id)
+                        .eq('product_id', product.id)
+                        .then(() => {});
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Existing Review Notice */}
+              {existingReview && (
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
+                  <p className="text-sm text-primary">
+                    ✓ You've already submitted a review for this product. Thank you!
+                  </p>
+                </div>
+              )}
+
+              {/* Purchase Required Notice */}
+              {user && !hasPurchased && (
+                <div className="bg-muted/50 border border-border rounded-lg p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Purchase this product to leave a review
+                  </p>
+                </div>
+              )}
+
+              {/* Sign In Notice */}
+              {!user && (
+                <div className="bg-muted/50 border border-border rounded-lg p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to leave a review
+                  </p>
+                </div>
+              )}
+
+              {/* Reviews List */}
+              {productReviews && productReviews.length > 0 ? (
+                <div className="space-y-4">
+                  {productReviews.map((review) => (
+                    <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          {review.profile?.avatar_url ? (
+                            <img 
+                              src={review.profile.avatar_url} 
+                              alt="" 
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-bold text-primary">
+                              {(review.profile?.display_name || review.external_reviewer_name || 'U').charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-sm">
+                              {review.profile?.display_name || review.external_reviewer_name || 'Anonymous'}
+                            </span>
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star 
+                                  key={star}
+                                  className={cn(
+                                    "h-3.5 w-3.5",
+                                    star <= review.rating 
+                                      ? "text-amber-400 fill-amber-400" 
+                                      : "text-muted-foreground"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(review.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {review.title && (
+                            <h4 className="font-medium mt-1">{review.title}</h4>
+                          )}
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {review.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-4">
+                  No reviews yet. Be the first to share your experience!
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {relatedProducts && relatedProducts.length > 0 && (
           <Card className="bg-card border-border">
             <CardHeader>

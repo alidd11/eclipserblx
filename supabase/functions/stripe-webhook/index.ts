@@ -315,6 +315,29 @@ async function processPayment(
         }
       }
     }
+
+    // Create review reminders for each item if user is logged in
+    if (userId) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i] as { id: string; name: string; price: number; category_slug?: string };
+        if (item.id) {
+          const { error: reminderError } = await supabase
+            .from("review_reminders")
+            .insert({
+              user_id: userId,
+              order_id: orderId,
+              product_id: item.id,
+              product_name: item.name,
+            });
+          
+          if (reminderError) {
+            logStep("Review reminder creation error (non-fatal)", { error: reminderError.message });
+          } else {
+            logStep("Review reminder created", { productName: item.name });
+          }
+        }
+      }
+    }
   }
 
   // Send order confirmation email

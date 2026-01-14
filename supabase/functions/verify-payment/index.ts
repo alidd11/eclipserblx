@@ -238,6 +238,29 @@ serve(async (req) => {
       }
     }
 
+    // Create review reminders for each item if user is logged in
+    if (userId) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.id) {
+          const { error: reminderError } = await supabaseClient
+            .from("review_reminders")
+            .insert({
+              user_id: userId,
+              order_id: order.id,
+              product_id: item.id,
+              product_name: item.name,
+            });
+          
+          if (reminderError) {
+            logStep("Review reminder creation error (non-fatal)", { error: reminderError.message });
+          } else {
+            logStep("Review reminder created", { productName: item.name });
+          }
+        }
+      }
+    }
+
     // Send order confirmation email
     logStep("Sending confirmation email");
     try {
