@@ -42,8 +42,9 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
   const { data: stats } = useQuery({
     queryKey: ['homepage-stats'],
     queryFn: async () => {
+      const now = new Date().toISOString();
       const [products, downloads, users] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true).or(`release_at.is.null,release_at.lte.${now}`),
         supabase.from('download_logs').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
       ]);

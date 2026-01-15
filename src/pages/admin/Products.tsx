@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -60,6 +60,8 @@ interface ProductForm {
   is_featured: boolean;
   images: string;
   asset_file_url: string;
+  release_at: string;
+  schedule_enabled: boolean;
 }
 
 interface MassEditForm {
@@ -82,6 +84,8 @@ const emptyForm: ProductForm = {
   is_featured: false,
   images: '',
   asset_file_url: '',
+  release_at: '',
+  schedule_enabled: false,
 };
 
 const emptyMassEditForm: MassEditForm = {
@@ -270,6 +274,7 @@ export default function AdminProducts() {
         is_featured: data.is_featured,
         images: data.images ? data.images.split(',').map(s => s.trim()) : [],
         asset_file_url: data.asset_file_url || null,
+        release_at: data.schedule_enabled && data.release_at ? new Date(data.release_at).toISOString() : null,
       };
 
       const isNewProduct = !data.id;
@@ -421,6 +426,25 @@ export default function AdminProducts() {
     },
   });
 
+  // Helper function to format datetime for input
+  const formatDateTimeForInput = (isoString: string | null) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    // Format: YYYY-MM-DDTHH:mm (local time)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Helper to check if product is scheduled for future
+  const isScheduledForFuture = (releaseAt: string | null) => {
+    if (!releaseAt) return false;
+    return new Date(releaseAt) > new Date();
+  };
+
   const openEdit = (product: any) => {
     setForm({
       id: product.id,
@@ -433,6 +457,8 @@ export default function AdminProducts() {
       is_featured: product.is_featured,
       images: product.images?.join(', ') || '',
       asset_file_url: product.asset_file_url || '',
+      release_at: formatDateTimeForInput(product.release_at),
+      schedule_enabled: !!product.release_at && isScheduledForFuture(product.release_at),
     });
     setIsDialogOpen(true);
   };
@@ -626,7 +652,12 @@ export default function AdminProducts() {
                             <p className="text-sm text-muted-foreground">{product.categories?.name || 'Uncategorized'}</p>
                           </div>
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            {product.is_active ? (
+                            {isScheduledForFuture(product.release_at) ? (
+                              <Badge className="bg-amber-500/20 text-amber-400 border-0 text-xs px-2 py-0.5 hover:bg-amber-500/20" title={`Releases: ${new Date(product.release_at).toLocaleString()}`}>
+                                <Clock className="h-3 w-3 mr-1" />
+                                Scheduled
+                              </Badge>
+                            ) : product.is_active ? (
                               <Badge className="bg-green-500/20 text-green-400 border-0 text-xs px-2 py-0.5 hover:bg-green-500/20">Active</Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">Inactive</Badge>
@@ -705,8 +736,13 @@ export default function AdminProducts() {
                         <TableCell>{product.categories?.name || '—'}</TableCell>
                         <TableCell>£{product.price.toFixed(2)}</TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            {product.is_active ? (
+                          <div className="flex gap-2 flex-wrap">
+                            {isScheduledForFuture(product.release_at) ? (
+                              <Badge variant="outline" className="text-amber-500 border-amber-500/30" title={`Releases: ${new Date(product.release_at).toLocaleString()}`}>
+                                <Clock className="h-3 w-3 mr-1" />
+                                {new Date(product.release_at).toLocaleDateString()}
+                              </Badge>
+                            ) : product.is_active ? (
                               <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
@@ -938,7 +974,7 @@ export default function AdminProducts() {
               </p>
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 flex-wrap">
               <div className="flex items-center gap-2">
                 <Switch
                   id="active"
@@ -955,7 +991,39 @@ export default function AdminProducts() {
                 />
                 <Label htmlFor="featured">Featured</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="schedule"
+                  checked={form.schedule_enabled}
+                  onCheckedChange={(v) => setForm({ ...form, schedule_enabled: v, release_at: v ? form.release_at : '' })}
+                />
+                <Label htmlFor="schedule" className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  Schedule
+                </Label>
+              </div>
             </div>
+
+            {/* Schedule Release Date/Time */}
+            {form.schedule_enabled && (
+              <div className="space-y-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-500">
+                  <Calendar className="h-4 w-4" />
+                  Release Date & Time
+                </Label>
+                <Input
+                  id="release_at"
+                  type="datetime-local"
+                  value={form.release_at}
+                  onChange={(e) => setForm({ ...form, release_at: e.target.value })}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="bg-background"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Product will be hidden from customers until this date and time
+                </p>
+              </div>
+            )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>

@@ -24,6 +24,7 @@ export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function Fea
         .select(`*, categories (name)`)
         .eq('is_featured', true)
         .eq('is_active', true)
+        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .limit(6);
       
       if (error) throw error;

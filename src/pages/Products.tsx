@@ -57,6 +57,9 @@ export default function Products() {
         .select(`*, categories(name, slug)`)
         .eq('is_active', true);
 
+      // Filter out products that are scheduled for the future
+      query = query.or('release_at.is.null,release_at.lte.' + new Date().toISOString());
+
       if (categorySlug) {
         const category = categories?.find(c => c.slug === categorySlug);
         if (category) {

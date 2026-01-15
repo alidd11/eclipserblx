@@ -26,6 +26,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         `)
         .eq('is_featured', true)
         .eq('is_active', true)
+        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .limit(8);
       
       if (error) throw error;
