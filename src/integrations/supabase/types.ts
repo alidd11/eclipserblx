@@ -1202,6 +1202,7 @@ export type Database = {
           is_featured: boolean | null
           name: string
           price: number
+          release_at: string | null
           slug: string
           updated_at: string
         }
@@ -1217,6 +1218,7 @@ export type Database = {
           is_featured?: boolean | null
           name: string
           price: number
+          release_at?: string | null
           slug: string
           updated_at?: string
         }
@@ -1232,6 +1234,7 @@ export type Database = {
           is_featured?: boolean | null
           name?: string
           price?: number
+          release_at?: string | null
           slug?: string
           updated_at?: string
         }

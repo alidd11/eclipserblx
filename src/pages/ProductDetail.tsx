@@ -60,6 +60,7 @@ export default function ProductDetail() {
         .select(`*, categories(name, slug)`)
         .eq('slug', slug)
         .eq('is_active', true)
+        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .single();
       if (error) throw error;
       return data;
@@ -76,6 +77,7 @@ export default function ProductDetail() {
         .eq('category_id', product.category_id)
         .neq('id', product.id)
         .eq('is_active', true)
+        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .limit(4);
       if (error) throw error;
       return data;
