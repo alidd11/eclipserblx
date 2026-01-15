@@ -79,15 +79,42 @@ serve(async (req) => {
       });
     } else if (event.type === "payment_intent.succeeded") {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      logStep("Processing payment_intent.succeeded", { paymentIntentId: paymentIntent.id });
       
-      await processPayment(supabaseAdmin, stripe, {
-        paymentId: paymentIntent.id,
-        paymentType: "payment_intent",
-        customerEmail: paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "",
-        metadata: paymentIntent.metadata,
-        amountTotal: paymentIntent.amount,
-      });
+      // Check if this payment intent was created via a Checkout Session
+      // If so, skip it - we handle those via checkout.session.completed to avoid duplicates
+      try {
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: paymentIntent.id,
+          limit: 1,
+        });
+        
+        if (sessions.data.length > 0) {
+          logStep("Skipping payment_intent.succeeded - has associated checkout session", { 
+            paymentIntentId: paymentIntent.id,
+            checkoutSessionId: sessions.data[0].id 
+          });
+        } else {
+          // This is a direct payment intent (e.g., from Apple Pay/Google Pay Payment Request)
+          logStep("Processing payment_intent.succeeded (no checkout session)", { paymentIntentId: paymentIntent.id });
+          
+          await processPayment(supabaseAdmin, stripe, {
+            paymentId: paymentIntent.id,
+            paymentType: "payment_intent",
+            customerEmail: paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "",
+            metadata: paymentIntent.metadata,
+            amountTotal: paymentIntent.amount,
+          });
+        }
+      } catch (checkError) {
+        logStep("Error checking for checkout session, processing anyway", { error: String(checkError) });
+        await processPayment(supabaseAdmin, stripe, {
+          paymentId: paymentIntent.id,
+          paymentType: "payment_intent",
+          customerEmail: paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "",
+          metadata: paymentIntent.metadata,
+          amountTotal: paymentIntent.amount,
+        });
+      }
     } else {
       logStep("Unhandled event type", { type: event.type });
     }
