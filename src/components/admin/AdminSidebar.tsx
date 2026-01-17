@@ -111,6 +111,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
       { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
+      { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', roles: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', roles: [] },
     ],
