@@ -1618,6 +1618,45 @@ export type Database = {
           },
         ]
       }
+      robux_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          product_name: string
+          roblox_user_id: string
+          roblox_username: string
+          robux_after_tax: number
+          robux_amount: number
+          transaction_id: string
+          transaction_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          product_name: string
+          roblox_user_id: string
+          roblox_username: string
+          robux_after_tax: number
+          robux_amount: number
+          transaction_id: string
+          transaction_type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          product_name?: string
+          roblox_user_id?: string
+          roblox_username?: string
+          robux_after_tax?: number
+          robux_amount?: number
+          transaction_id?: string
+          transaction_type?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           id: string

@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, ExternalLink } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -17,6 +19,9 @@ import { useAuth } from '@/hooks/useAuth';
 // Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards)
 const STRIPE_PERCENTAGE_FEE = 0.015;
 const STRIPE_FIXED_FEE = 0.20;
+
+// DevEx rate: R$1000 = ~$3.50 USD, assume £1 = $1.27
+const ROBUX_TO_GBP_RATE = 0.00275; // Approximate R$1 = £0.00275
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -187,6 +192,77 @@ export default function AdminIncome() {
     enabled: isVerified,
   });
 
+  // Robux transactions query
+  const { data: robuxTransactions } = useQuery({
+    queryKey: ['admin-robux-transactions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('robux_transactions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: isVerified,
+  });
+
+  // Robux breakdown calculation
+  const robuxBreakdown = useCallback(() => {
+    if (!robuxTransactions) return null;
+
+    const now = new Date();
+    const dayStart = startOfDay(now);
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const monthStart = startOfMonth(now);
+    const yearStart = startOfYear(now);
+
+    const calculatePeriod = (filterFn: (tx: typeof robuxTransactions[0]) => boolean) => {
+      const filtered = robuxTransactions.filter(filterFn);
+      const grossRobux = filtered.reduce((sum, tx) => sum + (tx.robux_amount || 0), 0);
+      const netRobux = filtered.reduce((sum, tx) => sum + (tx.robux_after_tax || 0), 0);
+      const count = filtered.length;
+      return { grossRobux, netRobux, count, gbpEstimate: netRobux * ROBUX_TO_GBP_RATE };
+    };
+
+    return {
+      daily: calculatePeriod(tx => isAfter(new Date(tx.created_at), dayStart)),
+      weekly: calculatePeriod(tx => isAfter(new Date(tx.created_at), weekStart)),
+      monthly: calculatePeriod(tx => isAfter(new Date(tx.created_at), monthStart)),
+      yearly: calculatePeriod(tx => isAfter(new Date(tx.created_at), yearStart)),
+      allTime: calculatePeriod(() => true),
+    };
+  }, [robuxTransactions]);
+
+  // Robux 30-day trend
+  const robuxTrend = useCallback(() => {
+    if (!robuxTransactions) return [];
+
+    const dailyData: Record<string, { gross: number; net: number; count: number }> = {};
+    for (let i = 29; i >= 0; i--) {
+      const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
+      dailyData[date] = { gross: 0, net: 0, count: 0 };
+    }
+
+    robuxTransactions.forEach((tx) => {
+      const date = format(new Date(tx.created_at), 'yyyy-MM-dd');
+      if (dailyData[date] !== undefined) {
+        dailyData[date].gross += tx.robux_amount || 0;
+        dailyData[date].net += tx.robux_after_tax || 0;
+        dailyData[date].count += 1;
+      }
+    });
+
+    return Object.entries(dailyData).map(([date, data]) => ({
+      date,
+      displayDate: format(new Date(date), 'MMM d'),
+      gross: data.gross,
+      net: data.net,
+      count: data.count,
+    }));
+  }, [robuxTransactions]);
+
   const exportIncomeReport = () => {
     if (!incomeTrend) {
       showErrorNotification('Export Failed', 'No data to export');
@@ -223,6 +299,9 @@ export default function AdminIncome() {
     URL.revokeObjectURL(url);
     showSuccessNotification('Export Complete', 'Report exported successfully');
   };
+
+  const robuxData = robuxBreakdown();
+  const robuxTrendData = robuxTrend();
 
   // Password verification screen
   if (!isVerified) {
@@ -311,7 +390,7 @@ export default function AdminIncome() {
 
         {/* Income Tabs */}
         <Tabs defaultValue="gross" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="gross" className="gap-2">
               <TrendingUp className="h-4 w-4" />
               Gross Revenue
@@ -319,6 +398,10 @@ export default function AdminIncome() {
             <TabsTrigger value="net" className="gap-2">
               <Percent className="h-4 w-4" />
               Net Earnings
+            </TabsTrigger>
+            <TabsTrigger value="robux" className="gap-2">
+              <Gamepad2 className="h-4 w-4" />
+              Robux
             </TabsTrigger>
           </TabsList>
 
@@ -641,6 +724,243 @@ export default function AdminIncome() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Robux Earnings Tab */}
+          <TabsContent value="robux" className="space-y-6">
+            {/* DevEx Info */}
+            <Card className="bg-muted/50 border-dashed">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Gamepad2 className="h-4 w-4" />
+                  <span>Robux earnings after 30% Roblox tax. GBP estimates based on DevEx rate (~R$1000 ≈ £2.75)</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Robux Summary Cards */}
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+              <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-muted-foreground">Today</span>
+                  </div>
+                  <p className="text-3xl font-bold text-green-500">R${(robuxData?.daily.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ≈ £{(robuxData?.daily.gbpEstimate ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Week</span>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-500">R${(robuxData?.weekly.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ≈ £{(robuxData?.weekly.gbpEstimate ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Month</span>
+                  </div>
+                  <p className="text-3xl font-bold text-purple-500">R${(robuxData?.monthly.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ≈ £{(robuxData?.monthly.gbpEstimate ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Year</span>
+                  </div>
+                  <p className="text-3xl font-bold text-amber-500">R${(robuxData?.yearly.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ≈ £{(robuxData?.yearly.gbpEstimate ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-muted-foreground">All Time</span>
+                  </div>
+                  <p className="text-3xl font-bold text-primary">R${(robuxData?.allTime.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ≈ £{(robuxData?.allTime.gbpEstimate ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 30-Day Robux Trend Chart */}
+            <div className="grid gap-4 lg:grid-cols-[1fr,280px]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>30-Day Robux Earnings Trend</CardTitle>
+                  <CardDescription>Daily Robux earnings (after tax) over the past 30 days</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px] w-full">
+                    <ChartContainer
+                      config={{
+                        net: {
+                          label: "Net Robux",
+                          color: "hsl(280 60% 50%)",
+                        },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={robuxTrendData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis
+                            dataKey="displayDate"
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                          />
+                          <YAxis
+                            tickFormatter={(value) => `R$${value}`}
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <ChartTooltip
+                            content={
+                              <ChartTooltipContent
+                                formatter={(value) => [`R$${Number(value).toLocaleString()}`, 'Net Robux']}
+                              />
+                            }
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="net"
+                            stroke="hsl(280 60% 50%)"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: "hsl(280 60% 50%)" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Robux Statistics Summary */}
+              <div className="flex flex-col gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground">30-Day Net Total</p>
+                    <p className="text-3xl font-bold text-purple-500">
+                      R${robuxTrendData.reduce((sum, day) => sum + day.net, 0).toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground">30-Day Transactions</p>
+                    <p className="text-3xl font-bold">
+                      {robuxTrendData.reduce((sum, day) => sum + day.count, 0)}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground">Best Day (30d)</p>
+                    <p className="text-3xl font-bold text-green-500">
+                      R${Math.max(...robuxTrendData.map((day) => day.net), 0).toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Transaction Log */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gamepad2 className="h-5 w-5" />
+                  Recent Transactions
+                </CardTitle>
+                <CardDescription>Latest Robux purchases from your Roblox games</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead className="text-right">Gross</TableHead>
+                        <TableHead className="text-right">After Tax</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {robuxTransactions && robuxTransactions.length > 0 ? (
+                        robuxTransactions.map((tx) => (
+                          <TableRow key={tx.id}>
+                            <TableCell className="text-muted-foreground">
+                              {format(new Date(tx.created_at), 'MMM d, HH:mm')}
+                            </TableCell>
+                            <TableCell className="font-medium">{tx.roblox_username}</TableCell>
+                            <TableCell>{tx.product_name}</TableCell>
+                            <TableCell className="text-right text-muted-foreground">
+                              R${tx.robux_amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-green-500">
+                              R${tx.robux_after_tax.toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No transactions yet. Set up the Lua script in your Roblox game to start tracking.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Integration Instructions */}
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <ExternalLink className="h-5 w-5" />
+                  Roblox Integration
+                </CardTitle>
+                <CardDescription>
+                  Add the tracking script to your Roblox game to automatically log purchases
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <p>1. Enable HTTP Requests in your game settings on Roblox</p>
+                <p>2. Create a Script in ServerScriptService</p>
+                <p>3. Use the webhook URL: <code className="bg-muted px-1.5 py-0.5 rounded">https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/robux-webhook</code></p>
+                <p>4. Include your ROBUX_WEBHOOK_SECRET in requests</p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
