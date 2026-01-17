@@ -679,55 +679,57 @@ export default function AdminAnalytics() {
                   Recent Visit Logs
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Page</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Device</TableHead>
-                        <TableHead>Browser</TableHead>
-                        <TableHead>Referrer</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recentVisits?.map((visit) => (
-                        <TableRow key={visit.id}>
-                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                            {format(new Date(visit.created_at), 'MMM d, HH:mm')}
-                          </TableCell>
-                          <TableCell className="font-medium text-sm">
-                            {visit.page_path}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={visit.is_new_visitor ? 'default' : 'secondary'} className="text-xs">
-                              {visit.is_new_visitor ? 'New' : 'Returning'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              {getDeviceIcon(visit.device_type || 'desktop')}
-                              <span className="text-xs capitalize">{visit.device_type || 'unknown'}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-xs">{visit.browser || 'unknown'}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
-                            {visit.referrer || '-'}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {(!recentVisits || recentVisits.length === 0) && (
+              <CardContent className="p-0 sm:p-6">
+                <div className="overflow-x-auto">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-card z-10">
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                            No visits recorded yet
-                          </TableCell>
+                          <TableHead className="whitespace-nowrap">Time</TableHead>
+                          <TableHead className="whitespace-nowrap">Page</TableHead>
+                          <TableHead className="whitespace-nowrap">Type</TableHead>
+                          <TableHead className="whitespace-nowrap">Device</TableHead>
+                          <TableHead className="whitespace-nowrap">Browser</TableHead>
+                          <TableHead className="whitespace-nowrap">Referrer</TableHead>
                         </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
+                      </TableHeader>
+                      <TableBody>
+                        {recentVisits?.map((visit) => (
+                          <TableRow key={visit.id}>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                              {format(new Date(visit.created_at), 'MMM d, HH:mm')}
+                            </TableCell>
+                            <TableCell className="font-medium text-sm whitespace-nowrap">
+                              {visit.page_path}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              <Badge variant={visit.is_new_visitor ? 'default' : 'secondary'} className="text-xs">
+                                {visit.is_new_visitor ? 'New' : 'Returning'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                {getDeviceIcon(visit.device_type || 'desktop')}
+                                <span className="text-xs capitalize">{visit.device_type || 'unknown'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs whitespace-nowrap">{visit.browser || 'unknown'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap max-w-[150px] truncate">
+                              {visit.referrer || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {(!recentVisits || recentVisits.length === 0) && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                              No visits recorded yet
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
