@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, ExternalLink } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, ExternalLink, CheckCircle2, XCircle, Package } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -262,6 +263,36 @@ export default function AdminIncome() {
       count: data.count,
     }));
   }, [robuxTransactions]);
+
+  // Products with Robux status query
+  const { data: productsWithRobuxStatus } = useQuery({
+    queryKey: ['admin-products-robux-status'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, slug, price, robux_enabled, robux_product_id, robux_price, is_active, category_id')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+
+      // Get category info to exclude bots
+      const { data: categories } = await supabase
+        .from('categories')
+        .select('id, slug');
+
+      const botCategoryId = categories?.find(c => c.slug === 'bots')?.id;
+
+      // Filter out bot products (they can't use Robux)
+      const eligibleProducts = (data ?? []).filter(p => p.category_id !== botCategoryId);
+
+      const configured = eligibleProducts.filter(p => p.robux_enabled && p.robux_product_id);
+      const notConfigured = eligibleProducts.filter(p => !p.robux_enabled || !p.robux_product_id);
+
+      return { configured, notConfigured, total: eligibleProducts.length };
+    },
+    enabled: isVerified,
+  });
 
   const exportIncomeReport = () => {
     if (!incomeTrend) {
@@ -735,6 +766,104 @@ export default function AdminIncome() {
                   <Gamepad2 className="h-4 w-4" />
                   <span>Robux earnings after 30% Roblox tax. GBP estimates based on DevEx rate (~R$1000 ≈ £2.75)</span>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Robux Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Product Robux Configuration
+                </CardTitle>
+                <CardDescription>
+                  Products configured for Robux payments in your Roblox games
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 mb-6">
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-green-500">
+                        {productsWithRobuxStatus?.configured.length ?? 0}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Configured for Robux</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                      <XCircle className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-amber-500">
+                        {productsWithRobuxStatus?.notConfigured.length ?? 0}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Not Configured</p>
+                    </div>
+                  </div>
+                </div>
+
+                <ScrollArea className="h-[300px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>GBP Price</TableHead>
+                        <TableHead>Robux Price</TableHead>
+                        <TableHead>Roblox Product ID</TableHead>
+                        <TableHead className="text-right">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productsWithRobuxStatus?.configured.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>£{product.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-purple-500 font-medium">
+                            R${product.robux_price?.toLocaleString() ?? '-'}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm text-muted-foreground">
+                            {product.robux_product_id}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Configured
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {productsWithRobuxStatus?.notConfigured.map((product) => (
+                        <TableRow key={product.id} className="opacity-60">
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>£{product.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-muted-foreground">-</TableCell>
+                          <TableCell className="text-muted-foreground">-</TableCell>
+                          <TableCell className="text-right">
+                            <Badge variant="outline" className="border-amber-500/50 text-amber-500">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Not Set Up
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {(!productsWithRobuxStatus || productsWithRobuxStatus.total === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No eligible products found. Bot products are excluded.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+
+                <p className="text-xs text-muted-foreground mt-4">
+                  Configure Robux settings in the product editor. Products in the "Bots" category are excluded as they cannot use Robux payments.
+                </p>
               </CardContent>
             </Card>
 
