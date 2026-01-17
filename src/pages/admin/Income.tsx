@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
@@ -825,47 +826,73 @@ export default function AdminIncome() {
                 </div>
 
                 <div className="overflow-x-auto -mx-6">
-                  <div className="px-6 min-w-max">
-                    <ScrollArea className="h-[300px]">
-                      <Table className="min-w-[550px]">
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="whitespace-nowrap">Product</TableHead>
-                            <TableHead className="whitespace-nowrap">GBP</TableHead>
-                            <TableHead className="whitespace-nowrap">Robux</TableHead>
-                            <TableHead className="whitespace-nowrap">ID</TableHead>
-                            <TableHead className="text-right whitespace-nowrap">Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
+                  <ScrollArea className="h-[300px]">
+                    <Table className="min-w-[500px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="whitespace-nowrap sticky left-0 bg-card z-10 min-w-[120px] max-w-[140px]">Product</TableHead>
+                          <TableHead className="whitespace-nowrap text-center">GBP</TableHead>
+                          <TableHead className="whitespace-nowrap text-center">Robux</TableHead>
+                          <TableHead className="whitespace-nowrap">ID</TableHead>
+                          <TableHead className="text-right whitespace-nowrap pr-6">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
                       <TableBody>
                         {productsWithRobuxStatus?.configured.map((product) => (
                           <TableRow key={product.id}>
-                            <TableCell className="font-medium whitespace-nowrap max-w-[150px] truncate">{product.name}</TableCell>
-                            <TableCell className="whitespace-nowrap">£{product.price.toFixed(2)}</TableCell>
-                            <TableCell className="text-purple-500 font-medium whitespace-nowrap">
+                            <TableCell className="sticky left-0 bg-card z-10 min-w-[120px] max-w-[140px]">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="font-medium block truncate cursor-default">{product.name}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="max-w-[200px]">
+                                  <p>{product.name}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-center">£{product.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-purple-500 font-medium whitespace-nowrap text-center">
                               R${product.robux_price?.toLocaleString() ?? '-'}
                             </TableCell>
-                            <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                              {product.robux_product_id}
+                            <TableCell className="max-w-[100px]">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="font-mono text-xs text-muted-foreground block truncate cursor-default">
+                                    {product.robux_product_id}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="font-mono text-xs">{product.robux_product_id}</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right pr-6">
                               <Badge variant="default" className="bg-green-500 hover:bg-green-600 whitespace-nowrap">
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
-                                Configured
+                                OK
                               </Badge>
                             </TableCell>
                           </TableRow>
                         ))}
                         {productsWithRobuxStatus?.notConfigured.map((product) => (
                           <TableRow key={product.id} className="opacity-60">
-                            <TableCell className="font-medium whitespace-nowrap max-w-[150px] truncate">{product.name}</TableCell>
-                            <TableCell className="whitespace-nowrap">£{product.price.toFixed(2)}</TableCell>
+                            <TableCell className="sticky left-0 bg-card z-10 min-w-[120px] max-w-[140px]">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="font-medium block truncate cursor-default">{product.name}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="max-w-[200px]">
+                                  <p>{product.name}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-center">£{product.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-muted-foreground text-center">-</TableCell>
                             <TableCell className="text-muted-foreground">-</TableCell>
-                            <TableCell className="text-muted-foreground">-</TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right pr-6">
                               <Badge variant="outline" className="border-amber-500/50 text-amber-500 whitespace-nowrap">
                                 <XCircle className="h-3 w-3 mr-1" />
-                                Not Set Up
+                                No
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -880,7 +907,6 @@ export default function AdminIncome() {
                       </TableBody>
                     </Table>
                   </ScrollArea>
-                  </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-4">
