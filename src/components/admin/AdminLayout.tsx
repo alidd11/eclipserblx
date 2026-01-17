@@ -497,8 +497,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     <TooltipProvider delayDuration={0}>
       <div
         className={cn(
-          'fixed flex overflow-hidden overflow-x-hidden w-full max-w-full min-w-0',
-          isChatPage ? 'top-0 left-0 right-0 bg-card' : 'inset-0 bg-background'
+          'fixed flex w-full max-w-full min-w-0',
+          isChatPage 
+            ? 'top-0 left-0 right-0 overflow-hidden overflow-x-hidden bg-card' 
+            : 'inset-0 overflow-x-hidden bg-background'
         )}
         style={isChatPage ? { height: 'var(--vvh, 100dvh)' } : undefined}
       >
