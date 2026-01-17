@@ -27,7 +27,7 @@ export function useDiscordUrl() {
 
       return DEFAULT_DISCORD_URL;
     },
-    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes for faster updates
   });
 
   return {
