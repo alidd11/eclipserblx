@@ -497,10 +497,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     <TooltipProvider delayDuration={0}>
       <div
         className={cn(
-          'fixed flex w-full max-w-full min-w-0',
-          isChatPage 
-            ? 'top-0 left-0 right-0 overflow-hidden overflow-x-hidden bg-card' 
-            : 'inset-0 overflow-x-hidden bg-background'
+          'flex w-full max-w-full min-w-0',
+          isChatPage
+            ? 'fixed top-0 left-0 right-0 overflow-hidden overflow-x-hidden bg-card'
+            : 'relative min-h-[100dvh] overflow-x-hidden bg-background'
         )}
         style={isChatPage ? { height: 'var(--vvh, 100dvh)' } : undefined}
       >
@@ -571,7 +571,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             </div>
           </div>
         )}
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-x-hidden">
+        <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
           {isMobile && (
             <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -604,12 +604,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           
           <main
             className={cn(
-              'flex-1 min-h-0 min-w-0 max-w-full overflow-x-hidden',
-              isChatPage 
-                ? 'overflow-hidden overscroll-none bg-card' 
-                : 'overflow-y-auto bg-background'
+              'flex-1 min-w-0 max-w-full overflow-x-hidden',
+              isChatPage ? 'min-h-0 overflow-hidden overscroll-none bg-card' : 'bg-background'
             )}
-            style={!isChatPage ? { WebkitOverflowScrolling: 'touch' } : undefined}
           >
             <div
               className={cn(
