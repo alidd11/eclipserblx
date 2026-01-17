@@ -824,18 +824,19 @@ export default function AdminIncome() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto -mx-6 px-6">
-                  <ScrollArea className="h-[300px]">
-                    <Table className="min-w-[600px]">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="whitespace-nowrap">Product</TableHead>
-                          <TableHead className="whitespace-nowrap">GBP</TableHead>
-                          <TableHead className="whitespace-nowrap">Robux</TableHead>
-                          <TableHead className="whitespace-nowrap">Product ID</TableHead>
-                          <TableHead className="text-right whitespace-nowrap">Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
+                <div className="overflow-x-auto -mx-6">
+                  <div className="px-6 min-w-max">
+                    <ScrollArea className="h-[300px]">
+                      <Table className="min-w-[550px]">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="whitespace-nowrap">Product</TableHead>
+                            <TableHead className="whitespace-nowrap">GBP</TableHead>
+                            <TableHead className="whitespace-nowrap">Robux</TableHead>
+                            <TableHead className="whitespace-nowrap">ID</TableHead>
+                            <TableHead className="text-right whitespace-nowrap">Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
                       <TableBody>
                         {productsWithRobuxStatus?.configured.map((product) => (
                           <TableRow key={product.id}>
@@ -879,6 +880,7 @@ export default function AdminIncome() {
                       </TableBody>
                     </Table>
                   </ScrollArea>
+                  </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-4">
