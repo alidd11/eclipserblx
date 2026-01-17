@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { showSuccessNotification } from '@/lib/nativeNotification';
 import { Badge } from '@/components/ui/badge';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 
 interface InstallationCode {
   id: string;
@@ -21,6 +22,7 @@ interface InstallationCode {
 
 export default function BotInstallation() {
   const { user } = useAuth();
+  const { discordUrl } = useDiscordUrl();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const { data: installationCodes, isLoading } = useQuery({
@@ -184,7 +186,7 @@ export default function BotInstallation() {
                         </Link>
                       </Button>
                       <Button variant="outline" asChild>
-                        <a href="https://discord.gg/EmQnXwv6VZ" target="_blank" rel="noopener noreferrer">
+                        <a href={discordUrl} target="_blank" rel="noopener noreferrer">
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Discord Support
                           <ExternalLink className="h-3 w-3 ml-2" />

@@ -3,6 +3,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SITE_NAME } from '@/lib/constants';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import {
   MessageCircle,
   FileQuestion,
@@ -61,13 +62,15 @@ const supportCategories = [
   },
 ];
 
-const quickLinks = [
-  { icon: MessageCircle, label: 'Live Chat', description: 'Chat with our support team', action: 'chat' },
-  { icon: FileQuestion, label: 'FAQ', description: 'Browse common questions', href: '/faq' },
-  { icon: Users, label: 'Discord', description: 'Join our community', href: 'https://discord.gg/EmQnXwv6VZ', external: true },
-];
-
 export default function Support() {
+  const { discordUrl } = useDiscordUrl();
+
+  const quickLinks = [
+    { icon: MessageCircle, label: 'Live Chat', description: 'Chat with our support team', action: 'chat' },
+    { icon: FileQuestion, label: 'FAQ', description: 'Browse common questions', href: '/faq' },
+    { icon: Users, label: 'Discord', description: 'Join our community', href: discordUrl, external: true },
+  ];
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12">

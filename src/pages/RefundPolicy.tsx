@@ -3,8 +3,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SITE_NAME } from '@/lib/constants';
 import { AlertCircle, CheckCircle, XCircle, Scale, Clock, Mail } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 
 export default function RefundPolicy() {
+  const { discordUrl } = useDiscordUrl();
   usePageTracking({ pagePath: '/refund-policy' });
   return (
     <MainLayout>
@@ -238,7 +240,7 @@ export default function RefundPolicy() {
             <p className="text-muted-foreground">
               If you have any questions about this Refund Policy, please contact us through our{' '}
               <a 
-                href="https://discord.gg/EmQnXwv6VZ" 
+                href={discordUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"

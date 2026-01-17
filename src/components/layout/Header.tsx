@@ -10,6 +10,7 @@ import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 
 const navLinks = [
   { href: '/products', label: 'Products', icon: Package },
@@ -31,6 +32,7 @@ type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 export const Header = memo(function Header() {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
+  const { discordUrl } = useDiscordUrl();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -118,7 +120,7 @@ export const Header = memo(function Header() {
           <div className="flex items-center gap-0.5 sm:gap-2">
             {/* Discord - hidden on very small screens */}
             <a
-              href="https://discord.gg/EmQnXwv6VZ"
+              href={discordUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden xs:block"
@@ -203,7 +205,7 @@ export const Header = memo(function Header() {
             
             {/* Discord Link */}
             <a
-              href="https://discord.gg/EmQnXwv6VZ"
+              href={discordUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors touch-manipulation"
