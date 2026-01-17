@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Trash2, BellRing, Vibrate, Key, RefreshCw, Copy, Webhook, Send } from 'lucide-react';
+import { Star, Check, X, Sparkles, Trash2, Plus, Globe, Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Vibrate, Key, RefreshCw, Copy, Webhook, Send, BellRing } from 'lucide-react';
 import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -47,6 +47,12 @@ export default function AdminSettings() {
   } | null>(null);
   const [isTestingDiscordWebhook, setIsTestingDiscordWebhook] = useState(false);
   const [discordWebhookTestResult, setDiscordWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+  const [isTestingReviewWebhook, setIsTestingReviewWebhook] = useState(false);
+  const [reviewWebhookTestResult, setReviewWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -915,6 +921,124 @@ export default function AdminSettings() {
                     <p className="text-xs text-muted-foreground">
                       Receive notifications when reviews are approved
                     </p>
+                  </div>
+
+                  {/* Review Webhook Test */}
+                  <div className="pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Star className="h-4 w-4 text-amber-400" />
+                      <span className="font-medium text-sm">Test Review Webhook</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Send a sample review notification to verify your webhook is configured correctly.
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        if (!user?.id) {
+                          toast.error('You must be logged in');
+                          return;
+                        }
+                        
+                        if (!formData.review_discord_webhook_url) {
+                          toast.error('Please enter a Review Notification Webhook URL first');
+                          return;
+                        }
+                        
+                        setIsTestingReviewWebhook(true);
+                        setReviewWebhookTestResult(null);
+                        
+                        try {
+                          const { data, error } = await supabase.functions.invoke('send-review-discord-notification', {
+                            body: {
+                              reviewId: 'test-review-id',
+                              rating: 5,
+                              title: 'Amazing Service!',
+                              content: 'This is a test review notification. The webhook is working correctly!',
+                              userId: user.id,
+                              productId: null,
+                            },
+                          });
+                          
+                          if (error) {
+                            setReviewWebhookTestResult({
+                              success: false,
+                              message: 'Function invocation failed',
+                              details: error.message,
+                            });
+                            toast.error('Review webhook test failed');
+                          } else if (data?.skipped) {
+                            setReviewWebhookTestResult({
+                              success: false,
+                              message: 'Webhook skipped',
+                              details: data.message || 'No webhook URL configured',
+                            });
+                            toast.warning('Webhook skipped - no URL configured');
+                          } else if (data?.success) {
+                            setReviewWebhookTestResult({
+                              success: true,
+                              message: 'Test review notification sent!',
+                              details: 'Check your Discord channel',
+                            });
+                            toast.success('Review webhook test sent successfully!');
+                          } else {
+                            setReviewWebhookTestResult({
+                              success: false,
+                              message: data?.error || 'Unknown error',
+                              details: data?.details,
+                            });
+                            toast.error('Review webhook test failed');
+                          }
+                        } catch (err: any) {
+                          console.error('Review webhook test error:', err);
+                          setReviewWebhookTestResult({
+                            success: false,
+                            message: 'Request failed',
+                            details: err.message,
+                          });
+                          toast.error('Failed to test review webhook');
+                        } finally {
+                          setIsTestingReviewWebhook(false);
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      disabled={isTestingReviewWebhook || !formData.review_discord_webhook_url}
+                    >
+                      {isTestingReviewWebhook ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4 mr-2" />
+                      )}
+                      Send Test Review
+                    </Button>
+                    
+                    {reviewWebhookTestResult && (
+                      <div className={`mt-3 p-3 rounded-lg ${
+                        reviewWebhookTestResult.success 
+                          ? 'bg-green-500/10 border border-green-500/30' 
+                          : 'bg-red-500/10 border border-red-500/30'
+                      }`}>
+                        <div className="flex items-start gap-2">
+                          {reviewWebhookTestResult.success ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                          )}
+                          <div className="space-y-1">
+                            <p className={`text-sm font-medium ${
+                              reviewWebhookTestResult.success ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {reviewWebhookTestResult.message}
+                            </p>
+                            {reviewWebhookTestResult.details && (
+                              <p className="text-xs text-muted-foreground">
+                                {reviewWebhookTestResult.details}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
