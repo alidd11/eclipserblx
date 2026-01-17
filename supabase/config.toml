@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.stripe-subscription-webhook]
 verify_jwt = false
+
+[functions.send-review-discord-notification]
+verify_jwt = false

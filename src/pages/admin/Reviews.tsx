@@ -211,8 +211,35 @@ export default function AdminReviews() {
     },
   });
 
-  const handleApprove = (id: string, approved: boolean) => {
-    updateReviewMutation.mutate({ id, updates: { is_approved: approved } });
+  const handleApprove = async (id: string, approved: boolean) => {
+    // Find the review to get its details for the webhook
+    const review = reviews?.find(r => r.id === id);
+    
+    updateReviewMutation.mutate(
+      { id, updates: { is_approved: approved } },
+      {
+        onSuccess: async () => {
+          // Only send Discord notification when approving (not un-approving)
+          if (approved && review) {
+            try {
+              await supabase.functions.invoke('send-review-discord-notification', {
+                body: {
+                  reviewId: review.id,
+                  rating: review.rating,
+                  title: review.title,
+                  content: review.content,
+                  userId: review.user_id,
+                  productId: review.product_id,
+                },
+              });
+            } catch (error) {
+              console.error('Failed to send review Discord notification:', error);
+              // Don't show error to user - webhook is non-blocking
+            }
+          }
+        },
+      }
+    );
   };
 
   const handleFeature = (id: string, featured: boolean) => {

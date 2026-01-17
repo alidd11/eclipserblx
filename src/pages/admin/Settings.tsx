@@ -23,6 +23,7 @@ interface StoreSettings {
   store_name: string;
   contact_email: string;
   discord_webhook_url: string;
+  review_discord_webhook_url: string;
   roblox_game_url: string;
 }
 
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
   store_name: 'Eclipse',
   contact_email: '',
   discord_webhook_url: '',
+  review_discord_webhook_url: '',
   roblox_game_url: '',
 };
 
@@ -105,7 +107,7 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['store_name', 'contact_email', 'discord_webhook_url', 'roblox_game_url', 'new_product_notifications_enabled', 'discount_notifications_enabled']);
+        .in('key', ['store_name', 'contact_email', 'discord_webhook_url', 'review_discord_webhook_url', 'roblox_game_url', 'new_product_notifications_enabled', 'discount_notifications_enabled']);
 
       if (error) throw error;
 
@@ -118,6 +120,8 @@ export default function AdminSettings() {
           settingsMap.contact_email = String(val);
         } else if (item.key === 'discord_webhook_url') {
           settingsMap.discord_webhook_url = String(val);
+        } else if (item.key === 'review_discord_webhook_url') {
+          settingsMap.review_discord_webhook_url = String(val);
         } else if (item.key === 'roblox_game_url') {
           settingsMap.roblox_game_url = String(val);
         } else if (item.key === 'new_product_notifications_enabled') {
@@ -898,6 +902,19 @@ export default function AdminSettings() {
                       placeholder="https://discord.com/api/webhooks/..."
                       className="bg-background"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reviewWebhookUrl">Review Notification Webhook</Label>
+                    <Input
+                      id="reviewWebhookUrl"
+                      value={formData.review_discord_webhook_url}
+                      onChange={(e) => handleChange('review_discord_webhook_url', e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Receive notifications when reviews are approved
+                    </p>
                   </div>
                 </CardContent>
               </Card>
