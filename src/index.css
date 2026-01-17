@@ -188,11 +188,13 @@
   }
   
   /* Enable smooth scrolling on iOS with overscroll containment */
-  .overflow-y-auto,
-  .overflow-auto,
-  .overflow-scroll {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+  @media (hover: none) and (pointer: coarse) {
+    .overflow-y-auto,
+    .overflow-auto,
+    .overflow-scroll {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
   }
   
   h1, h2, h3, h4, h5, h6 {
