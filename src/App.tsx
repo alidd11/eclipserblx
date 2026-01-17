@@ -7,8 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { ChatPanelProvider } from "@/hooks/useChatPanel";
+import { CookieConsentProvider } from "@/hooks/useCookieConsent";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ChatSidePanel } from "@/components/chat/ChatSidePanel";
+import { CookieConsentBanner } from "@/components/cookies/CookieConsentBanner";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
 import { IpBanCheck } from "@/components/IpBanCheck";
@@ -109,15 +111,16 @@ function PageLoader() {
 const App = () => (
   <ConnectionErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CartProvider>
-          <ChatPanelProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <IpBanCheck>
-                  <PWAWrapper>
+      <CookieConsentProvider>
+        <AuthProvider>
+          <CartProvider>
+            <ChatPanelProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <IpBanCheck>
+                    <PWAWrapper>
                 <AdminManifestHandler />
                 <AdminPWAHandler />
                 <PWARouteRestorer />
@@ -185,16 +188,18 @@ const App = () => (
                   </Routes>
                 </Suspense>
                     <InstallPrompt />
-                  </PWAWrapper>
-                  {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
-                  <ChatWidget />
-                  <ChatSidePanel />
-                </IpBanCheck>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ChatPanelProvider>
-        </CartProvider>
-      </AuthProvider>
+                    </PWAWrapper>
+                    {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
+                    <ChatWidget />
+                    <ChatSidePanel />
+                    <CookieConsentBanner />
+                  </IpBanCheck>
+                </BrowserRouter>
+              </TooltipProvider>
+            </ChatPanelProvider>
+          </CartProvider>
+        </AuthProvider>
+      </CookieConsentProvider>
     </QueryClientProvider>
   </ConnectionErrorBoundary>
 );

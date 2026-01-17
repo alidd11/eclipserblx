@@ -1,14 +1,27 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { safeStorage } from '@/lib/safeStorage';
+
+// Check if analytics cookies are consented
+const hasAnalyticsConsent = (): boolean => {
+  const consent = safeStorage.getItem('eclipse_cookie_consent');
+  if (!consent) return false;
+  try {
+    const parsed = JSON.parse(consent);
+    return parsed.analytics === true;
+  } catch {
+    return false;
+  }
+};
 
 // Generate or retrieve a persistent visitor ID
 const getVisitorId = (): string => {
   const storageKey = 'eclipse_visitor_id';
-  let visitorId = localStorage.getItem(storageKey);
+  let visitorId = safeStorage.getItem(storageKey);
   
   if (!visitorId) {
     visitorId = crypto.randomUUID();
-    localStorage.setItem(storageKey, visitorId);
+    safeStorage.setItem(storageKey, visitorId);
   }
   
   return visitorId;
@@ -17,10 +30,10 @@ const getVisitorId = (): string => {
 // Check if this visitor has been seen before
 const isNewVisitor = (): boolean => {
   const storageKey = 'eclipse_visitor_seen';
-  const seen = localStorage.getItem(storageKey);
+  const seen = safeStorage.getItem(storageKey);
   
   if (!seen) {
-    localStorage.setItem(storageKey, 'true');
+    safeStorage.setItem(storageKey, 'true');
     return true;
   }
   
@@ -56,6 +69,10 @@ export function usePageTracking({ pagePath }: UsePageTrackingOptions) {
   useEffect(() => {
     // Only track once per page load
     if (hasTracked.current) return;
+    
+    // Check for analytics consent before tracking
+    if (!hasAnalyticsConsent()) return;
+    
     hasTracked.current = true;
 
     const trackVisit = async () => {
