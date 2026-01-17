@@ -396,7 +396,23 @@ export default function Forum() {
             {rulesExpanded && (
               <div className="px-4 pb-4 border-t border-border/50">
                 <div className="pt-4 pl-[52px] text-sm text-muted-foreground whitespace-pre-line">
-                  {currentCategory.rules}
+                  {currentCategory.rules?.split(/(\[.*?\]\(.*?\))/g).map((part, index) => {
+                    const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
+                    if (linkMatch) {
+                      return (
+                        <a
+                          key={index}
+                          href={linkMatch[2]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {linkMatch[1]}
+                        </a>
+                      );
+                    }
+                    return part;
+                  })}
                 </div>
               </div>
             )}
