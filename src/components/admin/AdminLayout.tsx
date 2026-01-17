@@ -616,7 +616,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
                 'min-w-0 max-w-full overflow-x-hidden',
                 isChatPage
                   ? 'h-full p-0'
-                  : 'h-full p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+                  : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
               )}
             >
               {children}
