@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, ExternalLink, CheckCircle2, XCircle, Package } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -209,8 +209,8 @@ export default function AdminIncome() {
     enabled: isVerified,
   });
 
-  // Robux breakdown calculation
-  const robuxBreakdown = useCallback(() => {
+  // Robux breakdown calculation - memoized
+  const robuxBreakdown = useMemo(() => {
     if (!robuxTransactions) return null;
 
     const now = new Date();
@@ -236,8 +236,8 @@ export default function AdminIncome() {
     };
   }, [robuxTransactions]);
 
-  // Robux 30-day trend
-  const robuxTrend = useCallback(() => {
+  // Robux 30-day trend - memoized
+  const robuxTrendData = useMemo(() => {
     if (!robuxTransactions) return [];
 
     const dailyData: Record<string, { gross: number; net: number; count: number }> = {};
@@ -263,6 +263,25 @@ export default function AdminIncome() {
       count: data.count,
     }));
   }, [robuxTransactions]);
+
+  // Memoized income trend stats to avoid recalculation
+  const incomeTrendStats = useMemo(() => {
+    if (!incomeTrend) return null;
+    const total30d = incomeTrend.reduce((sum, day) => sum + day.total, 0);
+    const net30d = incomeTrend.reduce((sum, day) => sum + day.net, 0);
+    const fees30d = incomeTrend.reduce((sum, day) => sum + day.fees, 0);
+    const bestDayGross = Math.max(...incomeTrend.map((day) => day.total), 0);
+    const bestDayNet = Math.max(...incomeTrend.map((day) => day.net), 0);
+    return { total30d, net30d, fees30d, bestDayGross, bestDayNet, avgGross: total30d / 30, avgNet: net30d / 30 };
+  }, [incomeTrend]);
+
+  // Memoized robux trend stats
+  const robuxTrendStats = useMemo(() => {
+    const total30d = robuxTrendData.reduce((sum, day) => sum + day.net, 0);
+    const txCount = robuxTrendData.reduce((sum, day) => sum + day.count, 0);
+    const bestDay = Math.max(...robuxTrendData.map((day) => day.net), 0);
+    return { total30d, txCount, bestDay };
+  }, [robuxTrendData]);
 
   // Products with Robux status query
   const { data: productsWithRobuxStatus } = useQuery({
@@ -331,8 +350,7 @@ export default function AdminIncome() {
     showSuccessNotification('Export Complete', 'Report exported successfully');
   };
 
-  const robuxData = robuxBreakdown();
-  const robuxTrendData = robuxTrend();
+  // robuxBreakdown and robuxTrendData are now memoized above
 
   // Password verification screen
   if (!isVerified) {
@@ -549,13 +567,13 @@ export default function AdminIncome() {
               </Card>
 
               {/* Gross Statistics Summary - Side Panel */}
-              {incomeTrend && (
+              {incomeTrendStats && (
                 <div className="flex flex-col gap-4">
                   <Card>
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">30-Day Total (Gross)</p>
                       <p className="text-3xl font-bold text-primary">
-                        £{incomeTrend.reduce((sum, day) => sum + day.total, 0).toFixed(2)}
+                        £{incomeTrendStats.total30d.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -563,7 +581,7 @@ export default function AdminIncome() {
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">Daily Average (Gross)</p>
                       <p className="text-3xl font-bold">
-                        £{(incomeTrend.reduce((sum, day) => sum + day.total, 0) / 30).toFixed(2)}
+                        £{incomeTrendStats.avgGross.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -571,7 +589,7 @@ export default function AdminIncome() {
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">Best Day (30d)</p>
                       <p className="text-3xl font-bold text-green-500">
-                        £{Math.max(...incomeTrend.map((day) => day.total), 0).toFixed(2)}
+                        £{incomeTrendStats.bestDayGross.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -718,13 +736,13 @@ export default function AdminIncome() {
               </Card>
 
               {/* Net Statistics Summary - Side Panel */}
-              {incomeTrend && (
+              {incomeTrendStats && (
                 <div className="flex flex-col gap-4">
                   <Card>
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">30-Day Net Total</p>
                       <p className="text-3xl font-bold text-green-600">
-                        £{incomeTrend.reduce((sum, day) => sum + day.net, 0).toFixed(2)}
+                        £{incomeTrendStats.net30d.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -732,7 +750,7 @@ export default function AdminIncome() {
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">30-Day Fees</p>
                       <p className="text-3xl font-bold text-red-500">
-                        £{incomeTrend.reduce((sum, day) => sum + day.fees, 0).toFixed(2)}
+                        £{incomeTrendStats.fees30d.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -740,7 +758,7 @@ export default function AdminIncome() {
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">Daily Average (Net)</p>
                       <p className="text-3xl font-bold">
-                        £{(incomeTrend.reduce((sum, day) => sum + day.net, 0) / 30).toFixed(2)}
+                        £{incomeTrendStats.avgNet.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -748,7 +766,7 @@ export default function AdminIncome() {
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">Best Day Net (30d)</p>
                       <p className="text-3xl font-bold text-green-500">
-                        £{Math.max(...incomeTrend.map((day) => day.net), 0).toFixed(2)}
+                        £{incomeTrendStats.bestDayNet.toFixed(2)}
                       </p>
                     </CardContent>
                   </Card>
@@ -875,9 +893,9 @@ export default function AdminIncome() {
                     <Calendar className="h-4 w-4 text-green-500" />
                     <span className="text-sm font-medium text-muted-foreground">Today</span>
                   </div>
-                  <p className="text-3xl font-bold text-green-500">R${(robuxData?.daily.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-green-500">R${(robuxBreakdown?.daily.netRobux ?? 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ≈ £{(robuxData?.daily.gbpEstimate ?? 0).toFixed(2)}
+                    ≈ £{(robuxBreakdown?.daily.gbpEstimate ?? 0).toFixed(2)}
                   </p>
                 </CardContent>
               </Card>
@@ -888,9 +906,9 @@ export default function AdminIncome() {
                     <Calendar className="h-4 w-4 text-blue-500" />
                     <span className="text-sm font-medium text-muted-foreground">This Week</span>
                   </div>
-                  <p className="text-3xl font-bold text-blue-500">R${(robuxData?.weekly.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-blue-500">R${(robuxBreakdown?.weekly.netRobux ?? 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ≈ £{(robuxData?.weekly.gbpEstimate ?? 0).toFixed(2)}
+                    ≈ £{(robuxBreakdown?.weekly.gbpEstimate ?? 0).toFixed(2)}
                   </p>
                 </CardContent>
               </Card>
@@ -901,9 +919,9 @@ export default function AdminIncome() {
                     <Calendar className="h-4 w-4 text-purple-500" />
                     <span className="text-sm font-medium text-muted-foreground">This Month</span>
                   </div>
-                  <p className="text-3xl font-bold text-purple-500">R${(robuxData?.monthly.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-purple-500">R${(robuxBreakdown?.monthly.netRobux ?? 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ≈ £{(robuxData?.monthly.gbpEstimate ?? 0).toFixed(2)}
+                    ≈ £{(robuxBreakdown?.monthly.gbpEstimate ?? 0).toFixed(2)}
                   </p>
                 </CardContent>
               </Card>
@@ -914,9 +932,9 @@ export default function AdminIncome() {
                     <Calendar className="h-4 w-4 text-amber-500" />
                     <span className="text-sm font-medium text-muted-foreground">This Year</span>
                   </div>
-                  <p className="text-3xl font-bold text-amber-500">R${(robuxData?.yearly.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-amber-500">R${(robuxBreakdown?.yearly.netRobux ?? 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ≈ £{(robuxData?.yearly.gbpEstimate ?? 0).toFixed(2)}
+                    ≈ £{(robuxBreakdown?.yearly.gbpEstimate ?? 0).toFixed(2)}
                   </p>
                 </CardContent>
               </Card>
@@ -927,9 +945,9 @@ export default function AdminIncome() {
                     <TrendingUp className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-muted-foreground">All Time</span>
                   </div>
-                  <p className="text-3xl font-bold text-primary">R${(robuxData?.allTime.netRobux ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-primary">R${(robuxBreakdown?.allTime.netRobux ?? 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ≈ £{(robuxData?.allTime.gbpEstimate ?? 0).toFixed(2)}
+                    ≈ £{(robuxBreakdown?.allTime.gbpEstimate ?? 0).toFixed(2)}
                   </p>
                 </CardContent>
               </Card>
@@ -998,7 +1016,7 @@ export default function AdminIncome() {
                   <CardContent className="pt-6">
                     <p className="text-sm text-muted-foreground">30-Day Net Total</p>
                     <p className="text-3xl font-bold text-purple-500">
-                      R${robuxTrendData.reduce((sum, day) => sum + day.net, 0).toLocaleString()}
+                      R${robuxTrendStats.total30d.toLocaleString()}
                     </p>
                   </CardContent>
                 </Card>
@@ -1006,7 +1024,7 @@ export default function AdminIncome() {
                   <CardContent className="pt-6">
                     <p className="text-sm text-muted-foreground">30-Day Transactions</p>
                     <p className="text-3xl font-bold">
-                      {robuxTrendData.reduce((sum, day) => sum + day.count, 0)}
+                      {robuxTrendStats.txCount}
                     </p>
                   </CardContent>
                 </Card>
@@ -1014,7 +1032,7 @@ export default function AdminIncome() {
                   <CardContent className="pt-6">
                     <p className="text-sm text-muted-foreground">Best Day (30d)</p>
                     <p className="text-3xl font-bold text-green-500">
-                      R${Math.max(...robuxTrendData.map((day) => day.net), 0).toLocaleString()}
+                      R${robuxTrendStats.bestDay.toLocaleString()}
                     </p>
                   </CardContent>
                 </Card>
