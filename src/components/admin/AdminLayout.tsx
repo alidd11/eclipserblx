@@ -499,10 +499,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         className={cn(
           'flex w-full max-w-full min-w-0',
           isChatPage
-            ? 'fixed top-0 left-0 right-0 overflow-hidden overflow-x-hidden bg-card'
-            : 'relative min-h-[100dvh] overflow-x-hidden bg-background'
+            ? 'fixed top-0 left-0 right-0 h-[var(--vvh,100dvh)] overflow-hidden bg-card'
+            : 'min-h-screen bg-background'
         )}
-        style={isChatPage ? { height: 'var(--vvh, 100dvh)' } : undefined}
       >
         {/* Desktop Sidebar */}
         {!isMobile && (
@@ -571,7 +570,14 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             </div>
           </div>
         )}
-        <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
+        
+        {/* Main content area */}
+        <div 
+          className={cn(
+            'flex-1 flex flex-col min-w-0 max-w-full',
+            isChatPage ? 'h-full overflow-hidden' : ''
+          )}
+        >
           {isMobile && (
             <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -604,13 +610,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           
           <main
             className={cn(
-              'flex-1 min-w-0 max-w-full overflow-x-hidden',
-              isChatPage ? 'min-h-0 overflow-hidden overscroll-none bg-card' : 'bg-background'
+              'flex-1 min-w-0 max-w-full',
+              isChatPage ? 'overflow-hidden overscroll-none bg-card' : 'bg-background'
             )}
           >
             <div
               className={cn(
-                'min-w-0 max-w-full overflow-x-hidden',
+                'min-w-0 max-w-full',
                 isChatPage
                   ? 'h-full p-0'
                   : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
