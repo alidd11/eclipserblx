@@ -62,6 +62,10 @@ interface ProductForm {
   asset_file_url: string;
   release_at: string;
   schedule_enabled: boolean;
+  // Roblox / Robux configuration
+  robux_enabled: boolean;
+  robux_product_id: string;
+  robux_price: string;
 }
 
 interface MassEditForm {
@@ -86,6 +90,9 @@ const emptyForm: ProductForm = {
   asset_file_url: '',
   release_at: '',
   schedule_enabled: false,
+  robux_enabled: false,
+  robux_product_id: '',
+  robux_price: '',
 };
 
 const emptyMassEditForm: MassEditForm = {
@@ -264,6 +271,10 @@ export default function AdminProducts() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: ProductForm) => {
+      const robuxPriceValue = data.robux_price?.trim()
+        ? Number.parseInt(data.robux_price, 10)
+        : null;
+
       const payload = {
         name: data.name,
         slug: data.slug,
@@ -275,6 +286,12 @@ export default function AdminProducts() {
         images: data.images ? data.images.split(',').map(s => s.trim()) : [],
         asset_file_url: data.asset_file_url || null,
         release_at: data.schedule_enabled && data.release_at ? new Date(data.release_at).toISOString() : null,
+        robux_enabled: data.robux_enabled,
+        robux_product_id: data.robux_product_id?.trim() ? data.robux_product_id.trim() : null,
+        robux_price:
+          typeof robuxPriceValue === 'number' && Number.isFinite(robuxPriceValue)
+            ? robuxPriceValue
+            : null,
       };
 
       const isNewProduct = !data.id;
@@ -459,6 +476,9 @@ export default function AdminProducts() {
       asset_file_url: product.asset_file_url || '',
       release_at: formatDateTimeForInput(product.release_at),
       schedule_enabled: !!product.release_at && isScheduledForFuture(product.release_at),
+      robux_enabled: !!product.robux_enabled,
+      robux_product_id: product.robux_product_id || '',
+      robux_price: product.robux_price ? String(product.robux_price) : '',
     });
     setIsDialogOpen(true);
   };
