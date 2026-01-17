@@ -412,7 +412,7 @@ export default function AdminIncome() {
 
   return (
     <AdminLayout requiredRoles={['admin']}>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-full overflow-x-hidden">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -824,60 +824,62 @@ export default function AdminIncome() {
                   </div>
                 </div>
 
-                <ScrollArea className="h-[300px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>GBP Price</TableHead>
-                        <TableHead>Robux Price</TableHead>
-                        <TableHead>Roblox Product ID</TableHead>
-                        <TableHead className="text-right">Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {productsWithRobuxStatus?.configured.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell className="font-medium">{product.name}</TableCell>
-                          <TableCell>£{product.price.toFixed(2)}</TableCell>
-                          <TableCell className="text-purple-500 font-medium">
-                            R${product.robux_price?.toLocaleString() ?? '-'}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm text-muted-foreground">
-                            {product.robux_product_id}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Configured
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {productsWithRobuxStatus?.notConfigured.map((product) => (
-                        <TableRow key={product.id} className="opacity-60">
-                          <TableCell className="font-medium">{product.name}</TableCell>
-                          <TableCell>£{product.price.toFixed(2)}</TableCell>
-                          <TableCell className="text-muted-foreground">-</TableCell>
-                          <TableCell className="text-muted-foreground">-</TableCell>
-                          <TableCell className="text-right">
-                            <Badge variant="outline" className="border-amber-500/50 text-amber-500">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Not Set Up
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {(!productsWithRobuxStatus || productsWithRobuxStatus.total === 0) && (
+                <div className="overflow-x-auto -mx-6 px-6">
+                  <ScrollArea className="h-[300px]">
+                    <Table className="min-w-[600px]">
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                            No eligible products found. Bot products are excluded.
-                          </TableCell>
+                          <TableHead className="whitespace-nowrap">Product</TableHead>
+                          <TableHead className="whitespace-nowrap">GBP</TableHead>
+                          <TableHead className="whitespace-nowrap">Robux</TableHead>
+                          <TableHead className="whitespace-nowrap">Product ID</TableHead>
+                          <TableHead className="text-right whitespace-nowrap">Status</TableHead>
                         </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
+                      </TableHeader>
+                      <TableBody>
+                        {productsWithRobuxStatus?.configured.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium whitespace-nowrap max-w-[150px] truncate">{product.name}</TableCell>
+                            <TableCell className="whitespace-nowrap">£{product.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-purple-500 font-medium whitespace-nowrap">
+                              R${product.robux_price?.toLocaleString() ?? '-'}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                              {product.robux_product_id}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="default" className="bg-green-500 hover:bg-green-600 whitespace-nowrap">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Configured
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {productsWithRobuxStatus?.notConfigured.map((product) => (
+                          <TableRow key={product.id} className="opacity-60">
+                            <TableCell className="font-medium whitespace-nowrap max-w-[150px] truncate">{product.name}</TableCell>
+                            <TableCell className="whitespace-nowrap">£{product.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-muted-foreground">-</TableCell>
+                            <TableCell className="text-muted-foreground">-</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="outline" className="border-amber-500/50 text-amber-500 whitespace-nowrap">
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Not Set Up
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {(!productsWithRobuxStatus || productsWithRobuxStatus.total === 0) && (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                              No eligible products found. Bot products are excluded.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                </div>
 
                 <p className="text-xs text-muted-foreground mt-4">
                   Configure Robux settings in the product editor. Products in the "Bots" category are excluded as they cannot use Robux payments.
@@ -1049,44 +1051,46 @@ export default function AdminIncome() {
                 <CardDescription>Latest Robux purchases from your Roblox games</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Username</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead className="text-right">Gross</TableHead>
-                        <TableHead className="text-right">After Tax</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {robuxTransactions && robuxTransactions.length > 0 ? (
-                        robuxTransactions.map((tx) => (
-                          <TableRow key={tx.id}>
-                            <TableCell className="text-muted-foreground">
-                              {format(new Date(tx.created_at), 'MMM d, HH:mm')}
-                            </TableCell>
-                            <TableCell className="font-medium">{tx.roblox_username}</TableCell>
-                            <TableCell>{tx.product_name}</TableCell>
-                            <TableCell className="text-right text-muted-foreground">
-                              R${tx.robux_amount.toLocaleString()}
-                            </TableCell>
-                            <TableCell className="text-right font-medium text-green-500">
-                              R${tx.robux_after_tax.toLocaleString()}
+                <div className="overflow-x-auto -mx-6 px-6">
+                  <ScrollArea className="h-[400px]">
+                    <Table className="min-w-[500px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="whitespace-nowrap">Date</TableHead>
+                          <TableHead className="whitespace-nowrap">Username</TableHead>
+                          <TableHead className="whitespace-nowrap">Product</TableHead>
+                          <TableHead className="text-right whitespace-nowrap">Gross</TableHead>
+                          <TableHead className="text-right whitespace-nowrap">Net</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {robuxTransactions && robuxTransactions.length > 0 ? (
+                          robuxTransactions.map((tx) => (
+                            <TableRow key={tx.id}>
+                              <TableCell className="text-muted-foreground whitespace-nowrap">
+                                {format(new Date(tx.created_at), 'MMM d, HH:mm')}
+                              </TableCell>
+                              <TableCell className="font-medium whitespace-nowrap">{tx.roblox_username}</TableCell>
+                              <TableCell className="whitespace-nowrap max-w-[120px] truncate">{tx.product_name}</TableCell>
+                              <TableCell className="text-right text-muted-foreground whitespace-nowrap">
+                                R${tx.robux_amount.toLocaleString()}
+                              </TableCell>
+                              <TableCell className="text-right font-medium text-green-500 whitespace-nowrap">
+                                R${tx.robux_after_tax.toLocaleString()}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                              No transactions yet. Set up the Lua script in your Roblox game to start tracking.
                             </TableCell>
                           </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                            No transactions yet. Set up the Lua script in your Roblox game to start tracking.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                </div>
               </CardContent>
             </Card>
 
