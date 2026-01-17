@@ -2,8 +2,10 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { SITE_NAME } from '@/lib/constants';
 import { AlertCircle, CheckCircle, XCircle, Scale, Clock, Mail } from 'lucide-react';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function RefundPolicy() {
+  usePageTracking({ pagePath: '/refund-policy' });
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
