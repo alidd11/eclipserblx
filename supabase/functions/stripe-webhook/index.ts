@@ -467,6 +467,28 @@ async function processPayment(
       } catch (pushError) {
         logStep("Failed to send push notification", { error: String(pushError) });
       }
+
+      // Send Discord order notification
+      try {
+        const discordUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        const discordResponse = await fetch(`${discordUrl}/functions/v1/send-order-discord-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({
+            orderId,
+            userId,
+            customerEmail,
+            productNames: items.map(item => item.name),
+            total,
+          }),
+        });
+        logStep("Discord order notification sent", { status: discordResponse.status });
+      } catch (discordError) {
+        logStep("Failed to send Discord notification", { error: String(discordError) });
+      }
     } catch (e) {
       logStep("Failed to create notification", { error: String(e) });
     }

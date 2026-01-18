@@ -25,6 +25,7 @@ import { NotificationSettingsCard } from '@/components/account/NotificationSetti
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
+import { RobloxLinkCard } from '@/components/account/RobloxLinkCard';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { Input } from '@/components/ui/input';
@@ -130,7 +131,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, display_name, avatar_url, customer_id, discord_id, discord_username, created_at, updated_at')
+        .select('user_id, email, display_name, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -640,6 +641,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Roblox Account Link Card */}
+        <RobloxLinkCard
+          userId={user.id}
+          robloxUserId={profile?.roblox_user_id || null}
+          robloxUsername={profile?.roblox_username || null}
+        />
 
         {/* Eclipse+ Subscription Card */}
         <SubscriptionCard />

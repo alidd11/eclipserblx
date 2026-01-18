@@ -389,6 +389,30 @@ serve(async (req) => {
       } catch (pushError) {
         logStep("Push notification error (non-fatal)", pushError);
       }
+
+      // Send Discord order notification
+      try {
+        await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-discord-notification`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({
+              orderId: order.id,
+              userId: userId,
+              customerEmail: customerEmail,
+              productNames: items.map((item: any) => item.name),
+              total: total,
+            }),
+          }
+        );
+        logStep("Discord order notification sent");
+      } catch (discordError) {
+        logStep("Discord notification error (non-fatal)", discordError);
+      }
     }
 
     return new Response(JSON.stringify({ 
