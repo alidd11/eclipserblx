@@ -825,46 +825,92 @@ export default function AdminIncome() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto -mx-6">
+                {/* Mobile Card Layout */}
+                <div className="sm:hidden space-y-3">
+                  <ScrollArea className="h-[320px]">
+                    <div className="space-y-2 pr-2">
+                      {productsWithRobuxStatus?.configured.map((product) => (
+                        <div key={product.id} className="p-3 rounded-lg border border-green-500/30 bg-green-500/5">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <p className="font-medium text-sm leading-tight flex-1">{product.name}</p>
+                            <Badge variant="default" className="bg-green-500 hover:bg-green-600 shrink-0 text-xs">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              OK
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">GBP:</span>{' '}
+                              <span className="font-medium">£{product.price.toFixed(2)}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Robux:</span>{' '}
+                              <span className="font-medium text-purple-500">R${product.robux_price?.toLocaleString() ?? '-'}</span>
+                            </div>
+                          </div>
+                          <div className="mt-2 pt-2 border-t border-border/50">
+                            <span className="text-xs text-muted-foreground">ID: </span>
+                            <span className="font-mono text-xs text-muted-foreground break-all">{product.robux_product_id}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {productsWithRobuxStatus?.notConfigured.map((product) => (
+                        <div key={product.id} className="p-3 rounded-lg border border-amber-500/30 bg-muted/30 opacity-70">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <p className="font-medium text-sm leading-tight flex-1">{product.name}</p>
+                            <Badge variant="outline" className="border-amber-500/50 text-amber-500 shrink-0 text-xs">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              No
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">GBP:</span>{' '}
+                              <span className="font-medium">£{product.price.toFixed(2)}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Robux:</span>{' '}
+                              <span className="text-muted-foreground">Not set</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {(!productsWithRobuxStatus || productsWithRobuxStatus.total === 0) && (
+                        <div className="text-center text-muted-foreground py-8">
+                          No eligible products found. Bot products are excluded.
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                {/* Desktop Table Layout */}
+                <div className="hidden sm:block overflow-x-auto -mx-6">
                   <ScrollArea className="h-[300px]">
                     <Table className="min-w-[500px]">
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="whitespace-nowrap sticky left-0 bg-card z-10 min-w-[120px] max-w-[140px]">Product</TableHead>
+                          <TableHead className="whitespace-nowrap min-w-[180px]">Product</TableHead>
                           <TableHead className="whitespace-nowrap text-center">GBP</TableHead>
                           <TableHead className="whitespace-nowrap text-center">Robux</TableHead>
-                          <TableHead className="whitespace-nowrap">ID</TableHead>
+                          <TableHead className="whitespace-nowrap">Product ID</TableHead>
                           <TableHead className="text-right whitespace-nowrap pr-6">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {productsWithRobuxStatus?.configured.map((product) => (
                           <TableRow key={product.id}>
-                            <TableCell className="sticky left-0 bg-card z-10 min-w-[120px] max-w-[140px]">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="font-medium block truncate cursor-default">{product.name}</span>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[200px]">
-                                  <p>{product.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
+                            <TableCell className="min-w-[180px]">
+                              <span className="font-medium">{product.name}</span>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-center">£{product.price.toFixed(2)}</TableCell>
                             <TableCell className="text-purple-500 font-medium whitespace-nowrap text-center">
                               R${product.robux_price?.toLocaleString() ?? '-'}
                             </TableCell>
-                            <TableCell className="max-w-[100px]">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="font-mono text-xs text-muted-foreground block truncate cursor-default">
-                                    {product.robux_product_id}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="font-mono text-xs">{product.robux_product_id}</p>
-                                </TooltipContent>
-                              </Tooltip>
+                            <TableCell>
+                              <span className="font-mono text-xs text-muted-foreground">
+                                {product.robux_product_id}
+                              </span>
                             </TableCell>
                             <TableCell className="text-right pr-6">
                               <Badge variant="default" className="bg-green-500 hover:bg-green-600 whitespace-nowrap">
@@ -876,15 +922,8 @@ export default function AdminIncome() {
                         ))}
                         {productsWithRobuxStatus?.notConfigured.map((product) => (
                           <TableRow key={product.id} className="opacity-60">
-                            <TableCell className="sticky left-0 bg-card z-10 min-w-[120px] max-w-[140px]">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="font-medium block truncate cursor-default">{product.name}</span>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[200px]">
-                                  <p>{product.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
+                            <TableCell className="min-w-[180px]">
+                              <span className="font-medium">{product.name}</span>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-center">£{product.price.toFixed(2)}</TableCell>
                             <TableCell className="text-muted-foreground text-center">-</TableCell>
