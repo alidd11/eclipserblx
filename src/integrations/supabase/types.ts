@@ -1311,6 +1311,8 @@ export type Database = {
           id: string
           last_seen: string | null
           referral_code: string | null
+          roblox_user_id: string | null
+          roblox_username: string | null
           staff_id: string | null
           updated_at: string
           user_id: string
@@ -1326,6 +1328,8 @@ export type Database = {
           id?: string
           last_seen?: string | null
           referral_code?: string | null
+          roblox_user_id?: string | null
+          roblox_username?: string | null
           staff_id?: string | null
           updated_at?: string
           user_id: string
@@ -1341,6 +1345,8 @@ export type Database = {
           id?: string
           last_seen?: string | null
           referral_code?: string | null
+          roblox_user_id?: string | null
+          roblox_username?: string | null
           staff_id?: string | null
           updated_at?: string
           user_id?: string
