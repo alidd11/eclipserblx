@@ -333,6 +333,7 @@ export default function AdminProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products-robux-status'] });
       setIsDialogOpen(false);
       setForm(emptyForm);
       toast.success(form.id ? 'Product updated' : 'Product created');
