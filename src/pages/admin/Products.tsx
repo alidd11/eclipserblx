@@ -1045,6 +1045,54 @@ export default function AdminProducts() {
               </div>
             )}
 
+            {/* Robux Configuration Section */}
+            <div className="space-y-3 p-3 rounded-lg border border-border bg-muted/30">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="robux_enabled" className="font-medium">Robux Payments</Label>
+                <Switch
+                  id="robux_enabled"
+                  checked={form.robux_enabled}
+                  onCheckedChange={(checked) => setForm({ ...form, robux_enabled: checked })}
+                />
+              </div>
+              
+              {form.robux_enabled && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="robux_product_id" className="text-sm">Roblox Product ID</Label>
+                    <Input
+                      id="robux_product_id"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={form.robux_product_id}
+                      onChange={(e) => setForm({ ...form, robux_product_id: e.target.value })}
+                      placeholder="e.g. 1234567890"
+                      className="bg-background"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="robux_price" className="text-sm">Robux Price</Label>
+                    <Input
+                      id="robux_price"
+                      type="number"
+                      inputMode="numeric"
+                      value={form.robux_price}
+                      onChange={(e) => setForm({ ...form, robux_price: e.target.value })}
+                      placeholder="e.g. 100"
+                      className="bg-background"
+                      min="1"
+                      step="1"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={saveMutation.isPending}>
