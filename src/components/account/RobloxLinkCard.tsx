@@ -38,35 +38,24 @@ export function RobloxLinkCard({ userId, robloxUserId, robloxUsername }: RobloxL
     setVerifiedData(null);
 
     try {
-      // Use Roblox API to look up user by username
-      const response = await fetch(
-        `https://users.roblox.com/v1/usernames/users`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            usernames: [inputUsername.trim()],
-            excludeBannedUsers: true,
-          }),
-        }
-      );
+      // Use edge function to verify Roblox username (avoids CORS issues)
+      const { data, error } = await supabase.functions.invoke('verify-roblox-user', {
+        body: { username: inputUsername.trim() },
+      });
 
-      if (!response.ok) {
+      if (error) {
         throw new Error('Failed to verify username');
       }
 
-      const data = await response.json();
-      
-      if (!data.data || data.data.length === 0) {
+      if (!data.found) {
         setVerificationError('Username not found on Roblox');
         return;
       }
 
-      const user = data.data[0];
       setVerifiedData({
-        id: user.id.toString(),
-        name: user.name,
-        displayName: user.displayName,
+        id: data.id,
+        name: data.name,
+        displayName: data.displayName,
       });
     } catch (error) {
       console.error('Roblox verification error:', error);

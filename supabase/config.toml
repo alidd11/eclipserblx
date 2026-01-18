@@ -117,5 +117,8 @@ verify_jwt = false
 [functions.send-review-discord-notification]
 verify_jwt = false
 
+[functions.verify-roblox-user]
+enabled = true
+
 [functions.send-order-discord-notification]
 verify_jwt = false
