@@ -1118,7 +1118,46 @@ export default function AdminIncome() {
                 <CardDescription>Latest Robux purchases from your Roblox games</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto -mx-6 px-6">
+                {/* Mobile Card Layout */}
+                <div className="sm:hidden">
+                  <ScrollArea className="h-[400px]">
+                    <div className="space-y-2 pr-2">
+                      {robuxTransactions && robuxTransactions.length > 0 ? (
+                        robuxTransactions.map((tx) => (
+                          <div key={tx.id} className="p-3 rounded-lg border border-border bg-muted/20">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm">{tx.roblox_username}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {format(new Date(tx.created_at), 'MMM d, HH:mm')}
+                                </p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="font-medium text-green-500 text-sm">R${tx.robux_after_tax.toLocaleString()}</p>
+                                <p className="text-xs text-muted-foreground">net</p>
+                              </div>
+                            </div>
+                            <div className="pt-2 border-t border-border/50">
+                              <p className="text-xs text-muted-foreground mb-0.5">Product</p>
+                              <p className="text-sm">{tx.product_name}</p>
+                            </div>
+                            <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+                              <span>Gross: R${tx.robux_amount.toLocaleString()}</span>
+                              <span>Tax: R${(tx.robux_amount - tx.robux_after_tax).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                          No transactions yet. Set up the Lua script in your Roblox game to start tracking.
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                {/* Desktop Table Layout */}
+                <div className="hidden sm:block overflow-x-auto -mx-6 px-6">
                   <ScrollArea className="h-[400px]">
                     <Table className="min-w-[500px]">
                       <TableHeader>
@@ -1138,7 +1177,7 @@ export default function AdminIncome() {
                                 {format(new Date(tx.created_at), 'MMM d, HH:mm')}
                               </TableCell>
                               <TableCell className="font-medium whitespace-nowrap">{tx.roblox_username}</TableCell>
-                              <TableCell className="whitespace-nowrap max-w-[120px] truncate">{tx.product_name}</TableCell>
+                              <TableCell>{tx.product_name}</TableCell>
                               <TableCell className="text-right text-muted-foreground whitespace-nowrap">
                                 R${tx.robux_amount.toLocaleString()}
                               </TableCell>
