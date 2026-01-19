@@ -170,11 +170,11 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
-          paypal_email: string
-          paypal_payout_id: string | null
           processed_at: string | null
           processed_by: string | null
           status: string
+          stripe_account_id: string | null
+          stripe_transfer_id: string | null
           user_id: string
         }
         Insert: {
@@ -182,11 +182,11 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          paypal_email: string
-          paypal_payout_id?: string | null
           processed_at?: string | null
           processed_by?: string | null
           status?: string
+          stripe_account_id?: string | null
+          stripe_transfer_id?: string | null
           user_id: string
         }
         Update: {
@@ -194,11 +194,11 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          paypal_email?: string
-          paypal_payout_id?: string | null
           processed_at?: string | null
           processed_by?: string | null
           status?: string
+          stripe_account_id?: string | null
+          stripe_transfer_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1445,6 +1445,7 @@ export type Database = {
           roblox_user_id: string | null
           roblox_username: string | null
           staff_id: string | null
+          stripe_account_id: string | null
           updated_at: string
           user_id: string
         }
@@ -1463,6 +1464,7 @@ export type Database = {
           roblox_user_id?: string | null
           roblox_username?: string | null
           staff_id?: string | null
+          stripe_account_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1481,6 +1483,7 @@ export type Database = {
           roblox_user_id?: string | null
           roblox_username?: string | null
           staff_id?: string | null
+          stripe_account_id?: string | null
           updated_at?: string
           user_id?: string
         }

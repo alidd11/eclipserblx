@@ -1,9 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const COMMISSION_RATE = 0.10; // 10% commission
+
+const logStep = (step: string, details?: unknown) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[PROCESS-REFERRAL] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -18,7 +25,7 @@ serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { orderId, userId } = await req.json();
+    const { orderId, userId, orderTotal } = await req.json();
 
     if (!orderId || !userId) {
       return new Response(
@@ -26,6 +33,8 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    logStep("Processing referral", { orderId, userId, orderTotal });
 
     // Check if this user was referred and hasn't completed a referral yet
     const { data: referral, error: referralError } = await supabaseAdmin
@@ -36,12 +45,14 @@ serve(async (req) => {
       .single();
 
     if (referralError || !referral) {
-      // No pending referral for this user
+      logStep("No pending referral for this user");
       return new Response(
         JSON.stringify({ message: "No pending referral" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    logStep("Found pending referral", { referralId: referral.id, referrerId: referral.referrer_id });
 
     // Update referral status to completed
     await supabaseAdmin
@@ -53,7 +64,34 @@ serve(async (req) => {
       })
       .eq('id', referral.id);
 
-    // Generate discount code for referrer
+    // Calculate commission (order total should be in pence)
+    const orderTotalPence = orderTotal ? Math.round(orderTotal * 100) : 0;
+    const commissionAmount = Math.round(orderTotalPence * COMMISSION_RATE);
+
+    logStep("Calculated commission", { orderTotalPence, commissionRate: COMMISSION_RATE, commissionAmount });
+
+    // Create affiliate commission record
+    if (commissionAmount > 0) {
+      const { error: commissionError } = await supabaseAdmin
+        .from('affiliate_commissions')
+        .insert({
+          affiliate_id: referral.referrer_id,
+          referred_user_id: userId,
+          order_id: orderId,
+          order_total: orderTotalPence,
+          commission_rate: COMMISSION_RATE,
+          commission_amount: commissionAmount,
+          status: 'pending',
+        });
+
+      if (commissionError) {
+        logStep("Failed to create commission", { error: commissionError });
+      } else {
+        logStep("Commission created successfully");
+      }
+    }
+
+    // Generate discount code for referrer (existing logic)
     const referrerDiscountCode = `REF${referral.referrer_id.substring(0, 4).toUpperCase()}${Date.now().toString(36).toUpperCase()}`;
     
     // Create discount code for referrer (10% off)
@@ -66,13 +104,13 @@ serve(async (req) => {
         max_uses: 1,
         current_uses: 0,
         is_active: true,
-        expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
+        expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
       })
       .select()
       .single();
 
     if (referrerDiscountError) {
-      console.error('Failed to create referrer discount:', referrerDiscountError);
+      logStep('Failed to create referrer discount', { error: referrerDiscountError });
     } else {
       // Create reward record for referrer
       await supabaseAdmin
@@ -100,13 +138,13 @@ serve(async (req) => {
         max_uses: 1,
         current_uses: 0,
         is_active: true,
-        expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
+        expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
       })
       .select()
       .single();
 
     if (referredDiscountError) {
-      console.error('Failed to create referred user discount:', referredDiscountError);
+      logStep('Failed to create referred user discount', { error: referredDiscountError });
     } else {
       // Create reward record for referred user
       await supabaseAdmin
@@ -121,7 +159,7 @@ serve(async (req) => {
         });
     }
 
-    console.log(`Referral completed: ${referral.id}. Rewards created for referrer and referred.`);
+    logStep(`Referral completed: ${referral.id}. Commission: £${(commissionAmount / 100).toFixed(2)}`);
 
     return new Response(
       JSON.stringify({ 
@@ -129,13 +167,15 @@ serve(async (req) => {
         referralId: referral.id,
         referrerCode: referrerDiscountCode,
         referredCode: referredDiscountCode,
+        commissionAmount: commissionAmount,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
-    console.error("Error processing referral:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logStep("Error processing referral", { error: errorMessage });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
