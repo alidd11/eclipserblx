@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
 import { FeaturedProductsCard } from './FeaturedProductsCard';
+import { DiscordWidget } from './DiscordWidget';
 import { SectionWrapper } from './SectionWrapper';
 import { motion } from 'framer-motion';
 import {
@@ -12,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden">
@@ -178,15 +180,18 @@ export function HeroSection() {
             <FeaturedProductsCard />
           </motion.div>
 
-          {/* Stats & Reviews Cards */}
+          {/* Stats, Reviews & Discord Cards */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
-            className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"
+            className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
             <StatsCard />
             <ReviewCard />
+            <div className="sm:col-span-2 lg:col-span-1">
+              <DiscordWidget />
+            </div>
           </motion.div>
         </motion.div>
       </SectionWrapper>
