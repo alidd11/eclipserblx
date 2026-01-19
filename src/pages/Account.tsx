@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2 } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,6 +63,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [isUnlinkingRoblox, setIsUnlinkingRoblox] = useState(false);
   const [robloxVerifiedData, setRobloxVerifiedData] = useState<{ id: string; name: string; displayName: string } | null>(null);
   const [robloxVerificationError, setRobloxVerificationError] = useState<string | null>(null);
+  const [robloxPremiumStatus, setRobloxPremiumStatus] = useState<{ hasPremium: boolean; checked: boolean }>({ hasPremium: false, checked: false });
+  const [robloxGroupInfo, setRobloxGroupInfo] = useState<{ inGroup: boolean; groupName?: string; roleName?: string; rank?: number; checked: boolean }>({ inGroup: false, checked: false });
 
   // Get initial tab from URL hash
   const getInitialTab = () => {
@@ -168,6 +170,57 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     enabled: !!profile?.discord_id,
     staleTime: 1000 * 60 * 30, // Cache for 30 minutes
   });
+
+  // Fetch Roblox premium status and group info when linked
+  useEffect(() => {
+    const fetchRobloxStatus = async () => {
+      if (!profile?.roblox_user_id) {
+        setRobloxPremiumStatus({ hasPremium: false, checked: false });
+        setRobloxGroupInfo({ inGroup: false, checked: false });
+        return;
+      }
+
+      // Fetch premium status
+      try {
+        const { data: premiumData } = await supabase.functions.invoke('verify-roblox-premium', {
+          body: { roblox_user_id: profile.roblox_user_id },
+        });
+        setRobloxPremiumStatus({ hasPremium: premiumData?.hasPremium || false, checked: true });
+      } catch (e) {
+        console.error('Failed to check Roblox premium:', e);
+        setRobloxPremiumStatus({ hasPremium: false, checked: true });
+      }
+
+      // Fetch group info (get group ID from settings)
+      try {
+        const { data: groupIdSetting } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'roblox_group_id')
+          .single();
+
+        if (groupIdSetting?.value) {
+          const { data: groupData } = await supabase.functions.invoke('verify-roblox-group', {
+            body: { roblox_user_id: profile.roblox_user_id, group_id: groupIdSetting.value },
+          });
+          setRobloxGroupInfo({
+            inGroup: groupData?.inGroup || false,
+            groupName: groupData?.groupName,
+            roleName: groupData?.role?.name,
+            rank: groupData?.role?.rank,
+            checked: true,
+          });
+        } else {
+          setRobloxGroupInfo({ inGroup: false, checked: true });
+        }
+      } catch (e) {
+        console.error('Failed to check Roblox group:', e);
+        setRobloxGroupInfo({ inGroup: false, checked: true });
+      }
+    };
+
+    fetchRobloxStatus();
+  }, [profile?.roblox_user_id]);
 
   // Ensure a profile row exists (some older accounts may not have one).
   useEffect(() => {
@@ -748,8 +801,22 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                         <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{profile.roblox_username}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="font-medium text-sm truncate">{profile.roblox_username}</p>
+                        {robloxPremiumStatus.checked && robloxPremiumStatus.hasPremium && (
+                          <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] px-1.5 py-0 h-4">
+                            <Crown className="w-2 h-2 mr-0.5" />
+                            Premium
+                          </Badge>
+                        )}
+                        {robloxGroupInfo.checked && robloxGroupInfo.inGroup && (
+                          <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 text-[9px] px-1.5 py-0 h-4">
+                            <Users className="w-2 h-2 mr-0.5" />
+                            {robloxGroupInfo.roleName || 'Member'}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-[10px] text-muted-foreground font-mono truncate">
                         ID: {profile.roblox_user_id}
                       </p>

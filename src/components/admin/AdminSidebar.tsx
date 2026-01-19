@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -113,6 +113,7 @@ const navGroups: NavGroup[] = [
       { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
       { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', roles: ['admin'] },
+      { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', roles: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', roles: [] },
     ],
