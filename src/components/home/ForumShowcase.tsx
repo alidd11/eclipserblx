@@ -5,63 +5,84 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionWrapper } from './SectionWrapper';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
-
 export const ForumShowcase = memo(function ForumShowcase() {
-  const autoplayPlugin = useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false })
-  );
-
-  const { data: categories, isLoading } = useQuery({
+  const autoplayPlugin = useRef(Autoplay({
+    delay: 3000,
+    stopOnInteraction: false
+  }));
+  const {
+    data: categories,
+    isLoading
+  } = useQuery({
     queryKey: ['forum-categories-home'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('forum_categories')
-        .select('*')
-        .order('display_order', { ascending: true })
-        .limit(4);
-
+      const {
+        data,
+        error
+      } = await supabase.from('forum_categories').select('*').order('display_order', {
+        ascending: true
+      }).limit(4);
       if (error) throw error;
       return data;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5
   });
-
   const iconMap = useMemo<Record<string, React.ElementType>>(() => ({
     MessageSquare,
     Users,
-    TrendingUp,
+    TrendingUp
   }), []);
-
-  const colorMap: Record<number, { gradient: string; color: string; bgColor: string; glowColor: string }> = {
-    0: { gradient: 'from-purple-500/20 to-purple-600/20', color: 'text-purple-400', bgColor: 'bg-purple-500/20', glowColor: 'shadow-purple-500/30' },
-    1: { gradient: 'from-blue-500/20 to-blue-600/20', color: 'text-blue-400', bgColor: 'bg-blue-500/20', glowColor: 'shadow-blue-500/30' },
-    2: { gradient: 'from-emerald-500/20 to-emerald-600/20', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20', glowColor: 'shadow-emerald-500/30' },
-    3: { gradient: 'from-amber-500/20 to-amber-600/20', color: 'text-amber-400', bgColor: 'bg-amber-500/20', glowColor: 'shadow-amber-500/30' },
+  const colorMap: Record<number, {
+    gradient: string;
+    color: string;
+    bgColor: string;
+    glowColor: string;
+  }> = {
+    0: {
+      gradient: 'from-purple-500/20 to-purple-600/20',
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-500/20',
+      glowColor: 'shadow-purple-500/30'
+    },
+    1: {
+      gradient: 'from-blue-500/20 to-blue-600/20',
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-500/20',
+      glowColor: 'shadow-blue-500/30'
+    },
+    2: {
+      gradient: 'from-emerald-500/20 to-emerald-600/20',
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/20',
+      glowColor: 'shadow-emerald-500/30'
+    },
+    3: {
+      gradient: 'from-amber-500/20 to-amber-600/20',
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-500/20',
+      glowColor: 'shadow-amber-500/30'
+    }
   };
-
   if (isLoading) {
-    return (
-      <SectionWrapper>
+    return <SectionWrapper>
         <Skeleton className="h-64 rounded-2xl" />
-      </SectionWrapper>
-    );
+      </SectionWrapper>;
   }
-
-  return (
-    <SectionWrapper>
-      <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
+  return <SectionWrapper>
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} whileInView={{
+      opacity: 1,
+      y: 0
+    }} viewport={{
+      once: true
+    }} transition={{
+      duration: 0.5
+    }}>
           {/* Main Card Container - matching hero/stats style */}
           <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-emerald-500/5 p-6 md:p-8 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
             {/* Animated background glow */}
@@ -69,7 +90,9 @@ export const ForumShowcase = memo(function ForumShowcase() {
             <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-primary/15 rounded-full blur-3xl opacity-50" />
             
             {/* Scanline effect */}
-            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)' }} />
+            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)'
+        }} />
 
             <div className="relative z-10">
               {/* Header */}
@@ -82,7 +105,7 @@ export const ForumShowcase = memo(function ForumShowcase() {
                     <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                   </div>
                   <div>
-                    <h2 className="text-xl md:text-2xl font-display font-bold">Join the Community</h2>
+                    <h2 className="text-xl md:text-2xl font-display font-bold">Join The Community</h2>
                     <p className="text-sm text-muted-foreground">Connect, share, and get help</p>
                   </div>
                 </div>
@@ -93,37 +116,24 @@ export const ForumShowcase = memo(function ForumShowcase() {
               </div>
 
               {/* Categories Carousel */}
-              <Carousel
-                opts={{
-                  align: 'start',
-                  loop: true,
-                }}
-                plugins={[autoplayPlugin.current]}
-                className="w-full"
-              >
+              <Carousel opts={{
+            align: 'start',
+            loop: true
+          }} plugins={[autoplayPlugin.current]} className="w-full">
                 <CarouselContent className="-ml-3">
                   {categories?.map((category, index) => {
-                    const IconComponent = iconMap[category.icon || ''] || MessageSquare;
-                    const colors = colorMap[index % 4];
-
-                    return (
-                      <CarouselItem key={category.id} className="pl-3 basis-full sm:basis-1/2 lg:basis-1/2">
-                        <Link
-                          to={`/forum?category=${category.slug}`}
-                          className="group/card relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-5 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 block h-full min-h-[170px]"
-                        >
+                const IconComponent = iconMap[category.icon || ''] || MessageSquare;
+                const colors = colorMap[index % 4];
+                return <CarouselItem key={category.id} className="pl-3 basis-full sm:basis-1/2 lg:basis-1/2">
+                        <Link to={`/forum?category=${category.slug}`} className="group/card relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-5 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 block h-full min-h-[170px]">
                           {/* Per-card glow */}
                           <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-30 ${colors.bgColor}`} />
                           <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-0 group-hover/card:opacity-100 transition-opacity duration-300`} />
 
                           {/* Scanline effect */}
-                          <div
-                            className="absolute inset-0 opacity-5 pointer-events-none"
-                            style={{
-                              backgroundImage:
-                                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
-                            }}
-                          />
+                          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
+                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)'
+                    }} />
 
                           <div className="relative z-10">
                             <div className={`mb-3 inline-flex items-center justify-center w-10 h-10 rounded-xl ${colors.bgColor} ${colors.color} shadow-lg ${colors.glowColor} border border-white/10`}>
@@ -144,9 +154,8 @@ export const ForumShowcase = memo(function ForumShowcase() {
                             </div>
                           </div>
                         </Link>
-                      </CarouselItem>
-                    );
-                  })}
+                      </CarouselItem>;
+              })}
                 </CarouselContent>
               </Carousel>
 
@@ -156,10 +165,7 @@ export const ForumShowcase = memo(function ForumShowcase() {
                   <MessageSquare className="h-3.5 w-3.5" />
                   <span>4 Categories</span>
                 </div>
-                <Link
-                  to="/forum"
-                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors group/link"
-                >
+                <Link to="/forum" className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors group/link">
                   View All Forums
                   <ArrowRight className="h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
                 </Link>
@@ -167,6 +173,5 @@ export const ForumShowcase = memo(function ForumShowcase() {
             </div>
           </div>
         </motion.div>
-    </SectionWrapper>
-  );
+    </SectionWrapper>;
 });
