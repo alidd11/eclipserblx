@@ -15,11 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 
 export default function AdminAffiliates() {
   const [search, setSearch] = useState('');
   const [payoutStatusFilter, setPayoutStatusFilter] = useState<string>('all');
   const queryClient = useQueryClient();
+  const { settings: affiliateSettings, isLoading: affiliateSettingsLoading } = useAffiliateSettings();
 
   // Stats query
   const { data: stats } = useQuery({
