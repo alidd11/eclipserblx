@@ -48,7 +48,8 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
-      { title: 'Referrals', icon: Gift, href: '/admin/referrals', roles: ['admin'] },
+      // Affiliate program hidden until fully configured
+      // { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
       { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', roles: ['admin'] },
     ],
   },
