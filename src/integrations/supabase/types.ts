@@ -81,6 +81,60 @@ export type Database = {
           },
         ]
       }
+      affiliate_applications: {
+        Row: {
+          audience_size: string | null
+          created_at: string
+          discord_username: string | null
+          display_name: string | null
+          email: string
+          id: string
+          notes: string | null
+          paypal_email: string | null
+          promotion_method: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audience_size?: string | null
+          created_at?: string
+          discord_username?: string | null
+          display_name?: string | null
+          email: string
+          id?: string
+          notes?: string | null
+          paypal_email?: string | null
+          promotion_method: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audience_size?: string | null
+          created_at?: string
+          discord_username?: string | null
+          display_name?: string | null
+          email?: string
+          id?: string
+          notes?: string | null
+          paypal_email?: string | null
+          promotion_method?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       affiliate_balances: {
         Row: {
           available_balance: number
@@ -170,6 +224,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          paypal_email: string | null
           processed_at: string | null
           processed_by: string | null
           status: string
@@ -182,6 +237,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          paypal_email?: string | null
           processed_at?: string | null
           processed_by?: string | null
           status?: string
@@ -194,6 +250,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          paypal_email?: string | null
           processed_at?: string | null
           processed_by?: string | null
           status?: string

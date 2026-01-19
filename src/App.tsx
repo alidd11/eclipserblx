@@ -84,6 +84,7 @@ const AdminArchivedApplications = lazy(() => import("./pages/admin/ArchivedAppli
 const AdminJobChannels = lazy(() => import("./pages/admin/JobChannels"));
 const AdminStaffDirectory = lazy(() => import("./pages/admin/StaffDirectory"));
 const AdminStaffProfile = lazy(() => import("./pages/admin/StaffProfile"));
+const AdminAffiliateApplications = lazy(() => import("./pages/admin/AffiliateApplications"));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -187,6 +188,7 @@ const App = () => (
                   <Route path="/admin/job-channels" element={<AdminJobChannels />} />
                   <Route path="/admin/staff-directory" element={<AdminStaffDirectory />} />
                   <Route path="/admin/staff/:userId" element={<AdminStaffProfile />} />
+                  <Route path="/admin/affiliate-applications" element={<AdminAffiliateApplications />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
