@@ -12,6 +12,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { supabase } from '@/integrations/supabase/client';
 import { Check, X, Sparkles, Trash2, Plus, Globe, Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Vibrate, Key, RefreshCw, Copy, BellRing } from 'lucide-react';
 import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
+import { AffiliateSettingsCard } from '@/components/admin/AffiliateSettingsCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -871,6 +872,9 @@ export default function AdminSettings() {
 
               {/* PWA Force Update - Admin Only */}
               {isAdmin && <ForceUpdateCard />}
+
+              {/* Affiliate Program Settings - Admin Only */}
+              {isAdmin && <AffiliateSettingsCard />}
 
               {/* Roblox Integration */}
               <Card className="bg-card border-border">

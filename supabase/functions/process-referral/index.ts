@@ -6,12 +6,45 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const COMMISSION_RATE = 0.10; // 10% commission
+const DEFAULT_COMMISSION_RATE = 0.10; // 10% default commission
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[PROCESS-REFERRAL] ${step}${detailsStr}`);
 };
+
+// Fetch commission rate from settings table
+async function getCommissionRate(supabaseAdmin: any): Promise<number> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('settings')
+      .select('value')
+      .eq('key', 'affiliate_commission_rate')
+      .single();
+
+    if (error || !data) {
+      logStep("Using default commission rate", { reason: error?.message || 'No setting found' });
+      return DEFAULT_COMMISSION_RATE;
+    }
+
+    // Parse the value - it could be stored as "10" (string) or 10 (number)
+    const rawValue = typeof data.value === 'string' 
+      ? data.value.replace(/^"|"$/g, '') 
+      : data.value;
+    const rate = parseFloat(String(rawValue)) / 100; // Convert percentage to decimal
+    
+    if (isNaN(rate) || rate < 0 || rate > 1) {
+      logStep("Invalid commission rate, using default", { rawValue, parsed: rate });
+      return DEFAULT_COMMISSION_RATE;
+    }
+
+    logStep("Fetched commission rate from settings", { rate: rate * 100 + '%' });
+    return rate;
+  } catch (err) {
+    logStep("Error fetching commission rate, using default", { error: String(err) });
+    return DEFAULT_COMMISSION_RATE;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,6 +68,9 @@ serve(async (req) => {
     }
 
     logStep("Processing referral", { orderId, userId, orderTotal });
+
+    // Fetch dynamic commission rate from settings
+    const commissionRate = await getCommissionRate(supabaseAdmin);
 
     // Check if this user was referred and hasn't completed a referral yet
     const { data: referral, error: referralError } = await supabaseAdmin
@@ -66,9 +102,9 @@ serve(async (req) => {
 
     // Calculate commission (order total should be in pence)
     const orderTotalPence = orderTotal ? Math.round(orderTotal * 100) : 0;
-    const commissionAmount = Math.round(orderTotalPence * COMMISSION_RATE);
+    const commissionAmount = Math.round(orderTotalPence * commissionRate);
 
-    logStep("Calculated commission", { orderTotalPence, commissionRate: COMMISSION_RATE, commissionAmount });
+    logStep("Calculated commission", { orderTotalPence, commissionRate, commissionAmount });
 
     // Create affiliate commission record and update balance
     if (commissionAmount > 0) {
@@ -79,7 +115,7 @@ serve(async (req) => {
           referred_user_id: userId,
           order_id: orderId,
           order_total: orderTotalPence,
-          commission_rate: COMMISSION_RATE,
+          commission_rate: commissionRate,
           commission_amount: commissionAmount,
           status: 'pending',
         });
