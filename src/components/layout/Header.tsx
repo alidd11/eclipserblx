@@ -29,7 +29,11 @@ const legalLinks = [
 
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 
-export const Header = memo(function Header() {
+interface HeaderProps {
+  showDesktopNav?: boolean;
+}
+
+export const Header = memo(function Header({ showDesktopNav = true }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
@@ -103,18 +107,20 @@ export const Header = memo(function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Navigation - only show when not using sidebar */}
+          {showDesktopNav && (
+            <nav className="hidden md:flex items-center gap-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 sm:gap-2">
