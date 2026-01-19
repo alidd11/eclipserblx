@@ -559,12 +559,12 @@ export default function AdminAffiliates() {
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground">Commission Rate</p>
-                <p className="text-2xl font-bold">10%</p>
+                <p className="text-2xl font-bold">{affiliateSettings.commissionRate}%</p>
                 <p className="text-xs text-muted-foreground mt-1">On all referred purchases</p>
               </div>
               <div className="p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground">Minimum Payout</p>
-                <p className="text-2xl font-bold">£10.00</p>
+                <p className="text-2xl font-bold">£{affiliateSettings.minimumPayout.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground mt-1">Via Stripe Connect</p>
               </div>
               <div className="p-4 rounded-lg bg-muted/50">
