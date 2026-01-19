@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search
+  User, LogOut, LucideIcon, Home, Search, TrendingUp
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -94,6 +94,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Categories', icon: Grid3X3, href: '/categories' },
         { title: 'Featured', icon: Star, href: '/products?featured=true' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+      ],
+    },
+    {
+      id: 'affiliate',
+      title: 'Affiliate',
+      icon: TrendingUp,
+      items: [
+        { title: 'Affiliate Program', icon: TrendingUp, href: '/affiliate' },
       ],
     },
     {

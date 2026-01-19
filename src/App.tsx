@@ -49,6 +49,7 @@ const BotInstallation = lazy(() => import("./pages/BotInstallation"));
 const NotificationPreferences = lazy(() => import("./pages/NotificationPreferences"));
 const EclipsePlus = lazy(() => import("./pages/EclipsePlus"));
 const LiveChat = lazy(() => import("./pages/LiveChat"));
+const Affiliate = lazy(() => import("./pages/Affiliate"));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -154,6 +155,7 @@ const App = () => (
                   <Route path="/bot-installation" element={<BotInstallation />} />
                   <Route path="/notifications" element={<NotificationPreferences />} />
                   <Route path="/eclipse-plus" element={<EclipsePlus />} />
+                  <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/support/chat" element={<LiveChat />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
