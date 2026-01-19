@@ -92,54 +92,24 @@ serve(async (req) => {
 
     logStep("Profile data fetched", { discordId, discordUsername, robloxUserId, robloxUsername });
 
-    // Build the product names string
+    // Build the product names string (each on new line if multiple)
     const productList = productNames.length > 0 
-      ? productNames.join(", ") 
+      ? productNames.join("\n") 
       : "Unknown Product";
 
-    // Build Discord embed fields
-    const fields = [
-      {
-        name: "Product Name",
-        value: productList,
-        inline: false,
-      },
-    ];
+    // Build description in Parcel format
+    let description = `**Product Name**\n${productList}`;
 
-    // Add Roblox field if linked
+    // Add Roblox if linked
     if (robloxUserId && robloxUsername) {
-      fields.push({
-        name: "Roblox",
-        value: `${robloxUsername} (${robloxUserId})`,
-        inline: true,
-      });
-    } else {
-      fields.push({
-        name: "Roblox",
-        value: "Not linked",
-        inline: true,
-      });
+      description += `\n**Roblox**\n${robloxUsername}\n(${robloxUserId})`;
     }
 
-    // Add Discord field if linked
+    // Add Discord if linked
     if (discordId && discordUsername) {
-      fields.push({
-        name: "Discord",
-        value: `${discordUsername} (${discordId})`,
-        inline: true,
-      });
+      description += `\n**Discord**\n${discordUsername}\n(${discordId})`;
     } else if (discordId) {
-      fields.push({
-        name: "Discord",
-        value: `<@${discordId}> (${discordId})`,
-        inline: true,
-      });
-    } else {
-      fields.push({
-        name: "Discord",
-        value: "Not linked",
-        inline: true,
-      });
+      description += `\n**Discord**\n<@${discordId}>\n(${discordId})`;
     }
 
     // Get Roblox avatar thumbnail if user has Roblox linked
@@ -161,15 +131,12 @@ serve(async (req) => {
       }
     }
 
-    // Build Discord embed (Parcel-style)
+    // Build Discord embed (Parcel-style with description instead of fields)
     const embed: Record<string, unknown> = {
       title: "New Purchase",
+      description,
       color: 0x9b59b6, // Purple color
-      fields,
       timestamp: new Date().toISOString(),
-      footer: {
-        text: `Order ID: ${orderId.slice(0, 8)}`,
-      },
     };
 
     // Add thumbnail if we have a Roblox avatar
