@@ -20,6 +20,7 @@ import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useSearchCommand } from '@/hooks/useSearchCommand';
+import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 
 interface NavItem {
   title: string;
@@ -65,6 +66,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
+  const { settings: affiliateSettings } = useAffiliateSettings();
   const searchCommand = useSearchCommand();
   const navigate = useNavigate();
   const location = useLocation();
@@ -96,14 +98,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
       ],
     },
-    {
+    // Only show affiliate section if program is enabled
+    ...(affiliateSettings.isEnabled ? [{
       id: 'affiliate',
       title: 'Affiliate',
       icon: TrendingUp,
       items: [
         { title: 'Affiliate Program', icon: TrendingUp, href: '/affiliate' },
       ],
-    },
+    }] : []),
     {
       id: 'community',
       title: 'Community',
