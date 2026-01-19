@@ -12,12 +12,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Check, X, Clock, User, Mail, MessageSquare, ExternalLink, Search, Users, DollarSign } from "lucide-react";
+import { Check, X, Clock, User, Mail, MessageSquare, ExternalLink, Search, Users, DollarSign, Pencil, Hash } from "lucide-react";
 
 interface AffiliateApplication {
   id: string;
   user_id: string;
   email: string;
+  affiliate_id: string;
   display_name: string | null;
   paypal_email: string | null;
   discord_username: string | null;
@@ -37,6 +38,15 @@ const AffiliateApplications = () => {
   const [selectedApplication, setSelectedApplication] = useState<AffiliateApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({
+    display_name: "",
+    paypal_email: "",
+    discord_username: "",
+    promotion_method: "",
+    audience_size: "",
+    notes: "",
+  });
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["affiliate-applications"],
@@ -147,10 +157,51 @@ const AffiliateApplications = () => {
 
   const filteredApplications = applications.filter(
     (app) =>
-      app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.affiliate_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.discord_username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const updateApplicationMutation = useMutation({
+    mutationFn: async (data: typeof editForm) => {
+      if (!selectedApplication) throw new Error("No application selected");
+
+      const { error } = await supabase
+        .from("affiliate_applications")
+        .update({
+          display_name: data.display_name || null,
+          paypal_email: data.paypal_email || null,
+          discord_username: data.discord_username || null,
+          promotion_method: data.promotion_method,
+          audience_size: data.audience_size || null,
+          notes: data.notes || null,
+        })
+        .eq("id", selectedApplication.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Application updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["affiliate-applications"] });
+      setShowEditDialog(false);
+      setSelectedApplication(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to update: " + error.message);
+    },
+  });
+
+  const openEditDialog = (application: AffiliateApplication) => {
+    setEditForm({
+      display_name: application.display_name || "",
+      paypal_email: application.paypal_email || "",
+      discord_username: application.discord_username || "",
+      promotion_method: application.promotion_method,
+      audience_size: application.audience_size || "",
+      notes: application.notes || "",
+    });
+    setShowEditDialog(true);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -176,8 +227,8 @@ const AffiliateApplications = () => {
               {getStatusBadge(application.status)}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <Mail className="w-3 h-3" />
-              <span className="truncate">{application.email}</span>
+              <Hash className="w-3 h-3" />
+              <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{application.affiliate_id}</code>
             </div>
             <p className="text-sm text-muted-foreground line-clamp-2">{application.promotion_method}</p>
           </div>
@@ -257,7 +308,7 @@ const AffiliateApplications = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, email, or Discord..."
+            placeholder="Search by ID, name, or Discord..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -294,10 +345,20 @@ const AffiliateApplications = () => {
         </Tabs>
 
         {/* Application Detail Dialog */}
-        <Dialog open={!!selectedApplication && !showRejectDialog} onOpenChange={() => setSelectedApplication(null)}>
+        <Dialog open={!!selectedApplication && !showRejectDialog && !showEditDialog} onOpenChange={() => setSelectedApplication(null)}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Application Details</DialogTitle>
+              <DialogTitle className="flex items-center justify-between">
+                <span>Application Details</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => selectedApplication && openEditDialog(selectedApplication)}
+                >
+                  <Pencil className="w-4 h-4 mr-1" />
+                  Edit
+                </Button>
+              </DialogTitle>
               <DialogDescription>
                 Review this affiliate application
               </DialogDescription>
@@ -312,13 +373,13 @@ const AffiliateApplications = () => {
 
                 <div className="grid gap-3">
                   <div>
-                    <Label className="text-xs text-muted-foreground">Display Name</Label>
-                    <p className="font-medium">{selectedApplication.display_name || "Not set"}</p>
+                    <Label className="text-xs text-muted-foreground">Affiliate ID</Label>
+                    <code className="font-mono text-sm bg-muted px-2 py-1 rounded block mt-1">{selectedApplication.affiliate_id}</code>
                   </div>
 
                   <div>
-                    <Label className="text-xs text-muted-foreground">Email</Label>
-                    <p className="font-medium">{selectedApplication.email}</p>
+                    <Label className="text-xs text-muted-foreground">Display Name</Label>
+                    <p className="font-medium">{selectedApplication.display_name || "Not set"}</p>
                   </div>
 
                   {selectedApplication.paypal_email && (
@@ -391,6 +452,95 @@ const AffiliateApplications = () => {
                 )}
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit Application</DialogTitle>
+              <DialogDescription>
+                Update the affiliate application details
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit_display_name">Display Name</Label>
+                <Input
+                  id="edit_display_name"
+                  value={editForm.display_name}
+                  onChange={(e) => setEditForm({ ...editForm, display_name: e.target.value })}
+                  placeholder="Display name"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit_paypal_email">PayPal Email</Label>
+                <Input
+                  id="edit_paypal_email"
+                  type="email"
+                  value={editForm.paypal_email}
+                  onChange={(e) => setEditForm({ ...editForm, paypal_email: e.target.value })}
+                  placeholder="paypal@email.com"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit_discord">Discord Username</Label>
+                <Input
+                  id="edit_discord"
+                  value={editForm.discord_username}
+                  onChange={(e) => setEditForm({ ...editForm, discord_username: e.target.value })}
+                  placeholder="username#0000"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit_promotion">Promotion Method</Label>
+                <Textarea
+                  id="edit_promotion"
+                  value={editForm.promotion_method}
+                  onChange={(e) => setEditForm({ ...editForm, promotion_method: e.target.value })}
+                  placeholder="How they plan to promote..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit_audience">Audience Size</Label>
+                <Input
+                  id="edit_audience"
+                  value={editForm.audience_size}
+                  onChange={(e) => setEditForm({ ...editForm, audience_size: e.target.value })}
+                  placeholder="e.g., 10,000 followers"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit_notes">Additional Notes</Label>
+                <Textarea
+                  id="edit_notes"
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  placeholder="Any other information..."
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => updateApplicationMutation.mutate(editForm)}
+                disabled={updateApplicationMutation.isPending || !editForm.promotion_method.trim()}
+              >
+                {updateApplicationMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
