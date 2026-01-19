@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home
+  User, LogOut, LucideIcon, Home, Search
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,7 @@ import { hapticTap } from '@/lib/haptics';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
+import { useSearchCommand } from '@/hooks/useSearchCommand';
 
 interface NavItem {
   title: string;
@@ -55,18 +56,24 @@ type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 interface CustomerSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onNavigate?: () => void;
+  isMobileDrawer?: boolean;
   className?: string;
 }
 
-export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSidebarProps) {
+export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: CustomerSidebarProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
+  const searchCommand = useSearchCommand();
   const navigate = useNavigate();
   const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
+
+  // Use collapsed from props unless in mobile drawer mode
+  const isCollapsed = isMobileDrawer ? false : collapsed;
 
   // Navigation groups
   const navGroups: NavGroup[] = [
@@ -195,6 +202,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
 
   const handleNavClick = () => {
     hapticTap();
+    onNavigate?.();
   };
 
   const toggleGroup = (groupId: string) => {
@@ -224,10 +232,10 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
             )} />
           )}
         </div>
-        {!collapsed && (
+        {!isCollapsed && (
           <span className="min-w-0 truncate leading-none flex-1">{item.title}</span>
         )}
-        {!collapsed && item.showStatusDot && (
+        {!isCollapsed && item.showStatusDot && (
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
         )}
       </>
@@ -236,7 +244,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
     const linkClassName = cn(
       "rounded-lg text-sm font-medium select-none",
       "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-      collapsed
+      isCollapsed
         ? "flex items-center justify-center py-2.5"
         : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
       isActive
@@ -246,7 +254,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
 
     // External link (Discord)
     if (item.external) {
-      if (collapsed) {
+      if (isCollapsed) {
         return (
           <Tooltip key={item.title}>
             <TooltipTrigger asChild>
@@ -279,7 +287,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
     }
 
     // Internal link
-    if (!collapsed) {
+    if (!isCollapsed) {
       return (
         <NavLink
           key={item.href}
@@ -329,7 +337,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
     }
 
     // Collapsed: show group icon with tooltip menu
-    if (collapsed) {
+    if (isCollapsed) {
       return (
         <div key={group.id} className="mb-1">
           <Tooltip>
@@ -443,7 +451,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
     <aside 
       className={cn(
         "bg-card flex flex-col transition-all duration-300 shrink-0 h-screen sticky top-0 border-r border-border",
-        collapsed ? "w-14" : "w-64",
+        isCollapsed ? "w-14" : "w-64",
         className
       )}
       data-gesture-exempt="true"
@@ -452,7 +460,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
       <div className="p-4 border-b border-border pt-[max(1rem,env(safe-area-inset-top))]">
         <Link to="/" className="flex items-center gap-2" onClick={handleNavClick}>
           <EclipseLogo size="sm" />
-          {!collapsed && (
+          {!isCollapsed && (
             <span className="font-display text-lg font-bold gradient-text">
               {SITE_NAME}
             </span>
@@ -475,7 +483,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
               onClick={handleNavClick}
               className={cn(
                 "flex items-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
-                collapsed ? "justify-center py-2.5" : "gap-3 px-3 py-2"
+                isCollapsed ? "justify-center py-2.5" : "gap-3 px-3 py-2"
               )}
             >
               <div className="relative shrink-0">
@@ -486,10 +494,10 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
                   </span>
                 )}
               </div>
-              {!collapsed && <span>Cart</span>}
+              {!isCollapsed && <span>Cart</span>}
             </Link>
           </TooltipTrigger>
-          {collapsed && <TooltipContent side="right">Cart {itemCount > 0 && `(${itemCount})`}</TooltipContent>}
+          {isCollapsed && <TooltipContent side="right">Cart {itemCount > 0 && `(${itemCount})`}</TooltipContent>}
         </Tooltip>
 
         {/* Account or Sign In */}
@@ -502,14 +510,14 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
                   onClick={handleNavClick}
                   className={cn(
                     "flex items-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
-                    collapsed ? "justify-center py-2.5" : "gap-3 px-3 py-2"
+                    isCollapsed ? "justify-center py-2.5" : "gap-3 px-3 py-2"
                   )}
                 >
                   <User className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span>My Account</span>}
+                  {!isCollapsed && <span>My Account</span>}
                 </Link>
               </TooltipTrigger>
-              {collapsed && <TooltipContent side="right">My Account</TooltipContent>}
+              {isCollapsed && <TooltipContent side="right">My Account</TooltipContent>}
             </Tooltip>
 
             <Tooltip>
@@ -519,7 +527,7 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
                   size="sm"
                   className={cn(
                     "w-full text-muted-foreground hover:text-destructive hover:bg-muted",
-                    collapsed ? "justify-center px-2" : "justify-start"
+                    isCollapsed ? "justify-center px-2" : "justify-start"
                   )}
                   onClick={() => {
                     hapticTap();
@@ -527,10 +535,10 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
                   }}
                 >
                   <LogOut className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Sign Out</span>}
+                  {!isCollapsed && <span className="ml-3">Sign Out</span>}
                 </Button>
               </TooltipTrigger>
-              {collapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
+              {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
             </Tooltip>
           </>
         ) : (
@@ -541,33 +549,34 @@ export function CustomerSidebar({ collapsed, onToggle, className }: CustomerSide
                 onClick={handleNavClick}
                 className={cn(
                   "flex items-center rounded-lg text-sm font-medium transition-all duration-100 active:scale-[0.97]",
-                  collapsed 
+                  isCollapsed 
                     ? "justify-center py-2.5 gradient-button text-primary-foreground" 
                     : "gap-3 px-3 py-2 gradient-button text-primary-foreground"
                 )}
               >
                 <User className="h-4 w-4 shrink-0" />
-                {!collapsed && <span>Sign In</span>}
+                {!isCollapsed && <span>Sign In</span>}
               </Link>
             </TooltipTrigger>
-            {collapsed && <TooltipContent side="right">Sign In</TooltipContent>}
+            {isCollapsed && <TooltipContent side="right">Sign In</TooltipContent>}
           </Tooltip>
         )}
 
-        {/* Collapse Toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "w-full text-muted-foreground hover:text-foreground",
-            collapsed ? "justify-center px-2" : "justify-start"
-          )}
-          onClick={() => {
-            hapticTap();
-            onToggle();
-          }}
-        >
-          {collapsed ? (
+        {/* Collapse Toggle - hide in mobile drawer */}
+        {!isMobileDrawer && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "w-full text-muted-foreground hover:text-foreground",
+              isCollapsed ? "justify-center px-2" : "justify-start"
+            )}
+            onClick={() => {
+              hapticTap();
+              onToggle();
+            }}
+          >
+            {isCollapsed ? (
             <ChevronRight className="h-4 w-4" />
           ) : (
             <>
