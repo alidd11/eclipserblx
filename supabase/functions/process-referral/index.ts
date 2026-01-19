@@ -70,7 +70,7 @@ serve(async (req) => {
 
     logStep("Calculated commission", { orderTotalPence, commissionRate: COMMISSION_RATE, commissionAmount });
 
-    // Create affiliate commission record
+    // Create affiliate commission record and update balance
     if (commissionAmount > 0) {
       const { error: commissionError } = await supabaseAdmin
         .from('affiliate_commissions')
@@ -88,6 +88,40 @@ serve(async (req) => {
         logStep("Failed to create commission", { error: commissionError });
       } else {
         logStep("Commission created successfully");
+
+        // Update or create affiliate balance
+        const { data: existingBalance } = await supabaseAdmin
+          .from('affiliate_balances')
+          .select('*')
+          .eq('user_id', referral.referrer_id)
+          .single();
+
+        if (existingBalance) {
+          // Update existing balance
+          await supabaseAdmin
+            .from('affiliate_balances')
+            .update({
+              available_balance: existingBalance.available_balance + commissionAmount,
+              total_earned: existingBalance.total_earned + commissionAmount,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', referral.referrer_id);
+          logStep("Updated affiliate balance", { 
+            userId: referral.referrer_id, 
+            newBalance: existingBalance.available_balance + commissionAmount 
+          });
+        } else {
+          // Create new balance record
+          await supabaseAdmin
+            .from('affiliate_balances')
+            .insert({
+              user_id: referral.referrer_id,
+              available_balance: commissionAmount,
+              total_earned: commissionAmount,
+              total_paid: 0,
+            });
+          logStep("Created affiliate balance", { userId: referral.referrer_id, balance: commissionAmount });
+        }
       }
     }
 
