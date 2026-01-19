@@ -376,7 +376,7 @@ export default function AdminSettings() {
           </CardHeader>
         </Card>
 
-        <div className="grid gap-6 max-w-2xl">
+        <div className="grid gap-6">
           {/* Notifications Settings */}
           <Card className="bg-card border-border">
             <CardHeader>
