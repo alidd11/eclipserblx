@@ -310,7 +310,7 @@ serve(async (req) => {
 
     // Process referral if applicable
     if (userId) {
-      logStep("Processing referral for user", { userId });
+      logStep("Processing referral for user", { userId, orderTotal: order.total });
       try {
         const referralResponse = await fetch(
           `${Deno.env.get("SUPABASE_URL")}/functions/v1/process-referral`,
@@ -320,7 +320,7 @@ serve(async (req) => {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
             },
-            body: JSON.stringify({ orderId: order.id, userId }),
+            body: JSON.stringify({ orderId: order.id, userId, orderTotal: order.total }),
           }
         );
 
