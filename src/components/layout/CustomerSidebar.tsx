@@ -461,7 +461,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-card flex flex-col transition-all duration-300 shrink-0 h-screen sticky top-0 border-r border-border",
+        "bg-card flex flex-col transition-all duration-300 shrink-0 h-screen sticky top-0",
+        !isMobileDrawer && "border-r border-border",
         isCollapsed ? "w-14" : "w-64",
         className
       )}
