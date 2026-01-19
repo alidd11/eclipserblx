@@ -94,6 +94,22 @@ serve(async (req) => {
       throw new Error("You already have a pending payout request");
     }
 
+    // Deduct from available balance first
+    const newBalance = balance.available_balance - amount;
+    const { error: updateBalanceError } = await supabaseClient
+      .from('affiliate_balances')
+      .update({ 
+        available_balance: newBalance,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
+
+    if (updateBalanceError) {
+      throw new Error("Failed to update balance");
+    }
+
+    logStep("Balance deducted", { previousBalance: balance.available_balance, newBalance, amount });
+
     // Create payout request
     const { data: payout, error: payoutError } = await supabaseClient
       .from('affiliate_payouts')
@@ -107,6 +123,14 @@ serve(async (req) => {
       .single();
 
     if (payoutError) {
+      // Rollback balance deduction
+      await supabaseClient
+        .from('affiliate_balances')
+        .update({ 
+          available_balance: balance.available_balance,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
       throw new Error("Failed to create payout request");
     }
 

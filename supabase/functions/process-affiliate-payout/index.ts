@@ -105,7 +105,22 @@ serve(async (req) => {
       })
       .eq('id', payoutId);
 
-    // The balance will be updated by the database trigger
+    // Update total_paid in affiliate_balances
+    const { data: currentBalance } = await supabaseClient
+      .from('affiliate_balances')
+      .select('total_paid')
+      .eq('user_id', payout.user_id)
+      .single();
+
+    if (currentBalance) {
+      await supabaseClient
+        .from('affiliate_balances')
+        .update({
+          total_paid: currentBalance.total_paid + payout.amount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', payout.user_id);
+    }
 
     logStep("Payout completed", { payoutId, transferId: transfer.id });
 
