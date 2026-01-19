@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { useSearchCommand } from '@/hooks/useSearchCommand';
+import { hapticTap } from '@/lib/haptics';
 
 const navLinks = [
   { href: '/products', label: 'Products', icon: Package },
@@ -31,12 +33,14 @@ type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 
 interface HeaderProps {
   showDesktopNav?: boolean;
+  onMenuClick?: () => void;
 }
 
-export const Header = memo(function Header({ showDesktopNav = true }: HeaderProps) {
+export const Header = memo(function Header({ showDesktopNav = true, onMenuClick }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
+  const searchCommand = useSearchCommand();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -88,14 +92,20 @@ export const Header = memo(function Header({ showDesktopNav = true }: HeaderProp
         <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Left side - Mobile menu + Logo */}
           <div className="flex items-center gap-2">
-            {/* Mobile menu button */}
+            {/* Mobile menu button - uses onMenuClick if provided, otherwise internal state */}
             <Button
               variant="ghost"
               size="icon"
               className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                if (onMenuClick) {
+                  onMenuClick();
+                } else {
+                  setMobileMenuOpen(!mobileMenuOpen);
+                }
+              }}
             >
-              {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
+              {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
 
             {/* Logo */}
@@ -143,8 +153,16 @@ export const Header = memo(function Header({ showDesktopNav = true }: HeaderProp
               </Button>
             </a>
 
-            {/* Search - hidden on mobile, accessible via menu */}
-            <Button variant="ghost" size="icon" className="hidden sm:flex h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+            {/* Search - triggers command palette */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                hapticTap();
+                searchCommand?.toggle();
+              }}
+            >
               <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
 
