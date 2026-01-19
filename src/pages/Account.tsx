@@ -21,6 +21,7 @@ import { NewBadgeToast } from '@/components/badges/NewBadgeToast';
 import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
 import { ReferralCard } from '@/components/account/ReferralCard';
+import { AffiliateCard } from '@/components/account/AffiliateCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
@@ -736,6 +737,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
             {/* Referral Card */}
             <ReferralCard />
+
+            {/* Affiliate Earnings Card */}
+            <AffiliateCard />
           </TabsContent>
 
           {/* Shopping Tab */}

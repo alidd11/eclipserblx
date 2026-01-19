@@ -122,3 +122,15 @@ enabled = true
 
 [functions.send-order-discord-notification]
 verify_jwt = false
+
+[functions.create-connect-account]
+verify_jwt = false
+
+[functions.check-connect-status]
+verify_jwt = false
+
+[functions.request-affiliate-payout]
+verify_jwt = false
+
+[functions.process-affiliate-payout]
+verify_jwt = false
