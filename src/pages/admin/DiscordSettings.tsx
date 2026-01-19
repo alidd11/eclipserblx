@@ -8,19 +8,21 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface DiscordSettings {
   discord_invite_url: string;
   discord_webhook_url: string;
   review_discord_webhook_url: string;
+  discord_widget_server_id: string;
 }
 
 const DEFAULT_SETTINGS: DiscordSettings = {
   discord_invite_url: '',
   discord_webhook_url: '',
   review_discord_webhook_url: '',
+  discord_widget_server_id: '',
 };
 
 export default function DiscordSettings() {
@@ -58,7 +60,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -71,6 +73,8 @@ export default function DiscordSettings() {
           settingsMap.discord_webhook_url = String(val);
         } else if (item.key === 'review_discord_webhook_url') {
           settingsMap.review_discord_webhook_url = String(val);
+        } else if (item.key === 'discord_widget_server_id') {
+          settingsMap.discord_widget_server_id = String(val);
         }
       });
 
@@ -384,10 +388,14 @@ export default function DiscordSettings() {
         </Card>
 
         <Tabs defaultValue="invite" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
             <TabsTrigger value="invite" className="gap-2">
               <Link2 className="h-4 w-4 hidden sm:block" />
               Invite Link
+            </TabsTrigger>
+            <TabsTrigger value="widget" className="gap-2">
+              <Users className="h-4 w-4 hidden sm:block" />
+              Widget
             </TabsTrigger>
             <TabsTrigger value="orders" className="gap-2">
               <Webhook className="h-4 w-4 hidden sm:block" />
@@ -462,6 +470,53 @@ export default function DiscordSettings() {
                     <li>Privacy Policy, Terms of Service, Refund Policy - Contact sections</li>
                     <li>Header navigation (if applicable)</li>
                   </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Discord Widget Tab */}
+          <TabsContent value="widget">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-[#5865F2]" />
+                  <CardTitle>Discord Widget</CardTitle>
+                </div>
+                <CardDescription>
+                  Display your Discord server's online members on the homepage
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="widgetServerId">Server ID</Label>
+                  <Input
+                    id="widgetServerId"
+                    value={formData.discord_widget_server_id}
+                    onChange={(e) => handleChange('discord_widget_server_id', e.target.value)}
+                    placeholder="1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Your Discord server ID (right-click server icon → Copy Server ID with Developer Mode enabled)
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+                  <p className="text-sm font-medium">How to enable the widget:</p>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    <li>Go to your Discord server settings</li>
+                    <li>Navigate to <span className="font-medium text-foreground">Widget</span> in the left sidebar</li>
+                    <li>Enable <span className="font-medium text-foreground">"Enable Server Widget"</span></li>
+                    <li>Choose which channel to show as the invite channel (optional)</li>
+                    <li>Copy your Server ID and paste it above</li>
+                  </ol>
+                </div>
+
+                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
+                  <p className="text-sm text-amber-400">
+                    <strong>Note:</strong> The server widget must be enabled in Discord settings for the online members to display. If disabled, a fallback "Join Discord" button will be shown instead.
+                  </p>
                 </div>
               </CardContent>
             </Card>
