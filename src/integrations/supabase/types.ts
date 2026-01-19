@@ -673,6 +673,42 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_boost_trials: {
+        Row: {
+          boost_count: number
+          created_at: string
+          discord_id: string
+          id: string
+          last_boost_at: string
+          revoked_at: string | null
+          trial_end: string
+          trial_start: string
+          user_id: string
+        }
+        Insert: {
+          boost_count?: number
+          created_at?: string
+          discord_id: string
+          id?: string
+          last_boost_at?: string
+          revoked_at?: string | null
+          trial_end: string
+          trial_start?: string
+          user_id: string
+        }
+        Update: {
+          boost_count?: number
+          created_at?: string
+          discord_id?: string
+          id?: string
+          last_boost_at?: string
+          revoked_at?: string | null
+          trial_end?: string
+          trial_start?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       discount_codes: {
         Row: {
           category_ids: string[] | null
