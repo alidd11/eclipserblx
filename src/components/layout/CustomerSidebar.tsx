@@ -577,14 +577,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             }}
           >
             {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <>
-              <ChevronLeft className="h-4 w-4 mr-3" />
-              Collapse
-            </>
-          )}
-        </Button>
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4 mr-3" />
+                Collapse
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Sign Out Dialog */}
