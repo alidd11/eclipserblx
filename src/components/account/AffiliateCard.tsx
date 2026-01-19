@@ -3,19 +3,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   DollarSign, 
   TrendingUp, 
-  Wallet, 
-  ExternalLink, 
   Loader2, 
   CheckCircle, 
   AlertCircle,
   ArrowUpRight,
-  Clock
+  Clock,
+  Send,
+  FileText
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -29,24 +30,33 @@ export function AffiliateCard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [payoutAmount, setPayoutAmount] = useState('');
+  
+  // Application form state
+  const [applicationForm, setApplicationForm] = useState({
+    paypal_email: '',
+    discord_username: '',
+    promotion_method: '',
+    audience_size: '',
+    notes: '',
+  });
 
-  // Check Stripe Connect status
-  const { data: connectStatus, isLoading: statusLoading, refetch: refetchStatus } = useQuery({
-    queryKey: ['connect-status', user?.id],
+  // Check if user has an application
+  const { data: application, isLoading: applicationLoading } = useQuery({
+    queryKey: ['affiliate-application', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-connect-status');
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('affiliate_applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
       if (error) throw error;
-      return data as {
-        hasAccount: boolean;
-        isOnboarded: boolean;
-        canReceivePayments: boolean;
-        accountId?: string;
-      };
+      return data;
     },
     enabled: !!user?.id,
   });
 
-  // Get affiliate balance
+  // Get affiliate balance (only for approved affiliates)
   const { data: balance, isLoading: balanceLoading } = useQuery({
     queryKey: ['affiliate-balance', user?.id],
     queryFn: async () => {
@@ -59,7 +69,7 @@ export function AffiliateCard() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && application?.status === 'approved',
   });
 
   // Get recent commissions
@@ -76,7 +86,7 @@ export function AffiliateCard() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && application?.status === 'approved',
   });
 
   // Get pending payouts
@@ -93,20 +103,51 @@ export function AffiliateCard() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && application?.status === 'approved',
   });
 
-  // Create Connect account
-  const createAccountMutation = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('create-connect-account');
+  // Get user profile for referral code
+  const { data: profile } = useQuery({
+    queryKey: ['profile-referral', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('referral_code, display_name, paypal_email')
+        .eq('user_id', user.id)
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      if (data.url) {
-        window.open(data.url, '_blank');
-      }
+    enabled: !!user?.id && application?.status === 'approved',
+  });
+
+  // Submit application
+  const submitApplicationMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id || !user?.email) throw new Error('Not authenticated');
+      
+      const { error } = await supabase
+        .from('affiliate_applications')
+        .insert({
+          user_id: user.id,
+          email: user.email,
+          display_name: profile?.display_name || null,
+          paypal_email: applicationForm.paypal_email || null,
+          discord_username: applicationForm.discord_username || null,
+          promotion_method: applicationForm.promotion_method,
+          audience_size: applicationForm.audience_size || null,
+          notes: applicationForm.notes || null,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Application Submitted",
+        description: "We'll review your application and get back to you soon!",
+      });
+      queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
     },
     onError: (error: Error) => {
       toast({
@@ -121,7 +162,7 @@ export function AffiliateCard() {
   const requestPayoutMutation = useMutation({
     mutationFn: async (amount: number) => {
       const { data, error } = await supabase.functions.invoke('request-affiliate-payout', {
-        body: { amount: Math.round(amount * 100) }, // Convert to pence
+        body: { amount: Math.round(amount * 100) },
       });
       if (error) throw error;
       return data;
@@ -161,7 +202,7 @@ export function AffiliateCard() {
   const totalPaid = (balance?.total_paid || 0) / 100;
   const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
 
-  if (statusLoading || balanceLoading) {
+  if (applicationLoading || balanceLoading) {
     return (
       <Card className="bg-card border-border">
         <CardContent className="py-8 flex items-center justify-center">
@@ -171,6 +212,156 @@ export function AffiliateCard() {
     );
   }
 
+  // No application yet - show application form
+  if (!application) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Join Our Affiliate Program
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-primary" />
+              Earn {COMMISSION_RATE}% commission on every sale you refer!
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="paypal_email">PayPal Email (for payouts)</Label>
+              <Input
+                id="paypal_email"
+                type="email"
+                placeholder="your@paypal.com"
+                value={applicationForm.paypal_email}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, paypal_email: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="discord">Discord Username (optional)</Label>
+              <Input
+                id="discord"
+                placeholder="username#1234"
+                value={applicationForm.discord_username}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, discord_username: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="promotion">How will you promote us? *</Label>
+              <Textarea
+                id="promotion"
+                placeholder="E.g., YouTube channel, Discord server, social media, website..."
+                value={applicationForm.promotion_method}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, promotion_method: e.target.value }))}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="audience">Audience Size (optional)</Label>
+              <Input
+                id="audience"
+                placeholder="E.g., 5k YouTube subscribers, 1k Discord members"
+                value={applicationForm.audience_size}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, audience_size: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Additional Notes (optional)</Label>
+              <Textarea
+                id="notes"
+                placeholder="Anything else you'd like us to know..."
+                value={applicationForm.notes}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, notes: e.target.value }))}
+                rows={2}
+              />
+            </div>
+
+            <Button
+              className="w-full"
+              onClick={() => submitApplicationMutation.mutate()}
+              disabled={!applicationForm.promotion_method || submitApplicationMutation.isPending}
+            >
+              {submitApplicationMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4 mr-2" />
+              )}
+              Submit Application
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Application pending
+  if (application.status === 'pending') {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Affiliate Program
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-yellow-500">Application Under Review</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  We're reviewing your application. You'll be notified once it's approved!
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Submitted: {format(new Date(application.created_at), 'PPp')}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Application rejected
+  if (application.status === 'rejected') {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Affiliate Program
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-red-500">Application Not Approved</p>
+                {application.rejection_reason && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Reason: {application.rejection_reason}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Approved affiliate - show earnings dashboard
   return (
     <Card className="bg-card border-border">
       <CardHeader>
@@ -196,6 +387,30 @@ export function AffiliateCard() {
           </div>
         </div>
 
+        {/* Your referral link */}
+        {profile?.referral_code && (
+          <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+            <p className="text-sm font-medium">Your Referral Link</p>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={`${window.location.origin}?ref=${profile.referral_code}`}
+                className="text-xs"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}?ref=${profile.referral_code}`);
+                  toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+                }}
+              >
+                Copy
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Commission Rate Info */}
         <div className="p-4 bg-muted/50 rounded-lg">
           <p className="text-sm font-medium flex items-center gap-2">
@@ -204,81 +419,46 @@ export function AffiliateCard() {
           </p>
         </div>
 
-        {/* Payout Account Setup */}
-        {!connectStatus?.isOnboarded ? (
-          <div className="p-4 rounded-lg border border-dashed border-muted-foreground/30 space-y-3">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium">Set up your payout account</p>
-                <p className="text-sm text-muted-foreground">
-                  Connect your bank account via Stripe to receive your earnings.
-                </p>
+        {/* Request Payout */}
+        {availableBalance >= MINIMUM_PAYOUT && !hasPendingPayout && (
+          <div className="space-y-3">
+            <Label>Request Payout</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                <Input
+                  type="number"
+                  min={MINIMUM_PAYOUT}
+                  max={availableBalance}
+                  step="0.01"
+                  placeholder={MINIMUM_PAYOUT.toString()}
+                  value={payoutAmount}
+                  onChange={(e) => setPayoutAmount(e.target.value)}
+                  className="pl-7"
+                />
               </div>
+              <Button
+                onClick={handleRequestPayout}
+                disabled={requestPayoutMutation.isPending || !payoutAmount}
+              >
+                {requestPayoutMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowUpRight className="h-4 w-4" />
+                )}
+              </Button>
             </div>
-            <Button 
-              onClick={() => createAccountMutation.mutate()}
-              disabled={createAccountMutation.isPending}
-              className="w-full"
-            >
-              {createAccountMutation.isPending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <ExternalLink className="h-4 w-4 mr-2" />
-              )}
-              {connectStatus?.hasAccount ? 'Complete Setup' : 'Set Up Payouts'}
-            </Button>
+            <p className="text-xs text-muted-foreground">
+              Minimum payout: £{MINIMUM_PAYOUT}. Payouts are sent to your PayPal.
+            </p>
           </div>
-        ) : (
-          <>
-            {/* Payout Account Status */}
-            <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="text-sm font-medium text-green-500">Payout account connected</span>
-            </div>
+        )}
 
-            {/* Request Payout */}
-            {availableBalance >= MINIMUM_PAYOUT && !hasPendingPayout && (
-              <div className="space-y-3">
-                <Label>Request Payout</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
-                    <Input
-                      type="number"
-                      min={MINIMUM_PAYOUT}
-                      max={availableBalance}
-                      step="0.01"
-                      placeholder={MINIMUM_PAYOUT.toString()}
-                      value={payoutAmount}
-                      onChange={(e) => setPayoutAmount(e.target.value)}
-                      className="pl-7"
-                    />
-                  </div>
-                  <Button
-                    onClick={handleRequestPayout}
-                    disabled={requestPayoutMutation.isPending || !payoutAmount}
-                  >
-                    {requestPayoutMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ArrowUpRight className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Minimum payout: £{MINIMUM_PAYOUT}. Max: £{availableBalance.toFixed(2)}
-                </p>
-              </div>
-            )}
-
-            {hasPendingPayout && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                <Clock className="h-5 w-5 text-yellow-500" />
-                <span className="text-sm text-yellow-500">You have a pending payout request</span>
-              </div>
-            )}
-          </>
+        {hasPendingPayout && (
+          <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+            <Clock className="h-5 w-5 text-yellow-500" />
+            <span className="text-sm text-yellow-500">You have a pending payout request</span>
+          </div>
         )}
 
         {/* Recent Commissions */}
