@@ -232,24 +232,16 @@ export function AffiliateCard() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="paypal_email">PayPal Email (for payouts)</Label>
-              <Input
-                id="paypal_email"
-                type="email"
-                placeholder="your@paypal.com"
-                value={applicationForm.paypal_email}
-                onChange={(e) => setApplicationForm(prev => ({ ...prev, paypal_email: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="discord">Discord Username (optional)</Label>
               <Input
                 id="discord"
-                placeholder="username#1234"
+                placeholder="username"
                 value={applicationForm.discord_username}
                 onChange={(e) => setApplicationForm(prev => ({ ...prev, discord_username: e.target.value }))}
               />
+              <p className="text-xs text-muted-foreground">
+                Payouts are processed via Stripe Connect, which you'll set up after approval.
+              </p>
             </div>
 
             <div className="space-y-2">
