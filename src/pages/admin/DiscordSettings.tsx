@@ -146,20 +146,23 @@ export default function DiscordSettings() {
     setOrderWebhookTestResult(null);
 
     try {
-      // Test by sending to the webhook directly
+      // Build Parcel-style description
+      let description = '**Product Name**\nTest Product';
+      description += '\n**Roblox**\nTestUser123\n(123456789)';
+      description += '\n**Discord**\nTestUser#1234\n(987654321)';
+
+      // Test by sending to the webhook directly with Parcel-style format
       const response = await fetch(formData.discord_webhook_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           embeds: [{
-            title: '🧪 Test Order Notification',
-            description: 'This is a test notification from your Eclipse admin dashboard.',
-            color: 0x8b5cf6,
-            fields: [
-              { name: 'Order ID', value: 'TEST-12345', inline: true },
-              { name: 'Customer', value: 'test@example.com', inline: true },
-              { name: 'Total', value: '$9.99', inline: true },
-            ],
+            title: 'New Purchase',
+            description,
+            color: 0x9b59b6,
+            thumbnail: {
+              url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter',
+            },
             timestamp: new Date().toISOString(),
           }],
         }),
