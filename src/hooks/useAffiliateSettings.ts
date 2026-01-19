@@ -4,11 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 interface AffiliateSettings {
   commissionRate: number; // percentage (e.g., 10 for 10%)
   minimumPayout: number; // in GBP (e.g., 10 for £10)
+  isEnabled: boolean; // whether the program is visible to customers
 }
 
 const DEFAULT_SETTINGS: AffiliateSettings = {
   commissionRate: 10,
   minimumPayout: 10,
+  isEnabled: false,
 };
 
 export function useAffiliateSettings() {
@@ -18,7 +20,7 @@ export function useAffiliateSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['affiliate_commission_rate', 'affiliate_minimum_payout']);
+        .in('key', ['affiliate_commission_rate', 'affiliate_minimum_payout', 'affiliate_program_enabled']);
 
       if (error) throw error;
 
@@ -33,6 +35,8 @@ export function useAffiliateSettings() {
           result.commissionRate = parseFloat(String(val)) || DEFAULT_SETTINGS.commissionRate;
         } else if (item.key === 'affiliate_minimum_payout') {
           result.minimumPayout = parseFloat(String(val)) || DEFAULT_SETTINGS.minimumPayout;
+        } else if (item.key === 'affiliate_program_enabled') {
+          result.isEnabled = val === 'true' || val === true;
         }
       });
 

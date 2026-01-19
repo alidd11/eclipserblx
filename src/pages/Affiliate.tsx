@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   DollarSign, TrendingUp, Loader2, CheckCircle, AlertCircle,
   ArrowUpRight, Clock, Send, Users, Gift, Zap, Copy, ExternalLink,
-  CreditCard, BadgePercent, Star
+  CreditCard, BadgePercent, Star, Construction
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -232,6 +232,36 @@ export default function Affiliate() {
       description: 'Refer as many people as you want',
     },
   ];
+
+  // Program disabled - show coming soon
+  if (!affiliateSettings.isEnabled) {
+    return (
+      <MainLayout>
+        <div className="container py-8 max-w-2xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-6"
+          >
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <Construction className="h-10 w-10 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-display font-bold">Coming Soon</h1>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Our affiliate program is currently being set up. Check back soon for the opportunity to earn commissions by referring customers!
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/">
+                Return Home
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   // Not logged in - show landing with sign in prompt
   if (!user) {

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BadgePercent, Loader2, Save, DollarSign, Settings } from 'lucide-react';
+import { BadgePercent, Loader2, Save, DollarSign, Settings, Power } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
@@ -15,12 +16,14 @@ export function AffiliateSettingsCard() {
   
   const [commissionRate, setCommissionRate] = useState('10');
   const [minimumPayout, setMinimumPayout] = useState('10');
+  const [isEnabled, setIsEnabled] = useState(false);
 
   // Sync form with loaded settings
   useEffect(() => {
     if (settings) {
       setCommissionRate(String(settings.commissionRate));
       setMinimumPayout(String(settings.minimumPayout));
+      setIsEnabled(settings.isEnabled);
     }
   }, [settings]);
 
@@ -29,6 +32,7 @@ export function AffiliateSettingsCard() {
       const updates = [
         { key: 'affiliate_commission_rate', value: commissionRate },
         { key: 'affiliate_minimum_payout', value: minimumPayout },
+        { key: 'affiliate_program_enabled', value: String(isEnabled) },
       ];
 
       for (const { key, value } of updates) {
@@ -101,6 +105,25 @@ export function AffiliateSettingsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
+          <div className="flex items-center gap-3">
+            <Power className={`h-5 w-5 ${isEnabled ? 'text-green-500' : 'text-muted-foreground'}`} />
+            <div>
+              <Label htmlFor="program_enabled" className="text-base font-medium">
+                Program Status
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {isEnabled ? 'Visible to customers' : 'Hidden from customers'}
+              </p>
+            </div>
+          </div>
+          <Switch
+            id="program_enabled"
+            checked={isEnabled}
+            onCheckedChange={setIsEnabled}
+          />
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="commission_rate" className="flex items-center gap-2">
