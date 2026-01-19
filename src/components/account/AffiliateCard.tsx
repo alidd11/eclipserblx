@@ -20,16 +20,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { format } from 'date-fns';
-
-const COMMISSION_RATE = 10; // 10% commission
-const MINIMUM_PAYOUT = 10; // £10 minimum
 
 export function AffiliateCard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { settings } = useAffiliateSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
+  
+  const COMMISSION_RATE = settings.commissionRate;
+  const MINIMUM_PAYOUT = settings.minimumPayout;
   
   // Application form state
   const [applicationForm, setApplicationForm] = useState({
@@ -441,7 +443,7 @@ export function AffiliateCard() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Minimum payout: £{MINIMUM_PAYOUT}. Payouts are sent to your PayPal.
+              Minimum payout: £{MINIMUM_PAYOUT}. Payouts are processed via Stripe Connect.
             </p>
           </div>
         )}
