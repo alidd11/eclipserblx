@@ -81,6 +81,136 @@ export type Database = {
           },
         ]
       }
+      affiliate_balances: {
+        Row: {
+          available_balance: number
+          total_earned: number
+          total_paid: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number
+          total_earned?: number
+          total_paid?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_balance?: number
+          total_earned?: number
+          total_paid?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          order_id: string
+          order_total: number
+          referred_user_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_amount: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_id: string
+          order_total: number
+          referred_user_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_id?: string
+          order_total?: number
+          referred_user_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          paypal_email: string
+          paypal_payout_id: string | null
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paypal_email: string
+          paypal_payout_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paypal_email?: string
+          paypal_payout_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       app_version: {
         Row: {
           force_update: boolean
@@ -1310,6 +1440,7 @@ export type Database = {
           email: string
           id: string
           last_seen: string | null
+          paypal_email: string | null
           referral_code: string | null
           roblox_user_id: string | null
           roblox_username: string | null
@@ -1327,6 +1458,7 @@ export type Database = {
           email: string
           id?: string
           last_seen?: string | null
+          paypal_email?: string | null
           referral_code?: string | null
           roblox_user_id?: string | null
           roblox_username?: string | null
@@ -1344,6 +1476,7 @@ export type Database = {
           email?: string
           id?: string
           last_seen?: string | null
+          paypal_email?: string | null
           referral_code?: string | null
           roblox_user_id?: string | null
           roblox_username?: string | null
