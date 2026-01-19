@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DiscordWidgetData {
   id: string;
@@ -24,14 +26,36 @@ export function DiscordWidget() {
   const [error, setError] = useState<string | null>(null);
   const { discordUrl } = useDiscordUrl();
 
-  // Discord server ID - you can make this configurable via settings
-  const DISCORD_SERVER_ID = '1327082286107160697';
+  // Fetch server ID from settings
+  const { data: serverId } = useQuery({
+    queryKey: ['discord-widget-server-id'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'discord_widget_server_id')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data?.value) return null;
+      
+      const val = typeof data.value === 'string' ? data.value.replace(/^"|"$/g, '') : data.value;
+      return String(val);
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
 
   useEffect(() => {
+    if (!serverId) {
+      setIsLoading(false);
+      setError('No server ID configured');
+      return;
+    }
+
     const fetchWidgetData = async () => {
       try {
         const response = await fetch(
-          `https://discord.com/api/guilds/${DISCORD_SERVER_ID}/widget.json`
+          `https://discord.com/api/guilds/${serverId}/widget.json`
         );
         
         if (!response.ok) {
@@ -40,6 +64,7 @@ export function DiscordWidget() {
         
         const data = await response.json();
         setWidgetData(data);
+        setError(null);
       } catch (err) {
         console.error('Failed to fetch Discord widget:', err);
         setError('Unable to load Discord widget');
@@ -53,7 +78,7 @@ export function DiscordWidget() {
     // Refresh every 60 seconds
     const interval = setInterval(fetchWidgetData, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [serverId]);
 
   if (isLoading) {
     return (
