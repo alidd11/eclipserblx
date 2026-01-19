@@ -83,6 +83,7 @@ export type Database = {
       }
       affiliate_applications: {
         Row: {
+          affiliate_id: string | null
           audience_size: string | null
           created_at: string
           discord_username: string | null
@@ -100,6 +101,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          affiliate_id?: string | null
           audience_size?: string | null
           created_at?: string
           discord_username?: string | null
@@ -117,6 +119,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          affiliate_id?: string | null
           audience_size?: string | null
           created_at?: string
           discord_username?: string | null
@@ -2500,6 +2503,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }

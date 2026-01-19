@@ -382,7 +382,7 @@ export default function AdminAffiliates() {
                             <TableCell>
                               <div>
                                 <p className="font-medium">{payout.user?.display_name || 'Unknown'}</p>
-                                <p className="text-xs text-muted-foreground">{payout.user?.email}</p>
+                                <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{payout.user?.customer_id || 'N/A'}</code>
                               </div>
                             </TableCell>
                             <TableCell className="font-mono font-medium">
@@ -507,13 +507,13 @@ export default function AdminAffiliates() {
                             <TableCell>
                               <div>
                                 <p className="font-medium">{commission.affiliate?.display_name || 'Unknown'}</p>
-                                <p className="text-xs text-muted-foreground">{commission.affiliate?.email}</p>
+                                <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{commission.affiliate?.customer_id || 'N/A'}</code>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div>
                                 <p className="font-medium">{commission.referred?.display_name || 'Unknown'}</p>
-                                <p className="text-xs text-muted-foreground">{commission.referred?.email}</p>
+                                <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{commission.referred?.customer_id || 'N/A'}</code>
                               </div>
                             </TableCell>
                             <TableCell className="font-mono">
