@@ -197,7 +197,7 @@ export default function Affiliate() {
 
   const copyReferralLink = () => {
     if (profile?.referral_code) {
-      navigator.clipboard.writeText(`${window.location.origin}?ref=${profile.referral_code}`);
+      navigator.clipboard.writeText(`${window.location.origin}/auth?ref=${profile.referral_code}`);
       toast({ title: "Copied!", description: "Referral link copied to clipboard" });
     }
   };
@@ -630,7 +630,7 @@ export default function Affiliate() {
                   <div className="flex gap-2">
                     <Input
                       readOnly
-                      value={profile?.referral_code ? `${window.location.origin}?ref=${profile.referral_code}` : 'Loading...'}
+                      value={profile?.referral_code ? `${window.location.origin}/auth?ref=${profile.referral_code}` : 'Loading...'}
                       className="text-xs"
                     />
                     <Button variant="outline" size="icon" onClick={copyReferralLink}>
