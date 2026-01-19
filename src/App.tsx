@@ -66,6 +66,7 @@ const AdminOrders = lazy(() => import("./pages/admin/Orders"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminSettings = lazy(() => import("./pages/admin/Settings"));
 const AdminDiscordSettings = lazy(() => import("./pages/admin/DiscordSettings"));
+const AdminRobloxSettings = lazy(() => import("./pages/admin/RobloxSettings"));
 const AdminLiveChat = lazy(() => import("./pages/admin/LiveChat"));
 const AdminApplications = lazy(() => import("./pages/admin/Applications"));
 const AdminReviews = lazy(() => import("./pages/admin/Reviews"));
@@ -171,6 +172,7 @@ const App = () => (
                   <Route path="/admin/users" element={<AdminUsers />} />
                   <Route path="/admin/settings" element={<AdminSettings />} />
                   <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
+                  <Route path="/admin/roblox-settings" element={<AdminRobloxSettings />} />
                   <Route path="/admin/live-chat" element={<AdminLiveChat />} />
                   <Route path="/admin/applications" element={<AdminApplications />} />
                   <Route path="/admin/reviews" element={<AdminReviews />} />
