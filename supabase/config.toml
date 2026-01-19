@@ -134,6 +134,3 @@ verify_jwt = false
 
 [functions.process-affiliate-payout]
 verify_jwt = false
-
-[functions.discord-boost-webhook]
-verify_jwt = false
