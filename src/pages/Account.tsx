@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +26,7 @@ import { NotificationSettingsCard } from '@/components/account/NotificationSetti
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
 import { MyMessagesCard } from '@/components/account/MyMessagesCard';
-import { RobloxLinkCard } from '@/components/account/RobloxLinkCard';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { Input } from '@/components/ui/input';
@@ -56,6 +56,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [discordUsername, setDiscordUsername] = useState('');
   const [isLinkingDiscord, setIsLinkingDiscord] = useState(false);
   const [isUnlinkingDiscord, setIsUnlinkingDiscord] = useState(false);
+  
+  // Roblox link state
+  const [robloxInputUsername, setRobloxInputUsername] = useState('');
+  const [isVerifyingRoblox, setIsVerifyingRoblox] = useState(false);
+  const [isUnlinkingRoblox, setIsUnlinkingRoblox] = useState(false);
+  const [robloxVerifiedData, setRobloxVerifiedData] = useState<{ id: string; name: string; displayName: string } | null>(null);
+  const [robloxVerificationError, setRobloxVerificationError] = useState<string | null>(null);
 
   // Get initial tab from URL hash
   const getInitialTab = () => {
@@ -242,6 +249,87 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     setNewUsername(profile?.display_name || fallbackDisplayName || '');
     setEditingUsername(true);
     setUsernameAvailable(null);
+  };
+
+  // Roblox verification functions
+  const getRobloxAvatarUrl = (robloxId: string) => {
+    return `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxId}&width=150&height=150&format=png`;
+  };
+
+  const handleVerifyRobloxUsername = async () => {
+    if (!robloxInputUsername.trim()) return;
+    
+    setIsVerifyingRoblox(true);
+    setRobloxVerificationError(null);
+    setRobloxVerifiedData(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-roblox-user', {
+        body: { username: robloxInputUsername.trim() },
+      });
+      
+      if (error) throw new Error('Failed to verify username');
+      
+      if (!data.found) {
+        setRobloxVerificationError('Username not found on Roblox');
+        return;
+      }
+      
+      setRobloxVerifiedData({
+        id: data.id,
+        name: data.name,
+        displayName: data.displayName,
+      });
+    } catch (error) {
+      console.error('Roblox verification error:', error);
+      setRobloxVerificationError('Failed to verify username. Please try again.');
+    } finally {
+      setIsVerifyingRoblox(false);
+    }
+  };
+
+  const handleLinkRobloxAccount = async () => {
+    if (!robloxVerifiedData || !user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          roblox_user_id: robloxVerifiedData.id,
+          roblox_username: robloxVerifiedData.displayName || robloxVerifiedData.name,
+        })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+      setRobloxInputUsername('');
+      setRobloxVerifiedData(null);
+    } catch (error) {
+      console.error('Failed to link Roblox account:', error);
+    }
+  };
+
+  const handleUnlinkRoblox = async () => {
+    if (!user) return;
+    setIsUnlinkingRoblox(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          roblox_user_id: null,
+          roblox_username: null,
+        })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+    } catch (error) {
+      console.error('Failed to unlink Roblox account:', error);
+    } finally {
+      setIsUnlinkingRoblox(false);
+    }
   };
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
@@ -640,15 +728,130 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 </div>
               )}
             </div>
+            
+            {/* Roblox Section */}
+            <div className="p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Gamepad2 className="w-4 h-4 text-emerald-500" />
+                <p className="text-xs font-medium text-muted-foreground">Roblox Account</p>
+              </div>
+              
+              {profile?.roblox_user_id && profile?.roblox_username ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage 
+                        src={getRobloxAvatarUrl(profile.roblox_user_id)} 
+                        alt={profile.roblox_username} 
+                      />
+                      <AvatarFallback className="bg-emerald-500/20">
+                        <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{profile.roblox_username}</p>
+                      <p className="text-[10px] text-muted-foreground font-mono truncate">
+                        ID: {profile.roblox_user_id}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      asChild
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <a
+                        href={`https://www.roblox.com/users/${profile.roblox_user_id}/profile`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleUnlinkRoblox}
+                      disabled={isUnlinkingRoblox}
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    >
+                      {isUnlinkingRoblox ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Unlink className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Roblox username"
+                      value={robloxInputUsername}
+                      onChange={(e) => {
+                        setRobloxInputUsername(e.target.value);
+                        setRobloxVerificationError(null);
+                        setRobloxVerifiedData(null);
+                      }}
+                      className="flex-1 h-8 text-xs"
+                    />
+                    <Button
+                      onClick={handleVerifyRobloxUsername}
+                      disabled={!robloxInputUsername.trim() || isVerifyingRoblox}
+                      size="sm"
+                      variant="secondary"
+                      className="h-8 text-xs"
+                    >
+                      {isVerifyingRoblox ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        'Verify'
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {robloxVerificationError && (
+                    <div className="flex items-center gap-2 text-xs text-destructive">
+                      <X className="h-3 w-3" />
+                      {robloxVerificationError}
+                    </div>
+                  )}
+                  
+                  {robloxVerifiedData && (
+                    <div className="flex items-center justify-between p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage 
+                            src={getRobloxAvatarUrl(robloxVerifiedData.id)} 
+                            alt={robloxVerifiedData.displayName} 
+                          />
+                          <AvatarFallback className="bg-emerald-500/20">
+                            <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <Check className="h-3 w-3 text-green-500" />
+                            <p className="font-medium text-xs">{robloxVerifiedData.displayName}</p>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            @{robloxVerifiedData.name}
+                          </p>
+                        </div>
+                      </div>
+                      <Button size="sm" onClick={handleLinkRobloxAccount} className="h-7 text-xs">
+                        Link
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
-
-        {/* Roblox Account Link Card */}
-        <RobloxLinkCard
-          userId={user.id}
-          robloxUserId={profile?.roblox_user_id || null}
-          robloxUsername={profile?.roblox_username || null}
-        />
 
         {/* Eclipse+ Subscription Card */}
         <SubscriptionCard />
