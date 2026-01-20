@@ -2,6 +2,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { HeroSection } from '@/components/home/HeroSection';
 import { ForumShowcase } from '@/components/home/ForumShowcase';
 import { TrustSignals } from '@/components/home/TrustSignals';
+import { RecommendedProducts } from '@/components/recommendations/RecommendedProducts';
 import { usePWAAdminRedirect } from '@/hooks/usePWAAdminRedirect';
 
 export default function Index() {
@@ -11,6 +12,7 @@ export default function Index() {
   return (
     <MainLayout>
       <HeroSection />
+      <RecommendedProducts />
       <ForumShowcase />
       <TrustSignals />
     </MainLayout>

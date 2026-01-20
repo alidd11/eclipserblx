@@ -72,7 +72,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   // Get initial tab from URL hash
   const getInitialTab = () => {
     const hash = location.hash.replace('#', '');
-    if (['profile', 'shopping', 'preferences', 'security'].includes(hash)) {
+    if (['profile', 'shopping', 'following', 'preferences', 'security'].includes(hash)) {
       return hash;
     }
     return 'profile';
