@@ -6,6 +6,7 @@ import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
+import { WishlistButton } from '@/components/wishlist/WishlistButton';
 
 interface ProductCardProps {
   id: string;
@@ -120,6 +121,11 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
                 New
               </div>
             )}
+          </div>
+          
+          {/* Wishlist button */}
+          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <WishlistButton productId={id} variant="icon" />
           </div>
         </div>
 
