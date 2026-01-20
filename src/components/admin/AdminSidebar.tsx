@@ -257,8 +257,8 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         ? "flex items-center justify-center py-2.5"
         : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
       isActive
-        ? "bg-primary text-primary-foreground"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]"
+        : "text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
     );
 
     if (!isCollapsed) {
@@ -313,21 +313,21 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         <div key={group.id} className="mb-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
-                className={cn(
-                  "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
-                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-                  "focus:outline-none focus-visible:outline-none",
-                  hasActiveItem
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-                onClick={() => toggleGroup(group.id)}
-              >
-                <group.icon className={cn(
-                  "h-4 w-4 transition-all",
-                  hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
-                )} />
+            <button
+              className={cn(
+                "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
+                "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                "focus:outline-none focus-visible:outline-none",
+                hasActiveItem
+                  ? "bg-[hsl(var(--sidebar-primary)/0.15)] text-[hsl(var(--sidebar-primary))]"
+                  : "text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
+              )}
+              onClick={() => toggleGroup(group.id)}
+            >
+              <group.icon className={cn(
+                "h-4 w-4 transition-all",
+                hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
+              )} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="p-0">
@@ -374,8 +374,8 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
               "transition-all duration-100 active:scale-[0.98] active:opacity-90",
               "focus:outline-none focus-visible:outline-none",
               hasActiveItem
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                ? "text-[hsl(var(--sidebar-primary))]"
+                : "text-[hsl(var(--sidebar-foreground)/0.6)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.5)]"
             )}
           >
             <group.icon className={cn(
@@ -400,25 +400,26 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
   return (
     <aside className={cn(
-      "bg-card flex flex-col transition-all duration-300 shrink-0",
+      "flex flex-col transition-all duration-300 shrink-0",
+      "bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))]",
       isMobileDrawer 
         ? "h-full w-full border-0 max-h-[100dvh]" 
-        : "h-screen sticky top-0 border-r border-border",
+        : "h-screen sticky top-0 border-r border-[hsl(var(--sidebar-border))]",
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
     )}>
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-[hsl(var(--sidebar-border))]">
         {!isCollapsed && (
           <>
-            <h1 className="font-display font-bold text-xl">{SITE_NAME}</h1>
-            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+            <h1 className="font-display font-bold text-xl text-[hsl(var(--sidebar-primary))]">{SITE_NAME}</h1>
+            <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.6)]">Admin Dashboard</p>
           </>
         )}
         {isCollapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center justify-center">
-                <span className="font-display font-bold text-lg">E</span>
+                <span className="font-display font-bold text-lg text-[hsl(var(--sidebar-primary))]">E</span>
               </div>
             </TooltipTrigger>
             <TooltipContent side="right">{SITE_NAME}</TooltipContent>
@@ -435,7 +436,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg px-3 py-2.5 mt-2 active:scale-[0.97] active:opacity-90 transition-all duration-100"
+            className="w-full justify-start text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))] rounded-lg px-3 py-2.5 mt-2 active:scale-[0.97] active:opacity-90 transition-all duration-100"
             onClick={() => {
               hapticTap();
               setShowSignOutDialog(true);
@@ -449,14 +450,14 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
       {/* Footer - Desktop only (mobile Sign Out is inline with nav) */}
       {!isMobileDrawer && (
-        <div className="p-2 border-t border-border space-y-1">
+        <div className="p-2 border-t border-[hsl(var(--sidebar-border))] space-y-1">
 
         {/* Collapse Toggle */}
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            "w-full text-muted-foreground hover:text-foreground",
+            "w-full text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]",
             isCollapsed ? "justify-center px-2" : "justify-start"
           )}
           onClick={onToggle}
@@ -478,7 +479,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
               variant="ghost"
               size="sm"
               className={cn(
-                "w-full text-muted-foreground hover:text-destructive",
+                "w-full text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))]",
                 isCollapsed ? "justify-center px-2" : "justify-start"
               )}
               onClick={() => setShowSignOutDialog(true)}
