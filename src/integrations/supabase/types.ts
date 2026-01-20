@@ -1487,6 +1487,41 @@ export type Database = {
         }
         Relationships: []
       }
+      product_views: {
+        Row: {
+          created_at: string
+          id: string
+          last_viewed_at: string
+          product_id: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_viewed_at?: string
+          product_id: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_viewed_at?: string
+          product_id?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           asset_file_url: string | null
@@ -1955,6 +1990,41 @@ export type Database = {
           transaction_type?: string
         }
         Relationships: []
+      }
+      search_logs: {
+        Row: {
+          clicked_product_id: string | null
+          created_at: string
+          id: string
+          query: string
+          results_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          clicked_product_id?: string | null
+          created_at?: string
+          id?: string
+          query: string
+          results_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          clicked_product_id?: string | null
+          created_at?: string
+          id?: string
+          query?: string
+          results_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_logs_clicked_product_id_fkey"
+            columns: ["clicked_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_analytics: {
         Row: {
@@ -2655,6 +2725,41 @@ export type Database = {
           },
         ]
       }
+      store_follows: {
+        Row: {
+          created_at: string
+          id: string
+          notify_discounts: boolean | null
+          notify_new_products: boolean | null
+          store_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notify_discounts?: boolean | null
+          notify_new_products?: boolean | null
+          store_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notify_discounts?: boolean | null
+          notify_new_products?: boolean | null
+          store_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_follows_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_tab_products: {
         Row: {
           created_at: string
@@ -2842,6 +2947,7 @@ export type Database = {
           discord_url: string | null
           discord_webhook_url: string | null
           featured_product_ids: string[] | null
+          follower_count: number | null
           font_body: string | null
           font_heading: string | null
           hero_cta_link: string | null
@@ -2899,6 +3005,7 @@ export type Database = {
           discord_url?: string | null
           discord_webhook_url?: string | null
           featured_product_ids?: string[] | null
+          follower_count?: number | null
           font_body?: string | null
           font_heading?: string | null
           hero_cta_link?: string | null
@@ -2956,6 +3063,7 @@ export type Database = {
           discord_url?: string | null
           discord_webhook_url?: string | null
           featured_product_ids?: string[] | null
+          follower_count?: number | null
           font_body?: string | null
           font_heading?: string | null
           hero_cta_link?: string | null

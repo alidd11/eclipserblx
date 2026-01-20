@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { FollowButton } from '@/components/store/FollowButton';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { 
   Store as StoreIcon, 
@@ -15,7 +16,8 @@ import {
   Package,
   ShoppingCart,
   ArrowLeft,
-  LayoutGrid
+  LayoutGrid,
+  Users
 } from 'lucide-react';
 
 // Theme configurations
@@ -297,7 +299,7 @@ export default function StorePage() {
 
               {/* Store Info */}
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
                   <h1 className={`text-2xl md:text-3xl font-bold ${isDarkTheme ? 'text-white' : ''}`}>
                     {store.name}
                   </h1>
@@ -310,6 +312,11 @@ export default function StorePage() {
                       Verified
                     </Badge>
                   )}
+                  <FollowButton 
+                    storeId={store.id} 
+                    accentColor={accentColor}
+                    size="sm"
+                  />
                 </div>
                 
                 {store.description && (
@@ -333,6 +340,10 @@ export default function StorePage() {
                   <div className="flex items-center gap-2">
                     <ShoppingCart className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
                     <span>{store.total_sales || 0} Sales</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
+                    <span>{store.follower_count || 0} Followers</span>
                   </div>
                   {store.average_rating && (
                     <div className="flex items-center gap-2">
