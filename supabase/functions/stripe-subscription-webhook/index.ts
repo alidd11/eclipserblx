@@ -115,17 +115,67 @@ serve(async (req) => {
       
       // Determine what Discord event to send based on subscription status
       let discordEvent: 'subscription_activated' | 'subscription_deactivated' | null = null;
+      let isActive = false;
       
       if (event.type === "customer.subscription.created" && subscription.status === "active") {
         discordEvent = "subscription_activated";
+        isActive = true;
       } else if (event.type === "customer.subscription.updated") {
         if (subscription.status === "active") {
           discordEvent = "subscription_activated";
+          isActive = true;
         } else if (["canceled", "unpaid", "past_due", "incomplete_expired"].includes(subscription.status)) {
           discordEvent = "subscription_deactivated";
+          isActive = false;
         }
       } else if (event.type === "customer.subscription.deleted") {
         discordEvent = "subscription_deactivated";
+        isActive = false;
+      }
+
+      // Sync seller commission rate if user has a store
+      // Eclipse+ members get 10% commission, non-members get 15%
+      if (discordEvent) {
+        const newCommissionRate = isActive ? 10 : 15;
+        
+        const { data: store, error: storeError } = await supabaseAdmin
+          .from("stores")
+          .select("id, commission_rate, custom_commission_rate, custom_rate_expires_at")
+          .eq("owner_id", userId)
+          .maybeSingle();
+        
+        if (store && !storeError) {
+          // Only update if there's no active custom rate override
+          const hasActiveCustomRate = store.custom_commission_rate !== null && 
+            (!store.custom_rate_expires_at || new Date(store.custom_rate_expires_at) > new Date());
+          
+          if (!hasActiveCustomRate && store.commission_rate !== newCommissionRate) {
+            const { error: updateError } = await supabaseAdmin
+              .from("stores")
+              .update({ commission_rate: newCommissionRate })
+              .eq("id", store.id);
+            
+            if (updateError) {
+              logStep("Failed to update seller commission rate", { error: updateError.message });
+            } else {
+              logStep("Updated seller commission rate", { 
+                userId, 
+                storeId: store.id, 
+                oldRate: store.commission_rate, 
+                newRate: newCommissionRate,
+                reason: isActive ? "Eclipse+ activated" : "Eclipse+ deactivated"
+              });
+            }
+          } else {
+            logStep("Skipping commission update", { 
+              reason: hasActiveCustomRate ? "custom rate active" : "rate already correct",
+              currentRate: store.commission_rate,
+              newRate: newCommissionRate
+            });
+          }
+        } else if (storeError) {
+          logStep("Error checking for store", { error: storeError.message });
+        }
       }
 
       if (discordEvent && profile.discord_id) {
