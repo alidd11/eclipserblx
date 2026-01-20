@@ -4,23 +4,40 @@ import { useTheme } from 'next-themes';
 const THEME_COLORS: Record<string, string> = {
   light: '#f8f8fc',
   dark: '#0a0a0f',
-  slate: '#161922',  // hsl(220 25% 10%)
-  oled: '#000000',
+  purple: '#0a0a0f',
+  ocean: '#0a1214',      // hsl(200 25% 6%)
+  ember: '#140d0a',      // hsl(15 25% 6%)
+  forest: '#0a120b',     // hsl(140 25% 5%)
+  mono: '#0d0d0d',       // hsl(0 0% 5%)
 };
+
+const THEME_CLASS_MAP: Record<string, string> = {
+  'theme-ocean': 'ocean',
+  'theme-ember': 'ember',
+  'theme-forest': 'forest',
+  'theme-mono': 'mono',
+};
+
+function getActiveStaffTheme(html: HTMLElement): string | null {
+  for (const [cls, theme] of Object.entries(THEME_CLASS_MAP)) {
+    if (html.classList.contains(cls)) {
+      return theme;
+    }
+  }
+  return null;
+}
 
 export function useThemeColor() {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    // Check for staff themes first (they add classes to documentElement)
     const html = document.documentElement;
     let activeTheme = resolvedTheme || 'dark';
     
     // Staff themes take precedence in admin routes
-    if (html.classList.contains('slate')) {
-      activeTheme = 'slate';
-    } else if (html.classList.contains('oled')) {
-      activeTheme = 'oled';
+    const staffTheme = getActiveStaffTheme(html);
+    if (staffTheme) {
+      activeTheme = staffTheme;
     }
     
     const themeColor = THEME_COLORS[activeTheme] || THEME_COLORS.dark;
@@ -51,10 +68,9 @@ export function useThemeColor() {
         if (mutation.attributeName === 'class') {
           let activeTheme = 'dark';
           
-          if (html.classList.contains('slate')) {
-            activeTheme = 'slate';
-          } else if (html.classList.contains('oled')) {
-            activeTheme = 'oled';
+          const staffTheme = getActiveStaffTheme(html);
+          if (staffTheme) {
+            activeTheme = staffTheme;
           } else if (html.classList.contains('dark')) {
             activeTheme = 'dark';
           } else {
