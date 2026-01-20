@@ -1160,33 +1160,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             {/* My Messages */}
             <MyMessagesCard />
 
-            {/* Danger Zone */}
-            <Card className="bg-card border-destructive/30">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-destructive">
-                  <Trash2 className="h-5 w-5" />
-                  Danger Zone
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <p className="font-medium">Delete Account</p>
-                    <p className="text-sm text-muted-foreground">
-                      Permanently delete your account and all associated data including downloads.
-                    </p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
 
