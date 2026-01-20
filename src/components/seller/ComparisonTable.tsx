@@ -40,7 +40,7 @@ const comparisonData: ComparisonFeature[] = [
   },
   {
     feature: "Payout Method",
-    eclipse: "Direct GBP/USD via Stripe",
+    eclipse: "Direct GBP (£) via Stripe",
     clearlyDev: "USD via Stripe",
     kwStudio: "Platform credits/Robux",
     robloxStore: "DevEx conversion required",

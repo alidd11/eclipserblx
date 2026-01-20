@@ -392,7 +392,7 @@ export default function SellerProductEditor() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (USD) *</Label>
+                  <Label htmlFor="price">Price (£) *</Label>
                   <Input
                     id="price"
                     type="number"
