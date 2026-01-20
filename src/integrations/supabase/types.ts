@@ -2630,6 +2630,7 @@ export type Database = {
           custom_rate_set_by: string | null
           description: string | null
           discord_url: string | null
+          discord_webhook_url: string | null
           id: string
           is_active: boolean | null
           is_verified: boolean | null
@@ -2667,6 +2668,7 @@ export type Database = {
           custom_rate_set_by?: string | null
           description?: string | null
           discord_url?: string | null
+          discord_webhook_url?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
@@ -2704,6 +2706,7 @@ export type Database = {
           custom_rate_set_by?: string | null
           description?: string | null
           discord_url?: string | null
+          discord_webhook_url?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
