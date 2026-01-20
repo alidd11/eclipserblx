@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import {
   Select,
@@ -55,12 +53,10 @@ const ACCENT_COLORS = [
 ];
 
 export default function SellerSettings() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { user, loading: authLoading } = useAuth();
-  const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
-  const { store, isSeller, loading: sellerLoading } = useSellerStatus();
+  const { user } = useAuth();
+  const { store, isSeller } = useSellerStatus();
 
   // Check for Stripe onboarding completion
   const stripeOnboardingComplete = searchParams.get('stripe_onboarding') === 'complete';
@@ -80,15 +76,13 @@ export default function SellerSettings() {
       };
     },
     enabled: !!user && isSeller,
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 0,
   });
 
   // Auto-check status after returning from Stripe onboarding
   useEffect(() => {
     if (stripeOnboardingComplete) {
-      // Clear the query param
       setSearchParams({});
-      // Refetch connect status and seller data
       refetchConnectStatus();
       queryClient.invalidateQueries({ queryKey: ['seller-store'] });
     }
@@ -180,43 +174,14 @@ export default function SellerSettings() {
     },
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!flagLoading && !hasAccess) {
-      navigate('/');
-    }
-  }, [hasAccess, flagLoading, navigate]);
-
-  useEffect(() => {
-    if (!sellerLoading && !isSeller) {
-      navigate('/account');
-    }
-  }, [isSeller, sellerLoading, navigate]);
-
-  if (authLoading || flagLoading || sellerLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
-    );
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateStore.mutate(formData);
   };
 
   return (
-    <MainLayout>
-      <div className="container py-8 max-w-3xl">
+    <SellerLayout>
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Store Settings</h1>
@@ -587,6 +552,6 @@ export default function SellerSettings() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }

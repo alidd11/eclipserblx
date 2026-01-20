@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,17 +18,13 @@ import {
   Plus,
   Clock,
   CheckCircle,
-  AlertCircle,
   Copy,
   ExternalLink,
   LayoutGrid
 } from 'lucide-react';
 
 export default function SellerDashboard() {
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
-  const { store, isSeller, loading: sellerLoading, balance } = useSellerStatus();
+  const { store, balance } = useSellerStatus();
 
   // Fetch recent orders for this seller
   const { data: recentOrders, isLoading: ordersLoading } = useQuery({
@@ -76,41 +69,6 @@ export default function SellerDashboard() {
     enabled: !!store?.id,
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!flagLoading && !hasAccess) {
-      navigate('/');
-    }
-  }, [hasAccess, flagLoading, navigate]);
-
-  useEffect(() => {
-    if (!sellerLoading && !isSeller) {
-      navigate('/account');
-    }
-  }, [isSeller, sellerLoading, navigate]);
-
-  if (authLoading || flagLoading || sellerLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <div className="space-y-6">
-            <Skeleton className="h-10 w-64" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => (
-                <Skeleton key={i} className="h-32" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -128,8 +86,8 @@ export default function SellerDashboard() {
   };
 
   return (
-    <MainLayout>
-      <div className="container py-8">
+    <SellerLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -365,6 +323,6 @@ export default function SellerDashboard() {
           </Card>
         )}
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }
