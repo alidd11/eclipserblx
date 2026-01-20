@@ -491,7 +491,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
   return (
     <MainLayout ref={ref}>
-      <div className="container py-8 space-y-6 max-w-4xl">
+      <div className="container py-8 space-y-6 max-w-4xl ml-auto mr-4 sm:mr-8 lg:mr-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-display font-bold">My Account</h1>
