@@ -162,9 +162,14 @@ export default function Support() {
                 <CardContent>
                   <ul className="space-y-2">
                     {category.articles.map((article, articleIndex) => (
-                      <li key={articleIndex} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
-                        {article}
+                      <li key={articleIndex}>
+                        <Link 
+                          to={`/faq?search=${encodeURIComponent(article)}`}
+                          className="text-sm text-muted-foreground hover:text-primary flex items-center gap-2 transition-colors"
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
+                          {article}
+                        </Link>
                       </li>
                     ))}
                   </ul>
