@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { 
   Store as StoreIcon, 
   CheckCircle, 
@@ -70,7 +71,7 @@ export default function StorePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab');
 
-  // Fetch store details
+  // Fetch store details first to get the ID for analytics
   const { data: store, isLoading: storeLoading, error } = useQuery({
     queryKey: ['public-store', storeSlug],
     queryFn: async () => {
@@ -87,6 +88,10 @@ export default function StorePage() {
     },
     enabled: !!storeSlug,
   });
+
+  // Track analytics - this will auto-track store views
+  const { trackProductView } = useSellerAnalytics(store?.id);
+
 
   // Fetch store tabs
   const { data: storeTabs } = useQuery({

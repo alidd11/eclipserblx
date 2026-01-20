@@ -101,6 +101,8 @@ const SellerProductEditor = lazy(() => import("./pages/seller/SellerProductEdito
 const SellerOrders = lazy(() => import("./pages/seller/SellerOrders"));
 const SellerBalance = lazy(() => import("./pages/seller/SellerBalance"));
 const SellerStoreTabs = lazy(() => import("./pages/seller/SellerStoreTabs"));
+const SellerDiscounts = lazy(() => import("./pages/seller/SellerDiscounts"));
+const SellerAnalytics = lazy(() => import("./pages/seller/SellerAnalytics"));
 const SellerSettingsProfile = lazy(() => import("./pages/seller/SellerSettingsProfile"));
 const SellerSettingsAppearance = lazy(() => import("./pages/seller/SellerSettingsAppearance"));
 const SellerSettingsPayments = lazy(() => import("./pages/seller/SellerSettingsPayments"));
@@ -181,12 +183,14 @@ const App = () => (
                   <Route path="/support/chat" element={<LiveChat />} />
                   {/* Seller routes */}
                   <Route path="/seller" element={<SellerDashboard />} />
+                  <Route path="/seller/analytics" element={<SellerAnalytics />} />
                   <Route path="/seller/products" element={<SellerProducts />} />
                   <Route path="/seller/products/new" element={<SellerProductEditor />} />
                   <Route path="/seller/products/:productId/edit" element={<SellerProductEditor />} />
                   <Route path="/seller/orders" element={<SellerOrders />} />
                   <Route path="/seller/balance" element={<SellerBalance />} />
                   <Route path="/seller/tabs" element={<SellerStoreTabs />} />
+                  <Route path="/seller/discounts" element={<SellerDiscounts />} />
                   <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
                   <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
                   <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
