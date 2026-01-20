@@ -73,21 +73,9 @@ export function ForceUpdateCard() {
         .eq('id', 'current');
 
       if (error) throw error;
-
-      // Send push notification to all users to wake up their PWAs
-      try {
-        await supabase.functions.invoke('send-push-notification', {
-          body: {
-            broadcast: true,
-            title: 'App Update Available',
-            body: 'A new version is being installed...',
-            tag: `app-update-${version}`,
-            url: '/',
-          },
-        });
-      } catch (pushError) {
-        console.warn('Could not send push notification:', pushError);
-      }
+      
+      // Note: Push notifications for force updates are disabled
+      // Users will receive updates via realtime subscription or polling
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['app-version'] });

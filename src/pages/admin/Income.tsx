@@ -87,9 +87,8 @@ export default function AdminIncome() {
       } else {
         setIsVerified(true);
         setLastActivity(Date.now());
-        showSuccessNotification('Access Granted', 'Access granted to income analytics');
         
-        // Log access to audit_logs
+        // Log access to audit_logs (notification disabled)
         await supabase.from('audit_logs').insert({
           user_id: user.id,
           action: 'access',
