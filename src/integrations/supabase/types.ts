@@ -2545,6 +2545,7 @@ export type Database = {
           commission_rate: number | null
           created_at: string | null
           description: string | null
+          discord_url: string | null
           id: string
           is_active: boolean | null
           is_verified: boolean | null
@@ -2561,9 +2562,13 @@ export type Database = {
           store_id: string
           stripe_account_id: string | null
           theme: string | null
+          tiktok_url: string | null
           total_revenue: number | null
           total_sales: number | null
+          twitter_url: string | null
           updated_at: string | null
+          website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           accent_color?: string | null
@@ -2573,6 +2578,7 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           description?: string | null
+          discord_url?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
@@ -2589,9 +2595,13 @@ export type Database = {
           store_id: string
           stripe_account_id?: string | null
           theme?: string | null
+          tiktok_url?: string | null
           total_revenue?: number | null
           total_sales?: number | null
+          twitter_url?: string | null
           updated_at?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           accent_color?: string | null
@@ -2601,6 +2611,7 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           description?: string | null
+          discord_url?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
@@ -2617,9 +2628,13 @@ export type Database = {
           store_id?: string
           stripe_account_id?: string | null
           theme?: string | null
+          tiktok_url?: string | null
           total_revenue?: number | null
           total_sales?: number | null
+          twitter_url?: string | null
           updated_at?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {
