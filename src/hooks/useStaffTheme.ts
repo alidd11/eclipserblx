@@ -1,17 +1,18 @@
 import { useState, useCallback, useEffect } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
 
-export type StaffTheme = 'dark' | 'slate' | 'oled';
+export type StaffTheme = 'purple' | 'ocean' | 'ember' | 'forest' | 'mono';
 
 const STAFF_THEME_KEY = 'staff-theme';
+const ALL_THEME_CLASSES = ['theme-ocean', 'theme-ember', 'theme-forest', 'theme-mono'];
 
 export function useStaffTheme() {
   const [activeTheme, setActiveTheme] = useState<StaffTheme>(() => {
     const saved = safeStorage.getItem(STAFF_THEME_KEY);
-    if (saved === 'slate' || saved === 'oled' || saved === 'dark') {
+    if (saved === 'purple' || saved === 'ocean' || saved === 'ember' || saved === 'forest' || saved === 'mono') {
       return saved;
     }
-    return 'dark';
+    return 'purple';
   });
   
   const [previewTheme, setPreviewTheme] = useState<StaffTheme | null>(null);
@@ -24,14 +25,21 @@ export function useStaffTheme() {
     const html = document.documentElement;
     
     // Remove all staff theme classes
-    html.classList.remove('dark', 'slate', 'oled');
+    ALL_THEME_CLASSES.forEach(cls => html.classList.remove(cls));
     
-    // Add current theme class
-    html.classList.add(currentTheme);
+    // Add current theme class (purple uses the default dark theme, no extra class needed)
+    if (currentTheme !== 'purple') {
+      html.classList.add(`theme-${currentTheme}`);
+    }
+    
+    // Ensure dark mode is always on for admin
+    if (!html.classList.contains('dark')) {
+      html.classList.add('dark');
+    }
     
     return () => {
-      // Cleanup: remove staff-specific themes, keep dark for next-themes
-      html.classList.remove('slate', 'oled');
+      // Cleanup: remove all color theme classes
+      ALL_THEME_CLASSES.forEach(cls => html.classList.remove(cls));
     };
   }, [currentTheme]);
 

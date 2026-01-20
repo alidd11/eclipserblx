@@ -2,7 +2,7 @@ import { useRef, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useStaffTheme, StaffTheme } from '@/hooks/useStaffTheme';
-import { Moon, Eclipse, Circle, Eye } from 'lucide-react';
+import { Sparkles, Waves, Flame, TreePine, Circle, Eye, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,46 +10,68 @@ interface ThemeOption {
   id: StaffTheme;
   name: string;
   description: string;
-  icon: typeof Moon;
+  icon: typeof Sparkles;
   colors: {
-    background: string;
-    card: string;
+    primary: string;
+    secondary: string;
     accent: string;
   };
 }
 
 const themeOptions: ThemeOption[] = [
   {
-    id: 'dark',
-    name: 'Dark',
-    description: 'Default dark theme',
-    icon: Moon,
+    id: 'purple',
+    name: 'Purple',
+    description: 'Gaming neon',
+    icon: Sparkles,
     colors: {
-      background: 'hsl(220 20% 4%)',
-      card: 'hsl(220 20% 7%)',
-      accent: 'hsl(265 100% 65%)',
+      primary: 'hsl(265 100% 65%)',
+      secondary: 'hsl(200 100% 50%)',
+      accent: 'hsl(320 100% 60%)',
     },
   },
   {
-    id: 'slate',
-    name: 'Slate',
-    description: 'Softer blue-grey tones',
-    icon: Eclipse,
+    id: 'ocean',
+    name: 'Ocean',
+    description: 'Cool & calm',
+    icon: Waves,
     colors: {
-      background: 'hsl(220 25% 10%)',
-      card: 'hsl(220 22% 14%)',
-      accent: 'hsl(265 90% 60%)',
+      primary: 'hsl(185 100% 50%)',
+      secondary: 'hsl(210 100% 55%)',
+      accent: 'hsl(195 100% 45%)',
     },
   },
   {
-    id: 'oled',
-    name: 'OLED Black',
-    description: 'True black for OLED',
+    id: 'ember',
+    name: 'Ember',
+    description: 'Warm & energetic',
+    icon: Flame,
+    colors: {
+      primary: 'hsl(25 100% 55%)',
+      secondary: 'hsl(45 100% 50%)',
+      accent: 'hsl(10 100% 55%)',
+    },
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    description: 'Nature-inspired',
+    icon: TreePine,
+    colors: {
+      primary: 'hsl(145 85% 45%)',
+      secondary: 'hsl(160 80% 42%)',
+      accent: 'hsl(120 75% 48%)',
+    },
+  },
+  {
+    id: 'mono',
+    name: 'Mono',
+    description: 'Clean & minimal',
     icon: Circle,
     colors: {
-      background: 'hsl(0 0% 0%)',
-      card: 'hsl(220 15% 5%)',
-      accent: 'hsl(265 100% 65%)',
+      primary: 'hsl(0 0% 85%)',
+      secondary: 'hsl(0 0% 70%)',
+      accent: 'hsl(0 0% 75%)',
     },
   },
 ];
@@ -101,8 +123,8 @@ export function StaffThemeCard() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Moon className="h-5 w-5 text-primary" />
-            <CardTitle>Dashboard Theme</CardTitle>
+            <Palette className="h-5 w-5 text-primary" />
+            <CardTitle>Color Theme</CardTitle>
           </div>
           <AnimatePresence>
             {isPreviewActive && (
@@ -121,11 +143,11 @@ export function StaffThemeCard() {
           </AnimatePresence>
         </div>
         <CardDescription>
-          Choose your preferred admin dashboard appearance. Hover to preview.
+          Choose your color palette. Hover to preview, click to apply.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {themeOptions.map((option) => {
             const Icon = option.icon;
             const isActive = activeTheme === option.id;
@@ -148,7 +170,7 @@ export function StaffThemeCard() {
                   isLongPressing.current = false;
                 }}
                 className={cn(
-                  'relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200',
+                  'relative flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 transition-all duration-200',
                   'hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/50',
                   isActive
                     ? 'border-primary bg-primary/10'
@@ -156,38 +178,47 @@ export function StaffThemeCard() {
                   isPreviewing && 'ring-2 ring-primary/50 ring-offset-2 ring-offset-background'
                 )}
               >
-                {/* Color preview */}
-                <div className="flex gap-1 mb-1">
+                {/* Color swatches */}
+                <div className="flex gap-1">
                   <div
-                    className="w-4 h-4 rounded-full border border-white/10"
-                    style={{ backgroundColor: option.colors.background }}
-                    title="Background"
+                    className="w-4 h-4 rounded-full border border-white/20 shadow-lg"
+                    style={{ 
+                      backgroundColor: option.colors.primary,
+                      boxShadow: `0 0 8px ${option.colors.primary}`
+                    }}
                   />
                   <div
-                    className="w-4 h-4 rounded-full border border-white/10"
-                    style={{ backgroundColor: option.colors.card }}
-                    title="Card"
+                    className="w-4 h-4 rounded-full border border-white/20 shadow-lg"
+                    style={{ 
+                      backgroundColor: option.colors.secondary,
+                      boxShadow: `0 0 8px ${option.colors.secondary}`
+                    }}
                   />
                   <div
-                    className="w-4 h-4 rounded-full border border-white/10"
-                    style={{ backgroundColor: option.colors.accent }}
-                    title="Accent"
+                    className="w-4 h-4 rounded-full border border-white/20 shadow-lg"
+                    style={{ 
+                      backgroundColor: option.colors.accent,
+                      boxShadow: `0 0 8px ${option.colors.accent}`
+                    }}
                   />
                 </div>
                 
-                <Icon className={cn(
-                  'h-6 w-6 transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground'
-                )} />
+                <Icon 
+                  className={cn(
+                    'h-5 w-5 sm:h-6 sm:w-6 transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                  style={isActive ? { color: option.colors.primary } : undefined}
+                />
                 
                 <div className="text-center">
                   <p className={cn(
-                    'text-sm font-medium',
+                    'text-xs sm:text-sm font-medium',
                     isActive ? 'text-primary' : 'text-foreground'
                   )}>
                     {option.name}
                   </p>
-                  <p className="text-xs text-muted-foreground hidden sm:block">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
                     {option.description}
                   </p>
                 </div>
@@ -195,7 +226,8 @@ export function StaffThemeCard() {
                 {isActive && (
                   <motion.div
                     layoutId="activeThemeIndicator"
-                    className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background"
+                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background"
+                    style={{ backgroundColor: option.colors.primary }}
                     initial={false}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
