@@ -57,7 +57,7 @@ export function StoreLayout({ children, store }: StoreLayoutProps) {
     <div className="min-h-[100dvh] flex flex-col bg-background">
       {/* Store Header */}
       <header 
-        className="sticky top-0 z-50 border-b backdrop-blur-md"
+        className="sticky top-0 z-50 border-b backdrop-blur-md pt-[env(safe-area-inset-top)]"
         style={{ 
           backgroundColor: `hsl(var(--background) / 0.95)`,
           borderColor: `${accentColor}20`,
