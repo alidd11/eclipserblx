@@ -92,9 +92,13 @@ const AdminStoreApplications = lazy(() => import("./pages/admin/StoreApplication
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
 const SellerProducts = lazy(() => import("./pages/seller/SellerProducts"));
+const SellerProductEditor = lazy(() => import("./pages/seller/SellerProductEditor"));
 const SellerOrders = lazy(() => import("./pages/seller/SellerOrders"));
 const SellerBalance = lazy(() => import("./pages/seller/SellerBalance"));
 const SellerSettings = lazy(() => import("./pages/seller/SellerSettings"));
+
+// Public pages
+const StorePage = lazy(() => import("./pages/StorePage"));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -169,9 +173,13 @@ const App = () => (
                   {/* Seller routes */}
                   <Route path="/seller" element={<SellerDashboard />} />
                   <Route path="/seller/products" element={<SellerProducts />} />
+                  <Route path="/seller/products/new" element={<SellerProductEditor />} />
+                  <Route path="/seller/products/:productId/edit" element={<SellerProductEditor />} />
                   <Route path="/seller/orders" element={<SellerOrders />} />
                   <Route path="/seller/balance" element={<SellerBalance />} />
                   <Route path="/seller/settings" element={<SellerSettings />} />
+                  {/* Public store page */}
+                  <Route path="/store/:storeSlug" element={<StorePage />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />
