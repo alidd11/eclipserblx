@@ -437,7 +437,7 @@ export default function SellerSettings() {
         </Card>
 
         {/* Earnings Calculator */}
-        <EarningsCalculator commissionRate={store?.commission_rate || 15} />
+        <EarningsCalculator commissionRate={store?.commission_rate ? store.commission_rate * 100 : 15} />
 
         {/* Store Stats */}
         <Card>
