@@ -246,14 +246,16 @@ serve(async (req) => {
         // Check if this is a seller product and get store commission rate
         const { data: product } = await supabaseClient
           .from("products")
-          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate)")
+          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name, discord_webhook_url)")
           .eq("id", item.id)
           .single();
 
         if (product?.is_seller_product && product.store_id) {
-          const storesArray = product.stores as unknown as { owner_id: string; commission_rate?: number }[] | null;
+          const storesArray = product.stores as unknown as { owner_id: string; commission_rate?: number; name?: string; discord_webhook_url?: string }[] | null;
           const sellerId = storesArray?.[0]?.owner_id;
           const commissionRate = storesArray?.[0]?.commission_rate ?? 15; // Default 15% commission
+          const storeName = storesArray?.[0]?.name;
+          const sellerWebhookUrl = storesArray?.[0]?.discord_webhook_url;
           
           if (sellerId) {
             // Calculate net-based seller earnings
@@ -326,6 +328,43 @@ serve(async (req) => {
                   });
               }
               logStep("Seller balance updated", { sellerId, amount: sellerEarnings });
+
+              // Send Discord notification to seller if they have a webhook configured
+              if (sellerWebhookUrl) {
+                try {
+                  const webhookPayload = {
+                    embeds: [{
+                      title: "🎉 New Sale!",
+                      description: `Someone just purchased **${item.name}** from your store!`,
+                      color: 0x22c55e, // Green color
+                      fields: [
+                        { name: "Product", value: item.name, inline: true },
+                        { name: "Sale Price", value: `£${grossAmount.toFixed(2)}`, inline: true },
+                        { name: "Your Earnings", value: `£${sellerEarnings.toFixed(2)}`, inline: true },
+                        { name: "Order ID", value: order.id.slice(0, 8) + "...", inline: true },
+                      ],
+                      footer: { text: `${storeName || 'Your Store'} • Eclipse Store` },
+                      timestamp: new Date().toISOString(),
+                    }],
+                  };
+
+                  const webhookResponse = await fetch(sellerWebhookUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(webhookPayload),
+                  });
+
+                  if (webhookResponse.ok) {
+                    logStep("Seller Discord notification sent", { sellerId, product: item.name });
+                  } else {
+                    logStep("Seller Discord notification failed (non-fatal)", { 
+                      status: webhookResponse.status 
+                    });
+                  }
+                } catch (webhookError) {
+                  logStep("Seller Discord webhook error (non-fatal)", webhookError);
+                }
+              }
             }
           }
         }

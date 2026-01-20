@@ -206,11 +206,11 @@ export default function StorePage() {
       name: store.name,
       logo_url: store.logo_url,
       accent_color: accentColor,
-      social_discord: (store as any).social_discord,
-      social_twitter: (store as any).social_twitter,
-      social_youtube: (store as any).social_youtube,
-      social_tiktok: (store as any).social_tiktok,
-      social_website: (store as any).social_website,
+      social_discord: (store as any).discord_url,
+      social_twitter: (store as any).twitter_url,
+      social_youtube: (store as any).youtube_url,
+      social_tiktok: (store as any).tiktok_url,
+      social_website: (store as any).website_url,
     }}>
       {/* Store Banner */}
       <div className="relative">

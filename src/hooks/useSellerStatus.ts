@@ -24,6 +24,12 @@ export interface Store {
   product_count: number;
   average_rating: number | null;
   created_at: string;
+  discord_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
+  website_url: string | null;
+  discord_webhook_url: string | null;
 }
 
 export interface StoreApplication {
