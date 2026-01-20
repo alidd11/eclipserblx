@@ -79,7 +79,6 @@ export function ForceUpdateCard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['app-version'] });
-      showSuccessNotification('Update Triggered', 'All connected PWAs will update automatically');
       setNewVersion('');
     },
     onError: (error) => {
@@ -102,7 +101,6 @@ export function ForceUpdateCard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['app-version'] });
-      showSuccessNotification('Force Flag Reset', 'Force update flag has been cleared');
     },
   });
 
