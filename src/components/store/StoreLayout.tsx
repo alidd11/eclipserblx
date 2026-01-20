@@ -323,7 +323,7 @@ export function StoreLayout({
         {/* Store Footer */}
         <footer className="border-t border-border bg-card/50">
           <div className="container mx-auto px-4 py-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col items-center gap-4">
               <div className="flex items-center gap-2">
                 {store.logo_url ? (
                   <img 
@@ -339,17 +339,30 @@ export function StoreLayout({
                 </span>
               </div>
               
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>
-                  Powered by{' '}
-                  <Link 
-                    to="/" 
-                    className="font-medium hover:text-foreground transition-colors"
-                    style={{ color: accentColor }}
-                  >
-                    Eclipse Store
-                  </Link>
-                </span>
+              {/* Legal Links */}
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <Link to="/terms" className="hover:text-foreground transition-colors">
+                  Terms of Service
+                </Link>
+                <span className="text-border hidden sm:inline">|</span>
+                <Link to="/privacy" className="hover:text-foreground transition-colors">
+                  Privacy Policy
+                </Link>
+                <span className="text-border hidden sm:inline">|</span>
+                <Link to="/refunds" className="hover:text-foreground transition-colors">
+                  Refund Policy
+                </Link>
+              </div>
+              
+              <div className="text-sm text-muted-foreground">
+                Powered by{' '}
+                <Link 
+                  to="/" 
+                  className="font-medium hover:text-foreground transition-colors"
+                  style={{ color: accentColor }}
+                >
+                  Eclipse Store
+                </Link>
               </div>
             </div>
           </div>
