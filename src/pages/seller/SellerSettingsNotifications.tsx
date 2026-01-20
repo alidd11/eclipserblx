@@ -42,11 +42,11 @@ export default function SellerSettingsNotifications() {
   useEffect(() => {
     if (store) {
       setFormData({
-        discord_webhook_url: (store as any).discord_webhook_url || '',
-        review_discord_webhook_url: (store as any).review_discord_webhook_url || '',
-        discord_bot_token: (store as any).discord_bot_token || '',
-        discord_guild_id: (store as any).discord_guild_id || '',
-        discord_role_id: (store as any).discord_role_id || '',
+        discord_webhook_url: store.discord_webhook_url || '',
+        review_discord_webhook_url: store.review_discord_webhook_url || '',
+        discord_bot_token: store.discord_bot_token || '',
+        discord_guild_id: store.discord_guild_id || '',
+        discord_role_id: store.discord_role_id || '',
       });
     }
   }, [store]);

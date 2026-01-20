@@ -199,9 +199,9 @@ export default function StorePage() {
     );
   }
 
-  const theme = (store as any).theme || 'default';
-  const accentColor = (store as any).accent_color || '#8b5cf6';
-  const bio = (store as any).bio;
+  const theme = store.theme || 'default';
+  const accentColor = store.accent_color || '#8b5cf6';
+  const bio = store.bio;
   const themeStyles = getThemeStyles(theme, accentColor);
   const isDarkTheme = theme === 'dark';
 
@@ -211,11 +211,11 @@ export default function StorePage() {
       name: store.name,
       logo_url: store.logo_url,
       accent_color: accentColor,
-      social_discord: (store as any).discord_url,
-      social_twitter: (store as any).twitter_url,
-      social_youtube: (store as any).youtube_url,
-      social_tiktok: (store as any).tiktok_url,
-      social_website: (store as any).website_url,
+      discord_url: store.discord_url,
+      twitter_url: store.twitter_url,
+      youtube_url: store.youtube_url,
+      tiktok_url: store.tiktok_url,
+      website_url: store.website_url,
     }}>
       {/* Store Banner */}
       <div className="relative">
