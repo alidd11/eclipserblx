@@ -23,7 +23,8 @@ import {
   CheckCircle,
   AlertCircle,
   Copy,
-  ExternalLink
+  ExternalLink,
+  LayoutGrid
 } from 'lucide-react';
 
 export default function SellerDashboard() {
@@ -276,6 +277,15 @@ export default function SellerDashboard() {
                   <span className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
                     Balance & Payouts
+                  </span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-between" asChild>
+                <Link to="/seller/tabs">
+                  <span className="flex items-center gap-2">
+                    <LayoutGrid className="h-4 w-4" />
+                    Store Tabs
                   </span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>

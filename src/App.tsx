@@ -101,6 +101,7 @@ const SellerProductEditor = lazy(() => import("./pages/seller/SellerProductEdito
 const SellerOrders = lazy(() => import("./pages/seller/SellerOrders"));
 const SellerBalance = lazy(() => import("./pages/seller/SellerBalance"));
 const SellerSettings = lazy(() => import("./pages/seller/SellerSettings"));
+const SellerStoreTabs = lazy(() => import("./pages/seller/SellerStoreTabs"));
 
 // Public pages
 const StorePage = lazy(() => import("./pages/StorePage"));
@@ -183,6 +184,7 @@ const App = () => (
                   <Route path="/seller/orders" element={<SellerOrders />} />
                   <Route path="/seller/balance" element={<SellerBalance />} />
                   <Route path="/seller/settings" element={<SellerSettings />} />
+                  <Route path="/seller/tabs" element={<SellerStoreTabs />} />
                   {/* Public store page */}
                   <Route path="/store/:storeSlug" element={<StorePage />} />
                   <Route path="/admin" element={<AdminDashboard />} />
