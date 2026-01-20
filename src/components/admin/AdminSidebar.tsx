@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -113,6 +113,14 @@ const navGroups: NavGroup[] = [
       { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
+    ],
+  },
+  {
+    id: 'resources',
+    title: 'Resources',
+    icon: FolderOpen,
+    items: [
+      { title: 'Documents', icon: FileText, href: '/admin/documents', roles: ['admin'] },
     ],
   },
   {

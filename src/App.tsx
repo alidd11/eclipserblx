@@ -91,6 +91,7 @@ const AdminStoreApplications = lazy(() => import("./pages/admin/StoreApplication
 const AdminSellerProducts = lazy(() => import("./pages/admin/SellerProducts"));
 const AdminSellerPayouts = lazy(() => import("./pages/admin/SellerPayouts"));
 const AdminSellerRecruitment = lazy(() => import("./pages/admin/SellerRecruitment"));
+const AdminDocuments = lazy(() => import("./pages/admin/Documents"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -221,6 +222,7 @@ const App = () => (
                   <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
                   <Route path="/admin/seller-products" element={<AdminSellerProducts />} />
                   <Route path="/admin/seller-payouts" element={<AdminSellerPayouts />} />
+                  <Route path="/admin/documents" element={<AdminDocuments />} />
                   <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
