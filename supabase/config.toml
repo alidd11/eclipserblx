@@ -140,3 +140,9 @@ verify_jwt = false
 
 [functions.analyze-lua-script]
 verify_jwt = false
+
+[functions.smart-search]
+verify_jwt = false
+
+[functions.ai-recommendations]
+verify_jwt = false
