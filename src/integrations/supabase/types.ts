@@ -2735,6 +2735,91 @@ export type Database = {
           },
         ]
       }
+      store_team_invites: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["store_team_role"]
+          store_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["store_team_role"]
+          store_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["store_team_role"]
+          store_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_team_invites_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_team_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          id: string
+          invited_at: string
+          invited_by: string
+          role: Database["public"]["Enums"]["store_team_role"]
+          store_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["store_team_role"]
+          store_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["store_team_role"]
+          store_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_team_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           accent_color: string | null
@@ -3199,6 +3284,18 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_store_owner: {
+        Args: { store_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
+      is_store_team_member: {
+        Args: {
+          required_roles?: Database["public"]["Enums"]["store_team_role"][]
+          store_uuid: string
+          user_uuid: string
+        }
+        Returns: boolean
+      }
       is_username_available: { Args: { username: string }; Returns: boolean }
       record_rate_limit: {
         Args: { p_action_type: string; p_identifier: string }
@@ -3215,6 +3312,7 @@ export type Database = {
         | "analyst"
         | "recruiter"
         | "seller"
+      store_team_role: "manager" | "editor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3351,6 +3449,7 @@ export const Constants = {
         "recruiter",
         "seller",
       ],
+      store_team_role: ["manager", "editor", "viewer"],
     },
   },
 } as const

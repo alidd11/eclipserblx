@@ -105,6 +105,7 @@ const SellerDiscounts = lazy(() => import("./pages/seller/SellerDiscounts"));
 const SellerAnalytics = lazy(() => import("./pages/seller/SellerAnalytics"));
 const SellerSettingsProfile = lazy(() => import("./pages/seller/SellerSettingsProfile"));
 const SellerSettingsAppearance = lazy(() => import("./pages/seller/SellerSettingsAppearance"));
+const SellerSettingsTeam = lazy(() => import("./pages/seller/SellerSettingsTeam"));
 const SellerSettingsPayments = lazy(() => import("./pages/seller/SellerSettingsPayments"));
 const SellerSettingsNotifications = lazy(() => import("./pages/seller/SellerSettingsNotifications"));
 
@@ -193,6 +194,7 @@ const App = () => (
                   <Route path="/seller/discounts" element={<SellerDiscounts />} />
                   <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
                   <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
+                  <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
                   <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
                   <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
                   {/* Public store page */}

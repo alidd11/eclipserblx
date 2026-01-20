@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Package, ShoppingCart, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
-  LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, User,
+  LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
@@ -63,8 +63,9 @@ const navGroups: NavGroup[] = [
     title: 'Settings',
     icon: Settings,
     items: [
-      { title: 'Profile', icon: User, href: '/seller/settings/profile' },
+      { title: 'Store Settings', icon: Store, href: '/seller/settings/profile' },
       { title: 'Appearance', icon: Palette, href: '/seller/settings/appearance' },
+      { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Notifications', icon: Bell, href: '/seller/settings/notifications' },
     ],
