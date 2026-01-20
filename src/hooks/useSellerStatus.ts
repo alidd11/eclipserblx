@@ -10,6 +10,9 @@ export interface Store {
   description: string | null;
   logo_url: string | null;
   banner_url: string | null;
+  bio: string | null;
+  theme: string | null;
+  accent_color: string | null;
   stripe_account_id: string | null;
   payouts_enabled: boolean;
   commission_rate: number;

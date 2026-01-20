@@ -2529,8 +2529,10 @@ export type Database = {
       }
       stores: {
         Row: {
+          accent_color: string | null
           average_rating: number | null
           banner_url: string | null
+          bio: string | null
           commission_rate: number | null
           created_at: string | null
           description: string | null
@@ -2549,13 +2551,16 @@ export type Database = {
           status: string | null
           store_id: string
           stripe_account_id: string | null
+          theme: string | null
           total_revenue: number | null
           total_sales: number | null
           updated_at: string | null
         }
         Insert: {
+          accent_color?: string | null
           average_rating?: number | null
           banner_url?: string | null
+          bio?: string | null
           commission_rate?: number | null
           created_at?: string | null
           description?: string | null
@@ -2574,13 +2579,16 @@ export type Database = {
           status?: string | null
           store_id: string
           stripe_account_id?: string | null
+          theme?: string | null
           total_revenue?: number | null
           total_sales?: number | null
           updated_at?: string | null
         }
         Update: {
+          accent_color?: string | null
           average_rating?: number | null
           banner_url?: string | null
+          bio?: string | null
           commission_rate?: number | null
           created_at?: string | null
           description?: string | null
@@ -2599,6 +2607,7 @@ export type Database = {
           status?: string | null
           store_id?: string
           stripe_account_id?: string | null
+          theme?: string | null
           total_revenue?: number | null
           total_sales?: number | null
           updated_at?: string | null
