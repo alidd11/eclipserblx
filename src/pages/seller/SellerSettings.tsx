@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -52,10 +52,43 @@ const ACCENT_COLORS = [
 
 export default function SellerSettings() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
   const { store, isSeller, loading: sellerLoading } = useSellerStatus();
+
+  // Check for Stripe onboarding completion
+  const stripeOnboardingComplete = searchParams.get('stripe_onboarding') === 'complete';
+
+  // Query to check Connect status
+  const { data: connectStatus, refetch: refetchConnectStatus, isLoading: connectStatusLoading } = useQuery({
+    queryKey: ['connect-status', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-connect-status');
+      if (error) throw error;
+      return data as {
+        hasAccount: boolean;
+        isOnboarded: boolean;
+        canReceivePayments: boolean;
+        chargesEnabled: boolean;
+        accountId: string | null;
+      };
+    },
+    enabled: !!user && isSeller,
+    staleTime: 0, // Always fetch fresh data
+  });
+
+  // Auto-check status after returning from Stripe onboarding
+  useEffect(() => {
+    if (stripeOnboardingComplete) {
+      // Clear the query param
+      setSearchParams({});
+      // Refetch connect status and seller data
+      refetchConnectStatus();
+      queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+    }
+  }, [stripeOnboardingComplete, refetchConnectStatus, queryClient, setSearchParams]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -341,7 +374,14 @@ export default function SellerSettings() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {store?.payouts_enabled ? (
+            {connectStatusLoading ? (
+              <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="flex-1">
+                  <p className="font-medium">Checking payment status...</p>
+                </div>
+              </div>
+            ) : connectStatus?.canReceivePayments || store?.payouts_enabled ? (
               <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <CheckCircle className="h-6 w-6 text-green-500" />
                 <div className="flex-1">
@@ -357,7 +397,7 @@ export default function SellerSettings() {
                   </a>
                 </Button>
               </div>
-            ) : store?.stripe_account_id ? (
+            ) : connectStatus?.hasAccount || store?.stripe_account_id ? (
               <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <AlertCircle className="h-6 w-6 text-yellow-500" />
                 <div className="flex-1">
