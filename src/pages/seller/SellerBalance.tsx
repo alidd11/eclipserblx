@@ -331,12 +331,12 @@ export default function SellerBalance() {
             <div>
               <p className="font-medium">How Your Earnings Are Calculated</p>
               <p className="text-sm text-muted-foreground">
-                Your earnings are calculated <strong>after</strong> Stripe payment processing fees (approx. 2.9% + £0.30 per transaction). 
+                Your earnings are calculated <strong>after</strong> Stripe payment processing fees (approx. 1.5% + £0.20 per transaction for UK domestic cards). 
                 Eclipse then takes a {store?.commission_rate || 15}% commission on the net amount. 
                 This transparent model ensures you always know exactly what you'll earn.
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                <strong>Example:</strong> On a £10 sale, after ~£0.59 Stripe fees, you receive {(100 - (store?.commission_rate || 15))}% of £9.41 = approximately £{(9.41 * (1 - ((store?.commission_rate || 15) / 100))).toFixed(2)}.
+                <strong>Example:</strong> On a £10 sale, after ~£0.35 Stripe fees, you receive {(100 - (store?.commission_rate || 15))}% of £9.65 = approximately £{(9.65 * (1 - ((store?.commission_rate || 15) / 100))).toFixed(2)}.
               </p>
             </div>
           </CardContent>

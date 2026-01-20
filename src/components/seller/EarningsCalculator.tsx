@@ -19,9 +19,9 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
   const breakdown = useMemo(() => {
     const price = parseFloat(productPrice) || 0;
     
-    // Estimate Stripe fee: 2.9% + £0.30 for UK
-    const stripeFeePercentage = 0.029;
-    const stripeFeeFixed = 0.30;
+    // Estimate Stripe fee: 1.5% + £0.20 for UK domestic cards
+    const stripeFeePercentage = 0.015;
+    const stripeFeeFixed = 0.20;
     const stripeFee = (price * stripeFeePercentage) + stripeFeeFixed;
     
     // Net after Stripe
