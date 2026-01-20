@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { FollowButton } from '@/components/store/FollowButton';
+import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { 
   Store as StoreIcon, 
@@ -434,6 +435,17 @@ export default function StorePage() {
             </Card>
           )}
         </div>
+
+        {/* Recommendations Section */}
+        {store && products && products.length > 0 && (
+          <StoreRecommendations
+            storeId={store.id}
+            storeName={store.name}
+            categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
+            accentColor={accentColor}
+            limit={4}
+          />
+        )}
       </div>
     </StoreLayout>
   );
