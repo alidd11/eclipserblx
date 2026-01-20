@@ -246,16 +246,27 @@ serve(async (req) => {
         // Check if this is a seller product and get store commission rate
         const { data: product } = await supabaseClient
           .from("products")
-          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name, discord_webhook_url)")
+          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name, discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id)")
           .eq("id", item.id)
           .single();
 
         if (product?.is_seller_product && product.store_id) {
-          const storesArray = product.stores as unknown as { owner_id: string; commission_rate?: number; name?: string; discord_webhook_url?: string }[] | null;
+          const storesArray = product.stores as unknown as { 
+            owner_id: string; 
+            commission_rate?: number; 
+            name?: string; 
+            discord_webhook_url?: string;
+            discord_bot_token?: string;
+            discord_guild_id?: string;
+            discord_role_id?: string;
+          }[] | null;
           const sellerId = storesArray?.[0]?.owner_id;
           const commissionRate = storesArray?.[0]?.commission_rate ?? 15; // Default 15% commission
           const storeName = storesArray?.[0]?.name;
           const sellerWebhookUrl = storesArray?.[0]?.discord_webhook_url;
+          const discordBotToken = storesArray?.[0]?.discord_bot_token;
+          const discordGuildId = storesArray?.[0]?.discord_guild_id;
+          const discordRoleId = storesArray?.[0]?.discord_role_id;
           
           if (sellerId) {
             // Calculate net-based seller earnings
@@ -363,6 +374,48 @@ serve(async (req) => {
                   }
                 } catch (webhookError) {
                   logStep("Seller Discord webhook error (non-fatal)", webhookError);
+                }
+              }
+
+              // Assign Discord role if seller has role integration configured
+              if (discordBotToken && discordGuildId && discordRoleId && userId) {
+                try {
+                  // Get buyer's Discord ID from their profile
+                  const { data: buyerProfile } = await supabaseClient
+                    .from("profiles")
+                    .select("discord_id")
+                    .eq("user_id", userId)
+                    .single();
+
+                  if (buyerProfile?.discord_id) {
+                    const discordApiUrl = `https://discord.com/api/v10/guilds/${discordGuildId}/members/${buyerProfile.discord_id}/roles/${discordRoleId}`;
+                    
+                    const roleResponse = await fetch(discordApiUrl, {
+                      method: "PUT",
+                      headers: {
+                        "Authorization": `Bot ${discordBotToken}`,
+                        "Content-Type": "application/json",
+                      },
+                    });
+
+                    if (roleResponse.ok || roleResponse.status === 204) {
+                      logStep("Discord role assigned to buyer", { 
+                        buyerDiscordId: buyerProfile.discord_id, 
+                        roleId: discordRoleId,
+                        storeName 
+                      });
+                    } else {
+                      const errorText = await roleResponse.text();
+                      logStep("Discord role assignment failed (non-fatal)", { 
+                        status: roleResponse.status,
+                        error: errorText
+                      });
+                    }
+                  } else {
+                    logStep("Buyer has no Discord linked, skipping role assignment");
+                  }
+                } catch (roleError) {
+                  logStep("Discord role assignment error (non-fatal)", roleError);
                 }
               }
             }

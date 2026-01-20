@@ -2629,6 +2629,9 @@ export type Database = {
           custom_rate_set_at: string | null
           custom_rate_set_by: string | null
           description: string | null
+          discord_bot_token: string | null
+          discord_guild_id: string | null
+          discord_role_id: string | null
           discord_url: string | null
           discord_webhook_url: string | null
           id: string
@@ -2640,6 +2643,7 @@ export type Database = {
           payouts_enabled: boolean | null
           product_count: number | null
           rejection_reason: string | null
+          review_discord_webhook_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           slug: string
@@ -2667,6 +2671,9 @@ export type Database = {
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
           description?: string | null
+          discord_bot_token?: string | null
+          discord_guild_id?: string | null
+          discord_role_id?: string | null
           discord_url?: string | null
           discord_webhook_url?: string | null
           id?: string
@@ -2678,6 +2685,7 @@ export type Database = {
           payouts_enabled?: boolean | null
           product_count?: number | null
           rejection_reason?: string | null
+          review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           slug: string
@@ -2705,6 +2713,9 @@ export type Database = {
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
           description?: string | null
+          discord_bot_token?: string | null
+          discord_guild_id?: string | null
+          discord_role_id?: string | null
           discord_url?: string | null
           discord_webhook_url?: string | null
           id?: string
@@ -2716,6 +2727,7 @@ export type Database = {
           payouts_enabled?: boolean | null
           product_count?: number | null
           rejection_reason?: string | null
+          review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           slug?: string

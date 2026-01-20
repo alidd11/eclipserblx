@@ -30,6 +30,10 @@ export interface Store {
   tiktok_url: string | null;
   website_url: string | null;
   discord_webhook_url: string | null;
+  review_discord_webhook_url: string | null;
+  discord_bot_token: string | null;
+  discord_guild_id: string | null;
+  discord_role_id: string | null;
 }
 
 export interface StoreApplication {
