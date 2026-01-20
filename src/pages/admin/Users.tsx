@@ -181,7 +181,7 @@ export default function AdminUsers() {
           const slug = baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
           const uniqueSlug = `${slug}-${Date.now().toString(36)}`;
           
-          // Create store record
+          // Create store record with explicit commission rate
           const { data: newStore, error: storeError } = await supabase
             .from('stores')
             .insert({
@@ -191,6 +191,7 @@ export default function AdminUsers() {
               store_id: `STR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
               status: 'approved',
               is_active: true,
+              commission_rate: 15, // Default 15% commission rate
             })
             .select('id')
             .single();
