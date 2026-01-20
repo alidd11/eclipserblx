@@ -1154,11 +1154,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
           {/* Security Tab */}
           <TabsContent value="security" className="space-y-6">
-            {/* Saved Payment Methods */}
-            <SavedCardsCard />
-
             {/* My Messages */}
             <MyMessagesCard />
+
+            {/* Saved Payment Methods */}
+            <SavedCardsCard />
 
           </TabsContent>
         </Tabs>
