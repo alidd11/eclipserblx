@@ -43,6 +43,7 @@ serve(async (req) => {
     let amountTotal = 0;
     let discountCodeId: string | null = null;
     let discountAmount = 0;
+    let stripeProcessingFee = 0; // Actual Stripe fee from balance transaction
 
     // Handle Stripe Checkout Session
     if (sessionId) {
@@ -74,10 +75,32 @@ serve(async (req) => {
       else if (pmType === 'klarna') paymentMethod = 'klarna';
       else paymentMethod = 'stripe'; // Default to stripe for card payments
       amountTotal = session.amount_total ? session.amount_total / 100 : 0;
+
+      // Retrieve Stripe processing fee from payment intent's balance transaction
+      const paymentIntent = session.payment_intent as Stripe.PaymentIntent | null;
+      if (paymentIntent?.latest_charge) {
+        try {
+          const charge = await stripe.charges.retrieve(
+            typeof paymentIntent.latest_charge === 'string' 
+              ? paymentIntent.latest_charge 
+              : paymentIntent.latest_charge.id,
+            { expand: ['balance_transaction'] }
+          );
+          const balanceTransaction = charge.balance_transaction as Stripe.BalanceTransaction | null;
+          if (balanceTransaction?.fee) {
+            stripeProcessingFee = balanceTransaction.fee / 100; // Convert from pence to pounds
+            logStep("Stripe fee retrieved from checkout session", { fee: stripeProcessingFee });
+          }
+        } catch (feeError) {
+          logStep("Could not retrieve Stripe fee (non-fatal)", feeError);
+        }
+      }
     }
     // Handle PaymentIntent (from Apple Pay/Google Pay)
     else if (paymentIntentId) {
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ['latest_charge.balance_transaction']
+      });
 
       logStep("PaymentIntent retrieved", { id: paymentIntent.id, status: paymentIntent.status });
 
@@ -115,6 +138,16 @@ serve(async (req) => {
       }
       
       amountTotal = paymentIntent.amount / 100;
+
+      // Retrieve Stripe processing fee from balance transaction
+      const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+      if (charge?.balance_transaction) {
+        const balanceTransaction = charge.balance_transaction as Stripe.BalanceTransaction;
+        if (balanceTransaction.fee) {
+          stripeProcessingFee = balanceTransaction.fee / 100; // Convert from pence to pounds
+          logStep("Stripe fee retrieved from payment intent", { fee: stripeProcessingFee });
+        }
+      }
     }
 
     // Check if order already exists
@@ -203,28 +236,49 @@ serve(async (req) => {
       throw itemsError;
     }
 
-    // Process seller earnings for seller products
+    // Process seller earnings for seller products (net-based after Stripe fees)
+    // Calculate seller product count for proportional fee allocation
+    const sellerProducts = items.filter((item: any) => item.id);
+    const sellerProductCount = sellerProducts.length;
+    
     for (const item of items) {
       if (item.id) {
-        // Check if this is a seller product
+        // Check if this is a seller product and get store commission rate
         const { data: product } = await supabaseClient
           .from("products")
-          .select("is_seller_product, seller_price, store_id, stores(owner_id)")
+          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate)")
           .eq("id", item.id)
           .single();
 
-        if (product?.is_seller_product && product.store_id && product.seller_price) {
-          const storesArray = product.stores as unknown as { owner_id: string }[] | null;
+        if (product?.is_seller_product && product.store_id) {
+          const storesArray = product.stores as unknown as { owner_id: string; commission_rate?: number }[] | null;
           const sellerId = storesArray?.[0]?.owner_id;
+          const commissionRate = storesArray?.[0]?.commission_rate ?? 15; // Default 15% commission
           
           if (sellerId) {
-            logStep("Processing seller earnings", { 
+            // Calculate net-based seller earnings
+            const grossAmount = item.price;
+            // Allocate Stripe fee proportionally across all items
+            const proportionalStripeFee = sellerProductCount > 0 
+              ? stripeProcessingFee / sellerProductCount 
+              : 0;
+            const netBeforeCommission = grossAmount - proportionalStripeFee;
+            // Seller receives (100% - commission%) of net amount
+            const sellerEarnings = Math.max(0, netBeforeCommission * (1 - commissionRate / 100));
+            const platformFee = netBeforeCommission - sellerEarnings;
+            
+            logStep("Processing seller earnings (net-based)", { 
               productId: item.id, 
               sellerId, 
-              sellerPrice: product.seller_price 
+              grossAmount,
+              stripeFee: proportionalStripeFee,
+              netBeforeCommission,
+              commissionRate,
+              sellerEarnings,
+              platformFee
             });
 
-            // Create transaction record
+            // Create transaction record with full fee breakdown
             const { error: txError } = await supabaseClient
               .from("seller_transactions")
               .insert({
@@ -232,7 +286,12 @@ serve(async (req) => {
                 store_id: product.store_id,
                 order_id: order.id,
                 product_id: item.id,
-                amount: product.seller_price,
+                gross_amount: grossAmount,
+                stripe_fee: proportionalStripeFee,
+                net_before_commission: netBeforeCommission,
+                platform_fee: platformFee,
+                net_amount: sellerEarnings,
+                amount: sellerEarnings,
                 type: "sale",
                 status: "completed",
               });
@@ -251,8 +310,8 @@ serve(async (req) => {
                 await supabaseClient
                   .from("seller_balances")
                   .update({
-                    available_balance: (currentBalance.available_balance || 0) + product.seller_price,
-                    total_earned: (currentBalance.total_earned || 0) + product.seller_price,
+                    available_balance: (currentBalance.available_balance || 0) + sellerEarnings,
+                    total_earned: (currentBalance.total_earned || 0) + sellerEarnings,
                   })
                   .eq("user_id", sellerId);
               } else {
@@ -262,11 +321,11 @@ serve(async (req) => {
                   .insert({
                     user_id: sellerId,
                     store_id: product.store_id,
-                    available_balance: product.seller_price,
-                    total_earned: product.seller_price,
+                    available_balance: sellerEarnings,
+                    total_earned: sellerEarnings,
                   });
               }
-              logStep("Seller balance updated", { sellerId, amount: product.seller_price });
+              logStep("Seller balance updated", { sellerId, amount: sellerEarnings });
             }
           }
         }

@@ -246,8 +246,15 @@ export function BecomeSellerCard() {
           <div className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
-              <p className="font-medium text-sm">Keep 85% of your sales</p>
-              <p className="text-xs text-muted-foreground">Only 15% platform fee</p>
+              <p className="font-medium text-sm">Keep 85% of net sales</p>
+              <p className="text-xs text-muted-foreground">After payment processing fees</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="font-medium text-sm">Transparent fee structure</p>
+              <p className="text-xs text-muted-foreground">See exactly what you'll earn per sale</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
