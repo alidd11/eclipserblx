@@ -24,11 +24,11 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   const [isPulling, setIsPulling] = useState(false);
   const [hasShownRecoveryToast, setHasShownRecoveryToast] = useState(false);
   
-  // Initialize SW update handler - only show notifications on admin routes
-  const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate({ showNotifications: isAdminRoute });
+  // Initialize SW update handler - notifications disabled
+  const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate({ showNotifications: false });
   
-  // Initialize app version check for remote forced updates - only show notifications on admin routes
-  useAppVersionCheck({ showNotifications: isAdminRoute });
+  // Initialize app version check for remote forced updates - notifications disabled
+  useAppVersionCheck({ showNotifications: false });
   
   // Network quality monitoring
   const { status, isOffline, isDegraded, justRecovered, forceCheck } = useNetworkQuality();
