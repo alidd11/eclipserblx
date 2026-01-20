@@ -97,8 +97,10 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         {/* Main Content - Fixed header with scrollable content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
           <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
-          <Footer />
+          <main className="flex-1 overflow-y-auto overflow-x-hidden">
+            {children}
+            <Footer />
+          </main>
         </div>
       </div>
 
