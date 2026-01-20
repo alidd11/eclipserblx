@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 const DOCUMENT_CATEGORIES = [
   { value: 'general', label: 'General', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
@@ -131,6 +132,17 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       setIsUploading(true);
+      
+      // Security scan
+      toast.info('Scanning document...', { id: 'doc-scan' });
+      const scanResult = await performSecurityScan(file, { skipNsfwCheck: true });
+      
+      if (!scanResult.isAllowed) {
+        toast.dismiss('doc-scan');
+        throw new Error(scanResult.reason || 'File blocked by security scan');
+      }
+      
+      toast.dismiss('doc-scan');
       
       // Generate unique file path
       const fileExt = file.name.split('.').pop();

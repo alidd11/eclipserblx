@@ -48,6 +48,7 @@ import {
 import { SortableMediaItem } from '@/components/admin/SortableMediaItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 interface ProductForm {
   id?: string;
@@ -158,6 +159,22 @@ export default function AdminProducts() {
 
     setIsUploading(true);
     try {
+      // Security scan for product assets (Roblox files, Lua scripts)
+      toast.info('Scanning file for threats...', { id: 'security-scan' });
+      const scanResult = await performSecurityScan(file, { skipNsfwCheck: true });
+      
+      if (!scanResult.isAllowed) {
+        toast.dismiss('security-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      
+      if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
+        toast.warning(`File has concerns: ${scanResult.luaConcerns.join(', ')}`, { duration: 8000 });
+      }
+      
+      toast.dismiss('security-scan');
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;

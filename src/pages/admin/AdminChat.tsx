@@ -22,6 +22,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { hapticTap, hapticError } from '@/lib/haptics';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 interface ChatMessage {
   id: string;
@@ -313,6 +314,18 @@ function AdminChatContent() {
   // Upload file to storage
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!user?.id) return null;
+
+    // Security scan
+    toast.info('Scanning file...', { id: 'admin-chat-scan' });
+    const scanResult = await performSecurityScan(file);
+    
+    if (!scanResult.isAllowed) {
+      toast.dismiss('admin-chat-scan');
+      toast.error(scanResult.reason || 'File blocked by security scan');
+      return null;
+    }
+    
+    toast.dismiss('admin-chat-scan');
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;

@@ -18,6 +18,7 @@ import { showSuccessNotification, showErrorNotification, showInfoNotification } 
 import { ImagePlus, X, Loader2, Upload } from 'lucide-react';
 import { forumThreadSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 import { cn } from '@/lib/utils';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 interface CreateThreadDialogProps {
   open: boolean;
@@ -45,33 +46,6 @@ export function CreateThreadDialog({
   // Show image upload for showcase and requests categories
   const showImageUpload = categorySlug === 'showcase' || categorySlug === 'requests';
 
-  // Check image for NSFW content
-  const checkNSFW = async (file: File): Promise<{ isNSFW: boolean; reason: string }> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64 = reader.result as string;
-          const response = await supabase.functions.invoke('check-nsfw', {
-            body: { imageBase64: base64 }
-          });
-          
-          if (response.error) {
-            console.error('NSFW check error:', response.error);
-            resolve({ isNSFW: false, reason: '' }); // Allow on error
-            return;
-          }
-          
-          resolve(response.data);
-        } catch (error) {
-          console.error('NSFW check failed:', error);
-          resolve({ isNSFW: false, reason: '' }); // Allow on error
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
   const processImages = useCallback(async (files: File[]) => {
     if (!user) return;
 
@@ -96,12 +70,12 @@ export function CreateThreadDialog({
           break;
         }
 
-        // Check for NSFW content
-        showInfoNotification('Checking...', `Scanning ${file.name}`);
-        const nsfwResult = await checkNSFW(file);
+        // Security scan (virus + NSFW)
+        showInfoNotification('Scanning', `Checking ${file.name}...`);
+        const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
         
-        if (nsfwResult.isNSFW) {
-          showErrorNotification('Content Rejected', `${file.name}: ${nsfwResult.reason || 'Inappropriate content'}`);
+        if (!scanResult.isAllowed) {
+          showErrorNotification('Content Rejected', scanResult.reason || 'Image blocked');
           continue;
         }
 

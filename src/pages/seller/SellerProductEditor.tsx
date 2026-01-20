@@ -32,6 +32,7 @@ import {
   ImagePlus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 interface ProductFormData {
   name: string;
@@ -148,6 +149,17 @@ export default function SellerProductEditor() {
       const newImages: string[] = [];
 
       for (const file of Array.from(files)) {
+        // Security scan (virus + NSFW)
+        toast.info('Scanning image...', { id: 'img-scan' });
+        const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
+        
+        if (!scanResult.isAllowed) {
+          toast.dismiss('img-scan');
+          toast.error(scanResult.reason || 'Image blocked');
+          continue;
+        }
+        toast.dismiss('img-scan');
+
         const fileExt = file.name.split('.').pop();
         const fileName = `${store?.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
@@ -187,6 +199,22 @@ export default function SellerProductEditor() {
 
     setUploadingAsset(true);
     try {
+      // Security scan for product assets (Roblox files, Lua scripts)
+      toast.info('Scanning file for threats...', { id: 'asset-scan' });
+      const scanResult = await performSecurityScan(file, { skipNsfwCheck: true });
+      
+      if (!scanResult.isAllowed) {
+        toast.dismiss('asset-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      
+      if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
+        toast.warning(`File has concerns: ${scanResult.luaConcerns.join(', ')}`, { duration: 8000 });
+      }
+      
+      toast.dismiss('asset-scan');
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${store?.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
