@@ -13,6 +13,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
+import { useStaffTheme } from '@/hooks/useStaffTheme';
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
@@ -450,6 +451,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   
   // Use admin-specific PWA manifest
   useAdminManifest();
+  
+  // Initialize staff theme - the hook applies the theme class to document
+  useStaffTheme();
 
   useEffect(() => {
     safeStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
