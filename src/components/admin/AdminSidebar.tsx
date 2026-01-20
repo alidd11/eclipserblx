@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen
+  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -55,11 +55,12 @@ const navGroups: NavGroup[] = [
   },
   {
     id: 'marketplace',
-    title: 'Marketplace',
+    title: 'Seller Marketplace',
     icon: Store,
     items: [
       { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', roles: ['admin'] },
       { title: 'Seller Products', icon: Package, href: '/admin/seller-products', roles: ['admin'] },
+      { title: 'Seller Commissions', icon: Percent, href: '/admin/seller-commissions', roles: ['admin'] },
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
     ],
   },

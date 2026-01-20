@@ -2544,6 +2544,10 @@ export type Database = {
           bio: string | null
           commission_rate: number | null
           created_at: string | null
+          custom_commission_rate: number | null
+          custom_rate_expires_at: string | null
+          custom_rate_set_at: string | null
+          custom_rate_set_by: string | null
           description: string | null
           discord_url: string | null
           id: string
@@ -2577,6 +2581,10 @@ export type Database = {
           bio?: string | null
           commission_rate?: number | null
           created_at?: string | null
+          custom_commission_rate?: number | null
+          custom_rate_expires_at?: string | null
+          custom_rate_set_at?: string | null
+          custom_rate_set_by?: string | null
           description?: string | null
           discord_url?: string | null
           id?: string
@@ -2610,6 +2618,10 @@ export type Database = {
           bio?: string | null
           commission_rate?: number | null
           created_at?: string | null
+          custom_commission_rate?: number | null
+          custom_rate_expires_at?: string | null
+          custom_rate_set_at?: string | null
+          custom_rate_set_by?: string | null
           description?: string | null
           discord_url?: string | null
           id?: string
@@ -2933,6 +2945,7 @@ export type Database = {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined
       }
+      revert_expired_custom_rates: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role:
