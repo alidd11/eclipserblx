@@ -203,6 +203,76 @@ serve(async (req) => {
       throw itemsError;
     }
 
+    // Process seller earnings for seller products
+    for (const item of items) {
+      if (item.id) {
+        // Check if this is a seller product
+        const { data: product } = await supabaseClient
+          .from("products")
+          .select("is_seller_product, seller_price, store_id, stores(owner_id)")
+          .eq("id", item.id)
+          .single();
+
+        if (product?.is_seller_product && product.store_id && product.seller_price) {
+          const storesArray = product.stores as unknown as { owner_id: string }[] | null;
+          const sellerId = storesArray?.[0]?.owner_id;
+          
+          if (sellerId) {
+            logStep("Processing seller earnings", { 
+              productId: item.id, 
+              sellerId, 
+              sellerPrice: product.seller_price 
+            });
+
+            // Create transaction record
+            const { error: txError } = await supabaseClient
+              .from("seller_transactions")
+              .insert({
+                seller_id: sellerId,
+                store_id: product.store_id,
+                order_id: order.id,
+                product_id: item.id,
+                amount: product.seller_price,
+                type: "sale",
+                status: "completed",
+              });
+
+            if (txError) {
+              logStep("Seller transaction error (non-fatal)", txError);
+            } else {
+              // Update seller balance
+              const { data: currentBalance } = await supabaseClient
+                .from("seller_balances")
+                .select("available_balance, pending_balance, total_earned")
+                .eq("user_id", sellerId)
+                .single();
+
+              if (currentBalance) {
+                await supabaseClient
+                  .from("seller_balances")
+                  .update({
+                    available_balance: (currentBalance.available_balance || 0) + product.seller_price,
+                    total_earned: (currentBalance.total_earned || 0) + product.seller_price,
+                  })
+                  .eq("user_id", sellerId);
+              } else {
+                // Create new balance record
+                await supabaseClient
+                  .from("seller_balances")
+                  .insert({
+                    user_id: sellerId,
+                    store_id: product.store_id,
+                    available_balance: product.seller_price,
+                    total_earned: product.seller_price,
+                  });
+              }
+              logStep("Seller balance updated", { sellerId, amount: product.seller_price });
+            }
+          }
+        }
+      }
+    }
+
     // Generate installation codes for bot purchases
     const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
     for (let i = 0; i < items.length; i++) {
