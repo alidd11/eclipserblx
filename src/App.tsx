@@ -89,6 +89,13 @@ const AdminStaffProfile = lazy(() => import("./pages/admin/StaffProfile"));
 const AdminAffiliateApplications = lazy(() => import("./pages/admin/AffiliateApplications"));
 const AdminStoreApplications = lazy(() => import("./pages/admin/StoreApplications"));
 
+// Seller pages
+const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
+const SellerProducts = lazy(() => import("./pages/seller/SellerProducts"));
+const SellerOrders = lazy(() => import("./pages/seller/SellerOrders"));
+const SellerBalance = lazy(() => import("./pages/seller/SellerBalance"));
+const SellerSettings = lazy(() => import("./pages/seller/SellerSettings"));
+
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +166,12 @@ const App = () => (
                   <Route path="/eclipse-plus" element={<EclipsePlus />} />
                   <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/support/chat" element={<LiveChat />} />
+                  {/* Seller routes */}
+                  <Route path="/seller" element={<SellerDashboard />} />
+                  <Route path="/seller/products" element={<SellerProducts />} />
+                  <Route path="/seller/orders" element={<SellerOrders />} />
+                  <Route path="/seller/balance" element={<SellerBalance />} />
+                  <Route path="/seller/settings" element={<SellerSettings />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />
