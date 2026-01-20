@@ -215,9 +215,8 @@
     --sidebar-ring: 185 85% 40%;
   }
 
-  /* Ocean theme - Dark mode */
-  .theme-ocean.dark,
-  .dark .theme-ocean,
+  /* Ocean theme - Dark mode (both classes on html element) */
+  :root.dark.theme-ocean,
   .dark.theme-ocean {
     --background: 200 25% 6%;
     --foreground: 200 10% 95%;
@@ -335,9 +334,8 @@
     --sidebar-ring: 25 90% 48%;
   }
 
-  /* Ember theme - Dark mode */
-  .theme-ember.dark,
-  .dark .theme-ember,
+  /* Ember theme - Dark mode (both classes on html element) */
+  :root.dark.theme-ember,
   .dark.theme-ember {
     --background: 15 25% 6%;
     --foreground: 30 10% 95%;
@@ -455,9 +453,8 @@
     --sidebar-ring: 145 75% 38%;
   }
 
-  /* Forest theme - Dark mode */
-  .theme-forest.dark,
-  .dark .theme-forest,
+  /* Forest theme - Dark mode (both classes on html element) */
+  :root.dark.theme-forest,
   .dark.theme-forest {
     --background: 140 25% 5%;
     --foreground: 140 10% 95%;
@@ -575,9 +572,8 @@
     --sidebar-ring: 0 0% 30%;
   }
 
-  /* Monochrome theme - Dark mode */
-  .theme-mono.dark,
-  .dark .theme-mono,
+  /* Monochrome theme - Dark mode (both classes on html element) */
+  :root.dark.theme-mono,
   .dark.theme-mono {
     --background: 0 0% 5%;
     --foreground: 0 0% 95%;
