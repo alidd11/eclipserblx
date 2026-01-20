@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBadges } from '@/hooks/useBadges';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
@@ -29,6 +30,7 @@ import { MyMessagesCard } from '@/components/account/MyMessagesCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
+import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
@@ -38,6 +40,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges, newBadges, checkBadges, clearNewBadges } = useBadges();
   const { isSubscribed } = useSubscription();
+  const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -1004,6 +1007,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 <BadgeShowcase badges={badges} userBadges={userBadges} showAll />
               </CardContent>
             </Card>
+
+            {/* Marketplace Beta - Only visible to users with feature flag access */}
+            {hasMarketplaceAccess && <BecomeSellerCard />}
 
             {/* Referral Card */}
             <ReferralCard />

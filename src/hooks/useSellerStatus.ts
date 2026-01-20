@@ -1,0 +1,122 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+
+export interface Store {
+  id: string;
+  store_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  banner_url: string | null;
+  stripe_account_id: string | null;
+  payouts_enabled: boolean;
+  commission_rate: number;
+  is_verified: boolean;
+  is_active: boolean;
+  status: 'pending' | 'approved' | 'suspended' | 'rejected';
+  total_sales: number;
+  total_revenue: number;
+  product_count: number;
+  average_rating: number | null;
+  created_at: string;
+}
+
+export interface StoreApplication {
+  id: string;
+  user_id: string;
+  store_name: string;
+  store_description: string | null;
+  product_category: string | null;
+  expected_products: string | null;
+  portfolio_url: string | null;
+  experience: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason: string | null;
+  created_at: string;
+}
+
+export interface SellerBalance {
+  available_balance: number;
+  pending_balance: number;
+  total_earned: number;
+  total_paid: number;
+}
+
+export function useSellerStatus() {
+  const { user } = useAuth();
+
+  // Check if user has an approved store
+  const { data: store, isLoading: storeLoading } = useQuery({
+    queryKey: ['seller-store', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as Store | null;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Check if user has a pending application
+  const { data: application, isLoading: applicationLoading } = useQuery({
+    queryKey: ['seller-application', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('store_applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as StoreApplication | null;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Get seller balance if they have an approved store
+  const { data: balance, isLoading: balanceLoading } = useQuery({
+    queryKey: ['seller-balance', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('seller_balances')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as SellerBalance | null;
+    },
+    enabled: !!user?.id && store?.status === 'approved',
+  });
+
+  const isSeller = store?.status === 'approved';
+  const hasStore = !!store;
+  const hasPendingApplication = application?.status === 'pending';
+  const applicationRejected = application?.status === 'rejected';
+
+  return {
+    store,
+    application,
+    balance,
+    isSeller,
+    hasStore,
+    hasPendingApplication,
+    applicationRejected,
+    loading: storeLoading || applicationLoading,
+    balanceLoading,
+  };
+}
