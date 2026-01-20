@@ -27,6 +27,7 @@ export function useAdminAuth() {
   const isOrderManager = roles?.includes('order_manager') ?? false;
   const isSupportAgent = roles?.includes('support_agent') ?? false;
   const isAnalyst = roles?.includes('analyst') ?? false;
+  const isSeller = roles?.includes('seller') ?? false;
   const isStaff = (roles?.length ?? 0) > 0;
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;
@@ -42,6 +43,7 @@ export function useAdminAuth() {
     isOrderManager,
     isSupportAgent,
     isAnalyst,
+    isSeller,
     isStaff,
     hasRole,
     loading,

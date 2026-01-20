@@ -55,6 +55,7 @@ const ROLES: { value: AppRole; label: string; color: string }[] = [
   { value: 'support_agent', label: 'Support Agent', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
   { value: 'analyst', label: 'Analyst', color: 'bg-purple-500/10 text-purple-500 border-purple-500/30' },
   { value: 'recruiter', label: 'Recruiter', color: 'bg-violet-500/10 text-violet-500 border-violet-500/30' },
+  { value: 'seller', label: 'Seller', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' },
 ];
 
 const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';

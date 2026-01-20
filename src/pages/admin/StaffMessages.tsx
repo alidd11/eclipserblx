@@ -56,6 +56,7 @@ const roleBadges: Record<AppRole, { label: string; className: string }> = {
   support_agent: { label: 'Support', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
   analyst: { label: 'Analyst', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   recruiter: { label: 'Recruiter', className: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+  seller: { label: 'Seller', className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
 };
 
 // Parse @mentions from message text
