@@ -127,12 +127,22 @@ export default function SellerProducts() {
               Manage your store's product catalog
             </p>
           </div>
-          <Button asChild>
-            <Link to="/seller/products/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {store?.slug && (
+              <Button variant="outline" asChild>
+                <Link to={`/store/${store.slug}`}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Store
+                </Link>
+              </Button>
+            )}
+            <Button asChild>
+              <Link to="/seller/products/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
