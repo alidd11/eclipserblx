@@ -69,6 +69,42 @@ export function useFeatureFlag(flagName: string): UseFeatureFlagResult {
 }
 
 // Convenience hook specifically for marketplace feature
+// Sellers with the seller role automatically have access
 export function useMarketplaceAccess() {
-  return useFeatureFlag('marketplace');
+  const { user, loading: authLoading } = useAuth();
+  const featureFlag = useFeatureFlag('marketplace');
+  const [hasSellerRole, setHasSellerRole] = useState(false);
+  const [sellerLoading, setSellerLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading || !user) {
+      setSellerLoading(false);
+      return;
+    }
+
+    async function checkSellerRole() {
+      try {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'seller')
+          .maybeSingle();
+        
+        setHasSellerRole(!!data);
+      } catch (err) {
+        console.error('Error checking seller role:', err);
+      } finally {
+        setSellerLoading(false);
+      }
+    }
+
+    checkSellerRole();
+  }, [user, authLoading]);
+
+  return {
+    hasAccess: featureFlag.hasAccess || hasSellerRole,
+    loading: featureFlag.loading || sellerLoading,
+    error: featureFlag.error,
+  };
 }
