@@ -34,6 +34,20 @@ export interface Store {
   discord_bot_token: string | null;
   discord_guild_id: string | null;
   discord_role_id: string | null;
+  // Advanced customization fields
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  hero_cta_text: string | null;
+  hero_cta_link: string | null;
+  custom_css: string | null;
+  font_heading: string | null;
+  font_body: string | null;
+  announcement_text: string | null;
+  announcement_active: boolean;
+  featured_product_ids: string[] | null;
+  layout_style: string | null;
+  show_reviews: boolean;
+  show_social_proof: boolean;
 }
 
 export interface StoreApplication {

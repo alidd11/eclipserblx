@@ -1956,6 +1956,57 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_analytics: {
+        Row: {
+          country: string | null
+          created_at: string
+          device_type: string | null
+          event_type: string
+          id: string
+          product_id: string | null
+          referrer: string | null
+          store_id: string
+          visitor_id: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_type: string
+          id?: string
+          product_id?: string | null
+          referrer?: string | null
+          store_id: string
+          visitor_id?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          product_id?: string | null
+          referrer?: string | null
+          store_id?: string
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_analytics_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_analytics_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_balances: {
         Row: {
           available_balance: number | null
@@ -1998,6 +2049,65 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      seller_discount_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_discount_percent: number | null
+          max_uses: number | null
+          min_order_amount: number | null
+          product_ids: string[] | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount_percent?: number | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          product_ids?: string[] | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount_percent?: number | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          product_ids?: string[] | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_discount_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2619,12 +2729,15 @@ export type Database = {
       stores: {
         Row: {
           accent_color: string | null
+          announcement_active: boolean | null
+          announcement_text: string | null
           average_rating: number | null
           banner_url: string | null
           bio: string | null
           commission_rate: number | null
           created_at: string | null
           custom_commission_rate: number | null
+          custom_css: string | null
           custom_rate_expires_at: string | null
           custom_rate_set_at: string | null
           custom_rate_set_by: string | null
@@ -2634,9 +2747,17 @@ export type Database = {
           discord_role_id: string | null
           discord_url: string | null
           discord_webhook_url: string | null
+          featured_product_ids: string[] | null
+          font_body: string | null
+          font_heading: string | null
+          hero_cta_link: string | null
+          hero_cta_text: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
           id: string
           is_active: boolean | null
           is_verified: boolean | null
+          layout_style: string | null
           logo_url: string | null
           name: string
           owner_id: string
@@ -2646,6 +2767,8 @@ export type Database = {
           review_discord_webhook_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          show_reviews: boolean | null
+          show_social_proof: boolean | null
           slug: string
           status: string | null
           store_id: string
@@ -2661,12 +2784,15 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
           average_rating?: number | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
           created_at?: string | null
           custom_commission_rate?: number | null
+          custom_css?: string | null
           custom_rate_expires_at?: string | null
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
@@ -2676,9 +2802,17 @@ export type Database = {
           discord_role_id?: string | null
           discord_url?: string | null
           discord_webhook_url?: string | null
+          featured_product_ids?: string[] | null
+          font_body?: string | null
+          font_heading?: string | null
+          hero_cta_link?: string | null
+          hero_cta_text?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
+          layout_style?: string | null
           logo_url?: string | null
           name: string
           owner_id: string
@@ -2688,6 +2822,8 @@ export type Database = {
           review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          show_reviews?: boolean | null
+          show_social_proof?: boolean | null
           slug: string
           status?: string | null
           store_id: string
@@ -2703,12 +2839,15 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
           average_rating?: number | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
           created_at?: string | null
           custom_commission_rate?: number | null
+          custom_css?: string | null
           custom_rate_expires_at?: string | null
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
@@ -2718,9 +2857,17 @@ export type Database = {
           discord_role_id?: string | null
           discord_url?: string | null
           discord_webhook_url?: string | null
+          featured_product_ids?: string[] | null
+          font_body?: string | null
+          font_heading?: string | null
+          hero_cta_link?: string | null
+          hero_cta_text?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
+          layout_style?: string | null
           logo_url?: string | null
           name?: string
           owner_id?: string
@@ -2730,6 +2877,8 @@ export type Database = {
           review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          show_reviews?: boolean | null
+          show_social_proof?: boolean | null
           slug?: string
           status?: string | null
           store_id?: string
