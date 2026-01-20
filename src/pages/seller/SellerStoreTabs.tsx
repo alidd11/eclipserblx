@@ -1,11 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,11 +36,8 @@ interface Product {
 const MAX_TABS = 10;
 
 export default function SellerStoreTabs() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user, loading: authLoading } = useAuth();
-  const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
-  const { store, isSeller, loading: sellerLoading } = useSellerStatus();
+  const { store } = useSellerStatus();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTab, setEditingTab] = useState<StoreTab | null>(null);
@@ -228,35 +222,11 @@ export default function SellerStoreTabs() {
     }
   };
 
-  // Navigation guards
-  useEffect(() => {
-    if (!authLoading && !user) navigate('/auth');
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!flagLoading && !hasAccess) navigate('/');
-  }, [hasAccess, flagLoading, navigate]);
-
-  useEffect(() => {
-    if (!sellerLoading && !isSeller) navigate('/account');
-  }, [isSeller, sellerLoading, navigate]);
-
-  if (authLoading || flagLoading || sellerLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
-    );
-  }
-
   const canCreateMore = (tabs?.length || 0) < MAX_TABS;
 
   return (
-    <MainLayout>
-      <div className="container py-8 max-w-3xl">
+    <SellerLayout>
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -502,6 +472,6 @@ export default function SellerStoreTabs() {
           </DialogContent>
         </Dialog>
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }

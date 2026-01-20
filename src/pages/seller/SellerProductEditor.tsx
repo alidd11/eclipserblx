@@ -5,7 +5,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -331,18 +331,18 @@ export default function SellerProductEditor() {
 
   if (authLoading || flagLoading || sellerLoading || (isEditing && productLoading)) {
     return (
-      <MainLayout>
-        <div className="container py-8 max-w-3xl">
+      <SellerLayout>
+        <div className="max-w-3xl mx-auto">
           <Skeleton className="h-10 w-64 mb-6" />
           <Skeleton className="h-96" />
         </div>
-      </MainLayout>
+      </SellerLayout>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="container py-8 max-w-3xl">
+    <SellerLayout>
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/seller/products')}>
@@ -577,6 +577,6 @@ export default function SellerProductEditor() {
           </div>
         </form>
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }

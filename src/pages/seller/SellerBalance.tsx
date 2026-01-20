@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,11 +38,9 @@ import {
 import { toast } from 'sonner';
 
 export default function SellerBalance() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user, loading: authLoading } = useAuth();
-  const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
-  const { store, isSeller, loading: sellerLoading, balance, balanceLoading } = useSellerStatus();
+  const { user } = useAuth();
+  const { store, balance, balanceLoading } = useSellerStatus();
   const [showPayoutDialog, setShowPayoutDialog] = useState(false);
 
   // Fetch payout history
@@ -101,35 +97,6 @@ export default function SellerBalance() {
     },
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!flagLoading && !hasAccess) {
-      navigate('/');
-    }
-  }, [hasAccess, flagLoading, navigate]);
-
-  useEffect(() => {
-    if (!sellerLoading && !isSeller) {
-      navigate('/account');
-    }
-  }, [isSeller, sellerLoading, navigate]);
-
-  if (authLoading || flagLoading || sellerLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
-    );
-  }
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -157,8 +124,8 @@ export default function SellerBalance() {
   };
 
   return (
-    <MainLayout>
-      <div className="container py-8">
+    <SellerLayout>
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Balance & Payouts</h1>
@@ -378,6 +345,6 @@ export default function SellerBalance() {
           </DialogContent>
         </Dialog>
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }

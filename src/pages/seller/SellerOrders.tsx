@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,10 +30,7 @@ import {
 } from 'lucide-react';
 
 export default function SellerOrders() {
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
-  const { store, isSeller, loading: sellerLoading } = useSellerStatus();
+  const { store } = useSellerStatus();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -57,35 +51,6 @@ export default function SellerOrders() {
     },
     enabled: !!store?.id,
   });
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!flagLoading && !hasAccess) {
-      navigate('/');
-    }
-  }, [hasAccess, flagLoading, navigate]);
-
-  useEffect(() => {
-    if (!sellerLoading && !isSeller) {
-      navigate('/account');
-    }
-  }, [isSeller, sellerLoading, navigate]);
-
-  if (authLoading || flagLoading || sellerLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
-    );
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -137,8 +102,8 @@ export default function SellerOrders() {
   };
 
   return (
-    <MainLayout>
-      <div className="container py-8">
+    <SellerLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Orders & Transactions</h1>
@@ -286,6 +251,6 @@ export default function SellerOrders() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }

@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,11 +49,8 @@ import {
 import { toast } from 'sonner';
 
 export default function SellerProducts() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user, loading: authLoading } = useAuth();
-  const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
-  const { store, isSeller, loading: sellerLoading } = useSellerStatus();
+  const { store } = useSellerStatus();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
@@ -98,35 +93,6 @@ export default function SellerProducts() {
     },
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!flagLoading && !hasAccess) {
-      navigate('/');
-    }
-  }, [hasAccess, flagLoading, navigate]);
-
-  useEffect(() => {
-    if (!sellerLoading && !isSeller) {
-      navigate('/account');
-    }
-  }, [isSeller, sellerLoading, navigate]);
-
-  if (authLoading || flagLoading || sellerLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
-    );
-  }
-
   const filteredProducts = products?.filter((product: any) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
@@ -151,8 +117,8 @@ export default function SellerProducts() {
   };
 
   return (
-    <MainLayout>
-      <div className="container py-8">
+    <SellerLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
@@ -338,6 +304,6 @@ export default function SellerProducts() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </MainLayout>
+    </SellerLayout>
   );
 }
