@@ -14,15 +14,41 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Store, 
   Image as ImageIcon,
   CheckCircle,
   AlertCircle,
   ExternalLink,
-  Save
+  Save,
+  Palette
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+const STORE_THEMES = [
+  { id: 'default', name: 'Default', description: 'Clean and modern' },
+  { id: 'minimal', name: 'Minimal', description: 'Simple and elegant' },
+  { id: 'bold', name: 'Bold', description: 'Strong colors and contrast' },
+  { id: 'gradient', name: 'Gradient', description: 'Smooth color transitions' },
+  { id: 'dark', name: 'Dark Mode', description: 'Dark themed storefront' },
+];
+
+const ACCENT_COLORS = [
+  { id: '#8b5cf6', name: 'Purple' },
+  { id: '#3b82f6', name: 'Blue' },
+  { id: '#10b981', name: 'Green' },
+  { id: '#f59e0b', name: 'Amber' },
+  { id: '#ef4444', name: 'Red' },
+  { id: '#ec4899', name: 'Pink' },
+  { id: '#06b6d4', name: 'Cyan' },
+];
 
 export default function SellerSettings() {
   const navigate = useNavigate();
@@ -36,6 +62,9 @@ export default function SellerSettings() {
     description: '',
     logo_url: '',
     banner_url: '',
+    bio: '',
+    theme: 'default',
+    accent_color: '#8b5cf6',
   });
 
   useEffect(() => {
@@ -45,6 +74,9 @@ export default function SellerSettings() {
         description: store.description || '',
         logo_url: store.logo_url || '',
         banner_url: store.banner_url || '',
+        bio: store.bio || '',
+        theme: store.theme || 'default',
+        accent_color: store.accent_color || '#8b5cf6',
       });
     }
   }, [store]);
@@ -61,6 +93,9 @@ export default function SellerSettings() {
           description: data.description,
           logo_url: data.logo_url || null,
           banner_url: data.banner_url || null,
+          bio: data.bio || null,
+          theme: data.theme,
+          accent_color: data.accent_color,
           updated_at: new Date().toISOString(),
         })
         .eq('id', store.id);
@@ -228,6 +263,65 @@ export default function SellerSettings() {
                     />
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio">Store Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="A short bio about you or your store..."
+                  rows={3}
+                />
+              </div>
+
+              <Separator />
+
+              {/* Theme Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-muted-foreground" />
+                  <Label className="text-base font-medium">Store Theme</Label>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {STORE_THEMES.map((theme) => (
+                    <div
+                      key={theme.id}
+                      onClick={() => setFormData({ ...formData, theme: theme.id })}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        formData.theme === theme.id
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <p className="font-medium text-sm">{theme.name}</p>
+                      <p className="text-xs text-muted-foreground">{theme.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Accent Color */}
+              <div className="space-y-3">
+                <Label>Accent Color</Label>
+                <div className="flex flex-wrap gap-2">
+                  {ACCENT_COLORS.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, accent_color: color.id })}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        formData.accent_color === color.id
+                          ? 'border-foreground scale-110'
+                          : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color.id }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
               </div>
 
               <Button type="submit" disabled={updateStore.isPending}>

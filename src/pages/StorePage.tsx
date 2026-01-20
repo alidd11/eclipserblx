@@ -16,6 +16,54 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
+// Theme configurations
+const getThemeStyles = (theme: string, accentColor: string) => {
+  const baseStyles = {
+    banner: '',
+    header: '',
+    card: '',
+    accent: accentColor,
+  };
+
+  switch (theme) {
+    case 'minimal':
+      return {
+        ...baseStyles,
+        banner: 'h-32 md:h-40',
+        header: 'bg-background border-0 shadow-none',
+        card: 'border-0 shadow-sm',
+      };
+    case 'bold':
+      return {
+        ...baseStyles,
+        banner: 'h-56 md:h-72',
+        header: 'bg-card border-2',
+        card: 'border-2 hover:border-primary transition-colors',
+      };
+    case 'gradient':
+      return {
+        ...baseStyles,
+        banner: 'h-48 md:h-64',
+        header: 'bg-gradient-to-r from-card to-muted border-0',
+        card: 'bg-gradient-to-br from-card to-muted/50',
+      };
+    case 'dark':
+      return {
+        ...baseStyles,
+        banner: 'h-48 md:h-64',
+        header: 'bg-zinc-900 text-white border-zinc-800',
+        card: 'bg-zinc-900 border-zinc-800',
+      };
+    default:
+      return {
+        ...baseStyles,
+        banner: 'h-48 md:h-64',
+        header: '',
+        card: '',
+      };
+  }
+};
+
 export default function StorePage() {
   const { storeSlug } = useParams();
 
@@ -92,17 +140,58 @@ export default function StorePage() {
     );
   }
 
+  const theme = (store as any).theme || 'default';
+  const accentColor = (store as any).accent_color || '#8b5cf6';
+  const bio = (store as any).bio;
+  const themeStyles = getThemeStyles(theme, accentColor);
+  const isDarkTheme = theme === 'dark';
+
   return (
     <MainLayout>
       {/* Store Banner */}
       <div className="relative">
         {store.banner_url ? (
           <div 
-            className="h-48 md:h-64 bg-cover bg-center"
+            className={`${themeStyles.banner} bg-cover bg-center`}
             style={{ backgroundImage: `url(${store.banner_url})` }}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           </div>
+        ) : theme === 'gradient' ? (
+          <div 
+            className={themeStyles.banner}
+            style={{ 
+              background: `linear-gradient(135deg, ${accentColor}30 0%, ${accentColor}10 50%, transparent 100%)` 
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+          </div>
+        ) : theme === 'bold' ? (
+          <div 
+            className={`${themeStyles.banner} relative overflow-hidden`}
+            style={{ backgroundColor: `${accentColor}15` }}
+          >
+            <div 
+              className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: `repeating-linear-gradient(45deg, ${accentColor} 0, ${accentColor} 1px, transparent 0, transparent 50%)`,
+                backgroundSize: '20px 20px',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+          </div>
+        ) : theme === 'dark' ? (
+          <div className={`${themeStyles.banner} bg-zinc-950`}>
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: `radial-gradient(ellipse at top, ${accentColor}20 0%, transparent 70%)`,
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+          </div>
+        ) : theme === 'minimal' ? (
+          <div className={`${themeStyles.banner} bg-muted/30`} />
         ) : (
           <div className="h-48 md:h-64 bg-gradient-to-br from-primary/20 to-primary/5">
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
@@ -112,11 +201,17 @@ export default function StorePage() {
 
       <div className="container -mt-16 relative z-10">
         {/* Store Header */}
-        <Card className="mb-8">
+        <Card className={`mb-8 ${themeStyles.header}`}>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
               {/* Store Logo */}
-              <div className="h-24 w-24 rounded-xl border-4 border-background bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div 
+                className="h-24 w-24 rounded-xl border-4 border-background flex items-center justify-center overflow-hidden flex-shrink-0"
+                style={{ 
+                  backgroundColor: store.logo_url ? 'transparent' : `${accentColor}20`,
+                  borderColor: theme === 'bold' ? accentColor : undefined,
+                }}
+              >
                 {store.logo_url ? (
                   <img 
                     src={store.logo_url} 
@@ -124,16 +219,24 @@ export default function StorePage() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <StoreIcon className="h-10 w-10 text-muted-foreground" />
+                  <StoreIcon 
+                    className="h-10 w-10" 
+                    style={{ color: accentColor }}
+                  />
                 )}
               </div>
 
               {/* Store Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl md:text-3xl font-bold">{store.name}</h1>
+                  <h1 className={`text-2xl md:text-3xl font-bold ${isDarkTheme ? 'text-white' : ''}`}>
+                    {store.name}
+                  </h1>
                   {store.is_verified && (
-                    <Badge variant="default" className="gap-1">
+                    <Badge 
+                      className="gap-1"
+                      style={{ backgroundColor: accentColor, color: 'white' }}
+                    >
                       <CheckCircle className="h-3 w-3" />
                       Verified
                     </Badge>
@@ -141,19 +244,25 @@ export default function StorePage() {
                 </div>
                 
                 {store.description && (
-                  <p className="text-muted-foreground mb-4 max-w-2xl">
+                  <p className={`mb-2 max-w-2xl ${isDarkTheme ? 'text-zinc-300' : 'text-muted-foreground'}`}>
                     {store.description}
                   </p>
                 )}
 
+                {bio && (
+                  <p className={`text-sm italic mb-4 max-w-2xl ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                    "{bio}"
+                  </p>
+                )}
+
                 {/* Stats */}
-                <div className="flex flex-wrap gap-6 text-sm">
+                <div className={`flex flex-wrap gap-6 text-sm ${isDarkTheme ? 'text-zinc-300' : ''}`}>
                   <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <Package className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
                     <span>{store.product_count || 0} Products</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                    <ShoppingCart className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
                     <span>{store.total_sales || 0} Sales</span>
                   </div>
                   {store.average_rating && (
@@ -193,7 +302,7 @@ export default function StorePage() {
               ))}
             </div>
           ) : (
-            <Card>
+            <Card className={themeStyles.card}>
               <CardContent className="py-12 text-center">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
