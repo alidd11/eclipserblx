@@ -31,37 +31,21 @@ serve(async (req) => {
 
     console.log("Received review notification request:", { reviewId, rating, userId, productId });
 
-    // Get the review webhook URL from settings
-    const { data: webhookSetting, error: settingsError } = await supabase
+    // Get the main Eclipse review webhook URL from settings
+    const { data: webhookSetting } = await supabase
       .from("settings")
       .select("value")
       .eq("key", "review_discord_webhook_url")
       .maybeSingle();
 
-    if (settingsError) {
-      console.error("Error fetching webhook setting:", settingsError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch webhook setting" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Parse the webhook URL (it may be JSON-encoded)
-    let webhookUrl = webhookSetting?.value;
-    if (typeof webhookUrl === "string") {
+    let mainWebhookUrl = webhookSetting?.value;
+    if (typeof mainWebhookUrl === "string") {
       try {
-        webhookUrl = JSON.parse(webhookUrl);
+        mainWebhookUrl = JSON.parse(mainWebhookUrl);
       } catch {
         // It's already a plain string
       }
-    }
-
-    if (!webhookUrl) {
-      console.log("No review webhook URL configured, skipping notification");
-      return new Response(
-        JSON.stringify({ skipped: true, message: "No webhook URL configured" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     // Fetch reviewer display name from profiles
@@ -73,17 +57,30 @@ serve(async (req) => {
 
     const reviewerName = profile?.display_name || profile?.email?.split("@")[0] || "Anonymous";
 
-    // Fetch product name if productId exists
+    // Fetch product details including seller's webhook if it's a seller product
     let productName = "General";
+    let sellerWebhookUrl: string | null = null;
+    let storeName: string | null = null;
+
     if (productId) {
       const { data: product } = await supabase
         .from("products")
-        .select("name")
+        .select("name, is_seller_product, store_id, stores(name, review_discord_webhook_url)")
         .eq("id", productId)
         .maybeSingle();
       
       if (product?.name) {
         productName = product.name;
+      }
+
+      // Check if this is a seller product and get seller's review webhook
+      if (product?.is_seller_product && product.store_id) {
+        const storesArray = product.stores as unknown as { 
+          name?: string; 
+          review_discord_webhook_url?: string 
+        }[] | null;
+        sellerWebhookUrl = storesArray?.[0]?.review_discord_webhook_url || null;
+        storeName = storesArray?.[0]?.name || null;
       }
     }
 
@@ -97,8 +94,8 @@ serve(async (req) => {
       ? content.substring(0, 497) + "..." 
       : content;
 
-    // Build Discord embed
-    const embed = {
+    // Build base Discord embed
+    const buildEmbed = (footerText: string) => ({
       title: "⭐ New Review",
       color: 0xf59e0b, // Amber color
       fields: [
@@ -117,48 +114,86 @@ serve(async (req) => {
           value: reviewerName,
           inline: true,
         },
+        ...(title ? [{
+          name: "Title",
+          value: title,
+          inline: false,
+        }] : []),
+        {
+          name: "Review",
+          value: `"${truncatedContent}"`,
+          inline: false,
+        },
       ],
+      footer: { text: footerText },
       timestamp: new Date().toISOString(),
+    });
+
+    const results = {
+      mainWebhook: { sent: false, skipped: false, error: null as string | null },
+      sellerWebhook: { sent: false, skipped: false, error: null as string | null },
     };
 
-    // Add title if provided
-    if (title) {
-      embed.fields.push({
-        name: "Title",
-        value: title,
-        inline: false,
-      });
+    // Send to main Eclipse webhook
+    if (mainWebhookUrl) {
+      try {
+        const discordResponse = await fetch(mainWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            embeds: [buildEmbed("Eclipse Store • Reviews")],
+          }),
+        });
+
+        if (discordResponse.ok) {
+          console.log("Main review notification sent successfully");
+          results.mainWebhook.sent = true;
+        } else {
+          const errorText = await discordResponse.text();
+          console.error("Main Discord webhook failed:", discordResponse.status, errorText);
+          results.mainWebhook.error = errorText;
+        }
+      } catch (error) {
+        console.error("Main webhook error:", error);
+        results.mainWebhook.error = error instanceof Error ? error.message : "Unknown error";
+      }
+    } else {
+      console.log("No main review webhook URL configured, skipping");
+      results.mainWebhook.skipped = true;
     }
 
-    // Add review content
-    embed.fields.push({
-      name: "Review",
-      value: `"${truncatedContent}"`,
-      inline: false,
-    });
+    // Send to seller webhook if configured
+    if (sellerWebhookUrl) {
+      try {
+        const sellerResponse = await fetch(sellerWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            embeds: [buildEmbed(`${storeName || 'Your Store'} • Eclipse Store`)],
+          }),
+        });
 
-    // Send to Discord
-    const discordResponse = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        embeds: [embed],
-      }),
-    });
-
-    if (!discordResponse.ok) {
-      const errorText = await discordResponse.text();
-      console.error("Discord webhook failed:", discordResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Discord webhook failed", details: errorText }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        if (sellerResponse.ok) {
+          console.log("Seller review notification sent successfully");
+          results.sellerWebhook.sent = true;
+        } else {
+          const errorText = await sellerResponse.text();
+          console.error("Seller Discord webhook failed:", sellerResponse.status, errorText);
+          results.sellerWebhook.error = errorText;
+        }
+      } catch (error) {
+        console.error("Seller webhook error:", error);
+        results.sellerWebhook.error = error instanceof Error ? error.message : "Unknown error";
+      }
+    } else {
+      console.log("No seller review webhook configured, skipping seller notification");
+      results.sellerWebhook.skipped = true;
     }
 
-    console.log("Review notification sent successfully for review:", reviewId);
+    console.log("Review notification processing complete:", results);
 
     return new Response(
-      JSON.stringify({ success: true, message: "Review notification sent" }),
+      JSON.stringify({ success: true, results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
