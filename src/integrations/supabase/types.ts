@@ -2536,6 +2536,86 @@ export type Database = {
           },
         ]
       }
+      store_tab_products: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          tab_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          tab_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          tab_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_tab_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_tab_products_tab_id_fkey"
+            columns: ["tab_id"]
+            isOneToOne: false
+            referencedRelation: "store_tabs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_tabs: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_tabs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           accent_color: string | null

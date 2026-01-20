@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -13,7 +14,8 @@ import {
   Star,
   Package,
   ShoppingCart,
-  ArrowLeft
+  ArrowLeft,
+  LayoutGrid
 } from 'lucide-react';
 
 // Theme configurations
@@ -66,6 +68,8 @@ const getThemeStyles = (theme: string, accentColor: string) => {
 
 export default function StorePage() {
   const { storeSlug } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab');
 
   // Fetch store details
   const { data: store, isLoading: storeLoading, error } = useQuery({
@@ -83,6 +87,44 @@ export default function StorePage() {
       return data;
     },
     enabled: !!storeSlug,
+  });
+
+  // Fetch store tabs
+  const { data: storeTabs } = useQuery({
+    queryKey: ['store-tabs-public', store?.id],
+    queryFn: async () => {
+      if (!store?.id) return [];
+      const { data, error } = await supabase
+        .from('store_tabs')
+        .select('id, name, slug, icon')
+        .eq('store_id', store.id)
+        .eq('is_active', true)
+        .order('display_order');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!store?.id,
+  });
+
+  // Fetch tab product IDs if a tab is selected
+  const { data: tabProductIds } = useQuery({
+    queryKey: ['tab-product-ids', store?.id, activeTab],
+    queryFn: async () => {
+      if (!store?.id || !activeTab) return null;
+      
+      // Find the tab by slug
+      const tab = storeTabs?.find(t => t.slug === activeTab);
+      if (!tab) return null;
+
+      const { data, error } = await supabase
+        .from('store_tab_products')
+        .select('product_id')
+        .eq('tab_id', tab.id);
+      
+      if (error) throw error;
+      return data.map(p => p.product_id);
+    },
+    enabled: !!store?.id && !!activeTab && !!storeTabs,
   });
 
   // Fetch store products
@@ -104,6 +146,19 @@ export default function StorePage() {
     },
     enabled: !!store?.id,
   });
+
+  // Filter products based on active tab
+  const filteredProducts = activeTab && tabProductIds 
+    ? products?.filter(p => tabProductIds.includes(p.id))
+    : products;
+
+  const handleTabClick = (tabSlug: string | null) => {
+    if (tabSlug) {
+      setSearchParams({ tab: tabSlug });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   if (storeLoading) {
     return (
@@ -279,7 +334,35 @@ export default function StorePage() {
 
         {/* Products Section */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-6">Products</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Products</h2>
+          </div>
+
+          {/* Store Tabs */}
+          {storeTabs && storeTabs.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              <Button
+                variant={!activeTab ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleTabClick(null)}
+                style={!activeTab ? { backgroundColor: accentColor } : undefined}
+              >
+                <LayoutGrid className="h-4 w-4 mr-1.5" />
+                All
+              </Button>
+              {storeTabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.slug ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleTabClick(tab.slug)}
+                  style={activeTab === tab.slug ? { backgroundColor: accentColor } : undefined}
+                >
+                  {tab.name}
+                </Button>
+              ))}
+            </div>
+          )}
           
           {productsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -287,9 +370,9 @@ export default function StorePage() {
                 <Skeleton key={i} className="h-64" />
               ))}
             </div>
-          ) : products && products.length > 0 ? (
+          ) : filteredProducts && filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product: any) => (
+              {filteredProducts.map((product: any) => (
                 <ProductCard
                   key={product.id}
                   id={product.id}
@@ -301,6 +384,19 @@ export default function StorePage() {
                 />
               ))}
             </div>
+          ) : activeTab ? (
+            <Card className={themeStyles.card}>
+              <CardContent className="py-12 text-center">
+                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-medium mb-2">No Products in This Category</h3>
+                <p className="text-muted-foreground mb-4">
+                  There are no products in this category yet.
+                </p>
+                <Button variant="outline" onClick={() => handleTabClick(null)}>
+                  View All Products
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <Card className={themeStyles.card}>
               <CardContent className="py-12 text-center">
