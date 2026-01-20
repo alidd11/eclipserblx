@@ -95,33 +95,33 @@ const renderValue = (value: string | boolean) => {
 
 export function ComparisonTable() {
   return (
-    <div className="overflow-x-auto print:overflow-visible">
-      <Table>
+    <div className="overflow-x-auto print:overflow-visible print:w-full">
+      <Table className="print:w-full print:table-fixed print:text-[9pt]">
         <TableHeader>
           <TableRow className="border-border">
-            <TableHead className="w-[180px] font-bold text-foreground">Feature</TableHead>
-            <TableHead className="text-center bg-primary/5 text-primary font-bold min-w-[150px]">
+            <TableHead className="w-[140px] print:w-[15%] font-bold text-foreground print:text-[9pt] print:p-1">Feature</TableHead>
+            <TableHead className="text-center bg-primary/5 text-primary font-bold min-w-[120px] print:w-[21%] print:text-[9pt] print:p-1">
               Eclipse ✨
             </TableHead>
-            <TableHead className="text-center min-w-[150px]">ClearlyDev</TableHead>
-            <TableHead className="text-center min-w-[150px]">KW Studio</TableHead>
-            <TableHead className="text-center min-w-[150px]">Roblox Creator Store</TableHead>
+            <TableHead className="text-center min-w-[120px] print:w-[21%] print:text-[9pt] print:p-1">ClearlyDev</TableHead>
+            <TableHead className="text-center min-w-[120px] print:w-[21%] print:text-[9pt] print:p-1">KW Studio</TableHead>
+            <TableHead className="text-center min-w-[120px] print:w-[22%] print:text-[9pt] print:p-1">Roblox Creator Store</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {comparisonData.map((row, index) => (
             <TableRow key={index} className="border-border">
-              <TableCell className="font-medium text-foreground">{row.feature}</TableCell>
-              <TableCell className={`text-center ${getCellStyle(row.eclipse, true)}`}>
+              <TableCell className="font-medium text-foreground print:text-[9pt] print:p-1">{row.feature}</TableCell>
+              <TableCell className={`text-center print:text-[9pt] print:p-1 ${getCellStyle(row.eclipse, true)}`}>
                 {renderValue(row.eclipse)}
               </TableCell>
-              <TableCell className="text-center text-muted-foreground">
+              <TableCell className="text-center text-muted-foreground print:text-[9pt] print:p-1">
                 {renderValue(row.clearlyDev)}
               </TableCell>
-              <TableCell className="text-center text-muted-foreground">
+              <TableCell className="text-center text-muted-foreground print:text-[9pt] print:p-1">
                 {renderValue(row.kwStudio)}
               </TableCell>
-              <TableCell className="text-center text-muted-foreground">
+              <TableCell className="text-center text-muted-foreground print:text-[9pt] print:p-1">
                 {renderValue(row.robloxStore)}
               </TableCell>
             </TableRow>
