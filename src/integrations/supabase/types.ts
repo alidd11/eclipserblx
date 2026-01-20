@@ -1498,13 +1498,18 @@ export type Database = {
           images: string[] | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_seller_product: boolean | null
+          moderation_notes: string | null
+          moderation_status: string | null
           name: string
           price: number
           release_at: string | null
           robux_enabled: boolean | null
           robux_price: number | null
           robux_product_id: string | null
+          seller_price: number | null
           slug: string
+          store_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1517,13 +1522,18 @@ export type Database = {
           images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_seller_product?: boolean | null
+          moderation_notes?: string | null
+          moderation_status?: string | null
           name: string
           price: number
           release_at?: string | null
           robux_enabled?: boolean | null
           robux_price?: number | null
           robux_product_id?: string | null
+          seller_price?: number | null
           slug: string
+          store_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1536,13 +1546,18 @@ export type Database = {
           images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_seller_product?: boolean | null
+          moderation_notes?: string | null
+          moderation_status?: string | null
           name?: string
           price?: number
           release_at?: string | null
           robux_enabled?: boolean | null
           robux_price?: number | null
           robux_product_id?: string | null
+          seller_price?: number | null
           slug?: string
+          store_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1551,6 +1566,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1934,6 +1956,182 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_balances: {
+        Row: {
+          available_balance: number | null
+          pending_balance: number | null
+          store_id: string | null
+          total_earned: number | null
+          total_paid: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number | null
+          pending_balance?: number | null
+          store_id?: string | null
+          total_earned?: number | null
+          total_paid?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_balance?: number | null
+          pending_balance?: number | null
+          store_id?: string | null
+          total_earned?: number | null
+          total_paid?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_balances_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      seller_payouts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          notes: string | null
+          processed_at: string | null
+          processed_by: string | null
+          seller_id: string
+          status: string | null
+          store_id: string
+          stripe_transfer_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id: string
+          status?: string | null
+          store_id: string
+          stripe_transfer_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id?: string
+          status?: string | null
+          store_id?: string
+          stripe_transfer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          net_amount: number | null
+          order_id: string | null
+          order_item_id: string | null
+          platform_fee: number | null
+          seller_id: string
+          status: string | null
+          store_id: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          net_amount?: number | null
+          order_id?: string | null
+          order_item_id?: string | null
+          platform_fee?: number | null
+          seller_id: string
+          status?: string | null
+          store_id: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          net_amount?: number | null
+          order_id?: string | null
+          order_item_id?: string | null
+          platform_fee?: number | null
+          seller_id?: string
+          status?: string | null
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_transactions_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_transactions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "seller_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           id: string
@@ -2267,6 +2465,154 @@ export type Database = {
         }
         Relationships: []
       }
+      store_applications: {
+        Row: {
+          created_at: string | null
+          expected_products: string | null
+          experience: string | null
+          id: string
+          notes: string | null
+          portfolio_url: string | null
+          product_category: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          store_description: string | null
+          store_name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expected_products?: string | null
+          experience?: string | null
+          id?: string
+          notes?: string | null
+          portfolio_url?: string | null
+          product_category?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          store_description?: string | null
+          store_name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expected_products?: string | null
+          experience?: string | null
+          id?: string
+          notes?: string | null
+          portfolio_url?: string | null
+          product_category?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          store_description?: string | null
+          store_name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_applications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      stores: {
+        Row: {
+          average_rating: number | null
+          banner_url: string | null
+          commission_rate: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          logo_url: string | null
+          name: string
+          owner_id: string
+          payouts_enabled: boolean | null
+          product_count: number | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          slug: string
+          status: string | null
+          store_id: string
+          stripe_account_id: string | null
+          total_revenue: number | null
+          total_sales: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_rating?: number | null
+          banner_url?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          payouts_enabled?: boolean | null
+          product_count?: number | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          slug: string
+          status?: string | null
+          store_id: string
+          stripe_account_id?: string | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          average_rating?: number | null
+          banner_url?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          payouts_enabled?: boolean | null
+          product_count?: number | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          slug?: string
+          status?: string | null
+          store_id?: string
+          stripe_account_id?: string | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       subscription_free_claims: {
         Row: {
           claim_period: string
@@ -2538,6 +2884,7 @@ export type Database = {
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       generate_staff_id: { Args: never; Returns: string }
+      generate_store_id: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       has_role: {
