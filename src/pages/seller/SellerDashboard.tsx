@@ -156,21 +156,21 @@ export default function SellerDashboard() {
 
         {/* Store Link Card */}
         {storeUrl && (
-          <Card className="mb-6 bg-primary/5 border-primary/20">
+          <Card className="mb-6 bg-primary/5 border-primary/20 overflow-hidden">
             <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-4">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                 <ExternalLink className="h-5 w-5 text-primary flex-shrink-0" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1 overflow-hidden">
                   <p className="text-sm font-medium text-muted-foreground">Your Store Link</p>
-                  <p className="text-sm font-mono truncate">{storeUrl}</p>
+                  <p className="text-sm font-mono truncate max-w-full">{storeUrl}</p>
                 </div>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button variant="outline" size="sm" onClick={copyStoreLink}>
+              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+                <Button variant="outline" size="sm" onClick={copyStoreLink} className="flex-1 sm:flex-initial">
                   <Copy className="h-4 w-4 mr-2" />
                   Copy
                 </Button>
-                <Button variant="default" size="sm" asChild>
+                <Button variant="default" size="sm" asChild className="flex-1 sm:flex-initial">
                   <a href={storeUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Visit
