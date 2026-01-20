@@ -152,8 +152,73 @@
     --sidebar-ring: 265 100% 65%;
   }
 
-  /* Ocean theme - Cool cyan/teal/blue tones */
+  /* ========================================
+     COLOR THEMES WITH LIGHT/DARK VARIANTS
+     ======================================== */
+
+  /* Ocean theme - Light mode */
   .theme-ocean {
+    --background: 195 30% 97%;
+    --foreground: 200 25% 10%;
+    
+    --card: 195 25% 100%;
+    --card-foreground: 200 25% 10%;
+    
+    --popover: 195 25% 100%;
+    --popover-foreground: 200 25% 10%;
+    
+    --primary: 185 85% 40%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 210 80% 50%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 195 20% 92%;
+    --muted-foreground: 200 15% 45%;
+    
+    --accent: 195 75% 45%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 160 70% 38%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 45 95% 50%;
+    --warning-foreground: 0 0% 10%;
+    
+    --border: 195 20% 88%;
+    --input: 195 20% 92%;
+    --ring: 185 85% 40%;
+    
+    --neon-purple: 185 85% 45%;
+    --neon-blue: 210 80% 52%;
+    --neon-pink: 195 80% 48%;
+    --neon-green: 160 80% 42%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(185 85% 40%), hsl(210 80% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(195 75% 45%), hsl(175 75% 42%));
+    --gradient-success: linear-gradient(135deg, hsl(160 70% 38%), hsl(180 70% 38%));
+    
+    --glow-purple: 0 0 20px hsl(185 85% 45% / 0.25);
+    --glow-blue: 0 0 20px hsl(210 80% 50% / 0.25);
+    --glow-pink: 0 0 20px hsl(195 75% 45% / 0.25);
+    
+    --sidebar-background: 195 25% 96%;
+    --sidebar-foreground: 200 20% 20%;
+    --sidebar-primary: 185 85% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 195 20% 92%;
+    --sidebar-accent-foreground: 200 20% 20%;
+    --sidebar-border: 195 20% 88%;
+    --sidebar-ring: 185 85% 40%;
+  }
+
+  /* Ocean theme - Dark mode */
+  .theme-ocean.dark,
+  .dark .theme-ocean,
+  .dark.theme-ocean {
     --background: 200 25% 6%;
     --foreground: 200 10% 95%;
     
@@ -211,8 +276,69 @@
     --sidebar-ring: 185 100% 50%;
   }
 
-  /* Ember theme - Warm orange/red/gold tones */
+  /* Ember theme - Light mode */
   .theme-ember {
+    --background: 30 35% 97%;
+    --foreground: 15 25% 10%;
+    
+    --card: 30 30% 100%;
+    --card-foreground: 15 25% 10%;
+    
+    --popover: 30 30% 100%;
+    --popover-foreground: 15 25% 10%;
+    
+    --primary: 25 90% 48%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 45 90% 48%;
+    --secondary-foreground: 15 25% 10%;
+    
+    --muted: 30 20% 92%;
+    --muted-foreground: 15 15% 45%;
+    
+    --accent: 10 85% 50%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 145 70% 38%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 45 95% 50%;
+    --warning-foreground: 0 0% 10%;
+    
+    --border: 30 20% 88%;
+    --input: 30 20% 92%;
+    --ring: 25 90% 48%;
+    
+    --neon-purple: 25 90% 52%;
+    --neon-blue: 45 90% 50%;
+    --neon-pink: 10 85% 52%;
+    --neon-green: 145 80% 42%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(25 90% 48%), hsl(45 90% 48%));
+    --gradient-accent: linear-gradient(135deg, hsl(10 85% 50%), hsl(0 75% 50%));
+    --gradient-success: linear-gradient(135deg, hsl(145 70% 38%), hsl(120 65% 38%));
+    
+    --glow-purple: 0 0 20px hsl(25 90% 50% / 0.25);
+    --glow-blue: 0 0 20px hsl(45 90% 48% / 0.25);
+    --glow-pink: 0 0 20px hsl(10 85% 50% / 0.25);
+    
+    --sidebar-background: 30 28% 96%;
+    --sidebar-foreground: 15 20% 20%;
+    --sidebar-primary: 25 90% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 20% 92%;
+    --sidebar-accent-foreground: 15 20% 20%;
+    --sidebar-border: 30 20% 88%;
+    --sidebar-ring: 25 90% 48%;
+  }
+
+  /* Ember theme - Dark mode */
+  .theme-ember.dark,
+  .dark .theme-ember,
+  .dark.theme-ember {
     --background: 15 25% 6%;
     --foreground: 30 10% 95%;
     
@@ -270,8 +396,69 @@
     --sidebar-ring: 25 100% 55%;
   }
 
-  /* Forest theme - Natural green/emerald/lime tones */
+  /* Forest theme - Light mode */
   .theme-forest {
+    --background: 140 30% 97%;
+    --foreground: 140 25% 10%;
+    
+    --card: 140 25% 100%;
+    --card-foreground: 140 25% 10%;
+    
+    --popover: 140 25% 100%;
+    --popover-foreground: 140 25% 10%;
+    
+    --primary: 145 75% 38%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 160 70% 38%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 140 20% 92%;
+    --muted-foreground: 140 15% 45%;
+    
+    --accent: 120 65% 42%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 145 75% 38%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 45 95% 50%;
+    --warning-foreground: 0 0% 10%;
+    
+    --border: 140 20% 88%;
+    --input: 140 20% 92%;
+    --ring: 145 75% 38%;
+    
+    --neon-purple: 145 80% 42%;
+    --neon-blue: 160 75% 42%;
+    --neon-pink: 120 70% 45%;
+    --neon-green: 145 85% 42%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(145 75% 38%), hsl(160 70% 38%));
+    --gradient-accent: linear-gradient(135deg, hsl(120 65% 42%), hsl(100 70% 40%));
+    --gradient-success: linear-gradient(135deg, hsl(145 75% 38%), hsl(170 70% 38%));
+    
+    --glow-purple: 0 0 20px hsl(145 75% 40% / 0.25);
+    --glow-blue: 0 0 20px hsl(160 70% 38% / 0.25);
+    --glow-pink: 0 0 20px hsl(120 65% 42% / 0.25);
+    
+    --sidebar-background: 140 25% 96%;
+    --sidebar-foreground: 140 20% 20%;
+    --sidebar-primary: 145 75% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 140 20% 92%;
+    --sidebar-accent-foreground: 140 20% 20%;
+    --sidebar-border: 140 20% 88%;
+    --sidebar-ring: 145 75% 38%;
+  }
+
+  /* Forest theme - Dark mode */
+  .theme-forest.dark,
+  .dark .theme-forest,
+  .dark.theme-forest {
     --background: 140 25% 5%;
     --foreground: 140 10% 95%;
     
@@ -329,8 +516,69 @@
     --sidebar-ring: 145 85% 45%;
   }
 
-  /* Monochrome theme - Clean white/grey/silver tones */
+  /* Monochrome theme - Light mode */
   .theme-mono {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    
+    --primary: 0 0% 20%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 35%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 45%;
+    
+    --accent: 0 0% 30%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 145 60% 38%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 45 80% 50%;
+    --warning-foreground: 0 0% 10%;
+    
+    --border: 0 0% 88%;
+    --input: 0 0% 92%;
+    --ring: 0 0% 30%;
+    
+    --neon-purple: 0 0% 25%;
+    --neon-blue: 0 0% 35%;
+    --neon-pink: 0 0% 30%;
+    --neon-green: 0 0% 40%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 20%), hsl(0 0% 35%));
+    --gradient-accent: linear-gradient(135deg, hsl(0 0% 30%), hsl(0 0% 45%));
+    --gradient-success: linear-gradient(135deg, hsl(145 60% 38%), hsl(160 50% 36%));
+    
+    --glow-purple: 0 0 20px hsl(0 0% 20% / 0.15);
+    --glow-blue: 0 0 20px hsl(0 0% 30% / 0.15);
+    --glow-pink: 0 0 20px hsl(0 0% 25% / 0.15);
+    
+    --sidebar-background: 0 0% 96%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 0 0% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 92%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 0 0% 30%;
+  }
+
+  /* Monochrome theme - Dark mode */
+  .theme-mono.dark,
+  .dark .theme-mono,
+  .dark.theme-mono {
     --background: 0 0% 5%;
     --foreground: 0 0% 95%;
     

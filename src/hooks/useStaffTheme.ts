@@ -20,21 +20,16 @@ export function useStaffTheme() {
   const isPreviewActive = previewTheme !== null;
   const currentTheme = previewTheme ?? activeTheme;
 
-  // Apply theme class to document
+  // Apply theme class to document (works with light/dark mode from next-themes)
   useEffect(() => {
     const html = document.documentElement;
     
     // Remove all staff theme classes
     ALL_THEME_CLASSES.forEach(cls => html.classList.remove(cls));
     
-    // Add current theme class (purple uses the default dark theme, no extra class needed)
+    // Add current theme class (purple uses the default theme, no extra class needed)
     if (currentTheme !== 'purple') {
       html.classList.add(`theme-${currentTheme}`);
-    }
-    
-    // Ensure dark mode is always on for admin
-    if (!html.classList.contains('dark')) {
-      html.classList.add('dark');
     }
     
     return () => {

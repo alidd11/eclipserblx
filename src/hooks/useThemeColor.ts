@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useTheme } from 'next-themes';
 
-const THEME_COLORS: Record<string, string> = {
-  light: '#f8f8fc',
-  dark: '#0a0a0f',
-  purple: '#0a0a0f',
-  ocean: '#0a1214',      // hsl(200 25% 6%)
-  ember: '#140d0a',      // hsl(15 25% 6%)
-  forest: '#0a120b',     // hsl(140 25% 5%)
-  mono: '#0d0d0d',       // hsl(0 0% 5%)
+// Theme colors for light and dark variants
+const THEME_COLORS: Record<string, { light: string; dark: string }> = {
+  default: { light: '#f8f8fc', dark: '#0a0a0f' },
+  purple: { light: '#f8f8fc', dark: '#0a0a0f' },
+  ocean: { light: '#f5fafa', dark: '#0a1214' },
+  ember: { light: '#fcf8f5', dark: '#140d0a' },
+  forest: { light: '#f5fcf6', dark: '#0a120b' },
+  mono: { light: '#fafafa', dark: '#0d0d0d' },
 };
 
 const THEME_CLASS_MAP: Record<string, string> = {
@@ -27,20 +27,23 @@ function getActiveStaffTheme(html: HTMLElement): string | null {
   return null;
 }
 
+function isDarkMode(html: HTMLElement): boolean {
+  return html.classList.contains('dark');
+}
+
 export function useThemeColor() {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const html = document.documentElement;
-    let activeTheme = resolvedTheme || 'dark';
+    const dark = isDarkMode(html);
     
-    // Staff themes take precedence in admin routes
+    // Staff themes take precedence
     const staffTheme = getActiveStaffTheme(html);
-    if (staffTheme) {
-      activeTheme = staffTheme;
-    }
+    const colorTheme = staffTheme || 'default';
     
-    const themeColor = THEME_COLORS[activeTheme] || THEME_COLORS.dark;
+    const themeColors = THEME_COLORS[colorTheme] || THEME_COLORS.default;
+    const themeColor = dark ? themeColors.dark : themeColors.light;
 
     // Update meta theme-color (browser UI)
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -66,18 +69,13 @@ export function useThemeColor() {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.attributeName === 'class') {
-          let activeTheme = 'dark';
+          const dark = isDarkMode(html);
           
           const staffTheme = getActiveStaffTheme(html);
-          if (staffTheme) {
-            activeTheme = staffTheme;
-          } else if (html.classList.contains('dark')) {
-            activeTheme = 'dark';
-          } else {
-            activeTheme = 'light';
-          }
+          const colorTheme = staffTheme || 'default';
           
-          const themeColor = THEME_COLORS[activeTheme] || THEME_COLORS.dark;
+          const themeColors = THEME_COLORS[colorTheme] || THEME_COLORS.default;
+          const themeColor = dark ? themeColors.dark : themeColors.light;
           
           const metaThemeColor = document.querySelector('meta[name="theme-color"]');
           if (metaThemeColor) {
