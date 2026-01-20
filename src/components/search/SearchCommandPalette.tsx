@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
-  RotateCcw, ShoppingCart, User, Home, Search
+  RotateCcw, ShoppingCart, User, Home, Search, Sparkles, Loader2
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/command';
 import { supabase } from '@/integrations/supabase/client';
 import { hapticTap } from '@/lib/haptics';
+import { useSmartSearch } from '@/hooks/useSmartSearch';
 
 interface Product {
   id: string;
@@ -59,11 +60,31 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [useAI, setUseAI] = useState(false);
+  
+  const { search: smartSearch, isSearching: isSmartSearching, results: smartResults } = useSmartSearch();
+
+  // Detect if query looks like natural language
+  useEffect(() => {
+    const nlPatterns = /\b(under|below|above|over|between|cheap|expensive|free|best|top|new|latest|popular|for|with|like|similar)\b/i;
+    setUseAI(nlPatterns.test(searchQuery) && searchQuery.length > 5);
+  }, [searchQuery]);
 
   // Fetch products when search query changes
   useEffect(() => {
     if (!open) {
       setSearchQuery('');
+      return;
+    }
+
+    // If using AI search, let the smart search handle it
+    if (useAI) {
+      if (searchQuery.length >= 3) {
+        const debounce = setTimeout(() => {
+          smartSearch(searchQuery);
+        }, 500);
+        return () => clearTimeout(debounce);
+      }
       return;
     }
 
@@ -94,7 +115,11 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
     const debounce = setTimeout(fetchProducts, 200);
     return () => clearTimeout(debounce);
-  }, [searchQuery, open]);
+  }, [searchQuery, open, useAI, smartSearch]);
+
+  // Use smart search results when AI is active
+  const displayProducts = useAI && smartResults.length > 0 ? smartResults : products;
+  const displayLoading = useAI ? isSmartSearching : isLoading;
 
   const handleSelect = useCallback((href: string) => {
     hapticTap();
@@ -111,27 +136,46 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput 
-        placeholder="Search products, pages, and more..." 
-        value={searchQuery}
-        onValueChange={setSearchQuery}
-      />
+      <div className="relative">
+        <CommandInput 
+          placeholder="Search products, pages, or try 'scripts under £10'..." 
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+        />
+        {useAI && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-primary">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>AI Search</span>
+          </div>
+        )}
+      </div>
       <CommandList>
         <CommandEmpty>
-          {isLoading ? 'Searching...' : 'No results found.'}
+          {displayLoading ? (
+            <div className="flex items-center justify-center gap-2 py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{useAI ? 'AI is searching...' : 'Searching...'}</span>
+            </div>
+          ) : (
+            'No results found.'
+          )}
         </CommandEmpty>
 
         {/* Products */}
-        {products.length > 0 && (
-          <CommandGroup heading="Products">
-            {products.map((product) => (
+        {displayProducts.length > 0 && (
+          <CommandGroup heading={useAI ? "AI Results" : "Products"}>
+            {displayProducts.map((product) => (
               <CommandItem
                 key={product.id}
                 value={product.name}
                 onSelect={() => handleSelect(`/products/${product.slug}`)}
                 className="cursor-pointer"
               >
-                <Package className="mr-2 h-4 w-4" />
+                {useAI ? (
+                  <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                ) : (
+                  <Package className="mr-2 h-4 w-4" />
+                )}
                 <span className="flex-1">{product.name}</span>
                 <span className="text-xs text-muted-foreground">
                   {formatPrice(product.price)}
