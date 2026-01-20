@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { 
   Store, 
   Package, 
@@ -20,7 +21,9 @@ import {
   Plus,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  ExternalLink
 } from 'lucide-react';
 
 export default function SellerDashboard() {
@@ -114,6 +117,15 @@ export default function SellerDashboard() {
     }).format(amount);
   };
 
+  const storeUrl = store?.slug ? `${window.location.origin}/store/${store.slug}` : '';
+
+  const copyStoreLink = () => {
+    if (storeUrl) {
+      navigator.clipboard.writeText(storeUrl);
+      toast.success('Store link copied to clipboard!');
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container py-8">
@@ -141,6 +153,33 @@ export default function SellerDashboard() {
             </Link>
           </Button>
         </div>
+
+        {/* Store Link Card */}
+        {storeUrl && (
+          <Card className="mb-6 bg-primary/5 border-primary/20">
+            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-4">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <ExternalLink className="h-5 w-5 text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-muted-foreground">Your Store Link</p>
+                  <p className="text-sm font-mono truncate">{storeUrl}</p>
+                </div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" onClick={copyStoreLink}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+                <Button variant="default" size="sm" asChild>
+                  <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Visit
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
