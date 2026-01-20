@@ -1,15 +1,15 @@
-import { Printer, Download, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { SellerInfoContent } from "@/components/seller/SellerInfoContent";
 
-export default function SellerInfo() {
+export default function SellerRecruitment() {
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <>
+    <AdminLayout requiredRoles={["admin"]}>
       {/* Print-optimized styles */}
       <style>
         {`
@@ -19,6 +19,8 @@ export default function SellerInfo() {
             header,
             footer:not(.print-footer),
             nav,
+            aside,
+            .admin-sidebar,
             .chat-widget,
             .cookie-banner {
               display: none !important;
@@ -86,54 +88,26 @@ export default function SellerInfo() {
         `}
       </style>
 
-      <div className="min-h-screen bg-background">
-        {/* Navigation Bar - Hidden on Print */}
-        <nav className="no-print sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link 
-              to="/" 
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Eclipse
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handlePrint}
-                className="gap-2"
-              >
-                <Printer className="h-4 w-4" />
-                <span className="hidden sm:inline">Print / Save PDF</span>
-                <span className="sm:hidden">PDF</span>
-              </Button>
-              <Link to="/auth">
-                <Button size="sm" className="gap-2">
-                  Apply Now
-                </Button>
-              </Link>
-            </div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
+          <div>
+            <h1 className="text-2xl font-bold">Seller Recruitment Document</h1>
+            <p className="text-muted-foreground">
+              Internal document for seller recruitment - Admin access only
+            </p>
           </div>
-        </nav>
+          <Button onClick={handlePrint} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Print / Save as PDF
+          </Button>
+        </div>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 print-container max-w-6xl">
+        <div className="print-container">
           <SellerInfoContent />
-        </main>
-
-        {/* Footer - Hidden on Print */}
-        <footer className="no-print border-t border-border py-8 mt-12">
-          <div className="container mx-auto px-4 text-center text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Eclipse. All rights reserved.</p>
-            <div className="flex justify-center gap-4 mt-4 text-sm">
-              <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
-            </div>
-          </div>
-        </footer>
+        </div>
       </div>
-    </>
+    </AdminLayout>
   );
 }
