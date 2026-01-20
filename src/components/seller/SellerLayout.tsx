@@ -4,6 +4,7 @@ import { SellerSidebar } from './SellerSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Loader2, Menu } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -20,8 +21,9 @@ interface SellerLayoutProps {
 
 export function SellerLayout({ children }: SellerLayoutProps) {
   const { user, loading: authLoading } = useAuth();
-  const { isSeller, loading: sellerLoading, store } = useSellerStatus();
+  const { isSeller: isApprovedSeller, loading: sellerLoading, store } = useSellerStatus();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
+  const { isSeller: hasSellerRole, loading: roleLoading } = useAdminAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
 
@@ -127,7 +129,10 @@ export function SellerLayout({ children }: SellerLayoutProps) {
     safeStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  const loading = authLoading || sellerLoading || flagLoading;
+  const loading = authLoading || sellerLoading || flagLoading || roleLoading;
+
+  // User can access seller dashboard if they have the seller role OR have an approved store
+  const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
 
   if (loading) {
     return (
@@ -145,7 +150,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
     return <Navigate to="/" replace />;
   }
 
-  if (!isSeller) {
+  if (!canAccessSellerDashboard) {
     return <Navigate to="/account" replace />;
   }
 
