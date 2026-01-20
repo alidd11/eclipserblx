@@ -2586,6 +2586,7 @@ export type Database = {
       }
       store_applications: {
         Row: {
+          age_confirmed: boolean
           created_at: string | null
           expected_products: string | null
           experience: string | null
@@ -2599,10 +2600,13 @@ export type Database = {
           status: string | null
           store_description: string | null
           store_name: string
+          terms_accepted: boolean
+          terms_accepted_at: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          age_confirmed?: boolean
           created_at?: string | null
           expected_products?: string | null
           experience?: string | null
@@ -2616,10 +2620,13 @@ export type Database = {
           status?: string | null
           store_description?: string | null
           store_name: string
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          age_confirmed?: boolean
           created_at?: string | null
           expected_products?: string | null
           experience?: string | null
@@ -2633,6 +2640,8 @@ export type Database = {
           status?: string | null
           store_description?: string | null
           store_name?: string
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -2761,7 +2770,9 @@ export type Database = {
           logo_url: string | null
           name: string
           owner_id: string
+          payout_method: string
           payouts_enabled: boolean | null
+          paypal_email: string | null
           product_count: number | null
           rejection_reason: string | null
           review_discord_webhook_url: string | null
@@ -2816,7 +2827,9 @@ export type Database = {
           logo_url?: string | null
           name: string
           owner_id: string
+          payout_method?: string
           payouts_enabled?: boolean | null
+          paypal_email?: string | null
           product_count?: number | null
           rejection_reason?: string | null
           review_discord_webhook_url?: string | null
@@ -2871,7 +2884,9 @@ export type Database = {
           logo_url?: string | null
           name?: string
           owner_id?: string
+          payout_method?: string
           payouts_enabled?: boolean | null
+          paypal_email?: string | null
           product_count?: number | null
           rejection_reason?: string | null
           review_discord_webhook_url?: string | null

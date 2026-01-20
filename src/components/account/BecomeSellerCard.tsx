@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,22 +37,23 @@ export function BecomeSellerCard() {
   const [storeName, setStoreName] = useState('');
   const [storeDescription, setStoreDescription] = useState('');
   const [productCategory, setProductCategory] = useState('');
-  const [expectedProducts, setExpectedProducts] = useState('');
-  const [portfolioUrl, setPortfolioUrl] = useState('');
-  const [experience, setExperience] = useState('');
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const submitApplication = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('Not authenticated');
+      if (!ageConfirmed) throw new Error('You must confirm your age');
+      if (!termsAccepted) throw new Error('You must accept the seller terms');
 
       const { error } = await supabase.from('store_applications').insert({
         user_id: user.id,
         store_name: storeName.trim(),
         store_description: storeDescription.trim() || null,
         product_category: productCategory || null,
-        expected_products: expectedProducts.trim() || null,
-        portfolio_url: portfolioUrl.trim() || null,
-        experience: experience.trim() || null,
+        age_confirmed: ageConfirmed,
+        terms_accepted: termsAccepted,
+        terms_accepted_at: new Date().toISOString(),
       });
 
       if (error) throw error;
@@ -78,9 +80,8 @@ export function BecomeSellerCard() {
     setStoreName('');
     setStoreDescription('');
     setProductCategory('');
-    setExpectedProducts('');
-    setPortfolioUrl('');
-    setExperience('');
+    setAgeConfirmed(false);
+    setTermsAccepted(false);
   };
 
   if (loading) {
@@ -214,12 +215,10 @@ export function BecomeSellerCard() {
               setStoreDescription={setStoreDescription}
               productCategory={productCategory}
               setProductCategory={setProductCategory}
-              expectedProducts={expectedProducts}
-              setExpectedProducts={setExpectedProducts}
-              portfolioUrl={portfolioUrl}
-              setPortfolioUrl={setPortfolioUrl}
-              experience={experience}
-              setExperience={setExperience}
+              ageConfirmed={ageConfirmed}
+              setAgeConfirmed={setAgeConfirmed}
+              termsAccepted={termsAccepted}
+              setTermsAccepted={setTermsAccepted}
               onSubmit={() => submitApplication.mutate()}
               isSubmitting={submitApplication.isPending}
             />
@@ -260,8 +259,8 @@ export function BecomeSellerCard() {
           <div className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
-              <p className="font-medium text-sm">Easy payouts via Stripe</p>
-              <p className="text-xs text-muted-foreground">Get paid directly to your bank</p>
+              <p className="font-medium text-sm">Easy payouts via Stripe or PayPal</p>
+              <p className="text-xs text-muted-foreground">Get paid directly to your account</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -287,12 +286,10 @@ export function BecomeSellerCard() {
             setStoreDescription={setStoreDescription}
             productCategory={productCategory}
             setProductCategory={setProductCategory}
-            expectedProducts={expectedProducts}
-            setExpectedProducts={setExpectedProducts}
-            portfolioUrl={portfolioUrl}
-            setPortfolioUrl={setPortfolioUrl}
-            experience={experience}
-            setExperience={setExperience}
+            ageConfirmed={ageConfirmed}
+            setAgeConfirmed={setAgeConfirmed}
+            termsAccepted={termsAccepted}
+            setTermsAccepted={setTermsAccepted}
             onSubmit={() => submitApplication.mutate()}
             isSubmitting={submitApplication.isPending}
           />
@@ -309,12 +306,10 @@ interface ApplicationFormDialogProps {
   setStoreDescription: (value: string) => void;
   productCategory: string;
   setProductCategory: (value: string) => void;
-  expectedProducts: string;
-  setExpectedProducts: (value: string) => void;
-  portfolioUrl: string;
-  setPortfolioUrl: (value: string) => void;
-  experience: string;
-  setExperience: (value: string) => void;
+  ageConfirmed: boolean;
+  setAgeConfirmed: (value: boolean) => void;
+  termsAccepted: boolean;
+  setTermsAccepted: (value: boolean) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
 }
@@ -326,15 +321,15 @@ function ApplicationFormDialog({
   setStoreDescription,
   productCategory,
   setProductCategory,
-  expectedProducts,
-  setExpectedProducts,
-  portfolioUrl,
-  setPortfolioUrl,
-  experience,
-  setExperience,
+  ageConfirmed,
+  setAgeConfirmed,
+  termsAccepted,
+  setTermsAccepted,
   onSubmit,
   isSubmitting,
 }: ApplicationFormDialogProps) {
+  const canSubmit = storeName.trim() && ageConfirmed && termsAccepted;
+
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
       <DialogHeader>
@@ -391,42 +386,39 @@ function ApplicationFormDialog({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="expectedProducts">What products will you sell?</Label>
-          <Textarea
-            id="expectedProducts"
-            placeholder="Describe the types of products you plan to sell..."
-            value={expectedProducts}
-            onChange={(e) => setExpectedProducts(e.target.value)}
-            rows={2}
-            maxLength={300}
-          />
+        {/* Age Confirmation */}
+        <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="ageConfirmed"
+              checked={ageConfirmed}
+              onCheckedChange={(checked) => setAgeConfirmed(checked === true)}
+            />
+            <label htmlFor="ageConfirmed" className="text-sm leading-relaxed cursor-pointer">
+              I confirm I am at least <span className="font-medium">13 years old</span> to sell on this platform.
+              <span className="text-muted-foreground block mt-1">
+                Note: You must be 18+ to receive payouts.
+              </span>
+            </label>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="termsAccepted"
+              checked={termsAccepted}
+              onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+            />
+            <label htmlFor="termsAccepted" className="text-sm leading-relaxed cursor-pointer">
+              I agree to the{' '}
+              <Link to="/terms-of-service" target="_blank" className="text-primary hover:underline">
+                Terms of Service
+              </Link>
+              {' '}and understand the 15% commission rate on sales.
+            </label>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="portfolioUrl">Portfolio / Examples (optional)</Label>
-          <Input
-            id="portfolioUrl"
-            type="url"
-            placeholder="https://..."
-            value={portfolioUrl}
-            onChange={(e) => setPortfolioUrl(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="experience">Previous Experience (optional)</Label>
-          <Textarea
-            id="experience"
-            placeholder="Tell us about any previous selling experience..."
-            value={experience}
-            onChange={(e) => setExperience(e.target.value)}
-            rows={2}
-            maxLength={300}
-          />
-        </div>
-
-        <Button type="submit" className="w-full" disabled={!storeName.trim() || isSubmitting}>
+        <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
           {isSubmitting ? 'Submitting...' : 'Submit Application'}
         </Button>
       </form>

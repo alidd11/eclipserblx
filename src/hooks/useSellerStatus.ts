@@ -48,6 +48,9 @@ export interface Store {
   layout_style: string | null;
   show_reviews: boolean;
   show_social_proof: boolean;
+  // Payout method fields
+  paypal_email: string | null;
+  payout_method: 'stripe' | 'paypal' | 'bank';
 }
 
 export interface StoreApplication {
@@ -62,6 +65,9 @@ export interface StoreApplication {
   status: 'pending' | 'approved' | 'rejected';
   rejection_reason: string | null;
   created_at: string;
+  age_confirmed: boolean;
+  terms_accepted: boolean;
+  terms_accepted_at: string | null;
 }
 
 export interface SellerBalance {

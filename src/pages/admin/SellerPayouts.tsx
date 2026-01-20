@@ -45,8 +45,8 @@ export default function SellerPayouts() {
         .from("seller_payouts")
         .select(`
           *,
-          stores (name, store_id),
-          profiles!seller_payouts_seller_id_fkey (display_name, email, paypal_email)
+          stores (name, store_id, payout_method, paypal_email),
+          profiles!seller_payouts_seller_id_fkey (display_name, email)
         `)
         .order("created_at", { ascending: false });
 
@@ -179,7 +179,8 @@ export default function SellerPayouts() {
                   <TableHead>Seller</TableHead>
                   <TableHead>Store</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>PayPal Email</TableHead>
+                  <TableHead>Payout Method</TableHead>
+                  <TableHead>Payout Details</TableHead>
                   <TableHead>Requested</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -188,13 +189,13 @@ export default function SellerPayouts() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : payouts?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       No payout requests found
                     </TableCell>
                   </TableRow>
@@ -209,8 +210,19 @@ export default function SellerPayouts() {
                       </TableCell>
                       <TableCell>{payout.stores?.name}</TableCell>
                       <TableCell className="font-medium">£{payout.amount?.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Badge variant={payout.stores?.payout_method === 'stripe' ? 'default' : 'secondary'}>
+                          {payout.stores?.payout_method === 'stripe' ? 'Stripe' : 
+                           payout.stores?.payout_method === 'paypal' ? 'PayPal' : 
+                           payout.stores?.payout_method || 'Stripe'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-sm">
-                        {payout.paypal_email || payout.profiles?.paypal_email || "Not set"}
+                        {payout.stores?.payout_method === 'paypal' 
+                          ? payout.stores?.paypal_email || "Not set"
+                          : payout.stores?.payout_method === 'stripe' 
+                            ? "Automatic via Stripe"
+                            : "Not configured"}
                       </TableCell>
                       <TableCell className="text-sm">
                         {format(new Date(payout.created_at), "dd MMM yyyy")}
@@ -262,11 +274,21 @@ export default function SellerPayouts() {
                   <span className="font-medium text-lg">£{selectedPayout?.amount?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">PayPal:</span>
-                  <span className="font-medium">
-                    {selectedPayout?.paypal_email || selectedPayout?.profiles?.paypal_email || "Not set"}
-                  </span>
+                  <span className="text-muted-foreground">Payout Method:</span>
+                  <Badge variant={selectedPayout?.stores?.payout_method === 'stripe' ? 'default' : 'secondary'}>
+                    {selectedPayout?.stores?.payout_method === 'stripe' ? 'Stripe (Auto)' : 
+                     selectedPayout?.stores?.payout_method === 'paypal' ? 'PayPal' : 
+                     selectedPayout?.stores?.payout_method || 'Stripe'}
+                  </Badge>
                 </div>
+                {selectedPayout?.stores?.payout_method === 'paypal' && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">PayPal Email:</span>
+                    <span className="font-medium">
+                      {selectedPayout?.stores?.paypal_email || "Not set"}
+                    </span>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Notes</label>

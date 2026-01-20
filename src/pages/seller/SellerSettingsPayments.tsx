@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
@@ -7,13 +7,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   CheckCircle,
   AlertCircle,
   ExternalLink,
   CreditCard,
-  BarChart3
+  BarChart3,
+  Wallet
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EarningsCalculator } from '@/components/seller/EarningsCalculator';
@@ -24,7 +28,19 @@ export default function SellerSettingsPayments() {
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
 
+  // Payout method state
+  const [payoutMethod, setPayoutMethod] = useState<'stripe' | 'paypal'>(store?.payout_method === 'paypal' ? 'paypal' : 'stripe');
+  const [paypalEmail, setPaypalEmail] = useState(store?.paypal_email || '');
+
   const stripeOnboardingComplete = searchParams.get('stripe_onboarding') === 'complete';
+
+  // Sync state when store loads
+  useEffect(() => {
+    if (store) {
+      setPayoutMethod(store.payout_method === 'paypal' ? 'paypal' : 'stripe');
+      setPaypalEmail(store.paypal_email || '');
+    }
+  }, [store]);
 
   const { data: connectStatus, refetch: refetchConnectStatus, isLoading: connectStatusLoading } = useQuery({
     queryKey: ['connect-status', user?.id],
@@ -64,6 +80,33 @@ export default function SellerSettingsPayments() {
     },
     onError: (error) => {
       toast.error('Failed to setup Stripe Connect: ' + error.message);
+    },
+  });
+
+  const updatePayoutMethod = useMutation({
+    mutationFn: async ({ method, email }: { method: 'stripe' | 'paypal'; email?: string }) => {
+      if (!store?.id) throw new Error('Store not found');
+      
+      if (method === 'paypal' && !email?.trim()) {
+        throw new Error('PayPal email is required');
+      }
+
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          payout_method: method,
+          paypal_email: method === 'paypal' ? email?.trim() : null,
+        })
+        .eq('id', store.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      toast.success('Payout method updated');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update payout method');
     },
   });
 
@@ -147,6 +190,78 @@ export default function SellerSettingsPayments() {
                     {setupStripeConnect.isPending ? 'Loading...' : 'Connect Stripe'}
                   </Button>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Alternative Payout Method */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Payout Method
+              </CardTitle>
+              <CardDescription>
+                Choose how you'd like to receive your earnings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <RadioGroup
+                value={payoutMethod}
+                onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal')}
+                className="space-y-3"
+              >
+                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="stripe" id="stripe" className="mt-1" />
+                  <label htmlFor="stripe" className="flex-1 cursor-pointer">
+                    <p className="font-medium">Stripe Connect (Recommended)</p>
+                    <p className="text-sm text-muted-foreground">
+                      Automatic payouts directly to your bank. Fastest and most reliable.
+                    </p>
+                  </label>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="paypal" id="paypal" className="mt-1" />
+                  <label htmlFor="paypal" className="flex-1 cursor-pointer">
+                    <p className="font-medium">PayPal</p>
+                    <p className="text-sm text-muted-foreground">
+                      Manual payouts via PayPal. Good for regions where Stripe isn't available.
+                    </p>
+                  </label>
+                </div>
+              </RadioGroup>
+
+              {payoutMethod === 'paypal' && (
+                <div className="space-y-2 pt-2">
+                  <Label htmlFor="paypalEmail">PayPal Email</Label>
+                  <Input
+                    id="paypalEmail"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={paypalEmail}
+                    onChange={(e) => setPaypalEmail(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Payouts will be sent to this PayPal email address.
+                  </p>
+                </div>
+              )}
+
+              <Button
+                onClick={() => updatePayoutMethod.mutate({ method: payoutMethod, email: paypalEmail })}
+                disabled={updatePayoutMethod.isPending || (payoutMethod === 'paypal' && !paypalEmail.trim())}
+                className="w-full"
+              >
+                {updatePayoutMethod.isPending ? 'Saving...' : 'Save Payout Method'}
+              </Button>
+
+              {store?.payout_method && (
+                <p className="text-sm text-muted-foreground text-center">
+                  Current method: <span className="font-medium capitalize">{store.payout_method}</span>
+                  {store.payout_method === 'paypal' && store.paypal_email && (
+                    <span> ({store.paypal_email})</span>
+                  )}
+                </p>
               )}
             </CardContent>
           </Card>
