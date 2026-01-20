@@ -209,17 +209,26 @@ export default function StorePage() {
   const isDarkTheme = theme === 'dark';
 
   return (
-    <StoreLayout store={{
-      id: store.slug || storeSlug || '',
-      name: store.name,
-      logo_url: store.logo_url,
-      accent_color: accentColor,
-      discord_url: store.discord_url,
-      twitter_url: store.twitter_url,
-      youtube_url: store.youtube_url,
-      tiktok_url: store.tiktok_url,
-      website_url: store.website_url,
-    }}>
+    <StoreLayout 
+      store={{
+        id: store.slug || storeSlug || '',
+        name: store.name,
+        logo_url: store.logo_url,
+        accent_color: accentColor,
+        discord_url: store.discord_url,
+        twitter_url: store.twitter_url,
+        youtube_url: store.youtube_url,
+        tiktok_url: store.tiktok_url,
+        website_url: store.website_url,
+      }}
+      tabs={storeTabs || []}
+      activeTab={activeTab}
+      onTabChange={handleTabClick}
+      productCount={store.product_count || 0}
+      totalSales={store.total_sales || 0}
+      averageRating={store.average_rating}
+      bio={bio}
+    >
       {/* Store Banner */}
       <div className="relative">
         {store.banner_url ? (
@@ -327,7 +336,7 @@ export default function StorePage() {
                 )}
 
                 {bio && (
-                  <p className={`text-sm italic mb-4 max-w-2xl ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                  <p id="store-about" className={`text-sm italic mb-4 max-w-2xl ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
                     "{bio}"
                   </p>
                 )}
@@ -359,14 +368,14 @@ export default function StorePage() {
         </Card>
 
         {/* Products Section */}
-        <div className="mb-8">
+        <div id="store-products" className="mb-8 scroll-mt-20">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Products</h2>
           </div>
 
-          {/* Store Tabs */}
+          {/* Store Tabs (shown inline on desktop when sidebar is visible) */}
           {storeTabs && storeTabs.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6 md:hidden">
               <Button
                 variant={!activeTab ? 'default' : 'outline'}
                 size="sm"
@@ -438,13 +447,15 @@ export default function StorePage() {
 
         {/* Recommendations Section */}
         {store && products && products.length > 0 && (
-          <StoreRecommendations
-            storeId={store.id}
-            storeName={store.name}
-            categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
-            accentColor={accentColor}
-            limit={4}
-          />
+          <div id="store-recommendations" className="scroll-mt-20">
+            <StoreRecommendations
+              storeId={store.id}
+              storeName={store.name}
+              categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
+              accentColor={accentColor}
+              limit={4}
+            />
+          </div>
         )}
       </div>
     </StoreLayout>

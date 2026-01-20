@@ -1,13 +1,19 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useCallback, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Store as StoreIcon, 
   ExternalLink,
   Twitter,
-  Youtube
+  Youtube,
+  Menu,
+  PanelLeftClose
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import { StoreSidebar } from './StoreSidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 // Discord icon component
 function DiscordIcon({ className }: { className?: string }) {
@@ -27,6 +33,13 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+interface StoreTab {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string | null;
+}
+
 interface StoreLayoutProps {
   children: ReactNode;
   store: {
@@ -40,10 +53,121 @@ interface StoreLayoutProps {
     tiktok_url?: string | null;
     website_url?: string | null;
   };
+  tabs?: StoreTab[];
+  activeTab?: string | null;
+  onTabChange?: (tabSlug: string | null) => void;
+  productCount?: number;
+  totalSales?: number;
+  averageRating?: number | null;
+  bio?: string | null;
 }
 
-export function StoreLayout({ children, store }: StoreLayoutProps) {
+export function StoreLayout({ 
+  children, 
+  store,
+  tabs = [],
+  activeTab = null,
+  onTabChange,
+  productCount = 0,
+  totalSales = 0,
+  averageRating,
+  bio,
+}: StoreLayoutProps) {
   const accentColor = store.accent_color || '#8b5cf6';
+  const isMobile = useIsMobile();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+
+  // Swipe gesture tracking for mobile
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const isEdgeSwipe = useRef(false);
+
+  const EDGE_SWIPE_ZONE_PX = 100;
+  const OPEN_SWIPE_MIN_X = 12;
+  const HORIZONTAL_LOCK_RATIO = 1.1;
+
+  const handleTouchStart = useCallback(
+    (e: TouchEvent) => {
+      if (mobileOpen) {
+        isEdgeSwipe.current = false;
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
+
+      const target = e.target as Element | null;
+      if (target?.closest?.('[data-gesture-exempt="true"]')) {
+        isEdgeSwipe.current = false;
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
+
+      const touch = e.touches[0];
+      touchStartX.current = touch.clientX;
+      touchStartY.current = touch.clientY;
+      isEdgeSwipe.current = touch.clientX < EDGE_SWIPE_ZONE_PX;
+    },
+    [mobileOpen]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (mobileOpen) return;
+      if (!isEdgeSwipe.current || touchStartX.current === null) return;
+
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartX.current;
+
+      if (deltaX > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    [mobileOpen]
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      if (touchStartX.current === null || touchStartY.current === null) return;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX.current;
+      const deltaY = Math.abs(touch.clientY - touchStartY.current);
+
+      const isMostlyHorizontal = Math.abs(deltaX) > deltaY * HORIZONTAL_LOCK_RATIO;
+
+      if (
+        touchStartX.current < EDGE_SWIPE_ZONE_PX &&
+        deltaX > OPEN_SWIPE_MIN_X &&
+        isMostlyHorizontal &&
+        !mobileOpen
+      ) {
+        setMobileOpen(true);
+      }
+
+      touchStartX.current = null;
+      touchStartY.current = null;
+      isEdgeSwipe.current = false;
+    },
+    [mobileOpen]
+  );
+
+  // Add edge swipe listener for mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      document.removeEventListener('touchend', handleTouchEnd, { capture: true });
+    };
+  }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   const socialLinks = [
     { url: store.discord_url, icon: DiscordIcon, label: 'Discord' },
@@ -53,108 +177,187 @@ export function StoreLayout({ children, store }: StoreLayoutProps) {
     { url: store.website_url, icon: ExternalLink, label: 'Website' },
   ].filter(link => link.url);
 
-  return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
-      {/* Store Header */}
-      <header 
-        className="sticky top-0 z-50 border-b backdrop-blur-md pt-[env(safe-area-inset-top)]"
-        style={{ 
-          backgroundColor: `hsl(var(--background) / 0.95)`,
-          borderColor: `${accentColor}20`,
-        }}
-      >
-        <div className="container flex items-center justify-between h-14 px-4">
-          <Link to={`/store/${store.id}`} className="flex items-center gap-3">
-            {store.logo_url ? (
-              <img 
-                src={store.logo_url} 
-                alt={store.name}
-                className="h-8 w-8 rounded-lg object-cover"
-              />
-            ) : (
-              <div 
-                className="h-8 w-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: `${accentColor}20` }}
-              >
-                <StoreIcon className="h-4 w-4" style={{ color: accentColor }} />
-              </div>
-            )}
-            <span 
-              className="font-display font-bold text-lg"
-              style={{ color: accentColor }}
-            >
-              {store.name}
-            </span>
-          </Link>
+  const handleTabChange = (tabSlug: string | null) => {
+    onTabChange?.(tabSlug);
+  };
 
-          {/* Social Links */}
-          {socialLinks.length > 0 && (
-            <div className="flex items-center gap-1">
-              {socialLinks.map((link, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  asChild
-                >
-                  <a 
-                    href={link.url!} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    aria-label={link.label}
-                  >
-                    <link.icon className="h-4 w-4" />
-                  </a>
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      </header>
+  return (
+    <div className="min-h-[100dvh] flex bg-background">
+      {/* Desktop Sidebar */}
+      {!isMobile && sidebarVisible && (
+        <aside className="w-64 border-r border-border flex-shrink-0 sticky top-0 h-[100dvh]">
+          <StoreSidebar
+            storeSlug={store.id}
+            storeName={store.name}
+            accentColor={accentColor}
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            productCount={productCount}
+            totalSales={totalSales}
+            averageRating={averageRating}
+            bio={bio}
+          />
+        </aside>
+      )}
+
+      {/* Mobile Sidebar (Sheet) */}
+      {isMobile && (
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent
+            side="left"
+            className="p-0 w-72 max-w-[85vw] border-r border-border"
+            data-gesture-exempt="true"
+          >
+            <StoreSidebar
+              storeSlug={store.id}
+              storeName={store.name}
+              accentColor={accentColor}
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              onNavigate={() => setMobileOpen(false)}
+              productCount={productCount}
+              totalSales={totalSales}
+              averageRating={averageRating}
+              bio={bio}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
-
-      {/* Store Footer */}
-      <footer className="border-t border-border bg-card/50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Store Header */}
+        <header 
+          className="sticky top-0 z-50 border-b backdrop-blur-md pt-[env(safe-area-inset-top)]"
+          style={{ 
+            backgroundColor: `hsl(var(--background) / 0.95)`,
+            borderColor: `${accentColor}20`,
+          }}
+        >
+          <div className="container flex items-center justify-between h-14 px-4">
             <div className="flex items-center gap-2">
-              {store.logo_url ? (
-                <img 
-                  src={store.logo_url} 
-                  alt={store.name}
-                  className="h-6 w-6 rounded object-cover"
-                />
-              ) : (
-                <StoreIcon className="h-5 w-5" style={{ color: accentColor }} />
+              {/* Mobile Menu Button */}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setMobileOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
               )}
-              <span className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} {store.name}. All rights reserved.
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>
-                Powered by{' '}
-                <Link 
-                  to="/" 
-                  className="font-medium hover:text-foreground transition-colors"
+
+              {/* Desktop Sidebar Toggle */}
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setSidebarVisible(!sidebarVisible)}
+                >
+                  <PanelLeftClose className={cn(
+                    "h-5 w-5 transition-transform",
+                    !sidebarVisible && "rotate-180"
+                  )} />
+                </Button>
+              )}
+
+              <Link to={`/store/${store.id}`} className="flex items-center gap-3">
+                {store.logo_url ? (
+                  <img 
+                    src={store.logo_url} 
+                    alt={store.name}
+                    className="h-8 w-8 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div 
+                    className="h-8 w-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${accentColor}20` }}
+                  >
+                    <StoreIcon className="h-4 w-4" style={{ color: accentColor }} />
+                  </div>
+                )}
+                <span 
+                  className="font-display font-bold text-lg"
                   style={{ color: accentColor }}
                 >
-                  Eclipse Store
-                </Link>
-              </span>
+                  {store.name}
+                </span>
+              </Link>
+            </div>
+
+            {/* Social Links */}
+            {socialLinks.length > 0 && (
+              <div className="flex items-center gap-1">
+                {socialLinks.map((link, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    asChild
+                  >
+                    <a 
+                      href={link.url!} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      aria-label={link.label}
+                    >
+                      <link.icon className="h-4 w-4" />
+                    </a>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1">
+          {children}
+        </main>
+
+        {/* Store Footer */}
+        <footer className="border-t border-border bg-card/50">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                {store.logo_url ? (
+                  <img 
+                    src={store.logo_url} 
+                    alt={store.name}
+                    className="h-6 w-6 rounded object-cover"
+                  />
+                ) : (
+                  <StoreIcon className="h-5 w-5" style={{ color: accentColor }} />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  © {new Date().getFullYear()} {store.name}. All rights reserved.
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>
+                  Powered by{' '}
+                  <Link 
+                    to="/" 
+                    className="font-medium hover:text-foreground transition-colors"
+                    style={{ color: accentColor }}
+                  >
+                    Eclipse Store
+                  </Link>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
 
-      {/* Chat Widget */}
-      <ChatWidget />
+        {/* Chat Widget */}
+        <ChatWidget />
+      </div>
     </div>
   );
 }
