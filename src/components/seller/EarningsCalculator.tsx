@@ -96,7 +96,7 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
                   <Info className="h-3 w-3" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Stripe charges 2.9% + £0.30 per transaction</p>
+                  <p>Stripe charges approx. 1.5% + £0.20 per UK transaction</p>
                 </TooltipContent>
               </Tooltip>
             </span>

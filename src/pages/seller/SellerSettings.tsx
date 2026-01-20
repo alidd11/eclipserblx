@@ -117,12 +117,12 @@ export default function SellerSettings() {
         bio: store.bio || '',
         theme: store.theme || 'default',
         accent_color: store.accent_color || '#8b5cf6',
-        discord_url: (store as any).discord_url || '',
-        twitter_url: (store as any).twitter_url || '',
-        youtube_url: (store as any).youtube_url || '',
-        tiktok_url: (store as any).tiktok_url || '',
-        website_url: (store as any).website_url || '',
-        discord_webhook_url: (store as any).discord_webhook_url || '',
+        discord_url: store.discord_url || '',
+        twitter_url: store.twitter_url || '',
+        youtube_url: store.youtube_url || '',
+        tiktok_url: store.tiktok_url || '',
+        website_url: store.website_url || '',
+        discord_webhook_url: store.discord_webhook_url || '',
       });
     }
   }, [store]);
@@ -630,7 +630,7 @@ export default function SellerSettings() {
         </Card>
 
         {/* Earnings Calculator */}
-        <EarningsCalculator commissionRate={store?.commission_rate ? store.commission_rate * 100 : 15} />
+        <EarningsCalculator commissionRate={store?.commission_rate || 15} />
 
         {/* Store Stats */}
         <Card>
