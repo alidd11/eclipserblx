@@ -175,13 +175,24 @@ export default function AdminUsers() {
           .eq('owner_id', userId)
           .maybeSingle();
         
+        // Check if user has Eclipse+ membership for reduced commission rate
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .maybeSingle();
+        
+        const hasEclipsePlus = !!subscription;
+        const commissionRate = hasEclipsePlus ? 10 : 15; // 10% for Eclipse+, 15% for standard
+        
         if (!existingStore) {
           // Generate a unique slug from display name or email
           const baseName = displayName || targetEmail.split('@')[0];
           const slug = baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
           const uniqueSlug = `${slug}-${Date.now().toString(36)}`;
           
-          // Create store record with explicit commission rate
+          // Create store record with appropriate commission rate
           const { data: newStore, error: storeError } = await supabase
             .from('stores')
             .insert({
@@ -191,7 +202,7 @@ export default function AdminUsers() {
               store_id: `STR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
               status: 'approved',
               is_active: true,
-              commission_rate: 15, // Default 15% commission rate
+              commission_rate: commissionRate,
             })
             .select('id')
             .single();
@@ -212,10 +223,14 @@ export default function AdminUsers() {
             }
           }
         } else {
-          // Store exists, ensure it's active and approved
+          // Store exists, ensure it's active and approved, update commission if Eclipse+ member
           await supabase
             .from('stores')
-            .update({ status: 'approved', is_active: true })
+            .update({ 
+              status: 'approved', 
+              is_active: true,
+              commission_rate: commissionRate,
+            })
             .eq('id', existingStore.id);
         }
       }
