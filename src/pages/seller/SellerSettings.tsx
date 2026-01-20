@@ -12,13 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Store, 
   Image as ImageIcon,
@@ -31,7 +25,10 @@ import {
   Globe,
   MessageCircle,
   Bell,
-  Send
+  Send,
+  CreditCard,
+  BarChart3,
+  Settings2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EarningsCalculator } from '@/components/seller/EarningsCalculator';
@@ -232,179 +229,177 @@ export default function SellerSettings() {
 
   return (
     <SellerLayout>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Store Settings</h1>
           <p className="text-muted-foreground">
-            Manage your store profile and payment settings
+            Manage your store profile, payments, and notifications
           </p>
         </div>
 
-        {/* Store Info Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
+        {/* Store ID Badge */}
+        <div className="flex items-center gap-2 mb-6">
+          {store?.is_verified && (
+            <Badge variant="default" className="gap-1">
+              <CheckCircle className="h-3 w-3" />
+              Verified
+            </Badge>
+          )}
+          <Badge variant="outline">
+            Store ID: {store?.store_id}
+          </Badge>
+        </div>
+
+        {/* Settings Tabs */}
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="profile" className="flex items-center gap-2 py-2">
+              <Store className="h-4 w-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="flex items-center gap-2 py-2">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Appearance</span>
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-2 py-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Payments</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2 py-2">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notifications</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            {/* Basic Info */}
+            <Card>
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Store className="h-5 w-5" />
-                  Store Profile
+                  Basic Information
                 </CardTitle>
                 <CardDescription>
-                  Update your store's public information
+                  Your store's public name and description
                 </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                {store?.is_verified && (
-                  <Badge variant="default" className="gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Verified
-                  </Badge>
-                )}
-                <Badge variant="outline">
-                  ID: {store?.store_id}
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Store Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Your Store Name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Tell customers about your store..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="logo_url">Logo URL</Label>
-                <div className="flex gap-2">
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Store Name</Label>
                   <Input
-                    id="logo_url"
-                    value={formData.logo_url}
-                    onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                    placeholder="https://example.com/logo.png"
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Your Store Name"
+                    required
                   />
-                  {formData.logo_url && (
-                    <div className="h-10 w-10 rounded border overflow-hidden flex-shrink-0">
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Tell customers about your store..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Store Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    placeholder="A short bio about you or your store..."
+                    rows={3}
+                  />
+                </div>
+
+                <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateStore.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Branding */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  Branding
+                </CardTitle>
+                <CardDescription>
+                  Your store's logo and banner images
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="logo_url">Logo URL</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="logo_url"
+                      value={formData.logo_url}
+                      onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                      placeholder="https://example.com/logo.png"
+                    />
+                    {formData.logo_url && (
+                      <div className="h-10 w-10 rounded border overflow-hidden flex-shrink-0">
+                        <img 
+                          src={formData.logo_url} 
+                          alt="Logo preview" 
+                          className="h-full w-full object-cover"
+                          onError={(e) => (e.currentTarget.style.display = 'none')}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="banner_url">Banner URL</Label>
+                  <Input
+                    id="banner_url"
+                    value={formData.banner_url}
+                    onChange={(e) => setFormData({ ...formData, banner_url: e.target.value })}
+                    placeholder="https://example.com/banner.png"
+                  />
+                  {formData.banner_url && (
+                    <div className="h-24 rounded border overflow-hidden">
                       <img 
-                        src={formData.logo_url} 
-                        alt="Logo preview" 
+                        src={formData.banner_url} 
+                        alt="Banner preview" 
                         className="h-full w-full object-cover"
                         onError={(e) => (e.currentTarget.style.display = 'none')}
                       />
                     </div>
                   )}
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="banner_url">Banner URL</Label>
-                <Input
-                  id="banner_url"
-                  value={formData.banner_url}
-                  onChange={(e) => setFormData({ ...formData, banner_url: e.target.value })}
-                  placeholder="https://example.com/banner.png"
-                />
-                {formData.banner_url && (
-                  <div className="h-24 rounded border overflow-hidden">
-                    <img 
-                      src={formData.banner_url} 
-                      alt="Banner preview" 
-                      className="h-full w-full object-cover"
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
-                    />
-                  </div>
-                )}
-              </div>
+                <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateStore.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="bio">Store Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  placeholder="A short bio about you or your store..."
-                  rows={3}
-                />
-              </div>
-
-              <Separator />
-
-              {/* Theme Selection */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-muted-foreground" />
-                  <Label className="text-base font-medium">Store Theme</Label>
-                </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {STORE_THEMES.map((theme) => (
-                    <div
-                      key={theme.id}
-                      onClick={() => setFormData({ ...formData, theme: theme.id })}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                        formData.theme === theme.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <p className="font-medium text-sm">{theme.name}</p>
-                      <p className="text-xs text-muted-foreground">{theme.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Accent Color */}
-              <div className="space-y-3">
-                <Label>Accent Color</Label>
-                <div className="flex flex-wrap gap-2">
-                  {ACCENT_COLORS.map((color) => (
-                    <button
-                      key={color.id}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, accent_color: color.id })}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        formData.accent_color === color.id
-                          ? 'border-foreground scale-110'
-                          : 'border-transparent hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: color.id }}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Social Links */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <LinkIcon className="h-5 w-5 text-muted-foreground" />
-                  <Label className="text-base font-medium">Social Links</Label>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Add your social media links to display on your store page
-                </p>
-                
-                <div className="grid gap-4">
+            {/* Social Links */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LinkIcon className="h-5 w-5" />
+                  Social Links
+                </CardTitle>
+                <CardDescription>
+                  Connect your social media accounts to display on your store
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="discord_url" className="flex items-center gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -462,219 +457,311 @@ export default function SellerSettings() {
                       placeholder="https://tiktok.com/@username"
                     />
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="website_url" className="flex items-center gap-2">
-                      <Globe className="h-4 w-4" />
-                      Website
-                    </Label>
-                    <Input
-                      id="website_url"
-                      value={formData.website_url}
-                      onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                      placeholder="https://yourwebsite.com"
+                <div className="space-y-2">
+                  <Label htmlFor="website_url" className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Website
+                  </Label>
+                  <Input
+                    id="website_url"
+                    value={formData.website_url}
+                    onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+
+                <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateStore.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Appearance Tab */}
+          <TabsContent value="appearance" className="space-y-6">
+            {/* Theme Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Store Theme
+                </CardTitle>
+                <CardDescription>
+                  Choose a visual style for your storefront
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {STORE_THEMES.map((theme) => (
+                    <div
+                      key={theme.id}
+                      onClick={() => setFormData({ ...formData, theme: theme.id })}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        formData.theme === theme.id
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <p className="font-medium text-sm">{theme.name}</p>
+                      <p className="text-xs text-muted-foreground">{theme.description}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateStore.isPending ? 'Saving...' : 'Save Theme'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Accent Color */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings2 className="h-5 w-5" />
+                  Accent Color
+                </CardTitle>
+                <CardDescription>
+                  Choose your store's primary accent color
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-3">
+                  {ACCENT_COLORS.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, accent_color: color.id })}
+                      className={`w-12 h-12 rounded-full border-2 transition-all ${
+                        formData.accent_color === color.id
+                          ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-offset-background'
+                          : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color.id }}
+                      title={color.name}
                     />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Selected: <span className="font-medium">{ACCENT_COLORS.find(c => c.id === formData.accent_color)?.name || 'Purple'}</span>
+                </p>
+
+                <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateStore.isPending ? 'Saving...' : 'Save Color'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="space-y-6">
+            {/* Stripe Connect */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Stripe Connect
+                </CardTitle>
+                <CardDescription>
+                  Connect your Stripe account to receive automatic payouts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {connectStatusLoading ? (
+                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div className="flex-1">
+                      <p className="font-medium">Checking payment status...</p>
+                    </div>
+                  </div>
+                ) : connectStatus?.canReceivePayments || store?.payouts_enabled ? (
+                  <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                    <div className="flex-1">
+                      <p className="font-medium">Stripe Connect Active</p>
+                      <p className="text-sm text-muted-foreground">
+                        Your account is set up to receive payouts
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
+                        Dashboard
+                        <ExternalLink className="h-4 w-4 ml-2" />
+                      </a>
+                    </Button>
+                  </div>
+                ) : connectStatus?.hasAccount || store?.stripe_account_id ? (
+                  <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <AlertCircle className="h-6 w-6 text-yellow-500" />
+                    <div className="flex-1">
+                      <p className="font-medium">Setup Incomplete</p>
+                      <p className="text-sm text-muted-foreground">
+                        Please complete your Stripe Connect onboarding
+                      </p>
+                    </div>
+                    <Button 
+                      variant="default"
+                      onClick={() => setupStripeConnect.mutate()}
+                      disabled={setupStripeConnect.isPending}
+                    >
+                      {setupStripeConnect.isPending ? 'Loading...' : 'Complete Setup'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <CreditCard className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="font-medium">Connect Stripe</p>
+                      <p className="text-sm text-muted-foreground">
+                        Set up Stripe Connect to receive payouts for your sales
+                      </p>
+                    </div>
+                    <Button 
+                      variant="default"
+                      onClick={() => setupStripeConnect.mutate()}
+                      disabled={setupStripeConnect.isPending}
+                    >
+                      {setupStripeConnect.isPending ? 'Loading...' : 'Connect Stripe'}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Earnings Calculator */}
+            <EarningsCalculator commissionRate={store?.commission_rate || 15} />
+
+            {/* Store Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Store Statistics
+                </CardTitle>
+                <CardDescription>
+                  Your store's performance overview
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Total Sales</p>
+                    <p className="text-2xl font-bold">{store?.total_sales || 0}</p>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Total Revenue</p>
+                    <p className="text-2xl font-bold">
+                      £{((store?.total_revenue || 0) / 100).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Products</p>
+                    <p className="text-2xl font-bold">{store?.product_count || 0}</p>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Rating</p>
+                    <p className="text-2xl font-bold">
+                      {store?.average_rating ? store.average_rating.toFixed(1) : 'N/A'}
+                    </p>
                   </div>
                 </div>
-              </div>
 
-              <Button type="submit" disabled={updateStore.isPending}>
-                <Save className="h-4 w-4 mr-2" />
-                {updateStore.isPending ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                <Separator className="my-4" />
 
-        {/* Stripe Connect Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Payment Settings</CardTitle>
-            <CardDescription>
-              Connect your Stripe account to receive payouts
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {connectStatusLoading ? (
-              <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                <div className="flex-1">
-                  <p className="font-medium">Checking payment status...</p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Commission Rate</span>
+                  <span className="font-medium">{store?.commission_rate || 15}%</span>
                 </div>
-              </div>
-            ) : connectStatus?.canReceivePayments || store?.payouts_enabled ? (
-              <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-                <div className="flex-1">
-                  <p className="font-medium">Stripe Connect Active</p>
-                  <p className="text-sm text-muted-foreground">
-                    Your account is set up to receive payouts
-                  </p>
+                <div className="flex items-center justify-between text-sm mt-2">
+                  <span className="text-muted-foreground">Member Since</span>
+                  <span className="font-medium">
+                    {store?.created_at ? new Date(store.created_at).toLocaleDateString() : 'N/A'}
+                  </span>
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
-                    Dashboard
-                    <ExternalLink className="h-4 w-4 ml-2" />
-                  </a>
-                </Button>
-              </div>
-            ) : connectStatus?.hasAccount || store?.stripe_account_id ? (
-              <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-yellow-500" />
-                <div className="flex-1">
-                  <p className="font-medium">Setup Incomplete</p>
-                  <p className="text-sm text-muted-foreground">
-                    Please complete your Stripe Connect onboarding
-                  </p>
-                </div>
-                <Button 
-                  variant="default"
-                  onClick={() => setupStripeConnect.mutate()}
-                  disabled={setupStripeConnect.isPending}
-                >
-                  {setupStripeConnect.isPending ? 'Loading...' : 'Complete Setup'}
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="font-medium">Connect Stripe</p>
-                  <p className="text-sm text-muted-foreground">
-                    Set up Stripe Connect to receive payouts for your sales
-                  </p>
-                </div>
-                <Button 
-                  variant="default"
-                  onClick={() => setupStripeConnect.mutate()}
-                  disabled={setupStripeConnect.isPending}
-                >
-                  {setupStripeConnect.isPending ? 'Loading...' : 'Connect Stripe'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Discord Notifications Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Discord Notifications
-            </CardTitle>
-            <CardDescription>
-              Receive order notifications directly in your Discord server
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="discord_webhook_url" className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Discord Webhook URL
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="discord_webhook_url"
-                  type="password"
-                  value={formData.discord_webhook_url}
-                  onChange={(e) => setFormData({ ...formData, discord_webhook_url: e.target.value })}
-                  placeholder="https://discord.com/api/webhooks/..."
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={testDiscordWebhook}
-                  disabled={isTestingWebhook || !formData.discord_webhook_url}
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {isTestingWebhook ? 'Sending...' : 'Test'}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Get notified when someone purchases from your store. 
-                <a 
-                  href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline ml-1"
-                >
-                  How to create a webhook
-                  <ExternalLink className="h-3 w-3 inline ml-1" />
-                </a>
-              </p>
-            </div>
-
-            {formData.discord_webhook_url && (
-              <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="text-sm font-medium">Webhook Configured</p>
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Discord Notifications
+                </CardTitle>
+                <CardDescription>
+                  Receive order notifications directly in your Discord server
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="discord_webhook_url" className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    Discord Webhook URL
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="discord_webhook_url"
+                      type="password"
+                      value={formData.discord_webhook_url}
+                      onChange={(e) => setFormData({ ...formData, discord_webhook_url: e.target.value })}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={testDiscordWebhook}
+                      disabled={isTestingWebhook || !formData.discord_webhook_url}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      {isTestingWebhook ? 'Sending...' : 'Test'}
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    You'll receive notifications when orders are placed
+                    Get notified when someone purchases from your store. 
+                    <a 
+                      href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline ml-1"
+                    >
+                      How to create a webhook
+                      <ExternalLink className="h-3 w-3 inline ml-1" />
+                    </a>
                   </p>
                 </div>
-              </div>
-            )}
 
-            <Button 
-              onClick={handleSubmit}
-              disabled={updateStore.isPending}
-              className="w-full"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {updateStore.isPending ? 'Saving...' : 'Save Notification Settings'}
-            </Button>
-          </CardContent>
-        </Card>
+                {formData.discord_webhook_url && (
+                  <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="text-sm font-medium">Webhook Configured</p>
+                      <p className="text-xs text-muted-foreground">
+                        You'll receive notifications when orders are placed
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-        {/* Earnings Calculator */}
-        <EarningsCalculator commissionRate={store?.commission_rate || 15} />
-
-        {/* Store Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Store Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Total Sales</p>
-                <p className="text-2xl font-bold">{store?.total_sales || 0}</p>
-              </div>
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">
-                  ${((store?.total_revenue || 0) / 100).toFixed(2)}
-                </p>
-              </div>
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Products</p>
-                <p className="text-2xl font-bold">{store?.product_count || 0}</p>
-              </div>
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Rating</p>
-                <p className="text-2xl font-bold">
-                  {store?.average_rating ? store.average_rating.toFixed(1) : 'N/A'}
-                </p>
-              </div>
-            </div>
-
-            <Separator className="my-4" />
-
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Commission Rate</span>
-              <span className="font-medium">{store?.commission_rate || 15}%</span>
-            </div>
-            <div className="flex items-center justify-between text-sm mt-2">
-              <span className="text-muted-foreground">Member Since</span>
-              <span className="font-medium">
-                {store?.created_at ? new Date(store.created_at).toLocaleDateString() : 'N/A'}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={updateStore.isPending}
+                  className="w-full"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateStore.isPending ? 'Saving...' : 'Save Notification Settings'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </SellerLayout>
   );
