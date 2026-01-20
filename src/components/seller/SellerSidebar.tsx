@@ -304,7 +304,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
     )}>
       {/* Header */}
-      <div className="p-4 border-b border-[hsl(var(--sidebar-border))]">
+      <div className="p-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-[hsl(var(--sidebar-border))]">
         {!isCollapsed && (
           <>
             <h1 className="font-display font-bold text-xl text-[hsl(var(--sidebar-primary))] truncate">
