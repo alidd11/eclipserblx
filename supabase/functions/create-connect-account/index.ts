@@ -40,16 +40,21 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check if user already has a Stripe Connect account
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('stripe_account_id')
-      .eq('user_id', user.id)
+    // Get the store for this user
+    const { data: store, error: storeError } = await supabaseClient
+      .from('stores')
+      .select('id, stripe_account_id, name')
+      .eq('owner_id', user.id)
       .single();
+
+    if (storeError || !store) {
+      throw new Error("No store found for this user");
+    }
+    logStep("Found store", { storeId: store.id, storeName: store.name });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    let accountId = profile?.stripe_account_id;
+    let accountId = store.stripe_account_id;
 
     // If no existing account, create one
     if (!accountId) {
@@ -59,18 +64,26 @@ serve(async (req) => {
         email: user.email,
         metadata: {
           user_id: user.id,
+          store_id: store.id,
         },
         capabilities: {
           transfers: { requested: true },
         },
+        business_profile: {
+          name: store.name || undefined,
+        },
       });
       accountId = account.id;
 
-      // Save to profile
-      await supabaseClient
-        .from('profiles')
+      // Save to stores table
+      const { error: updateError } = await supabaseClient
+        .from('stores')
         .update({ stripe_account_id: accountId })
-        .eq('user_id', user.id);
+        .eq('id', store.id);
+
+      if (updateError) {
+        logStep("Warning: Failed to save stripe_account_id", { error: updateError.message });
+      }
 
       logStep("Created Connect account", { accountId });
     } else {
@@ -78,12 +91,12 @@ serve(async (req) => {
     }
 
     // Create account link for onboarding
-    const origin = req.headers.get("origin") || "https://eclipse.lovable.app";
+    const origin = req.headers.get("origin") || "https://roleplay-hub-shop.lovable.app";
     
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${origin}/account#affiliate`,
-      return_url: `${origin}/account#affiliate`,
+      refresh_url: `${origin}/seller/settings`,
+      return_url: `${origin}/seller/settings?stripe_onboarding=complete`,
       type: 'account_onboarding',
     });
 
