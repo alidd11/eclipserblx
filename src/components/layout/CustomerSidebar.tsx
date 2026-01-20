@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search, TrendingUp
+  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
+import { useSellerStatus } from '@/hooks/useSellerStatus';
 
 interface NavItem {
   title: string;
@@ -67,6 +68,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
   const { settings: affiliateSettings } = useAffiliateSettings();
+  const { isSeller } = useSellerStatus();
   const searchCommand = useSearchCommand();
   const navigate = useNavigate();
   const location = useLocation();
@@ -105,6 +107,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: TrendingUp,
       items: [
         { title: 'Affiliate Program', icon: TrendingUp, href: '/affiliate' },
+      ],
+    }] : []),
+    // Only show seller section if user is an approved seller
+    ...(isSeller ? [{
+      id: 'seller',
+      title: 'Seller',
+      icon: Store,
+      items: [
+        { title: 'Seller Dashboard', icon: Store, href: '/seller' },
       ],
     }] : []),
     {
