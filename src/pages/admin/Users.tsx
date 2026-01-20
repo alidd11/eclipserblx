@@ -162,9 +162,62 @@ export default function AdminUsers() {
   const isAdmin = userRoles?.some(r => r.user_id === user?.id && r.role === 'admin') ?? false;
 
   const addRoleMutation = useMutation({
-    mutationFn: async ({ userId, role, targetEmail }: { userId: string; role: AppRole; targetEmail: string }) => {
+    mutationFn: async ({ userId, role, targetEmail, displayName }: { userId: string; role: AppRole; targetEmail: string; displayName?: string }) => {
       const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
       if (error) throw error;
+      
+      // If assigning seller role, automatically create store and balance records
+      if (role === 'seller') {
+        // Check if store already exists for this user
+        const { data: existingStore } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('owner_id', userId)
+          .maybeSingle();
+        
+        if (!existingStore) {
+          // Generate a unique slug from display name or email
+          const baseName = displayName || targetEmail.split('@')[0];
+          const slug = baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          const uniqueSlug = `${slug}-${Date.now().toString(36)}`;
+          
+          // Create store record
+          const { data: newStore, error: storeError } = await supabase
+            .from('stores')
+            .insert({
+              owner_id: userId,
+              name: displayName || targetEmail.split('@')[0],
+              slug: uniqueSlug,
+              store_id: `STR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+              status: 'approved',
+              is_active: true,
+            })
+            .select('id')
+            .single();
+          
+          if (storeError) {
+            console.error('Failed to create store:', storeError);
+          } else if (newStore) {
+            // Create seller balance record
+            const { error: balanceError } = await supabase
+              .from('seller_balances')
+              .insert({
+                user_id: userId,
+                store_id: newStore.id,
+              });
+            
+            if (balanceError) {
+              console.error('Failed to create seller balance:', balanceError);
+            }
+          }
+        } else {
+          // Store exists, ensure it's active and approved
+          await supabase
+            .from('stores')
+            .update({ status: 'approved', is_active: true })
+            .eq('id', existingStore.id);
+        }
+      }
       
       // Log the action to audit_logs
       await supabase.from('audit_logs').insert({
@@ -176,6 +229,7 @@ export default function AdminUsers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-commissions'] });
       setNewRole('');
       toast.success('Role added');
     },
@@ -571,7 +625,12 @@ export default function AdminUsers() {
                     </Select>
                     <Button
                       disabled={!newRole || addRoleMutation.isPending}
-                      onClick={() => newRole && addRoleMutation.mutate({ userId: selectedUser.user_id, role: newRole, targetEmail: selectedUser.email })}
+                      onClick={() => newRole && addRoleMutation.mutate({ 
+                        userId: selectedUser.user_id, 
+                        role: newRole, 
+                        targetEmail: selectedUser.email,
+                        displayName: selectedUser.display_name 
+                      })}
                       className="h-10 px-4"
                     >
                       <Plus className="h-4 w-4" />
