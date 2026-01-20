@@ -40,9 +40,9 @@ export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarCh
       return;
     }
 
-    // Security scan (NSFW check for images)
-    showInfoNotification('Scanning', 'Checking image...');
-    const scanResult = await performSecurityScan(file, { skipVirusScan: true, skipLuaAnalysis: true });
+    // Security scan (virus + NSFW check for images)
+    showInfoNotification('Scanning', 'Scanning for threats...');
+    const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
     
     if (!scanResult.isAllowed) {
       showErrorNotification('Upload Blocked', scanResult.reason || 'Image rejected');
