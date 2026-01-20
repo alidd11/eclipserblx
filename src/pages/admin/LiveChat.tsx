@@ -24,6 +24,8 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { hapticTap, hapticError } from '@/lib/haptics';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
+import { performSecurityScan } from '@/lib/secureFileUpload';
+import { toast } from 'sonner';
 
 const CANNED_RESPONSES = [
   {
@@ -520,12 +522,28 @@ export default function AdminLiveChat() {
     if (!selectedConversation || !user) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      toast.error('File size must be less than 5MB');
       return;
     }
 
     setIsUploading(true);
     try {
+      // Security scan
+      toast.info('Scanning file...', { id: 'admin-file-scan' });
+      const scanResult = await performSecurityScan(file);
+      
+      if (!scanResult.isAllowed) {
+        toast.dismiss('admin-file-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      
+      if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
+        toast.warning(`File has concerns: ${scanResult.luaConcerns[0]}`, { duration: 5000 });
+      }
+      
+      toast.dismiss('admin-file-scan');
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${selectedConversation.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
@@ -565,7 +583,7 @@ export default function AdminLiveChat() {
       if (updateError) throw updateError;
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Failed to upload file');
+      toast.error('Failed to upload file');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {

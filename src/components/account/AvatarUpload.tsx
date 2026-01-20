@@ -3,9 +3,9 @@ import { Camera, Loader2, User, Upload } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
+import { showSuccessNotification, showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { useDropZone } from '@/hooks/useDropZone';
-
+import { performSecurityScan } from '@/lib/secureFileUpload';
 interface AvatarUploadProps {
   userId: string;
   currentAvatarUrl: string | null;
@@ -37,6 +37,15 @@ export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarCh
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       showErrorNotification('File Too Large', 'Image must be less than 5MB');
+      return;
+    }
+
+    // Security scan (NSFW check for images)
+    showInfoNotification('Scanning', 'Checking image...');
+    const scanResult = await performSecurityScan(file, { skipVirusScan: true, skipLuaAnalysis: true });
+    
+    if (!scanResult.isAllowed) {
+      showErrorNotification('Upload Blocked', scanResult.reason || 'Image rejected');
       return;
     }
 

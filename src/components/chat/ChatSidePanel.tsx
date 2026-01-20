@@ -17,6 +17,7 @@ import { SecureCodeInput } from './SecureCodeInput';
 import { CodeVerificationMessage } from './CodeVerificationMessage';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 interface SecureData {
   verified: boolean;
@@ -353,6 +354,22 @@ export function ChatSidePanel() {
 
     setIsUploading(true);
     try {
+      // Security scan
+      toast.info('Scanning file...', { id: 'security-scan' });
+      const scanResult = await performSecurityScan(file);
+      
+      if (!scanResult.isAllowed) {
+        toast.dismiss('security-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      
+      if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
+        toast.warning(`File has concerns: ${scanResult.luaConcerns[0]}`, { duration: 5000 });
+      }
+      
+      toast.dismiss('security-scan');
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${conversation.id}/${Date.now()}.${fileExt}`;
 

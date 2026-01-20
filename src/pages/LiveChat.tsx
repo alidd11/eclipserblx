@@ -9,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SecureCodeInput } from '@/components/chat/SecureCodeInput';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
 import { MainLayout } from '@/components/layout/MainLayout';
-
+import { performSecurityScan } from '@/lib/secureFileUpload';
 interface SecureData {
   verified: boolean;
   masked_code: string;
@@ -312,6 +312,23 @@ const LiveChatPage = () => {
 
     setIsUploading(true);
     try {
+      // Security scan
+      toast.info('Scanning file for threats...', { id: 'security-scan' });
+      const scanResult = await performSecurityScan(file);
+      
+      if (!scanResult.isAllowed) {
+        toast.dismiss('security-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      
+      // Show warning for medium-risk Lua files
+      if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
+        toast.warning(`File has some concerns: ${scanResult.luaConcerns[0]}`, { duration: 5000 });
+      }
+      
+      toast.dismiss('security-scan');
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${conversation.id}/${Date.now()}.${fileExt}`;
 

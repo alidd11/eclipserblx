@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { showSuccessNotification, showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { cn } from '@/lib/utils';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 // Badge configuration for user roles
 const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
@@ -207,33 +208,6 @@ export default function ThreadDetail() {
     return null;
   };
 
-  // Check image for NSFW content
-  const checkNSFW = async (file: File): Promise<{ isNSFW: boolean; reason: string }> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64 = reader.result as string;
-          const response = await supabase.functions.invoke('check-nsfw', {
-            body: { imageBase64: base64 }
-          });
-          
-          if (response.error) {
-            console.error('NSFW check error:', response.error);
-            resolve({ isNSFW: false, reason: '' });
-            return;
-          }
-          
-          resolve(response.data);
-        } catch (error) {
-          console.error('NSFW check failed:', error);
-          resolve({ isNSFW: false, reason: '' });
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !user) return;
@@ -253,12 +227,12 @@ export default function ThreadDetail() {
           continue;
         }
 
-        // Check for NSFW content
-        showInfoNotification('Checking...', `Scanning ${file.name}`);
-        const nsfwResult = await checkNSFW(file);
+        // Security scan (virus + NSFW)
+        showInfoNotification('Scanning', `Checking ${file.name}...`);
+        const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
         
-        if (nsfwResult.isNSFW) {
-          showErrorNotification('Content Rejected', `${file.name}: ${nsfwResult.reason || 'Inappropriate content'}`);
+        if (!scanResult.isAllowed) {
+          showErrorNotification('Content Rejected', scanResult.reason || 'Image blocked');
           continue;
         }
 
