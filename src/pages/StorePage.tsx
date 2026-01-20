@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { StoreLayout } from '@/components/store/StoreLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,7 +66,7 @@ const getThemeStyles = (theme: string, accentColor: string) => {
 };
 
 export default function StorePage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab');
 
@@ -162,7 +161,7 @@ export default function StorePage() {
 
   if (storeLoading) {
     return (
-      <MainLayout>
+      <div className="min-h-[100dvh] flex flex-col bg-background">
         <div className="container py-8">
           <Skeleton className="h-48 w-full mb-6" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -171,13 +170,13 @@ export default function StorePage() {
             ))}
           </div>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
   if (error || !store) {
     return (
-      <MainLayout>
+      <div className="min-h-[100dvh] flex flex-col bg-background items-center justify-center">
         <div className="container py-16 text-center">
           <StoreIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
           <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
@@ -191,7 +190,7 @@ export default function StorePage() {
             </Link>
           </Button>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
@@ -202,7 +201,17 @@ export default function StorePage() {
   const isDarkTheme = theme === 'dark';
 
   return (
-    <MainLayout>
+    <StoreLayout store={{
+      id: store.slug || storeSlug || '',
+      name: store.name,
+      logo_url: store.logo_url,
+      accent_color: accentColor,
+      social_discord: (store as any).social_discord,
+      social_twitter: (store as any).social_twitter,
+      social_youtube: (store as any).social_youtube,
+      social_tiktok: (store as any).social_tiktok,
+      social_website: (store as any).social_website,
+    }}>
       {/* Store Banner */}
       <div className="relative">
         {store.banner_url ? (
@@ -410,6 +419,6 @@ export default function StorePage() {
           )}
         </div>
       </div>
-    </MainLayout>
+    </StoreLayout>
   );
 }
