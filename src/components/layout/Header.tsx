@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -167,6 +167,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick 
             </Button>
 
             <NotificationBell />
+
+            {/* Wishlist */}
+            <Link to="/wishlist">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </Link>
 
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">

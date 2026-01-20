@@ -111,6 +111,7 @@ const SellerSettingsNotifications = lazy(() => import("./pages/seller/SellerSett
 
 // Public pages
 const StorePage = lazy(() => import("./pages/StorePage"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -182,6 +183,7 @@ const App = () => (
                   <Route path="/eclipse-plus" element={<EclipsePlus />} />
                   <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/support/chat" element={<LiveChat />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
                   {/* Seller routes */}
                   <Route path="/seller" element={<SellerDashboard />} />
                   <Route path="/seller/analytics" element={<SellerAnalytics />} />
