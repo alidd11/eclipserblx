@@ -2060,45 +2060,54 @@ export type Database = {
           amount: number
           created_at: string | null
           description: string | null
+          gross_amount: number | null
           id: string
           metadata: Json | null
           net_amount: number | null
+          net_before_commission: number | null
           order_id: string | null
           order_item_id: string | null
           platform_fee: number | null
           seller_id: string
           status: string | null
           store_id: string
+          stripe_fee: number | null
           type: string
         }
         Insert: {
           amount: number
           created_at?: string | null
           description?: string | null
+          gross_amount?: number | null
           id?: string
           metadata?: Json | null
           net_amount?: number | null
+          net_before_commission?: number | null
           order_id?: string | null
           order_item_id?: string | null
           platform_fee?: number | null
           seller_id: string
           status?: string | null
           store_id: string
+          stripe_fee?: number | null
           type: string
         }
         Update: {
           amount?: number
           created_at?: string | null
           description?: string | null
+          gross_amount?: number | null
           id?: string
           metadata?: Json | null
           net_amount?: number | null
+          net_before_commission?: number | null
           order_id?: string | null
           order_item_id?: string | null
           platform_fee?: number | null
           seller_id?: string
           status?: string | null
           store_id?: string
+          stripe_fee?: number | null
           type?: string
         }
         Relationships: [

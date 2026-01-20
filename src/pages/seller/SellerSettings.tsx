@@ -31,6 +31,7 @@ import {
   Palette
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { EarningsCalculator } from '@/components/seller/EarningsCalculator';
 
 const STORE_THEMES = [
   { id: 'default', name: 'Default', description: 'Clean and modern' },
@@ -435,6 +436,9 @@ export default function SellerSettings() {
           </CardContent>
         </Card>
 
+        {/* Earnings Calculator */}
+        <EarningsCalculator commissionRate={store?.commission_rate || 15} />
+
         {/* Store Stats */}
         <Card>
           <CardHeader>
@@ -468,7 +472,7 @@ export default function SellerSettings() {
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Commission Rate</span>
-              <span className="font-medium">{((store?.commission_rate || 0.15) * 100).toFixed(0)}%</span>
+              <span className="font-medium">{store?.commission_rate || 15}%</span>
             </div>
             <div className="flex items-center justify-between text-sm mt-2">
               <span className="text-muted-foreground">Member Since</span>

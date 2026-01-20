@@ -324,16 +324,19 @@ export default function SellerBalance() {
           </CardContent>
         </Card>
 
-        {/* Commission Info */}
+        {/* Commission Info - Updated for net-based earnings */}
         <Card className="mt-6 border-blue-500/50 bg-blue-500/5">
           <CardContent className="flex items-start gap-4 py-4">
             <AlertCircle className="h-6 w-6 text-blue-500 mt-0.5" />
             <div>
-              <p className="font-medium">Platform Commission</p>
+              <p className="font-medium">How Your Earnings Are Calculated</p>
               <p className="text-sm text-muted-foreground">
-                Eclipse takes a {((store?.commission_rate || 0.15) * 100).toFixed(0)}% commission on all sales. 
-                This covers payment processing, hosting, and platform maintenance. 
-                The remaining amount is credited to your balance after a 7-14 day clearing period.
+                Your earnings are calculated <strong>after</strong> Stripe payment processing fees (approx. 2.9% + £0.30 per transaction). 
+                Eclipse then takes a {store?.commission_rate || 15}% commission on the net amount. 
+                This transparent model ensures you always know exactly what you'll earn.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                <strong>Example:</strong> On a £10 sale, after ~£0.59 Stripe fees, you receive {(100 - (store?.commission_rate || 15))}% of £9.41 = approximately £{(9.41 * (1 - ((store?.commission_rate || 15) / 100))).toFixed(2)}.
               </p>
             </div>
           </CardContent>
