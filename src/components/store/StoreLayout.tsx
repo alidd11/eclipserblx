@@ -34,11 +34,11 @@ interface StoreLayoutProps {
     name: string;
     logo_url?: string | null;
     accent_color?: string;
-    social_discord?: string | null;
-    social_twitter?: string | null;
-    social_youtube?: string | null;
-    social_tiktok?: string | null;
-    social_website?: string | null;
+    discord_url?: string | null;
+    twitter_url?: string | null;
+    youtube_url?: string | null;
+    tiktok_url?: string | null;
+    website_url?: string | null;
   };
 }
 
@@ -46,11 +46,11 @@ export function StoreLayout({ children, store }: StoreLayoutProps) {
   const accentColor = store.accent_color || '#8b5cf6';
 
   const socialLinks = [
-    { url: store.social_discord, icon: DiscordIcon, label: 'Discord' },
-    { url: store.social_twitter, icon: Twitter, label: 'Twitter' },
-    { url: store.social_youtube, icon: Youtube, label: 'YouTube' },
-    { url: store.social_tiktok, icon: TikTokIcon, label: 'TikTok' },
-    { url: store.social_website, icon: ExternalLink, label: 'Website' },
+    { url: store.discord_url, icon: DiscordIcon, label: 'Discord' },
+    { url: store.twitter_url, icon: Twitter, label: 'Twitter' },
+    { url: store.youtube_url, icon: Youtube, label: 'YouTube' },
+    { url: store.tiktok_url, icon: TikTokIcon, label: 'TikTok' },
+    { url: store.website_url, icon: ExternalLink, label: 'Website' },
   ].filter(link => link.url);
 
   return (
