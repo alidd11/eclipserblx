@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
+import { StoreReviews } from '@/components/store/StoreReviews';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { 
   Store as StoreIcon, 
@@ -444,6 +445,18 @@ export default function StorePage() {
             </Card>
           )}
         </div>
+
+        {/* Reviews Section */}
+        {store && (
+          <div className="mb-8">
+            <StoreReviews
+              storeId={store.id}
+              storeName={store.name}
+              accentColor={accentColor}
+              averageRating={store.average_rating}
+            />
+          </div>
+        )}
 
         {/* Recommendations Section */}
         {store && products && products.length > 0 && (
