@@ -2026,6 +2026,44 @@ export type Database = {
           },
         ]
       }
+      seller_agreements: {
+        Row: {
+          agreement_version: string
+          id: string
+          ip_address: string | null
+          signed_at: string
+          signed_by: string
+          store_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          agreement_version?: string
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signed_by: string
+          store_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          agreement_version?: string
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signed_by?: string
+          store_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_agreements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_analytics: {
         Row: {
           country: string | null
