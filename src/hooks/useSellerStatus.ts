@@ -5,70 +5,88 @@ import { useAuth } from '@/hooks/useAuth';
 export interface Store {
   id: string;
   owner_id: string;
-  store_id: string;
+  store_id?: string;
   name: string;
   slug: string;
-  description: string | null;
-  logo_url: string | null;
-  banner_url: string | null;
-  bio: string | null;
-  theme: string | null;
-  accent_color: string | null;
-  stripe_account_id: string | null;
-  payouts_enabled: boolean;
+  description: string;
+  logo_url?: string;
+  banner_url?: string;
+  stripe_account_id?: string;
+  payouts_enabled?: boolean;
   commission_rate: number;
-  is_verified: boolean;
-  is_active: boolean;
-  status: 'pending' | 'approved' | 'suspended' | 'rejected';
+  is_verified?: boolean;
+  is_active?: boolean;
+  status: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  rejection_reason?: string;
   total_sales: number;
   total_revenue: number;
   product_count: number;
-  average_rating: number | null;
+  average_rating?: number;
   created_at: string;
-  discord_url: string | null;
-  twitter_url: string | null;
-  youtube_url: string | null;
-  tiktok_url: string | null;
-  website_url: string | null;
-  discord_webhook_url: string | null;
-  review_discord_webhook_url: string | null;
-  discord_bot_token: string | null;
-  discord_guild_id: string | null;
-  discord_role_id: string | null;
-  // Advanced customization fields
-  hero_title: string | null;
-  hero_subtitle: string | null;
-  hero_cta_text: string | null;
-  hero_cta_link: string | null;
-  custom_css: string | null;
-  font_heading: string | null;
-  font_body: string | null;
-  announcement_text: string | null;
-  announcement_active: boolean;
-  featured_product_ids: string[] | null;
-  layout_style: string | null;
-  show_reviews: boolean;
-  show_social_proof: boolean;
-  // Payout method fields
-  paypal_email: string | null;
-  payout_method: 'stripe' | 'paypal' | 'bank';
+  updated_at: string;
+  // Customization fields
+  theme?: string;
+  accent_color?: string;
+  bio?: string;
+  discord_url?: string;
+  twitter_url?: string;
+  youtube_url?: string;
+  tiktok_url?: string;
+  website_url?: string;
+  // Custom commission rate
+  custom_commission_rate?: number;
+  custom_rate_expires_at?: string;
+  custom_rate_set_by?: string;
+  custom_rate_set_at?: string;
+  // Discord integration
+  discord_webhook_url?: string;
+  review_discord_webhook_url?: string;
+  discord_bot_token?: string;
+  discord_guild_id?: string;
+  discord_role_id?: string;
+  // Storefront customization
+  hero_title?: string;
+  hero_subtitle?: string;
+  hero_cta_text?: string;
+  hero_cta_link?: string;
+  custom_css?: string;
+  font_heading?: string;
+  font_body?: string;
+  announcement_text?: string;
+  announcement_active?: boolean;
+  featured_product_ids?: string[];
+  layout_style?: string;
+  show_reviews?: boolean;
+  show_social_proof?: boolean;
+  // Payout settings
+  paypal_email?: string;
+  payout_method?: string;
+  // Bank transfer fields
+  bank_name?: string;
+  bank_account_holder?: string;
+  bank_account_number?: string;
+  bank_routing_number?: string;
+  bank_swift_bic?: string;
+  bank_country?: string;
+  // Followers
+  follower_count?: number;
+  about_content?: string;
+  is_trusted?: boolean;
 }
 
 export interface StoreApplication {
   id: string;
   user_id: string;
   store_name: string;
-  store_description: string | null;
-  product_category: string | null;
-  expected_products: string | null;
-  portfolio_url: string | null;
-  experience: string | null;
-  status: 'pending' | 'approved' | 'rejected';
-  rejection_reason: string | null;
+  status: string;
   created_at: string;
-  age_confirmed: boolean;
-  terms_accepted: boolean;
-  terms_accepted_at: string | null;
+  reviewed_at?: string;
+  reviewed_by?: string;
+  rejection_reason?: string;
+  accepted_terms?: boolean;
+  accepted_commission?: boolean;
 }
 
 export interface SellerBalance {

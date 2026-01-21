@@ -11,16 +11,81 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   CheckCircle,
   AlertCircle,
   ExternalLink,
   CreditCard,
   BarChart3,
-  Wallet
+  Wallet,
+  Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EarningsCalculator } from '@/components/seller/EarningsCalculator';
+
+const COUNTRIES = [
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'US', name: 'United States' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'BE', name: 'Belgium' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'AT', name: 'Austria' },
+  { code: 'CH', name: 'Switzerland' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'CZ', name: 'Czech Republic' },
+  { code: 'HU', name: 'Hungary' },
+  { code: 'RO', name: 'Romania' },
+  { code: 'BG', name: 'Bulgaria' },
+  { code: 'HR', name: 'Croatia' },
+  { code: 'SK', name: 'Slovakia' },
+  { code: 'SI', name: 'Slovenia' },
+  { code: 'LT', name: 'Lithuania' },
+  { code: 'LV', name: 'Latvia' },
+  { code: 'EE', name: 'Estonia' },
+  { code: 'GR', name: 'Greece' },
+  { code: 'CY', name: 'Cyprus' },
+  { code: 'MT', name: 'Malta' },
+  { code: 'LU', name: 'Luxembourg' },
+  { code: 'NZ', name: 'New Zealand' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'HK', name: 'Hong Kong' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'IN', name: 'India' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'CL', name: 'Chile' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'SA', name: 'Saudi Arabia' },
+  { code: 'IL', name: 'Israel' },
+  { code: 'TR', name: 'Turkey' },
+  { code: 'TH', name: 'Thailand' },
+  { code: 'MY', name: 'Malaysia' },
+  { code: 'PH', name: 'Philippines' },
+  { code: 'ID', name: 'Indonesia' },
+  { code: 'VN', name: 'Vietnam' },
+  { code: 'PK', name: 'Pakistan' },
+  { code: 'BD', name: 'Bangladesh' },
+  { code: 'NG', name: 'Nigeria' },
+  { code: 'KE', name: 'Kenya' },
+  { code: 'EG', name: 'Egypt' },
+  { code: 'OTHER', name: 'Other' },
+];
 
 export default function SellerSettingsPayments() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,16 +94,36 @@ export default function SellerSettingsPayments() {
   const { store, isSeller } = useSellerStatus();
 
   // Payout method state
-  const [payoutMethod, setPayoutMethod] = useState<'stripe' | 'paypal'>(store?.payout_method === 'paypal' ? 'paypal' : 'stripe');
+  const [payoutMethod, setPayoutMethod] = useState<'stripe' | 'paypal' | 'bank_transfer'>(
+    store?.payout_method === 'paypal' ? 'paypal' : 
+    store?.payout_method === 'bank_transfer' ? 'bank_transfer' : 'stripe'
+  );
   const [paypalEmail, setPaypalEmail] = useState(store?.paypal_email || '');
+  
+  // Bank transfer fields
+  const [bankName, setBankName] = useState(store?.bank_name || '');
+  const [bankAccountHolder, setBankAccountHolder] = useState(store?.bank_account_holder || '');
+  const [bankAccountNumber, setBankAccountNumber] = useState(store?.bank_account_number || '');
+  const [bankRoutingNumber, setBankRoutingNumber] = useState(store?.bank_routing_number || '');
+  const [bankSwiftBic, setBankSwiftBic] = useState(store?.bank_swift_bic || '');
+  const [bankCountry, setBankCountry] = useState(store?.bank_country || '');
 
   const stripeOnboardingComplete = searchParams.get('stripe_onboarding') === 'complete';
 
   // Sync state when store loads
   useEffect(() => {
     if (store) {
-      setPayoutMethod(store.payout_method === 'paypal' ? 'paypal' : 'stripe');
+      setPayoutMethod(
+        store.payout_method === 'paypal' ? 'paypal' : 
+        store.payout_method === 'bank_transfer' ? 'bank_transfer' : 'stripe'
+      );
       setPaypalEmail(store.paypal_email || '');
+      setBankName(store.bank_name || '');
+      setBankAccountHolder(store.bank_account_holder || '');
+      setBankAccountNumber(store.bank_account_number || '');
+      setBankRoutingNumber(store.bank_routing_number || '');
+      setBankSwiftBic(store.bank_swift_bic || '');
+      setBankCountry(store.bank_country || '');
     }
   }, [store]);
 
@@ -84,19 +169,49 @@ export default function SellerSettingsPayments() {
   });
 
   const updatePayoutMethod = useMutation({
-    mutationFn: async ({ method, email }: { method: 'stripe' | 'paypal'; email?: string }) => {
+    mutationFn: async ({ 
+      method, 
+      email,
+      bankDetails 
+    }: { 
+      method: 'stripe' | 'paypal' | 'bank_transfer'; 
+      email?: string;
+      bankDetails?: {
+        bank_name: string;
+        bank_account_holder: string;
+        bank_account_number: string;
+        bank_routing_number: string;
+        bank_swift_bic: string;
+        bank_country: string;
+      };
+    }) => {
       if (!store?.id) throw new Error('Store not found');
       
       if (method === 'paypal' && !email?.trim()) {
         throw new Error('PayPal email is required');
       }
 
+      if (method === 'bank_transfer') {
+        if (!bankDetails?.bank_name?.trim()) throw new Error('Bank name is required');
+        if (!bankDetails?.bank_account_holder?.trim()) throw new Error('Account holder name is required');
+        if (!bankDetails?.bank_account_number?.trim()) throw new Error('Account number is required');
+        if (!bankDetails?.bank_country?.trim()) throw new Error('Country is required');
+      }
+
+      const updateData: Record<string, unknown> = {
+        payout_method: method,
+        paypal_email: method === 'paypal' ? email?.trim() : null,
+        bank_name: method === 'bank_transfer' ? bankDetails?.bank_name?.trim() : null,
+        bank_account_holder: method === 'bank_transfer' ? bankDetails?.bank_account_holder?.trim() : null,
+        bank_account_number: method === 'bank_transfer' ? bankDetails?.bank_account_number?.trim() : null,
+        bank_routing_number: method === 'bank_transfer' ? bankDetails?.bank_routing_number?.trim() || null : null,
+        bank_swift_bic: method === 'bank_transfer' ? bankDetails?.bank_swift_bic?.trim() || null : null,
+        bank_country: method === 'bank_transfer' ? bankDetails?.bank_country : null,
+      };
+
       const { error } = await supabase
         .from('stores')
-        .update({
-          payout_method: method,
-          paypal_email: method === 'paypal' ? email?.trim() : null,
-        })
+        .update(updateData)
         .eq('id', store.id);
 
       if (error) throw error;
@@ -208,7 +323,7 @@ export default function SellerSettingsPayments() {
             <CardContent className="space-y-4">
               <RadioGroup
                 value={payoutMethod}
-                onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal')}
+                onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal' | 'bank_transfer')}
                 className="space-y-3"
               >
                 <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
@@ -226,6 +341,18 @@ export default function SellerSettingsPayments() {
                     <p className="font-medium">PayPal</p>
                     <p className="text-sm text-muted-foreground">
                       Manual payouts via PayPal. Good for regions where Stripe isn't available.
+                    </p>
+                  </label>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="bank_transfer" id="bank_transfer" className="mt-1" />
+                  <label htmlFor="bank_transfer" className="flex-1 cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">International Bank Transfer</p>
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Manual bank transfers for overseas accounts. Ideal for sellers outside Stripe-supported regions.
                     </p>
                   </label>
                 </div>
@@ -247,9 +374,106 @@ export default function SellerSettingsPayments() {
                 </div>
               )}
 
+              {payoutMethod === 'bank_transfer' && (
+                <div className="space-y-4 pt-2 border-t">
+                  <div className="pt-2">
+                    <p className="text-sm font-medium mb-1">Bank Account Details</p>
+                    <p className="text-xs text-muted-foreground">
+                      Enter your international bank details for manual payouts.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="bankCountry">Country *</Label>
+                      <Select value={bankCountry} onValueChange={setBankCountry}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="bankName">Bank Name *</Label>
+                      <Input
+                        id="bankName"
+                        placeholder="e.g. HSBC, Bank of America"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="bankAccountHolder">Account Holder Name *</Label>
+                      <Input
+                        id="bankAccountHolder"
+                        placeholder="Full name as shown on account"
+                        value={bankAccountHolder}
+                        onChange={(e) => setBankAccountHolder(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="bankAccountNumber">Account Number / IBAN *</Label>
+                      <Input
+                        id="bankAccountNumber"
+                        placeholder="Account number or IBAN"
+                        value={bankAccountNumber}
+                        onChange={(e) => setBankAccountNumber(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="bankRoutingNumber">Routing Number / Sort Code</Label>
+                      <Input
+                        id="bankRoutingNumber"
+                        placeholder="Routing number or sort code"
+                        value={bankRoutingNumber}
+                        onChange={(e) => setBankRoutingNumber(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="bankSwiftBic">SWIFT / BIC Code</Label>
+                      <Input
+                        id="bankSwiftBic"
+                        placeholder="e.g. HSBCGB2L"
+                        value={bankSwiftBic}
+                        onChange={(e) => setBankSwiftBic(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Required for international transfers. Usually 8-11 characters.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Button
-                onClick={() => updatePayoutMethod.mutate({ method: payoutMethod, email: paypalEmail })}
-                disabled={updatePayoutMethod.isPending || (payoutMethod === 'paypal' && !paypalEmail.trim())}
+                onClick={() => updatePayoutMethod.mutate({ 
+                  method: payoutMethod, 
+                  email: paypalEmail,
+                  bankDetails: payoutMethod === 'bank_transfer' ? {
+                    bank_name: bankName,
+                    bank_account_holder: bankAccountHolder,
+                    bank_account_number: bankAccountNumber,
+                    bank_routing_number: bankRoutingNumber,
+                    bank_swift_bic: bankSwiftBic,
+                    bank_country: bankCountry,
+                  } : undefined
+                })}
+                disabled={
+                  updatePayoutMethod.isPending || 
+                  (payoutMethod === 'paypal' && !paypalEmail.trim()) ||
+                  (payoutMethod === 'bank_transfer' && (!bankName.trim() || !bankAccountHolder.trim() || !bankAccountNumber.trim() || !bankCountry))
+                }
                 className="w-full"
               >
                 {updatePayoutMethod.isPending ? 'Saving...' : 'Save Payout Method'}
@@ -257,9 +481,12 @@ export default function SellerSettingsPayments() {
 
               {store?.payout_method && (
                 <p className="text-sm text-muted-foreground text-center">
-                  Current method: <span className="font-medium capitalize">{store.payout_method}</span>
+                  Current method: <span className="font-medium capitalize">{store.payout_method?.replace('_', ' ')}</span>
                   {store.payout_method === 'paypal' && store.paypal_email && (
                     <span> ({store.paypal_email})</span>
+                  )}
+                  {store.payout_method === 'bank_transfer' && store.bank_name && (
+                    <span> ({store.bank_name})</span>
                   )}
                 </p>
               )}
