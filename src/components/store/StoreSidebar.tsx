@@ -60,7 +60,7 @@ export function StoreSidebar({
   };
 
   return (
-    <div className="h-full flex flex-col bg-sidebar">
+    <div className="h-full flex flex-col bg-sidebar pt-[env(safe-area-inset-top)]">
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <h2 
