@@ -62,6 +62,7 @@ const navGroups: NavGroup[] = [
       { title: 'Seller Products', icon: Package, href: '/admin/seller-products', roles: ['admin'] },
       { title: 'Seller Commissions', icon: Percent, href: '/admin/seller-commissions', roles: ['admin'] },
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
+      { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
     ],
   },
   {
