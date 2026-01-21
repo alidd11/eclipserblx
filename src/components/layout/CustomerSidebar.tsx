@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NavItem {
@@ -70,6 +71,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { discordUrl } = useDiscordUrl();
   const { settings: affiliateSettings } = useAffiliateSettings();
   const { isSeller } = useSellerStatus();
+  const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
   const searchCommand = useSearchCommand();
   const navigate = useNavigate();
   const location = useLocation();
@@ -165,6 +167,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Categories', icon: Grid3X3, href: '/categories' },
         { title: 'Featured', icon: Star, href: '/products?featured=true' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+        ...(hasMarketplaceAccess ? [{ title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' }] : []),
       ],
     },
     // Only show affiliate section if program is enabled
