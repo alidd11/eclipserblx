@@ -98,8 +98,9 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, slug, price')
+          .select('id, name, slug, price, stores!inner (is_active)')
           .eq('is_active', true)
+          .eq('stores.is_active', true)
           .ilike('name', `%${searchQuery}%`)
           .limit(5);
 

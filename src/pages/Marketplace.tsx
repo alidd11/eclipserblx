@@ -177,8 +177,9 @@ export default function Marketplace() {
       const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, stores (name, slug)')
+        .select('id, name, slug, price, images, stores!inner (name, slug, is_active)')
         .eq('is_active', true)
+        .eq('stores.is_active', true)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .ilike('name', `%${debouncedQuery}%`)
         .limit(6);

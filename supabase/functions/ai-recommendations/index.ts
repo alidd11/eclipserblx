@@ -54,9 +54,10 @@ serve(async (req) => {
         // Recommend from followed stores
         const { data: followedProducts } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, categories(name), stores(name, slug, logo_url, is_verified, is_trusted)")
+          .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
           .in("store_id", followedStoreIds)
           .eq("is_active", true)
+          .eq("stores.is_active", true)
           .eq("moderation_status", "approved")
           .order("created_at", { ascending: false })
           .limit(limit);
@@ -80,10 +81,11 @@ serve(async (req) => {
         if (categoryIds.length > 0) {
           const { data: similarProducts } = await supabase
             .from("products")
-            .select("id, name, slug, price, images, categories(name), stores(name, slug, logo_url, is_verified, is_trusted)")
+            .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
             .in("category_id", categoryIds)
             .not("id", "in", `(${viewedIds.join(",")})`)
             .eq("is_active", true)
+            .eq("stores.is_active", true)
             .eq("moderation_status", "approved")
             .order("download_count", { ascending: false })
             .limit(limit - recommendations.length);
@@ -107,10 +109,11 @@ serve(async (req) => {
       if (product) {
         const { data: similar } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, categories(name), stores(name, slug, logo_url, is_verified, is_trusted)")
+          .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
           .eq("category_id", product.category_id)
           .neq("id", productId)
           .eq("is_active", true)
+          .eq("stores.is_active", true)
           .eq("moderation_status", "approved")
           .order("download_count", { ascending: false })
           .limit(limit - recommendations.length);
@@ -128,8 +131,9 @@ serve(async (req) => {
       
       const { data: popular } = await supabase
         .from("products")
-        .select("id, name, slug, price, images, categories(name), stores(name, slug, logo_url, is_verified, is_trusted)")
+        .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
         .eq("is_active", true)
+        .eq("stores.is_active", true)
         .eq("moderation_status", "approved")
         .order("download_count", { ascending: false })
         .limit(limit - recommendations.length);

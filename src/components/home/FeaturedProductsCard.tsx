@@ -21,9 +21,10 @@ export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function Fea
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name)`)
+        .select(`*, categories (name), stores!inner (is_active)`)
         .eq('is_featured', true)
         .eq('is_active', true)
+        .eq('stores.is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .limit(6);
       

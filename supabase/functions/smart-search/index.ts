@@ -155,8 +155,9 @@ Examples:
     // Build the database query
     let dbQuery = supabase
       .from("products")
-      .select("id, name, slug, price, images, description, created_at, download_count, categories(name)")
+      .select("id, name, slug, price, images, description, created_at, download_count, categories(name), stores!inner(is_active)")
       .eq("is_active", true)
+      .eq("stores.is_active", true)
       .eq("moderation_status", "approved");
 
     // Apply keyword search
