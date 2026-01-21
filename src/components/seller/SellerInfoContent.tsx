@@ -10,7 +10,11 @@ import {
   Sparkles,
   Lock,
   FileCheck,
-  TrendingUp
+  TrendingUp,
+  Bell,
+  Calendar,
+  MessageSquare,
+  Wallet
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,9 +33,9 @@ const benefits = [
     description: "Base sellers keep 85%, Eclipse+ members keep 90%. Commission calculated AFTER Stripe fees for maximum transparency.",
   },
   {
-    icon: CreditCard,
-    title: "Direct Bank Payouts",
-    description: "Get paid directly to your bank account via Stripe Connect. No platform credits, no Robux conversion, no waiting.",
+    icon: Wallet,
+    title: "Flexible Payout Options",
+    description: "Choose how you get paid: Stripe Connect (direct to bank), PayPal, or manual bank transfer. Your earnings, your choice.",
   },
   {
     icon: Palette,
@@ -39,14 +43,37 @@ const benefits = [
     description: "5 unique themes, 7 accent colors, custom logo and banner. Make your store stand out from the competition.",
   },
   {
-    icon: Users,
-    title: "Built-in Customer Base",
-    description: "Access our growing community of Roblox roleplay enthusiasts actively looking for quality scripts and assets.",
+    icon: Bell,
+    title: "Real-Time Notifications",
+    description: "Discord webhooks for sales, new reviews, and scheduled releases. Stay informed on your phone or desktop.",
   },
   {
     icon: Bot,
     title: "AI-Powered Security",
     description: "Advanced Lua script analysis for backdoor detection plus virus scanning. Protect your reputation automatically.",
+  },
+];
+
+const additionalFeatures = [
+  {
+    icon: Calendar,
+    title: "Scheduled Releases",
+    description: "Set future release dates for your products. Build hype and launch when you're ready.",
+  },
+  {
+    icon: Users,
+    title: "Team Management",
+    description: "Invite team members with different roles (Admin, Editor, Viewer) to help manage your store.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Discord Integration",
+    description: "Connect your Discord webhook to get instant notifications for orders, reviews, and product launches.",
+  },
+  {
+    icon: CreditCard,
+    title: "Direct Bank Payouts",
+    description: "Get paid directly to your bank account via Stripe Connect. No platform credits, no waiting.",
   },
 ];
 
@@ -63,8 +90,8 @@ const steps = [
   },
   {
     number: "3",
-    title: "Connect Stripe",
-    description: "Link your bank account via Stripe for secure, direct payouts.",
+    title: "Connect Payouts",
+    description: "Link Stripe Connect, PayPal, or provide bank details for payouts.",
   },
   {
     number: "4",
@@ -81,6 +108,27 @@ const ownershipPoints = [
   "No derivative works claims by the platform",
 ];
 
+const payoutOptions = [
+  {
+    method: "Stripe Connect",
+    description: "Direct to your bank account",
+    timing: "Automatic payouts",
+    recommended: true,
+  },
+  {
+    method: "PayPal",
+    description: "Manual payout to your PayPal email",
+    timing: "Request anytime",
+    recommended: false,
+  },
+  {
+    method: "Bank Transfer",
+    description: "Manual transfer to your bank details",
+    timing: "Request anytime",
+    recommended: false,
+  },
+];
+
 export function SellerInfoContent() {
   return (
     <div className="space-y-12 print:space-y-8">
@@ -94,7 +142,7 @@ export function SellerInfoContent() {
             Sell Your Digital Products on Eclipse
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            The transparent marketplace where you keep what you create. Fair fees, full ownership, direct payouts.
+            The transparent marketplace where you keep what you create. Fair fees, full ownership, flexible payouts.
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -107,8 +155,8 @@ export function SellerInfoContent() {
             100% Asset Ownership
           </Badge>
           <Badge variant="outline" className="text-lg px-4 py-2 border-primary/50">
-            <CreditCard className="h-4 w-4 mr-2" />
-            Direct Bank Payouts
+            <Wallet className="h-4 w-4 mr-2" />
+            3 Payout Options
           </Badge>
         </div>
       </section>
@@ -188,7 +236,7 @@ export function SellerInfoContent() {
             <div className="bg-muted/30 rounded-lg p-6 space-y-4">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Example: £10.00 Sale
+                Example: £10.00 Sale (UK Stripe Rates)
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-border/50">
@@ -196,22 +244,25 @@ export function SellerInfoContent() {
                   <span className="font-semibold">£10.00</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-border/50">
-                  <span className="text-muted-foreground">Stripe Fee (~2.9% + 20p)</span>
-                  <span className="text-destructive">-£0.49</span>
+                  <span className="text-muted-foreground">Stripe Fee (1.5% + £0.20)</span>
+                  <span className="text-destructive">-£0.35</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-border/50">
                   <span className="text-muted-foreground">Net After Stripe</span>
-                  <span className="font-semibold">£9.51</span>
+                  <span className="font-semibold">£9.65</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-border/50">
                   <span className="text-muted-foreground">Platform Commission (15%)</span>
-                  <span className="text-destructive">-£1.43</span>
+                  <span className="text-destructive">-£1.45</span>
                 </div>
                 <div className="flex justify-between items-center py-2 bg-primary/10 rounded-lg px-3">
                   <span className="font-semibold text-primary">Your Earnings</span>
-                  <span className="font-bold text-xl text-primary">£8.08</span>
+                  <span className="font-bold text-xl text-primary">£8.20</span>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                * UK domestic Stripe rates shown. International rates may vary slightly.
+              </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -243,8 +294,49 @@ export function SellerInfoContent() {
         </Card>
       </section>
 
-      {/* Store Customization Section */}
+      {/* Payout Options Section */}
       <section className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-foreground">Flexible Payout Options</h2>
+          <p className="text-muted-foreground mt-2">Choose how you want to receive your earnings</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {payoutOptions.map((option, index) => (
+            <Card key={index} className={`border-border/50 ${option.recommended ? 'border-primary/50 bg-primary/5' : ''}`}>
+              <CardContent className="pt-6 text-center">
+                {option.recommended && (
+                  <Badge className="mb-3 bg-primary">Recommended</Badge>
+                )}
+                <h3 className="font-semibold text-lg mb-2">{option.method}</h3>
+                <p className="text-sm text-muted-foreground mb-2">{option.description}</p>
+                <p className="text-xs text-muted-foreground">{option.timing}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Additional Features Section */}
+      <section className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-foreground">Powerful Seller Tools</h2>
+          <p className="text-muted-foreground mt-2">Everything you need to manage and grow your store</p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {additionalFeatures.map((feature, index) => (
+            <Card key={index} className="border-border/50">
+              <CardContent className="pt-6 text-center">
+                <feature.icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                <h3 className="font-semibold mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Store Customization Section */}
+      <section className="space-y-6 print:break-before-page">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-foreground">Make Your Store Unique</h2>
           <p className="text-muted-foreground mt-2">Stand out with full customization options</p>
@@ -254,7 +346,7 @@ export function SellerInfoContent() {
             { label: "5 Themes", desc: "Default, Minimal, Bold, Gradient, Dark" },
             { label: "7 Accent Colors", desc: "Match your brand identity" },
             { label: "Custom Branding", desc: "Logo and banner uploads" },
-            { label: "Rich Profiles", desc: "Bio, description, links" },
+            { label: "Trusted Seller Badge", desc: "Earn verified status" },
           ].map((item, index) => (
             <Card key={index} className="border-border/50 text-center">
               <CardContent className="pt-6">
