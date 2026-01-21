@@ -184,29 +184,7 @@ export function StoreSidebar({
             </>
           )}
 
-          {/* Stats Card */}
-          <Separator className="my-3" />
-          <div className="p-3 rounded-lg bg-sidebar-accent/50">
-            <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider mb-2">
-              Store Stats
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <p className="font-semibold" style={{ color: accentColor }}>{productCount}</p>
-                <p className="text-xs text-sidebar-foreground/60">Products</p>
-              </div>
-              <div>
-                <p className="font-semibold" style={{ color: accentColor }}>{totalSales}</p>
-                <p className="text-xs text-sidebar-foreground/60">Sales</p>
-              </div>
-              {averageRating && (
-                <div className="col-span-2">
-                  <p className="font-semibold text-yellow-500">{averageRating.toFixed(1)} ★</p>
-                  <p className="text-xs text-sidebar-foreground/60">Average Rating</p>
-                </div>
-              )}
-            </div>
-          </div>
+
 
           {/* Legal Section */}
           <Separator className="my-3" />
