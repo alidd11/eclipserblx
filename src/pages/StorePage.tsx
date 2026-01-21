@@ -212,7 +212,8 @@ export default function StorePage() {
   return (
     <StoreLayout 
       store={{
-        id: store.slug || storeSlug || '',
+        id: store.id,
+        slug: store.slug || storeSlug || '',
         name: store.name,
         logo_url: store.logo_url,
         accent_color: accentColor,

@@ -44,6 +44,7 @@ interface StoreLayoutProps {
   children: ReactNode;
   store: {
     id: string;
+    slug?: string;
     name: string;
     logo_url?: string | null;
     accent_color?: string;
@@ -187,7 +188,7 @@ export function StoreLayout({
       {!isMobile && sidebarVisible && (
         <aside className="w-64 border-r border-border flex-shrink-0 sticky top-0 h-[100dvh]">
           <StoreSidebar
-            storeSlug={store.id}
+            storeSlug={store.slug || store.id}
             storeName={store.name}
             accentColor={accentColor}
             tabs={tabs}
@@ -210,7 +211,7 @@ export function StoreLayout({
             data-gesture-exempt="true"
           >
             <StoreSidebar
-              storeSlug={store.id}
+              storeSlug={store.slug || store.id}
               storeName={store.name}
               accentColor={accentColor}
               tabs={tabs}
