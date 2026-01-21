@@ -77,6 +77,10 @@ export const RecommendedProducts = ({
             image={product.images?.[0] || '/placeholder.svg'}
             slug={product.slug}
             category={product.categories?.name}
+            storeName={product.stores?.name}
+            storeSlug={product.stores?.slug}
+            isVerified={product.stores?.is_verified}
+            isTrusted={product.stores?.is_trusted}
           />
         ))}
       </div>
