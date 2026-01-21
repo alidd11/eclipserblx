@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store
+  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NavItem {
   title: string;
@@ -75,6 +76,71 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [userProfile, setUserProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+
+  // Fetch user profile
+  useEffect(() => {
+    if (!user) {
+      setUserProfile(null);
+      return;
+    }
+
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name, avatar_url')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data) {
+        setUserProfile(data);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    if (!user) {
+      setUnreadNotifications(0);
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+      
+      setUnreadNotifications(count || 0);
+    };
+
+    fetchUnreadCount();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('sidebar-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;
@@ -499,58 +565,120 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
       {/* Footer */}
       <div className="p-2 border-t border-border space-y-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {/* Cart */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/cart"
-              onClick={handleNavClick}
-              className={cn(
-                "flex items-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
-                isCollapsed ? "justify-center py-2.5" : "gap-3 px-3 py-2"
-              )}
-            >
-              <div className="relative shrink-0">
-                <ShoppingCart className="h-4 w-4" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-                    {itemCount}
-                  </span>
+        {/* Quick Actions Row */}
+        <div className={cn(
+          "flex items-center gap-1 mb-1",
+          isCollapsed ? "flex-col" : "flex-row"
+        )}>
+          {/* Cart */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to="/cart"
+                onClick={handleNavClick}
+                className={cn(
+                  "flex items-center justify-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
+                  isCollapsed ? "py-2.5 w-full" : "h-9 w-9"
                 )}
-              </div>
-              {!isCollapsed && <span>Cart</span>}
-            </Link>
-          </TooltipTrigger>
-          {isCollapsed && <TooltipContent side="right">Cart {itemCount > 0 && `(${itemCount})`}</TooltipContent>}
-        </Tooltip>
+              >
+                <div className="relative shrink-0">
+                  <ShoppingCart className="h-4 w-4" />
+                  {itemCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center animate-in zoom-in-50 duration-200">
+                      {itemCount > 9 ? '9+' : itemCount}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side={isCollapsed ? "right" : "top"}>
+              Cart {itemCount > 0 && `(${itemCount})`}
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Account or Sign In */}
+          {/* Notifications - only show when logged in */}
+          {user && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/notifications"
+                  onClick={handleNavClick}
+                  className={cn(
+                    "flex items-center justify-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
+                    isCollapsed ? "py-2.5 w-full" : "h-9 w-9"
+                  )}
+                >
+                  <div className="relative shrink-0">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center animate-in zoom-in-50 duration-200">
+                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side={isCollapsed ? "right" : "top"}>
+                Notifications {unreadNotifications > 0 && `(${unreadNotifications} unread)`}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+
+        {/* User Profile Section */}
         {user ? (
           <>
+            {/* User Card */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   to="/account"
                   onClick={handleNavClick}
                   className={cn(
-                    "flex items-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
+                    "flex items-center rounded-lg text-sm font-medium hover:bg-muted transition-all duration-100 active:scale-[0.97] group",
                     isCollapsed ? "justify-center py-2.5" : "gap-3 px-3 py-2"
                   )}
                 >
-                  <User className="h-4 w-4 shrink-0" />
-                  {!isCollapsed && <span>My Account</span>}
+                  <div className="relative shrink-0">
+                    <Avatar className="h-7 w-7 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                      <AvatarImage src={userProfile?.avatar_url || undefined} />
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-medium">
+                        {userProfile?.display_name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Online indicator */}
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-card" />
+                  </div>
+                  {!isCollapsed && (
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-foreground">
+                        {userProfile?.display_name || user.email?.split('@')[0]}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        View profile
+                      </p>
+                    </div>
+                  )}
                 </Link>
               </TooltipTrigger>
-              {isCollapsed && <TooltipContent side="right">My Account</TooltipContent>}
+              {isCollapsed && (
+                <TooltipContent side="right">
+                  <div>
+                    <p className="font-medium">{userProfile?.display_name || user.email?.split('@')[0]}</p>
+                    <p className="text-xs text-muted-foreground">View profile</p>
+                  </div>
+                </TooltipContent>
+              )}
             </Tooltip>
 
+            {/* Sign Out */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "w-full text-muted-foreground hover:text-destructive hover:bg-muted",
+                    "w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10",
                     isCollapsed ? "justify-center px-2" : "justify-start"
                   )}
                   onClick={() => {
@@ -566,6 +694,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             </Tooltip>
           </>
         ) : (
+          /* Sign In CTA for guests */
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
@@ -575,11 +704,16 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   "flex items-center rounded-lg text-sm font-medium transition-all duration-100 active:scale-[0.97]",
                   isCollapsed 
                     ? "justify-center py-2.5 gradient-button text-primary-foreground" 
-                    : "gap-3 px-3 py-2 gradient-button text-primary-foreground"
+                    : "gap-3 px-3 py-2.5 gradient-button text-primary-foreground"
                 )}
               >
                 <User className="h-4 w-4 shrink-0" />
-                {!isCollapsed && <span>Sign In</span>}
+                {!isCollapsed && (
+                  <div className="flex-1">
+                    <span className="font-medium">Sign In</span>
+                    <p className="text-[10px] opacity-80">Access your account</p>
+                  </div>
+                )}
               </Link>
             </TooltipTrigger>
             {isCollapsed && <TooltipContent side="right">Sign In</TooltipContent>}
