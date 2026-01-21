@@ -158,6 +158,7 @@ export default function Marketplace() {
         .from('stores')
         .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count')
         .eq('status', 'approved')
+        .eq('is_active', true)
         .order('is_trusted', { ascending: false })
         .order('is_verified', { ascending: false })
         .order('follower_count', { ascending: false });
