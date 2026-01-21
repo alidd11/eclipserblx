@@ -14,14 +14,81 @@ interface ScheduledProduct {
   price: number;
   store_id: string;
   release_at: string;
+  images: string[] | null;
   stores: {
     id: string;
     name: string;
     slug: string;
+    discord_webhook_url: string | null;
   } | null;
   categories: {
     name: string;
   } | null;
+}
+
+async function sendDiscordWebhook(
+  webhookUrl: string,
+  product: ScheduledProduct,
+  supabaseUrl: string
+): Promise<boolean> {
+  try {
+    const storeName = product.stores?.name || 'Store';
+    const categoryName = product.categories?.name || 'Products';
+    const formattedPrice = `£${product.price.toFixed(2)}`;
+    const productUrl = `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/products/${product.slug}`;
+    
+    // Get the first image if available
+    const thumbnailUrl = product.images?.[0] || null;
+
+    const embed = {
+      title: '🎉 Scheduled Product Now Live!',
+      description: `**${product.name}** is now available for purchase!`,
+      color: 0x9333EA, // Purple color
+      fields: [
+        {
+          name: '💰 Price',
+          value: formattedPrice,
+          inline: true,
+        },
+        {
+          name: '📂 Category',
+          value: categoryName,
+          inline: true,
+        },
+        {
+          name: '🔗 View Product',
+          value: `[Click here](${productUrl})`,
+          inline: false,
+        },
+      ],
+      thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
+      footer: {
+        text: `${storeName} • Scheduled Release`,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: storeName,
+        embeds: [embed],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[notify-scheduled-release] Discord webhook failed: ${response.status} - ${errorText}`);
+      return false;
+    }
+
+    console.log(`[notify-scheduled-release] Discord webhook sent successfully for ${product.name}`);
+    return true;
+  } catch (error) {
+    console.error('[notify-scheduled-release] Discord webhook error:', error);
+    return false;
+  }
 }
 
 serve(async (req) => {
@@ -83,10 +150,12 @@ serve(async (req) => {
         price,
         store_id,
         release_at,
+        images,
         stores (
           id,
           name,
-          slug
+          slug,
+          discord_webhook_url
         ),
         categories (
           name
@@ -209,6 +278,15 @@ serve(async (req) => {
 
         const pushResult = await pushResponse.json();
         console.log(`[notify-scheduled-release] Push result for ${product.name}:`, pushResult);
+      }
+
+      // Send Discord webhook notification to seller's channel if configured
+      const sellerWebhookUrl = product.stores?.discord_webhook_url;
+      if (sellerWebhookUrl) {
+        console.log(`[notify-scheduled-release] Sending Discord webhook for ${product.name}`);
+        await sendDiscordWebhook(sellerWebhookUrl, product, supabaseUrl);
+      } else {
+        console.log(`[notify-scheduled-release] No Discord webhook configured for store: ${product.stores?.name}`);
       }
 
       totalNotified += followerUserIds.length;
