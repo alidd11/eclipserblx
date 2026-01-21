@@ -8,12 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { Percent, Calendar, Store, Edit2, RotateCcw, AlertCircle, Shield } from 'lucide-react';
+import { Percent, Calendar, Store, Edit2, RotateCcw, AlertCircle, Shield, Power, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface StoreWithCommission {
   id: string;
@@ -29,6 +32,8 @@ interface StoreWithCommission {
   is_trusted: boolean;
 }
 
+type StoreFilter = 'all' | 'active' | 'inactive';
+
 export default function SellerCommissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -36,17 +41,25 @@ export default function SellerCommissions() {
   const [customRate, setCustomRate] = useState('');
   const [expirationDate, setExpirationDate] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [storeFilter, setStoreFilter] = useState<StoreFilter>('all');
+  const [storeToDelete, setStoreToDelete] = useState<StoreWithCommission | null>(null);
 
-  // Fetch all active stores
+  // Fetch all stores (not just active)
   const { data: stores, isLoading } = useQuery({
-    queryKey: ['seller-commissions'],
+    queryKey: ['seller-commissions', storeFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('stores')
         .select('id, name, slug, owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, custom_rate_set_at, is_active, status, is_trusted')
-        .eq('is_active', true)
         .order('name');
       
+      if (storeFilter === 'active') {
+        query = query.eq('is_active', true);
+      } else if (storeFilter === 'inactive') {
+        query = query.eq('is_active', false);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data as StoreWithCommission[];
     },
@@ -114,6 +127,49 @@ export default function SellerCommissions() {
     },
   });
 
+  // Toggle store active status mutation
+  const toggleActiveMutation = useMutation({
+    mutationFn: async ({ storeId, isActive }: { storeId: string; isActive: boolean }) => {
+      const { error } = await supabase
+        .from('stores')
+        .update({ is_active: isActive })
+        .eq('id', storeId);
+      
+      if (error) throw error;
+    },
+    onSuccess: (_, { isActive }) => {
+      queryClient.invalidateQueries({ queryKey: ['seller-commissions'] });
+      toast.success(isActive ? 'Store activated' : 'Store deactivated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update store status: ' + error.message);
+    },
+  });
+
+  // Delete store mutation
+  const deleteStoreMutation = useMutation({
+    mutationFn: async (storeId: string) => {
+      // First delete related records
+      await supabase.from('store_follows').delete().eq('store_id', storeId);
+      await supabase.from('store_team_members').delete().eq('store_id', storeId);
+      
+      // Deactivate products instead of deleting (preserve order history)
+      await supabase.from('products').update({ is_active: false }).eq('store_id', storeId);
+      
+      // Finally delete the store
+      const { error } = await supabase.from('stores').delete().eq('id', storeId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seller-commissions'] });
+      toast.success('Store deleted successfully');
+      setStoreToDelete(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to delete store: ' + error.message);
+    },
+  });
+
   const resetForm = () => {
     setSelectedStore(null);
     setCustomRate('');
@@ -169,13 +225,16 @@ export default function SellerCommissions() {
     return true;
   };
 
+  const activeCount = stores?.filter(s => s.is_active).length ?? 0;
+  const inactiveCount = stores?.filter(s => !s.is_active).length ?? 0;
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Seller Commissions</h1>
           <p className="text-muted-foreground">
-            Manage custom commission rates for individual sellers
+            Manage custom commission rates and store status for individual sellers
           </p>
         </div>
 
@@ -207,13 +266,37 @@ export default function SellerCommissions() {
         {/* Stores Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5" />
-              Active Seller Stores
-            </CardTitle>
-            <CardDescription>
-              Set custom commission rates with optional expiration dates
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  Seller Stores
+                </CardTitle>
+                <CardDescription>
+                  Set custom commission rates, manage store status, or delete stores
+                </CardDescription>
+              </div>
+              <Select value={storeFilter} onValueChange={(v) => setStoreFilter(v as StoreFilter)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter stores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stores ({(stores?.length ?? 0)})</SelectItem>
+                  <SelectItem value="active">
+                    <span className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-green-500" />
+                      Active ({activeCount})
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="inactive">
+                    <span className="flex items-center gap-2">
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      Inactive ({inactiveCount})
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -223,6 +306,7 @@ export default function SellerCommissions() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Store Name</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Trusted Seller</TableHead>
                     <TableHead>Default Rate</TableHead>
                     <TableHead>Custom Rate</TableHead>
@@ -233,7 +317,7 @@ export default function SellerCommissions() {
                 </TableHeader>
                 <TableBody>
                   {stores.map((store) => (
-                    <TableRow key={store.id}>
+                    <TableRow key={store.id} className={!store.is_active ? 'opacity-60' : ''}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {store.name}
@@ -246,10 +330,22 @@ export default function SellerCommissions() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={store.is_active}
+                            onCheckedChange={(checked) => toggleActiveMutation.mutate({ storeId: store.id, isActive: checked })}
+                            disabled={toggleActiveMutation.isPending}
+                          />
+                          <Badge variant={store.is_active ? 'default' : 'secondary'}>
+                            {store.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <Switch
                           checked={store.is_trusted}
                           onCheckedChange={(checked) => toggleTrustedMutation.mutate({ storeId: store.id, isTrusted: checked })}
-                          disabled={toggleTrustedMutation.isPending}
+                          disabled={toggleTrustedMutation.isPending || !store.is_active}
                         />
                       </TableCell>
                       <TableCell>{store.commission_rate ?? defaultRate}%</TableCell>
@@ -281,25 +377,40 @@ export default function SellerCommissions() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditClick(store)}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          {isCustomRateActive(store) && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRevertRate(store)}
-                              className="text-muted-foreground hover:text-foreground"
-                            >
-                              <RotateCcw className="h-4 w-4" />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              Actions
                             </Button>
-                          )}
-                        </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditClick(store)}>
+                              <Edit2 className="h-4 w-4 mr-2" />
+                              Edit Commission
+                            </DropdownMenuItem>
+                            {isCustomRateActive(store) && (
+                              <DropdownMenuItem onClick={() => handleRevertRate(store)}>
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Reset to Default
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => toggleActiveMutation.mutate({ storeId: store.id, isActive: !store.is_active })}
+                            >
+                              <Power className="h-4 w-4 mr-2" />
+                              {store.is_active ? 'Deactivate Store' : 'Activate Store'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setStoreToDelete(store)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Store
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -307,7 +418,7 @@ export default function SellerCommissions() {
               </Table>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No active seller stores found
+                No seller stores found
               </div>
             )}
           </CardContent>
@@ -378,6 +489,29 @@ export default function SellerCommissions() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!storeToDelete} onOpenChange={() => setStoreToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Store</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <p>Are you sure you want to delete <strong>{storeToDelete?.name}</strong>?</p>
+                <p className="text-destructive">This action cannot be undone. The store will be permanently removed, and all its products will be deactivated.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => storeToDelete && deleteStoreMutation.mutate(storeToDelete.id)}
+                disabled={deleteStoreMutation.isPending}
+              >
+                {deleteStoreMutation.isPending ? 'Deleting...' : 'Delete Store'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
