@@ -87,13 +87,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Home,
       items: [
         { title: 'Home', icon: Home, href: '/' },
-      ],
-    },
-    {
-      id: 'account',
-      title: 'My Account',
-      icon: User,
-      items: [
         { title: 'My Account', icon: User, href: '/account' },
       ],
     },
