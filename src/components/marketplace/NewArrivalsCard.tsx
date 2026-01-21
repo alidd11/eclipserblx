@@ -34,9 +34,10 @@ export function NewArrivalsCard() {
           price,
           images,
           created_at,
-          stores (name, slug)
+          stores!inner (name, slug, is_active)
         `)
         .eq('is_active', true)
+        .eq('stores.is_active', true)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('created_at', { ascending: false })
         .limit(5);

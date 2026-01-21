@@ -22,10 +22,12 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         .from('products')
         .select(`
           *,
-          categories (name, slug)
+          categories (name, slug),
+          stores!inner (is_active)
         `)
         .eq('is_featured', true)
         .eq('is_active', true)
+        .eq('stores.is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .limit(8);
       

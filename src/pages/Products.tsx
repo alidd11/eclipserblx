@@ -54,8 +54,9 @@ export default function Products() {
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug)`)
-        .eq('is_active', true);
+        .select(`*, categories(name, slug), stores!inner(is_active)`)
+        .eq('is_active', true)
+        .eq('stores.is_active', true);
 
       // Filter out products that are scheduled for the future
       query = query.or('release_at.is.null,release_at.lte.' + new Date().toISOString());
