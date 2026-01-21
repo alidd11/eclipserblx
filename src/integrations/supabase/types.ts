@@ -3015,6 +3015,7 @@ export type Database = {
           review_discord_webhook_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          roblox_url: string | null
           show_reviews: boolean | null
           show_social_proof: boolean | null
           slug: string
@@ -3081,6 +3082,7 @@ export type Database = {
           review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          roblox_url?: string | null
           show_reviews?: boolean | null
           show_social_proof?: boolean | null
           slug: string
@@ -3147,6 +3149,7 @@ export type Database = {
           review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          roblox_url?: string | null
           show_reviews?: boolean | null
           show_social_proof?: boolean | null
           slug?: string

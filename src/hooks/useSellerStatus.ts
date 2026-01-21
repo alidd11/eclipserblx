@@ -35,6 +35,7 @@ export interface Store {
   youtube_url?: string;
   tiktok_url?: string;
   website_url?: string;
+  roblox_url?: string;
   // Custom commission rate
   custom_commission_rate?: number;
   custom_rate_expires_at?: string;

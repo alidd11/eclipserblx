@@ -33,6 +33,15 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+// Roblox icon component
+function RobloxIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M5.164 0L0 18.627 18.836 24 24 5.373 5.164 0zm10.291 14.273l-5.728-1.545 1.545-5.728 5.728 1.545-1.545 5.728z"/>
+    </svg>
+  );
+}
+
 interface StoreTab {
   id: string;
   name: string;
@@ -53,6 +62,7 @@ interface StoreLayoutProps {
     youtube_url?: string | null;
     tiktok_url?: string | null;
     website_url?: string | null;
+    roblox_url?: string | null;
   };
   tabs?: StoreTab[];
   activeTab?: string | null;
@@ -175,6 +185,7 @@ export function StoreLayout({
     { url: store.twitter_url, icon: Twitter, label: 'Twitter' },
     { url: store.youtube_url, icon: Youtube, label: 'YouTube' },
     { url: store.tiktok_url, icon: TikTokIcon, label: 'TikTok' },
+    { url: store.roblox_url, icon: RobloxIcon, label: 'Roblox' },
     { url: store.website_url, icon: ExternalLink, label: 'Website' },
   ].filter(link => link.url);
 
