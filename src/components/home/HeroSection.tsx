@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { MarketplaceHeroButton } from '@/components/marketplace/MarketplaceHeroButton';
 
 export function HeroSection() {
   return (
@@ -166,6 +167,7 @@ export function HeroSection() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+                <MarketplaceHeroButton />
               </motion.div>
             </div>
           </div>

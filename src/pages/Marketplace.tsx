@@ -10,6 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
+import { TopSellersCard } from '@/components/marketplace/TopSellersCard';
+import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
+import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
 
 interface StoreData {
   id: string;
@@ -195,6 +198,13 @@ export default function Marketplace() {
             scripts, and resources for your projects.
           </p>
         </div>
+
+        {/* Top Sellers, New Arrivals & Categories Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <TopSellersCard />
+          <NewArrivalsCard />
+          <CategoriesGridCard />
+        </section>
 
         {/* First batch of stores (3 rows) */}
         <section>
