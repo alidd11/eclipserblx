@@ -8,7 +8,8 @@ import {
   ChevronRight,
   FileText,
   Shield,
-  RefreshCw
+  RefreshCw,
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -77,16 +78,41 @@ export function StoreSidebar({
 
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-1">
+          {/* Home & About */}
+          <div className="mb-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              asChild
+            >
+              <Link to="/" onClick={onNavigate}>
+                <Home className="h-4 w-4" style={{ color: accentColor }} />
+                <span>Home</span>
+              </Link>
+            </Button>
+
+            {bio && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+                onClick={() => scrollToSection('store-about')}
+              >
+                <Info className="h-4 w-4" style={{ color: accentColor }} />
+                <span>About</span>
+              </Button>
+            )}
+          </div>
+
+          <Separator className="my-3" />
+
           {/* Quick Navigation */}
-          <div className="mb-4">
+          <div className="mb-2">
             <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
               Quick Links
             </p>
             <Button
               variant="ghost"
-              className={cn(
-                "w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-              )}
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
               onClick={() => scrollToSection('store-products')}
             >
               <Package className="h-4 w-4" style={{ color: accentColor }} />
@@ -118,17 +144,6 @@ export function StoreSidebar({
               <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
               <span>Recommended</span>
             </Button>
-
-            {bio && (
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-                onClick={() => scrollToSection('store-about')}
-              >
-                <Info className="h-4 w-4" style={{ color: accentColor }} />
-                <span>About</span>
-              </Button>
-            )}
           </div>
 
           {/* Categories / Tabs */}
@@ -198,7 +213,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/terms" onClick={onNavigate}>
-                <FileText className="h-4 w-4 text-sidebar-foreground/60" />
+                <FileText className="h-4 w-4" style={{ color: accentColor }} />
                 <span>Terms of Service</span>
               </Link>
             </Button>
@@ -208,7 +223,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/privacy" onClick={onNavigate}>
-                <Shield className="h-4 w-4 text-sidebar-foreground/60" />
+                <Shield className="h-4 w-4" style={{ color: accentColor }} />
                 <span>Privacy Policy</span>
               </Link>
             </Button>
@@ -218,7 +233,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/refund" onClick={onNavigate}>
-                <RefreshCw className="h-4 w-4 text-sidebar-foreground/60" />
+                <RefreshCw className="h-4 w-4" style={{ color: accentColor }} />
                 <span>Refund Policy</span>
               </Link>
             </Button>
