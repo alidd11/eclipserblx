@@ -312,10 +312,11 @@ export default function StorePage() {
 
               {/* Store Info */}
               <div className="flex-1">
+                <h1 className={`text-2xl md:text-3xl font-bold text-center mb-2 ${isDarkTheme ? 'text-white' : ''}`}>
+                  {store.name}
+                </h1>
+                
                 <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
-                  <h1 className={`text-2xl md:text-3xl font-bold ${isDarkTheme ? 'text-white' : ''}`}>
-                    {store.name}
-                  </h1>
                   {store.is_verified && (
                     <Badge 
                       className="gap-1"
