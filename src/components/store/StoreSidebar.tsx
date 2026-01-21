@@ -5,7 +5,10 @@ import {
   Info, 
   Package,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  Shield,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -203,6 +206,44 @@ export function StoreSidebar({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Legal Section */}
+          <Separator className="my-3" />
+          <div>
+            <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
+              Legal
+            </p>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              asChild
+            >
+              <Link to="/terms" onClick={onNavigate}>
+                <FileText className="h-4 w-4 text-sidebar-foreground/60" />
+                <span>Terms of Service</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              asChild
+            >
+              <Link to="/privacy" onClick={onNavigate}>
+                <Shield className="h-4 w-4 text-sidebar-foreground/60" />
+                <span>Privacy Policy</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              asChild
+            >
+              <Link to="/refund" onClick={onNavigate}>
+                <RefreshCw className="h-4 w-4 text-sidebar-foreground/60" />
+                <span>Refund Policy</span>
+              </Link>
+            </Button>
           </div>
         </div>
       </ScrollArea>
