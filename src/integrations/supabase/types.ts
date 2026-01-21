@@ -2927,6 +2927,7 @@ export type Database = {
       }
       stores: {
         Row: {
+          about_content: string | null
           accent_color: string | null
           announcement_active: boolean | null
           announcement_text: string | null
@@ -2985,6 +2986,7 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          about_content?: string | null
           accent_color?: string | null
           announcement_active?: boolean | null
           announcement_text?: string | null
@@ -3043,6 +3045,7 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          about_content?: string | null
           accent_color?: string | null
           announcement_active?: boolean | null
           announcement_text?: string | null

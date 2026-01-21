@@ -111,6 +111,7 @@ const SellerSettingsNotifications = lazy(() => import("./pages/seller/SellerSett
 
 // Public pages
 const StorePage = lazy(() => import("./pages/StorePage"));
+const StoreAbout = lazy(() => import("./pages/StoreAbout"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 
 // Optimized QueryClient with better caching
@@ -201,6 +202,7 @@ const App = () => (
                   <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
                   {/* Public store page */}
                   <Route path="/store/:storeSlug" element={<StorePage />} />
+                  <Route path="/store/:slug/about" element={<StoreAbout />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />

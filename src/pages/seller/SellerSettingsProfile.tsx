@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { 
   Store, 
   Image as ImageIcon,
@@ -17,7 +18,8 @@ import {
   Save,
   Link as LinkIcon,
   Globe,
-  MessageCircle
+  MessageCircle,
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +34,7 @@ export default function SellerSettingsProfile() {
     logo_url: '',
     banner_url: '',
     bio: '',
+    about_content: '',
     discord_url: '',
     twitter_url: '',
     youtube_url: '',
@@ -47,6 +50,7 @@ export default function SellerSettingsProfile() {
         logo_url: store.logo_url || '',
         banner_url: store.banner_url || '',
         bio: store.bio || '',
+        about_content: (store as any).about_content || '',
         discord_url: store.discord_url || '',
         twitter_url: store.twitter_url || '',
         youtube_url: store.youtube_url || '',
@@ -68,13 +72,14 @@ export default function SellerSettingsProfile() {
           logo_url: data.logo_url || null,
           banner_url: data.banner_url || null,
           bio: data.bio || null,
+          about_content: data.about_content || null,
           discord_url: data.discord_url || null,
           twitter_url: data.twitter_url || null,
           youtube_url: data.youtube_url || null,
           tiktok_url: data.tiktok_url || null,
           website_url: data.website_url || null,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq('id', store.id);
 
       if (error) throw error;
@@ -158,6 +163,34 @@ export default function SellerSettingsProfile() {
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="A short bio about you or your store..."
                   rows={3}
+                />
+              </div>
+
+              <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                <Save className="h-4 w-4 mr-2" />
+                {updateStore.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* About Us Content */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                About Us Page
+              </CardTitle>
+              <CardDescription>
+                Rich content for your store's dedicated About page. Customers can access this from your store navigation.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>About Content</Label>
+                <RichTextEditor
+                  content={formData.about_content}
+                  onChange={(content) => setFormData({ ...formData, about_content: content })}
+                  placeholder="Tell customers about yourself, your story, your mission..."
                 />
               </div>
 
