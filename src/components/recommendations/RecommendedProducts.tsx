@@ -35,13 +35,13 @@ export const RecommendedProducts = ({
   if (isLoading) {
     return (
       <div className={className}>
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-4">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 className="text-lg sm:text-xl font-bold">{title}</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
           {Array.from({ length: limit }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-lg" />
+            <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
           ))}
         </div>
       </div>
@@ -57,17 +57,17 @@ export const RecommendedProducts = ({
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 className="text-lg sm:text-xl font-bold">{title}</h2>
         </div>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <StrategyIcon className="h-4 w-4" />
-          <span>{strategyLabel}</span>
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+          <StrategyIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">{strategyLabel}</span>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
         {data.recommendations.map((product) => (
           <ProductCard
             key={product.id}
