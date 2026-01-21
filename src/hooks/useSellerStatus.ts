@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export interface Store {
   id: string;
+  owner_id: string;
   store_id: string;
   name: string;
   slug: string;

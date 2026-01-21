@@ -104,6 +104,9 @@ const SellerBalance = lazy(() => import("./pages/seller/SellerBalance"));
 const SellerStoreTabs = lazy(() => import("./pages/seller/SellerStoreTabs"));
 const SellerDiscounts = lazy(() => import("./pages/seller/SellerDiscounts"));
 const SellerAnalytics = lazy(() => import("./pages/seller/SellerAnalytics"));
+const SellerDocuments = lazy(() => import("./pages/seller/SellerDocuments"));
+const SellerTermsOfService = lazy(() => import("./pages/seller/SellerTermsOfService"));
+const SellerGuide = lazy(() => import("./pages/seller/SellerGuide"));
 const SellerSettingsProfile = lazy(() => import("./pages/seller/SellerSettingsProfile"));
 const SellerSettingsAppearance = lazy(() => import("./pages/seller/SellerSettingsAppearance"));
 const SellerSettingsTeam = lazy(() => import("./pages/seller/SellerSettingsTeam"));
@@ -197,6 +200,9 @@ const App = () => (
                   <Route path="/seller/balance" element={<SellerBalance />} />
                   <Route path="/seller/tabs" element={<SellerStoreTabs />} />
                   <Route path="/seller/discounts" element={<SellerDiscounts />} />
+                  <Route path="/seller/documents" element={<SellerDocuments />} />
+                  <Route path="/seller/documents/terms" element={<SellerTermsOfService />} />
+                  <Route path="/seller/documents/guide" element={<SellerGuide />} />
                   <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
                   <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
                   <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
