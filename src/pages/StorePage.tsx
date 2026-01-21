@@ -290,25 +290,23 @@ export default function StorePage() {
           <CardContent className="pt-6">
             <div className="flex flex-col gap-6 items-center text-center">
               {/* Store Logo */}
-              <div 
-                className="h-24 w-24 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
-                style={{ 
-                  backgroundColor: store.logo_url ? 'transparent' : `${accentColor}20`,
-                }}
-              >
-                {store.logo_url ? (
-                  <img 
-                    src={store.logo_url} 
-                    alt={store.name}
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
+              {store.logo_url ? (
+                <img 
+                  src={store.logo_url} 
+                  alt={store.name}
+                  className="h-24 w-24 object-contain flex-shrink-0"
+                />
+              ) : (
+                <div 
+                  className="h-24 w-24 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${accentColor}20` }}
+                >
                   <StoreIcon 
                     className="h-10 w-10" 
                     style={{ color: accentColor }}
                   />
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Store Info */}
               <div className="flex-1">
