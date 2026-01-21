@@ -140,8 +140,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       ],
     },
     {
-      id: 'legal',
-      title: 'Legal',
+      id: 'about',
+      title: 'About Us',
       icon: FileText,
       items: [
         { title: 'Terms of Service', icon: FileText, href: '/terms' },
