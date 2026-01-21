@@ -137,7 +137,7 @@ export default function SellerCommissions() {
       
       if (error) throw error;
 
-      // Send deactivation email if store is being deactivated
+      // Send email notification based on activation status
       if (!isActive) {
         try {
           await supabase.functions.invoke('send-store-deactivation-email', {
@@ -145,7 +145,14 @@ export default function SellerCommissions() {
           });
         } catch (emailError) {
           console.error('Failed to send deactivation email:', emailError);
-          // Don't throw - the store was still deactivated successfully
+        }
+      } else {
+        try {
+          await supabase.functions.invoke('send-store-reactivation-email', {
+            body: { store_id: storeId },
+          });
+        } catch (emailError) {
+          console.error('Failed to send reactivation email:', emailError);
         }
       }
     },

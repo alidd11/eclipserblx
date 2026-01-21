@@ -152,3 +152,6 @@ verify_jwt = false
 
 [functions.send-store-deactivation-email]
 verify_jwt = false
+
+[functions.send-store-reactivation-email]
+verify_jwt = false
