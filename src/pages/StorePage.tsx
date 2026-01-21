@@ -291,17 +291,16 @@ export default function StorePage() {
             <div className="flex flex-col gap-6 items-center text-center">
               {/* Store Logo */}
               <div 
-                className="h-24 w-24 rounded-xl border-4 border-background flex items-center justify-center overflow-hidden flex-shrink-0"
+                className="h-24 w-24 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
                 style={{ 
                   backgroundColor: store.logo_url ? 'transparent' : `${accentColor}20`,
-                  borderColor: theme === 'bold' ? accentColor : undefined,
                 }}
               >
                 {store.logo_url ? (
                   <img 
                     src={store.logo_url} 
                     alt={store.name}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                   />
                 ) : (
                   <StoreIcon 
