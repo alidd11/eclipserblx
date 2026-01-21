@@ -266,16 +266,16 @@ export function StoreLayout({
                 </Button>
               )}
 
-              <Link to={`/store/${store.id}`} className="flex items-center gap-3">
+               <Link to={`/store/${store.id}`} className="flex items-center gap-3">
                 {store.logo_url ? (
                   <img 
                     src={store.logo_url} 
                     alt={store.name}
-                    className="h-8 w-8 rounded-lg object-cover"
+                     className="h-8 w-8 rounded-full object-contain"
                   />
                 ) : (
                   <div 
-                    className="h-8 w-8 rounded-lg flex items-center justify-center"
+                     className="h-8 w-8 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: `${accentColor}20` }}
                   >
                     <StoreIcon className="h-4 w-4" style={{ color: accentColor }} />
@@ -330,7 +330,7 @@ export function StoreLayout({
                   <img 
                     src={store.logo_url} 
                     alt={store.name}
-                    className="h-6 w-6 rounded object-cover"
+                    className="h-6 w-6 rounded-full object-contain"
                   />
                 ) : (
                   <StoreIcon className="h-5 w-5" style={{ color: accentColor }} />
