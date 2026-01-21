@@ -213,13 +213,13 @@ export function SellerInfoContent() {
       </section>
 
       {/* Comparison Table Section */}
-      <section className="space-y-6 print:break-before-page">
+      <section className="space-y-6 print:break-before-page print:break-inside-avoid">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">How We Compare</h2>
-          <p className="text-muted-foreground mt-2">See why Eclipse is the best choice for digital creators</p>
+          <h2 className="text-3xl font-bold text-foreground print:text-2xl">How We Compare</h2>
+          <p className="text-muted-foreground mt-2 print:text-sm print:mt-1">See why Eclipse is the best choice for digital creators</p>
         </div>
-        <Card className="border-border/50 overflow-hidden">
-          <CardContent className="p-0 md:p-6">
+        <Card className="border-border/50 overflow-hidden print:break-inside-avoid">
+          <CardContent className="p-0 md:p-6 print:p-2">
             <ComparisonTable />
           </CardContent>
         </Card>
