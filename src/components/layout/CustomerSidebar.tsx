@@ -90,6 +90,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       ],
     },
     {
+      id: 'account',
+      title: 'My Account',
+      icon: User,
+      items: [
+        { title: 'My Account', icon: User, href: '/account' },
+      ],
+    },
+    {
       id: 'products',
       title: 'Products',
       icon: Package,
