@@ -7,6 +7,7 @@ import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchComman
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { hapticTap } from '@/lib/haptics';
+import { useScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -23,6 +24,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
   });
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
+
+  // Check for scheduled product releases periodically
+  useScheduledReleaseCheck();
 
   // Touch tracking for edge swipe
   const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);

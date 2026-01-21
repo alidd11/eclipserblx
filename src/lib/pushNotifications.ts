@@ -193,3 +193,79 @@ export async function notifyNewJobApplication(
     url: '/admin/applications',
   });
 }
+
+/**
+ * Check for scheduled products that just went live and notify store followers
+ * This should be called periodically (e.g., every minute via cron or on app load)
+ */
+export async function checkScheduledReleases(): Promise<{ success: boolean; processed?: number; notified?: number; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('notify-scheduled-release', {
+      body: {},
+    });
+
+    if (error) {
+      console.error('Error checking scheduled releases:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, processed: data?.processed || 0, notified: data?.notified || 0 };
+  } catch (error) {
+    console.error('Error checking scheduled releases:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+/**
+ * Notify store followers about a specific product release
+ */
+export async function notifyProductRelease(
+  storeId: string,
+  product: { id: string; name: string; slug: string; price: number },
+  categoryName?: string
+): Promise<{ success: boolean; sent?: number; error?: string }> {
+  try {
+    // Get followers of this store who want new product notifications
+    const { data: followers, error: followError } = await supabase
+      .from('store_follows')
+      .select('user_id')
+      .eq('store_id', storeId)
+      .eq('notify_new_products', true);
+
+    if (followError) {
+      console.error('Error fetching store followers:', followError);
+      return { success: false, error: followError.message };
+    }
+
+    if (!followers || followers.length === 0) {
+      return { success: true, sent: 0 };
+    }
+
+    // Get store name
+    const { data: store } = await supabase
+      .from('stores')
+      .select('name')
+      .eq('id', storeId)
+      .single();
+
+    const storeName = store?.name || 'a store you follow';
+    const formattedPrice = `£${product.price.toFixed(2)}`;
+    const title = `🎉 New from ${storeName}!`;
+    const body = categoryName
+      ? `${product.name} is now available in ${categoryName} for ${formattedPrice}`
+      : `${product.name} is now available for ${formattedPrice}`;
+
+    const followerUserIds = followers.map(f => f.user_id);
+
+    return await sendPushNotification(followerUserIds, {
+      title,
+      body,
+      tag: `product-release-${product.id}-${Date.now()}`,
+      url: `/products/${product.slug}`,
+      requireInteraction: false,
+    });
+  } catch (error) {
+    console.error('Error notifying product release:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
