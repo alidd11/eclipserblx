@@ -149,3 +149,6 @@ verify_jwt = false
 
 [functions.notify-scheduled-release]
 verify_jwt = false
+
+[functions.send-store-deactivation-email]
+verify_jwt = false
