@@ -39,13 +39,15 @@ export function CategoriesGridCard() {
       if (error) throw error;
       
       // Get product counts for each category
+      const now = new Date().toISOString();
       const categoriesWithCounts = await Promise.all(
         (data || []).map(async (category) => {
           const { count } = await supabase
             .from('products')
             .select('id', { count: 'exact', head: true })
             .eq('category_id', category.id)
-            .eq('is_active', true);
+            .eq('is_active', true)
+            .or(`release_at.is.null,release_at.lte.${now}`);
           
           return {
             ...category,

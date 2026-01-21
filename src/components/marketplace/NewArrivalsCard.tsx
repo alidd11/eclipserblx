@@ -24,6 +24,7 @@ export function NewArrivalsCard() {
   const { data: products, isLoading } = useQuery({
     queryKey: ['new-arrivals'],
     queryFn: async () => {
+      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -36,6 +37,7 @@ export function NewArrivalsCard() {
           stores (name, slug)
         `)
         .eq('is_active', true)
+        .or(`release_at.is.null,release_at.lte.${now}`)
         .order('created_at', { ascending: false })
         .limit(5);
       
