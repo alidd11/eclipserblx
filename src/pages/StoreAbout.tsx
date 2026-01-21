@@ -56,37 +56,54 @@ export default function StoreAbout() {
       bio={store.bio}
     >
       <div className={`min-h-[60vh] ${isDarkTheme ? 'text-white' : ''}`}>
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to={`/store/${slug}`} className="gap-2">
-              <ChevronLeft className="h-4 w-4" />
-              Back to Store
-            </Link>
-          </Button>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div 
-            className="p-3 rounded-xl"
-            style={{ backgroundColor: `${accentColor}20` }}
-          >
-            <Info className="h-6 w-6" style={{ color: accentColor }} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">About {store.name}</h1>
-            <p className={`text-sm ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
-              Learn more about this store
-            </p>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-sm max-w-none dark:prose-invert">
-          {store.about_content ? (
+        {/* Hero Section with Banner Background */}
+        <div className="relative rounded-2xl overflow-hidden mb-8">
+          {/* Banner Background */}
+          {store.banner_url ? (
             <div 
-              dangerouslySetInnerHTML={{ __html: store.about_content }}
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${store.banner_url})` }}
+            />
+          ) : (
+            <div 
+              className="absolute inset-0"
+              style={{ background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)` }}
+            />
+          )}
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-black/60" />
+          
+          {/* Content */}
+          <div className="relative z-10 py-16 px-6 flex flex-col items-center justify-center text-center">
+            {/* Store Logo */}
+            {store.logo_url && (
+              <div className="mb-6">
+                <img 
+                  src={store.logo_url} 
+                  alt={store.name}
+                  className="h-24 w-24 rounded-2xl object-cover border-4 border-white/20 shadow-xl"
+                />
+              </div>
+            )}
+            
+            {/* Store Name */}
+            <h1 className="text-3xl font-bold text-white mb-2">{store.name}</h1>
+            
+            {/* Back Button */}
+            <Button variant="outline" size="sm" asChild className="mt-4 bg-white/10 border-white/20 text-white hover:bg-white/20">
+              <Link to={`/store/${slug}`} className="gap-2">
+                <ChevronLeft className="h-4 w-4" />
+                Back to Store
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* About Content */}
+        <div className="prose prose-sm max-w-none dark:prose-invert text-center mx-auto max-w-2xl">
+          {(store as any).about_content ? (
+            <div 
+              dangerouslySetInnerHTML={{ __html: (store as any).about_content }}
               className={`${isDarkTheme ? 'text-zinc-300' : 'text-foreground'}`}
             />
           ) : store.bio ? (
@@ -97,7 +114,7 @@ export default function StoreAbout() {
               )}
             </div>
           ) : (
-            <div className={`text-center py-12 ${isDarkTheme ? 'text-zinc-500' : 'text-muted-foreground'}`}>
+            <div className={`py-12 ${isDarkTheme ? 'text-zinc-500' : 'text-muted-foreground'}`}>
               <Info className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>This store hasn't added their about information yet.</p>
             </div>
