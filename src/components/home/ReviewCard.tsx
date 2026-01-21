@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useRef, forwardRef } from 'react';
-import { Star, MessageSquare, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -57,8 +57,6 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
       const profileMap = new Map<string, string | null>(profiles?.map(p => [p.user_id, p.display_name] as [string, string | null]) || []);
 
       return reviewsData?.map((review) => {
-        // For external reviews, use the external_reviewer_name
-        // For regular reviews, use the profile display_name or fallback
         const displayName = review.is_external 
           ? (review.external_reviewer_name || 'Anonymous')
           : (profileMap.get(review.user_id) || 'Customer');
@@ -128,8 +126,8 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
 
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-blue-500/5 p-5">
-        <div className="relative z-10 text-center text-muted-foreground py-8">
+      <div className="rounded-2xl border border-border bg-card p-5 h-full">
+        <div className="text-center text-muted-foreground py-8">
           No reviews yet
         </div>
       </div>
@@ -140,37 +138,26 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
 
   return (
     <div 
-      className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-blue-500/5 p-5 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 touch-pan-x"
+      className="rounded-2xl border border-border bg-card p-5 h-full touch-pan-x"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Animated background */}
-      <div className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl opacity-30" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Quote icon - subtle */}
+      <Quote className="absolute top-4 right-4 h-10 w-10 text-muted/30" />
       
-      {/* Quote decoration */}
-      <div className="absolute top-3 right-3 opacity-10">
-        <Quote className="h-16 w-16 text-primary" />
-      </div>
-      
-      <div className="relative z-10">
+      <div className="relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/10">
-                <MessageSquare className="h-4 w-4 text-blue-400" />
-              </div>
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
             </div>
-            <span className="text-xs font-medium text-primary/80 uppercase tracking-wider">Reviews</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Reviews</span>
           </div>
           <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className="h-3 w-3 text-amber-400 fill-amber-400"
-              />
+              <Star key={i} className="h-3 w-3 text-amber-500 fill-amber-500" />
             ))}
           </div>
         </div>
@@ -180,11 +167,11 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentReview.id}
-              initial={{ opacity: 0, x: direction >= 0 ? 40 : -40 }}
+              initial={{ opacity: 0, x: direction >= 0 ? 30 : -30 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction >= 0 ? -40 : 40 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="absolute inset-0 will-change-transform"
+              exit={{ opacity: 0, x: direction >= 0 ? -30 : 30 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0"
             >
               {/* Stars for this review */}
               <div className="flex items-center gap-0.5 mb-2">
@@ -193,29 +180,28 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
                     key={i}
                     className={`h-3.5 w-3.5 ${
                       i < currentReview.rating
-                        ? 'text-amber-400 fill-amber-400'
-                        : 'text-muted-foreground/20'
+                        ? 'text-amber-500 fill-amber-500'
+                        : 'text-muted'
                     }`}
                   />
                 ))}
-                <span className="ml-1.5 text-xs text-muted-foreground">{currentReview.rating}.0</span>
               </div>
 
               {/* Review text */}
-              <p className="text-sm text-foreground/90 line-clamp-2 leading-relaxed">
+              <p className="text-sm text-foreground line-clamp-2 leading-relaxed">
                 "{currentReview.content}"
               </p>
 
               {/* Author */}
               <div className="flex items-center gap-2 mt-2">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
+                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
                   {currentReview.display_name.charAt(0)}
                 </div>
-                <p className="text-xs font-medium text-primary">
+                <p className="text-xs font-medium text-foreground">
                   {currentReview.display_name}
                 </p>
                 {currentReview.external_source && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
                     via {currentReview.external_source}
                   </span>
                 )}
@@ -237,7 +223,7 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === currentIndex % 6
                     ? 'bg-primary w-4'
-                    : 'bg-muted-foreground/30 w-1.5 hover:bg-muted-foreground/50'
+                    : 'bg-muted w-1.5 hover:bg-muted-foreground/50'
                 }`}
                 aria-label={`Go to review ${i + 1}`}
               />
@@ -249,13 +235,13 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
           <div className="flex items-center gap-1">
             <button 
               onClick={goPrev}
-              className="w-6 h-6 rounded-md bg-muted/30 flex items-center justify-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <button 
               onClick={goNext}
-              className="w-6 h-6 rounded-md bg-muted/30 flex items-center justify-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>

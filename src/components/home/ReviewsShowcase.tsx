@@ -77,7 +77,7 @@ export function ReviewsShowcase() {
 
   if (isLoading) {
     return (
-      <section className="py-16 px-4 bg-muted/30">
+      <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <Skeleton className="h-8 w-64 mx-auto mb-4" />
@@ -98,10 +98,10 @@ export function ReviewsShowcase() {
   }
 
   return (
-    <section className="py-16 px-4 bg-muted/30">
+    <section className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
             What Our Customers Say
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -120,8 +120,8 @@ export function ReviewsShowcase() {
           <CarouselContent className="-ml-4">
             {reviews.map((review) => (
               <CarouselItem key={review.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 h-full">
-                  <Quote className="absolute top-4 right-4 h-8 w-8 text-primary/20" />
+                <div className="relative rounded-xl border border-border bg-card p-6 h-full">
+                  <Quote className="absolute top-4 right-4 h-8 w-8 text-muted/20" />
                   
                   <div className="flex items-center gap-1 mb-4">
                     {[...Array(5)].map((_, i) => (
@@ -129,8 +129,8 @@ export function ReviewsShowcase() {
                         key={i}
                         className={`h-4 w-4 ${
                           i < review.rating
-                            ? 'text-amber-400 fill-amber-400'
-                            : 'text-muted-foreground'
+                            ? 'text-amber-500 fill-amber-500'
+                            : 'text-muted'
                         }`}
                       />
                     ))}
