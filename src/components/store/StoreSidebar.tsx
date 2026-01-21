@@ -123,19 +123,17 @@ export function StoreSidebar({
               </span>
             </Button>
 
-            {tabs.length > 0 && (
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-                onClick={() => scrollToSection('store-categories')}
-              >
-                <FolderOpen className="h-4 w-4" style={{ color: accentColor }} />
-                <span>Categories</span>
-                <span className="ml-auto text-xs text-sidebar-foreground/50">
-                  {tabs.length}
-                </span>
-              </Button>
-            )}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+          onClick={() => scrollToSection('store-categories')}
+        >
+          <FolderOpen className="h-4 w-4" style={{ color: accentColor }} />
+          <span>Categories</span>
+          <span className="ml-auto text-xs text-sidebar-foreground/50">
+            {tabs.length}
+          </span>
+        </Button>
 
             {averageRating && (
               <Button
