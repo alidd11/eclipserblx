@@ -79,6 +79,7 @@ export const RecommendedProducts = ({
             category={product.categories?.name}
             storeName={product.stores?.name}
             storeSlug={product.stores?.slug}
+            storeLogo={product.stores?.logo_url}
             isVerified={product.stores?.is_verified}
             isTrusted={product.stores?.is_trusted}
           />

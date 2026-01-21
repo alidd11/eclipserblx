@@ -12,6 +12,7 @@ interface RecommendedProduct {
   stores: {
     name: string;
     slug: string;
+    logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
   } | null;
