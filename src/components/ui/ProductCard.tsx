@@ -1,6 +1,6 @@
 import { memo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -20,9 +20,13 @@ interface ProductCardProps {
   categoryId?: string;
   isFeatured?: boolean;
   createdAt?: string;
+  storeName?: string;
+  storeSlug?: string;
+  isVerified?: boolean;
+  isTrusted?: boolean;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, isVerified, isTrusted }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
@@ -135,6 +139,32 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             <span className="text-[10px] font-medium text-primary uppercase tracking-wider truncate">
               {category}
             </span>
+          )}
+          
+          {/* Store info with badges */}
+          {storeName && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+              <span className="truncate">
+                by{' '}
+                {storeSlug ? (
+                  <Link 
+                    to={`/store/${storeSlug}`} 
+                    className="hover:text-primary transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {storeName}
+                  </Link>
+                ) : (
+                  storeName
+                )}
+              </span>
+              {isVerified && (
+                <BadgeCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
+              )}
+              {isTrusted && (
+                <Shield className="h-3 w-3 text-amber-500 flex-shrink-0" />
+              )}
+            </div>
           )}
           
           <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">

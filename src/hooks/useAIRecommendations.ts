@@ -9,6 +9,12 @@ interface RecommendedProduct {
   price: number;
   images: string[];
   categories: { name: string } | null;
+  stores: {
+    name: string;
+    slug: string;
+    is_verified: boolean;
+    is_trusted: boolean;
+  } | null;
 }
 
 interface RecommendationsResponse {
