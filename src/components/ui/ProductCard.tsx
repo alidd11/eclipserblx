@@ -1,6 +1,6 @@
 import { memo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -22,11 +22,12 @@ interface ProductCardProps {
   createdAt?: string;
   storeName?: string;
   storeSlug?: string;
+  storeLogo?: string | null;
   isVerified?: boolean;
   isTrusted?: boolean;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, isVerified, isTrusted }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted }: ProductCardProps) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
@@ -141,11 +142,22 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
             </span>
           )}
           
-          {/* Store info with badges */}
+          {/* Store info with logo and badges */}
           {storeName && (
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              {/* Store Logo */}
+              {storeLogo ? (
+                <img 
+                  src={storeLogo} 
+                  alt={storeName}
+                  className="h-4 w-4 rounded object-contain bg-background flex-shrink-0"
+                />
+              ) : (
+                <div className="h-4 w-4 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                  <Store className="h-2.5 w-2.5 text-muted-foreground" />
+                </div>
+              )}
               <span className="truncate">
-                by{' '}
                 {storeSlug ? (
                   <Link 
                     to={`/store/${storeSlug}`} 
