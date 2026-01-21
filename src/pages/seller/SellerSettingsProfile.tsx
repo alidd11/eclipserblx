@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { BrandingImageUpload } from '@/components/seller/BrandingImageUpload';
 import { 
   Store, 
   Image as ImageIcon,
@@ -209,51 +210,27 @@ export default function SellerSettingsProfile() {
                 Branding
               </CardTitle>
               <CardDescription>
-                Your store's logo and banner images
+                Upload your store's logo and banner images
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="logo_url">Logo URL</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="logo_url"
-                    value={formData.logo_url}
-                    onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                    placeholder="https://example.com/logo.png"
+            <CardContent className="space-y-6">
+              {user && (
+                <>
+                  <BrandingImageUpload
+                    userId={user.id}
+                    type="logo"
+                    currentUrl={formData.logo_url}
+                    onUpload={(url) => setFormData({ ...formData, logo_url: url })}
                   />
-                  {formData.logo_url && (
-                    <div className="h-10 w-10 rounded border overflow-hidden flex-shrink-0">
-                      <img 
-                        src={formData.logo_url} 
-                        alt="Logo preview" 
-                        className="h-full w-full object-cover"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="banner_url">Banner URL</Label>
-                <Input
-                  id="banner_url"
-                  value={formData.banner_url}
-                  onChange={(e) => setFormData({ ...formData, banner_url: e.target.value })}
-                  placeholder="https://example.com/banner.png"
-                />
-                {formData.banner_url && (
-                  <div className="h-24 rounded border overflow-hidden">
-                    <img 
-                      src={formData.banner_url} 
-                      alt="Banner preview" 
-                      className="h-full w-full object-cover"
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
-                    />
-                  </div>
-                )}
-              </div>
+                  <BrandingImageUpload
+                    userId={user.id}
+                    type="banner"
+                    currentUrl={formData.banner_url}
+                    onUpload={(url) => setFormData({ ...formData, banner_url: url })}
+                  />
+                </>
+              )}
 
               <Button onClick={handleSubmit} disabled={updateStore.isPending}>
                 <Save className="h-4 w-4 mr-2" />
