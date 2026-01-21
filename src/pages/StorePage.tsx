@@ -316,16 +316,26 @@ export default function StorePage() {
                   {store.name}
                 </h1>
                 
-                <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
-                  {store.is_verified && (
-                    <Badge 
-                      className="gap-1"
-                      style={{ backgroundColor: accentColor, color: 'white' }}
-                    >
-                      <CheckCircle className="h-3 w-3" />
-                      Verified
-                    </Badge>
-                  )}
+                <div className="flex flex-col items-center gap-2 mb-2">
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    {store.is_verified && (
+                      <Badge 
+                        className="gap-1"
+                        style={{ backgroundColor: accentColor, color: 'white' }}
+                      >
+                        <CheckCircle className="h-3 w-3" />
+                        Verified
+                      </Badge>
+                    )}
+                    {(store as any).is_trusted && (
+                      <Badge 
+                        className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0"
+                      >
+                        <CheckCircle className="h-3 w-3" />
+                        Trusted Seller
+                      </Badge>
+                    )}
+                  </div>
                   <FollowButton 
                     storeId={store.id} 
                     accentColor={accentColor}

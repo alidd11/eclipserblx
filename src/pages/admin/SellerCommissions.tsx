@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { Percent, Calendar, Store, Edit2, RotateCcw, AlertCircle } from 'lucide-react';
+import { Percent, Calendar, Store, Edit2, RotateCcw, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { Switch } from '@/components/ui/switch';
 
 interface StoreWithCommission {
   id: string;
@@ -25,6 +26,7 @@ interface StoreWithCommission {
   custom_rate_set_at: string | null;
   is_active: boolean;
   status: string | null;
+  is_trusted: boolean;
 }
 
 export default function SellerCommissions() {
@@ -41,7 +43,7 @@ export default function SellerCommissions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
-        .select('id, name, slug, owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, custom_rate_set_at, is_active, status')
+        .select('id, name, slug, owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, custom_rate_set_at, is_active, status, is_trusted')
         .eq('is_active', true)
         .order('name');
       
@@ -90,6 +92,25 @@ export default function SellerCommissions() {
     },
     onError: (error) => {
       toast.error('Failed to update commission rate: ' + error.message);
+    },
+  });
+
+  // Toggle trusted seller mutation
+  const toggleTrustedMutation = useMutation({
+    mutationFn: async ({ storeId, isTrusted }: { storeId: string; isTrusted: boolean }) => {
+      const { error } = await supabase
+        .from('stores')
+        .update({ is_trusted: isTrusted })
+        .eq('id', storeId);
+      
+      if (error) throw error;
+    },
+    onSuccess: (_, { isTrusted }) => {
+      queryClient.invalidateQueries({ queryKey: ['seller-commissions'] });
+      toast.success(isTrusted ? 'Trusted Seller badge granted' : 'Trusted Seller badge removed');
+    },
+    onError: (error) => {
+      toast.error('Failed to update trusted status: ' + error.message);
     },
   });
 
@@ -202,6 +223,7 @@ export default function SellerCommissions() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Store Name</TableHead>
+                    <TableHead>Trusted Seller</TableHead>
                     <TableHead>Default Rate</TableHead>
                     <TableHead>Custom Rate</TableHead>
                     <TableHead>Expires</TableHead>
@@ -212,7 +234,24 @@ export default function SellerCommissions() {
                 <TableBody>
                   {stores.map((store) => (
                     <TableRow key={store.id}>
-                      <TableCell className="font-medium">{store.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {store.name}
+                          {store.is_trusted && (
+                            <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs">
+                              <Shield className="h-3 w-3" />
+                              Trusted
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={store.is_trusted}
+                          onCheckedChange={(checked) => toggleTrustedMutation.mutate({ storeId: store.id, isTrusted: checked })}
+                          disabled={toggleTrustedMutation.isPending}
+                        />
+                      </TableCell>
                       <TableCell>{store.commission_rate ?? defaultRate}%</TableCell>
                       <TableCell>
                         {isCustomRateActive(store) ? (
