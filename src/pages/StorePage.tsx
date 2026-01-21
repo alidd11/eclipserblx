@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,35 +36,35 @@ const getThemeStyles = (theme: string, accentColor: string) => {
     case 'minimal':
       return {
         ...baseStyles,
-        banner: 'h-32 md:h-40',
+        banner: 'h-24 md:h-32',
         header: 'bg-background border-0 shadow-none',
         card: 'border-0 shadow-sm',
       };
     case 'bold':
       return {
         ...baseStyles,
-        banner: 'h-56 md:h-72',
+        banner: 'h-32 md:h-44',
         header: 'bg-card border-2',
         card: 'border-2 hover:border-primary transition-colors',
       };
     case 'gradient':
       return {
         ...baseStyles,
-        banner: 'h-48 md:h-64',
+        banner: 'h-28 md:h-40',
         header: 'bg-gradient-to-r from-card to-muted border-0',
         card: 'bg-gradient-to-br from-card to-muted/50',
       };
     case 'dark':
       return {
         ...baseStyles,
-        banner: 'h-48 md:h-64',
+        banner: 'h-28 md:h-40',
         header: 'bg-zinc-900 text-white border-zinc-800',
         card: 'bg-zinc-900 border-zinc-800',
       };
     default:
       return {
         ...baseStyles,
-        banner: 'h-48 md:h-64',
+        banner: 'h-28 md:h-40',
         header: '',
         card: '',
       };
@@ -74,6 +75,7 @@ export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab');
+  const [bioExpanded, setBioExpanded] = useState(false);
 
   // Fetch store details first to get the ID for analytics
   const { data: store, isLoading: storeLoading, error } = useQuery({
@@ -276,7 +278,7 @@ export default function StorePage() {
         ) : theme === 'minimal' ? (
           <div className={`${themeStyles.banner} bg-muted/30`} />
         ) : (
-          <div className="h-48 md:h-64 bg-gradient-to-br from-primary/20 to-primary/5">
+          <div className="h-28 md:h-40 bg-gradient-to-br from-primary/20 to-primary/5">
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           </div>
         )}
@@ -286,7 +288,7 @@ export default function StorePage() {
         {/* Store Header */}
         <Card className={`mb-8 ${themeStyles.header}`}>
           <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <div className="flex flex-col gap-6 items-center text-center">
               {/* Store Logo */}
               <div 
                 className="h-24 w-24 rounded-xl border-4 border-background flex items-center justify-center overflow-hidden flex-shrink-0"
@@ -311,7 +313,7 @@ export default function StorePage() {
 
               {/* Store Info */}
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
                   <h1 className={`text-2xl md:text-3xl font-bold ${isDarkTheme ? 'text-white' : ''}`}>
                     {store.name}
                   </h1>
@@ -332,19 +334,43 @@ export default function StorePage() {
                 </div>
                 
                 {store.description && (
-                  <p className={`mb-2 max-w-2xl ${isDarkTheme ? 'text-zinc-300' : 'text-muted-foreground'}`}>
+                  <p className={`mb-2 text-center max-w-2xl mx-auto ${isDarkTheme ? 'text-zinc-300' : 'text-muted-foreground'}`}>
                     {store.description}
                   </p>
                 )}
 
                 {bio && (
-                  <p id="store-about" className={`text-sm italic mb-4 max-w-2xl ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
-                    "{bio}"
-                  </p>
+                  <div id="store-about" className={`text-sm italic mb-4 max-w-2xl mx-auto text-center ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                    {bio.length > 100 && !bioExpanded ? (
+                      <>
+                        "{bio.slice(0, 100)}..."
+                        <button
+                          onClick={() => setBioExpanded(true)}
+                          className="ml-1 text-xs font-medium not-italic hover:underline"
+                          style={{ color: accentColor }}
+                        >
+                          See more
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        "{bio}"
+                        {bio.length > 100 && (
+                          <button
+                            onClick={() => setBioExpanded(false)}
+                            className="ml-1 text-xs font-medium not-italic hover:underline"
+                            style={{ color: accentColor }}
+                          >
+                            See less
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 )}
 
                 {/* Stats */}
-                <div className={`flex flex-wrap gap-6 text-sm ${isDarkTheme ? 'text-zinc-300' : ''}`}>
+                <div className={`flex flex-wrap justify-center gap-6 text-sm ${isDarkTheme ? 'text-zinc-300' : ''}`}>
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
                     <span>{store.product_count || 0} Products</span>
