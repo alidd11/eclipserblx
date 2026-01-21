@@ -9,7 +9,8 @@ import {
   FileText,
   Shield,
   RefreshCw,
-  Home
+  Home,
+  FolderOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -85,7 +86,7 @@ export function StoreSidebar({
               className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
               asChild
             >
-              <Link to="/" onClick={onNavigate}>
+              <Link to={`/store/${storeSlug}`} onClick={onNavigate}>
                 <Home className="h-4 w-4" style={{ color: accentColor }} />
                 <span>Home</span>
               </Link>
@@ -121,6 +122,20 @@ export function StoreSidebar({
                 {productCount}
               </span>
             </Button>
+
+            {tabs.length > 0 && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+                onClick={() => scrollToSection('store-categories')}
+              >
+                <FolderOpen className="h-4 w-4" style={{ color: accentColor }} />
+                <span>Categories</span>
+                <span className="ml-auto text-xs text-sidebar-foreground/50">
+                  {tabs.length}
+                </span>
+              </Button>
+            )}
 
             {averageRating && (
               <Button
