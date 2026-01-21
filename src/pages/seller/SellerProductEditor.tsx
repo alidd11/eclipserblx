@@ -29,7 +29,9 @@ import {
   Plus,
   FileCheck,
   Loader2,
-  ImagePlus
+  ImagePlus,
+  Calendar,
+  Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
@@ -44,6 +46,8 @@ interface ProductFormData {
   is_active: boolean;
   images: string[];
   asset_file_url: string;
+  schedule_enabled: boolean;
+  release_at: string;
 }
 
 export default function SellerProductEditor() {
@@ -69,6 +73,8 @@ export default function SellerProductEditor() {
     is_active: true,
     images: [],
     asset_file_url: '',
+    schedule_enabled: false,
+    release_at: '',
   });
 
   const [uploading, setUploading] = useState(false);
@@ -109,6 +115,7 @@ export default function SellerProductEditor() {
   // Populate form when editing
   useEffect(() => {
     if (product) {
+      const hasSchedule = !!product.release_at && new Date(product.release_at) > new Date();
       setFormData({
         name: product.name || '',
         slug: product.slug || '',
@@ -119,6 +126,8 @@ export default function SellerProductEditor() {
         is_active: product.is_active ?? true,
         images: product.images || [],
         asset_file_url: product.asset_file_url || '',
+        schedule_enabled: hasSchedule,
+        release_at: product.release_at ? new Date(product.release_at).toISOString().slice(0, 16) : '',
       });
     }
   }, [product]);
@@ -254,6 +263,12 @@ export default function SellerProductEditor() {
     mutationFn: async (data: ProductFormData) => {
       if (!store?.id || !user?.id) throw new Error('Missing store or user');
 
+      // Calculate release_at value
+      let releaseAt: string | null = null;
+      if (data.schedule_enabled && data.release_at) {
+        releaseAt = new Date(data.release_at).toISOString();
+      }
+
       const productData = {
         name: data.name,
         slug: data.slug,
@@ -267,6 +282,7 @@ export default function SellerProductEditor() {
         store_id: store.id,
         is_seller_product: true,
         moderation_status: 'pending', // All new/edited products go to pending
+        release_at: releaseAt,
       };
 
       if (isEditing && productId) {
@@ -445,6 +461,57 @@ export default function SellerProductEditor() {
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
+              </div>
+
+              {/* Scheduled Release */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-amber-500" />
+                      Schedule Release
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Set a future date and time for this product to go live
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.schedule_enabled}
+                    onCheckedChange={(checked) => setFormData({ 
+                      ...formData, 
+                      schedule_enabled: checked,
+                      release_at: checked ? formData.release_at : '',
+                    })}
+                  />
+                </div>
+
+                {formData.schedule_enabled && (
+                  <div className="space-y-2 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                    <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                      <Clock className="h-4 w-4" />
+                      Release Date & Time
+                    </Label>
+                    <Input
+                      id="release_at"
+                      type="datetime-local"
+                      value={formData.release_at}
+                      onChange={(e) => setFormData({ ...formData, release_at: e.target.value })}
+                      min={new Date().toISOString().slice(0, 16)}
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your product will be hidden from customers until this date and time. Make sure to set the product as "Active" above.
+                    </p>
+                    {formData.release_at && new Date(formData.release_at) > new Date() && (
+                      <div className="flex items-center gap-2 mt-2 text-sm text-amber-600 dark:text-amber-400">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          Scheduled for: {new Date(formData.release_at).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
