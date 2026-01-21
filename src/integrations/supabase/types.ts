@@ -2970,6 +2970,12 @@ export type Database = {
           announcement_active: boolean | null
           announcement_text: string | null
           average_rating: number | null
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
           banner_url: string | null
           bio: string | null
           commission_rate: number | null
@@ -3030,6 +3036,12 @@ export type Database = {
           announcement_active?: boolean | null
           announcement_text?: string | null
           average_rating?: number | null
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
@@ -3090,6 +3102,12 @@ export type Database = {
           announcement_active?: boolean | null
           announcement_text?: string | null
           average_rating?: number | null
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
