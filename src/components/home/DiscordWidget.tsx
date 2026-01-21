@@ -31,7 +31,7 @@ export function DiscordWidget() {
 
   if (isLoading) {
     return (
-      <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-4 transition-all duration-500 hover:border-primary/40">
+      <div className="rounded-2xl border border-border bg-card p-4 h-full">
         <Skeleton className="w-full h-[400px] rounded-lg" />
       </div>
     );
@@ -44,12 +44,8 @@ export function DiscordWidget() {
   const theme = resolvedTheme === 'light' ? 'light' : 'dark';
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-4 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
-      {/* Background glow effects */}
-      <div className="absolute -top-16 -right-16 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl opacity-50" />
-      <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-primary/15 rounded-full blur-2xl opacity-50" />
-      
-      <div className="relative z-10 rounded-lg overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card p-4 h-full">
+      <div className="rounded-lg overflow-hidden">
         <iframe
           src={`https://discord.com/widget?id=${serverId}&theme=${theme}`}
           width="100%"
