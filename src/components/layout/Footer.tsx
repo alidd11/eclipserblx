@@ -79,9 +79,13 @@ export function Footer() {
         </div>
 
         <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-2">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
+            </p>
+            <span className="hidden sm:inline text-muted-foreground">·</span>
+            <p className="text-sm text-muted-foreground">Made with care for the Roblox community</p>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
               Secure payments powered by Stripe
