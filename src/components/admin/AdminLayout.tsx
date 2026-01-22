@@ -179,9 +179,12 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
       const keyboardOpen = isInputFocused && keyboardHeight > 80;
 
+      // When keyboard is open, add a small padding (8px) to prevent the iOS keyboard
+      // accessory bar from overlapping the input. When closed, use safe-area inset
+      // to fill the home indicator region.
       html.style.setProperty(
         '--chat-safe-bottom',
-        keyboardOpen ? '0px' : 'calc(env(safe-area-inset-bottom) + 4px)'
+        keyboardOpen ? '8px' : 'calc(env(safe-area-inset-bottom) + 4px)'
       );
       html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
