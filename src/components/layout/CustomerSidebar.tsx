@@ -910,32 +910,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           "flex items-center gap-1 mb-1",
           isCollapsed ? "flex-col" : "flex-row"
         )}>
-          {/* Cart */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                to="/cart"
-                onClick={handleNavClick}
-                className={cn(
-                  "flex items-center justify-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
-                  isCollapsed ? "py-2.5 w-full" : "h-9 w-9"
-                )}
-              >
-                <div className="relative shrink-0">
-                  <ShoppingCart className="h-4 w-4" />
-                  {itemCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center animate-in zoom-in-50 duration-200">
-                      {itemCount > 9 ? '9+' : itemCount}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side={isCollapsed ? "right" : "top"}>
-              Cart {itemCount > 0 && `(${itemCount})`}
-            </TooltipContent>
-          </Tooltip>
-
           {/* Notifications - only show when logged in */}
           {user && (
             <Tooltip>
