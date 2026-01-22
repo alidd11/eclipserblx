@@ -158,6 +158,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   // “grey strip” at the bottom of non-chat admin pages. Limiting this logic prevents that.
   useEffect(() => {
     const html = document.documentElement;
+    const supportsDvh = typeof CSS !== 'undefined' && typeof (CSS as any).supports === 'function'
+      ? (CSS as any).supports('height: 100dvh')
+      : false;
+    const getClosedVvh = () => (supportsDvh ? '100dvh' : `${window.innerHeight}px`);
 
     // Hard reset whenever we are NOT on a chat page (extra safety)
     if (!isChatPage) {
@@ -168,7 +172,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     }
 
     // IMMEDIATELY set --vvh on mount to prevent layout jump
-    html.style.setProperty('--vvh', `${window.innerHeight}px`);
+    // Use modern dynamic viewport units when the keyboard is closed to avoid iOS/PWA
+    // visualViewport bugs leaving a persistent bottom gap.
+    html.style.setProperty('--vvh', getClosedVvh());
 
     // IMPORTANT: We schedule multiple setTimeout passes to handle iOS keyboard animation.
     // If those timeouts fire after navigating away, they can re-apply --vvh and cause the
@@ -213,10 +219,14 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const keyboardOpen =
         isInputFocused && (Math.abs(innerH - vvHeight) > 50 || vvOffsetTop > 10);
 
-      // When keyboard is open, use visualViewport (minus offsetTop for iOS scroll offset);
-      // when closed, ALWAYS use innerHeight to ensure full recovery
-      const height = keyboardOpen ? vvHeight - vvOffsetTop : innerH;
-      html.style.setProperty('--vvh', `${height}px`);
+      // When keyboard is open, use visualViewport (minus offsetTop for iOS scroll offset).
+      // When closed, prefer 100dvh to prevent a stale px value leaving a visible bottom gap.
+      if (keyboardOpen) {
+        const heightPx = Math.max(0, vvHeight - vvOffsetTop);
+        html.style.setProperty('--vvh', `${heightPx}px`);
+      } else {
+        html.style.setProperty('--vvh', getClosedVvh());
+      }
 
       // Clamp safe-bottom while the keyboard is open.
       html.style.setProperty(
@@ -266,7 +276,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
         if (!isInputFocused) {
           forceViewportRecalc();
-          html.style.setProperty('--vvh', `${window.innerHeight}px`);
+          html.style.setProperty('--vvh', getClosedVvh());
           html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
           html.dataset.chatKeyboard = 'closed';
         }
@@ -305,10 +315,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           (activeEl as HTMLElement).isContentEditable);
 
       if (!isInputFocused) {
-        const currentVvh = parseInt(html.style.getPropertyValue('--vvh') || '0', 10);
-        if (currentVvh > 0 && currentVvh < window.innerHeight - 20) {
+        const vvhRaw = (html.style.getPropertyValue('--vvh') || '').trim();
+        const currentVvhPx = vvhRaw.endsWith('px') ? parseFloat(vvhRaw) : null;
+
+        // Only perform "stuck height" recovery when we're using a px value.
+        if (currentVvhPx !== null && currentVvhPx > 0 && currentVvhPx < window.innerHeight - 20) {
           forceViewportRecalc();
-          html.style.setProperty('--vvh', `${window.innerHeight}px`);
+          html.style.setProperty('--vvh', getClosedVvh());
           html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
           html.dataset.chatKeyboard = 'closed';
         }

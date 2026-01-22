@@ -661,7 +661,7 @@ export default function AdminLiveChat() {
   
   return (
     <AdminLayout requiredRoles={['admin', 'support_agent']}>
-      <div className="h-full flex flex-col min-h-0 overflow-hidden p-3 lg:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="h-full flex flex-col min-h-0 overflow-hidden p-3 lg:p-4 pb-[max(0.75rem,var(--chat-safe-bottom,env(safe-area-inset-bottom)))]">
         {/* Header Card - compact on mobile */}
         <Card className="bg-card border-border mb-3 shrink-0">
           <CardHeader className="pb-2 py-2.5 lg:py-4">
@@ -998,7 +998,7 @@ export default function AdminLiveChat() {
 
                 {/* Input */}
                 {selectedConversation.status !== 'closed' && (
-                  <div className="p-2 lg:p-4 border-t border-border space-y-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] lg:pb-4">
+                  <div className="p-2 lg:p-4 border-t border-border space-y-2 pb-[calc(var(--chat-safe-bottom,env(safe-area-inset-bottom))+0.5rem)] lg:pb-4">
                     <input
                       type="file"
                       ref={fileInputRef}
