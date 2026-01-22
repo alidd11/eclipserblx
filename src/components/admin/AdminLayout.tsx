@@ -166,6 +166,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     // Hard reset whenever we are NOT on a chat page (extra safety)
     if (!isChatPage) {
       html.style.removeProperty('--vvh');
+      html.style.removeProperty('--vvtop');
       html.style.removeProperty('--chat-safe-bottom');
       delete html.dataset.chatKeyboard;
       return;
@@ -175,6 +176,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     // Use modern dynamic viewport units when the keyboard is closed to avoid iOS/PWA
     // visualViewport bugs leaving a persistent bottom gap.
     html.style.setProperty('--vvh', getClosedVvh());
+    // Track visualViewport's top offset separately so we can align the fixed chat shell.
+    // (Using vvHeight - vvOffsetTop can leave a gap at the bottom on some iOS builds.)
+    html.style.setProperty('--vvtop', '0px');
     // Default safe-bottom for chat controls (minimal gap when keyboard closed)
     html.style.setProperty('--chat-safe-bottom', '4px');
     html.dataset.chatKeyboard = 'closed';
@@ -231,9 +235,12 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // When keyboard is open, use visualViewport (minus offsetTop for iOS scroll offset).
       // When closed, prefer 100dvh to prevent a stale px value leaving a visible bottom gap.
       if (keyboardOpen) {
-        const heightPx = Math.max(0, vvHeight - vvOffsetTop);
-        html.style.setProperty('--vvh', `${heightPx}px`);
+        // Align to the *visible* viewport: set a top offset AND the full visualViewport height.
+        // This avoids bottom gaps that happen when subtracting offsetTop from height.
+        html.style.setProperty('--vvtop', `${Math.max(0, vvOffsetTop)}px`);
+        html.style.setProperty('--vvh', `${Math.max(0, vvHeight)}px`);
       } else {
+        html.style.setProperty('--vvtop', '0px');
         html.style.setProperty('--vvh', getClosedVvh());
       }
 
@@ -282,6 +289,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
         if (!isInputFocused) {
           forceViewportRecalc();
+          html.style.setProperty('--vvtop', '0px');
           html.style.setProperty('--vvh', getClosedVvh());
           html.style.setProperty('--chat-safe-bottom', '4px');
           html.dataset.chatKeyboard = 'closed';
@@ -327,6 +335,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         // Only perform "stuck height" recovery when we're using a px value.
         if (currentVvhPx !== null && currentVvhPx > 0 && currentVvhPx < window.innerHeight - 20) {
           forceViewportRecalc();
+          html.style.setProperty('--vvtop', '0px');
           html.style.setProperty('--vvh', getClosedVvh());
           html.style.setProperty('--chat-safe-bottom', '4px');
           html.dataset.chatKeyboard = 'closed';
@@ -350,6 +359,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
       // Ensure complete cleanup - remove all chat-related CSS variables
       html.style.removeProperty('--vvh');
+      html.style.removeProperty('--vvtop');
       html.style.removeProperty('--chat-safe-bottom');
       delete html.dataset.chatKeyboard;
     };
@@ -529,9 +539,17 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         className={cn(
           'flex w-full max-w-full min-w-0',
           isChatPage
-            ? 'fixed top-0 left-0 right-0 h-[var(--vvh,100dvh)] overflow-hidden bg-card'
+            ? 'fixed left-0 right-0 overflow-hidden bg-card'
             : 'min-h-screen bg-background'
         )}
+        style={
+          isChatPage
+            ? {
+                top: 'var(--vvtop, 0px)',
+                height: 'var(--vvh, 100dvh)',
+              }
+            : undefined
+        }
       >
         {/* Desktop Sidebar */}
         {!isMobile && (
@@ -549,6 +567,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
               // Force viewport height reset when opening drawer (fixes iOS keyboard leftover --vvh)
               if (open) {
                 document.documentElement.style.removeProperty('--vvh');
+                document.documentElement.style.removeProperty('--vvtop');
                 document.documentElement.style.removeProperty('--chat-safe-bottom');
               }
               setMobileOpen(open);
