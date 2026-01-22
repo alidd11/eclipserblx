@@ -48,7 +48,30 @@ aiohttp>=3.8.0
 
 ## Step 3: Configure Your Bot
 
-Add these configuration values to your bot's config (MongoDB or config.json):
+Add these two new config values to your bot:
+
+### For MongoDB Configuration
+
+Run these commands in your bot's Discord server (as an admin):
+
+```
+?config set dashboard_webhook_url https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/discord-modmail-webhook
+```
+
+```
+?config set dashboard_webhook_secret YOUR_SECRET_KEY_HERE
+```
+
+**Or** add them directly in MongoDB Compass/Atlas by adding these fields to your config document:
+
+| Field Name | Value |
+|------------|-------|
+| `dashboard_webhook_url` | `https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/discord-modmail-webhook` |
+| `dashboard_webhook_secret` | `YOUR_SECRET_KEY_HERE` |
+
+### For config.json (if your bot uses a local file)
+
+Add these lines to your `config.json`:
 
 ```json
 {
@@ -57,7 +80,9 @@ Add these configuration values to your bot's config (MongoDB or config.json):
 }
 ```
 
-### Getting Your Secret Key
+---
+
+## Getting Your Secret Key
 
 The secret key must match what's configured in your Lovable Cloud secrets:
 - Secret name: `DISCORD_WEBHOOK_SECRET`
