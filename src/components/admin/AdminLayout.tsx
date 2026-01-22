@@ -148,13 +148,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       return;
     }
 
-    // Closed keyboard: include safe-area inset so the chat bar background fills
-    // the home-indicator area (prevents a thin bottom line).
+    // Start with safe-area padding (keyboard closed state)
     html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
     html.dataset.chatKeyboard = 'closed';
 
     let disposed = false;
     let baseVvHeight = window.visualViewport?.height ?? window.innerHeight;
+    let timers: number[] = [];
 
     const updateSafeBottom = () => {
       if (disposed) return;
@@ -170,7 +170,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           activeEl.tagName === 'TEXTAREA' ||
           (activeEl as HTMLElement).isContentEditable);
 
-      // Update baseline when keyboard is closed
+      // Update baseline when keyboard is closed (no input focused)
       if (!isInputFocused) {
         baseVvHeight = Math.max(baseVvHeight, vvHeight);
       }
@@ -186,18 +186,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
 
-    updateSafeBottom();
+    // Staggered updates for reliable first-open detection
+    const updateStaggered = () => {
+      timers.forEach(t => clearTimeout(t));
+      updateSafeBottom();
+      timers = [
+        window.setTimeout(updateSafeBottom, 50),
+        window.setTimeout(updateSafeBottom, 150),
+        window.setTimeout(updateSafeBottom, 300),
+      ];
+    };
+
+    updateStaggered();
 
     const vv = window.visualViewport;
     vv?.addEventListener('resize', updateSafeBottom);
-    document.addEventListener('focusin', updateSafeBottom);
-    document.addEventListener('focusout', updateSafeBottom);
+    document.addEventListener('focusin', updateStaggered);
+    document.addEventListener('focusout', updateStaggered);
 
     return () => {
       disposed = true;
+      timers.forEach(t => clearTimeout(t));
       vv?.removeEventListener('resize', updateSafeBottom);
-      document.removeEventListener('focusin', updateSafeBottom);
-      document.removeEventListener('focusout', updateSafeBottom);
+      document.removeEventListener('focusin', updateStaggered);
+      document.removeEventListener('focusout', updateStaggered);
 
       html.style.removeProperty('--chat-safe-bottom');
       delete html.dataset.chatKeyboard;
@@ -470,7 +482,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             isChatPage ? 'h-full overflow-hidden' : ''
           )}
         >
-          {isMobile && (
+          {isMobile && !isChatPage && (
             <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button 
