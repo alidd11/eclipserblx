@@ -46,6 +46,7 @@ export default function AdminForumReports() {
       let query = supabase
         .from('forum_reports')
         .select('*')
+        .neq('status', 'resolved')
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {

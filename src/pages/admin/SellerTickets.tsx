@@ -85,7 +85,7 @@ export default function SellerTickets() {
   const { data: tickets, isLoading } = useQuery({
     queryKey: ['admin-seller-tickets'],
     queryFn: async () => {
-      // First fetch tickets
+      // First fetch tickets (exclude closed/resolved - those are in Transcripts)
       const { data: ticketsData, error: ticketsError } = await supabase
         .from('seller_support_tickets')
         .select(`
@@ -95,6 +95,7 @@ export default function SellerTickets() {
             store_id
           )
         `)
+        .not('status', 'in', '("closed","resolved")')
         .order('created_at', { ascending: false });
       
       if (ticketsError) throw ticketsError;
