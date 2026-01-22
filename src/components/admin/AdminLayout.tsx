@@ -87,8 +87,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     };
 
     // Match chat surface behind safe-areas to avoid "grey strip" flashes
-    html.style.backgroundColor = 'hsl(var(--card))';
-    body.style.backgroundColor = 'hsl(var(--card))';
+    // Use the same color for both to ensure safe-area consistency
+    const chatBg = 'hsl(var(--card))';
+    html.style.backgroundColor = chatBg;
+    body.style.backgroundColor = chatBg;
 
     // Lock document scroll to prevent iOS auto-scroll / rubber-banding behind our fixed chat shell
     html.style.overflow = 'hidden';
@@ -115,7 +117,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
     return () => {
       // Restore prior styles (fallback to theme background if previously unset)
-      html.style.backgroundColor = prev.html.backgroundColor || 'hsl(var(--background))';
+      const themeBg = 'hsl(var(--background))';
+      html.style.backgroundColor = prev.html.backgroundColor || themeBg;
       html.style.overflow = prev.html.overflow;
       html.style.overflowX = prev.html.overflowX;
       html.style.position = prev.html.position;
@@ -127,7 +130,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       html.style.height = prev.html.height;
       html.style.maxWidth = prev.html.maxWidth;
 
-      body.style.backgroundColor = prev.body.backgroundColor || 'hsl(var(--background))';
+      body.style.backgroundColor = prev.body.backgroundColor || themeBg;
       body.style.overflow = prev.body.overflow;
       body.style.overflowX = prev.body.overflowX;
       body.style.position = prev.body.position;
