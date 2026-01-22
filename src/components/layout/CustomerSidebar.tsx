@@ -904,40 +904,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       </nav>
 
       {/* Footer */}
-      <div className="p-2 border-t border-border space-y-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {/* Quick Actions Row */}
-        <div className={cn(
-          "flex items-center gap-1 mb-1",
-          isCollapsed ? "flex-col" : "flex-row"
-        )}>
-          {/* Notifications - only show when logged in */}
-          {user && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to="/notifications"
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center justify-center rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-100 active:scale-[0.97]",
-                    isCollapsed ? "py-2.5 w-full" : "h-9 w-9"
-                  )}
-                >
-                  <div className="relative shrink-0">
-                    <Bell className="h-4 w-4" />
-                    {unreadNotifications > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center animate-in zoom-in-50 duration-200">
-                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side={isCollapsed ? "right" : "top"}>
-                Notifications {unreadNotifications > 0 && `(${unreadNotifications} unread)`}
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+      <div className="p-2 space-y-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
 
         {/* User Profile Section */}
         {user ? (
