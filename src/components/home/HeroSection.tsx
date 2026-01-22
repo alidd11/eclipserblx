@@ -30,14 +30,14 @@ export function HeroSection() {
                 Roblox Creator Marketplace
               </div>
 
-              {/* Main heading - specific, not generic */}
+              {/* Main heading */}
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
-                Scripts, Liveries & Assets for Roblox Developers
+                Inspiring Your Innovation
               </h1>
 
               {/* Concise description */}
               <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-                147+ premium assets ready for instant download. Vehicle liveries, UI kits, Discord bots, and more.
+                Premium assets ready for instant download. Vehicle liveries, UI kits, Discord bots, and more.
               </p>
 
               {/* Clean CTAs */}
@@ -51,7 +51,7 @@ export function HeroSection() {
                 <Link to="/eclipse-plus">
                   <Button size="lg" variant="outline" className="text-base px-8 py-6 border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400">
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Eclipse+ — 30% Off Everything
+                    Eclipse+
                   </Button>
                 </Link>
                 <MarketplaceHeroButton />
