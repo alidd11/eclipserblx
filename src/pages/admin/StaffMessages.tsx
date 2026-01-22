@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Users, AtSign, X } from 'lucide-react';
+import { Send, AtSign } from 'lucide-react';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { KeyboardDebugOverlay } from '@/components/admin/KeyboardDebugOverlay';
-import { ChatQuickActions } from '@/components/admin/ChatQuickActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -93,7 +90,6 @@ const renderMessageWithMentions = (message: string, opts?: { isOwn?: boolean }) 
 
   return parts.map((part, index) => {
     if (part.startsWith('@')) {
-      // If the message bubble is already primary-colored, use primary-foreground for contrast.
       const mentionClass = isOwn
         ? 'text-primary-foreground font-medium bg-primary-foreground/15 rounded px-1'
         : 'text-primary font-medium bg-primary/10 rounded px-1';
@@ -127,12 +123,10 @@ function StaffMessagesContent() {
   const [mentionIndex, setMentionIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const inputBarRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // iOS keyboard fix for PWA - now only provides visibility state for scroll behavior
   const { isKeyboardVisible } = useIOSKeyboardFix();
 
   // Mark messages as read when component mounts
@@ -258,19 +252,16 @@ function StaffMessagesContent() {
     const senderProfile = currentUserProfile;
     const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Someone';
 
-    // Check for group mentions
     const hasEveryone = mentions.includes('everyone');
     const hasHere = mentions.includes('here');
 
     let targetUserIds: string[] = [];
 
     if (hasEveryone || hasHere) {
-      // Notify all staff except sender
       targetUserIds = allStaff
         .filter(s => s.user_id !== senderId)
         .map(s => s.user_id);
     } else {
-      // Find specific mentioned users
       targetUserIds = allStaff
         .filter(staff => {
           if (staff.user_id === senderId) return false;
@@ -294,7 +285,6 @@ function StaffMessagesContent() {
           },
         },
       });
-      console.log('Mention notifications sent to', targetUserIds.length, 'users');
     } catch (err) {
       console.error('Failed to send mention notifications:', err);
     }
@@ -315,7 +305,6 @@ function StaffMessagesContent() {
       
       if (error) throw error;
 
-      // Send notifications to mentioned users
       await sendMentionNotifications(message.trim(), user.id);
     },
     onSuccess: () => {
@@ -399,24 +388,21 @@ function StaffMessagesContent() {
     },
   });
 
-  // Scroll to bottom (native scroll)
+  // Scroll to bottom
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, []);
 
-  // Auto-scroll on new messages and initial load
+  // Auto-scroll on new messages
   useEffect(() => {
-    // Immediate scroll
     scrollToBottom();
-    // Delayed scroll to ensure DOM has rendered (especially on initial load)
     const timeoutId = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timeoutId);
   }, [messages, scrollToBottom]);
 
-  // Keep the newest messages visible when the iOS keyboard opens/closes (PWA)
-  // Only respond to significant viewport changes (keyboard open/close), not scroll events
+  // Handle viewport resize for keyboard
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
@@ -425,13 +411,11 @@ function StaffMessagesContent() {
     let raf = 0;
 
     const handleViewportResize = () => {
-      // Only scroll if viewport height changed significantly (keyboard open/close)
       const heightDelta = Math.abs(vv.height - lastHeight);
       if (heightDelta > 50) {
         lastHeight = vv.height;
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
-          // Reset any document scroll iOS might have caused
           window.scrollTo(0, 0);
           scrollToBottom();
         });
@@ -439,7 +423,6 @@ function StaffMessagesContent() {
     };
 
     vv.addEventListener('resize', handleViewportResize);
-    // Removed scroll listener - it causes conflicts with iOS auto-scroll
 
     return () => {
       cancelAnimationFrame(raf);
@@ -447,22 +430,19 @@ function StaffMessagesContent() {
     };
   }, [scrollToBottom]);
 
-  // Extra reliability: when keyboard state changes, force scroll to latest with aggressive scroll lock
+  // Keyboard visibility scroll lock
   useEffect(() => {
     if (!isKeyboardVisible) return;
 
-    // Aggressively reset document scroll during keyboard animation to prevent iOS auto-scroll
     const lockScroll = () => {
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     };
 
-    // Lock scroll position during keyboard opening animation
     lockScroll();
     const lockInterval = setInterval(lockScroll, 16);
 
-    // Stop after keyboard animation completes (~350ms) and scroll to bottom
     const cleanup = setTimeout(() => {
       clearInterval(lockInterval);
       scrollToBottom();
@@ -474,31 +454,19 @@ function StaffMessagesContent() {
     };
   }, [isKeyboardVisible, scrollToBottom]);
 
-  // Real-time subscription for messages and reactions
+  // Real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('staff-chat-realtime')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'staff_chat_messages',
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
-        }
+        { event: '*', schema: 'public', table: 'staff_chat_messages' },
+        () => queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] })
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'staff_chat_reactions',
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['staff-chat-reactions'] });
-        }
+        { event: '*', schema: 'public', table: 'staff_chat_reactions' },
+        () => queryClient.invalidateQueries({ queryKey: ['staff-chat-reactions'] })
       )
       .subscribe();
 
@@ -550,7 +518,6 @@ function StaffMessagesContent() {
     };
   }, [user?.id, currentUserProfile]);
 
-
   // Handle typing indicator
   const handleTyping = useCallback(() => {
     if (!user?.id || !currentUserProfile || !presenceChannelRef.current) return;
@@ -582,8 +549,6 @@ function StaffMessagesContent() {
     setNewMessage(value);
     handleTyping();
 
-    // Check for @ mention trigger
-    // Safari/iOS PWA can report selectionStart as 0 during onChange; treat that as "end" for chat.
     const rawCursorPos = e.target.selectionStart;
     const cursorPos =
       rawCursorPos == null
@@ -617,17 +582,13 @@ function StaffMessagesContent() {
 
     const textBeforeCursor = newMessage.slice(0, cursorPos);
     const textAfterCursor = newMessage.slice(cursorPos);
-
-    // Find the @ position
     const atPos = textBeforeCursor.lastIndexOf('@');
     
     let newText: string;
     if (atPos === -1) {
-      // Quick action: no @ in text, just append the mention
       const prefix = newMessage.length > 0 && !newMessage.endsWith(' ') ? ' ' : '';
       newText = newMessage + prefix + `@${name} `;
     } else {
-      // Autocomplete: replace from @ position
       newText = textBeforeCursor.slice(0, atPos) + `@${name} ` + textAfterCursor;
     }
     
@@ -635,7 +596,6 @@ function StaffMessagesContent() {
     setShowMentionSuggestions(false);
     setMentionFilter('');
 
-    // Focus back on input
     setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
@@ -654,7 +614,6 @@ function StaffMessagesContent() {
     }
   };
 
-  // Create a map of messages for easy lookup
   const messagesMap = useMemo(() => {
     return Object.fromEntries(messages.map(m => [m.id, m]));
   }, [messages]);
@@ -698,249 +657,211 @@ function StaffMessagesContent() {
   };
 
   return (
+    <div 
+      className="h-full flex flex-col bg-card"
+      style={{ overscrollBehavior: 'none' }}
+    >
+      {/* Messages area - fills available space */}
       <div 
-        className="h-full flex flex-col overflow-hidden overflow-x-hidden px-0 sm:px-4 pb-0 bg-card overscroll-contain"
-        style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}
+        ref={scrollRef} 
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
       >
-      <KeyboardDebugOverlay />
-      {/* Header */}
-      <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Staff Messages</h1>
-          <p className="text-xs sm:text-base text-muted-foreground">Real-time communication with your team • Use @mentions to notify</p>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <span className="text-sm hidden sm:inline">Team Chat</span>
+        <div className="py-4 flex flex-col">
+          {isLoading ? (
+            <div className="text-center text-muted-foreground py-8">
+              Loading messages...
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              No messages yet. Start the conversation!
+            </div>
+          ) : (
+            messages.map((message, index) => {
+              const isOwn = message.user_id === user?.id;
+              const role = userRoles[message.user_id];
+              const roleBadge = role ? roleBadges[role] : null;
+              
+              const prevMessage = index > 0 ? messages[index - 1] : null;
+              const isGrouped = prevMessage && 
+                prevMessage.user_id === message.user_id &&
+                (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime()) <= 30000;
+
+              return (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex gap-2 sm:gap-3 group',
+                    isOwn && 'flex-row-reverse',
+                    isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
+                  )}
+                >
+                  {isGrouped ? (
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0" />
+                  ) : (
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                      <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                        {getInitials(message.user_id)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
+                    {!isGrouped && (
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs sm:text-sm font-medium text-foreground">
+                          {getDisplayName(message.user_id)}
+                        </span>
+                        {roleBadge && (
+                          <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
+                            {roleBadge.label}
+                          </Badge>
+                        )}
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    )}
+                    {message.reply_to_id && messagesMap[message.reply_to_id] && (
+                      <QuotedMessage
+                        message={messagesMap[message.reply_to_id].message}
+                        senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
+                        isCompact
+                        className="mb-1 max-w-full"
+                      />
+                    )}
+                    <div
+                      className={cn(
+                        'rounded-2xl px-3 py-2 text-sm break-words',
+                        isOwn
+                          ? 'bg-primary text-primary-foreground rounded-br-md'
+                          : 'bg-muted text-foreground rounded-bl-md'
+                      )}
+                    >
+                      {renderMessageWithMentions(message.message, { isOwn })}
+                    </div>
+                    <ChatMessageActions
+                      messageId={message.id}
+                      isOwn={isOwn}
+                      canDelete={canDeleteMessage(message.user_id)}
+                      reactions={reactions.filter(r => r.message_id === message.id)}
+                      currentUserId={user?.id || ''}
+                      onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
+                      onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
+                      onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
+                      onReply={handleReply}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
-      {/* Chat Card - fills remaining space, flush edge-to-edge on mobile */}
-      <Card className="bg-card sm:bg-card/50 sm:backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden rounded-none sm:rounded-lg border-x-0 sm:border-x border-b-0 sm:border-b sm:mb-4">
-        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 flex-shrink-0">
-          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            Staff Chat
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden overscroll-none">
-          {/* Messages area - fills available space with native scroll */}
-        <div 
-          ref={scrollRef} 
-          className="flex-1 px-3 sm:px-4 overflow-y-auto overflow-x-hidden overscroll-contain"
-          style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
-        >
-            <div className="py-4 flex flex-col">
-              {isLoading ? (
-                <div className="text-center text-muted-foreground py-8">
-                  Loading messages...
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  No messages yet. Start the conversation!
-                </div>
-              ) : (
-              messages.map((message, index) => {
-                  const isOwn = message.user_id === user?.id;
-                  const role = userRoles[message.user_id];
-                  const roleBadge = role ? roleBadges[role] : null;
-                  
-                  // Check if this message should be grouped with the previous one
-                  const prevMessage = index > 0 ? messages[index - 1] : null;
-                  const isGrouped = prevMessage && 
-                    prevMessage.user_id === message.user_id &&
-                    (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime()) <= 30000;
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-3 sm:px-4 py-1 text-xs text-muted-foreground flex-shrink-0">
+          {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+        </div>
+      )}
 
-                  return (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        'flex gap-2 sm:gap-3 group',
-                        isOwn && 'flex-row-reverse',
-                        isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
-                      )}
-                    >
-                      {/* Avatar - invisible spacer when grouped */}
-                      {isGrouped ? (
-                        <div className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0" />
-                      ) : (
-                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                            {getInitials(message.user_id)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
-                        {/* Header - only show for first message in group */}
-                        {!isGrouped && (
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="text-xs sm:text-sm font-medium text-foreground">
-                              {getDisplayName(message.user_id)}
-                            </span>
-                            {roleBadge && (
-                              <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
-                                {roleBadge.label}
-                              </Badge>
-                            )}
-                            <span className="text-[10px] sm:text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                            </span>
-                          </div>
-                        )}
-                        {/* Quoted message if replying */}
-                        {message.reply_to_id && messagesMap[message.reply_to_id] && (
-                          <QuotedMessage
-                            message={messagesMap[message.reply_to_id].message}
-                            senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
-                            isCompact
-                            className="mb-1 max-w-full"
-                          />
-                        )}
-                        <div
-                          className={cn(
-                            'rounded-lg px-3 py-2 text-sm break-words',
-                            isOwn
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-foreground'
-                          )}
-                        >
-                          {renderMessageWithMentions(message.message, { isOwn })}
-                        </div>
-                        <ChatMessageActions
-                          messageId={message.id}
-                          isOwn={isOwn}
-                          canDelete={canDeleteMessage(message.user_id)}
-                          reactions={reactions.filter(r => r.message_id === message.id)}
-                          currentUserId={user?.id || ''}
-                          onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
-                          onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
-                          onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
-                          onReply={handleReply}
-                        />
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Typing indicator */}
-          {typingUsers.length > 0 && (
-            <div className="px-3 sm:px-4 py-2 text-sm text-muted-foreground flex-shrink-0">
-              {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
-            </div>
-          )}
-
-          {/* Reply preview */}
-          {replyToMessage && (
-            <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
-              <QuotedMessage
-                message={replyToMessage.message}
-                senderName={getDisplayName(replyToMessage.user_id)}
-                onClear={() => setReplyToMessage(null)}
-              />
-            </div>
-          )}
-
-          {/* Message input with mention suggestions - stays in flex flow */}
-          <div 
-            ref={inputBarRef}
-            className="px-3 py-2 sm:px-4 sm:py-3 border-t border-border/50 relative flex-shrink-0 bg-card sm:bg-card/95 sm:backdrop-blur-sm"
-          >
-            {/* Mention suggestions dropdown */}
-            {showMentionSuggestions && (
-              <div className="absolute bottom-full left-3 right-3 sm:left-4 sm:right-4 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[100]">
-                {isStaffLoading ? (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">Loading team…</div>
-                ) : staffError ? (
-                  <button
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
-                    onClick={() => refetchStaff()}
-                  >
-                    Couldn’t load team members. Tap to retry.
-                  </button>
-                ) : allSuggestions.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
-                ) : (
-                  allSuggestions.map((suggestion, index) => (
-                    <button
-                      key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
-                      className={cn(
-                        'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
-                        index === mentionIndex && 'bg-accent'
-                      )}
-                      onClick={() => {
-                        const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
-                        insertMention(name);
-                      }}
-                    >
-                      {suggestion.type === 'group' ? (
-                        <>
-                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
-                            <AtSign className="h-3 w-3 text-primary" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-sm">@{suggestion.name}</div>
-                            <div className="text-xs text-muted-foreground">{suggestion.description}</div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                              {(suggestion.display_name || suggestion.email)[0].toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {suggestion.display_name || suggestion.email.split('@')[0]}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Input
-                ref={inputRef}
-                value={newMessage}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onFocus={() => {
-                  // Prevent iOS from scrolling the document to show the input
-                  // Reset any scroll and then scroll our messages container
-                  requestAnimationFrame(() => {
-                    window.scrollTo(0, 0);
-                    scrollToBottom();
-                  });
-                }}
-                placeholder="Type a message... Use @ to mention"
-                className="flex-1 min-w-0"
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!newMessage.trim() || sendMessageMutation.isPending}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Quick Actions Tab Bar */}
-          <ChatQuickActions 
-            variant="staff" 
-            onMentionInsert={insertMention}
-            onlineCount={typingUsers.length}
+      {/* Reply preview */}
+      {replyToMessage && (
+        <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0 bg-muted/30">
+          <QuotedMessage
+            message={replyToMessage.message}
+            senderName={getDisplayName(replyToMessage.user_id)}
+            onClear={() => setReplyToMessage(null)}
           />
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {/* Input bar - iMessage style */}
+      <div className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[env(safe-area-inset-bottom)] relative">
+        {/* Mention suggestions */}
+        {showMentionSuggestions && (
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
+            {isStaffLoading ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">Loading team…</div>
+            ) : staffError ? (
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
+                onClick={() => refetchStaff()}
+              >
+                Couldn't load team members. Tap to retry.
+              </button>
+            ) : allSuggestions.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
+            ) : (
+              allSuggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                  className={cn(
+                    'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                    index === mentionIndex && 'bg-accent'
+                  )}
+                  onClick={() => {
+                    const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
+                    insertMention(name);
+                  }}
+                >
+                  {suggestion.type === 'group' ? (
+                    <>
+                      <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                        <AtSign className="h-3 w-3 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm">@{suggestion.name}</div>
+                        <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                          {(suggestion.display_name || suggestion.email)[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {suggestion.display_name || suggestion.email.split('@')[0]}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2 items-center">
+          <Input
+            ref={inputRef}
+            value={newMessage}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              requestAnimationFrame(() => {
+                window.scrollTo(0, 0);
+                scrollToBottom();
+              });
+            }}
+            placeholder="Message..."
+            className="flex-1 min-w-0 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
+          />
+          <Button
+            onClick={handleSend}
+            disabled={!newMessage.trim() || sendMessageMutation.isPending}
+            size="icon"
+            className="rounded-full h-9 w-9 flex-shrink-0"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

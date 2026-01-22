@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Shield, Users, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
+import { Send, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { KeyboardDebugOverlay } from '@/components/admin/KeyboardDebugOverlay';
-import { ChatQuickActions } from '@/components/admin/ChatQuickActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -101,7 +98,6 @@ const renderMessageWithMentions = (message: string, opts?: { isOwn?: boolean }) 
 
   return parts.map((part, index) => {
     if (part.startsWith('@')) {
-      // If the message bubble is already primary-colored, use primary-foreground for contrast.
       const mentionClass = isOwn
         ? 'text-primary-foreground font-medium bg-primary-foreground/15 rounded px-1'
         : 'text-primary font-medium bg-primary/10 rounded px-1';
@@ -142,13 +138,11 @@ function AdminChatContent() {
   const [mentionIndex, setMentionIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const inputBarRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // iOS keyboard fix for PWA - now only provides visibility state for scroll behavior
   const { isKeyboardVisible } = useIOSKeyboardFix();
 
   // Mark messages as read when component mounts
@@ -221,7 +215,6 @@ function AdminChatContent() {
   } = useQuery({
     queryKey: ['all-admin-members'],
     queryFn: async () => {
-      // Get all users with admin role
       const { data: adminRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id')
@@ -270,18 +263,15 @@ function AdminChatContent() {
     const senderProfile = currentUserProfile;
     const senderName = senderProfile?.display_name || senderProfile?.email?.split('@')[0] || 'Someone';
 
-    // Check for group mentions
     const hasEveryone = mentions.includes('everyone');
 
     let targetUserIds: string[] = [];
 
     if (hasEveryone) {
-      // Notify all admins except sender
       targetUserIds = allAdmins
         .filter(a => a.user_id !== senderId)
         .map(a => a.user_id);
     } else {
-      // Find specific mentioned admins
       targetUserIds = allAdmins
         .filter(admin => {
           if (admin.user_id === senderId) return false;
@@ -305,7 +295,6 @@ function AdminChatContent() {
           },
         },
       });
-      console.log('Admin mention notifications sent to', targetUserIds.length, 'users');
     } catch (err) {
       console.error('Failed to send admin mention notifications:', err);
     }
@@ -315,7 +304,6 @@ function AdminChatContent() {
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!user?.id) return null;
 
-    // Security scan
     toast.info('Scanning file...', { id: 'admin-chat-scan' });
     const scanResult = await performSecurityScan(file);
     
@@ -362,7 +350,6 @@ function AdminChatContent() {
       
       if (error) throw error;
 
-      // Send notifications to mentioned admins
       if (message.trim()) {
         await sendMentionNotifications(message.trim(), user.id);
       }
@@ -449,24 +436,21 @@ function AdminChatContent() {
     },
   });
 
-  // Scroll to bottom (native scroll)
+  // Scroll to bottom
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, []);
 
-  // Auto-scroll on new messages and initial load
+  // Auto-scroll on new messages
   useEffect(() => {
-    // Immediate scroll
     scrollToBottom();
-    // Delayed scroll to ensure DOM has rendered (especially on initial load)
     const timeoutId = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timeoutId);
   }, [messages, scrollToBottom]);
 
-  // Keep the newest messages visible when the iOS keyboard opens/closes (PWA)
-  // Only respond to significant viewport changes (keyboard open/close), not scroll events
+  // Handle viewport resize for keyboard
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
@@ -475,13 +459,11 @@ function AdminChatContent() {
     let raf = 0;
 
     const handleViewportResize = () => {
-      // Only scroll if viewport height changed significantly (keyboard open/close)
       const heightDelta = Math.abs(vv.height - lastHeight);
       if (heightDelta > 50) {
         lastHeight = vv.height;
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
-          // Reset any document scroll iOS might have caused
           window.scrollTo(0, 0);
           scrollToBottom();
         });
@@ -489,7 +471,6 @@ function AdminChatContent() {
     };
 
     vv.addEventListener('resize', handleViewportResize);
-    // Removed scroll listener - it causes conflicts with iOS auto-scroll
 
     return () => {
       cancelAnimationFrame(raf);
@@ -497,22 +478,19 @@ function AdminChatContent() {
     };
   }, [scrollToBottom]);
 
-  // Extra reliability: when keyboard state changes, force scroll to latest with aggressive scroll lock
+  // Keyboard visibility scroll lock
   useEffect(() => {
     if (!isKeyboardVisible) return;
 
-    // Aggressively reset document scroll during keyboard animation to prevent iOS auto-scroll
     const lockScroll = () => {
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     };
 
-    // Lock scroll position during keyboard opening animation
     lockScroll();
     const lockInterval = setInterval(lockScroll, 16);
 
-    // Stop after keyboard animation completes (~350ms) and scroll to bottom
     const cleanup = setTimeout(() => {
       clearInterval(lockInterval);
       scrollToBottom();
@@ -524,7 +502,7 @@ function AdminChatContent() {
     };
   }, [isKeyboardVisible, scrollToBottom]);
 
-  // Real-time subscription for messages and reactions
+  // Real-time subscription
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -532,25 +510,13 @@ function AdminChatContent() {
       .channel('admin-chat-realtime')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_chat_messages',
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
-        }
+        { event: '*', schema: 'public', table: 'admin_chat_messages' },
+        () => queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] })
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_chat_reactions',
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['admin-chat-reactions'] });
-        }
+        { event: '*', schema: 'public', table: 'admin_chat_reactions' },
+        () => queryClient.invalidateQueries({ queryKey: ['admin-chat-reactions'] })
       )
       .subscribe();
 
@@ -576,14 +542,12 @@ function AdminChatContent() {
         
         Object.values(state).forEach((presences: any[]) => {
           presences.forEach((presence) => {
-            // Track all online admins
             if (presence.user_id && presence.name) {
               online.push({
                 user_id: presence.user_id,
                 name: presence.name,
               });
             }
-            // Track typing admins (excluding self)
             if (presence.typing && presence.user_id !== user.id) {
               typing.push({
                 user_id: presence.user_id,
@@ -593,7 +557,6 @@ function AdminChatContent() {
           });
         });
         
-        // Dedupe online admins by user_id
         const uniqueOnline = online.filter((admin, index, arr) => 
           arr.findIndex(a => a.user_id === admin.user_id) === index
         );
@@ -648,8 +611,6 @@ function AdminChatContent() {
     setNewMessage(value);
     handleTyping();
 
-    // Check for @ mention trigger
-    // Safari/iOS PWA can report selectionStart as 0 during onChange; treat that as "end" for chat.
     const rawCursorPos = e.target.selectionStart;
     const cursorPos =
       rawCursorPos == null
@@ -683,17 +644,13 @@ function AdminChatContent() {
 
     const textBeforeCursor = newMessage.slice(0, cursorPos);
     const textAfterCursor = newMessage.slice(cursorPos);
-
-    // Find the @ position
     const atPos = textBeforeCursor.lastIndexOf('@');
     
     let newText: string;
     if (atPos === -1) {
-      // Quick action: no @ in text, just append the mention
       const prefix = newMessage.length > 0 && !newMessage.endsWith(' ') ? ' ' : '';
       newText = newMessage + prefix + `@${name} `;
     } else {
-      // Autocomplete: replace from @ position
       newText = textBeforeCursor.slice(0, atPos) + `@${name} ` + textAfterCursor;
     }
     
@@ -701,7 +658,6 @@ function AdminChatContent() {
     setShowMentionSuggestions(false);
     setMentionFilter('');
 
-    // Focus back on input
     setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
@@ -717,7 +673,6 @@ function AdminChatContent() {
 
   // Process file (shared by file input and drag-drop)
   const processFile = useCallback((file: File) => {
-    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error('File too large', { description: 'Maximum file size is 10MB' });
       return;
@@ -770,7 +725,6 @@ function AdminChatContent() {
     }
   };
 
-  // Create a map of messages for easy lookup
   const messagesMap = useMemo(() => {
     return Object.fromEntries(messages.map(m => [m.id, m]));
   }, [messages]);
@@ -824,364 +778,317 @@ function AdminChatContent() {
   }
 
   return (
-      <div 
-        className="h-full flex flex-col overflow-hidden overflow-x-hidden px-0 sm:px-4 pb-0 bg-card overscroll-contain"
-        style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}
-      >
-      <KeyboardDebugOverlay />
-      {/* Header */}
-      <div className="flex items-center justify-between py-2 sm:py-4 px-3 sm:px-0 flex-shrink-0">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Admin Chat</h1>
-          <p className="text-xs sm:text-base text-muted-foreground">
-            Private channel for administrators only • Use @mentions to notify
-            {onlineAdmins.length > 0 && (
-              <span className="text-green-400 ml-2">• {onlineAdmins.length} online</span>
-            )}
-          </p>
+    <div 
+      className={cn(
+        "h-full flex flex-col bg-card transition-colors",
+        isDragOver && "ring-2 ring-primary ring-inset"
+      )}
+      style={{ overscrollBehavior: 'none' }}
+      {...dragProps}
+    >
+      {/* Drag overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-primary">
+            <Upload className="h-12 w-12 animate-bounce" />
+            <span className="text-lg font-medium">Drop file here</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Shield className="h-4 w-4" />
-          <span className="text-sm hidden sm:inline">Admins Only</span>
+      )}
+
+      {/* Messages area - fills available space */}
+      <div 
+        ref={scrollRef} 
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+      >
+        <div className="py-4 flex flex-col">
+          {isLoading ? (
+            <div className="text-center text-muted-foreground py-8">
+              Loading messages...
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8 space-y-2">
+              <p>No messages yet.</p>
+              <p className="text-sm">Start a private admin conversation!</p>
+            </div>
+          ) : (
+            messages.map((message, index) => {
+              const isOwn = message.user_id === user?.id;
+              
+              const prevMessage = index > 0 ? messages[index - 1] : null;
+              const isGrouped = prevMessage && 
+                prevMessage.user_id === message.user_id &&
+                (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime()) <= 30000;
+
+              return (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex gap-2 sm:gap-3 group min-w-0 max-w-full',
+                    isOwn && 'flex-row-reverse',
+                    isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
+                  )}
+                >
+                  {isGrouped ? (
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0" />
+                  ) : (
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                      <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                        {getInitials(message.user_id)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%] min-w-0', isOwn ? 'items-end' : 'items-start')}>
+                    {!isGrouped && (
+                      <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0 max-w-full">
+                        <span className="text-xs sm:text-sm font-medium text-foreground">
+                          {getDisplayName(message.user_id)}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] sm:text-xs py-0 bg-red-500/20 text-red-400 border-red-500/30">
+                          Admin
+                        </Badge>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Attachment preview */}
+                    {message.attachment_url && (
+                      <div className="mb-2 max-w-full min-w-0">
+                        {isImageUrl(message.attachment_url) ? (
+                          <a 
+                            href={message.attachment_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="block max-w-full"
+                          >
+                            <img 
+                              src={message.attachment_url} 
+                              alt="Attachment" 
+                              className="block max-w-full max-h-64 rounded-lg border border-border/50 hover:opacity-90 transition-opacity object-contain"
+                            />
+                          </a>
+                        ) : (
+                          <a
+                            href={message.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/50 hover:bg-muted transition-colors max-w-full min-w-0 overflow-hidden"
+                          >
+                            <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm truncate min-w-0 max-w-[150px] sm:max-w-[200px]">
+                              {getFileName(message.attachment_url)}
+                            </span>
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Quoted message if replying */}
+                    {message.reply_to_id && messagesMap[message.reply_to_id] && (
+                      <QuotedMessage
+                        message={messagesMap[message.reply_to_id].message}
+                        senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
+                        isCompact
+                        className="mb-1 max-w-full"
+                      />
+                    )}
+
+                    {/* Message text */}
+                    {message.message && message.message !== '📎 Attachment' && (
+                      <div
+                        className={cn(
+                          'rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words max-w-full',
+                          isOwn
+                            ? 'bg-primary text-primary-foreground rounded-br-md'
+                            : 'bg-muted text-foreground rounded-bl-md'
+                        )}
+                      >
+                        {renderMessageWithMentions(message.message, { isOwn })}
+                      </div>
+                    )}
+                    
+                    <ChatMessageActions
+                      messageId={message.id}
+                      isOwn={isOwn}
+                      canDelete={true}
+                      reactions={reactions.filter(r => r.message_id === message.id)}
+                      currentUserId={user?.id || ''}
+                      onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
+                      onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
+                      onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
+                      onReply={handleReply}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
-      {/* Chat Card - fills remaining space, flush edge-to-edge on mobile */}
-      <Card 
-        className={cn(
-          "bg-card sm:bg-card/50 sm:backdrop-blur border-border/50 flex-1 flex flex-col min-h-0 overflow-hidden transition-colors rounded-none sm:rounded-lg border-x-0 sm:border-x border-b-0 sm:border-b sm:mb-4",
-          isDragOver && "border-primary border-2 bg-primary/5"
-        )}
-        {...dragProps}
-      >
-        {/* Drag overlay */}
-        {isDragOver && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg pointer-events-none">
-            <div className="flex flex-col items-center gap-2 text-primary">
-              <Upload className="h-12 w-12 animate-bounce" />
-              <span className="text-lg font-medium">Drop file here</span>
-            </div>
-          </div>
-        )}
-        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 flex-shrink-0">
-          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            Admin Chat
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 flex-1 flex flex-col min-h-0 overflow-hidden overscroll-none">
-          {/* Messages area - fills available space with native scroll */}
-          <div 
-            ref={scrollRef} 
-            className="flex-1 px-3 sm:px-4 overflow-y-auto overflow-x-hidden overscroll-contain"
-            style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
-          >
-            <div className="py-4 flex flex-col">
-              {isLoading ? (
-                <div className="text-center text-muted-foreground py-8">
-                  Loading messages...
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8 space-y-2">
-                  <Users className="h-12 w-12 mx-auto opacity-50" />
-                  <p>No messages yet.</p>
-                  <p className="text-sm">Start a private admin conversation!</p>
-                </div>
-              ) : (
-              messages.map((message, index) => {
-                  const isOwn = message.user_id === user?.id;
-                  
-                  // Check if this message should be grouped with the previous one
-                  const prevMessage = index > 0 ? messages[index - 1] : null;
-                  const isGrouped = prevMessage && 
-                    prevMessage.user_id === message.user_id &&
-                    (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime()) <= 30000;
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-3 sm:px-4 py-1 text-xs text-muted-foreground flex-shrink-0">
+          {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+        </div>
+      )}
 
-                  return (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        'flex gap-2 sm:gap-3 group min-w-0 max-w-full',
-                        isOwn && 'flex-row-reverse',
-                        isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
-                      )}
-                    >
-                      {/* Avatar - invisible spacer when grouped */}
-                      {isGrouped ? (
-                        <div className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0" />
-                      ) : (
-                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                            {getInitials(message.user_id)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%] min-w-0', isOwn ? 'items-end' : 'items-start')}>
-                        {/* Header - only show for first message in group */}
-                        {!isGrouped && (
-                          <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0 max-w-full">
-                            <span className="text-xs sm:text-sm font-medium text-foreground">
-                              {getDisplayName(message.user_id)}
-                            </span>
-                            <Badge variant="outline" className="text-[10px] sm:text-xs py-0 bg-red-500/20 text-red-400 border-red-500/30">
-                              Admin
-                            </Badge>
-                            <span className="text-[10px] sm:text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {/* Attachment preview */}
-                        {message.attachment_url && (
-                          <div className="mb-2 max-w-full min-w-0">
-                            {isImageUrl(message.attachment_url) ? (
-                              <a 
-                                href={message.attachment_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="block max-w-full"
-                              >
-                                <img 
-                                  src={message.attachment_url} 
-                                  alt="Attachment" 
-                                  className="block max-w-full max-h-64 rounded-lg border border-border/50 hover:opacity-90 transition-opacity object-contain"
-                                />
-                              </a>
-                            ) : (
-                              <a
-                                href={message.attachment_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/50 hover:bg-muted transition-colors max-w-full min-w-0 overflow-hidden"
-                              >
-                                <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <span className="text-sm truncate min-w-0 max-w-[150px] sm:max-w-[200px]">
-                                  {getFileName(message.attachment_url)}
-                                </span>
-                              </a>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Quoted message if replying */}
-                        {message.reply_to_id && messagesMap[message.reply_to_id] && (
-                          <QuotedMessage
-                            message={messagesMap[message.reply_to_id].message}
-                            senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
-                            isCompact
-                            className="mb-1 max-w-full"
-                          />
-                        )}
-
-                        {/* Message text */}
-                        {message.message && message.message !== '📎 Attachment' && (
-                          <div
-                            className={cn(
-                              'rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words max-w-full',
-                              isOwn
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-foreground'
-                            )}
-                          >
-                            {renderMessageWithMentions(message.message, { isOwn })}
-                          </div>
-                        )}
-                        
-                        <ChatMessageActions
-                          messageId={message.id}
-                          isOwn={isOwn}
-                          canDelete={true}
-                          reactions={reactions.filter(r => r.message_id === message.id)}
-                          currentUserId={user?.id || ''}
-                          onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
-                          onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
-                          onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
-                          onReply={handleReply}
-                        />
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Typing indicator */}
-          {typingUsers.length > 0 && (
-            <div className="px-3 sm:px-4 py-2 text-sm text-muted-foreground flex-shrink-0">
-              {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
-            </div>
-          )}
-
-          {/* Selected file preview */}
-          {selectedFile && (
-            <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
-              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg min-w-0 overflow-hidden">
-                {selectedFile.type.startsWith('image/') ? (
-                  <Image className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                ) : (
-                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                )}
-                <span className="text-sm truncate flex-1 min-w-0">{selectedFile.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {(selectedFile.size / 1024).toFixed(1)} KB
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setSelectedFile(null)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Reply preview */}
-          {replyToMessage && (
-            <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0">
-              <QuotedMessage
-                message={replyToMessage.message}
-                senderName={getDisplayName(replyToMessage.user_id)}
-                onClear={() => setReplyToMessage(null)}
-              />
-            </div>
-          )}
-
-          {/* Message input - stays in flex flow, browser handles keyboard resize */}
-          <div 
-            ref={inputBarRef}
-            className="px-3 py-2 sm:px-4 sm:py-3 border-t border-border/50 relative flex-shrink-0 bg-card sm:bg-card/95 sm:backdrop-blur-sm"
-          >
-            {/* Mention suggestions dropdown */}
-            {showMentionSuggestions && (
-              <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[100]">
-                {isAdminsLoading ? (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">Loading admins…</div>
-                ) : adminsError ? (
-                  <button
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
-                    onClick={() => refetchAdmins()}
-                  >
-                    Couldn’t load admins. Tap to retry.
-                  </button>
-                ) : allSuggestions.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
-                ) : (
-                  allSuggestions.map((suggestion, index) => (
-                    <button
-                      key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
-                      className={cn(
-                        'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
-                        index === mentionIndex && 'bg-accent'
-                      )}
-                      onClick={() => {
-                        const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
-                        insertMention(name);
-                      }}
-                    >
-                      {suggestion.type === 'group' ? (
-                        <>
-                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
-                            <AtSign className="h-3 w-3 text-primary" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-sm">@{suggestion.name}</div>
-                            <div className="text-xs text-muted-foreground">{suggestion.description}</div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs bg-red-500/20 text-red-400">
-                              {(suggestion.display_name || suggestion.email.split('@')[0]).slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {suggestion.display_name || suggestion.email.split('@')[0]}
-                            </div>
-                          </div>
-                          <Badge
-                            variant="outline"
-                            className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30"
-                          >
-                            Admin
-                          </Badge>
-                        </>
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
+      {/* Selected file preview */}
+      {selectedFile && (
+        <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0 bg-muted/30">
+          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg min-w-0 overflow-hidden">
+            {selectedFile.type.startsWith('image/') ? (
+              <Image className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            ) : (
+              <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             )}
-
-            <div className="flex gap-2">
-              {/* Hidden file input */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileSelect}
-                className="hidden"
-                accept="image/*,.pdf,.doc,.docx,.txt,.zip"
-              />
-
-              {/* Attachment button */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="flex-shrink-0"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                <Paperclip className="h-4 w-4" />
-              </Button>
-
-              <Input
-                ref={inputRef}
-                value={newMessage}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onFocus={() => {
-                  // Prevent iOS from scrolling the document to show the input
-                  // Reset any scroll and then scroll our messages container
-                  requestAnimationFrame(() => {
-                    window.scrollTo(0, 0);
-                    scrollToBottom();
-                  });
-                }}
-                placeholder="Type a message... Use @ to mention"
-                className="flex-1 min-w-0"
-                disabled={isUploading}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
-                size="icon"
-                className="flex-shrink-0"
-              >
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            <span className="text-sm truncate flex-1 min-w-0">{selectedFile.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {(selectedFile.size / 1024).toFixed(1)} KB
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setSelectedFile(null)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
           </div>
-          
-          {/* Quick Actions Tab Bar */}
-          <ChatQuickActions 
-            variant="admin" 
-            onMentionInsert={insertMention}
-            onAttach={() => fileInputRef.current?.click()}
-            onlineCount={onlineAdmins.length}
+        </div>
+      )}
+
+      {/* Reply preview */}
+      {replyToMessage && (
+        <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0 bg-muted/30">
+          <QuotedMessage
+            message={replyToMessage.message}
+            senderName={getDisplayName(replyToMessage.user_id)}
+            onClear={() => setReplyToMessage(null)}
           />
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {/* Input bar - iMessage style */}
+      <div className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[env(safe-area-inset-bottom)] relative">
+        {/* Mention suggestions */}
+        {showMentionSuggestions && (
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
+            {isAdminsLoading ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">Loading admins…</div>
+            ) : adminsError ? (
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
+                onClick={() => refetchAdmins()}
+              >
+                Couldn't load admins. Tap to retry.
+              </button>
+            ) : allSuggestions.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
+            ) : (
+              allSuggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                  className={cn(
+                    'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                    index === mentionIndex && 'bg-accent'
+                  )}
+                  onClick={() => {
+                    const name = suggestion.type === 'group' ? suggestion.name : getMentionHandle(suggestion);
+                    insertMention(name);
+                  }}
+                >
+                  {suggestion.type === 'group' ? (
+                    <>
+                      <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                        <AtSign className="h-3 w-3 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm">@{suggestion.name}</div>
+                        <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs bg-red-500/20 text-red-400">
+                          {(suggestion.display_name || suggestion.email.split('@')[0]).slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm">@{getMentionHandle(suggestion)}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {suggestion.display_name || suggestion.email.split('@')[0]}
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30"
+                      >
+                        Admin
+                      </Badge>
+                    </>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+        />
+
+        <div className="flex gap-2 items-center">
+          {/* Attachment button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0 rounded-full h-9 w-9"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
+
+          <Input
+            ref={inputRef}
+            value={newMessage}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              requestAnimationFrame(() => {
+                window.scrollTo(0, 0);
+                scrollToBottom();
+              });
+            }}
+            placeholder="Message..."
+            className="flex-1 min-w-0 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
+            disabled={isUploading}
+          />
+          <Button
+            onClick={handleSend}
+            disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
+            size="icon"
+            className="flex-shrink-0 rounded-full h-9 w-9"
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
