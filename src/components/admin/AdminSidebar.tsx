@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent, Ticket
+  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent, Ticket, Bot
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -66,6 +66,7 @@ const navGroups: NavGroup[] = [
       { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'], dividerAfter: true },
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
       { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
+      { title: 'Modmail Bot Setup', icon: Bot, href: '/admin/modmail-bot-setup', roles: ['admin'] },
     ],
   },
   {
