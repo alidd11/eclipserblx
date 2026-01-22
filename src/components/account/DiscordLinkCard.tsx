@@ -19,6 +19,7 @@ interface DiscordLinkCardProps {
   currentDiscordId: string | null;
   currentDiscordUsername: string | null;
   hasEclipsePlus: boolean;
+  accountsLocked?: boolean;
   onUpdate: () => void;
 }
 
@@ -27,6 +28,7 @@ export const DiscordLinkCard = ({
   currentDiscordId,
   currentDiscordUsername,
   hasEclipsePlus,
+  accountsLocked = false,
   onUpdate,
 }: DiscordLinkCardProps) => {
   const [discordId, setDiscordId] = useState("");
@@ -195,23 +197,41 @@ export const DiscordLinkCard = ({
                   </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleUnlink}
-                disabled={isUnlinking}
-                className="text-destructive hover:text-destructive"
-              >
-                <Unlink className="w-4 h-4 mr-1" />
-                {isUnlinking ? "Unlinking..." : "Unlink"}
-              </Button>
+              {!accountsLocked ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUnlink}
+                  disabled={isUnlinking}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Unlink className="w-4 h-4 mr-1" />
+                  {isUnlinking ? "Unlinking..." : "Unlink"}
+                </Button>
+              ) : (
+                <Badge variant="secondary" className="text-xs">
+                  Locked
+                </Badge>
+              )}
             </div>
             
-            {!hasEclipsePlus && (
+            {accountsLocked && (
+              <p className="text-xs text-muted-foreground text-center">
+                Your linked accounts are locked after becoming a seller. Contact staff to request changes.
+              </p>
+            )}
+            
+            {!hasEclipsePlus && !accountsLocked && (
               <p className="text-sm text-muted-foreground text-center">
                 Subscribe to Eclipse+ to get the special Discord role!
               </p>
             )}
+          </div>
+        ) : accountsLocked ? (
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">
+              Your linked accounts are locked. Contact staff to make changes.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">

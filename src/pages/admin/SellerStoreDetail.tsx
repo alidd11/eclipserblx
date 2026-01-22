@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -43,7 +43,9 @@ export default function SellerStoreDetail() {
             discord_username,
             roblox_user_id,
             roblox_username,
-            customer_id
+            customer_id,
+            accounts_locked,
+            accounts_locked_at
           )
         `)
         .eq('id', storeId)
@@ -203,6 +205,51 @@ export default function SellerStoreDetail() {
     },
     onError: (error) => {
       toast.error('Failed to delete: ' + error.message);
+    },
+  });
+
+  // Unlock accounts mutation
+  const unlockAccountsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          accounts_locked: false,
+          accounts_lock_reset_by: user?.id,
+          accounts_lock_reset_at: new Date().toISOString(),
+        })
+        .eq('user_id', store?.owner_id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
+      toast.success('Account links unlocked. User can now update their linked accounts.');
+    },
+    onError: (error) => {
+      toast.error('Failed to unlock: ' + error.message);
+    },
+  });
+
+  // Lock accounts mutation
+  const lockAccountsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          accounts_locked: true,
+          accounts_locked_at: new Date().toISOString(),
+        })
+        .eq('user_id', store?.owner_id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
+      toast.success('Account links locked.');
+    },
+    onError: (error) => {
+      toast.error('Failed to lock: ' + error.message);
     },
   });
 
@@ -430,6 +477,75 @@ export default function SellerStoreDetail() {
                     )}
                   </div>
                 </div>
+                
+                <Separator />
+                
+                {/* Account Lock Status */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      {ownerProfile?.accounts_locked ? (
+                        <Lock className="h-4 w-4" />
+                      ) : (
+                        <Unlock className="h-4 w-4" />
+                      )}
+                      Account Links
+                    </span>
+                    {ownerProfile?.accounts_locked ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">Locked</Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => unlockAccountsMutation.mutate()}
+                          disabled={unlockAccountsMutation.isPending}
+                        >
+                          <Unlock className="h-3 w-3 mr-1" />
+                          Unlock
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-yellow-500 border-yellow-500/30">Unlocked</Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => lockAccountsMutation.mutate()}
+                          disabled={lockAccountsMutation.isPending}
+                        >
+                          <Lock className="h-3 w-3 mr-1" />
+                          Lock
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {ownerProfile?.accounts_locked 
+                      ? 'User cannot change their linked Discord/Roblox accounts.'
+                      : 'User can currently modify their linked accounts. Lock to prevent changes.'}
+                  </p>
+                </div>
+                
+                <Separator />
+
+                {/* Discord Server Invite */}
+                {(store as any).discord_invite && (
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Link2 className="h-4 w-4" />
+                      Discord Server
+                    </span>
+                    <a
+                      href={(store as any).discord_invite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
+                    >
+                      Join Server
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
                 
                 <Separator />
                 

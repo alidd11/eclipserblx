@@ -1643,6 +1643,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accounts_lock_reset_at: string | null
+          accounts_lock_reset_by: string | null
+          accounts_locked: boolean | null
+          accounts_locked_at: string | null
           avatar_url: string | null
           created_at: string
           customer_id: string | null
@@ -1662,6 +1666,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accounts_lock_reset_at?: string | null
+          accounts_lock_reset_by?: string | null
+          accounts_locked?: boolean | null
+          accounts_locked_at?: string | null
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
@@ -1681,6 +1689,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accounts_lock_reset_at?: string | null
+          accounts_lock_reset_by?: string | null
+          accounts_locked?: boolean | null
+          accounts_locked_at?: string | null
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
@@ -2725,6 +2737,7 @@ export type Database = {
         Row: {
           age_confirmed: boolean
           created_at: string | null
+          discord_server_invite: string | null
           expected_products: string | null
           experience: string | null
           id: string
@@ -2745,6 +2758,7 @@ export type Database = {
         Insert: {
           age_confirmed?: boolean
           created_at?: string | null
+          discord_server_invite?: string | null
           expected_products?: string | null
           experience?: string | null
           id?: string
@@ -2765,6 +2779,7 @@ export type Database = {
         Update: {
           age_confirmed?: boolean
           created_at?: string | null
+          discord_server_invite?: string | null
           expected_products?: string | null
           experience?: string | null
           id?: string

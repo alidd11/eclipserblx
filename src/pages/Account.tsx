@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store, Lock } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -144,7 +144,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, display_name, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at')
+        .select('user_id, email, display_name, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at, accounts_locked')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -705,10 +705,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                         setIsUnlinkingDiscord(false);
                       }
                     }}
-                    disabled={isUnlinkingDiscord}
+                    disabled={isUnlinkingDiscord || (profile as any)?.accounts_locked}
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                   >
-                    {isUnlinkingDiscord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Unlink className="w-3.5 h-3.5" />}
+                    {isUnlinkingDiscord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (profile as any)?.accounts_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlink className="w-3.5 h-3.5" />}
                   </Button>
                 </div>
               ) : (
@@ -844,11 +844,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       variant="ghost"
                       size="icon"
                       onClick={handleUnlinkRoblox}
-                      disabled={isUnlinkingRoblox}
+                      disabled={isUnlinkingRoblox || (profile as any)?.accounts_locked}
                       className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     >
                       {isUnlinkingRoblox ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (profile as any)?.accounts_locked ? (
+                        <Lock className="w-3.5 h-3.5" />
                       ) : (
                         <Unlink className="w-3.5 h-3.5" />
                       )}

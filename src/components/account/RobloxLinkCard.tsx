@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -13,9 +14,10 @@ interface RobloxLinkCardProps {
   userId: string;
   robloxUserId: string | null;
   robloxUsername: string | null;
+  accountsLocked?: boolean;
 }
 
-export function RobloxLinkCard({ userId, robloxUserId, robloxUsername }: RobloxLinkCardProps) {
+export function RobloxLinkCard({ userId, robloxUserId, robloxUsername, accountsLocked = false }: RobloxLinkCardProps) {
   const queryClient = useQueryClient();
   const [inputUsername, setInputUsername] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -123,51 +125,70 @@ export function RobloxLinkCard({ userId, robloxUserId, robloxUsername }: RobloxL
       <CardContent className="space-y-4">
         {isLinked ? (
           // Linked state
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage 
-                  src={getAvatarUrl(robloxUserId!)} 
-                  alt={robloxUsername!} 
-                />
-                <AvatarFallback className="bg-primary/10">
-                  <Gamepad2 className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium text-sm">{robloxUsername}</p>
-                <p className="text-xs text-muted-foreground">ID: {robloxUserId}</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage 
+                    src={getAvatarUrl(robloxUserId!)} 
+                    alt={robloxUsername!} 
+                  />
+                  <AvatarFallback className="bg-primary/10">
+                    <Gamepad2 className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-sm">{robloxUsername}</p>
+                  <p className="text-xs text-muted-foreground">ID: {robloxUserId}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="text-muted-foreground"
+                >
+                  <a
+                    href={`https://www.roblox.com/users/${robloxUserId}/profile`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+                {!accountsLocked ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUnlink}
+                    disabled={isUnlinking}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    {isUnlinking ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Unlink className="h-4 w-4" />
+                    )}
+                  </Button>
+                ) : (
+                  <Badge variant="secondary" className="text-xs">
+                    Locked
+                  </Badge>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="text-muted-foreground"
-              >
-                <a
-                  href={`https://www.roblox.com/users/${robloxUserId}/profile`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleUnlink}
-                disabled={isUnlinking}
-                className="text-destructive hover:text-destructive"
-              >
-                {isUnlinking ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Unlink className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            {accountsLocked && (
+              <p className="text-xs text-muted-foreground">
+                Your linked accounts are locked after becoming a seller. Contact staff to request changes.
+              </p>
+            )}
+          </div>
+        ) : accountsLocked ? (
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">
+              Your linked accounts are locked. Contact staff to make changes.
+            </p>
           </div>
         ) : (
           // Unlinked state

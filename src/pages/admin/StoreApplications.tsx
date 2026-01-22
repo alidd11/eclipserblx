@@ -23,6 +23,7 @@ interface StoreApplication {
   expected_products: string | null;
   portfolio_url: string | null;
   experience: string | null;
+  discord_server_invite: string | null;
   status: 'pending' | 'approved' | 'rejected';
   rejection_reason: string | null;
   reviewed_by: string | null;
@@ -33,6 +34,8 @@ interface StoreApplication {
     display_name: string | null;
     email: string;
     customer_id: string | null;
+    discord_username: string | null;
+    roblox_username: string | null;
   };
 }
 
@@ -54,7 +57,9 @@ export default function StoreApplications() {
           profiles:user_id (
             display_name,
             email,
-            customer_id
+            customer_id,
+            discord_username,
+            roblox_username
           )
         `)
         .order('created_at', { ascending: false });
@@ -78,7 +83,7 @@ export default function StoreApplications() {
 
       if (updateError) throw updateError;
 
-      // 2. Create the store
+      // 2. Create the store with discord server invite
       const slug = application.store_name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -91,6 +96,7 @@ export default function StoreApplications() {
           name: application.store_name,
           slug: `${slug}-${Date.now().toString(36)}`,
           description: application.store_description,
+          discord_invite: application.discord_server_invite,
           status: 'approved',
           is_active: true,
           reviewed_by: user?.id,
@@ -110,6 +116,20 @@ export default function StoreApplications() {
         } as any);
 
       if (balanceError) throw balanceError;
+
+      // 4. Lock the user's linked accounts
+      const { error: lockError } = await supabase
+        .from('profiles')
+        .update({
+          accounts_locked: true,
+          accounts_locked_at: new Date().toISOString(),
+        })
+        .eq('user_id', application.user_id);
+
+      if (lockError) {
+        console.error('Failed to lock accounts:', lockError);
+        // Don't fail the whole operation for this
+      }
 
       return store;
     },
@@ -357,6 +377,21 @@ export default function StoreApplications() {
                           className="text-sm text-primary hover:underline flex items-center gap-1"
                         >
                           {selectedApplication.portfolio_url}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    )}
+
+                    {selectedApplication.discord_server_invite && (
+                      <div>
+                        <Label className="text-muted-foreground text-xs">Discord Server Invite</Label>
+                        <a 
+                          href={selectedApplication.discord_server_invite} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                        >
+                          {selectedApplication.discord_server_invite}
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
