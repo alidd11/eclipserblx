@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store, Lock } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store, Lock, Clock } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -144,7 +144,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, display_name, username, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at, accounts_locked')
+        .select('user_id, email, display_name, username, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at, accounts_locked, display_name_changed_at')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -280,15 +280,40 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     return () => clearTimeout(timeoutId);
   }, [newUsername, editingUsername, profile?.display_name]);
 
+  // Calculate cooldown for display name changes (30 days)
+  const displayNameCooldownDays = 30;
+  const displayNameCooldownMs = displayNameCooldownDays * 24 * 60 * 60 * 1000;
+  
+  const getDisplayNameCooldownInfo = () => {
+    if (!profile?.display_name_changed_at) return { onCooldown: false, remainingDays: 0 };
+    const lastChanged = new Date(profile.display_name_changed_at).getTime();
+    const cooldownEnds = lastChanged + displayNameCooldownMs;
+    const now = Date.now();
+    if (now >= cooldownEnds) return { onCooldown: false, remainingDays: 0 };
+    const remainingMs = cooldownEnds - now;
+    const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+    return { onCooldown: true, remainingDays };
+  };
+  
+  const cooldownInfo = getDisplayNameCooldownInfo();
+
   const handleSaveUsername = async () => {
     const trimmed = newUsername.trim();
     if (!user || !trimmed || trimmed.length < 6 || trimmed.length > 20 || usernameAvailable === false) return;
+    
+    // Check cooldown
+    if (cooldownInfo.onCooldown) {
+      return;
+    }
     
     setSavingUsername(true);
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ display_name: newUsername.trim() })
+        .update({ 
+          display_name: newUsername.trim(),
+          display_name_changed_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
       
       if (error) throw error;
@@ -297,7 +322,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       setEditingUsername(false);
       setNewUsername('');
     } catch (error) {
-      console.error('Failed to update username:', error);
+      console.error('Failed to update display name:', error);
     } finally {
       setSavingUsername(false);
     }
@@ -618,15 +643,31 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
-                          <button
-                            onClick={startEditingUsername}
-                            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                            title="Edit display name"
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </button>
+                          {cooldownInfo.onCooldown ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground cursor-help">
+                                    <Clock className="h-2.5 w-2.5 mr-1" />
+                                    {cooldownInfo.remainingDays}d
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <button
+                              onClick={startEditingUsername}
+                              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                              title="Edit display name"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
