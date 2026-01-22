@@ -84,10 +84,18 @@ export function ChatMessageActions({
     return acc;
   }, {} as Record<string, { count: number; hasOwn: boolean }>);
 
+  const hasReactions = Object.keys(reactionCounts).length > 0;
+
+  // Only render if there are reactions OR we need the hover menu
+  // The hover menu button uses absolute positioning to not take up space
   return (
-    <div className={cn('flex items-center gap-1', isOwn ? 'flex-row-reverse' : '')}>
+    <div className={cn(
+      'flex items-center gap-1 relative',
+      isOwn ? 'flex-row-reverse' : '',
+      hasReactions ? 'mt-1' : 'h-0 overflow-visible' // Zero height when no reactions
+    )}>
       {/* Reactions display */}
-      {Object.keys(reactionCounts).length > 0 && (
+      {hasReactions && (
         <div className="flex gap-1 flex-wrap">
           {Object.entries(reactionCounts).map(([emoji, { count, hasOwn }]) => (
             <button
@@ -107,13 +115,17 @@ export function ChatMessageActions({
         </div>
       )}
 
-      {/* Actions dropdown */}
+      {/* Actions dropdown - absolutely positioned to not affect layout */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
+            className={cn(
+              'h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation',
+              !hasReactions && 'absolute top-0',
+              !hasReactions && (isOwn ? 'right-0' : 'left-0')
+            )}
           >
             <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
