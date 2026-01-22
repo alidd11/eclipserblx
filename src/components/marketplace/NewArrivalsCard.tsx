@@ -34,16 +34,17 @@ export function NewArrivalsCard() {
           price,
           images,
           created_at,
-          stores!inner (name, slug, is_active)
+          stores (name, slug, is_active)
         `)
         .eq('is_active', true)
-        .eq('stores.is_active', true)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
       
       if (error) throw error;
-      return (data || []) as unknown as NewProduct[];
+      // Include products without stores (Eclipse main store) or with active stores
+      const filtered = (data || []).filter(p => !p.stores || p.stores.is_active !== false);
+      return filtered.slice(0, 5) as unknown as NewProduct[];
     },
   });
 

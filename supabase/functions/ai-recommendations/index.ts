@@ -54,16 +54,17 @@ serve(async (req) => {
         // Recommend from followed stores
         const { data: followedProducts } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
+          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
           .in("store_id", followedStoreIds)
           .eq("is_active", true)
-          .eq("stores.is_active", true)
           .eq("moderation_status", "approved")
           .order("created_at", { ascending: false })
-          .limit(limit);
+          .limit(limit * 2);
 
         if (followedProducts && followedProducts.length > 0) {
-          recommendations = followedProducts;
+          // Filter to include products without stores or with active stores
+          const filtered = followedProducts.filter((p: any) => !p.stores || p.stores.is_active !== false);
+          recommendations = filtered.slice(0, limit);
           strategy = "followed_stores";
         }
       }
@@ -81,17 +82,18 @@ serve(async (req) => {
         if (categoryIds.length > 0) {
           const { data: similarProducts } = await supabase
             .from("products")
-            .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
+            .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
             .in("category_id", categoryIds)
             .not("id", "in", `(${viewedIds.join(",")})`)
             .eq("is_active", true)
-            .eq("stores.is_active", true)
             .eq("moderation_status", "approved")
             .order("download_count", { ascending: false })
-            .limit(limit - recommendations.length);
+            .limit((limit - recommendations.length) * 2);
 
           if (similarProducts) {
-            recommendations = [...recommendations, ...similarProducts];
+            // Filter to include products without stores or with active stores
+            const filtered = similarProducts.filter((p: any) => !p.stores || p.stores.is_active !== false);
+            recommendations = [...recommendations, ...filtered.slice(0, limit - recommendations.length)];
             strategy = recommendations.length > followedStoreIds.length ? "similar_categories" : strategy;
           }
         }
@@ -109,17 +111,18 @@ serve(async (req) => {
       if (product) {
         const { data: similar } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
+          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
           .eq("category_id", product.category_id)
           .neq("id", productId)
           .eq("is_active", true)
-          .eq("stores.is_active", true)
           .eq("moderation_status", "approved")
           .order("download_count", { ascending: false })
-          .limit(limit - recommendations.length);
+          .limit((limit - recommendations.length) * 2);
 
         if (similar) {
-          recommendations = [...recommendations, ...similar];
+          // Filter to include products without stores or with active stores
+          const filtered = similar.filter((p: any) => !p.stores || p.stores.is_active !== false);
+          recommendations = [...recommendations, ...filtered.slice(0, limit - recommendations.length)];
           strategy = "similar_products";
         }
       }
@@ -131,16 +134,17 @@ serve(async (req) => {
       
       const { data: popular } = await supabase
         .from("products")
-        .select("id, name, slug, price, images, categories(name), stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active)")
+        .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
         .eq("is_active", true)
-        .eq("stores.is_active", true)
         .eq("moderation_status", "approved")
         .order("download_count", { ascending: false })
-        .limit(limit - recommendations.length);
+        .limit((limit - recommendations.length) * 2);
 
       if (popular) {
-        const filtered = popular.filter((p) => !existingIds.includes(p.id));
-        recommendations = [...recommendations, ...filtered];
+        // Filter to include products without stores or with active stores
+        const filtered = popular.filter((p: any) => !p.stores || p.stores.is_active !== false);
+        const withoutDupes = filtered.filter((p: any) => !existingIds.includes(p.id));
+        recommendations = [...recommendations, ...withoutDupes.slice(0, limit - recommendations.length)];
       }
     }
 
