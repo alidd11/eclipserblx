@@ -528,12 +528,24 @@ function StaffMessagesContent() {
   useEffect(() => {
     if (!showMentionSuggestions) return;
 
+    // On iOS PWA, the visual viewport can scroll independent of the document,
+    // causing the input to appear at the "top" of the screen while the actual
+    // scroll container shows empty space. We need to:
+    // 1. Scroll the messages container to bottom
+    // 2. Scroll the input element into view within the visual viewport
+    const scrollInputIntoView = () => {
+      scrollToBottom();
+      // Also ensure the input element itself is visible in the visual viewport
+      inputRef.current?.scrollIntoView({ block: 'end', behavior: 'instant' });
+    };
+
     // Staggered scrolls to handle viewport resize during keyboard animation
     const timers = [
-      setTimeout(scrollToBottom, 0),
-      setTimeout(scrollToBottom, 100),
-      setTimeout(scrollToBottom, 200),
-      setTimeout(scrollToBottom, 350),
+      setTimeout(scrollInputIntoView, 0),
+      setTimeout(scrollInputIntoView, 100),
+      setTimeout(scrollInputIntoView, 200),
+      setTimeout(scrollInputIntoView, 350),
+      setTimeout(scrollInputIntoView, 500),
     ];
 
     return () => {
@@ -1057,12 +1069,16 @@ function StaffMessagesContent() {
                 }
               }}
               onFocus={() => {
-                // Keep the message list pinned to the bottom.
-                requestAnimationFrame(() => {
+                // Keep the message list pinned to the bottom and ensure input is visible.
+                const scrollAll = () => {
                   scrollToBottom();
-                  setTimeout(scrollToBottom, 150);
-                  setTimeout(scrollToBottom, 350);
-                  setTimeout(scrollToBottom, 650);
+                  inputRef.current?.scrollIntoView({ block: 'end', behavior: 'instant' });
+                };
+                requestAnimationFrame(() => {
+                  scrollAll();
+                  setTimeout(scrollAll, 150);
+                  setTimeout(scrollAll, 350);
+                  setTimeout(scrollAll, 650);
                 });
               }}
               placeholder="Message..."
