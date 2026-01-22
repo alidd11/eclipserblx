@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sparkles } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 interface StoreRecommendationsProps {
   storeId: string;
@@ -84,7 +84,7 @@ export const StoreRecommendations = ({
     return (
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-6">
-          <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
+          <Star className="h-5 w-5" style={{ color: accentColor }} />
           <h2 className="text-xl font-bold">You May Also Like</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -103,7 +103,7 @@ export const StoreRecommendations = ({
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-6">
-        <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
+        <Star className="h-5 w-5" style={{ color: accentColor }} />
         <h2 className="text-xl font-bold">You May Also Like</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
