@@ -121,11 +121,13 @@ const SellerSettingsTeam = lazy(() => import("./pages/seller/SellerSettingsTeam"
 const SellerSettingsPayments = lazy(() => import("./pages/seller/SellerSettingsPayments"));
 const SellerSettingsNotifications = lazy(() => import("./pages/seller/SellerSettingsNotifications"));
 const SellerSupport = lazy(() => import("./pages/seller/SellerSupport"));
+const SellerMessages = lazy(() => import("./pages/seller/SellerMessages"));
 
 // Public pages
 const StorePage = lazy(() => import("./pages/StorePage"));
 const StoreAbout = lazy(() => import("./pages/StoreAbout"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
+const StoreMessages = lazy(() => import("./pages/StoreMessages"));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -200,6 +202,7 @@ const App = () => (
                   <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/support/chat" element={<LiveChat />} />
                   <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/store-messages" element={<StoreMessages />} />
                   {/* Seller routes */}
                   <Route path="/seller" element={<SellerDashboard />} />
                   <Route path="/seller/analytics" element={<SellerAnalytics />} />
@@ -219,6 +222,7 @@ const App = () => (
                   <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
                   <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
                   <Route path="/seller/support" element={<SellerSupport />} />
+                  <Route path="/seller/messages" element={<SellerMessages />} />
                   {/* Public store page */}
                   <Route path="/store/:storeSlug" element={<StorePage />} />
                   <Route path="/store/:slug/about" element={<StoreAbout />} />
