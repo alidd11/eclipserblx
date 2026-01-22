@@ -643,6 +643,8 @@
     /* Theme color is set dynamically via useThemeColor hook */
     /* Prevent iOS overscroll from showing gaps */
     overscroll-behavior: none;
+    /* Ensure safe areas have proper background */
+    background-color: hsl(var(--background));
   }
   
   body {
@@ -659,6 +661,11 @@
     /* Prevent overscroll bounce revealing gaps on iOS */
     overscroll-behavior: none;
     overscroll-behavior-y: contain;
+    /* Ensure consistent background through safe areas */
+    background-color: hsl(var(--background));
+    /* Extend background color into safe areas */
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
   }
   
   /* Allow text selection in inputs and textareas */
