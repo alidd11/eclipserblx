@@ -2321,7 +2321,9 @@ export type Database = {
           change_reason: string | null
           created_at: string
           description: string
+          escalated_at: string | null
           id: string
+          last_staff_response_at: string | null
           link_change_type: string | null
           new_discord_username: string | null
           new_roblox_username: string | null
@@ -2342,7 +2344,9 @@ export type Database = {
           change_reason?: string | null
           created_at?: string
           description: string
+          escalated_at?: string | null
           id?: string
+          last_staff_response_at?: string | null
           link_change_type?: string | null
           new_discord_username?: string | null
           new_roblox_username?: string | null
@@ -2363,7 +2367,9 @@ export type Database = {
           change_reason?: string | null
           created_at?: string
           description?: string
+          escalated_at?: string | null
           id?: string
+          last_staff_response_at?: string | null
           link_change_type?: string | null
           new_discord_username?: string | null
           new_roblox_username?: string | null
@@ -3626,6 +3632,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      escalate_unanswered_tickets: { Args: never; Returns: number }
       generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
