@@ -47,6 +47,7 @@ const navGroups: NavGroup[] = [
     title: 'Daily Operations',
     icon: ShoppingCart,
     items: [
+      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'], dividerAfter: true },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
@@ -108,13 +109,12 @@ const navGroups: NavGroup[] = [
   },
   {
     id: 'users-analytics',
-    title: 'Users & Analytics',
-    icon: BarChart3,
+    title: 'Users',
+    icon: Users,
     items: [
       { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
-      { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'], dividerAfter: true },
-      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
+      { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
     ],
   },
   {
