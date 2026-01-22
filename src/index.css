@@ -673,16 +673,7 @@
     This prevents the “tall grey strip” while still ensuring the home-indicator area
     matches the current page background (including chat pages that override body bg).
   */
-  body::after {
-    content: '';
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: env(safe-area-inset-bottom);
-    background-color: inherit;
-    pointer-events: none;
-  }
+  /* body::after removed - was causing duplicate bottom space on iOS */
   
   /* Allow text selection in inputs and textareas */
   input, textarea, [contenteditable="true"] {

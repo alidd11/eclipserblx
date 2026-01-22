@@ -998,7 +998,7 @@ export default function AdminLiveChat() {
 
                 {/* Input */}
                 {selectedConversation.status !== 'closed' && (
-                  <div className="p-2 lg:p-4 border-t border-border space-y-2 pb-[calc(var(--chat-safe-bottom,env(safe-area-inset-bottom))+0.5rem)] lg:pb-4">
+                  <div className="p-2 lg:p-4 border-t border-border space-y-2 pb-[var(--chat-safe-bottom,8px)] lg:pb-4">
                     <input
                       type="file"
                       ref={fileInputRef}
