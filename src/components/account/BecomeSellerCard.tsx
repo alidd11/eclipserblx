@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Store, Sparkles, Clock, XCircle, CheckCircle, ExternalLink, AlertCircle } from 'lucide-react';
+import { Store, Sparkles, Clock, XCircle, CheckCircle, ExternalLink, AlertCircle, Loader2, Shield, Users, Award, Mail, ShoppingBag, UserCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useSellerVerification, VerificationResults } from '@/hooks/useSellerVerification';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
@@ -42,8 +44,25 @@ export function BecomeSellerCard() {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  // Verification hook
+  const {
+    verificationResults,
+    settings,
+    discordValidating,
+    validateDiscordInvite,
+    allRequirementsMet,
+    userProfile,
+  } = useSellerVerification();
+
+  // Validate Discord invite on blur
+  const handleDiscordBlur = () => {
+    if (discordServerInvite.trim()) {
+      validateDiscordInvite(discordServerInvite);
+    }
+  };
+
   // Check if user has linked accounts
-  const { data: userProfile } = useQuery({
+  const { data: linkedAccountsData } = useQuery({
     queryKey: ['user-profile-linked-accounts', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -58,8 +77,8 @@ export function BecomeSellerCard() {
     enabled: !!user?.id,
   });
 
-  const hasDiscordLinked = !!(userProfile?.discord_id && userProfile?.discord_username);
-  const hasRobloxLinked = !!(userProfile?.roblox_user_id && userProfile?.roblox_username);
+  const hasDiscordLinked = !!(linkedAccountsData?.discord_id && linkedAccountsData?.discord_username);
+  const hasRobloxLinked = !!(linkedAccountsData?.roblox_user_id && linkedAccountsData?.roblox_username);
   const hasRequiredAccounts = hasDiscordLinked && hasRobloxLinked;
 
   const submitApplication = useMutation({
@@ -68,6 +87,14 @@ export function BecomeSellerCard() {
       if (!ageConfirmed) throw new Error('You must confirm your age');
       if (!termsAccepted) throw new Error('You must accept the seller terms');
       if (!discordServerInvite.trim()) throw new Error('Discord server invite is required');
+
+      // Check if Discord invite is valid
+      if (!verificationResults.discord_server?.valid) {
+        throw new Error('Please provide a valid Discord server invite');
+      }
+      if (!verificationResults.discord_server?.is_permanent) {
+        throw new Error('Discord invite must be permanent (no expiration)');
+      }
 
       const { error } = await supabase.from('store_applications').insert({
         user_id: user.id,
@@ -78,6 +105,7 @@ export function BecomeSellerCard() {
         age_confirmed: ageConfirmed,
         terms_accepted: termsAccepted,
         terms_accepted_at: new Date().toISOString(),
+        verification_results: verificationResults as any,
       });
 
       if (error) throw error;
@@ -248,6 +276,10 @@ export function BecomeSellerCard() {
               setTermsAccepted={setTermsAccepted}
               onSubmit={() => submitApplication.mutate()}
               isSubmitting={submitApplication.isPending}
+              onDiscordBlur={handleDiscordBlur}
+              discordValidating={discordValidating}
+              verificationResults={verificationResults}
+              settings={settings}
             />
           </Dialog>
         </CardContent>
@@ -284,7 +316,7 @@ export function BecomeSellerCard() {
                   ) : (
                     <XCircle className="h-4 w-4 text-destructive" />
                   )}
-                  <span className="text-sm">Discord {hasDiscordLinked ? `(${userProfile?.discord_username})` : '- Not linked'}</span>
+                  <span className="text-sm">Discord {hasDiscordLinked ? `(${linkedAccountsData?.discord_username})` : '- Not linked'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {hasRobloxLinked ? (
@@ -292,7 +324,7 @@ export function BecomeSellerCard() {
                   ) : (
                     <XCircle className="h-4 w-4 text-destructive" />
                   )}
-                  <span className="text-sm">Roblox {hasRobloxLinked ? `(${userProfile?.roblox_username})` : '- Not linked'}</span>
+                  <span className="text-sm">Roblox {hasRobloxLinked ? `(${linkedAccountsData?.roblox_username})` : '- Not linked'}</span>
                 </div>
               </div>
               <p className="text-sm mt-3 text-muted-foreground">
@@ -355,6 +387,10 @@ export function BecomeSellerCard() {
             setTermsAccepted={setTermsAccepted}
             onSubmit={() => submitApplication.mutate()}
             isSubmitting={submitApplication.isPending}
+            onDiscordBlur={handleDiscordBlur}
+            discordValidating={discordValidating}
+            verificationResults={verificationResults}
+            settings={settings}
           />
         </Dialog>
       </CardContent>
@@ -377,6 +413,10 @@ interface ApplicationFormDialogProps {
   setTermsAccepted: (value: boolean) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  onDiscordBlur: () => void;
+  discordValidating: boolean;
+  verificationResults: VerificationResults;
+  settings: any;
 }
 
 function ApplicationFormDialog({
@@ -394,8 +434,63 @@ function ApplicationFormDialog({
   setTermsAccepted,
   onSubmit,
   isSubmitting,
+  onDiscordBlur,
+  discordValidating,
+  verificationResults,
+  settings,
 }: ApplicationFormDialogProps) {
-  const canSubmit = storeName.trim() && discordServerInvite.trim() && ageConfirmed && termsAccepted;
+  // Calculate verification progress
+  const getVerificationStatus = () => {
+    let passed = 0;
+    let total = 0;
+
+    // Account age
+    total++;
+    if (verificationResults.account_age?.meets_requirement) passed++;
+
+    // Email verified
+    total++;
+    if (verificationResults.email_verified) passed++;
+
+    // Purchase history (only if required)
+    if (settings.seller_min_purchases_required > 0) {
+      total++;
+      if (verificationResults.purchase_history?.meets_requirement) passed++;
+    }
+
+    // Group membership (only if required)
+    if (settings.seller_require_group_membership) {
+      total++;
+      if (verificationResults.roblox_group?.in_group) passed++;
+    }
+
+    // Badge ownership (only if required)
+    if (settings.seller_require_badge_ownership) {
+      total++;
+      if (verificationResults.roblox_badges?.all_owned) passed++;
+    }
+
+    // Discord server
+    total++;
+    if (verificationResults.discord_server?.valid && verificationResults.discord_server?.is_permanent) passed++;
+
+    return { passed, total, percentage: total > 0 ? Math.round((passed / total) * 100) : 0 };
+  };
+
+  const status = getVerificationStatus();
+
+  const canSubmit = 
+    storeName.trim() && 
+    discordServerInvite.trim() && 
+    ageConfirmed && 
+    termsAccepted &&
+    verificationResults.discord_server?.valid &&
+    verificationResults.discord_server?.is_permanent &&
+    verificationResults.account_age?.meets_requirement &&
+    verificationResults.email_verified &&
+    (!settings.seller_require_group_membership || verificationResults.roblox_group?.in_group) &&
+    (!settings.seller_require_badge_ownership || verificationResults.roblox_badges?.all_owned) &&
+    (settings.seller_min_purchases_required === 0 || verificationResults.purchase_history?.meets_requirement);
 
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -413,6 +508,84 @@ function ApplicationFormDialog({
         }}
         className="space-y-4"
       >
+        {/* Verification Status Section */}
+        <Card className="border-muted">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Verification Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Progress value={status.percentage} className="flex-1" />
+              <span className="text-sm font-medium">{status.passed}/{status.total}</span>
+            </div>
+
+            <div className="grid gap-2 text-sm">
+              {/* Account Age */}
+              <VerificationItem
+                icon={Clock}
+                label={`Account Age (${verificationResults.account_age?.days || 0} days)`}
+                passed={verificationResults.account_age?.meets_requirement}
+                required={true}
+                detail={`Minimum ${settings.seller_min_account_age_days} days required`}
+              />
+
+              {/* Email Verified */}
+              <VerificationItem
+                icon={Mail}
+                label="Email Verified"
+                passed={verificationResults.email_verified}
+                required={true}
+              />
+
+              {/* Purchase History */}
+              {settings.seller_min_purchases_required > 0 && (
+                <VerificationItem
+                  icon={ShoppingBag}
+                  label={`Purchase History (${verificationResults.purchase_history?.count || 0} orders)`}
+                  passed={verificationResults.purchase_history?.meets_requirement}
+                  required={true}
+                  detail={`Minimum ${settings.seller_min_purchases_required} purchases required`}
+                />
+              )}
+
+              {/* Group Membership */}
+              {settings.seller_require_group_membership && (
+                <VerificationItem
+                  icon={Users}
+                  label="Eclipse Group Member"
+                  passed={verificationResults.roblox_group?.in_group}
+                  required={true}
+                  detail={verificationResults.roblox_group?.role ? `Role: ${verificationResults.roblox_group.role}` : undefined}
+                />
+              )}
+
+              {/* Badge Ownership */}
+              {settings.seller_require_badge_ownership && settings.roblox_required_badges?.length > 0 && (
+                <VerificationItem
+                  icon={Award}
+                  label={`Required Badges (${verificationResults.roblox_badges?.owned.length || 0}/${settings.roblox_required_badges?.length || 0})`}
+                  passed={verificationResults.roblox_badges?.all_owned}
+                  required={true}
+                />
+              )}
+
+              {/* Identity Consistency */}
+              {verificationResults.identity_consistency && (
+                <VerificationItem
+                  icon={UserCheck}
+                  label={`Identity Check (${verificationResults.identity_consistency.similarity_score}% match)`}
+                  passed={verificationResults.identity_consistency.is_consistent}
+                  required={false}
+                  detail="Discord & Roblox username similarity"
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="space-y-2">
           <Label htmlFor="storeName">Store Name *</Label>
           <Input
@@ -455,53 +628,141 @@ function ApplicationFormDialog({
 
         <div className="space-y-2">
           <Label htmlFor="discordServerInvite">Discord Server Invite Link *</Label>
-          <Input
-            id="discordServerInvite"
-            placeholder="https://discord.gg/your-server"
-            value={discordServerInvite}
-            onChange={(e) => setDiscordServerInvite(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="discordServerInvite"
+              placeholder="https://discord.gg/your-server"
+              value={discordServerInvite}
+              onChange={(e) => setDiscordServerInvite(e.target.value)}
+              onBlur={onDiscordBlur}
+              required
+              className={
+                verificationResults.discord_server?.valid
+                  ? 'border-green-500 pr-10'
+                  : verificationResults.discord_server?.error
+                  ? 'border-destructive pr-10'
+                  : ''
+              }
+            />
+            {discordValidating && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+            {!discordValidating && verificationResults.discord_server?.valid && (
+              <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+            {!discordValidating && verificationResults.discord_server?.error && (
+              <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
+            )}
+          </div>
+
+          {/* Discord Server Preview */}
+          {verificationResults.discord_server?.valid && verificationResults.discord_server?.guild_name && (
+            <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="font-medium text-sm">{verificationResults.discord_server.guild_name}</span>
+              </div>
+              {verificationResults.discord_server.member_count && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {verificationResults.discord_server.member_count.toLocaleString()} members
+                </p>
+              )}
+              {verificationResults.discord_server.is_permanent && (
+                <Badge variant="outline" className="mt-2 text-xs">Permanent Invite</Badge>
+              )}
+            </div>
+          )}
+
+          {/* Discord Error */}
+          {verificationResults.discord_server?.error && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <XCircle className="h-3 w-3" />
+              {verificationResults.discord_server.error}
+            </p>
+          )}
+
           <p className="text-xs text-muted-foreground">
-            Provide a permanent Discord invite link to your server. This is required for customer support.
+            Must be a permanent invite (no expiration or member limits).
           </p>
         </div>
 
-        <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+        <div className="space-y-3 border-t pt-4">
           <div className="flex items-start gap-3">
             <Checkbox
-              id="ageConfirmed"
+              id="ageConfirm"
               checked={ageConfirmed}
-              onCheckedChange={(checked) => setAgeConfirmed(checked === true)}
+              onCheckedChange={(checked) => setAgeConfirmed(checked as boolean)}
             />
-            <label htmlFor="ageConfirmed" className="text-sm leading-relaxed cursor-pointer">
-              I confirm I am at least <span className="font-medium">13 years old</span> to sell on this platform.
-              <span className="text-muted-foreground block mt-1">
-                Note: You must be 18+ to receive payouts.
-              </span>
-            </label>
+            <Label htmlFor="ageConfirm" className="text-sm leading-normal cursor-pointer">
+              I confirm I am at least 13 years old. I understand that sellers must be 18+ to receive payouts.
+            </Label>
           </div>
 
           <div className="flex items-start gap-3">
             <Checkbox
-              id="termsAccepted"
+              id="termsAccept"
               checked={termsAccepted}
-              onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+              onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
             />
-            <label htmlFor="termsAccepted" className="text-sm leading-relaxed cursor-pointer">
+            <Label htmlFor="termsAccept" className="text-sm leading-normal cursor-pointer">
               I agree to the{' '}
-              <Link to="/terms-of-service" target="_blank" className="text-primary hover:underline">
-                Terms of Service
-              </Link>
-              {' '}and understand the 15% commission rate on sales.
-            </label>
+              <Link to="/seller/terms" className="text-primary hover:underline" target="_blank">
+                Seller Terms of Service
+              </Link>{' '}
+              and the 15% platform commission on net sales.
+            </Label>
           </div>
         </div>
 
         <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Submit Application'}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            'Submit Application'
+          )}
         </Button>
+
+        {!canSubmit && storeName.trim() && discordServerInvite.trim() && ageConfirmed && termsAccepted && (
+          <p className="text-xs text-center text-muted-foreground">
+            Complete all verification requirements above to submit
+          </p>
+        )}
       </form>
     </DialogContent>
+  );
+}
+
+interface VerificationItemProps {
+  icon: React.ElementType;
+  label: string;
+  passed?: boolean;
+  required: boolean;
+  detail?: string;
+}
+
+function VerificationItem({ icon: Icon, label, passed, required, detail }: VerificationItemProps) {
+  return (
+    <div className="flex items-center gap-2">
+      {passed ? (
+        <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+      ) : passed === false ? (
+        <XCircle className="h-4 w-4 text-destructive shrink-0" />
+      ) : (
+        <div className="h-4 w-4 rounded-full border-2 border-muted shrink-0" />
+      )}
+      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+      <div className="flex-1 min-w-0">
+        <span className={passed ? 'text-green-600 dark:text-green-400' : passed === false ? 'text-destructive' : ''}>
+          {label}
+        </span>
+        {!required && (
+          <Badge variant="outline" className="ml-2 text-xs py-0">Optional</Badge>
+        )}
+        {detail && <p className="text-xs text-muted-foreground truncate">{detail}</p>}
+      </div>
+    </div>
   );
 }

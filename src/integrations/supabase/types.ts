@@ -2754,6 +2754,7 @@ export type Database = {
           terms_accepted_at: string | null
           updated_at: string | null
           user_id: string
+          verification_results: Json | null
         }
         Insert: {
           age_confirmed?: boolean
@@ -2775,6 +2776,7 @@ export type Database = {
           terms_accepted_at?: string | null
           updated_at?: string | null
           user_id: string
+          verification_results?: Json | null
         }
         Update: {
           age_confirmed?: boolean
@@ -2796,6 +2798,7 @@ export type Database = {
           terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string
+          verification_results?: Json | null
         }
         Relationships: [
           {
