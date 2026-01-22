@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 export function MarketplaceHeroButton() {
   return (
@@ -13,9 +12,6 @@ export function MarketplaceHeroButton() {
       >
         <Store className="mr-2 h-5 w-5 text-primary" />
         <span className="text-foreground">Eclipse Marketplace</span>
-        <Badge variant="secondary" className="ml-2 text-xs">
-          Coming Soon
-        </Badge>
       </Button>
     </Link>
   );
