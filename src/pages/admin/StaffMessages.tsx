@@ -823,7 +823,7 @@ function StaffMessagesContent() {
                   className={cn(
                     'flex gap-2 sm:gap-3 group',
                     isOwn && 'flex-row-reverse',
-                    isGrouped ? 'mt-1' : index > 0 ? 'mt-3' : ''
+                    isGrouped ? 'mt-0.5' : index > 0 ? 'mt-4' : ''
                   )}
                 >
                   {isGrouped ? (
