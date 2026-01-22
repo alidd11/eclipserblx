@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,8 @@ interface Ticket {
   resolved_by?: string;
   resolved_at?: string;
   resolution_notes?: string;
+  escalated_at?: string;
+  last_staff_response_at?: string;
   created_at: string;
   updated_at: string;
   profiles?: {
@@ -147,6 +149,7 @@ export default function SellerTickets() {
           user_id: user.id,
           message: newMessage,
           is_admin: true,
+          is_staff_reply: true, // Mark as staff reply for escalation tracking
         });
       
       if (error) throw error;
@@ -295,12 +298,23 @@ export default function SellerTickets() {
   const filteredTickets = tickets?.filter(t => {
     if (statusFilter === 'all') return true;
     if (statusFilter === 'open') return !['resolved', 'closed'].includes(t.status);
+    if (statusFilter === 'escalated') return !!t.escalated_at && !['resolved', 'closed'].includes(t.status);
     return t.status === statusFilter;
   }) || [];
+
+  // Sort escalated tickets to the top
+  const sortedTickets = [...filteredTickets].sort((a, b) => {
+    // Escalated tickets first
+    if (a.escalated_at && !b.escalated_at) return -1;
+    if (!a.escalated_at && b.escalated_at) return 1;
+    // Then by created_at descending
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   const openCount = tickets?.filter(t => t.status === 'open').length || 0;
   const inProgressCount = tickets?.filter(t => t.status === 'in_progress').length || 0;
   const awaitingCount = tickets?.filter(t => t.status === 'awaiting_seller').length || 0;
+  const escalatedCount = tickets?.filter(t => t.escalated_at && !['resolved', 'closed'].includes(t.status)).length || 0;
 
   return (
     <AdminLayout requiredRoles={['admin', 'moderator']}>
@@ -311,7 +325,21 @@ export default function SellerTickets() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {escalatedCount > 0 && (
+            <Card className="border-destructive bg-destructive/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-destructive flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Escalated
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-destructive">{escalatedCount}</p>
+                <p className="text-xs text-muted-foreground">24h+ no response</p>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground">Open</CardTitle>
@@ -354,6 +382,7 @@ export default function SellerTickets() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Tickets</SelectItem>
+              <SelectItem value="escalated">🔥 Escalated</SelectItem>
               <SelectItem value="open">Open Only</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="awaiting_seller">Awaiting Seller</SelectItem>
@@ -364,7 +393,7 @@ export default function SellerTickets() {
         </div>
 
         {/* Tickets List */}
-        {filteredTickets.length === 0 ? (
+        {sortedTickets.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
@@ -376,19 +405,24 @@ export default function SellerTickets() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredTickets.map((ticket) => (
+            {sortedTickets.map((ticket) => (
               <Card 
                 key={ticket.id} 
-                className="cursor-pointer hover:border-primary/50 transition-colors"
+                className={`cursor-pointer hover:border-primary/50 transition-colors ${
+                  ticket.escalated_at ? 'border-destructive bg-destructive/5' : ''
+                }`}
                 onClick={() => setSelectedTicket(ticket)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
                       <div className={`p-2 rounded-lg shrink-0 ${
+                        ticket.escalated_at ? 'bg-destructive/20' :
                         ticket.category === 'account_link_change' ? 'bg-primary/10' : 'bg-muted'
                       }`}>
-                        {ticket.category === 'account_link_change' ? (
+                        {ticket.escalated_at ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive" />
+                        ) : ticket.category === 'account_link_change' ? (
                           <LinkIcon className="h-4 w-4" />
                         ) : (
                           <MessageSquare className="h-4 w-4" />
@@ -397,6 +431,12 @@ export default function SellerTickets() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
+                          {ticket.escalated_at && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Escalated
+                            </Badge>
+                          )}
                           {getStatusBadge(ticket.status)}
                           {getPriorityBadge(ticket.priority)}
                         </div>
@@ -413,6 +453,11 @@ export default function SellerTickets() {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           {CATEGORY_LABELS[ticket.category] || ticket.category} • {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+                          {ticket.escalated_at && (
+                            <span className="text-destructive ml-2">
+                              • Escalated {formatDistanceToNow(new Date(ticket.escalated_at), { addSuffix: true })}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
