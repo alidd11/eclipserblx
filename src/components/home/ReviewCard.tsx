@@ -15,7 +15,7 @@ interface Review {
 
 const SWIPE_THRESHOLD = 50;
 
-export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_, ref) {
+export const ReviewCard = memo(forwardRef<HTMLDivElement, object>(function ReviewCard(_props, ref) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef(0);
@@ -138,7 +138,8 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
 
   return (
     <div 
-      className="rounded-2xl border border-border bg-card p-5 h-full touch-pan-x"
+      ref={ref}
+      className="rounded-2xl border border-border bg-card p-5 h-full touch-pan-x relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -251,3 +252,5 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement>(function ReviewCard(_,
     </div>
   );
 }));
+
+ReviewCard.displayName = 'ReviewCard';
