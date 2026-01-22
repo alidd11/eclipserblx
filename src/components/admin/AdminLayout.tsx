@@ -524,14 +524,25 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
         {/* Mobile Sidebar (Sheet with swipe support) */}
         {isMobile && (
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <Sheet 
+            open={mobileOpen} 
+            onOpenChange={(open) => {
+              // Force viewport height reset when opening drawer (fixes iOS keyboard leftover --vvh)
+              if (open) {
+                document.documentElement.style.removeProperty('--vvh');
+                document.documentElement.style.removeProperty('--chat-safe-bottom');
+              }
+              setMobileOpen(open);
+            }}
+          >
             <SheetContent 
               side="left" 
-              className="h-[100dvh] max-h-[100dvh] p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-0 [&>button]:hidden shadow-2xl shadow-black/50 bg-sidebar border-0"
+              className="!h-[100dvh] !max-h-[100dvh] p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-0 [&>button]:hidden shadow-2xl shadow-black/50 bg-sidebar border-0"
+              style={{ height: '100dvh', maxHeight: '100dvh' }}
               onPointerDownOutside={() => setMobileOpen(false)}
             >
               <div 
-                className="h-full relative"
+                className="h-full relative bg-sidebar"
                 onTouchStart={(e) => {
                   const touch = e.touches[0];
                   (e.currentTarget as any)._touchStartX = touch.clientX;
