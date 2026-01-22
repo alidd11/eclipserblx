@@ -47,8 +47,11 @@ const navGroups: NavGroup[] = [
     title: 'Daily Operations',
     icon: ShoppingCart,
     items: [
-      { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
+      { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
+      { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
+      { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', roles: ['admin'], dividerAfter: true },
+      { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
     ],
   },
   {
@@ -111,9 +114,6 @@ const navGroups: NavGroup[] = [
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'], dividerAfter: true },
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
-      { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
-      { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
-      { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', roles: ['admin'] },
     ],
   },
   {
