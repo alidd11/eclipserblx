@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell, FolderOpen, Heart
+  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -222,6 +222,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'My Account', icon: User, href: '/account' },
         { title: 'My Messages', icon: Bell, href: '/messages', showNotificationDot: true },
+        { title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       ],
     },

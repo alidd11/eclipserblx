@@ -2990,6 +2990,54 @@ export type Database = {
           },
         ]
       }
+      store_conversations: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          last_message_at: string
+          order_id: string | null
+          status: string
+          store_id: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          last_message_at?: string
+          order_id?: string | null
+          status?: string
+          store_id: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          last_message_at?: string
+          order_id?: string | null
+          status?: string
+          store_id?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_conversations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_conversations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_follows: {
         Row: {
           created_at: string
@@ -3018,6 +3066,64 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "store_follows_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          is_read: boolean
+          message: string
+          order_id: string | null
+          sender_type: string
+          store_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_read?: boolean
+          message: string
+          order_id?: string | null
+          sender_type: string
+          store_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          order_id?: string | null
+          sender_type?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "store_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_messages_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
