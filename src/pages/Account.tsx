@@ -18,7 +18,7 @@ import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
 import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
-import { NewBadgeToast } from '@/components/badges/NewBadgeToast';
+
 import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
 import { ReferralCard } from '@/components/account/ReferralCard';
@@ -38,7 +38,7 @@ import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
-  const { badges, userBadges, newBadges, checkBadges, clearNewBadges } = useBadges();
+  const { badges, userBadges } = useBadges();
   const { isSubscribed } = useSubscription();
   const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
   const queryClient = useQueryClient();
@@ -101,12 +101,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     }
   };
 
-  // Check for new badges when account page loads
-  useEffect(() => {
-    if (user) {
-      checkBadges();
-    }
-  }, [user, checkBadges]);
 
   // Handle pending email subscription from signup
   useEffect(() => {
@@ -564,8 +558,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Top section: Avatar + Main info */}
-            <div className="flex gap-4">
+            {/* Profile Header - Roblox style */}
+            <div className="flex items-start gap-4">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
@@ -574,10 +568,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 compact
               />
               
-              <div className="flex-1 min-w-0 space-y-1">
-                {/* Username with badges inline */}
+              <div className="flex-1 min-w-0 pt-1">
+                {/* Display Name - Large and prominent */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-lg">@{profile?.username || fallbackDisplayName}</span>
+                  <h2 className="text-2xl font-bold tracking-tight">
+                    {profile?.display_name || fallbackDisplayName || 'User'}
+                  </h2>
                   {isSubscribed && (
                     <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
                       <Sparkles className="h-2.5 w-2.5" />
@@ -587,87 +583,89 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 
-                {/* Email */}
-                <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                {/* Username - Smaller, muted */}
+                <p className="text-sm text-muted-foreground">@{profile?.username || fallbackDisplayName}</p>
               </div>
             </div>
 
-            {/* Display Name row */}
-            <div className="flex items-center justify-between py-2 border-t border-border/30">
-              <div className="flex-1">
-                <p className="text-xs text-muted-foreground mb-0.5">Display Name</p>
-                {editingUsername ? (
-                  <div className="space-y-2 max-w-xs">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
-                        autoFocus
-                      />
-                      {newUsername.trim().length >= 2 && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {checkingUsername ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          ) : usernameAvailable === true ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : usernameAvailable === false ? (
-                            <X className="h-4 w-4 text-destructive" />
-                          ) : null}
-                        </div>
-                      )}
+            {/* Edit Display Name Section */}
+            {editingUsername ? (
+              <div className="space-y-2 p-3 rounded-lg bg-muted/30">
+                <p className="text-xs text-muted-foreground">Change Display Name</p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-md border bg-input pr-10"
+                    autoFocus
+                    placeholder="Enter new display name"
+                  />
+                  {newUsername.trim().length >= 2 && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {checkingUsername ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      ) : usernameAvailable === true ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : usernameAvailable === false ? (
+                        <X className="h-4 w-4 text-destructive" />
+                      ) : null}
                     </div>
-                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                      <p className="text-xs text-destructive">This display name is already taken</p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleSaveUsername}
-                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                      >
-                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
+                  )}
+                </div>
+                {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                  <p className="text-xs text-destructive">This display name is already taken</p>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveUsername}
+                    disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                  >
+                    {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Display Name</p>
+                  <p className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
+                </div>
+                {cooldownInfo.onCooldown ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground cursor-help">
+                          <Clock className="h-2.5 w-2.5 mr-1" />
+                          {cooldownInfo.remainingDays}d
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</span>
-                    {cooldownInfo.onCooldown ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground cursor-help">
-                              <Clock className="h-2.5 w-2.5 mr-1" />
-                              {cooldownInfo.remainingDays}d
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ) : (
-                      <button
-                        onClick={startEditingUsername}
-                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                        title="Edit display name"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={startEditingUsername}
+                    className="h-8"
+                  >
+                    <Pencil className="h-3 w-3 mr-1.5" />
+                    Edit
+                  </Button>
                 )}
               </div>
-            </div>
+            )}
 
             {/* Customer ID and Member Since row */}
             <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-muted/30">
@@ -1240,8 +1238,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           onDeleted={() => navigate('/')}
         />
 
-        {/* New Badge Toast Notifications */}
-        <NewBadgeToast badges={newBadges} onClear={clearNewBadges} />
       </div>
     </MainLayout>
   );
