@@ -1069,9 +1069,13 @@ function AdminChatContent() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onFocus={() => {
+                // Don't scroll the document on focus (can fight iOS keyboard viewport resize).
+                // Instead, keep the message list pinned to the bottom.
                 requestAnimationFrame(() => {
-                  window.scrollTo(0, 0);
                   scrollToBottom();
+                  // iOS keyboard animation can finish after the first frame.
+                  setTimeout(scrollToBottom, 150);
+                  setTimeout(scrollToBottom, 350);
                 });
               }}
               placeholder="Message..."
