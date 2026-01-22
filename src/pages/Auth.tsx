@@ -361,10 +361,6 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             });
           }
         } else {
-          toast({
-            title: 'Welcome back!',
-            description: 'You have successfully signed in.',
-          });
           navigate('/');
         }
       } else {

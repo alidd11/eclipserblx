@@ -563,9 +563,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </Tooltip>
             </div>
           </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Avatar and basic info */}
-            <div className="flex items-center gap-4">
+          <CardContent className="space-y-4">
+            {/* Top section: Avatar + Main info */}
+            <div className="flex gap-4">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
@@ -574,105 +574,98 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 compact
               />
               
-              <div className="flex-1 min-w-0">
-                {/* Username */}
-                {/* Username (uneditable) */}
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-base">@{profile?.username || fallbackDisplayName}</p>
-                    <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground">
-                      <Lock className="h-2.5 w-2.5 mr-1" />
-                      Username
+              <div className="flex-1 min-w-0 space-y-1">
+                {/* Username with badges inline */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-lg">@{profile?.username || fallbackDisplayName}</span>
+                  {isSubscribed && (
+                    <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      Eclipse+
                     </Badge>
-                    {isSubscribed && (
-                      <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
-                        <Sparkles className="h-2.5 w-2.5" />
-                        Eclipse+
-                      </Badge>
-                    )}
-                    {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  )}
+                  {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
+                
+                {/* Email */}
+                <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+              </div>
+            </div>
 
-                {/* Display Name (editable) */}
-                <div className="mt-3 pt-3 border-t border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-0.5">Display Name</p>
-                      {editingUsername ? (
-                        <div className="space-y-2">
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={newUsername}
-                              onChange={(e) => setNewUsername(e.target.value)}
-                              className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
-                              autoFocus
-                            />
-                            {newUsername.trim().length >= 2 && (
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                {checkingUsername ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                ) : usernameAvailable === true ? (
-                                  <Check className="h-4 w-4 text-green-500" />
-                                ) : usernameAvailable === false ? (
-                                  <X className="h-4 w-4 text-destructive" />
-                                ) : null}
-                              </div>
-                            )}
-                          </div>
-                          {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                            <p className="text-xs text-destructive">This display name is already taken</p>
-                          )}
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={handleSaveUsername}
-                              disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                            >
-                              {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
-                          {cooldownInfo.onCooldown ? (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground cursor-help">
-                                    <Clock className="h-2.5 w-2.5 mr-1" />
-                                    {cooldownInfo.remainingDays}d
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ) : (
-                            <button
-                              onClick={startEditingUsername}
-                              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                              title="Edit display name"
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </button>
-                          )}
+            {/* Display Name row */}
+            <div className="flex items-center justify-between py-2 border-t border-border/30">
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground mb-0.5">Display Name</p>
+                {editingUsername ? (
+                  <div className="space-y-2 max-w-xs">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
+                        autoFocus
+                      />
+                      {newUsername.trim().length >= 2 && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingUsername ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : usernameAvailable === true ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="h-4 w-4 text-destructive" />
+                          ) : null}
                         </div>
                       )}
                     </div>
+                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                      <p className="text-xs text-destructive">This display name is already taken</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveUsername}
+                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                      >
+                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</span>
+                    {cooldownInfo.onCooldown ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground cursor-help">
+                              <Clock className="h-2.5 w-2.5 mr-1" />
+                              {cooldownInfo.remainingDays}d
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <button
+                        onClick={startEditingUsername}
+                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                        title="Edit display name"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
