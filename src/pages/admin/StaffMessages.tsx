@@ -477,7 +477,7 @@ function StaffMessagesContent() {
     return () => clearTimeout(timeoutId);
   }, [messages, scrollToBottom]);
 
-  // Handle viewport resize for keyboard
+  // Handle viewport resize for keyboard - scroll chat to bottom when keyboard opens
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
@@ -487,11 +487,12 @@ function StaffMessagesContent() {
 
     const handleViewportResize = () => {
       const heightDelta = Math.abs(vv.height - lastHeight);
+      // Only react to significant height changes (keyboard open/close)
       if (heightDelta > 50) {
         lastHeight = vv.height;
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
-          window.scrollTo(0, 0);
+          // Just scroll chat to bottom - don't fight the native viewport resize
           scrollToBottom();
         });
       }
@@ -505,27 +506,17 @@ function StaffMessagesContent() {
     };
   }, [scrollToBottom]);
 
-  // Keyboard visibility scroll lock
+  // Scroll to bottom when keyboard becomes visible
   useEffect(() => {
     if (!isKeyboardVisible) return;
-
-    const lockScroll = () => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-
-    lockScroll();
-    const lockInterval = setInterval(lockScroll, 16);
-
-    const cleanup = setTimeout(() => {
-      clearInterval(lockInterval);
+    
+    // Give the viewport time to resize, then scroll chat to bottom
+    const timeoutId = setTimeout(() => {
       scrollToBottom();
-    }, 350);
+    }, 150);
 
     return () => {
-      clearInterval(lockInterval);
-      window.clearTimeout(cleanup);
+      clearTimeout(timeoutId);
     };
   }, [isKeyboardVisible, scrollToBottom]);
 
