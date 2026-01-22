@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Paperclip, X, Image, FileText, Loader2, Upload, AtSign } from 'lucide-react';
+import { Send, Paperclip, X, Image, FileText, Loader2, Upload, AtSign, Plus } from 'lucide-react';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
@@ -1048,38 +1048,44 @@ function AdminChatContent() {
           accept="image/*,.pdf,.doc,.docx,.txt,.zip"
         />
 
+        {/* Lovable-style input bar */}
         <div className="flex gap-2 items-center">
-          {/* Attachment button */}
+          {/* Plus/Attachment button */}
           <Button
             variant="ghost"
             size="icon"
-            className="flex-shrink-0 rounded-full h-9 w-9"
+            className="flex-shrink-0 rounded-full h-10 w-10 border border-border/50 bg-muted/30"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
           >
-            <Paperclip className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </Button>
 
-          <Input
-            ref={inputRef}
-            value={newMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              requestAnimationFrame(() => {
-                window.scrollTo(0, 0);
-                scrollToBottom();
-              });
-            }}
-            placeholder="Message..."
-            className="flex-1 min-w-0 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
-            disabled={isUploading}
-          />
+          {/* Input pill */}
+          <div className="flex-1 min-w-0 relative">
+            <Input
+              ref={inputRef}
+              value={newMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                requestAnimationFrame(() => {
+                  window.scrollTo(0, 0);
+                  scrollToBottom();
+                });
+              }}
+              placeholder="Message..."
+              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10"
+              disabled={isUploading}
+            />
+          </div>
+
+          {/* Send button */}
           <Button
             onClick={handleSend}
             disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
             size="icon"
-            className="flex-shrink-0 rounded-full h-9 w-9"
+            className="flex-shrink-0 rounded-full h-10 w-10"
           >
             {isUploading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
