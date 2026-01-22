@@ -444,13 +444,16 @@ export default function AdminUsers() {
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium">{profile.display_name || 'No username'}</p>
+                            <p className="font-medium">{profile.display_name || 'No name'}</p>
                             {roles.length === 0 ? (
                               <Badge variant="secondary" className="text-xs">Customer</Badge>
                             ) : (
                               roles.map(r => getRoleBadge(r.role))
                             )}
                           </div>
+                          {profile.username && (
+                            <p className="text-xs text-muted-foreground">@{profile.username}</p>
+                          )}
                           {profile.customer_id && (
                             <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
                           )}

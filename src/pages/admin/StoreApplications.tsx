@@ -100,6 +100,7 @@ export default function StoreApplications() {
           *,
           profiles:user_id (
             display_name,
+            username,
             email,
             customer_id,
             discord_username,

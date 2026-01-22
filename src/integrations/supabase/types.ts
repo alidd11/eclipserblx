@@ -1688,6 +1688,7 @@ export type Database = {
           stripe_account_id: string | null
           updated_at: string
           user_id: string
+          username: string
         }
         Insert: {
           accounts_lock_reset_at?: string | null
@@ -1711,6 +1712,7 @@ export type Database = {
           stripe_account_id?: string | null
           updated_at?: string
           user_id: string
+          username: string
         }
         Update: {
           accounts_lock_reset_at?: string | null
@@ -1734,6 +1736,7 @@ export type Database = {
           stripe_account_id?: string | null
           updated_at?: string
           user_id?: string
+          username?: string
         }
         Relationships: []
       }

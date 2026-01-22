@@ -18,6 +18,7 @@ type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' |
 interface StaffMember {
   user_id: string;
   display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   staff_id: string | null;
   customer_id: string | null;
@@ -78,7 +79,7 @@ export default function StaffDirectory() {
       // Get profiles for these users - exclude email for privacy
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, staff_id, customer_id, created_at')
+        .select('user_id, display_name, username, avatar_url, staff_id, customer_id, created_at')
         .in('user_id', userIds);
 
       if (profilesError) throw profilesError;
@@ -91,6 +92,7 @@ export default function StaffDirectory() {
         staffMap.set(profile.user_id, {
           user_id: profile.user_id,
           display_name: profile.display_name,
+          username: profile.username,
           avatar_url: profile.avatar_url,
           staff_id: profile.staff_id,
           customer_id: profile.customer_id,
@@ -244,6 +246,11 @@ export default function StaffDirectory() {
                             <p className="font-medium truncate">
                               {member.display_name || 'Unknown User'}
                             </p>
+                            {member.username && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                @{member.username}
+                              </p>
+                            )}
                             
                             {/* Staff ID */}
                             {member.staff_id && (

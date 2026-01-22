@@ -24,6 +24,7 @@ interface StoreWithCommission {
   created_at: string;
   profiles?: {
     display_name: string | null;
+    username: string | null;
     email: string;
   };
 }
@@ -44,7 +45,7 @@ export default function SellerCommissions() {
         .select(`
           id, name, slug, owner_id, commission_rate, custom_commission_rate, 
           custom_rate_expires_at, is_active, is_trusted, created_at,
-          profiles:owner_id (display_name, email)
+          profiles:owner_id (display_name, username, email)
         `)
         .order('name');
       
@@ -224,7 +225,12 @@ export default function SellerCommissions() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <p className="text-sm">{store.profiles?.display_name || 'Unknown'}</p>
+                        <div>
+                          <p className="text-sm">{store.profiles?.display_name || 'Unknown'}</p>
+                          {store.profiles?.username && (
+                            <p className="text-xs text-muted-foreground">@{store.profiles.username}</p>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant={store.is_active ? 'default' : 'secondary'}>
