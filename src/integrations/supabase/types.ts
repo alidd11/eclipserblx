@@ -2314,6 +2314,115 @@ export type Database = {
           },
         ]
       }
+      seller_support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          change_reason: string | null
+          created_at: string
+          description: string
+          id: string
+          link_change_type: string | null
+          new_discord_username: string | null
+          new_roblox_username: string | null
+          priority: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          store_id: string | null
+          subject: string
+          ticket_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          change_reason?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          link_change_type?: string | null
+          new_discord_username?: string | null
+          new_roblox_username?: string | null
+          priority?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          store_id?: string | null
+          subject: string
+          ticket_number: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          change_reason?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          link_change_type?: string | null
+          new_discord_username?: string | null
+          new_roblox_username?: string | null
+          priority?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          store_id?: string | null
+          subject?: string
+          ticket_number?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_support_tickets_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_ticket_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean
+          message: string
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          message: string
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          message?: string
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "seller_support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_transactions: {
         Row: {
           amount: number
@@ -3523,6 +3632,7 @@ export type Database = {
       generate_referral_code: { Args: never; Returns: string }
       generate_staff_id: { Args: never; Returns: string }
       generate_store_id: { Args: never; Returns: string }
+      generate_ticket_number: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       has_role: {

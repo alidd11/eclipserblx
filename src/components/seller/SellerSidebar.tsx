@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
-  Tag, BarChart3, FileText
+  Tag, BarChart3, FileText, HelpCircle
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -76,6 +76,14 @@ const navGroups: NavGroup[] = [
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Notifications', icon: Bell, href: '/seller/settings/notifications' },
+    ],
+  },
+  {
+    id: 'support',
+    title: 'Support',
+    icon: HelpCircle,
+    items: [
+      { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
     ],
   },
 ];
