@@ -336,6 +336,7 @@ export default function AdminLiveChat() {
     const { data, error } = await supabase
       .from('chat_conversations')
       .select('*')
+      .not('status', 'in', '("closed","resolved")')
       .order('updated_at', { ascending: false });
 
     if (data) {

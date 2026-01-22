@@ -84,6 +84,7 @@ export default function DiscordModmail() {
       const { data, error } = await supabase
         .from("discord_modmail_tickets" as any)
         .select("*")
+        .neq("status", "closed")
         .order("updated_at", { ascending: false });
 
       if (error) throw error;
@@ -291,7 +292,6 @@ export default function DiscordModmail() {
 
   const openTickets = filteredTickets.filter((t) => t.status === "open");
   const claimedTickets = filteredTickets.filter((t) => t.status === "claimed");
-  const closedTickets = filteredTickets.filter((t) => t.status === "closed");
 
   const copyDiscordId = (id: string) => {
     navigator.clipboard.writeText(id);
@@ -318,7 +318,7 @@ export default function DiscordModmail() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-green-500">{openTickets.length}</div>
@@ -333,14 +333,8 @@ export default function DiscordModmail() {
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-muted-foreground">{closedTickets.length}</div>
-              <p className="text-sm text-muted-foreground">Closed</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
               <div className="text-2xl font-bold">{tickets.length}</div>
-              <p className="text-sm text-muted-foreground">Total</p>
+              <p className="text-sm text-muted-foreground">Total Active</p>
             </CardContent>
           </Card>
         </div>
@@ -361,16 +355,15 @@ export default function DiscordModmail() {
             </CardHeader>
             <CardContent className="p-0">
               <Tabs defaultValue="open" className="w-full">
-                <TabsList className="w-full grid grid-cols-3 rounded-none">
+                <TabsList className="w-full grid grid-cols-2 rounded-none">
                   <TabsTrigger value="open">Open ({openTickets.length})</TabsTrigger>
                   <TabsTrigger value="claimed">Active ({claimedTickets.length})</TabsTrigger>
-                  <TabsTrigger value="closed">Closed</TabsTrigger>
                 </TabsList>
 
-                {["open", "claimed", "closed"].map((status) => (
+                {["open", "claimed"].map((status) => (
                   <TabsContent key={status} value={status} className="m-0">
                     <ScrollArea className="h-[500px]">
-                      {(status === "open" ? openTickets : status === "claimed" ? claimedTickets : closedTickets).map(
+                      {(status === "open" ? openTickets : claimedTickets).map(
                         (ticket) => (
                           <div
                             key={ticket.id}
@@ -402,8 +395,7 @@ export default function DiscordModmail() {
                           </div>
                         )
                       )}
-                      {(status === "open" ? openTickets : status === "claimed" ? claimedTickets : closedTickets)
-                        .length === 0 && (
+                      {(status === "open" ? openTickets : claimedTickets).length === 0 && (
                         <div className="p-8 text-center text-muted-foreground">
                           No {status} tickets
                         </div>

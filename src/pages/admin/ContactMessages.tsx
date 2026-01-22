@@ -178,6 +178,7 @@ export default function ContactMessages() {
       const { data, error } = await supabase
         .from('contact_messages')
         .select('*')
+        .neq('status', 'responded')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
