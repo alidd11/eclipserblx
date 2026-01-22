@@ -48,7 +48,7 @@ const navGroups: NavGroup[] = [
     icon: ShoppingCart,
     items: [
       { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
-      { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
+      { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
     ],
   },
   {
@@ -69,6 +69,7 @@ const navGroups: NavGroup[] = [
     icon: Package,
     items: [
       { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
+      { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
       { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
       { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
     ],
