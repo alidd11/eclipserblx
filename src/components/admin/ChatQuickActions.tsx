@@ -66,7 +66,7 @@ export function ChatQuickActions({
   const actions = variant === 'staff' ? staffActions : adminActions;
 
   return (
-    <div className="border-t border-border/30 bg-card pb-[max(var(--chat-safe-bottom,env(safe-area-inset-bottom)),8px)]">
+    <div className="border-t border-border/30 bg-card pb-2">
       <div className="flex items-center justify-around px-2 py-1">
         {actions.map((action) => (
           <button

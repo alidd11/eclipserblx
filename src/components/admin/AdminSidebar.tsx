@@ -423,7 +423,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       "flex flex-col transition-all duration-300 shrink-0",
       "bg-sidebar text-sidebar-foreground",
       isMobileDrawer 
-        ? "h-[100dvh] max-h-[100dvh] w-full border-0 pb-[env(safe-area-inset-bottom)]" 
+        ? "h-[100dvh] max-h-[100dvh] w-full border-0 pb-2" 
         : "h-screen sticky top-0 border-r border-sidebar-border",
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
     )}>
