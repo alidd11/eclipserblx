@@ -99,6 +99,7 @@ const AdminStaffDocuments = lazy(() => import("./pages/admin/StaffDocuments"));
 const AdminPublicDocuments = lazy(() => import("./pages/admin/PublicDocuments"));
 const AdminManualPayouts = lazy(() => import("./pages/admin/ManualPayouts"));
 const AdminMarketplaceInterest = lazy(() => import("./pages/admin/MarketplaceInterest"));
+const AdminSellerTickets = lazy(() => import("./pages/admin/SellerTickets"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -117,6 +118,7 @@ const SellerSettingsAppearance = lazy(() => import("./pages/seller/SellerSetting
 const SellerSettingsTeam = lazy(() => import("./pages/seller/SellerSettingsTeam"));
 const SellerSettingsPayments = lazy(() => import("./pages/seller/SellerSettingsPayments"));
 const SellerSettingsNotifications = lazy(() => import("./pages/seller/SellerSettingsNotifications"));
+const SellerSupport = lazy(() => import("./pages/seller/SellerSupport"));
 
 // Public pages
 const StorePage = lazy(() => import("./pages/StorePage"));
@@ -213,6 +215,7 @@ const App = () => (
                   <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
                   <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
                   <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
+                  <Route path="/seller/support" element={<SellerSupport />} />
                   {/* Public store page */}
                   <Route path="/store/:storeSlug" element={<StorePage />} />
                   <Route path="/store/:slug/about" element={<StoreAbout />} />
@@ -262,6 +265,7 @@ const App = () => (
                   <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
                   <Route path="/admin/manual-payouts" element={<AdminManualPayouts />} />
                   <Route path="/admin/marketplace-interest" element={<AdminMarketplaceInterest />} />
+                  <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>

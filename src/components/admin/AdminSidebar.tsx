@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent
+  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent, Ticket
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -83,6 +83,7 @@ const navGroups: NavGroup[] = [
       { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', roles: ['admin'] },
       { title: 'Seller Products', icon: Package, href: '/admin/seller-products', roles: ['admin'] },
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
+      { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', roles: ['admin', 'moderator'] },
       { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', roles: ['admin'], dividerAfter: true },
       { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', roles: ['admin'] },
       { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
