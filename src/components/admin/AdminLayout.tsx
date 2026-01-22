@@ -231,7 +231,11 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // Clamp safe-bottom while the keyboard is open.
       html.style.setProperty(
         '--chat-safe-bottom',
-        keyboardOpen ? '0px' : 'env(safe-area-inset-bottom)'
+        // Slightly reduce the safe-area padding so the input bar sits lower (less “grey strip”),
+        // while still keeping controls clear of the home-indicator.
+        keyboardOpen
+          ? '0px'
+          : 'max(calc(env(safe-area-inset-bottom) - 14px), 0px)'
       );
       html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
@@ -277,7 +281,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         if (!isInputFocused) {
           forceViewportRecalc();
           html.style.setProperty('--vvh', getClosedVvh());
-          html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
+          html.style.setProperty('--chat-safe-bottom', 'max(calc(env(safe-area-inset-bottom) - 14px), 0px)');
           html.dataset.chatKeyboard = 'closed';
         }
       };
@@ -322,7 +326,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         if (currentVvhPx !== null && currentVvhPx > 0 && currentVvhPx < window.innerHeight - 20) {
           forceViewportRecalc();
           html.style.setProperty('--vvh', getClosedVvh());
-          html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
+          html.style.setProperty('--chat-safe-bottom', 'max(calc(env(safe-area-inset-bottom) - 14px), 0px)');
           html.dataset.chatKeyboard = 'closed';
         }
       }
