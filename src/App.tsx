@@ -93,6 +93,7 @@ const AdminSellerProducts = lazy(() => import("./pages/admin/SellerProducts"));
 const AdminSellerPayouts = lazy(() => import("./pages/admin/SellerPayouts"));
 const AdminSellerRecruitment = lazy(() => import("./pages/admin/SellerRecruitment"));
 const AdminSellerCommissions = lazy(() => import("./pages/admin/SellerCommissions"));
+const AdminSellerStoreDetail = lazy(() => import("./pages/admin/SellerStoreDetail"));
 const AdminSellerAgreements = lazy(() => import("./pages/admin/SellerAgreements"));
 const AdminStaffDocuments = lazy(() => import("./pages/admin/StaffDocuments"));
 const AdminPublicDocuments = lazy(() => import("./pages/admin/PublicDocuments"));
@@ -253,6 +254,7 @@ const App = () => (
                   <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
                   <Route path="/admin/seller-products" element={<AdminSellerProducts />} />
                   <Route path="/admin/seller-commissions" element={<AdminSellerCommissions />} />
+                  <Route path="/admin/seller-commissions/:storeId" element={<AdminSellerStoreDetail />} />
                   <Route path="/admin/seller-payouts" element={<AdminSellerPayouts />} />
                   <Route path="/admin/seller-agreements" element={<AdminSellerAgreements />} />
                   <Route path="/admin/staff-documents" element={<AdminStaffDocuments />} />
