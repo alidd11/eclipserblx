@@ -219,11 +219,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Home,
       items: [
         { title: 'Home', icon: Home, href: '/' },
-        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'My Account', icon: User, href: '/account' },
+        // Add Seller Dashboard for sellers right after Account
+        ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
+        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'My Messages', icon: Bell, href: '/messages', showNotificationDot: true },
         { title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' },
-        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       ],
     },
     {
@@ -244,15 +246,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: TrendingUp,
       items: [
         { title: 'Affiliate Program', icon: TrendingUp, href: '/affiliate' },
-      ],
-    }] : []),
-    // Only show seller section if user is an approved seller
-    ...(isSeller ? [{
-      id: 'seller',
-      title: 'Seller',
-      icon: Store,
-      items: [
-        { title: 'Seller Dashboard', icon: Store, href: '/seller' },
       ],
     }] : []),
     {
