@@ -17,19 +17,19 @@ const faqItems = [
     questions: [
       {
         question: 'What types of products do you sell?',
-        answer: `${SITE_NAME} offers a variety of premium digital assets including scripts, tools, templates, and other digital products for various platforms.`,
+        answer: `We focus on premium Roblox assets — things like vehicle liveries, UI kits, scripts, and Discord bots. Everything's made by creators who actually use this stuff themselves.`,
       },
       {
         question: 'How do I download my purchased products?',
-        answer: 'After completing your purchase, head to your Account page and click on "Downloads". All your purchased products will be available there for download.',
+        answer: 'Easy! After you buy something, head to your Account page and hit "Downloads". All your stuff will be waiting there, ready to grab.',
       },
       {
         question: 'Is there a download limit?',
-        answer: 'There is a 48-hour cooldown between downloads to prevent abuse. After downloading a product, you\'ll need to wait 48 hours before downloading another.',
+        answer: 'Here\'s the deal: there\'s a 48-hour cooldown between downloads to keep things fair for everyone. After grabbing one product, just wait a couple days before downloading the next.',
       },
       {
         question: 'Can I re-download my purchases?',
-        answer: 'Yes, you can re-download any product you\'ve purchased at any time from your Downloads page, subject to the 48-hour cooldown period.',
+        answer: 'Absolutely! Your purchases are yours forever. Re-download anytime from your Downloads page — just keep the 48-hour cooldown in mind.',
       },
     ],
   },
@@ -38,23 +38,23 @@ const faqItems = [
     questions: [
       {
         question: 'What payment methods do you accept?',
-        answer: 'We accept all major credit/debit cards through Stripe, as well as PayPal for your convenience.',
+        answer: 'We keep it simple — all major cards work (Visa, Mastercard, Amex) through Stripe, and PayPal too if that\'s your thing.',
       },
       {
         question: 'Are prices inclusive of VAT?',
-        answer: 'All prices displayed on our website are inclusive of UK VAT where applicable.',
+        answer: 'Yep! What you see is what you pay. All prices include UK VAT where it applies.',
       },
       {
         question: 'Do you offer discount codes?',
-        answer: 'Yes, we occasionally offer discount codes. You can apply these at checkout to receive a discount on your order. However, discount codes cannot be combined with Eclipse+ membership discounts.',
+        answer: 'We do! Keep an eye on our Discord for codes. Quick heads up though — you can\'t stack discount codes with Eclipse+ membership discounts.',
       },
       {
         question: 'What is Eclipse+ and what discounts does it offer?',
-        answer: 'Eclipse+ is our premium membership (£4.99/month) that provides 30% off standard products and 35% off Bots, plus one free product claim per month. Eclipse+ discounts are automatically applied at checkout and cannot be combined with promotional discount codes. Products in the "Eclipse Savers" category are already discounted and excluded from Eclipse+ benefits.',
+        answer: 'Eclipse+ is our membership for serious creators — £4.99/month gets you 30% off standard products, 35% off Bots, and one free product each month. The discounts apply automatically at checkout. One thing to note: "Eclipse Savers" products are already discounted, so they\'re excluded from the membership perks.',
       },
       {
         question: 'Can I use a discount code with my Eclipse+ membership?',
-        answer: 'No, Eclipse+ membership discounts cannot be combined with promotional discount codes. When Eclipse+ discounts are applied to your order, the discount code field will not be available. This ensures you always receive the best possible discount automatically.',
+        answer: 'Unfortunately not — it\'s one or the other. But honestly, the Eclipse+ discount is usually better anyway, and it applies automatically so you don\'t have to remember codes.',
       },
     ],
   },
@@ -63,15 +63,15 @@ const faqItems = [
     questions: [
       {
         question: 'Do I need an account to purchase?',
-        answer: 'Yes, you need to create an account to purchase and download products. This ensures you can always access your purchases.',
+        answer: 'Yeah, you\'ll need one. It only takes a minute to sign up, and it means you\'ll always have access to everything you\'ve bought.',
       },
       {
         question: 'How do I reset my password?',
-        answer: 'Click on "Sign In" and then use the "Forgot Password" link. You\'ll receive an email with instructions to reset your password.',
+        answer: 'No worries, happens to everyone. Hit "Sign In", click "Forgot Password", and check your email. You\'ll get a reset link within a few minutes.',
       },
       {
         question: 'Is my payment information secure?',
-        answer: 'Absolutely. We use industry-standard encryption and never store your full payment details. All transactions are processed securely through Stripe or PayPal.',
+        answer: 'Totally. We use industry-standard encryption, and we never actually see or store your card details — Stripe and PayPal handle all that securely.',
       },
     ],
   },
@@ -80,15 +80,15 @@ const faqItems = [
     questions: [
       {
         question: 'What is your refund policy?',
-        answer: 'As we sell digital products, refunds are handled on a case-by-case basis in accordance with UK Consumer Rights Act 2015. Please see our Refund Policy page for full details.',
+        answer: 'Since everything\'s digital, we handle refunds case-by-case following UK Consumer Rights. Check our Refund Policy page for the full details, but the short version: if something\'s genuinely wrong, we\'ll sort it out.',
       },
       {
         question: 'How do I request a refund?',
-        answer: 'Contact our support team via the live chat or email with your order number and reason for the refund request. We aim to respond within 24-48 hours.',
+        answer: 'Drop us a message via live chat or email with your order number and what went wrong. We usually get back to you within a few hours during the week, 24-48 hours max.',
       },
       {
         question: 'How can I get support?',
-        answer: 'You can reach us through our live chat widget on the website, join our Discord community, or visit the Support Centre for help articles.',
+        answer: 'A few options: the live chat on this site (Mon-Sat, 9AM-7PM), our Discord community where other creators can help too, or the Support Centre for guides and articles.',
       },
     ],
   },
@@ -97,11 +97,11 @@ const faqItems = [
     questions: [
       {
         question: 'How do I join the community forum?',
-        answer: 'Simply sign in to your account and visit the Forum section. You can browse discussions and create new threads once logged in.',
+        answer: 'Just sign in and head to the Forum section — that\'s it! Browse around, jump into discussions, or start your own thread.',
       },
       {
         question: 'Can I join your Discord server?',
-        answer: 'Yes! We have an active Discord community where you can chat with other users and get support. Click the Discord link in the navigation to join.',
+        answer: 'For sure! It\'s actually the best place to hang out, get quick help, and see what other creators are working on. Link\'s in the nav bar.',
       },
     ],
   },
