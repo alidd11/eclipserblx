@@ -48,7 +48,7 @@ const Status = lazy(() => import("./pages/Status"));
 const BotInstallation = lazy(() => import("./pages/BotInstallation"));
 const NotificationPreferences = lazy(() => import("./pages/NotificationPreferences"));
 const EclipsePlus = lazy(() => import("./pages/EclipsePlus"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
+const MarketplaceComingSoon = lazy(() => import("./pages/MarketplaceComingSoon"));
 const LiveChat = lazy(() => import("./pages/LiveChat"));
 const Affiliate = lazy(() => import("./pages/Affiliate"));
 
@@ -188,7 +188,7 @@ const App = () => (
                   <Route path="/bot-installation" element={<BotInstallation />} />
                   <Route path="/notifications" element={<NotificationPreferences />} />
                   <Route path="/eclipse-plus" element={<EclipsePlus />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/marketplace" element={<MarketplaceComingSoon />} />
                   <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/support/chat" element={<LiveChat />} />
                   <Route path="/wishlist" element={<Wishlist />} />
