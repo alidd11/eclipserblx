@@ -781,7 +781,7 @@ function AdminChatContent() {
   return (
     <div 
       className={cn(
-        "h-full flex flex-col bg-card transition-colors",
+        "flex-1 flex flex-col min-h-0 bg-card transition-colors",
         isDragOver && "ring-2 ring-primary ring-inset"
       )}
       style={{ overscrollBehavior: 'none' }}
@@ -808,7 +808,7 @@ function AdminChatContent() {
       {/* Messages area - fills available space */}
       <div
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
       >
         <div className="py-4 flex flex-col">
