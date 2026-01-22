@@ -95,6 +95,7 @@ const AdminSellerRecruitment = lazy(() => import("./pages/admin/SellerRecruitmen
 const AdminSellerCommissions = lazy(() => import("./pages/admin/SellerCommissions"));
 const AdminSellerAgreements = lazy(() => import("./pages/admin/SellerAgreements"));
 const AdminStaffDocuments = lazy(() => import("./pages/admin/StaffDocuments"));
+const AdminPublicDocuments = lazy(() => import("./pages/admin/PublicDocuments"));
 const AdminMarketplaceInterest = lazy(() => import("./pages/admin/MarketplaceInterest"));
 
 // Seller pages
@@ -254,6 +255,7 @@ const App = () => (
                   <Route path="/admin/seller-payouts" element={<AdminSellerPayouts />} />
                   <Route path="/admin/seller-agreements" element={<AdminSellerAgreements />} />
                   <Route path="/admin/staff-documents" element={<AdminStaffDocuments />} />
+                  <Route path="/admin/public-documents" element={<AdminPublicDocuments />} />
                   <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
                   <Route path="/admin/marketplace-interest" element={<AdminMarketplaceInterest />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
