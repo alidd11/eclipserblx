@@ -524,6 +524,23 @@ function StaffMessagesContent() {
     };
   }, [isKeyboardVisible, scrollToBottom]);
 
+  // Scroll to bottom when mention suggestions appear (ensures input stays visible)
+  useEffect(() => {
+    if (!showMentionSuggestions) return;
+
+    // Staggered scrolls to handle viewport resize during keyboard animation
+    const timers = [
+      setTimeout(scrollToBottom, 0),
+      setTimeout(scrollToBottom, 100),
+      setTimeout(scrollToBottom, 200),
+      setTimeout(scrollToBottom, 350),
+    ];
+
+    return () => {
+      timers.forEach(t => clearTimeout(t));
+    };
+  }, [showMentionSuggestions, scrollToBottom]);
+
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
