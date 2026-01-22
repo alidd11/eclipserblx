@@ -219,7 +219,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: 'Home', icon: Home, href: '/' },
         { title: 'My Account', icon: User, href: '/account' },
-        { title: 'Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       ],
     },
