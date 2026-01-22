@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, AtSign } from 'lucide-react';
+import { Send, AtSign, Plus, Paperclip, X, Image, FileText, Loader2 } from 'lucide-react';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 import { hapticTap, hapticError } from '@/lib/haptics';
+import { toast } from 'sonner';
+import { performSecurityScan } from '@/lib/secureFileUpload';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -24,6 +26,7 @@ interface ChatMessage {
   id: string;
   user_id: string;
   message: string;
+  attachment_url: string | null;
   created_at: string;
   reply_to_id: string | null;
 }
@@ -45,6 +48,23 @@ interface TypingUser {
   user_id: string;
   name: string;
 }
+
+// Helper to check if URL is an image
+const isImageUrl = (url: string): boolean => {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+  const lowerUrl = url.toLowerCase();
+  return imageExtensions.some(ext => lowerUrl.includes(ext));
+};
+
+// Helper to get file name from URL
+const getFileName = (url: string): string => {
+  try {
+    const parts = url.split('/');
+    return decodeURIComponent(parts[parts.length - 1].split('?')[0]);
+  } catch {
+    return 'attachment';
+  }
+};
 
 const roleBadges: Record<AppRole, { label: string; className: string }> = {
   admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
@@ -118,11 +138,14 @@ function StaffMessagesContent() {
   const [newMessage, setNewMessage] = useState('');
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -290,26 +313,77 @@ function StaffMessagesContent() {
     }
   };
 
+  // Upload file to storage
+  const uploadFile = async (file: File): Promise<string | null> => {
+    if (!user?.id) return null;
+
+    toast.info('Scanning file...', { id: 'staff-chat-scan' });
+    const scanResult = await performSecurityScan(file);
+    
+    if (!scanResult.isAllowed) {
+      toast.dismiss('staff-chat-scan');
+      toast.error(scanResult.reason || 'File blocked by security scan');
+      return null;
+    }
+    
+    toast.dismiss('staff-chat-scan');
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('staff-chat-attachments')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw uploadError;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('staff-chat-attachments')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  };
+
+  // Handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB');
+        return;
+      }
+      setSelectedFile(file);
+    }
+    e.target.value = '';
+  };
+
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async ({ message, replyToId }: { message: string; replyToId: string | null }) => {
+    mutationFn: async ({ message, attachmentUrl, replyToId }: { message: string; attachmentUrl: string | null; replyToId: string | null }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       const { error } = await supabase
         .from('staff_chat_messages')
         .insert({
           user_id: user.id,
-          message: message.trim(),
+          message: message.trim() || (attachmentUrl ? '📎 Attachment' : ''),
+          attachment_url: attachmentUrl,
           reply_to_id: replyToId,
         });
       
       if (error) throw error;
 
-      await sendMentionNotifications(message.trim(), user.id);
+      if (message.trim()) {
+        await sendMentionNotifications(message.trim(), user.id);
+      }
     },
     onSuccess: () => {
       hapticTap();
       setNewMessage('');
+      setSelectedFile(null);
       setReplyToMessage(null);
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
@@ -601,9 +675,32 @@ function StaffMessagesContent() {
     }, 0);
   };
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
-    sendMessageMutation.mutate({ message: newMessage, replyToId: replyToMessage?.id || null });
+  const handleSend = async () => {
+    if (!newMessage.trim() && !selectedFile) return;
+
+    let attachmentUrl: string | null = null;
+
+    if (selectedFile) {
+      setIsUploading(true);
+      try {
+        attachmentUrl = await uploadFile(selectedFile);
+        if (!attachmentUrl && !newMessage.trim()) {
+          setIsUploading(false);
+          return;
+        }
+      } catch (err) {
+        toast.error('Failed to upload file');
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    sendMessageMutation.mutate({ 
+      message: newMessage, 
+      attachmentUrl, 
+      replyToId: replyToMessage?.id || null 
+    });
   };
 
   const handleReply = (messageId: string) => {
@@ -737,7 +834,35 @@ function StaffMessagesContent() {
                           : 'bg-muted text-foreground rounded-bl-md'
                       )}
                     >
-                      {renderMessageWithMentions(message.message, { isOwn })}
+                      {message.attachment_url && (
+                        <div className="mb-2">
+                          {isImageUrl(message.attachment_url) ? (
+                            <a href={message.attachment_url} target="_blank" rel="noopener noreferrer">
+                              <img 
+                                src={message.attachment_url} 
+                                alt="Attachment" 
+                                className="max-w-[200px] max-h-[200px] rounded-lg object-cover"
+                              />
+                            </a>
+                          ) : (
+                            <a 
+                              href={message.attachment_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className={cn(
+                                "flex items-center gap-2 p-2 rounded-lg",
+                                isOwn ? "bg-primary-foreground/10" : "bg-background/50"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 flex-shrink-0" />
+                              <span className="text-sm truncate max-w-[150px]">
+                                {getFileName(message.attachment_url)}
+                              </span>
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {message.message && message.message !== '📎 Attachment' && renderMessageWithMentions(message.message, { isOwn })}
                     </div>
                     <ChatMessageActions
                       messageId={message.id}
@@ -837,28 +962,79 @@ function StaffMessagesContent() {
           </div>
         )}
 
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+        />
+
+        {/* Selected file preview */}
+        {selectedFile && (
+          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg mb-2">
+            {selectedFile.type.startsWith('image/') ? (
+              <Image className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            )}
+            <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setSelectedFile(null)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+
+        {/* Lovable-style input bar */}
         <div className="flex gap-2 items-center">
-          <Input
-            ref={inputRef}
-            value={newMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              requestAnimationFrame(() => {
-                window.scrollTo(0, 0);
-                scrollToBottom();
-              });
-            }}
-            placeholder="Message..."
-            className="flex-1 min-w-0 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
-          />
+          {/* Plus/Attachment button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0 rounded-full h-10 w-10 border border-border/50 bg-muted/30"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+
+          {/* Input pill */}
+          <div className="flex-1 min-w-0 relative">
+            <Input
+              ref={inputRef}
+              value={newMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                requestAnimationFrame(() => {
+                  window.scrollTo(0, 0);
+                  scrollToBottom();
+                });
+              }}
+              placeholder="Message..."
+              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10"
+              disabled={isUploading}
+            />
+          </div>
+
+          {/* Send button */}
           <Button
             onClick={handleSend}
-            disabled={!newMessage.trim() || sendMessageMutation.isPending}
+            disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
             size="icon"
-            className="rounded-full h-9 w-9 flex-shrink-0"
+            className="flex-shrink-0 rounded-full h-10 w-10"
           >
-            <Send className="h-4 w-4" />
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>
