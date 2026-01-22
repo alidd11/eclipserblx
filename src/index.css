@@ -663,9 +663,25 @@
     overscroll-behavior-y: contain;
     /* Ensure consistent background through safe areas */
     background-color: hsl(var(--background));
-    /* Extend background color into safe areas */
-    padding-bottom: env(safe-area-inset-bottom);
+    /* Avoid layout shifts from safe-area padding; we paint the safe-area with ::after instead */
+    padding-bottom: 0;
     box-sizing: border-box;
+  }
+
+  /*
+    iOS safe-area background fill without adding extra bottom space.
+    This prevents the “tall grey strip” while still ensuring the home-indicator area
+    matches the current page background (including chat pages that override body bg).
+  */
+  body::after {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: env(safe-area-inset-bottom);
+    background-color: inherit;
+    pointer-events: none;
   }
   
   /* Allow text selection in inputs and textareas */
