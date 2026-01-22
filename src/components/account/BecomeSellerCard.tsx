@@ -38,6 +38,7 @@ export function BecomeSellerCard() {
   const [storeName, setStoreName] = useState('');
   const [storeDescription, setStoreDescription] = useState('');
   const [productCategory, setProductCategory] = useState('');
+  const [discordServerInvite, setDiscordServerInvite] = useState('');
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -66,12 +67,14 @@ export function BecomeSellerCard() {
       if (!user?.id) throw new Error('Not authenticated');
       if (!ageConfirmed) throw new Error('You must confirm your age');
       if (!termsAccepted) throw new Error('You must accept the seller terms');
+      if (!discordServerInvite.trim()) throw new Error('Discord server invite is required');
 
       const { error } = await supabase.from('store_applications').insert({
         user_id: user.id,
         store_name: storeName.trim(),
         store_description: storeDescription.trim() || null,
         product_category: productCategory || null,
+        discord_server_invite: discordServerInvite.trim(),
         age_confirmed: ageConfirmed,
         terms_accepted: termsAccepted,
         terms_accepted_at: new Date().toISOString(),
@@ -101,6 +104,7 @@ export function BecomeSellerCard() {
     setStoreName('');
     setStoreDescription('');
     setProductCategory('');
+    setDiscordServerInvite('');
     setAgeConfirmed(false);
     setTermsAccepted(false);
   };
@@ -236,6 +240,8 @@ export function BecomeSellerCard() {
               setStoreDescription={setStoreDescription}
               productCategory={productCategory}
               setProductCategory={setProductCategory}
+              discordServerInvite={discordServerInvite}
+              setDiscordServerInvite={setDiscordServerInvite}
               ageConfirmed={ageConfirmed}
               setAgeConfirmed={setAgeConfirmed}
               termsAccepted={termsAccepted}
@@ -341,6 +347,8 @@ export function BecomeSellerCard() {
             setStoreDescription={setStoreDescription}
             productCategory={productCategory}
             setProductCategory={setProductCategory}
+            discordServerInvite={discordServerInvite}
+            setDiscordServerInvite={setDiscordServerInvite}
             ageConfirmed={ageConfirmed}
             setAgeConfirmed={setAgeConfirmed}
             termsAccepted={termsAccepted}
@@ -361,6 +369,8 @@ interface ApplicationFormDialogProps {
   setStoreDescription: (value: string) => void;
   productCategory: string;
   setProductCategory: (value: string) => void;
+  discordServerInvite: string;
+  setDiscordServerInvite: (value: string) => void;
   ageConfirmed: boolean;
   setAgeConfirmed: (value: boolean) => void;
   termsAccepted: boolean;
@@ -376,6 +386,8 @@ function ApplicationFormDialog({
   setStoreDescription,
   productCategory,
   setProductCategory,
+  discordServerInvite,
+  setDiscordServerInvite,
   ageConfirmed,
   setAgeConfirmed,
   termsAccepted,
@@ -383,7 +395,7 @@ function ApplicationFormDialog({
   onSubmit,
   isSubmitting,
 }: ApplicationFormDialogProps) {
-  const canSubmit = storeName.trim() && ageConfirmed && termsAccepted;
+  const canSubmit = storeName.trim() && discordServerInvite.trim() && ageConfirmed && termsAccepted;
 
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -441,7 +453,20 @@ function ApplicationFormDialog({
           </Select>
         </div>
 
-        {/* Age Confirmation */}
+        <div className="space-y-2">
+          <Label htmlFor="discordServerInvite">Discord Server Invite Link *</Label>
+          <Input
+            id="discordServerInvite"
+            placeholder="https://discord.gg/your-server"
+            value={discordServerInvite}
+            onChange={(e) => setDiscordServerInvite(e.target.value)}
+            required
+          />
+          <p className="text-xs text-muted-foreground">
+            Provide a permanent Discord invite link to your server. This is required for customer support.
+          </p>
+        </div>
+
         <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
           <div className="flex items-start gap-3">
             <Checkbox
