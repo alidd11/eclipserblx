@@ -85,10 +85,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
       // Refresh the session - user should still be logged in
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        toast({
-          title: 'Welcome back!',
-          description: 'Redirecting to dashboard...',
-        });
         navigate('/admin');
       } else {
         toast({
@@ -168,10 +164,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
         }
       } else {
         // Wait for roles to be fetched then redirect
-        toast({
-          title: 'Welcome back!',
-          description: 'Redirecting to dashboard...',
-        });
         // Force a small delay to allow role query to refetch
         setTimeout(() => {
           navigate('/admin');
