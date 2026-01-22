@@ -1055,7 +1055,17 @@ export default function AdminLiveChat() {
                           handleTyping();
                         }}
                         onKeyPress={handleKeyPress}
+                        onTouchStart={(e) => {
+                          // Force focus on first touch to work around iOS PWA tap-blocking
+                          const input = e.currentTarget;
+                          requestAnimationFrame(() => {
+                            if (document.activeElement !== input) {
+                              input.focus();
+                            }
+                          });
+                        }}
                         className="text-base"
+                        style={{ touchAction: 'manipulation' }}
                       />
                       <Button onClick={() => sendMessage()} disabled={!newMessage.trim()} className="h-9 lg:h-10 shrink-0 px-3">
                         <Send className="h-4 w-4" />

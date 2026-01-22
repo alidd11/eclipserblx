@@ -525,7 +525,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
               className={cn(
                 'min-w-0 max-w-full',
                 isChatPage
-                  ? 'flex-1 flex flex-col min-h-0 p-0'
+                  ? 'flex-1 flex flex-col min-h-0 p-0 pt-[env(safe-area-inset-top)]'
                   : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
               )}
             >
