@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
@@ -26,7 +26,7 @@ export function HeroSection() {
             <div className="text-center space-y-5 max-w-3xl mx-auto">
               {/* Simple badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                <Sparkles className="h-4 w-4" />
+                <Rocket className="h-4 w-4" />
                 Roblox Creator Marketplace
               </div>
 
@@ -37,7 +37,7 @@ export function HeroSection() {
 
               {/* Concise description */}
               <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-                Premium assets ready for instant download. Vehicle liveries, UI kits, Discord bots, and more.
+                Premium liveries, UI kits, and Discord bots. Instant download, lifetime updates.
               </p>
 
               {/* Clean CTAs */}

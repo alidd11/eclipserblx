@@ -10,12 +10,12 @@ const signals = [
   {
     icon: Zap,
     title: 'Instant Delivery',
-    description: 'Download immediately after purchase',
+    description: 'Download in seconds, no waiting',
   },
   {
     icon: Headphones,
-    title: '24/7 Support',
-    description: 'Live chat and ticket support available',
+    title: 'Fast Support',
+    description: 'Mon-Sat, 9AM-7PM via chat & tickets',
   },
   {
     icon: RefreshCw,
@@ -34,8 +34,8 @@ export function TrustSignals() {
             <Shield className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl md:text-2xl font-bold">Why Eclipse</h2>
-            <p className="text-sm text-muted-foreground">Fast, secure, and supported</p>
+            <h2 className="text-xl md:text-2xl font-bold">Why creators choose us</h2>
+            <p className="text-sm text-muted-foreground">Trusted by the Roblox community</p>
           </div>
         </div>
 
