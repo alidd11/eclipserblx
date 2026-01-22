@@ -144,6 +144,7 @@ function StaffMessagesContent() {
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
+  const [openActionsId, setOpenActionsId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -152,6 +153,12 @@ function StaffMessagesContent() {
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const { isKeyboardVisible } = useIOSKeyboardFix();
+
+  // Detect PWA mode
+  const isPWA = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true
+  );
 
   // Mark messages as read when component mounts
   useEffect(() => {
@@ -860,17 +867,19 @@ function StaffMessagesContent() {
                       />
                     )}
                     <div
+                      onClick={isPWA ? () => setOpenActionsId(message.id) : undefined}
                       className={cn(
                         'rounded-2xl px-3 py-2 text-sm break-words',
                         isOwn
                           ? 'bg-primary text-primary-foreground rounded-br-md'
-                          : 'bg-muted text-foreground rounded-bl-md'
+                          : 'bg-muted text-foreground rounded-bl-md',
+                        isPWA && 'cursor-pointer active:opacity-80 transition-opacity'
                       )}
                     >
                       {message.attachment_url && (
                         <div className="mb-2">
                           {isImageUrl(message.attachment_url) ? (
-                            <a href={message.attachment_url} target="_blank" rel="noopener noreferrer">
+                            <a href={message.attachment_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                               <img 
                                 src={message.attachment_url} 
                                 alt="Attachment" 
@@ -882,6 +891,7 @@ function StaffMessagesContent() {
                               href={message.attachment_url} 
                               target="_blank" 
                               rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
                               className={cn(
                                 "flex items-center gap-2 p-2 rounded-lg",
                                 isOwn ? "bg-primary-foreground/10" : "bg-background/50"
@@ -907,6 +917,9 @@ function StaffMessagesContent() {
                       onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
                       onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
                       onReply={handleReply}
+                      isPWA={isPWA}
+                      isOpen={openActionsId === message.id}
+                      onOpenChange={(open) => setOpenActionsId(open ? message.id : null)}
                     />
                   </div>
                 </div>

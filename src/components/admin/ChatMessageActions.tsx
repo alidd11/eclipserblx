@@ -36,6 +36,10 @@ interface ChatMessageActionsProps {
   onDelete: (messageId: string) => void;
   onReply?: (messageId: string) => void;
   isOwnBubble?: boolean;
+  // PWA-specific props for tap-to-open behavior
+  isPWA?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ChatMessageActions({
@@ -49,6 +53,9 @@ export function ChatMessageActions({
   onDelete,
   onReply,
   isOwnBubble = false,
+  isPWA = false,
+  isOpen,
+  onOpenChange,
 }: ChatMessageActionsProps) {
   const [isReactionOpen, setIsReactionOpen] = useState(false);
 
@@ -115,22 +122,28 @@ export function ChatMessageActions({
         </div>
       )}
 
-      {/* Actions dropdown - absolutely positioned to not affect layout */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              'h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation',
-              !hasReactions && 'absolute top-0',
-              !hasReactions && (isOwn ? 'right-0' : 'left-0')
-            )}
-          >
-            <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="w-40">
+      {/* Actions dropdown - controlled mode for PWA, uncontrolled for desktop */}
+      <DropdownMenu 
+        open={isPWA ? isOpen : undefined} 
+        onOpenChange={isPWA ? onOpenChange : undefined}
+      >
+        {/* Hide trigger button on PWA - messages are tapped directly */}
+        {!isPWA && (
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation',
+                !hasReactions && 'absolute top-0',
+                !hasReactions && (isOwn ? 'right-0' : 'left-0')
+              )}
+            >
+              <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+        )}
+        <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="w-40 bg-popover border border-border shadow-lg">
           {/* Reply option */}
           {onReply && (
             <DropdownMenuItem
