@@ -490,6 +490,40 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
+    // HOME group: always expanded, non-collapsible
+    if (group.id === 'home') {
+      if (isCollapsed) {
+        // Collapsed mode: show items directly with tooltips
+        return (
+          <div key={group.id} className="mb-1 space-y-0.5">
+            {group.items.map(renderNavItem)}
+          </div>
+        );
+      }
+      // Expanded mode: show header and items without collapsible
+      return (
+        <div key={group.id} className="mb-1">
+          <div
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 text-sm font-medium",
+              hasActiveItem
+                ? "text-primary"
+                : "text-muted-foreground"
+            )}
+          >
+            <group.icon className={cn(
+              "h-4 w-4 shrink-0 transition-all",
+              hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
+            )} />
+            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{group.title}</span>
+          </div>
+          <div className="space-y-0.5">
+            {group.items.map(renderNavItem)}
+          </div>
+        </div>
+      );
+    }
+
     // Collapsed: show group icon with tooltip menu
     if (isCollapsed) {
       return (
@@ -1023,32 +1057,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
             </Tooltip>
           </>
-        ) : (
-          /* Sign In CTA for guests */
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                to="/auth"
-                onClick={handleNavClick}
-                className={cn(
-                  "flex items-center rounded-lg text-sm font-medium transition-all duration-100 active:scale-[0.97]",
-                  isCollapsed 
-                    ? "justify-center py-2.5 gradient-button text-primary-foreground" 
-                    : "gap-3 px-3 py-2.5 gradient-button text-primary-foreground"
-                )}
-              >
-                <User className="h-4 w-4 shrink-0" />
-                {!isCollapsed && (
-                  <div className="flex-1">
-                    <span className="font-medium">Sign In</span>
-                    <p className="text-[10px] opacity-80">Access your account</p>
-                  </div>
-                )}
-              </Link>
-            </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">Sign In</TooltipContent>}
-          </Tooltip>
-        )}
+        ) : null}
 
         {/* Collapse Toggle - hide in mobile drawer */}
         {!isMobileDrawer && (
