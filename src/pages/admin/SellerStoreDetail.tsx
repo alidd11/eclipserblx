@@ -37,6 +37,7 @@ export default function SellerStoreDetail() {
           *,
           profiles:owner_id (
             display_name,
+            username,
             email,
             avatar_url,
             discord_id,
@@ -419,6 +420,9 @@ export default function SellerStoreDetail() {
                 )}
                 <div>
                   <p className="font-medium">{ownerProfile?.display_name || 'Unknown User'}</p>
+                  {ownerProfile?.username && (
+                    <p className="text-xs text-muted-foreground">@{ownerProfile.username}</p>
+                  )}
                   <p className="text-sm text-muted-foreground">{ownerProfile?.email}</p>
                 </div>
               </div>

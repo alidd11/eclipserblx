@@ -144,7 +144,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, display_name, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at, accounts_locked')
+        .select('user_id, email, display_name, username, avatar_url, customer_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at, updated_at, accounts_locked')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -232,10 +232,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     if (profile) return;
 
     const run = async () => {
+      const usernameValue = fallbackDisplayName || user.email?.split('@')[0] || 'user';
       const { error } = await supabase.from('profiles').insert({
         user_id: user.id,
         email: user.email,
         display_name: fallbackDisplayName || null,
+        username: usernameValue,
       });
 
       if (!error) {
@@ -549,70 +551,87 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               
               <div className="flex-1 min-w-0">
                 {/* Username */}
-                {editingUsername ? (
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
-                        autoFocus
-                      />
-                      {newUsername.trim().length >= 2 && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {checkingUsername ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          ) : usernameAvailable === true ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : usernameAvailable === false ? (
-                            <X className="h-4 w-4 text-destructive" />
-                          ) : null}
+                {/* Username (uneditable) */}
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-base">@{profile?.username || fallbackDisplayName}</p>
+                    <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground">
+                      <Lock className="h-2.5 w-2.5 mr-1" />
+                      Username
+                    </Badge>
+                    {isSubscribed && (
+                      <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        Eclipse+
+                      </Badge>
+                    )}
+                    {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+
+                {/* Display Name (editable) */}
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-0.5">Display Name</p>
+                      {editingUsername ? (
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={newUsername}
+                              onChange={(e) => setNewUsername(e.target.value)}
+                              className="w-full px-3 py-1.5 text-sm rounded-md border bg-input pr-10"
+                              autoFocus
+                            />
+                            {newUsername.trim().length >= 2 && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {checkingUsername ? (
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                ) : usernameAvailable === true ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : usernameAvailable === false ? (
+                                  <X className="h-4 w-4 text-destructive" />
+                                ) : null}
+                              </div>
+                            )}
+                          </div>
+                          {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                            <p className="text-xs text-destructive">This display name is already taken</p>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={handleSaveUsername}
+                              disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                            >
+                              {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
+                          <button
+                            onClick={startEditingUsername}
+                            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                            title="Edit display name"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
                         </div>
                       )}
                     </div>
-                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                      <p className="text-xs text-destructive">This username is already taken</p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleSaveUsername}
-                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                      >
-                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-base">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
-                      <button
-                        onClick={startEditingUsername}
-                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                        title="Edit username"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                      {isSubscribed && (
-                        <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
-                          <Sparkles className="h-2.5 w-2.5" />
-                          Eclipse+
-                        </Badge>
-                      )}
-                      {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
 
