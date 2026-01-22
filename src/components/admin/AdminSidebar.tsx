@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Key, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent
+  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,7 @@ interface NavItem {
   icon: LucideIcon;
   href: string;
   roles: string[];
+  dividerAfter?: boolean;
 }
 
 interface NavGroup {
@@ -42,88 +43,75 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'analytics',
-    title: 'Analytics & Finance',
-    icon: BarChart3,
+    id: 'daily-ops',
+    title: 'Daily Operations',
+    icon: ShoppingCart,
     items: [
-      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
-      { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
-      { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
-      { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', roles: ['admin'] },
-      { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', roles: ['admin'] },
-    ],
-  },
-  {
-    id: 'marketplace',
-    title: 'Seller Marketplace',
-    icon: Store,
-    items: [
-      { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', roles: ['admin'] },
-      { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', roles: ['admin'] },
-      { title: 'Seller Products', icon: Package, href: '/admin/seller-products', roles: ['admin'] },
-      { title: 'Seller Commissions', icon: Percent, href: '/admin/seller-commissions', roles: ['admin'] },
-      { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
-      { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
-    ],
-  },
-  {
-    id: 'store',
-    title: 'Store Management',
-    icon: Package,
-    items: [
-      { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
-      { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
-      { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
-      { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
       { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
-    ],
-  },
-  {
-    id: 'staff-comms',
-    title: 'Staff Communications',
-    icon: MessageCircle,
-    items: [
-      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
-      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
-    ],
-  },
-  {
-    id: 'customer-comms',
-    title: 'Customer Support',
-    icon: Headphones,
-    items: [
-      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
+      { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
       { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
       { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'] },
     ],
   },
   {
-    id: 'team',
-    title: 'Recruitment',
-    icon: FileText,
+    id: 'communications',
+    title: 'Communications',
+    icon: MessageCircle,
     items: [
+      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'], dividerAfter: true },
+      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
+      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
+    ],
+  },
+  {
+    id: 'store',
+    title: 'Store',
+    icon: Package,
+    items: [
+      { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
+      { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
+      { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
+    ],
+  },
+  {
+    id: 'marketplace',
+    title: 'Marketplace',
+    icon: Store,
+    items: [
+      { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', roles: ['admin'] },
+      { title: 'Seller Products', icon: Package, href: '/admin/seller-products', roles: ['admin'] },
+      { title: 'Seller Commissions', icon: Percent, href: '/admin/seller-commissions', roles: ['admin'] },
+      { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
+      { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', roles: ['admin'], dividerAfter: true },
+      { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
+      { title: 'Seller Info PDF', icon: FileText, href: '/admin/seller-recruitment', roles: ['admin'] },
+    ],
+  },
+  {
+    id: 'team',
+    title: 'Team',
+    icon: Users,
+    items: [
+      { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', roles: ['admin'] },
+      { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', roles: ['admin'] },
+      { title: 'Staff Documents', icon: FolderOpen, href: '/admin/staff-documents', roles: ['admin'], dividerAfter: true },
       { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', roles: ['admin', 'recruiter'] },
       { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
       { title: 'Archived', icon: Archive, href: '/admin/archived-applications', roles: ['admin'] },
     ],
   },
   {
-    id: 'users',
-    title: 'User Management',
-    icon: Users,
+    id: 'users-analytics',
+    title: 'Users & Analytics',
+    icon: BarChart3,
     items: [
       { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
-      { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
-      { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
-    ],
-  },
-  {
-    id: 'resources',
-    title: 'Resources',
-    icon: FolderOpen,
-    items: [
-      { title: 'Documents', icon: FileText, href: '/admin/documents', roles: ['admin'] },
+      { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'], dividerAfter: true },
+      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
+      { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
+      { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
+      { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', roles: ['admin'] },
     ],
   },
   {
@@ -132,9 +120,9 @@ const navGroups: NavGroup[] = [
     icon: Settings,
     items: [
       { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
-      { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
+      { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'], dividerAfter: true },
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', roles: ['admin'] },
-      { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', roles: ['admin'] },
+      { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', roles: ['admin'], dividerAfter: true },
       { title: 'Settings', icon: Settings, href: '/admin/settings', roles: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', roles: [] },
     ],
@@ -226,7 +214,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   // In mobile drawer mode, always show full sidebar (never collapsed)
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  const renderNavItem = (item: NavItem) => {
+  const renderNavItem = (item: NavItem, index: number) => {
     const isActive = location.pathname === item.href || 
       (item.href === '/admin' && location.pathname === '/admin');
 
@@ -282,21 +270,17 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         : "text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
     );
 
-    if (!isCollapsed) {
-      return (
-        <NavLink
-          key={item.href}
-          to={item.href}
-          end={item.href === '/admin'}
-          onClick={handleNavClick}
-          className={linkClassName}
-        >
-          {LinkContent}
-        </NavLink>
-      );
-    }
-
-    return (
+    const navElement = !isCollapsed ? (
+      <NavLink
+        key={item.href}
+        to={item.href}
+        end={item.href === '/admin'}
+        onClick={handleNavClick}
+        className={linkClassName}
+      >
+        {LinkContent}
+      </NavLink>
+    ) : (
       <Tooltip key={item.href}>
         <TooltipTrigger asChild>
           <Link
@@ -309,6 +293,18 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         </TooltipTrigger>
         <TooltipContent side="right">{item.title}</TooltipContent>
       </Tooltip>
+    );
+
+    // Return nav item with optional divider
+    return (
+      <div key={item.href}>
+        {navElement}
+        {item.dividerAfter && !isCollapsed && (
+          <div className="flex justify-center my-2 px-4 ml-4">
+            <div className="w-full border-t border-[hsl(var(--sidebar-border)/0.4)]" />
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -323,7 +319,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     if (group.items.length === 1) {
       return (
         <div key={group.id} className="mb-1">
-          {renderNavItem(group.items[0])}
+          {renderNavItem(group.items[0], 0)}
         </div>
       );
     }
@@ -413,7 +409,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-0.5 pt-0.5">
-          {group.items.map(renderNavItem)}
+          {group.items.map((item, index) => renderNavItem(item, index))}
         </CollapsibleContent>
       </Collapsible>
     );
