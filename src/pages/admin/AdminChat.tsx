@@ -137,6 +137,7 @@ function AdminChatContent() {
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
+  const [openActionsId, setOpenActionsId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +146,12 @@ function AdminChatContent() {
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const { isKeyboardVisible } = useIOSKeyboardFix();
+
+  // Detect PWA mode
+  const isPWA = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true
+  );
 
   // Mark messages as read when component mounts
   useEffect(() => {
@@ -932,11 +939,13 @@ function AdminChatContent() {
                     {/* Message text */}
                     {message.message && message.message !== '📎 Attachment' && (
                       <div
+                        onClick={isPWA ? () => setOpenActionsId(message.id) : undefined}
                         className={cn(
                           'rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words max-w-full',
                           isOwn
                             ? 'bg-primary text-primary-foreground rounded-br-md'
-                            : 'bg-muted text-foreground rounded-bl-md'
+                            : 'bg-muted text-foreground rounded-bl-md',
+                          isPWA && 'cursor-pointer active:opacity-80 transition-opacity'
                         )}
                       >
                         {renderMessageWithMentions(message.message, { isOwn })}
@@ -953,6 +962,9 @@ function AdminChatContent() {
                       onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
                       onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
                       onReply={handleReply}
+                      isPWA={isPWA}
+                      isOpen={openActionsId === message.id}
+                      onOpenChange={(open) => setOpenActionsId(open ? message.id : null)}
                     />
                   </div>
                 </div>

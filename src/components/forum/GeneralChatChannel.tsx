@@ -83,6 +83,12 @@ export function GeneralChatChannel() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingRef = useRef<number>(0);
 
+  // Detect PWA mode
+  const isPWA = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true
+  );
+
   // Fetch current user's profile for typing indicator
   const { data: currentProfile } = useQuery({
     queryKey: ['current-user-profile', user?.id],
@@ -446,12 +452,16 @@ export function GeneralChatChannel() {
                     </div>
                     
                     <div className="relative">
-                      <div className={cn(
-                        "px-3 py-2 rounded-xl text-sm",
-                        isOwn 
-                          ? "bg-primary text-primary-foreground rounded-br-sm" 
-                          : "bg-muted rounded-bl-sm"
-                      )}>
+                      <div 
+                        onClick={isPWA && user ? () => setOpenReactionPopover(msg.id) : undefined}
+                        className={cn(
+                          "px-3 py-2 rounded-xl text-sm",
+                          isOwn 
+                            ? "bg-primary text-primary-foreground rounded-br-sm" 
+                            : "bg-muted rounded-bl-sm",
+                          isPWA && user && "cursor-pointer active:opacity-80 transition-opacity"
+                        )}
+                      >
                         {msg.message}
                       </div>
                       
@@ -463,24 +473,26 @@ export function GeneralChatChannel() {
                         {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                       </span>
                       
-                      {/* Reaction button */}
+                      {/* Reaction button - hidden on PWA since bubble is tappable */}
                       {user && (
                         <Popover 
                           open={openReactionPopover === msg.id} 
                           onOpenChange={(open) => setOpenReactionPopover(open ? msg.id : null)}
                         >
-                          <PopoverTrigger asChild>
-                            <button
-                              className={cn(
-                                "absolute -bottom-2 opacity-0 group-hover:opacity-100 transition-opacity",
-                                "p-1 bg-card border border-border rounded-full shadow-sm hover:bg-muted",
-                                isOwn ? "left-0" : "right-0"
-                              )}
-                              title="Add reaction"
-                            >
-                              <SmilePlus className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </PopoverTrigger>
+                          {!isPWA && (
+                            <PopoverTrigger asChild>
+                              <button
+                                className={cn(
+                                  "absolute -bottom-2 opacity-0 group-hover:opacity-100 transition-opacity",
+                                  "p-1 bg-card border border-border rounded-full shadow-sm hover:bg-muted",
+                                  isOwn ? "left-0" : "right-0"
+                                )}
+                                title="Add reaction"
+                              >
+                                <SmilePlus className="h-3 w-3 text-muted-foreground" />
+                              </button>
+                            </PopoverTrigger>
+                          )}
                           <PopoverContent className="w-auto p-2" side="top">
                             <div className="flex gap-1">
                               {REACTION_EMOJIS.map((emoji) => (
