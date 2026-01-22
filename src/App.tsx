@@ -104,6 +104,7 @@ const AdminSellerTickets = lazy(() => import("./pages/admin/SellerTickets"));
 const AdminRolePermissions = lazy(() => import("./pages/admin/RolePermissions"));
 const AdminDiscordModmail = lazy(() => import("./pages/admin/DiscordModmail"));
 const AdminModmailBotSetup = lazy(() => import("./pages/admin/ModmailBotSetup"));
+const AdminTranscripts = lazy(() => import("./pages/admin/Transcripts"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -278,6 +279,7 @@ const App = () => (
                   <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
                   <Route path="/admin/discord-modmail" element={<AdminDiscordModmail />} />
                   <Route path="/admin/modmail-bot-setup" element={<AdminModmailBotSetup />} />
+                  <Route path="/admin/transcripts" element={<AdminTranscripts />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
