@@ -483,25 +483,29 @@ function StaffMessagesContent() {
     if (!vv) return;
 
     let lastHeight = vv.height;
-    let raf = 0;
+    let timers: number[] = [];
 
     const handleViewportResize = () => {
       const heightDelta = Math.abs(vv.height - lastHeight);
       // Only react to significant height changes (keyboard open/close)
       if (heightDelta > 50) {
         lastHeight = vv.height;
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => {
-          // Just scroll chat to bottom - don't fight the native viewport resize
-          scrollToBottom();
-        });
+        // Clear any pending scroll timers
+        timers.forEach(t => clearTimeout(t));
+        // Staggered scrolls to handle iOS keyboard animation settling
+        timers = [
+          window.setTimeout(scrollToBottom, 0),
+          window.setTimeout(scrollToBottom, 100),
+          window.setTimeout(scrollToBottom, 250),
+          window.setTimeout(scrollToBottom, 400),
+        ];
       }
     };
 
     vv.addEventListener('resize', handleViewportResize);
 
     return () => {
-      cancelAnimationFrame(raf);
+      timers.forEach(t => clearTimeout(t));
       vv.removeEventListener('resize', handleViewportResize);
     };
   }, [scrollToBottom]);
