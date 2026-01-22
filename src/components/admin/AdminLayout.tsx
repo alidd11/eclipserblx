@@ -175,8 +175,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     // Use modern dynamic viewport units when the keyboard is closed to avoid iOS/PWA
     // visualViewport bugs leaving a persistent bottom gap.
     html.style.setProperty('--vvh', getClosedVvh());
-    // Default safe-bottom for chat controls (small cap so the input bar sits low)
-    html.style.setProperty('--chat-safe-bottom', 'min(env(safe-area-inset-bottom), 8px)');
+    // Default safe-bottom for chat controls (minimal gap when keyboard closed)
+    html.style.setProperty('--chat-safe-bottom', '4px');
     html.dataset.chatKeyboard = 'closed';
 
     // IMPORTANT: We schedule multiple setTimeout passes to handle iOS keyboard animation.
@@ -237,13 +237,8 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         html.style.setProperty('--vvh', getClosedVvh());
       }
 
-      // Clamp safe-bottom while the keyboard is open.
-      html.style.setProperty(
-        '--chat-safe-bottom',
-        // When keyboard is open, keep the input bar flush to the keyboard.
-        // When closed, keep only a small capped inset so the bar sits low.
-        keyboardOpen ? '0px' : 'min(env(safe-area-inset-bottom), 8px)'
-      );
+      // Set safe-bottom: 0px when keyboard open (flush), 4px when closed (minimal gap)
+      html.style.setProperty('--chat-safe-bottom', keyboardOpen ? '0px' : '4px');
       html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
 
@@ -288,7 +283,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         if (!isInputFocused) {
           forceViewportRecalc();
           html.style.setProperty('--vvh', getClosedVvh());
-          html.style.setProperty('--chat-safe-bottom', 'min(env(safe-area-inset-bottom), 8px)');
+          html.style.setProperty('--chat-safe-bottom', '4px');
           html.dataset.chatKeyboard = 'closed';
         }
       };
@@ -333,7 +328,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         if (currentVvhPx !== null && currentVvhPx > 0 && currentVvhPx < window.innerHeight - 20) {
           forceViewportRecalc();
           html.style.setProperty('--vvh', getClosedVvh());
-          html.style.setProperty('--chat-safe-bottom', 'min(env(safe-area-inset-bottom), 8px)');
+          html.style.setProperty('--chat-safe-bottom', '4px');
           html.dataset.chatKeyboard = 'closed';
         }
       }
