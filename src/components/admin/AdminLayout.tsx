@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { safeStorage } from '@/lib/safeStorage';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
+import { useSellerTicketNotifications } from '@/hooks/useSellerTicketNotifications';
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { useStaffTheme } from '@/hooks/useStaffTheme';
@@ -445,6 +446,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
 
   // Enable support ticket notifications for all admin pages
   useSupportTicketNotifications();
+  
+  // Enable seller ticket notifications for all admin pages
+  useSellerTicketNotifications();
   
   // Track staff presence across all admin pages (keeps user "online" when navigating)
   useStaffPresence();
