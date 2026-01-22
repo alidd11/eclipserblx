@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Store, Sparkles, Clock, XCircle, CheckCircle, ExternalLink } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Store, Sparkles, Clock, XCircle, CheckCircle, ExternalLink, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
@@ -39,6 +40,26 @@ export function BecomeSellerCard() {
   const [productCategory, setProductCategory] = useState('');
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Check if user has linked accounts
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile-linked-accounts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('discord_id, discord_username, roblox_user_id, roblox_username')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const hasDiscordLinked = !!(userProfile?.discord_id && userProfile?.discord_username);
+  const hasRobloxLinked = !!(userProfile?.roblox_user_id && userProfile?.roblox_username);
+  const hasRequiredAccounts = hasDiscordLinked && hasRobloxLinked;
 
   const submitApplication = useMutation({
     mutationFn: async () => {
@@ -241,6 +262,40 @@ export function BecomeSellerCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Linked Accounts Requirement */}
+        {!hasRequiredAccounts && (
+          <Alert variant="destructive" className="bg-destructive/10 border-destructive/30">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <p className="font-medium mb-2">Account Linking Required</p>
+              <p className="text-sm mb-3">
+                To become a seller, you must link both your Discord and Roblox accounts. This helps us verify your identity and provide support.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  {hasDiscordLinked ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  )}
+                  <span className="text-sm">Discord {hasDiscordLinked ? `(${userProfile?.discord_username})` : '- Not linked'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {hasRobloxLinked ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  )}
+                  <span className="text-sm">Roblox {hasRobloxLinked ? `(${userProfile?.roblox_username})` : '- Not linked'}</span>
+                </div>
+              </div>
+              <p className="text-sm mt-3 text-muted-foreground">
+                Link your accounts in the Profile Details section above.
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -274,9 +329,9 @@ export function BecomeSellerCard() {
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full" size="lg">
+            <Button className="w-full" size="lg" disabled={!hasRequiredAccounts}>
               <Store className="h-4 w-4 mr-2" />
-              Apply to Become a Seller
+              {hasRequiredAccounts ? 'Apply to Become a Seller' : 'Link Accounts to Apply'}
             </Button>
           </DialogTrigger>
           <ApplicationFormDialog
