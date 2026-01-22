@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail } from 'lucide-react';
+import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -39,7 +39,10 @@ export default function SellerStoreDetail() {
             display_name,
             email,
             avatar_url,
+            discord_id,
             discord_username,
+            roblox_user_id,
+            roblox_username,
             customer_id
           )
         `)
@@ -382,12 +385,54 @@ export default function SellerStoreDetail() {
                     <span className="font-mono">{ownerProfile.customer_id}</span>
                   </div>
                 )}
-                {ownerProfile?.discord_username && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Discord</span>
-                    <span>{ownerProfile.discord_username}</span>
+                
+                <Separator />
+                
+                {/* Linked Accounts */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Linked Accounts</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <MessageCircle className="h-4 w-4" />
+                      Discord
+                    </span>
+                    {ownerProfile?.discord_username ? (
+                      <span className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/30">
+                          {ownerProfile.discord_username}
+                        </Badge>
+                        {ownerProfile.discord_id && (
+                          <span className="text-xs text-muted-foreground font-mono">{ownerProfile.discord_id}</span>
+                        )}
+                      </span>
+                    ) : (
+                      <Badge variant="destructive">Not Linked</Badge>
+                    )}
                   </div>
-                )}
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Gamepad2 className="h-4 w-4" />
+                      Roblox
+                    </span>
+                    {ownerProfile?.roblox_username ? (
+                      <span className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
+                          {ownerProfile.roblox_username}
+                        </Badge>
+                        {ownerProfile.roblox_user_id && (
+                          <span className="text-xs text-muted-foreground font-mono">{ownerProfile.roblox_user_id}</span>
+                        )}
+                      </span>
+                    ) : (
+                      <Badge variant="destructive">Not Linked</Badge>
+                    )}
+                  </div>
+                </div>
+                
+                <Separator />
+                
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Store Created</span>
                   <span>{format(parseISO(store.created_at), 'MMM d, yyyy')}</span>
