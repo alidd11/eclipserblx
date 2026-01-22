@@ -220,6 +220,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Home', icon: Home, href: '/' },
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'My Account', icon: User, href: '/account' },
+        { title: 'My Messages', icon: Bell, href: '/messages' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       ],
     },

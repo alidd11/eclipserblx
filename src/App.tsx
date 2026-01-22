@@ -51,6 +51,7 @@ const EclipsePlus = lazy(() => import("./pages/EclipsePlus"));
 const MarketplaceComingSoon = lazy(() => import("./pages/MarketplaceComingSoon"));
 const LiveChat = lazy(() => import("./pages/LiveChat"));
 const Affiliate = lazy(() => import("./pages/Affiliate"));
+const Messages = lazy(() => import("./pages/Messages"));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -172,6 +173,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/account" element={<Account />} />
+                  <Route path="/messages" element={<Messages />} />
                   <Route path="/downloads" element={<Downloads />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/categories" element={<Categories />} />
