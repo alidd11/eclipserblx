@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell, FolderOpen
+  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell, FolderOpen, Heart
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -219,6 +219,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: 'Home', icon: Home, href: '/' },
         { title: 'My Account', icon: User, href: '/account' },
+        { title: 'Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       ],
     },
     {
@@ -490,36 +492,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // HOME group: always expanded, non-collapsible
+    // HOME group: always expanded, non-collapsible, no header
     if (group.id === 'home') {
-      if (isCollapsed) {
-        // Collapsed mode: show items directly with tooltips
-        return (
-          <div key={group.id} className="mb-1 space-y-0.5">
-            {group.items.map(renderNavItem)}
-          </div>
-        );
-      }
-      // Expanded mode: show header and items without collapsible
       return (
-        <div key={group.id} className="mb-1">
-          <div
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 text-sm font-medium",
-              hasActiveItem
-                ? "text-primary"
-                : "text-muted-foreground"
-            )}
-          >
-            <group.icon className={cn(
-              "h-4 w-4 shrink-0 transition-all",
-              hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
-            )} />
-            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{group.title}</span>
-          </div>
-          <div className="space-y-0.5">
-            {group.items.map(renderNavItem)}
-          </div>
+        <div key={group.id} className="mb-1 space-y-0.5">
+          {group.items.map(renderNavItem)}
         </div>
       );
     }
