@@ -1018,15 +1018,26 @@ function StaffMessagesContent() {
               value={newMessage}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              onTouchStart={(e) => {
-                // Force focus on first touch to work around iOS PWA tap-blocking
+              onPointerDown={(e) => {
+                // iOS PWA can ignore the first tap; force focus synchronously within the gesture.
                 const input = e.currentTarget;
-                // Small delay to let iOS process the touch, then focus
-                requestAnimationFrame(() => {
-                  if (document.activeElement !== input) {
-                    input.focus();
-                  }
-                });
+                if (document.activeElement === input) return;
+                try {
+                  input.focus({ preventScroll: true });
+                } catch {
+                  input.focus();
+                }
+              }}
+              onTouchStart={(e) => {
+                // Force focus on first touch to work around iOS PWA tap-blocking.
+                // NOTE: must be synchronous (no rAF/setTimeout) to count as a user gesture.
+                const input = e.currentTarget;
+                if (document.activeElement === input) return;
+                try {
+                  input.focus({ preventScroll: true });
+                } catch {
+                  input.focus();
+                }
               }}
               onFocus={() => {
                 // Keep the message list pinned to the bottom.

@@ -23,16 +23,16 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         .select(`
           *,
           categories (name, slug),
-          stores!inner (is_active)
+          stores (is_active)
         `)
         .eq('is_featured', true)
         .eq('is_active', true)
-        .eq('stores.is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-        .limit(8);
+        .limit(12);
       
       if (error) throw error;
-      return data;
+      // Include products without stores (Eclipse main store) or with active stores
+      return data?.filter(p => !p.stores || p.stores.is_active !== false) ?? [];
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });

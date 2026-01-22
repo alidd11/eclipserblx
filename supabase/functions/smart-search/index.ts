@@ -155,9 +155,8 @@ Examples:
     // Build the database query
     let dbQuery = supabase
       .from("products")
-      .select("id, name, slug, price, images, description, created_at, download_count, categories(name), stores!inner(is_active)")
+      .select("id, name, slug, price, images, description, created_at, download_count, store_id, categories(name), stores(is_active)")
       .eq("is_active", true)
-      .eq("stores.is_active", true)
       .eq("moderation_status", "approved");
 
     // Apply keyword search
@@ -212,16 +211,19 @@ Examples:
       throw dbError;
     }
 
+    // Filter to include products without stores (Eclipse main store) or with active stores
+    const filteredProducts = (products || []).filter((p: any) => !p.stores || p.stores.is_active !== false);
+
     // Log the search for analytics
     await supabase.from("search_logs").insert({
       user_id: userId || null,
       query: query,
-      results_count: products?.length || 0,
+      results_count: filteredProducts.length,
     });
 
     return new Response(
       JSON.stringify({
-        products: products || [],
+        products: filteredProducts,
         parsedQuery: searchParams,
         originalQuery: query,
       }),

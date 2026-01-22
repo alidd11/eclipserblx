@@ -54,9 +54,8 @@ export default function Products() {
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug), stores!inner(is_active)`)
-        .eq('is_active', true)
-        .eq('stores.is_active', true);
+        .select(`*, categories(name, slug), stores(is_active)`)
+        .eq('is_active', true);
 
       // Filter out products that are scheduled for the future
       query = query.or('release_at.is.null,release_at.lte.' + new Date().toISOString());
@@ -79,11 +78,14 @@ export default function Products() {
       const { data, error } = await query;
       if (error) throw error;
       
+      // Include products without stores (Eclipse main store) or with active stores
+      const filtered = (data || []).filter(p => !p.stores || p.stores.is_active !== false);
+      
       // Sort products based on selected sort option
       const now = new Date();
       const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
       
-      const sorted = (data || []).sort((a, b) => {
+      const sorted = filtered.sort((a, b) => {
         switch (sortBy) {
           case 'newest':
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();

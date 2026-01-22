@@ -98,14 +98,15 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, slug, price, stores!inner (is_active)')
+          .select('id, name, slug, price, stores (is_active)')
           .eq('is_active', true)
-          .eq('stores.is_active', true)
           .ilike('name', `%${searchQuery}%`)
-          .limit(5);
+          .limit(10);
 
         if (!error && data) {
-          setProducts(data);
+          // Include products without stores (Eclipse main store) or with active stores
+          const filtered = data.filter(p => !p.stores || p.stores.is_active !== false);
+          setProducts(filtered.slice(0, 5));
         }
       } catch {
         console.error('Error fetching products');
