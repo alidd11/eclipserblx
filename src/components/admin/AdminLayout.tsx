@@ -92,28 +92,13 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     html.style.backgroundColor = chatBg;
     body.style.backgroundColor = chatBg;
 
-    // Lock document scroll to prevent iOS auto-scroll / rubber-banding behind our fixed chat shell
+    // Lock document scroll to prevent iOS rubber-banding behind our chat.
+    // NOTE: Avoid `position: fixed` here because it can interfere with
+    // `interactive-widget=resizes-content` (keyboard resize), causing bottom gaps.
     html.style.overflow = 'hidden';
     html.style.overflowX = 'hidden';
-    html.style.position = 'fixed';
-    html.style.top = '0';
-    html.style.bottom = '0';
-    html.style.left = '0';
-    html.style.right = '0';
-    html.style.width = '100%';
-    html.style.height = '100%';
-    html.style.maxWidth = '100%';
-
     body.style.overflow = 'hidden';
     body.style.overflowX = 'hidden';
-    body.style.position = 'fixed';
-    body.style.top = '0';
-    body.style.bottom = '0';
-    body.style.left = '0';
-    body.style.right = '0';
-    body.style.width = '100%';
-    body.style.height = '100%';
-    body.style.maxWidth = '100%';
 
     return () => {
       // Restore prior styles (fallback to theme background if previously unset)
@@ -162,8 +147,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       return;
     }
 
-    // Set default for closed keyboard
-    html.style.setProperty('--chat-safe-bottom', '4px');
+    // Closed keyboard: include safe-area inset so the chat bar background fills
+    // the home-indicator area (prevents a thin bottom line).
+    html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
     html.dataset.chatKeyboard = 'closed';
 
     let disposed = false;
@@ -192,7 +178,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
       const keyboardOpen = isInputFocused && keyboardHeight > 80;
 
-      html.style.setProperty('--chat-safe-bottom', keyboardOpen ? '0px' : '4px');
+      html.style.setProperty(
+        '--chat-safe-bottom',
+        keyboardOpen ? '0px' : 'calc(env(safe-area-inset-bottom) + 4px)'
+      );
       html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
 
