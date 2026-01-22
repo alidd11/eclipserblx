@@ -830,7 +830,7 @@ export default function DiscordSettings() {
           <TabsContent value="boosts">
             <div className="space-y-6">
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 <Card className="bg-card border-border">
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-3">

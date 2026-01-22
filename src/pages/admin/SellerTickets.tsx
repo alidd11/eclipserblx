@@ -325,7 +325,7 @@ export default function SellerTickets() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
           {escalatedCount > 0 && (
             <Card className="border-destructive bg-destructive/5">
               <CardHeader className="pb-2">
