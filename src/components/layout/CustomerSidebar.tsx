@@ -33,6 +33,7 @@ interface NavItem {
   href: string;
   external?: boolean;
   showStatusDot?: boolean;
+  showNotificationDot?: boolean;
 }
 
 interface NavGroup {
@@ -220,7 +221,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Home', icon: Home, href: '/' },
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'My Account', icon: User, href: '/account' },
-        { title: 'My Messages', icon: Bell, href: '/messages' },
+        { title: 'My Messages', icon: Bell, href: '/messages', showNotificationDot: true },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       ],
     },
@@ -388,12 +389,22 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               isActive ? "stroke-[2.5]" : "stroke-[1.5]"
             )} />
           )}
+          {/* Red notification dot */}
+          {item.showNotificationDot && unreadNotifications > 0 && (
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
+          )}
         </div>
         {!isCollapsed && (
           <span className="min-w-0 truncate leading-none flex-1">{item.title}</span>
         )}
         {!isCollapsed && item.showStatusDot && (
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
+        )}
+        {/* Show unread count badge for notifications */}
+        {!isCollapsed && item.showNotificationDot && unreadNotifications > 0 && (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1.5">
+            {unreadNotifications > 99 ? '99+' : unreadNotifications}
+          </span>
         )}
       </>
     );
