@@ -224,10 +224,7 @@ export default function SellerCommissions() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <p className="text-sm">{store.profiles?.display_name || 'Unknown'}</p>
-                          <p className="text-xs text-muted-foreground">{store.profiles?.email}</p>
-                        </div>
+                        <p className="text-sm">{store.profiles?.display_name || 'Unknown'}</p>
                       </TableCell>
                       <TableCell>
                         <Badge variant={store.is_active ? 'default' : 'secondary'}>
