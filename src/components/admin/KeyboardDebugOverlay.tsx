@@ -12,6 +12,7 @@ export function KeyboardDebugOverlay() {
     innerHeight: 0,
     keyboardOpen: false,
     vvhVar: '',
+    chatVvhVar: '',
     isStandalone: false,
     isIOS: false,
   });
@@ -32,6 +33,7 @@ export function KeyboardDebugOverlay() {
       const vvHeight = vv?.height ?? window.innerHeight;
       const innerHeight = window.innerHeight;
       const vvhVar = getComputedStyle(document.documentElement).getPropertyValue('--vvh');
+      const chatVvhVar = getComputedStyle(document.documentElement).getPropertyValue('--chat-vvh');
       
       // Keyboard is open if visualViewport is significantly smaller than innerHeight
       const keyboardOpen = vvHeight < innerHeight - 100;
@@ -41,6 +43,7 @@ export function KeyboardDebugOverlay() {
         innerHeight: Math.round(innerHeight),
         keyboardOpen,
         vvhVar: vvhVar.trim(),
+        chatVvhVar: chatVvhVar.trim(),
         isStandalone,
         isIOS,
       });
@@ -72,6 +75,7 @@ export function KeyboardDebugOverlay() {
         <div>vv.height: <span className="text-green-400">{data.vvHeight}px</span></div>
         <div>innerHeight: <span className="text-blue-400">{data.innerHeight}px</span></div>
         <div>--vvh: <span className="text-yellow-400">{data.vvhVar || 'not set'}</span></div>
+        <div>--chat-vvh: <span className="text-orange-400">{data.chatVvhVar || 'not set'}</span></div>
         <div>
           keyboard: <span className={data.keyboardOpen ? 'text-red-400' : 'text-green-400'}>
             {data.keyboardOpen ? 'OPEN' : 'closed'}

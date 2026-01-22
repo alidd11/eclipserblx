@@ -130,33 +130,30 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     };
   }, [isChatPage]);
 
-  // Manage `--chat-safe-bottom` for the input bar on chat pages.
-  // Since we now use a CSS-first `100dvh` layout (matching MainLayout), we no longer need
-  // JS-based shell height (--vvh/--vvtop). `interactive-widget=resizes-content` handles the
-  // viewport resize automatically.
-  //
-  // We still keep a lightweight effect to:
-  // 1. Set --chat-safe-bottom to 0px when keyboard is open (flush), 4px when closed (minimal gap).
-  // 2. Set data attribute for optional CSS hooks.
+  // Manage `--chat-safe-bottom` and `--chat-vvh` for iOS PWA keyboard handling.
+  // On iOS PWA, we need to explicitly set container height based on visualViewport
+  // because 100dvh doesn't always update correctly when the keyboard animates.
   useEffect(() => {
     const html = document.documentElement;
 
     // Cleanup immediately if we're not on a chat page
     if (!isChatPage) {
       html.style.removeProperty('--chat-safe-bottom');
+      html.style.removeProperty('--chat-vvh');
       delete html.dataset.chatKeyboard;
       return;
     }
 
     // Start with safe-area padding (keyboard closed state)
     html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
+    html.style.setProperty('--chat-vvh', '100dvh');
     html.dataset.chatKeyboard = 'closed';
 
     let disposed = false;
     let baseVvHeight = window.visualViewport?.height ?? window.innerHeight;
     let timers: number[] = [];
 
-    const updateSafeBottom = () => {
+    const updateViewport = () => {
       if (disposed) return;
 
       const vv = window.visualViewport;
@@ -179,6 +176,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
       const keyboardOpen = isInputFocused && keyboardHeight > 80;
 
+      // Set the visual viewport height as a CSS variable for the chat container
+      // This ensures the container shrinks when the keyboard opens on iOS PWA
+      html.style.setProperty('--chat-vvh', `${vvHeight}px`);
+
       // When keyboard is open, add a small padding (8px) to prevent the iOS keyboard
       // accessory bar from overlapping the input. When closed, use safe-area inset
       // to fill the home indicator region.
@@ -192,29 +193,33 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     // Staggered updates for reliable first-open detection
     const updateStaggered = () => {
       timers.forEach(t => clearTimeout(t));
-      updateSafeBottom();
+      updateViewport();
       timers = [
-        window.setTimeout(updateSafeBottom, 50),
-        window.setTimeout(updateSafeBottom, 150),
-        window.setTimeout(updateSafeBottom, 300),
+        window.setTimeout(updateViewport, 50),
+        window.setTimeout(updateViewport, 150),
+        window.setTimeout(updateViewport, 300),
+        window.setTimeout(updateViewport, 500),
       ];
     };
 
     updateStaggered();
 
     const vv = window.visualViewport;
-    vv?.addEventListener('resize', updateSafeBottom);
+    vv?.addEventListener('resize', updateViewport);
+    vv?.addEventListener('scroll', updateViewport);
     document.addEventListener('focusin', updateStaggered);
     document.addEventListener('focusout', updateStaggered);
 
     return () => {
       disposed = true;
       timers.forEach(t => clearTimeout(t));
-      vv?.removeEventListener('resize', updateSafeBottom);
+      vv?.removeEventListener('resize', updateViewport);
+      vv?.removeEventListener('scroll', updateViewport);
       document.removeEventListener('focusin', updateStaggered);
       document.removeEventListener('focusout', updateStaggered);
 
       html.style.removeProperty('--chat-safe-bottom');
+      html.style.removeProperty('--chat-vvh');
       delete html.dataset.chatKeyboard;
     };
   }, [isChatPage]);
@@ -393,9 +398,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   return (
     <TooltipProvider delayDuration={0}>
       {/* 
-        Use a CSS-first layout (h-[100dvh] flex column) instead of JS-calculated --vvh/--vvtop.
-        `interactive-widget=resizes-content` in index.html makes the 100dvh flex container
-        resize naturally when the iOS keyboard opens, eliminating the "grey strip" gap.
+        For chat pages, use --chat-vvh (set by JS based on visualViewport.height)
+        to ensure the container shrinks correctly when the iOS keyboard opens.
+        This is more reliable than 100dvh on iOS PWA.
       */}
       <div
         className={cn(
@@ -404,7 +409,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
             ? 'flex-col overflow-hidden bg-card'
             : 'min-h-screen bg-background'
         )}
-        style={isChatPage ? { height: '100dvh' } : undefined}
+        style={isChatPage ? { height: 'var(--chat-vvh, 100dvh)' } : undefined}
       >
         {/* Desktop Sidebar */}
         {!isMobile && (
