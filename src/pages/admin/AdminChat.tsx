@@ -1066,21 +1066,31 @@ function AdminChatContent() {
           </Button>
 
           {/* Input pill */}
-          <div className="flex-1 min-w-0 relative">
+          <div 
+            className="flex-1 min-w-0 relative"
+            style={{ touchAction: 'manipulation' }}
+          >
             <Input
               ref={inputRef}
               value={newMessage}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              onTouchStart={(e) => {
+                // Force focus on first touch to work around iOS PWA tap-blocking
+                const input = e.currentTarget;
+                // Small delay to let iOS process the touch, then focus
+                requestAnimationFrame(() => {
+                  if (document.activeElement !== input) {
+                    input.focus();
+                  }
+                });
+              }}
               onFocus={() => {
-                // Don't scroll the document on focus (can fight iOS keyboard viewport resize).
-                // Instead, keep the message list pinned to the bottom.
+                // Keep the message list pinned to the bottom.
                 requestAnimationFrame(() => {
                   scrollToBottom();
-                  // iOS keyboard animation can finish after the first frame.
                   setTimeout(scrollToBottom, 150);
                   setTimeout(scrollToBottom, 350);
-                  // Some iOS PWA builds settle even later on the first open.
                   setTimeout(scrollToBottom, 650);
                 });
               }}
