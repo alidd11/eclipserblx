@@ -229,7 +229,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'All Products', icon: Grid3X3, href: '/products' },
         { title: 'Featured', icon: Star, href: '/products?featured=true' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        ...(hasMarketplaceAccess ? [{ title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' }] : []),
+        { title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' },
       ],
     },
     // Only show affiliate section if program is enabled
