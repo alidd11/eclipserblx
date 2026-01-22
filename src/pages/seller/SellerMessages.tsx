@@ -289,13 +289,17 @@ export default function SellerMessages() {
                   <p>No messages in this conversation.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {messages.map((msg) => (
+                <div>
+                  {messages.map((msg, index) => {
+                    const prevMsg = index > 0 ? messages[index - 1] : null;
+                    const isGrouped = prevMsg && prevMsg.sender_type === msg.sender_type;
+                    return (
                     <div
                       key={msg.id}
                       className={cn(
                         'flex',
-                        msg.sender_type === 'seller' ? 'justify-end' : 'justify-start'
+                        msg.sender_type === 'seller' ? 'justify-end' : 'justify-start',
+                        isGrouped ? 'mt-0.5' : index > 0 ? 'mt-4' : ''
                       )}
                     >
                       <div
@@ -315,7 +319,8 @@ export default function SellerMessages() {
                         </p>
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
             </div>

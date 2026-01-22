@@ -887,13 +887,17 @@ export default function AdminLiveChat() {
 
                 {/* Messages */}
                 <ScrollArea className="flex-1 min-h-0 p-3 lg:p-4" ref={scrollRef}>
-                  <div className="space-y-3 lg:space-y-4">
-                    {messages.map((msg) => (
+                  <div>
+                    {messages.map((msg, index) => {
+                      const prevMsg = index > 0 ? messages[index - 1] : null;
+                      const isGrouped = prevMsg && prevMsg.sender_type === msg.sender_type;
+                      return (
                       <div
                         key={msg.id}
                         className={cn(
                           'flex flex-col',
-                          msg.sender_type === 'agent' ? 'items-end' : 'items-start'
+                          msg.sender_type === 'agent' ? 'items-end' : 'items-start',
+                          isGrouped ? 'mt-0.5' : index > 0 ? 'mt-4' : ''
                         )}
                       >
                         <div className="flex items-center gap-2 mb-1">
@@ -980,7 +984,8 @@ export default function AdminLiveChat() {
                           </div>
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                     {customerTyping && (
                       <div className="flex justify-start">
                         <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 lg:px-4 flex items-center gap-1">
