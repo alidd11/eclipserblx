@@ -175,6 +175,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     // Use modern dynamic viewport units when the keyboard is closed to avoid iOS/PWA
     // visualViewport bugs leaving a persistent bottom gap.
     html.style.setProperty('--vvh', getClosedVvh());
+    // Default safe-bottom for chat controls (small cap so the input bar sits low)
+    html.style.setProperty('--chat-safe-bottom', 'min(env(safe-area-inset-bottom), 8px)');
+    html.dataset.chatKeyboard = 'closed';
 
     // IMPORTANT: We schedule multiple setTimeout passes to handle iOS keyboard animation.
     // If those timeouts fire after navigating away, they can re-apply --vvh and cause the
@@ -182,6 +185,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     let disposed = false;
     let rafId = 0;
     const timeoutIds: number[] = [];
+    // Track a baseline visualViewport height so keyboard detection still works when
+    // `interactive-widget=resizes-content` makes window.innerHeight shrink too.
+    let baseVvHeight = window.visualViewport?.height ?? window.innerHeight;
 
     const schedule = (fn: () => void, ms: number) => {
       const id = window.setTimeout(() => {
@@ -202,7 +208,6 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       const vv = window.visualViewport;
       const vvHeight = vv?.height ?? window.innerHeight;
       const vvOffsetTop = vv?.offsetTop ?? 0;
-      const innerH = window.innerHeight;
 
       // Check if any input is currently focused
       const activeEl = document.activeElement;
@@ -212,12 +217,16 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
           activeEl.tagName === 'TEXTAREA' ||
           (activeEl as HTMLElement).isContentEditable);
 
+      // Keep baseline updated only when the keyboard is closed.
+      // We use max() so the baseline survives iOS toolbar show/hide fluctuations.
+      if (!isInputFocused) {
+        baseVvHeight = Math.max(baseVvHeight, vvHeight);
+      }
+
       // Detect if keyboard is likely open:
-      // 1. Significant difference between layout and visual viewport
-      // 2. AND an input element is focused
-      // 3. OR visualViewport has a non-zero offsetTop (iOS quirk)
-      const keyboardOpen =
-        isInputFocused && (Math.abs(innerH - vvHeight) > 50 || vvOffsetTop > 10);
+      // Use baseline diff so it works even when the browser resizes innerHeight.
+      const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
+      const keyboardOpen = isInputFocused && (keyboardHeight > 80 || vvOffsetTop > 10);
 
       // When keyboard is open, use visualViewport (minus offsetTop for iOS scroll offset).
       // When closed, prefer 100dvh to prevent a stale px value leaving a visible bottom gap.
@@ -231,11 +240,9 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
       // Clamp safe-bottom while the keyboard is open.
       html.style.setProperty(
         '--chat-safe-bottom',
-        // Slightly reduce the safe-area padding so the input bar sits lower (less “grey strip”),
-        // while still keeping controls clear of the home-indicator.
-        keyboardOpen
-          ? '0px'
-          : 'max(calc(env(safe-area-inset-bottom) - 14px), 0px)'
+        // When keyboard is open, keep the input bar flush to the keyboard.
+        // When closed, keep only a small capped inset so the bar sits low.
+        keyboardOpen ? '0px' : 'min(env(safe-area-inset-bottom), 8px)'
       );
       html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
     };
@@ -281,7 +288,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         if (!isInputFocused) {
           forceViewportRecalc();
           html.style.setProperty('--vvh', getClosedVvh());
-          html.style.setProperty('--chat-safe-bottom', 'max(calc(env(safe-area-inset-bottom) - 14px), 0px)');
+          html.style.setProperty('--chat-safe-bottom', 'min(env(safe-area-inset-bottom), 8px)');
           html.dataset.chatKeyboard = 'closed';
         }
       };
@@ -326,7 +333,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         if (currentVvhPx !== null && currentVvhPx > 0 && currentVvhPx < window.innerHeight - 20) {
           forceViewportRecalc();
           html.style.setProperty('--vvh', getClosedVvh());
-          html.style.setProperty('--chat-safe-bottom', 'max(calc(env(safe-area-inset-bottom) - 14px), 0px)');
+          html.style.setProperty('--chat-safe-bottom', 'min(env(safe-area-inset-bottom), 8px)');
           html.dataset.chatKeyboard = 'closed';
         }
       }
