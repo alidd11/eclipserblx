@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -13,12 +14,12 @@ interface WishlistButtonProps {
   className?: string;
 }
 
-export function WishlistButton({ 
+export const WishlistButton = forwardRef<HTMLButtonElement, WishlistButtonProps>(function WishlistButton({ 
   productId, 
   variant = 'icon',
   size = 'default',
   className 
-}: WishlistButtonProps) {
+}, ref) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isInWishlist, toggleWishlist, isToggling } = useWishlist(productId);
@@ -39,6 +40,7 @@ export function WishlistButton({
   if (variant === 'icon') {
     return (
       <button
+        ref={ref}
         onClick={handleClick}
         disabled={isToggling}
         className={cn(
@@ -64,6 +66,7 @@ export function WishlistButton({
 
   return (
     <Button
+      ref={ref}
       onClick={handleClick}
       disabled={isToggling}
       variant={isInWishlist ? "secondary" : "outline"}
@@ -78,4 +81,6 @@ export function WishlistButton({
       {isInWishlist ? 'Saved' : 'Save'}
     </Button>
   );
-}
+});
+
+WishlistButton.displayName = 'WishlistButton';

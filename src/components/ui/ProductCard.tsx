@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useRef, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ interface ProductCardProps {
   isTrusted?: boolean;
 }
 
-export const ProductCard = memo(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted }: ProductCardProps) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
@@ -68,6 +68,7 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
 
   return (
     <Link 
+      ref={ref}
       to={`/products/${slug}`} 
       className="group block h-full"
       onMouseEnter={handleMouseEnter}
@@ -236,4 +237,6 @@ export const ProductCard = memo(function ProductCard({ id, name, slug, price, im
       </div>
     </Link>
   );
-});
+}));
+
+ProductCard.displayName = 'ProductCard';
