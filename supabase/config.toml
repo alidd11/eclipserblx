@@ -155,3 +155,9 @@ verify_jwt = false
 
 [functions.send-store-reactivation-email]
 verify_jwt = false
+
+[functions.discord-modmail-webhook]
+verify_jwt = false
+
+[functions.discord-modmail-reply]
+verify_jwt = false

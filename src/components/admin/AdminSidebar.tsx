@@ -60,6 +60,7 @@ const navGroups: NavGroup[] = [
     icon: MessageCircle,
     items: [
       { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
+      { title: 'Discord Modmail', icon: Mail, href: '/admin/discord-modmail', roles: ['admin', 'support_agent'] },
       { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
       { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'], dividerAfter: true },
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
