@@ -236,6 +236,33 @@ export default function Transcripts() {
             sender_name: r.sender_type === 'staff' ? 'Staff' : 'Customer',
           });
         });
+      } else if (activeTab === 'forum-reports') {
+        // Forum reports show the report details as a single "message"
+        const { data: report } = await supabase
+          .from('forum_reports')
+          .select('id, reason, details, staff_response, created_at, resolved_at')
+          .eq('id', expandedTranscript)
+          .single();
+        
+        if (report) {
+          messages.push({
+            id: `${report.id}-report`,
+            message: `**Reason:** ${report.reason}\n\n${report.details || 'No additional details provided.'}`,
+            sender_type: 'customer',
+            created_at: report.created_at,
+            sender_name: 'Reporter',
+          });
+          
+          if (report.staff_response) {
+            messages.push({
+              id: `${report.id}-response`,
+              message: report.staff_response,
+              sender_type: 'staff',
+              created_at: report.resolved_at || report.created_at,
+              sender_name: 'Staff',
+            });
+          }
+        }
       }
       
       return messages;
