@@ -723,6 +723,95 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_modmail_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string
+          discord_message_id: string | null
+          id: string
+          is_staff_reply: boolean
+          staff_user_id: string | null
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string
+          discord_message_id?: string | null
+          id?: string
+          is_staff_reply?: boolean
+          staff_user_id?: string | null
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string
+          discord_message_id?: string | null
+          id?: string
+          is_staff_reply?: boolean
+          staff_user_id?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_modmail_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "discord_modmail_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discord_modmail_tickets: {
+        Row: {
+          claimed_at: string | null
+          claimed_by: string | null
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          discord_avatar_url: string | null
+          discord_user_id: string
+          discord_username: string
+          id: string
+          priority: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          discord_avatar_url?: string | null
+          discord_user_id: string
+          discord_username: string
+          id?: string
+          priority?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          discord_avatar_url?: string | null
+          discord_user_id?: string
+          discord_username?: string
+          id?: string
+          priority?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discount_codes: {
         Row: {
           category_ids: string[] | null
