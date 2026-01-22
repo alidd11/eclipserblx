@@ -179,3 +179,6 @@ verify_jwt = false
 
 [functions.process-review-reminders]
 verify_jwt = false
+
+[functions.discord-oauth-callback]
+verify_jwt = false
