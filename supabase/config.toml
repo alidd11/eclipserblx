@@ -118,7 +118,19 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.verify-roblox-user]
-enabled = true
+verify_jwt = false
+
+[functions.verify-roblox-badge]
+verify_jwt = false
+
+[functions.verify-roblox-gamepass]
+verify_jwt = false
+
+[functions.verify-roblox-group]
+verify_jwt = false
+
+[functions.verify-roblox-premium]
+verify_jwt = false
 
 [functions.send-order-discord-notification]
 verify_jwt = false
@@ -160,4 +172,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.discord-modmail-reply]
+verify_jwt = false
+
+[functions.get-discord-avatar]
+verify_jwt = false
+
+[functions.process-review-reminders]
 verify_jwt = false
