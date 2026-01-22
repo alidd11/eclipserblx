@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
   RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell
+  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell, FolderOpen
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,8 @@ import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface NavItem {
   title: string;
@@ -54,8 +56,16 @@ const DiscordIcon = ({ className }: { className?: string }) => (
 
 const STORAGE_KEY = 'customer-sidebar-groups';
 const COLLAPSED_KEY = 'customer-sidebar-collapsed';
+const CATEGORY_STORAGE_KEY = 'customer-sidebar-categories';
 
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parent_id: string | null;
+}
 
 interface CustomerSidebarProps {
   collapsed: boolean;
@@ -80,6 +90,59 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [userProfile, setUserProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() => {
+    const stored = safeStorage.getItem(CATEGORY_STORAGE_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  // Fetch categories from database
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ['sidebar-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, slug, parent_id')
+        .order('display_order', { ascending: true });
+      
+      if (error) throw error;
+      return data as Category[];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Organize categories into parent/child structure
+  const { parentCategories, subcategoriesMap } = useMemo(() => {
+    const parents = categories.filter(c => !c.parent_id);
+    const subMap: Record<string, Category[]> = {};
+    
+    categories.forEach(c => {
+      if (c.parent_id) {
+        if (!subMap[c.parent_id]) {
+          subMap[c.parent_id] = [];
+        }
+        subMap[c.parent_id].push(c);
+      }
+    });
+    
+    return { parentCategories: parents, subcategoriesMap: subMap };
+  }, [categories]);
+
+  // Persist open categories
+  useEffect(() => {
+    safeStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(openCategories));
+  }, [openCategories]);
+
+  const toggleCategory = (categoryId: string) => {
+    hapticTap();
+    setOpenCategories(prev => ({ ...prev, [categoryId]: !prev[categoryId] }));
+  };
 
   // Fetch user profile
   useEffect(() => {
@@ -164,7 +227,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Package,
       items: [
         { title: 'All Products', icon: Grid3X3, href: '/products' },
-        { title: 'Categories', icon: Grid3X3, href: '/categories' },
         { title: 'Featured', icon: Star, href: '/products?featured=true' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         ...(hasMarketplaceAccess ? [{ title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' }] : []),
@@ -539,6 +601,265 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
   };
 
+  // Render dynamic categories section
+  const renderCategoriesSection = () => {
+    const isCategoriesActive = location.pathname === '/products' && location.search.includes('category=');
+    
+    // Loading state
+    if (categoriesLoading) {
+      if (isCollapsed) {
+        return (
+          <div className="mb-1">
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+        );
+      }
+      return (
+        <div className="mb-1 space-y-1">
+          <Skeleton className="h-9 w-full rounded-lg" />
+          <Skeleton className="h-8 w-full ml-4 rounded-lg" />
+          <Skeleton className="h-8 w-full ml-4 rounded-lg" />
+        </div>
+      );
+    }
+
+    // No categories
+    if (parentCategories.length === 0) {
+      return null;
+    }
+
+    // Collapsed mode: show tooltip with all categories
+    if (isCollapsed) {
+      return (
+        <div className="mb-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className={cn(
+                  "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
+                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                  "focus:outline-none focus-visible:outline-none",
+                  isCategoriesActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <FolderOpen className={cn(
+                  "h-4 w-4 transition-all",
+                  isCategoriesActive ? "stroke-[2.5]" : "stroke-[1.5]"
+                )} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="p-0 max-h-80 overflow-y-auto">
+              <div className="py-2">
+                <div className="px-3 pb-1 text-xs font-semibold text-muted-foreground">
+                  Categories
+                </div>
+                <NavLink
+                  to="/categories"
+                  onClick={handleNavClick}
+                  className={({ isActive }) => cn(
+                    "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
+                    isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                  )}
+                >
+                  <Grid3X3 className="h-3.5 w-3.5" />
+                  All Categories
+                </NavLink>
+                {parentCategories.map(category => {
+                  const subs = subcategoriesMap[category.id] || [];
+                  return (
+                    <div key={category.id}>
+                      <NavLink
+                        to={`/products?category=${category.slug}`}
+                        onClick={handleNavClick}
+                        className={({ isActive }) => cn(
+                          "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
+                          isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                        )}
+                      >
+                        <FolderOpen className="h-3.5 w-3.5" />
+                        {category.name}
+                      </NavLink>
+                      {subs.map(sub => (
+                        <NavLink
+                          key={sub.id}
+                          to={`/products?category=${sub.slug}`}
+                          onClick={handleNavClick}
+                          className={({ isActive }) => cn(
+                            "flex items-center gap-2 px-6 py-1.5 text-sm transition-colors",
+                            isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"
+                          )}
+                        >
+                          {sub.name}
+                        </NavLink>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      );
+    }
+
+    // Expanded mode: collapsible categories with subcategories
+    return (
+      <Collapsible
+        open={openGroups['categories'] ?? true}
+        onOpenChange={() => toggleGroup('categories')}
+        className="mb-1"
+      >
+        <CollapsibleTrigger asChild>
+          <button
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium select-none",
+              "transition-all duration-100 active:scale-[0.98] active:opacity-90",
+              "focus:outline-none focus-visible:outline-none",
+              isCategoriesActive
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            )}
+          >
+            <FolderOpen className={cn(
+              "h-4 w-4 shrink-0 transition-all",
+              isCategoriesActive ? "stroke-[2.5]" : "stroke-[1.5]"
+            )} />
+            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">Categories</span>
+            <ChevronDown 
+              className={cn(
+                "h-4 w-4 shrink-0 transition-transform duration-200",
+                (openGroups['categories'] ?? true) ? "rotate-0" : "-rotate-90"
+              )} 
+            />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-0.5 pt-0.5">
+          {/* All Categories link */}
+          <NavLink
+            to="/categories"
+            end
+            onClick={handleNavClick}
+            className={({ isActive }) => cn(
+              "rounded-lg text-sm font-medium select-none",
+              "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+              "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            <Grid3X3 className="h-4 w-4 shrink-0" />
+            <span className="min-w-0 truncate leading-none flex-1">All Categories</span>
+          </NavLink>
+          
+          {/* Dynamic categories with subcategories */}
+          {parentCategories.map(category => {
+            const subs = subcategoriesMap[category.id] || [];
+            const hasSubcategories = subs.length > 0;
+            const isCategoryOpen = openCategories[category.id] ?? false;
+            const categoryPath = `/products?category=${category.slug}`;
+            const isCategoryActive = location.pathname === '/products' && 
+              new URLSearchParams(location.search).get('category') === category.slug;
+            const isSubActive = subs.some(sub => 
+              location.pathname === '/products' && 
+              new URLSearchParams(location.search).get('category') === sub.slug
+            );
+
+            if (!hasSubcategories) {
+              // Category without subcategories - simple link
+              return (
+                <NavLink
+                  key={category.id}
+                  to={categoryPath}
+                  onClick={handleNavClick}
+                  className={() => cn(
+                    "rounded-lg text-sm font-medium select-none",
+                    "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                    "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
+                    isCategoryActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <FolderOpen className="h-4 w-4 shrink-0" />
+                  <span className="min-w-0 truncate leading-none flex-1">{category.name}</span>
+                </NavLink>
+              );
+            }
+
+            // Category with subcategories - collapsible
+            return (
+              <Collapsible
+                key={category.id}
+                open={isCategoryOpen}
+                onOpenChange={() => toggleCategory(category.id)}
+              >
+                <div className="flex items-center ml-4">
+                  <NavLink
+                    to={categoryPath}
+                    onClick={handleNavClick}
+                    className={() => cn(
+                      "flex-1 rounded-lg text-sm font-medium select-none",
+                      "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                      "flex flex-row flex-nowrap items-center gap-3 px-3 py-2",
+                      isCategoryActive || isSubActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <FolderOpen className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 truncate leading-none flex-1">{category.name}</span>
+                  </NavLink>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <ChevronDown 
+                        className={cn(
+                          "h-3.5 w-3.5 transition-transform duration-200",
+                          isCategoryOpen ? "rotate-0" : "-rotate-90"
+                        )} 
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent className="space-y-0.5 pt-0.5">
+                  {subs.map(sub => {
+                    const subPath = `/products?category=${sub.slug}`;
+                    const isSubCategoryActive = location.pathname === '/products' && 
+                      new URLSearchParams(location.search).get('category') === sub.slug;
+
+                    return (
+                      <NavLink
+                        key={sub.id}
+                        to={subPath}
+                        onClick={handleNavClick}
+                        className={() => cn(
+                          "rounded-lg text-sm font-medium select-none",
+                          "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                          "flex flex-row flex-nowrap items-center gap-3 px-3 py-1.5 ml-10",
+                          isSubCategoryActive
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
+                      >
+                        <span className="min-w-0 truncate leading-none flex-1">{sub.name}</span>
+                      </NavLink>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
+
   return (
     <aside 
       className={cn(
@@ -563,7 +884,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
       {/* Navigation */}
       <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map(renderGroup)}
+        {navGroups.map((group, index) => (
+          <div key={group.id}>
+            {renderGroup(group)}
+            {/* Insert categories section after Products group */}
+            {group.id === 'products' && renderCategoriesSection()}
+          </div>
+        ))}
       </nav>
 
       {/* Footer */}
