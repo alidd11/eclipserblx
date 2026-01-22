@@ -15,6 +15,7 @@ import { useSellerTicketNotifications } from '@/hooks/useSellerTicketNotificatio
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { useStaffTheme } from '@/hooks/useStaffTheme';
+import { Capacitor } from '@capacitor/core';
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
@@ -203,6 +204,78 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     };
   }, [isChatPage]);
 
+  // iOS PWA fallback: ensure the *shell itself* shrinks with the keyboard on first open.
+  // Some iOS versions can be flaky with `100dvh` + keyboard the first time; however
+  // `visualViewport.height` is reliable. We only apply this in standalone iOS PWAs
+  // (and never in Capacitor native mode).
+  useEffect(() => {
+    const html = document.documentElement;
+
+    if (!isChatPage) {
+      html.style.removeProperty('--chat-vvh');
+      return;
+    }
+
+    // Never run this in native mode.
+    if (Capacitor.isNativePlatform()) {
+      html.style.removeProperty('--chat-vvh');
+      return;
+    }
+
+    const ua = navigator.userAgent;
+    const isIOS =
+      /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+
+    if (!isIOS || !standalone) {
+      html.style.removeProperty('--chat-vvh');
+      return;
+    }
+
+    let disposed = false;
+    let timers: number[] = [];
+
+    const apply = () => {
+      if (disposed) return;
+      const vvHeight = window.visualViewport?.height ?? window.innerHeight;
+      html.style.setProperty('--chat-vvh', `${Math.round(vvHeight)}px`);
+    };
+
+    // On the very first focus, iOS can report intermediate values during the keyboard animation.
+    // A small stagger ensures we settle on the final height.
+    const applyStaggered = () => {
+      apply();
+      timers.forEach(t => window.clearTimeout(t));
+      timers = [
+        window.setTimeout(apply, 50),
+        window.setTimeout(apply, 150),
+        window.setTimeout(apply, 350),
+      ];
+    };
+
+    applyStaggered();
+
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', apply);
+    document.addEventListener('focusin', applyStaggered);
+    document.addEventListener('focusout', applyStaggered);
+    window.addEventListener('orientationchange', applyStaggered);
+
+    return () => {
+      disposed = true;
+      timers.forEach(t => window.clearTimeout(t));
+      vv?.removeEventListener('resize', apply);
+      document.removeEventListener('focusin', applyStaggered);
+      document.removeEventListener('focusout', applyStaggered);
+      window.removeEventListener('orientationchange', applyStaggered);
+      html.style.removeProperty('--chat-vvh');
+    };
+  }, [isChatPage]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     if ('caches' in window) {
@@ -382,9 +455,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         className={cn(
           'flex w-full max-w-full min-w-0',
           isChatPage
-            ? 'h-[100dvh] flex-col overflow-hidden bg-card'
+            ? 'flex-col overflow-hidden bg-card'
             : 'min-h-screen bg-background'
         )}
+        style={isChatPage ? { height: 'var(--chat-vvh, 100dvh)' } : undefined}
       >
         {/* Desktop Sidebar */}
         {!isMobile && (

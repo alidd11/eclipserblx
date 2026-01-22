@@ -1076,6 +1076,8 @@ function AdminChatContent() {
                   // iOS keyboard animation can finish after the first frame.
                   setTimeout(scrollToBottom, 150);
                   setTimeout(scrollToBottom, 350);
+                  // Some iOS PWA builds settle even later on the first open.
+                  setTimeout(scrollToBottom, 650);
                 });
               }}
               placeholder="Message..."
