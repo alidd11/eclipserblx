@@ -50,11 +50,11 @@ export function DiscordWidget() {
           src={`https://discord.com/widget?id=${serverId}&theme=${theme}`}
           width="100%"
           height="400"
-          allowTransparency={true}
           frameBorder={0}
           sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
           className="w-full"
           title="Discord Widget"
+          style={{ border: 'none' }}
         />
       </div>
     </div>
