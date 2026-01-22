@@ -1677,6 +1677,7 @@ export type Database = {
           discord_id: string | null
           discord_username: string | null
           display_name: string | null
+          display_name_changed_at: string | null
           email: string
           id: string
           last_seen: string | null
@@ -1701,6 +1702,7 @@ export type Database = {
           discord_id?: string | null
           discord_username?: string | null
           display_name?: string | null
+          display_name_changed_at?: string | null
           email: string
           id?: string
           last_seen?: string | null
@@ -1725,6 +1727,7 @@ export type Database = {
           discord_id?: string | null
           discord_username?: string | null
           display_name?: string | null
+          display_name_changed_at?: string | null
           email?: string
           id?: string
           last_seen?: string | null
