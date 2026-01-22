@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
     }
 
     let ticketId: string;
+    let isNewTicket = false;
 
     if (existingTicket) {
       // Add message to existing ticket
@@ -87,11 +88,12 @@ Deno.serve(async (req) => {
       }
 
       ticketId = newTicket.id;
+      isNewTicket = true;
       console.log("Created new ticket:", ticketId);
     }
 
     // Insert the message
-    const { error: messageError } = await supabase
+    const { data: newMessage, error: messageError } = await supabase
       .from("discord_modmail_messages")
       .insert({
         ticket_id: ticketId,
@@ -99,7 +101,9 @@ Deno.serve(async (req) => {
         is_staff_reply: false,
         discord_message_id: payload.discord_message_id,
         attachments: payload.attachments || [],
-      });
+      })
+      .select("id")
+      .single();
 
     if (messageError) {
       console.error("Error inserting message:", messageError);
@@ -112,10 +116,55 @@ Deno.serve(async (req) => {
       .update({ updated_at: new Date().toISOString() })
       .eq("id", ticketId);
 
+    // Send push notification to staff (admin and support_agent roles)
+    try {
+      const { data: staffUsers } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .in("role", ["admin", "support_agent"]);
+
+      if (staffUsers && staffUsers.length > 0) {
+        const userIds = staffUsers.map((u) => u.user_id);
+        
+        // Use unique tag to prevent collapsing
+        const notificationTag = isNewTicket 
+          ? `modmail-new-${ticketId}` 
+          : `modmail-msg-${ticketId}-${newMessage.id}`;
+        
+        const notificationPayload = {
+          user_ids: userIds,
+          title: isNewTicket ? "New Discord Modmail" : "New Modmail Message",
+          body: `${payload.discord_username}: ${payload.content.substring(0, 100)}${payload.content.length > 100 ? "..." : ""}`,
+          tag: notificationTag,
+          url: "/admin/discord-modmail",
+          data: {
+            ticket_id: ticketId,
+            message_id: newMessage.id,
+            type: "modmail",
+          },
+        };
+
+        const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify(notificationPayload),
+        });
+
+        const pushResult = await pushResponse.text();
+        console.log("Push notification result:", pushResult);
+      }
+    } catch (pushError) {
+      // Don't fail the webhook if push fails
+      console.error("Error sending push notification:", pushError);
+    }
+
     console.log("Successfully processed modmail message for ticket:", ticketId);
 
     return new Response(
-      JSON.stringify({ success: true, ticket_id: ticketId }),
+      JSON.stringify({ success: true, ticket_id: ticketId, is_new_ticket: isNewTicket }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
