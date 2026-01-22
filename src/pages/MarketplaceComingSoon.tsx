@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Store, Bell, BellOff, Check, ShieldCheck, Users, BarChart3, Star } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -108,7 +108,6 @@ export default function MarketplaceComingSoon() {
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-2">
               <Store className="h-5 w-5 text-primary" />
               <span className="font-medium">Eclipse Marketplace</span>
-              <Badge variant="secondary">Coming Soon</Badge>
             </div>
             
             <h1 className="text-3xl md:text-5xl font-bold leading-tight">
