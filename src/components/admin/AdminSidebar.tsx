@@ -122,7 +122,8 @@ const navGroups: NavGroup[] = [
     icon: Settings,
     items: [
       { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
-      { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'], dividerAfter: true },
+      { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
+      { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', roles: ['admin'], dividerAfter: true },
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', roles: ['admin'] },
       { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', roles: ['admin'], dividerAfter: true },
       { title: 'Settings', icon: Settings, href: '/admin/settings', roles: [] },
