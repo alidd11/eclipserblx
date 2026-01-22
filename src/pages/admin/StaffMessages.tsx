@@ -19,6 +19,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { hapticTap, hapticError } from '@/lib/haptics';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -758,8 +759,16 @@ function StaffMessagesContent() {
       className="h-full flex flex-col bg-card"
       style={{ overscrollBehavior: 'none' }}
     >
+      {/* iOS-style header with logo */}
+      <div className="flex-shrink-0 border-b border-border/50 bg-card/80 backdrop-blur-sm">
+        <div className="flex items-center justify-center gap-2 py-3 px-4">
+          <EclipseLogo size="sm" />
+          <span className="text-sm font-semibold text-foreground">Staff Messages</span>
+        </div>
+      </div>
+
       {/* Messages area - fills available space */}
-      <div 
+      <div
         ref={scrollRef} 
         className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}

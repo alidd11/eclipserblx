@@ -20,6 +20,7 @@ import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { hapticTap, hapticError } from '@/lib/haptics';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 interface ChatMessage {
   id: string;
@@ -786,6 +787,14 @@ function AdminChatContent() {
       style={{ overscrollBehavior: 'none' }}
       {...dragProps}
     >
+      {/* iOS-style header with logo */}
+      <div className="flex-shrink-0 border-b border-border/50 bg-card/80 backdrop-blur-sm">
+        <div className="flex items-center justify-center gap-2 py-3 px-4">
+          <EclipseLogo size="sm" />
+          <span className="text-sm font-semibold text-foreground">Admin Chat</span>
+        </div>
+      </div>
+
       {/* Drag overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none">
@@ -797,7 +806,7 @@ function AdminChatContent() {
       )}
 
       {/* Messages area - fills available space */}
-      <div 
+      <div
         ref={scrollRef} 
         className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
