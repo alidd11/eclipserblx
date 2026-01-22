@@ -167,6 +167,39 @@ const LiveChatPage = () => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  // Handle viewport resize for keyboard - scroll chat to bottom when keyboard opens
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    let lastHeight = vv.height;
+    let timers: number[] = [];
+
+    const handleViewportResize = () => {
+      const heightDelta = Math.abs(vv.height - lastHeight);
+      // Only react to significant height changes (keyboard open/close)
+      if (heightDelta > 50) {
+        lastHeight = vv.height;
+        // Clear any pending scroll timers
+        timers.forEach(t => clearTimeout(t));
+        // Staggered scrolls to handle iOS keyboard animation settling
+        timers = [
+          window.setTimeout(scrollToBottom, 0),
+          window.setTimeout(scrollToBottom, 100),
+          window.setTimeout(scrollToBottom, 250),
+          window.setTimeout(scrollToBottom, 400),
+        ];
+      }
+    };
+
+    vv.addEventListener('resize', handleViewportResize);
+
+    return () => {
+      timers.forEach(t => clearTimeout(t));
+      vv.removeEventListener('resize', handleViewportResize);
+    };
+  }, [scrollToBottom]);
+
   // Handle customer typing broadcast
   const handleTyping = useCallback(() => {
     const channel = typingChannelRef.current;
@@ -557,6 +590,33 @@ const LiveChatPage = () => {
                       handleTyping();
                     }}
                     onKeyPress={handleKeyPress}
+                    onPointerDown={(e) => {
+                      // iOS PWA can ignore the first tap; force focus synchronously
+                      const input = e.currentTarget;
+                      if (document.activeElement === input) return;
+                      try {
+                        input.focus({ preventScroll: true });
+                      } catch {
+                        input.focus();
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      const input = e.currentTarget;
+                      if (document.activeElement === input) return;
+                      try {
+                        input.focus({ preventScroll: true });
+                      } catch {
+                        input.focus();
+                      }
+                    }}
+                    onFocus={() => {
+                      // Scroll to bottom when keyboard opens
+                      requestAnimationFrame(() => {
+                        scrollToBottom();
+                        setTimeout(scrollToBottom, 150);
+                        setTimeout(scrollToBottom, 350);
+                      });
+                    }}
                     placeholder="Type a message..."
                     className="flex-1"
                     disabled={isSending}
