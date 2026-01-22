@@ -49,8 +49,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
-      { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
-      { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'] },
     ],
   },
   {
@@ -58,7 +56,9 @@ const navGroups: NavGroup[] = [
     title: 'Communications',
     icon: MessageCircle,
     items: [
-      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'], dividerAfter: true },
+      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
+      { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
+      { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'], dividerAfter: true },
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
       { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
     ],
@@ -83,8 +83,8 @@ const navGroups: NavGroup[] = [
       { title: 'Seller Commissions', icon: Percent, href: '/admin/seller-commissions', roles: ['admin'] },
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
       { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', roles: ['admin'], dividerAfter: true },
+      { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', roles: ['admin'] },
       { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
-      { title: 'Seller Info PDF', icon: FileText, href: '/admin/seller-recruitment', roles: ['admin'] },
     ],
   },
   {
