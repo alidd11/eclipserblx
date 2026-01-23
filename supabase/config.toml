@@ -195,3 +195,9 @@ verify_jwt = false
 
 [functions.check-affiliate-connect-status]
 verify_jwt = false
+
+[functions.check-product-purchase]
+verify_jwt = false
+
+[functions.send-eclipse-plus-announcement]
+verify_jwt = false
