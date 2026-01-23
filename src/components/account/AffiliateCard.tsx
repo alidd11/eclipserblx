@@ -234,6 +234,20 @@ export function AffiliateCard() {
 
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="paypal">PayPal Email *</Label>
+              <Input
+                id="paypal"
+                type="email"
+                placeholder="your@paypal.email"
+                value={applicationForm.paypal_email}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, paypal_email: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Payouts are processed via PayPal to this email address.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="discord">Discord Username (optional)</Label>
               <Input
                 id="discord"
@@ -241,9 +255,6 @@ export function AffiliateCard() {
                 value={applicationForm.discord_username}
                 onChange={(e) => setApplicationForm(prev => ({ ...prev, discord_username: e.target.value }))}
               />
-              <p className="text-xs text-muted-foreground">
-                Payouts are processed via Stripe Connect, which you'll set up after approval.
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -281,7 +292,7 @@ export function AffiliateCard() {
             <Button
               className="w-full"
               onClick={() => submitApplicationMutation.mutate()}
-              disabled={!applicationForm.promotion_method || submitApplicationMutation.isPending}
+              disabled={!applicationForm.promotion_method || !applicationForm.paypal_email || submitApplicationMutation.isPending}
             >
               {submitApplicationMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -443,7 +454,7 @@ export function AffiliateCard() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Minimum payout: £{MINIMUM_PAYOUT}. Payouts are processed via Stripe Connect.
+              Minimum payout: £{MINIMUM_PAYOUT}. Payouts are processed via PayPal.
             </p>
           </div>
         )}
