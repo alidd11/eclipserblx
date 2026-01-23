@@ -884,75 +884,73 @@ export default function Affiliate() {
             </CardContent>
           </Card>
 
-          {/* Stats - Horizontally scrollable */}
-          <div className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            <div className="flex gap-4 min-w-max">
-              <Card className="bg-card border-border min-w-[160px]">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <DollarSign className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-2xl font-bold">£{availableBalance.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">Available</p>
-                    </div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <DollarSign className="h-5 w-5 text-primary" />
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border min-w-[160px]">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-2xl font-bold">£{totalEarned.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">Total Earned</p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">£{availableBalance.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">Available</p>
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border min-w-[160px]">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                      <MousePointerClick className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-2xl font-bold">{totalClicks.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">Link Clicks</p>
-                    </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <TrendingUp className="h-5 w-5 text-muted-foreground" />
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border min-w-[160px]">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
-                      <UserPlus className="h-5 w-5 text-green-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-2xl font-bold">{totalSignups.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">Signups</p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">£{totalEarned.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">Total Earned</p>
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border min-w-[160px]">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-                      <BadgePercent className="h-5 w-5 text-purple-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-2xl font-bold">{conversionRate}%</p>
-                      <p className="text-xs text-muted-foreground">Conversion</p>
-                    </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <MousePointerClick className="h-5 w-5 text-blue-500" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">{totalClicks.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Link Clicks</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                    <UserPlus className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">{totalSignups.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Signups</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                    <BadgePercent className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">{conversionRate}%</p>
+                    <p className="text-xs text-muted-foreground">Conversion</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Referral Link */}

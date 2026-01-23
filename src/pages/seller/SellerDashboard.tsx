@@ -142,68 +142,66 @@ export default function SellerDashboard() {
 
         {/* Stats Cards */}
         {/* Stats - Horizontally scrollable */}
-        <div className="overflow-x-auto pb-2 -mx-4 px-4 mb-8 scrollbar-hide">
-          <div className="flex gap-3 min-w-max">
-            <Card className="min-w-[160px]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">Total Revenue</CardTitle>
-                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-lg sm:text-2xl font-bold truncate">
-                  {formatCurrency(store?.total_revenue || 0)}
-                </div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  Lifetime earnings
-                </p>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
+              <CardTitle className="text-xs font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="px-3 pb-3">
+              <div className="text-lg sm:text-2xl font-bold truncate">
+                {formatCurrency(store?.total_revenue || 0)}
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Lifetime earnings
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card className="min-w-[160px]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">Available Balance</CardTitle>
-                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-lg sm:text-2xl font-bold text-green-600 truncate">
-                  {formatCurrency(balance?.available_balance || 0)}
-                </div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  Ready for payout
-                </p>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
+              <CardTitle className="text-xs font-medium">Available Balance</CardTitle>
+              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="px-3 pb-3">
+              <div className="text-lg sm:text-2xl font-bold text-green-600 truncate">
+                {formatCurrency(balance?.available_balance || 0)}
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Ready for payout
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card className="min-w-[160px]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">Total Sales</CardTitle>
-                <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-lg sm:text-2xl font-bold">
-                  {store?.total_sales || 0}
-                </div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  Products sold
-                </p>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
+              <CardTitle className="text-xs font-medium">Total Sales</CardTitle>
+              <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="px-3 pb-3">
+              <div className="text-lg sm:text-2xl font-bold">
+                {store?.total_sales || 0}
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Products sold
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card className="min-w-[160px]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">Products</CardTitle>
-                <Package className="h-3.5 w-3.5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-lg sm:text-2xl font-bold">
-                  {statsLoading ? '...' : productStats?.total || 0}
-                </div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  {productStats?.pending || 0} pending review
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
+              <CardTitle className="text-xs font-medium">Products</CardTitle>
+              <Package className="h-3.5 w-3.5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="px-3 pb-3">
+              <div className="text-lg sm:text-2xl font-bold">
+                {statsLoading ? '...' : productStats?.total || 0}
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                {productStats?.pending || 0} pending review
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Quick Actions + Recent Activity */}
