@@ -102,7 +102,8 @@ export default function DiscordOutreach() {
     member_count: "",
     server_type: "",
     status: "contacted",
-    decision: "",
+    // Radix Select disallows empty-string item values; use a sentinel for "not decided"
+    decision: "none",
     notes: "",
   });
 
@@ -126,6 +127,7 @@ export default function DiscordOutreach() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
+      const decision = data.decision === "none" ? null : data.decision;
       const payload = {
         server_name: data.server_name,
         server_id: data.server_id || null,
@@ -134,9 +136,9 @@ export default function DiscordOutreach() {
         member_count: data.member_count ? parseInt(data.member_count) : null,
         server_type: data.server_type || null,
         status: data.status,
-        decision: data.decision || null,
+        decision,
         notes: data.notes || null,
-        decided_at: data.decision ? new Date().toISOString() : null,
+        decided_at: decision ? new Date().toISOString() : null,
       };
 
       if (data.id) {
@@ -192,7 +194,7 @@ export default function DiscordOutreach() {
       member_count: "",
       server_type: "",
       status: "contacted",
-      decision: "",
+      decision: "none",
       notes: "",
     });
   };
@@ -207,7 +209,7 @@ export default function DiscordOutreach() {
       member_count: record.member_count?.toString() || "",
       server_type: record.server_type || "",
       status: record.status,
-      decision: record.decision || "",
+      decision: record.decision || "none",
       notes: record.notes || "",
     });
     setIsDialogOpen(true);
@@ -480,7 +482,7 @@ export default function DiscordOutreach() {
                     <SelectValue placeholder="Not decided" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Not decided</SelectItem>
+                    <SelectItem value="none">Not decided</SelectItem>
                     {DECISION_OPTIONS.map(d => (
                       <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
                     ))}
