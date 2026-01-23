@@ -358,13 +358,13 @@ export default function DiscordOutreach() {
 
   const getStatusBadge = (status: string) => {
     const config = STATUS_OPTIONS.find(s => s.value === status);
-    return <Badge variant="outline" className={config?.color}>{config?.label || status}</Badge>;
+    return <Badge variant="outline" className={`${config?.color} text-[10px] sm:text-xs px-1.5 sm:px-2`}>{config?.label || status}</Badge>;
   };
 
   const getDecisionBadge = (decision: string | null) => {
     if (!decision) return null;
     const config = DECISION_OPTIONS.find(d => d.value === decision);
-    return <Badge className={config?.color}>{config?.label || decision}</Badge>;
+    return <Badge className={`${config?.color} text-[10px] sm:text-xs px-1.5 sm:px-2`}>{config?.label || decision}</Badge>;
   };
 
   return (
@@ -443,19 +443,18 @@ export default function DiscordOutreach() {
           </div>
 
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Server</TableHead>
-                    <TableHead className="hidden md:table-cell">Contact</TableHead>
-                    <TableHead className="hidden lg:table-cell">Members</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Decision</TableHead>
-                    <TableHead className="hidden md:table-cell">Contacted</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-3">Server</TableHead>
+                  <TableHead className="hidden md:table-cell">Contact</TableHead>
+                  <TableHead className="hidden lg:table-cell">Members</TableHead>
+                  <TableHead className="px-1 text-center">Status</TableHead>
+                  <TableHead className="px-1 text-center">Decision</TableHead>
+                  <TableHead className="hidden md:table-cell">Contacted</TableHead>
+                  <TableHead className="pr-2 text-right w-16">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
@@ -474,11 +473,11 @@ export default function DiscordOutreach() {
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => navigate(`/admin/discord-outreach/${record.id}`)}
                       >
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{record.server_name}</p>
+                        <TableCell className="pl-3">
+                          <div className="max-w-[100px] sm:max-w-none">
+                            <p className="font-medium truncate">{record.server_name}</p>
                             {record.server_type && (
-                              <p className="text-xs text-muted-foreground">{record.server_type}</p>
+                              <p className="text-xs text-muted-foreground truncate">{record.server_type}</p>
                             )}
                           </div>
                         </TableCell>
@@ -493,8 +492,8 @@ export default function DiscordOutreach() {
                         <TableCell className="hidden lg:table-cell">
                           {record.member_count?.toLocaleString() || "-"}
                         </TableCell>
-                        <TableCell>{getStatusBadge(record.status)}</TableCell>
-                        <TableCell>{getDecisionBadge(record.decision) || "-"}</TableCell>
+                        <TableCell className="px-1 text-center">{getStatusBadge(record.status)}</TableCell>
+                        <TableCell className="px-1 text-center">{getDecisionBadge(record.decision) || "-"}</TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {format(new Date(record.contacted_at), "dd MMM yyyy")}
                         </TableCell>
@@ -519,7 +518,6 @@ export default function DiscordOutreach() {
                   )}
                 </TableBody>
               </Table>
-            </div>
           </CardContent>
         </Card>
       </div>
