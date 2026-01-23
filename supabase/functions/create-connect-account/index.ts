@@ -67,6 +67,7 @@ serve(async (req) => {
           store_id: store.id,
         },
         capabilities: {
+          card_payments: { requested: true },
           transfers: { requested: true },
         },
         business_profile: {
