@@ -546,7 +546,7 @@ export default function ProductDetail() {
                   <MessageSquare className="h-5 w-5" />
                   Customer Reviews
                 </CardTitle>
-                {hasPurchased && !existingReview && user && (
+                {!existingReview && user && (
                   <Button 
                     onClick={() => setShowReviewForm(!showReviewForm)}
                     variant={showReviewForm ? "outline" : "default"}
@@ -559,9 +559,16 @@ export default function ProductDetail() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Review Form - only show if user purchased and hasn't reviewed */}
-              {showReviewForm && hasPurchased && !existingReview && user && (
+              {/* Review Form - show for any logged-in user who hasn't reviewed */}
+              {showReviewForm && !existingReview && user && (
                 <div className="border-b border-border pb-6">
+                  {!hasPurchased && (
+                    <div className="bg-muted/50 border border-border rounded-lg p-3 mb-4 text-center">
+                      <p className="text-xs text-muted-foreground">
+                        💡 Tip: Purchase this product to get a "Verified Purchase" badge on your review
+                      </p>
+                    </div>
+                  )}
                   <ReviewForm 
                     productId={product.id} 
                     productName={product.name}
@@ -569,13 +576,15 @@ export default function ProductDetail() {
                       setShowReviewForm(false);
                       queryClient.invalidateQueries({ queryKey: ['product-reviews', product.id] });
                       queryClient.invalidateQueries({ queryKey: ['user-existing-review', product.id, user.id] });
-                      // Mark review reminder as submitted
-                      supabase
-                        .from('review_reminders')
-                        .update({ review_submitted: true })
-                        .eq('user_id', user.id)
-                        .eq('product_id', product.id)
-                        .then(() => {});
+                      // Mark review reminder as submitted if applicable
+                      if (hasPurchased) {
+                        supabase
+                          .from('review_reminders')
+                          .update({ review_submitted: true })
+                          .eq('user_id', user.id)
+                          .eq('product_id', product.id)
+                          .then(() => {});
+                      }
                     }}
                   />
                 </div>
@@ -586,15 +595,6 @@ export default function ProductDetail() {
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
                   <p className="text-sm text-primary">
                     ✓ You've already submitted a review for this product. Thank you!
-                  </p>
-                </div>
-              )}
-
-              {/* Purchase Required Notice */}
-              {user && !hasPurchased && (
-                <div className="bg-muted/50 border border-border rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Purchase this product to leave a review
                   </p>
                 </div>
               )}
