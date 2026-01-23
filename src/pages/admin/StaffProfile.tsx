@@ -388,11 +388,6 @@ export default function StaffProfile() {
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Email</span>
-                <span className="text-sm">{profile.email}</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Account Created</span>
                 <span className="text-sm">
                   {format(new Date(profile.created_at), 'MMM d, yyyy')}
