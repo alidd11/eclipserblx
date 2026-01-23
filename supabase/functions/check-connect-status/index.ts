@@ -40,19 +40,23 @@ serve(async (req) => {
     if (!user?.id) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
-    // Get user's Connect account ID
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('stripe_account_id')
-      .eq('user_id', user.id)
-      .single();
+    // Get seller's Connect account ID from their store record
+    const { data: store, error: storeError } = await supabaseClient
+      .from('stores')
+      .select('id, stripe_account_id, payouts_enabled')
+      .eq('owner_id', user.id)
+      .maybeSingle();
 
-    if (!profile?.stripe_account_id) {
+    if (storeError) throw new Error(`Store lookup error: ${storeError.message}`);
+
+    if (!store?.stripe_account_id) {
       logStep("No Connect account found");
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         hasAccount: false,
         isOnboarded: false,
         canReceivePayments: false,
+        chargesEnabled: false,
+        accountId: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -62,13 +66,23 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Get account details
-    const account = await stripe.accounts.retrieve(profile.stripe_account_id);
+    const account = await stripe.accounts.retrieve(store.stripe_account_id);
     logStep("Retrieved account", { 
       accountId: account.id, 
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
       detailsSubmitted: account.details_submitted
     });
+
+    // Best-effort sync so the seller dashboard can show status without always calling Stripe
+    try {
+      await supabaseClient
+        .from('stores')
+        .update({ payouts_enabled: account.payouts_enabled })
+        .eq('id', store.id);
+    } catch (syncErr) {
+      logStep('Warning: failed to sync payouts_enabled', { message: String(syncErr) });
+    }
 
     return new Response(JSON.stringify({ 
       hasAccount: true,
