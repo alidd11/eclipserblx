@@ -13,10 +13,11 @@ import { reviewSchema, validateWithSchema, isValidationError } from '@/lib/valid
 interface ReviewFormProps {
   productId?: string;
   productName?: string;
+  isVerifiedPurchase?: boolean;
   onSuccess?: () => void;
 }
 
-export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProps) {
+export function ReviewForm({ productId, productName, isVerifiedPurchase = false, onSuccess }: ReviewFormProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
@@ -56,6 +57,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
         rating: validatedData.rating,
         title: validatedData.title || null,
         content: validatedData.content,
+        is_verified_purchase: isVerifiedPurchase,
       });
 
       if (error) throw error;

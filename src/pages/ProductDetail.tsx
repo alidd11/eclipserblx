@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
+import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { sortMediaVideosFirst, isVideoUrl } from '@/lib/mediaUtils';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -33,6 +34,7 @@ export default function ProductDetail() {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
   const isMobile = useIsMobile();
   const videoRef = useRef<HTMLVideoElement>(null);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
@@ -133,11 +135,11 @@ export default function ProductDetail() {
       // First get reviews
       const { data: reviews, error } = await supabase
         .from('reviews')
-        .select('*')
+        .select('*, is_verified_purchase')
         .eq('product_id', product.id)
         .eq('is_approved', true)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
       
       if (error) {
         console.error('Error fetching reviews:', error);
@@ -163,6 +165,17 @@ export default function ProductDetail() {
     },
     enabled: !!product?.id,
   });
+
+  // Filter reviews based on verified purchase toggle
+  const filteredReviews = useMemo(() => {
+    if (!productReviews) return [];
+    if (!showVerifiedOnly) return productReviews;
+    return productReviews.filter(r => r.is_verified_purchase);
+  }, [productReviews, showVerifiedOnly]);
+
+  const verifiedCount = useMemo(() => {
+    return productReviews?.filter(r => r.is_verified_purchase).length || 0;
+  }, [productReviews]);
 
   // Scroll to reviews section if hash is #reviews
   useEffect(() => {
@@ -562,6 +575,7 @@ export default function ProductDetail() {
                   <ReviewForm 
                     productId={product.id} 
                     productName={product.name}
+                    isVerifiedPurchase={true}
                     onSuccess={() => {
                       setShowReviewForm(false);
                       queryClient.invalidateQueries({ queryKey: ['product-reviews', product.id] });
@@ -605,10 +619,29 @@ export default function ProductDetail() {
                 </div>
               )}
 
+              {/* Verified Filter Toggle */}
+              {productReviews && productReviews.length > 0 && verifiedCount > 0 && (
+                <div className="flex items-center justify-between border-b border-border pb-4">
+                  <span className="text-sm text-muted-foreground">
+                    {productReviews.length} {productReviews.length === 1 ? 'review' : 'reviews'} 
+                    {verifiedCount > 0 && ` (${verifiedCount} verified)`}
+                  </span>
+                  <Button
+                    variant={showVerifiedOnly ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
+                    className="gap-1.5"
+                  >
+                    <BadgeCheck className="h-4 w-4" />
+                    Verified Only
+                  </Button>
+                </div>
+              )}
+
               {/* Reviews List */}
-              {productReviews && productReviews.length > 0 ? (
+              {filteredReviews && filteredReviews.length > 0 ? (
                 <div className="space-y-4">
-                  {productReviews.map((review) => (
+                  {filteredReviews.map((review) => (
                     <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -629,6 +662,7 @@ export default function ProductDetail() {
                             <span className="font-semibold text-sm">
                               {review.profile?.display_name || review.external_reviewer_name || 'Anonymous'}
                             </span>
+                            {review.is_verified_purchase && <VerifiedPurchaseBadge />}
                             <div className="flex items-center gap-0.5">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star 
@@ -657,6 +691,10 @@ export default function ProductDetail() {
                     </div>
                   ))}
                 </div>
+              ) : showVerifiedOnly && productReviews && productReviews.length > 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No verified purchase reviews yet.
+                </p>
               ) : (
                 <p className="text-center text-muted-foreground py-4">
                   No reviews yet. Be the first to share your experience!

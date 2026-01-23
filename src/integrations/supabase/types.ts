@@ -2206,6 +2206,7 @@ export type Database = {
           is_approved: boolean | null
           is_external: boolean | null
           is_featured: boolean | null
+          is_verified_purchase: boolean | null
           product_id: string | null
           rating: number
           title: string | null
@@ -2221,6 +2222,7 @@ export type Database = {
           is_approved?: boolean | null
           is_external?: boolean | null
           is_featured?: boolean | null
+          is_verified_purchase?: boolean | null
           product_id?: string | null
           rating: number
           title?: string | null
@@ -2236,6 +2238,7 @@ export type Database = {
           is_approved?: boolean | null
           is_external?: boolean | null
           is_featured?: boolean | null
+          is_verified_purchase?: boolean | null
           product_id?: string | null
           rating?: number
           title?: string | null

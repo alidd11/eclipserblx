@@ -1,9 +1,12 @@
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 
 interface StoreReviewsProps {
   storeId: string;
@@ -20,6 +23,7 @@ interface Review {
   created_at: string;
   external_reviewer_name: string | null;
   is_external: boolean | null;
+  is_verified_purchase: boolean | null;
   product: {
     name: string;
     slug: string;
@@ -31,6 +35,7 @@ interface Review {
 }
 
 export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', averageRating }: StoreReviewsProps) {
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
   // Fetch reviews for all products in this store
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['store-reviews', storeId],
@@ -58,13 +63,14 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
           created_at,
           external_reviewer_name,
           is_external,
+          is_verified_purchase,
           user_id,
           product_id
         `)
         .in('product_id', productIds)
         .eq('is_approved', true)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (reviewsError) throw reviewsError;
       if (!reviewsData || reviewsData.length === 0) return [];
@@ -93,6 +99,17 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
     },
     enabled: !!storeId,
   });
+
+  // Filter reviews based on verified purchase toggle
+  const filteredReviews = useMemo(() => {
+    if (!reviews) return [];
+    if (!showVerifiedOnly) return reviews;
+    return reviews.filter(r => r.is_verified_purchase);
+  }, [reviews, showVerifiedOnly]);
+
+  const verifiedCount = useMemo(() => {
+    return reviews?.filter(r => r.is_verified_purchase).length || 0;
+  }, [reviews]);
 
   // Calculate rating distribution
   const ratingDistribution = reviews?.reduce((acc, review) => {
@@ -195,62 +212,87 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
           </div>
         </div>
 
+        {/* Verified Filter Toggle */}
+        {verifiedCount > 0 && (
+          <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
+            <span className="text-sm text-muted-foreground">
+              {verifiedCount} verified {verifiedCount === 1 ? 'review' : 'reviews'}
+            </span>
+            <Button
+              variant={showVerifiedOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
+              className="gap-1.5"
+            >
+              <BadgeCheck className="h-4 w-4" />
+              Verified Only
+            </Button>
+          </div>
+        )}
+
         {/* Reviews List */}
-        <div className="space-y-4">
-          {reviews.map((review) => (
-            <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  {review.profile?.avatar_url ? (
-                    <img
-                      src={review.profile.avatar_url}
-                      alt=""
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm font-bold text-primary">
-                      {(review.profile?.display_name || review.external_reviewer_name || 'U').charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm">
-                      {review.profile?.display_name || review.external_reviewer_name || 'Anonymous'}
-                    </span>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            star <= review.rating
-                              ? "text-amber-400 fill-amber-400"
-                              : "text-muted-foreground"
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(review.created_at).toLocaleDateString()}
-                    </span>
+        {filteredReviews.length > 0 ? (
+          <div className="space-y-4">
+            {filteredReviews.map((review) => (
+              <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    {review.profile?.avatar_url ? (
+                      <img
+                        src={review.profile.avatar_url}
+                        alt=""
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-sm font-bold text-primary">
+                        {(review.profile?.display_name || review.external_reviewer_name || 'U').charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
-                  {review.product && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Reviewed: {review.product.name}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">
+                        {review.profile?.display_name || review.external_reviewer_name || 'Anonymous'}
+                      </span>
+                      {review.is_verified_purchase && <VerifiedPurchaseBadge />}
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              star <= review.rating
+                                ? "text-amber-400 fill-amber-400"
+                                : "text-muted-foreground"
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {review.product && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Reviewed: {review.product.name}
+                      </p>
+                    )}
+                    {review.title && (
+                      <h4 className="font-medium mt-1">{review.title}</h4>
+                    )}
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {review.content}
                     </p>
-                  )}
-                  {review.title && (
-                    <h4 className="font-medium mt-1">{review.title}</h4>
-                  )}
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {review.content}
-                  </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : showVerifiedOnly ? (
+          <p className="text-center text-muted-foreground py-4">
+            No verified purchase reviews yet.
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );
