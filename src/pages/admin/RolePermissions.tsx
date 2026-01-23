@@ -285,47 +285,45 @@ export default function RolePermissions() {
               Quick comparison of permissions across all roles
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2 font-medium">Permission</th>
+          <CardContent className="p-0">
+            <table className="w-full text-xs md:text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 px-2 font-medium">Permission</th>
+                  {ROLES.map(role => (
+                    <th key={role.value} className="text-center py-2 px-1">
+                      <div className={`inline-flex items-center justify-center gap-0.5 px-1 py-0.5 rounded text-white text-[10px] md:text-xs ${role.color}`}>
+                        {role.icon}
+                        <span className="hidden lg:inline">{role.label}</span>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {permissions?.map(permission => (
+                  <tr key={permission.id} className="border-b border-border/50 hover:bg-muted/50">
+                    <td className="py-1.5 px-2">
+                      <div className="flex items-center gap-1">
+                        <span className="hidden md:inline">{CATEGORY_ICONS[permission.category]}</span>
+                        <span className="truncate max-w-[120px] md:max-w-[200px] text-xs">
+                          {permission.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </span>
+                      </div>
+                    </td>
                     {ROLES.map(role => (
-                      <th key={role.value} className="text-center py-3 px-2">
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-white text-xs ${role.color}`}>
-                          {role.icon}
-                          <span className="hidden sm:inline">{role.label}</span>
-                        </div>
-                      </th>
+                      <td key={role.value} className="text-center py-1.5 px-1">
+                        {hasPermission(role.value, permission.id) ? (
+                          <span className="text-green-500 text-xs">✓</span>
+                        ) : (
+                          <span className="text-muted-foreground/30 text-xs">—</span>
+                        )}
+                      </td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {permissions?.map(permission => (
-                    <tr key={permission.id} className="border-b border-border/50 hover:bg-muted/50">
-                      <td className="py-2 px-2">
-                        <div className="flex items-center gap-2">
-                          {CATEGORY_ICONS[permission.category]}
-                          <span className="truncate max-w-[200px]">
-                            {permission.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                        </div>
-                      </td>
-                      {ROLES.map(role => (
-                        <td key={role.value} className="text-center py-2 px-2">
-                          {hasPermission(role.value, permission.id) ? (
-                            <Badge variant="default" className="bg-green-500 text-white">✓</Badge>
-                          ) : (
-                            <Badge variant="secondary" className="opacity-30">—</Badge>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       </div>
