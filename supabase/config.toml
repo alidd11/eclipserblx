@@ -189,3 +189,9 @@ verify_jwt = false
 
 [functions.send-affiliate-announcement]
 verify_jwt = false
+
+[functions.create-affiliate-connect-account]
+verify_jwt = false
+
+[functions.check-affiliate-connect-status]
+verify_jwt = false

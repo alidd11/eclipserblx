@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { 
   DollarSign, TrendingUp, Loader2, CheckCircle, AlertCircle,
   ArrowUpRight, Clock, Send, Users, Gift, Zap, Copy, ExternalLink,
-  CreditCard, BadgePercent, Star, Construction, MousePointerClick, UserPlus
+  CreditCard, BadgePercent, Star, Construction, MousePointerClick, UserPlus,
+  Link as LinkIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,20 +14,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export default function Affiliate() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const { settings: affiliateSettings, isLoading: settingsLoading } = useAffiliateSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
+  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   
   // Application form state
   const [applicationForm, setApplicationForm] = useState({
@@ -35,7 +39,26 @@ export default function Affiliate() {
     promotion_method: '',
     audience_size: '',
     notes: '',
+    preferred_payout_method: 'stripe' as 'stripe' | 'paypal',
   });
+
+  // Handle Stripe onboarding return
+  useEffect(() => {
+    if (searchParams.get('stripe_onboarding') === 'complete') {
+      toast({
+        title: "Stripe Connected!",
+        description: "Your Stripe account has been connected successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['affiliate-connect-status'] });
+    }
+    if (searchParams.get('stripe_refresh') === 'true') {
+      toast({
+        title: "Session Expired",
+        description: "Please try connecting your Stripe account again.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, toast, queryClient]);
 
   // Check if user has an application
   const { data: application, isLoading: applicationLoading } = useQuery({
@@ -67,6 +90,17 @@ export default function Affiliate() {
       return data;
     },
     enabled: !!user?.id && application?.status === 'approved',
+  });
+
+  // Check Stripe Connect status
+  const { data: connectStatus, isLoading: connectStatusLoading } = useQuery({
+    queryKey: ['affiliate-connect-status', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-affiliate-connect-status');
+      if (error) throw error;
+      return data as { hasAccount: boolean; isOnboarded: boolean; canReceivePayments: boolean; accountId: string | null };
+    },
+    enabled: !!user?.id && application?.status === 'approved' && application?.preferred_payout_method === 'stripe',
   });
 
   // Get recent commissions
@@ -135,6 +169,7 @@ export default function Affiliate() {
           promotion_method: applicationForm.promotion_method,
           audience_size: applicationForm.audience_size || null,
           notes: applicationForm.notes || null,
+          preferred_payout_method: applicationForm.preferred_payout_method,
         });
 
       if (error) throw error;
@@ -155,19 +190,43 @@ export default function Affiliate() {
     },
   });
 
+  // Connect Stripe account
+  const connectStripeMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('create-affiliate-connect-account');
+      if (error) throw error;
+      return data as { url: string; accountId: string };
+    },
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsConnectingStripe(false);
+    },
+  });
+
   // Request payout
   const requestPayoutMutation = useMutation({
     mutationFn: async (amount: number) => {
+      const method = application?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments
+        ? 'stripe'
+        : 'paypal';
+      
       const { data, error } = await supabase.functions.invoke('request-affiliate-payout', {
-        body: { amount: Math.round(amount * 100) },
+        body: { amount: Math.round(amount * 100), method },
       });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: "Payout Requested",
-        description: "Your payout request has been submitted for review.",
+        title: data.method === 'stripe' ? "Payout Complete!" : "Payout Requested",
+        description: data.message,
       });
       setPayoutAmount('');
       queryClient.invalidateQueries({ queryKey: ['affiliate-payouts', user?.id] });
@@ -195,6 +254,11 @@ export default function Affiliate() {
     requestPayoutMutation.mutate(amount);
   };
 
+  const handleConnectStripe = () => {
+    setIsConnectingStripe(true);
+    connectStripeMutation.mutate();
+  };
+
   const copyReferralLink = () => {
     if (profile?.referral_code) {
       navigator.clipboard.writeText(`${window.location.origin}/auth?ref=${profile.referral_code}`);
@@ -211,6 +275,10 @@ export default function Affiliate() {
   const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
 
   const isLoading = applicationLoading || balanceLoading || settingsLoading;
+
+  // Determine if user can use Stripe payouts
+  const canUseStripe = application?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments;
+  const needsStripeOnboarding = application?.preferred_payout_method === 'stripe' && !connectStatus?.canReceivePayments;
 
   // Benefits for the landing page
   const benefits = [
@@ -397,20 +465,62 @@ export default function Affiliate() {
                   Tell us about yourself and how you plan to promote our products.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="paypal">PayPal Email *</Label>
-                  <Input
-                    id="paypal"
-                    type="email"
-                    placeholder="your@paypal.email"
-                    value={applicationForm.paypal_email}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, paypal_email: e.target.value }))}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Payouts are processed via PayPal to this email address.
-                  </p>
+              <CardContent className="space-y-6">
+                {/* Payout Method Selection */}
+                <div className="space-y-3">
+                  <Label>Preferred Payout Method *</Label>
+                  <RadioGroup
+                    value={applicationForm.preferred_payout_method}
+                    onValueChange={(value: 'stripe' | 'paypal') => 
+                      setApplicationForm(prev => ({ ...prev, preferred_payout_method: value }))
+                    }
+                    className="grid gap-3"
+                  >
+                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
+                      <RadioGroupItem value="stripe" id="stripe" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          Stripe Connect
+                          <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Automatic instant payouts directly to your bank account. You'll connect your Stripe account after approval.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
+                      <RadioGroupItem value="paypal" id="paypal" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="paypal" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <DollarSign className="h-4 w-4 text-blue-500" />
+                          PayPal
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Manual payouts processed within 1-3 business days to your PayPal email.
+                        </p>
+                      </div>
+                    </div>
+                  </RadioGroup>
                 </div>
+
+                {applicationForm.preferred_payout_method === 'paypal' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="paypal">PayPal Email *</Label>
+                    <Input
+                      id="paypal"
+                      type="email"
+                      placeholder="your@paypal.email"
+                      value={applicationForm.paypal_email}
+                      onChange={(e) => setApplicationForm(prev => ({ ...prev, paypal_email: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Payouts will be sent to this email address.
+                    </p>
+                  </div>
+                )}
+
+                <Separator />
 
                 <div className="space-y-2">
                   <Label htmlFor="discord">Discord Username (optional)</Label>
@@ -457,7 +567,11 @@ export default function Affiliate() {
                 <Button
                   className="w-full gradient-button"
                   onClick={() => submitApplicationMutation.mutate()}
-                  disabled={!applicationForm.promotion_method || !applicationForm.paypal_email || submitApplicationMutation.isPending}
+                  disabled={
+                    !applicationForm.promotion_method || 
+                    (applicationForm.preferred_payout_method === 'paypal' && !applicationForm.paypal_email) ||
+                    submitApplicationMutation.isPending
+                  }
                 >
                   {submitApplicationMutation.isPending ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -577,6 +691,39 @@ export default function Affiliate() {
             </Badge>
           </div>
 
+          {/* Stripe Connect Onboarding Banner */}
+          {needsStripeOnboarding && (
+            <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30">
+              <CardContent className="py-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
+                      <LinkIcon className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">Connect Your Stripe Account</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Connect your Stripe account to receive instant automatic payouts directly to your bank.
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleConnectStripe}
+                    disabled={isConnectingStripe || connectStripeMutation.isPending}
+                    className="shrink-0"
+                  >
+                    {isConnectingStripe || connectStripeMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                    )}
+                    Connect Stripe
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Cash Out Hero Card */}
           <Card className="bg-gradient-to-br from-primary/30 via-primary/20 to-transparent border-primary/40 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -623,7 +770,7 @@ export default function Affiliate() {
                         ) : (
                           <ArrowUpRight className="h-5 w-5 mr-2" />
                         )}
-                        Cash Out
+                        {canUseStripe ? 'Instant Payout' : 'Cash Out'}
                       </Button>
                     </div>
                   ) : (
@@ -633,9 +780,15 @@ export default function Affiliate() {
                       </p>
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground md:text-right">
-                    {affiliateSettings.commissionRate}% commission on all referred sales
-                  </p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-right">
+                    <span>{affiliateSettings.commissionRate}% commission on all referred sales</span>
+                    {canUseStripe && (
+                      <Badge variant="outline" className="text-green-500 border-green-500/30">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Stripe Connected
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -794,14 +947,20 @@ export default function Affiliate() {
               <CardContent>
                 {pendingPayouts && pendingPayouts.length > 0 ? (
                   <div className="space-y-2">
-                    {pendingPayouts.map((payout) => (
+                    {pendingPayouts.map((payout: any) => (
                       <div 
                         key={payout.id} 
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                       >
                         <div>
-                          <p className="font-medium">
+                          <p className="font-medium flex items-center gap-2">
                             £{(payout.amount / 100).toFixed(2)}
+                            {payout.payout_method === 'stripe' && (
+                              <Badge variant="outline" className="text-xs">Stripe</Badge>
+                            )}
+                            {payout.payout_method === 'paypal' && (
+                              <Badge variant="outline" className="text-xs">PayPal</Badge>
+                            )}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(payout.created_at), 'dd MMM yyyy')}

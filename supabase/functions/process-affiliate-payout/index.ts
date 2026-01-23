@@ -54,11 +54,20 @@ serve(async (req) => {
     if (payoutError || !payout) throw new Error("Payout not found");
     if (payout.status !== 'pending') throw new Error("Payout is not pending");
 
+    // Check payout method
+    const payoutMethod = payout.payout_method || 'paypal';
+
+    if (payoutMethod === 'stripe') {
+      // Stripe payouts should already be processed automatically
+      throw new Error("Stripe payouts are processed automatically. This payout may have already been completed.");
+    }
+
+    // PayPal payout - validate PayPal email exists
     if (!payout.paypal_email) {
       throw new Error("No PayPal email associated with this payout request");
     }
 
-    logStep("Processing payout", { 
+    logStep("Processing PayPal payout", { 
       payoutId, 
       amount: payout.amount, 
       userId: payout.user_id,
@@ -66,7 +75,6 @@ serve(async (req) => {
     });
 
     // Mark as completed - staff will manually send PayPal payment
-    // This function just updates the status for record keeping
     const { error: updateError } = await supabaseClient
       .from('affiliate_payouts')
       .update({

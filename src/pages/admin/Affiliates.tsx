@@ -372,8 +372,8 @@ export default function AdminAffiliates() {
                         <TableRow>
                           <TableHead>Affiliate</TableHead>
                           <TableHead>Amount</TableHead>
-                          <TableHead>Stripe Account</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>Payout Method</TableHead>
+                          <TableHead>Destination</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -391,17 +391,25 @@ export default function AdminAffiliates() {
                               {formatAmount(payout.amount)}
                             </TableCell>
                             <TableCell>
-                              {payout.user?.stripe_account_id ? (
+                              <Badge variant="outline" className={
+                                payout.payout_method === 'stripe' 
+                                  ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                                  : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                              }>
+                                {payout.payout_method === 'stripe' ? 'Stripe' : 'PayPal'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {payout.payout_method === 'stripe' && payout.stripe_account_id ? (
                                 <code className="text-xs bg-muted px-2 py-1 rounded">
-                                  {payout.user.stripe_account_id.slice(0, 12)}...
+                                  {payout.stripe_account_id.slice(0, 12)}...
                                 </code>
+                              ) : payout.paypal_email ? (
+                                <span className="text-sm">{payout.paypal_email}</span>
                               ) : (
-                                <Badge variant="outline" className="text-red-500 border-red-500/30">
-                                  Not Connected
-                                </Badge>
+                                <span className="text-muted-foreground text-sm">N/A</span>
                               )}
                             </TableCell>
-                            <TableCell>{getPayoutStatusBadge(payout.status)}</TableCell>
                             <TableCell className="text-muted-foreground text-sm">
                               {format(new Date(payout.created_at), 'MMM d, yyyy HH:mm')}
                             </TableCell>
@@ -565,7 +573,7 @@ export default function AdminAffiliates() {
               <div className="p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground">Minimum Payout</p>
                 <p className="text-2xl font-bold">£{affiliateSettings.minimumPayout.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Via Stripe Connect</p>
+                <p className="text-xs text-muted-foreground mt-1">Via Stripe or PayPal</p>
               </div>
               <div className="p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground">Commission Duration</p>
