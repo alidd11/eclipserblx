@@ -563,17 +563,81 @@ export default function Affiliate() {
             </Badge>
           </div>
 
+          {/* Cash Out Hero Card */}
+          <Card className="bg-gradient-to-br from-primary/30 via-primary/20 to-transparent border-primary/40 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="pt-6 pb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                    <DollarSign className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
+                    <p className="text-4xl md:text-5xl font-bold text-foreground">£{availableBalance.toFixed(2)}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 md:items-end">
+                  {hasPendingPayout ? (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                      <Clock className="h-5 w-5 text-yellow-500" />
+                      <span className="text-sm font-medium text-yellow-500">Payout request pending</span>
+                    </div>
+                  ) : availableBalance >= affiliateSettings.minimumPayout ? (
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">£</span>
+                        <Input
+                          type="number"
+                          min={affiliateSettings.minimumPayout}
+                          max={availableBalance}
+                          step="0.01"
+                          placeholder={affiliateSettings.minimumPayout.toString()}
+                          value={payoutAmount}
+                          onChange={(e) => setPayoutAmount(e.target.value)}
+                          className="pl-7 w-full sm:w-32 h-12 text-lg"
+                        />
+                      </div>
+                      <Button
+                        size="lg"
+                        className="gradient-button h-12 px-8 text-base font-semibold"
+                        onClick={handleRequestPayout}
+                        disabled={requestPayoutMutation.isPending || !payoutAmount}
+                      >
+                        {requestPayoutMutation.isPending ? (
+                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        ) : (
+                          <ArrowUpRight className="h-5 w-5 mr-2" />
+                        )}
+                        Cash Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-3 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        Minimum balance for payout: <span className="font-semibold text-foreground">£{affiliateSettings.minimumPayout}</span>
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground md:text-right">
+                    {affiliateSettings.commissionRate}% commission on all referred sales
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Stats */}
           <div className="grid sm:grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-primary/20 to-transparent border-primary/30">
+            <Card className="bg-card border-border">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <DollarSign className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-3xl font-bold">£{availableBalance.toFixed(2)}</p>
-                    <p className="text-sm text-muted-foreground">Available Balance</p>
+                    <p className="text-sm text-muted-foreground">Available</p>
                   </div>
                 </div>
               </CardContent>
@@ -606,177 +670,123 @@ export default function Affiliate() {
             </Card>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column - Referral Link & Payout */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Referral Link */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    Your Referral Link
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      readOnly
-                      value={profile?.referral_code ? `${window.location.origin}/auth?ref=${profile.referral_code}` : 'Loading...'}
-                      className="text-xs"
-                    />
-                    <Button variant="outline" size="icon" onClick={copyReferralLink}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <p className="text-sm text-center">
-                      <span className="font-semibold text-primary">{affiliateSettings.commissionRate}%</span> commission on all referred sales
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Referral Link */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                Your Referral Link
+              </CardTitle>
+              <CardDescription>
+                Share this link to earn {affiliateSettings.commissionRate}% on every sale
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={profile?.referral_code ? `${window.location.origin}/auth?ref=${profile.referral_code}` : 'Loading...'}
+                  className="font-mono text-sm"
+                />
+                <Button variant="outline" size="icon" onClick={copyReferralLink}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" asChild>
+                  <a 
+                    href={profile?.referral_code ? `${window.location.origin}/auth?ref=${profile.referral_code}` : '#'} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-              {/* Request Payout */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <ArrowUpRight className="h-5 w-5 text-primary" />
-                    Request Payout
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {hasPendingPayout ? (
-                    <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                      <Clock className="h-5 w-5 text-yellow-500" />
-                      <span className="text-sm text-yellow-500">Payout request pending</span>
-                    </div>
-                  ) : availableBalance >= affiliateSettings.minimumPayout ? (
-                    <>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
-                          <Input
-                            type="number"
-                            min={affiliateSettings.minimumPayout}
-                            max={availableBalance}
-                            step="0.01"
-                            placeholder={affiliateSettings.minimumPayout.toString()}
-                            value={payoutAmount}
-                            onChange={(e) => setPayoutAmount(e.target.value)}
-                            className="pl-7"
-                          />
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Recent Commissions */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-lg">Recent Commissions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {commissions && commissions.length > 0 ? (
+                  <div className="space-y-2">
+                    {commissions.map((commission) => (
+                      <div 
+                        key={commission.id} 
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            £{(commission.commission_amount / 100).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(commission.created_at), 'dd MMM yyyy, HH:mm')}
+                          </p>
                         </div>
-                        <Button
-                          onClick={handleRequestPayout}
-                          disabled={requestPayoutMutation.isPending || !payoutAmount}
-                        >
-                          {requestPayoutMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <ArrowUpRight className="h-4 w-4" />
-                          )}
-                        </Button>
+                        <Badge variant="outline" className={
+                          commission.status === 'paid' 
+                            ? 'bg-green-500/10 text-green-500 border-green-500/30'
+                            : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
+                        }>
+                          {commission.status}
+                        </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Minimum: £{affiliateSettings.minimumPayout}
-                      </p>
-                    </>
-                  ) : (
-                    <div className="p-3 bg-muted/50 rounded-lg text-center">
-                      <p className="text-sm text-muted-foreground">
-                        Minimum balance for payout: <span className="font-semibold">£{affiliateSettings.minimumPayout}</span>
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                    <p>No commissions yet</p>
+                    <p className="text-sm">Share your referral link to start earning!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Right Column - Commissions & Payouts */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Recent Commissions */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Commissions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {commissions && commissions.length > 0 ? (
-                    <div className="space-y-2">
-                      {commissions.map((commission) => (
-                        <div 
-                          key={commission.id} 
-                          className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                        >
-                          <div>
-                            <p className="font-medium">
-                              £{(commission.commission_amount / 100).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(commission.created_at), 'dd MMM yyyy, HH:mm')}
-                            </p>
-                          </div>
-                          <Badge variant="outline" className={
-                            commission.status === 'paid' 
-                              ? 'bg-green-500/10 text-green-500 border-green-500/30'
-                              : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
-                          }>
-                            {commission.status}
-                          </Badge>
+            {/* Payout History */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-lg">Payout History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingPayouts && pendingPayouts.length > 0 ? (
+                  <div className="space-y-2">
+                    {pendingPayouts.map((payout) => (
+                      <div 
+                        key={payout.id} 
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            £{(payout.amount / 100).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(payout.created_at), 'dd MMM yyyy')}
+                          </p>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>No commissions yet</p>
-                      <p className="text-sm">Share your referral link to start earning!</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Payout History */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">Payout History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {pendingPayouts && pendingPayouts.length > 0 ? (
-                    <div className="space-y-2">
-                      {pendingPayouts.map((payout) => (
-                        <div 
-                          key={payout.id} 
-                          className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                        >
-                          <div>
-                            <p className="font-medium">
-                              £{(payout.amount / 100).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(payout.created_at), 'dd MMM yyyy')}
-                            </p>
-                          </div>
-                          <Badge variant="outline" className={
-                            payout.status === 'completed' 
-                              ? 'bg-green-500/10 text-green-500 border-green-500/30'
-                              : payout.status === 'pending'
-                              ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
-                              : 'bg-red-500/10 text-red-500 border-red-500/30'
-                          }>
-                            {payout.status}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>No payouts yet</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        <Badge variant="outline" className={
+                          payout.status === 'completed' 
+                            ? 'bg-green-500/10 text-green-500 border-green-500/30'
+                            : payout.status === 'pending'
+                            ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
+                            : 'bg-red-500/10 text-red-500 border-red-500/30'
+                        }>
+                          {payout.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                    <p>No payouts yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </motion.div>
       </div>
