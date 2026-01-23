@@ -106,6 +106,7 @@ const AdminDiscordModmail = lazy(() => import("./pages/admin/DiscordModmail"));
 const AdminModmailBotSetup = lazy(() => import("./pages/admin/ModmailBotSetup"));
 const AdminTranscripts = lazy(() => import("./pages/admin/Transcripts"));
 const AdminDiscordOutreach = lazy(() => import("./pages/admin/DiscordOutreach"));
+const AdminDiscordOutreachDetail = lazy(() => import("./pages/admin/DiscordOutreachDetail"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -282,6 +283,7 @@ const App = () => (
                   <Route path="/admin/modmail-bot-setup" element={<AdminModmailBotSetup />} />
                   <Route path="/admin/transcripts" element={<AdminTranscripts />} />
                   <Route path="/admin/discord-outreach" element={<AdminDiscordOutreach />} />
+                  <Route path="/admin/discord-outreach/:id" element={<AdminDiscordOutreachDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>

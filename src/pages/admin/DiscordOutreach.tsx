@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   MessageSquare, Plus, Search, Users, CheckCircle, XCircle,
-  Clock, Filter, Edit, Trash2, Calendar, Hash, History
+  Clock, Filter, Edit, Trash2, Calendar, Hash, History, AlertCircle
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,6 +51,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OutreachActivityTimeline } from "@/components/admin/OutreachActivityTimeline";
@@ -97,12 +99,15 @@ const SERVER_TYPES = [
 
 export default function DiscordOutreach() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<OutreachRecord | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [timelineRecord, setTimelineRecord] = useState<OutreachRecord | null>(null);
+  const [duplicateMatches, setDuplicateMatches] = useState<OutreachRecord[]>([]);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
   const [formData, setFormData] = useState({
     server_name: "",
     server_id: "",
@@ -282,12 +287,60 @@ export default function DiscordOutreach() {
     setIsDialogOpen(true);
   };
 
+  // Check for duplicates before submitting
+  const checkForDuplicates = () => {
+    if (!records || editingRecord) return []; // Skip duplicate check when editing
+    
+    const serverName = formData.server_name.toLowerCase().trim();
+    const serverId = formData.server_id.trim();
+    const discordInvite = formData.discord_invite.trim();
+    
+    const matches = records.filter(r => {
+      // Match by server name (fuzzy)
+      const nameMatch = r.server_name.toLowerCase().includes(serverName) || 
+                        serverName.includes(r.server_name.toLowerCase());
+      // Match by server ID (exact)
+      const idMatch = serverId && r.server_id && r.server_id === serverId;
+      // Match by discord invite (contains)
+      const inviteMatch = discordInvite && r.discord_invite && 
+                          (r.discord_invite.includes(discordInvite) || discordInvite.includes(r.discord_invite));
+      
+      return nameMatch || idMatch || inviteMatch;
+    });
+    
+    return matches;
+  };
+
   const handleSubmit = () => {
     if (!formData.server_name.trim()) {
       toast.error("Server name is required");
       return;
     }
+    
+    // Check for duplicates when creating new record
+    if (!editingRecord) {
+      const matches = checkForDuplicates();
+      if (matches.length > 0) {
+        setDuplicateMatches(matches);
+        setShowDuplicateWarning(true);
+        return;
+      }
+    }
+    
     saveMutation.mutate({ ...formData, id: editingRecord?.id });
+  };
+
+  const handleForceCreate = () => {
+    setShowDuplicateWarning(false);
+    setDuplicateMatches([]);
+    saveMutation.mutate({ ...formData, id: editingRecord?.id });
+  };
+
+  const handleOpenDuplicate = (record: OutreachRecord) => {
+    setShowDuplicateWarning(false);
+    setDuplicateMatches([]);
+    setIsDialogOpen(false);
+    navigate(`/admin/discord-outreach/${record.id}`);
   };
 
   const filteredRecords = records?.filter(r =>
@@ -416,7 +469,11 @@ export default function DiscordOutreach() {
                     </TableRow>
                   ) : (
                     filteredRecords?.map((record) => (
-                      <TableRow key={record.id}>
+                      <TableRow 
+                        key={record.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => navigate(`/admin/discord-outreach/${record.id}`)}
+                      >
                         <TableCell>
                           <div>
                             <p className="font-medium">{record.server_name}</p>
@@ -441,7 +498,7 @@ export default function DiscordOutreach() {
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {format(new Date(record.contacted_at), "dd MMM yyyy")}
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-1">
                             <Button
                               size="icon"
@@ -631,6 +688,73 @@ export default function DiscordOutreach() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Duplicate Warning Dialog */}
+      <Dialog open={showDuplicateWarning} onOpenChange={setShowDuplicateWarning}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-500">
+              <AlertCircle className="h-5 w-5" />
+              Potential Duplicates Found
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              We found existing records that may match the server you're trying to add. 
+              Click on a record to view and update it, or create a new one anyway.
+            </p>
+            <ScrollArea className="max-h-[300px]">
+              <div className="space-y-2">
+                {duplicateMatches.map((match) => (
+                  <Card 
+                    key={match.id} 
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleOpenDuplicate(match)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium">{match.server_name}</p>
+                          {match.server_type && (
+                            <p className="text-xs text-muted-foreground">{match.server_type}</p>
+                          )}
+                          {match.contact_name && (
+                            <p className="text-xs text-muted-foreground mt-1">Contact: {match.contact_name}</p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          {getStatusBadge(match.status)}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {format(new Date(match.contacted_at), "MMM d, yyyy")}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDuplicateWarning(false);
+                setDuplicateMatches([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="secondary"
+              onClick={handleForceCreate}
+              disabled={saveMutation.isPending}
+            >
+              {saveMutation.isPending ? "Creating..." : "Create Anyway"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
