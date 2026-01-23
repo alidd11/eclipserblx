@@ -339,67 +339,54 @@ export default function ContactMessages() {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{stats.total}</p>
-            </CardContent>
+        <div className="grid grid-cols-4 gap-2 md:gap-3">
+          <Card className="p-3 md:p-4">
+            <div className="flex items-center gap-1.5">
+              <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Total</span>
+            </div>
+            <p className="text-xl md:text-2xl font-bold">{stats.total}</p>
           </Card>
-          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-destructive" />
-                <span className="text-sm text-muted-foreground">Unread</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{stats.unread}</p>
-            </CardContent>
+          <Card className="p-3 md:p-4">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5 text-destructive" />
+              <span className="text-xs text-muted-foreground">Unread</span>
+            </div>
+            <p className="text-xl md:text-2xl font-bold">{stats.unread}</p>
           </Card>
-          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Read</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{stats.read}</p>
-            </CardContent>
+          <Card className="p-3 md:p-4">
+            <div className="flex items-center gap-1.5">
+              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Read</span>
+            </div>
+            <p className="text-xl md:text-2xl font-bold">{stats.read}</p>
           </Card>
-          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-muted-foreground">Responded</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{stats.responded}</p>
-            </CardContent>
+          <Card className="p-3 md:p-4">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+              <span className="text-xs text-muted-foreground">Responded</span>
+            </div>
+            <p className="text-xl md:text-2xl font-bold">{stats.responded}</p>
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Filters + Messages Combined */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
+          {/* Compact Filters */}
+          <div className="p-3 md:p-4 border-b border-border">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by name, email, or subject..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-9"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
+                <SelectTrigger className="w-full sm:w-[150px] h-9">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
@@ -409,23 +396,21 @@ export default function ContactMessages() {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Messages List */}
-        <Card>
+          {/* Messages List */}
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-6 space-y-4">
+              <div className="p-4 space-y-3">
                 {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <Skeleton key={i} className="h-14 w-full" />
                 ))}
               </div>
             ) : filteredMessages?.length === 0 ? (
-              <div className="p-12 text-center">
-                <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold text-lg">No messages found</h3>
-                <p className="text-muted-foreground">
+              <div className="p-8 text-center">
+                <Mail className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                <h3 className="font-semibold">No messages found</h3>
+                <p className="text-sm text-muted-foreground">
                   {search || statusFilter !== 'all' 
                     ? 'Try adjusting your filters' 
                     : 'Contact form submissions will appear here'}
