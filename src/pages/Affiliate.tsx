@@ -158,7 +158,8 @@ export default function Affiliate() {
     mutationFn: async () => {
       if (!user?.id || !user?.email) throw new Error('Not authenticated');
       
-      const { error } = await supabase
+      // Insert application with auto-approved status
+      const { data: application, error } = await supabase
         .from('affiliate_applications')
         .insert({
           user_id: user.id,
@@ -170,16 +171,41 @@ export default function Affiliate() {
           audience_size: applicationForm.audience_size || null,
           notes: applicationForm.notes || null,
           preferred_payout_method: applicationForm.preferred_payout_method,
-        });
+          status: 'approved',
+          reviewed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Create affiliate balance record
+      const { error: balanceError } = await supabase
+        .from('affiliate_balances')
+        .upsert({
+          user_id: user.id,
+          balance: 0,
+          total_earned: 0,
+          total_withdrawn: 0,
+        }, { onConflict: 'user_id' });
+
+      if (balanceError) throw balanceError;
+
+      // Update profile with PayPal email if provided
+      if (applicationForm.paypal_email) {
+        await supabase
+          .from('profiles')
+          .update({ paypal_email: applicationForm.paypal_email })
+          .eq('id', user.id);
+      }
     },
     onSuccess: () => {
       toast({
-        title: "Application Submitted",
-        description: "We'll review your application and get back to you soon!",
+        title: "Welcome to the Affiliate Program!",
+        description: "Your account is now active. Start earning by sharing your referral link!",
       });
       queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
     },
     onError: (error: Error) => {
       toast({
