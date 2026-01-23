@@ -453,7 +453,7 @@ export default function DiscordOutreach() {
                     <TableHead>Status</TableHead>
                     <TableHead>Decision</TableHead>
                     <TableHead className="hidden md:table-cell">Contacted</TableHead>
-                    <TableHead className="w-[80px]">Actions</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -498,22 +498,19 @@ export default function DiscordOutreach() {
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {format(new Date(record.contacted_at), "dd MMM yyyy")}
                         </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-1">
+                        <TableCell onClick={(e) => e.stopPropagation()} className="text-right">
+                          <div className="flex items-center justify-end gap-0.5">
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8"
+                              className="h-7 w-7"
                               onClick={() => setTimelineRecord(record)}
                               title="View timeline"
                             >
-                              <History className="h-4 w-4" />
+                              <History className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(record)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setDeleteId(record.id)}>
-                              <Trash2 className="h-4 w-4" />
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(record)}>
+                              <Edit className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </TableCell>
