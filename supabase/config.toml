@@ -186,3 +186,6 @@ verify_jwt = false
 
 [functions.discord-oauth-callback]
 verify_jwt = false
+
+[functions.send-affiliate-announcement]
+verify_jwt = false
