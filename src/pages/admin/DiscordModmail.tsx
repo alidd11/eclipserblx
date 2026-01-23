@@ -318,23 +318,23 @@ export default function DiscordModmail() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-500">{openTickets.length}</div>
-              <p className="text-sm text-muted-foreground">Open</p>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <Card className="bg-card">
+            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
+              <div className="text-xl md:text-2xl font-bold text-green-500">{openTickets.length}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">Open</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-500">{claimedTickets.length}</div>
-              <p className="text-sm text-muted-foreground">In Progress</p>
+          <Card className="bg-card">
+            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
+              <div className="text-xl md:text-2xl font-bold text-blue-500">{claimedTickets.length}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">In Progress</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{tickets.length}</div>
-              <p className="text-sm text-muted-foreground">Total Active</p>
+          <Card className="bg-card">
+            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
+              <div className="text-xl md:text-2xl font-bold">{tickets.length}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">Total Active</p>
             </CardContent>
           </Card>
         </div>
@@ -342,17 +342,17 @@ export default function DiscordModmail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Ticket List */}
           <Card className="lg:col-span-1">
-            <CardHeader className="pb-3">
+            <div className="p-3 border-b border-border">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search tickets..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-9"
                 />
               </div>
-            </CardHeader>
+            </div>
             <CardContent className="p-0">
               <Tabs defaultValue="open" className="w-full">
                 <TabsList className="w-full grid grid-cols-2 rounded-none">

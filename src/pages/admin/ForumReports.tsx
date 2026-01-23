@@ -157,42 +157,43 @@ export default function AdminForumReports() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
-              <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
-              <p className="text-sm text-muted-foreground">Pending</p>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <Card className="bg-card">
+            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
+              <p className="text-xl md:text-2xl font-bold text-yellow-400">{stats.pending}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
-              <p className="text-2xl font-bold text-green-400">{stats.resolved}</p>
-              <p className="text-sm text-muted-foreground">Resolved</p>
+          <Card className="bg-card">
+            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
+              <p className="text-xl md:text-2xl font-bold text-green-400">{stats.resolved}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Resolved</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
-              <p className="text-2xl font-bold text-muted-foreground">{stats.dismissed}</p>
-              <p className="text-sm text-muted-foreground">Dismissed</p>
+          <Card className="bg-card">
+            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
+              <p className="text-xl md:text-2xl font-bold text-muted-foreground">{stats.dismissed}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Dismissed</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card className="glass-card">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+        {/* Reports Card with integrated filters */}
+        <Card className="bg-card">
+          {/* Compact Filter Section */}
+          <div className="p-3 md:p-4 border-b border-border">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search reports..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-9"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[160px] h-9">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -203,18 +204,16 @@ export default function AdminForumReports() {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Reports Table */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Flag className="h-5 w-5" />
-              Reports ({filteredReports?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          {/* Reports List */}
+          <CardContent className="p-0">
+            <div className="p-3 md:p-4 border-b border-border">
+              <h3 className="font-medium flex items-center gap-2">
+                <Flag className="h-4 w-4" />
+                Reports ({filteredReports?.length || 0})
+              </h3>
+            </div>
             {isLoading ? (
               <p className="text-muted-foreground text-center py-8">Loading reports...</p>
             ) : filteredReports?.length === 0 ? (
@@ -222,9 +221,9 @@ export default function AdminForumReports() {
             ) : (
               <>
                 {/* Mobile Card View */}
-                <div className="block md:hidden space-y-3">
+                <div className="block md:hidden">
                   {filteredReports?.map((report) => (
-                    <div key={report.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+                    <div key={report.id} className="p-3 border-b border-border space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {report.thread_id ? <FileText className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
@@ -235,7 +234,7 @@ export default function AdminForumReports() {
                         {getStatusBadge(report.status)}
                       </div>
                       <p className="text-sm">{report.reason}</p>
-                      <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center justify-between pt-1">
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
                         </span>
