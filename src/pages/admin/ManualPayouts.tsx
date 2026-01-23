@@ -126,32 +126,26 @@ export default function ManualPayouts() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingRequests.length}</div>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <Card className="bg-card">
+            <CardContent className="p-3 text-center">
+              <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+              <div className="text-xl md:text-2xl font-bold">{pendingRequests.length}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Pending Amount</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">£{totalPending.toFixed(2)}</div>
+          <Card className="bg-card">
+            <CardContent className="p-3 text-center">
+              <DollarSign className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+              <div className="text-xl md:text-2xl font-bold">£{totalPending.toFixed(2)}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">Pending Amount</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Processed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{processedRequests.length}</div>
+          <Card className="bg-card">
+            <CardContent className="p-3 text-center">
+              <CheckCircle className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+              <div className="text-xl md:text-2xl font-bold">{processedRequests.length}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">Processed</p>
             </CardContent>
           </Card>
         </div>
