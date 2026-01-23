@@ -11,35 +11,39 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const webhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
-    
-    if (!webhookUrl) {
-      console.error("DISCORD_WEBHOOK_URL not configured");
-      return new Response(
-        JSON.stringify({ error: "Discord webhook not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get affiliate settings from database
+    // Get settings from database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: settings } = await supabase
       .from("settings")
-      .select("value")
-      .in("key", ["affiliate_commission_rate", "affiliate_minimum_payout", "affiliate_cookie_days"])
+      .select("key, value")
+      .in("key", ["affiliate_commission_rate", "affiliate_minimum_payout", "affiliate_cookie_days", "affiliate_discord_webhook_url"])
       .order("key");
 
     const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key?: string; value: string }) => {
-      if (s.key) settingsMap[s.key] = s.value;
+    settings?.forEach((s: { key: string; value: string }) => {
+      // Remove quotes from JSON-stringified values
+      const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
+      settingsMap[s.key] = val;
     });
+
+    const webhookUrl = settingsMap["affiliate_discord_webhook_url"];
+    
+    if (!webhookUrl) {
+      console.error("Affiliate Discord webhook URL not configured in settings");
+      return new Response(
+        JSON.stringify({ error: "Affiliate Discord webhook not configured. Please set it in Admin → Discord Settings → Affiliate tab." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const commissionRate = settingsMap["affiliate_commission_rate"] || "10";
     const minimumPayout = settingsMap["affiliate_minimum_payout"] || "10";
     const cookieDays = settingsMap["affiliate_cookie_days"] || "30";
+
+    console.log("Sending affiliate announcement with settings:", { commissionRate, minimumPayout, cookieDays });
 
     const embed = {
       title: "🚀 EARN MONEY WITH US! 💸",
@@ -68,7 +72,7 @@ Deno.serve(async (req) => {
         },
         {
           name: "💳 CASH OUT ANYTIME",
-          value: `Hit **$${minimumPayout}** and request your payout instantly via PayPal. It's YOUR money, get it when you want it!`,
+          value: `Hit **£${minimumPayout}** and request your payout instantly via PayPal. It's YOUR money, get it when you want it!`,
           inline: false,
         },
         {

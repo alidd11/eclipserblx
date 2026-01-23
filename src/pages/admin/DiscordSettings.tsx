@@ -19,6 +19,7 @@ interface DiscordSettings {
   discord_invite_url: string;
   discord_webhook_url: string;
   review_discord_webhook_url: string;
+  affiliate_discord_webhook_url: string;
   discord_widget_server_id: string;
 }
 
@@ -43,6 +44,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   discord_invite_url: '',
   discord_webhook_url: '',
   review_discord_webhook_url: '',
+  affiliate_discord_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -73,6 +75,13 @@ export default function DiscordSettings() {
   
   const [isTestingRoleWebhook, setIsTestingRoleWebhook] = useState(false);
   const [roleWebhookTestResult, setRoleWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+  
+  const [isTestingAffiliateWebhook, setIsTestingAffiliateWebhook] = useState(false);
+  const [affiliateWebhookTestResult, setAffiliateWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -143,7 +152,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -156,6 +165,8 @@ export default function DiscordSettings() {
           settingsMap.discord_webhook_url = String(val);
         } else if (item.key === 'review_discord_webhook_url') {
           settingsMap.review_discord_webhook_url = String(val);
+        } else if (item.key === 'affiliate_discord_webhook_url') {
+          settingsMap.affiliate_discord_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -464,6 +475,60 @@ export default function DiscordSettings() {
     }
   };
 
+  const handleTestAffiliateWebhook = async () => {
+    if (!user?.id) {
+      toast.error('You must be logged in');
+      return;
+    }
+    
+    if (!formData.affiliate_discord_webhook_url) {
+      toast.error('Please enter an Affiliate Webhook URL first');
+      return;
+    }
+    
+    setIsTestingAffiliateWebhook(true);
+    setAffiliateWebhookTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-affiliate-announcement', {
+        body: {},
+      });
+      
+      if (error) {
+        setAffiliateWebhookTestResult({
+          success: false,
+          message: 'Function invocation failed',
+          details: error.message,
+        });
+        toast.error('Affiliate webhook test failed');
+      } else if (data?.success) {
+        setAffiliateWebhookTestResult({
+          success: true,
+          message: 'Affiliate announcement sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Affiliate webhook test sent successfully!');
+      } else {
+        setAffiliateWebhookTestResult({
+          success: false,
+          message: data?.error || 'Unknown error',
+          details: data?.details,
+        });
+        toast.error('Affiliate webhook test failed');
+      }
+    } catch (err: any) {
+      console.error('Affiliate webhook test error:', err);
+      setAffiliateWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to test affiliate webhook');
+    } finally {
+      setIsTestingAffiliateWebhook(false);
+    }
+  };
+
   const TestResultBadge = ({ result }: { result: { success: boolean; message: string; details?: string } | null }) => {
     if (!result) return null;
     
@@ -548,6 +613,10 @@ export default function DiscordSettings() {
             <TabsTrigger value="boosts" className="gap-2">
               <Zap className="h-4 w-4 hidden sm:block" />
               Boosts
+            </TabsTrigger>
+            <TabsTrigger value="affiliate" className="gap-2">
+              <Gift className="h-4 w-4 hidden sm:block" />
+              Affiliate
             </TabsTrigger>
           </TabsList>
 
@@ -1041,6 +1110,70 @@ export default function DiscordSettings() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Affiliate Webhook Tab */}
+          <TabsContent value="affiliate">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-green-400" />
+                  <CardTitle>Affiliate Programme Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Send affiliate programme announcements to Discord
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="affiliateWebhook">Webhook URL</Label>
+                  <Input
+                    id="affiliateWebhook"
+                    value={formData.affiliate_discord_webhook_url}
+                    onChange={(e) => handleChange('affiliate_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for affiliate programme announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Send className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Send Announcement</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Send the affiliate programme advertisement to your Discord channel to attract new affiliates.
+                  </p>
+                  <Button
+                    onClick={handleTestAffiliateWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingAffiliateWebhook || !formData.affiliate_discord_webhook_url}
+                  >
+                    {isTestingAffiliateWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Announcement
+                  </Button>
+                  <TestResultBadge result={affiliateWebhookTestResult} />
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Eye-catching affiliate programme advert</li>
+                    <li>Current commission rate from your settings</li>
+                    <li>Minimum payout threshold</li>
+                    <li>Cookie duration (referral tracking period)</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
