@@ -686,57 +686,14 @@ export default function DiscordSettings() {
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[#5865F2]/20">
-                  <MessageSquare className="h-6 w-6 text-[#5865F2]" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
-                  <CardDescription>Manage your Discord integrations and webhooks</CardDescription>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[#5865F2]/20">
+                <MessageSquare className="h-6 w-6 text-[#5865F2]" />
               </div>
-              
-              {/* Announcement Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    {isSendingAnnouncement ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Megaphone className="h-4 w-4" />
-                    )}
-                    Send Announcement
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Select Announcement</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => handleSendAnnouncementFromDropdown('affiliate')}
-                    disabled={isSendingAnnouncement !== null || !formData.affiliate_discord_webhook_url}
-                    className="gap-2"
-                  >
-                    <Gift className="h-4 w-4 text-green-400" />
-                    <div>
-                      <p className="font-medium">Affiliate Programme</p>
-                      <p className="text-xs text-muted-foreground">Promote affiliate sign-ups</p>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleSendAnnouncementFromDropdown('eclipse_plus')}
-                    disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url}
-                    className="gap-2"
-                  >
-                    <Sparkles className="h-4 w-4 text-amber-400" />
-                    <div>
-                      <p className="font-medium">Eclipse+ Membership</p>
-                      <p className="text-xs text-muted-foreground">Promote premium membership</p>
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
+                <CardDescription>Manage your Discord integrations and webhooks</CardDescription>
+              </div>
             </div>
           </CardHeader>
         </Card>
@@ -776,6 +733,52 @@ export default function DiscordSettings() {
                 <Sparkles className="h-4 w-4 hidden sm:block" />
                 Eclipse+
               </TabsTrigger>
+              
+              {/* Announce Dropdown integrated into tabs */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow text-muted-foreground hover:text-foreground gap-1.5"
+                  >
+                    {isSendingAnnouncement ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Megaphone className="h-4 w-4 hidden sm:block" />
+                    )}
+                    Announce
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                    Send Announcement
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => handleSendAnnouncementFromDropdown('affiliate')}
+                    disabled={isSendingAnnouncement !== null || !formData.affiliate_discord_webhook_url}
+                    className="gap-3 cursor-pointer"
+                  >
+                    <Gift className="h-4 w-4 text-emerald-500" />
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Affiliate Programme</p>
+                      <p className="text-xs text-muted-foreground">Promote affiliate sign-ups</p>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleSendAnnouncementFromDropdown('eclipse_plus')}
+                    disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url}
+                    className="gap-3 cursor-pointer"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Eclipse+ Membership</p>
+                      <p className="text-xs text-muted-foreground">Promote premium membership</p>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </TabsList>
           </div>
 
