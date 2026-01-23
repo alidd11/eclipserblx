@@ -221,13 +221,13 @@ export default function Marketplace() {
   }, [stores, debouncedQuery]);
 
   const isSearching = debouncedQuery.length >= 2;
-
-  // Redirect if no access (after loading)
+  // Only redirect if marketplace is public but user lacks specific access
+  // When private, everyone can see the "Coming Soon" page
   useEffect(() => {
-    if (!accessLoading && !hasAccess) {
+    if (!accessLoading && isMarketplacePublic && !hasAccess) {
       navigate('/', { replace: true });
     }
-  }, [accessLoading, hasAccess, navigate]);
+  }, [accessLoading, hasAccess, isMarketplacePublic, navigate]);
 
   // Show nothing while checking access
   if (accessLoading) {
@@ -242,8 +242,8 @@ export default function Marketplace() {
     );
   }
 
-  // Don't render if no access (will redirect)
-  if (!hasAccess) {
+  // Don't render if marketplace is public but no access (will redirect)
+  if (!hasAccess && isMarketplacePublic) {
     return null;
   }
 
