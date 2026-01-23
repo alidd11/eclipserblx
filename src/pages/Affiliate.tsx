@@ -511,7 +511,7 @@ export default function Affiliate() {
                           <Badge variant="secondary" className="text-xs">Recommended</Badge>
                         </Label>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Automatic instant payouts directly to your bank account. You'll connect your Stripe account after approval.
+                          Instant payouts directly to your bank. Connect your Stripe account after joining to activate.
                         </p>
                       </div>
                     </div>
@@ -802,7 +802,7 @@ export default function Affiliate() {
                   ) : (
                     <div className="px-4 py-3 bg-muted/50 rounded-lg">
                       <p className="text-sm text-muted-foreground">
-                        Minimum balance for payout: <span className="font-semibold text-foreground">£{affiliateSettings.minimumPayout}</span>
+                        Minimum balance for payout: <span className="font-semibold text-foreground">£{affiliateSettings.minimumPayout}</span>. Via Stripe (instant) or PayPal (1-3 days).
                       </p>
                     </div>
                   )}
