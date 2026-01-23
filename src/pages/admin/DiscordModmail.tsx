@@ -318,30 +318,18 @@ export default function DiscordModmail() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Open</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-500">{openTickets.length}</p>
-            </CardContent>
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="p-3">
+            <p className="text-xs text-muted-foreground">Open</p>
+            <p className="text-xl font-bold text-green-500">{openTickets.length}</p>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">In Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-500">{claimedTickets.length}</p>
-            </CardContent>
+          <Card className="p-3">
+            <p className="text-xs text-muted-foreground">In Progress</p>
+            <p className="text-xl font-bold text-blue-500">{claimedTickets.length}</p>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Active</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{tickets.length}</p>
-            </CardContent>
+          <Card className="p-3">
+            <p className="text-xs text-muted-foreground">Total Active</p>
+            <p className="text-xl font-bold">{tickets.length}</p>
           </Card>
         </div>
 
