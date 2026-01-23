@@ -110,7 +110,7 @@ export default function DiscordOutreach() {
     queryKey: ["discord-outreach", filterStatus],
     queryFn: async () => {
       let query = supabase
-        .from("discord_outreach")
+        .from("discord_outreach" as any)
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -120,7 +120,7 @@ export default function DiscordOutreach() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as OutreachRecord[];
+      return data as unknown as OutreachRecord[];
     },
   });
 
@@ -141,14 +141,14 @@ export default function DiscordOutreach() {
 
       if (data.id) {
         const { error } = await supabase
-          .from("discord_outreach")
+          .from("discord_outreach" as any)
           .update(payload)
           .eq("id", data.id);
         if (error) throw error;
       } else {
         const { data: user } = await supabase.auth.getUser();
         const { error } = await supabase
-          .from("discord_outreach")
+          .from("discord_outreach" as any)
           .insert({ ...payload, created_by: user.user?.id });
         if (error) throw error;
       }
@@ -166,7 +166,7 @@ export default function DiscordOutreach() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("discord_outreach")
+        .from("discord_outreach" as any)
         .delete()
         .eq("id", id);
       if (error) throw error;
