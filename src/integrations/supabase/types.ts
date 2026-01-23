@@ -92,6 +92,7 @@ export type Database = {
           id: string
           notes: string | null
           paypal_email: string | null
+          preferred_payout_method: string | null
           promotion_method: string
           rejection_reason: string | null
           reviewed_at: string | null
@@ -110,6 +111,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paypal_email?: string | null
+          preferred_payout_method?: string | null
           promotion_method: string
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -128,6 +130,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paypal_email?: string | null
+          preferred_payout_method?: string | null
           promotion_method?: string
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -233,6 +236,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          payout_method: string | null
           paypal_email: string | null
           processed_at: string | null
           processed_by: string | null
@@ -246,6 +250,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payout_method?: string | null
           paypal_email?: string | null
           processed_at?: string | null
           processed_by?: string | null
@@ -259,6 +264,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payout_method?: string | null
           paypal_email?: string | null
           processed_at?: string | null
           processed_by?: string | null
