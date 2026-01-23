@@ -40,7 +40,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Verify user has an approved affiliate application with stripe as preferred method
+    // Verify user has an approved affiliate application
     const { data: application, error: appError } = await supabaseClient
       .from('affiliate_applications')
       .select('id, preferred_payout_method')
@@ -50,10 +50,6 @@ serve(async (req) => {
 
     if (appError || !application) {
       throw new Error("No approved affiliate application found");
-    }
-
-    if (application.preferred_payout_method !== 'stripe') {
-      throw new Error("Your payout method is set to PayPal. Please update your preference to use Stripe.");
     }
 
     logStep("Affiliate application verified", { applicationId: application.id });

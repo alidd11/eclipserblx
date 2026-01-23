@@ -312,8 +312,7 @@ export default function AdminAnalytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                  <div className="flex gap-3 min-w-max">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
                       <ShoppingCart className="h-5 w-5 text-primary" />
@@ -355,7 +354,6 @@ export default function AdminAnalytics() {
                       <p className="text-2xl font-bold">{stats?.downloads ?? 0}</p>
                       <p className="text-xs text-muted-foreground">Downloads</p>
                     </div>
-                  </div>
                   </div>
                 </div>
               </CardContent>

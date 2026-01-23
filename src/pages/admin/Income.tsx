@@ -456,59 +456,57 @@ export default function AdminIncome() {
 
           {/* Gross Revenue Tab */}
           <TabsContent value="gross" className="space-y-6">
-            {/* Gross Income Summary Cards - Horizontally scrollable */}
-            <div className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-              <div className="flex gap-4 min-w-max">
-                <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium text-muted-foreground">Today</span>
-                    </div>
-                    <p className="text-3xl font-bold text-green-500">£{(incomeBreakdown?.daily.gross ?? 0).toFixed(2)}</p>
-                  </CardContent>
-                </Card>
+            {/* Gross Income Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-muted-foreground">Today</span>
+                  </div>
+                  <p className="text-3xl font-bold text-green-500">£{(incomeBreakdown?.daily.gross ?? 0).toFixed(2)}</p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-medium text-muted-foreground">This Week</span>
-                    </div>
-                    <p className="text-3xl font-bold text-blue-500">£{(incomeBreakdown?.weekly.gross ?? 0).toFixed(2)}</p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Week</span>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-500">£{(incomeBreakdown?.weekly.gross ?? 0).toFixed(2)}</p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm font-medium text-muted-foreground">This Month</span>
-                    </div>
-                    <p className="text-3xl font-bold text-purple-500">£{(incomeBreakdown?.monthly.gross ?? 0).toFixed(2)}</p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Month</span>
+                  </div>
+                  <p className="text-3xl font-bold text-purple-500">£{(incomeBreakdown?.monthly.gross ?? 0).toFixed(2)}</p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-medium text-muted-foreground">This Year</span>
-                    </div>
-                    <p className="text-3xl font-bold text-amber-500">£{(incomeBreakdown?.yearly.gross ?? 0).toFixed(2)}</p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Year</span>
+                  </div>
+                  <p className="text-3xl font-bold text-amber-500">£{(incomeBreakdown?.yearly.gross ?? 0).toFixed(2)}</p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium text-muted-foreground">All Time</span>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">£{(incomeBreakdown?.allTime.gross ?? 0).toFixed(2)}</p>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-muted-foreground">All Time</span>
+                  </div>
+                  <p className="text-3xl font-bold text-primary">£{(incomeBreakdown?.allTime.gross ?? 0).toFixed(2)}</p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* 30-Day Gross Trend Chart with Statistics */}
@@ -612,74 +610,72 @@ export default function AdminIncome() {
               </CardContent>
             </Card>
 
-            {/* Net Income Summary Cards - Horizontally scrollable */}
-            <div className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-              <div className="flex gap-4 min-w-max">
-                <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium text-muted-foreground">Today</span>
-                    </div>
-                    <p className="text-3xl font-bold text-green-500">£{(incomeBreakdown?.daily.net ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Fees: £{(incomeBreakdown?.daily.fees ?? 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
+            {/* Net Income Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-muted-foreground">Today</span>
+                  </div>
+                  <p className="text-3xl font-bold text-green-500">£{(incomeBreakdown?.daily.net ?? 0).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Fees: £{(incomeBreakdown?.daily.fees ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-medium text-muted-foreground">This Week</span>
-                    </div>
-                    <p className="text-3xl font-bold text-blue-500">£{(incomeBreakdown?.weekly.net ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Fees: £{(incomeBreakdown?.weekly.fees ?? 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Week</span>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-500">£{(incomeBreakdown?.weekly.net ?? 0).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Fees: £{(incomeBreakdown?.weekly.fees ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm font-medium text-muted-foreground">This Month</span>
-                    </div>
-                    <p className="text-3xl font-bold text-purple-500">£{(incomeBreakdown?.monthly.net ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Fees: £{(incomeBreakdown?.monthly.fees ?? 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Month</span>
+                  </div>
+                  <p className="text-3xl font-bold text-purple-500">£{(incomeBreakdown?.monthly.net ?? 0).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Fees: £{(incomeBreakdown?.monthly.fees ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-medium text-muted-foreground">This Year</span>
-                    </div>
-                    <p className="text-3xl font-bold text-amber-500">£{(incomeBreakdown?.yearly.net ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Fees: £{(incomeBreakdown?.yearly.fees ?? 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm font-medium text-muted-foreground">This Year</span>
+                  </div>
+                  <p className="text-3xl font-bold text-amber-500">£{(incomeBreakdown?.yearly.net ?? 0).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Fees: £{(incomeBreakdown?.yearly.fees ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 min-w-[180px]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium text-muted-foreground">All Time</span>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">£{(incomeBreakdown?.allTime.net ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Fees: £{(incomeBreakdown?.allTime.fees ?? 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-muted-foreground">All Time</span>
+                  </div>
+                  <p className="text-3xl font-bold text-primary">£{(incomeBreakdown?.allTime.net ?? 0).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Fees: £{(incomeBreakdown?.allTime.fees ?? 0).toFixed(2)}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* 30-Day Net Trend Chart with Statistics */}
