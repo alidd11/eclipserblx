@@ -1,109 +1,118 @@
 
-
-# Update Affiliate UI Messaging for Hybrid Stripe/PayPal System
+# Add Payout Settings Section to Affiliate Dashboard
 
 ## Overview
-This plan updates all affiliate-related messaging across the application to consistently reflect the hybrid payout system where affiliates can choose between **Stripe Connect (instant automatic payouts)** or **PayPal (manual payouts within 1-3 business days)**.
+Add a new "Payout Settings" card to the affiliate dashboard that allows members to:
+1. Change their preferred payout method (Stripe or PayPal)
+2. Update their PayPal email address
+3. View their current Stripe connection status
 
----
+## Current State
+- Affiliates select their payout method during application
+- No way to change preferences after joining
+- PayPal email is stored in both `affiliate_applications.paypal_email` and `profiles.paypal_email`
+- Stripe Connect status is already being checked via `check-affiliate-connect-status` edge function
 
-## Current Issues Found
+## Implementation
 
-1. **Outdated "after approval" text**: Since applications are now auto-approved, the Stripe description mentioning "You'll connect your Stripe account after approval" is misleading.
+### File: `src/pages/Affiliate.tsx`
 
-2. **Inconsistent payout messaging**: Some places correctly show both options, but the messaging could be more consistent.
-
-3. **AffiliateCard uses hardcoded `MINIMUM_PAYOUT`**: Should use dynamic `settings.minimumPayout` consistently.
-
-4. **Missing payout method indicator**: When showing "Minimum balance for payout", it doesn't clarify the available methods.
-
----
-
-## Files to Update
-
-### 1. `src/pages/Affiliate.tsx`
-
-**Application Form Section (lines 513-527)**
-- Update Stripe description from "You'll connect your Stripe account after approval" to "You'll connect your Stripe account after joining."
-- Keep PayPal description as-is (correctly describes manual payouts)
-
-**Stripe Onboarding Banner (lines 731-733)**
-- Current text is good: "receive instant automatic payouts directly to your bank"
-
-**Minimum Balance Message (lines 803-806)**
-- Add clarity about which payout methods are available
-
-### 2. `src/components/account/AffiliateCard.tsx`
-
-**Stripe Onboarding Card (lines 496-499)**
-- Keep existing text (already correct)
-
-**Payout Request Footer (line 603)**
-- Already dynamically shows "Instant via Stripe" or "Via PayPal (1-3 days)" based on connection status - this is correct
-
-**Minimum Balance Info**
-- Add similar clarifying text for minimum payout threshold
-
-### 3. Minor: Confirm other files are already correct
-
-**Admin Affiliates (src/pages/admin/Affiliates.tsx)**
-- Line 576: Already shows "Via Stripe or PayPal" - correct
-
-**Edge Function (supabase/functions/send-affiliate-announcement/index.ts)**
-- Lines 74-76: Already shows "Stripe Connect (automatic) or PayPal (manual)" - correct
-
----
-
-## Specific Changes
-
-### `src/pages/Affiliate.tsx`
-
-#### Change 1: Update Stripe description in application form
-**Location**: Lines 513-515
-```text
-Before: "Automatic instant payouts directly to your bank account. You'll connect your Stripe account after approval."
-After:  "Instant payouts directly to your bank. Connect your Stripe account after joining to activate."
+**1. Add new state for payout settings form**
+```typescript
+const [payoutSettings, setPayoutSettings] = useState({
+  preferred_method: 'stripe' as 'stripe' | 'paypal',
+  paypal_email: '',
+});
 ```
 
-#### Change 2: Add payout method info to minimum balance message
-**Location**: Lines 803-806
-```text
-Before: "Minimum balance for payout: £{minimumPayout}"
-After:  "Minimum balance for payout: £{minimumPayout}. Via Stripe (instant) or PayPal (1-3 days)."
+**2. Sync payout settings state from application data**
+```typescript
+useEffect(() => {
+  if (application) {
+    setPayoutSettings({
+      preferred_method: application.preferred_payout_method || 'stripe',
+      paypal_email: application.paypal_email || '',
+    });
+  }
+}, [application]);
 ```
 
-### `src/components/account/AffiliateCard.tsx`
-
-#### Change 1: Update Stripe description in application form
-**Location**: Lines 328-329
-```text
-Before: "Stripe Connect (Instant)"
-After:  "Stripe Connect (Instant)" (no change needed)
+**3. Add mutation to update payout settings**
+```typescript
+const updatePayoutSettingsMutation = useMutation({
+  mutationFn: async (settings: { preferred_method: 'stripe' | 'paypal'; paypal_email: string }) => {
+    // Update affiliate_applications
+    await supabase
+      .from('affiliate_applications')
+      .update({
+        preferred_payout_method: settings.preferred_method,
+        paypal_email: settings.paypal_email,
+      })
+      .eq('user_id', user.id);
+    
+    // Sync PayPal email to profiles table
+    await supabase
+      .from('profiles')
+      .update({ paypal_email: settings.paypal_email })
+      .eq('id', user.id);
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['affiliate-application'] });
+    toast({ title: "Payout settings updated" });
+  },
+});
 ```
 
-#### Change 2: Add minimum balance info message below payout section
-**Location**: Around line 573-574 (when balance is below minimum)
-- Add clarifying text about both payout methods being available once threshold is reached
+**4. Add Payout Settings Card UI (after Referral Link card, around line 927)**
 
----
+The card will include:
+- Radio group to switch between Stripe and PayPal
+- Current Stripe connection status badge
+- Connect Stripe button (if not connected)
+- PayPal email input field (shown when PayPal selected or as secondary option)
+- Save button
 
-## Technical Details
+```text
+┌─────────────────────────────────────────────────────────┐
+│ ⚙️ Payout Settings                                      │
+│ Choose how you want to receive your earnings            │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ○ Stripe Connect (Instant)                              │
+│   Automatic payouts directly to your bank               │
+│   ┌──────────────────────────────────┐                  │
+│   │ ✓ Connected        [Manage →]    │                  │
+│   └──────────────────────────────────┘                  │
+│                                                         │
+│ ○ PayPal (1-3 business days)                            │
+│   Manual payouts processed by our team                  │
+│   ┌────────────────────────────────────────┐            │
+│   │ PayPal Email: you@email.com            │            │
+│   └────────────────────────────────────────┘            │
+│                                                         │
+│                              [ Save Changes ]           │
+└─────────────────────────────────────────────────────────┘
+```
 
-| File | Line(s) | Change |
-|------|---------|--------|
-| `src/pages/Affiliate.tsx` | 513-515 | Update Stripe description text |
-| `src/pages/Affiliate.tsx` | 803-806 | Add payout method clarification |
-| `src/components/account/AffiliateCard.tsx` | 328-329 | Minor wording update (optional) |
-| `src/components/account/AffiliateCard.tsx` | 573-574 | Add payout method clarification |
+## Database Changes
+None required - all necessary columns already exist:
+- `affiliate_applications.preferred_payout_method`
+- `affiliate_applications.paypal_email`
+- `profiles.paypal_email`
 
----
+## Technical Notes
+
+| Aspect | Details |
+|--------|---------|
+| Validation | PayPal email required when PayPal is selected |
+| Stripe status | Uses existing `connectStatus` query data |
+| Sync | Updates both `affiliate_applications` and `profiles` tables |
+| Invalidation | Refreshes application data after save |
 
 ## Summary
+This adds approximately 80-100 lines of code to `Affiliate.tsx`:
+1. New state + useEffect for form data
+2. New mutation for saving settings
+3. New Card component with RadioGroup, Input, and Button
 
-The implementation updates 2-3 text strings across 2 files to ensure:
-1. "After approval" is changed to "after joining" (reflecting auto-approval)
-2. All minimum payout threshold messages clarify both Stripe and PayPal are options
-3. Consistent terminology: "Stripe Connect (instant)" and "PayPal (1-3 business days)"
-
-The admin pages and edge functions are already correctly updated and require no changes.
-
+The implementation follows existing patterns in the file and reuses the Stripe Connect functionality already present in the dashboard.
