@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   MessageSquare, Plus, Search, Users, CheckCircle, XCircle,
-  Clock, Filter, Edit, Trash2, Calendar, Hash
+  Clock, Filter, Edit, Trash2, Calendar, Hash, History
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,6 +37,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   Table,
   TableBody,
   TableCell,
@@ -46,6 +52,7 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { OutreachActivityTimeline } from "@/components/admin/OutreachActivityTimeline";
 
 interface OutreachRecord {
   id: string;
@@ -94,6 +101,7 @@ export default function DiscordOutreach() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<OutreachRecord | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [timelineRecord, setTimelineRecord] = useState<OutreachRecord | null>(null);
   const [formData, setFormData] = useState({
     server_name: "",
     server_id: "",
@@ -125,6 +133,25 @@ export default function DiscordOutreach() {
     },
   });
 
+  // Helper to log activity
+  const logActivity = async (
+    outreachId: string,
+    activityType: string,
+    description?: string,
+    oldValue?: string,
+    newValue?: string
+  ) => {
+    const { data: user } = await supabase.auth.getUser();
+    await supabase.from("discord_outreach_activity" as any).insert({
+      outreach_id: outreachId,
+      activity_type: activityType,
+      description,
+      old_value: oldValue,
+      new_value: newValue,
+      created_by: user.user?.id,
+    });
+  };
+
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
       const decision = data.decision === "none" ? null : data.decision;
@@ -142,21 +169,56 @@ export default function DiscordOutreach() {
       };
 
       if (data.id) {
+        // Update existing record
         const { error } = await supabase
           .from("discord_outreach" as any)
           .update(payload)
           .eq("id", data.id);
         if (error) throw error;
+
+        // Log status changes
+        if (editingRecord && editingRecord.status !== data.status) {
+          const oldLabel = STATUS_OPTIONS.find(s => s.value === editingRecord.status)?.label || editingRecord.status;
+          const newLabel = STATUS_OPTIONS.find(s => s.value === data.status)?.label || data.status;
+          await logActivity(data.id, "status_change", undefined, oldLabel, newLabel);
+        }
+
+        // Log decision changes
+        const oldDecision = editingRecord?.decision;
+        if (oldDecision !== decision) {
+          if (decision) {
+            const decisionLabel = DECISION_OPTIONS.find(d => d.value === decision)?.label || decision;
+            await logActivity(data.id, "decision", `Decision: ${decisionLabel}`, oldDecision || undefined, decisionLabel);
+          }
+        }
+
+        // Log follow-up if status changed to followup
+        if (data.status === "followup" && editingRecord?.status !== "followup") {
+          await logActivity(data.id, "follow_up", "Follow-up recorded");
+        }
+
+        return { id: data.id, isNew: false };
       } else {
+        // Create new record
         const { data: user } = await supabase.auth.getUser();
-        const { error } = await supabase
+        const { data: inserted, error } = await supabase
           .from("discord_outreach" as any)
-          .insert({ ...payload, created_by: user.user?.id });
+          .insert({ ...payload, created_by: user.user?.id })
+          .select("id")
+          .single();
         if (error) throw error;
+
+        const newId = (inserted as any).id;
+        // Log creation and initial contact
+        await logActivity(newId, "created", `Added ${data.server_name} to outreach`);
+        await logActivity(newId, "contacted", "Initial contact made");
+
+        return { id: newId, isNew: true };
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["discord-outreach"] });
+      queryClient.invalidateQueries({ queryKey: ["outreach-activity", result?.id] });
       toast.success(editingRecord ? "Record updated" : "Record added");
       closeDialog();
     },
@@ -376,6 +438,15 @@ export default function DiscordOutreach() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={() => setTimelineRecord(record)}
+                              title="View timeline"
+                            >
+                              <History className="h-4 w-4" />
+                            </Button>
                             <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(record)}>
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -529,6 +600,24 @@ export default function DiscordOutreach() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Activity Timeline Sheet */}
+      <Sheet open={!!timelineRecord} onOpenChange={(open) => !open && setTimelineRecord(null)}>
+        <SheetContent className="sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Activity Timeline
+            </SheetTitle>
+            {timelineRecord && (
+              <p className="text-sm text-muted-foreground">{timelineRecord.server_name}</p>
+            )}
+          </SheetHeader>
+          <div className="mt-6">
+            {timelineRecord && <OutreachActivityTimeline outreachId={timelineRecord.id} />}
+          </div>
+        </SheetContent>
+      </Sheet>
     </AdminLayout>
   );
 }
