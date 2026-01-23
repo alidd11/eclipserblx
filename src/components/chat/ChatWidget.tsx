@@ -1,7 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { MessageCircle, HelpCircle, Users, X } from 'lucide-react';
 import { useChatPanel } from '@/hooks/useChatPanel';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 
 // Opening hours configuration (24-hour format)
 const OPENING_HOURS: Record<number, { open: number; close: number } | null> = {
@@ -33,7 +33,7 @@ function getOpeningStatus() {
   return { isOpen, currentDay: day };
 }
 
-export function ChatWidget() {
+export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_props, _ref) {
   const location = useLocation();
   const { toggleChat, isOpen, unreadCount } = useChatPanel();
   const status = getOpeningStatus();
@@ -171,4 +171,4 @@ export function ChatWidget() {
       )}
     </>
   );
-}
+});
