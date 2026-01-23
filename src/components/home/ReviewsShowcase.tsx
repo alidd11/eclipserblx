@@ -1,4 +1,4 @@
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, BadgeCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +21,7 @@ interface Review {
   is_external: boolean | null;
   external_source: string | null;
   external_reviewer_name: string | null;
+  is_verified_purchase: boolean | null;
   profiles: { display_name: string | null } | null;
   products: { name: string } | null;
 }
@@ -46,6 +47,7 @@ export function ReviewsShowcase() {
           is_external,
           external_source,
           external_reviewer_name,
+          is_verified_purchase,
           products:product_id(name)
         `)
         .eq('is_approved', true)
@@ -145,11 +147,19 @@ export function ReviewsShowcase() {
                   </p>
 
                   <div className="mt-auto pt-4 border-t border-border">
-                    <p className="font-medium text-sm">
-                      {review.is_external 
-                        ? review.external_reviewer_name || 'Anonymous'
-                        : review.profiles?.display_name || 'Anonymous'}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-sm">
+                        {review.is_external 
+                          ? review.external_reviewer_name || 'Anonymous'
+                          : review.profiles?.display_name || 'Anonymous'}
+                      </p>
+                      {review.is_verified_purchase && (
+                        <span className="inline-flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
+                          <BadgeCheck className="h-3 w-3" />
+                          Verified
+                        </span>
+                      )}
+                    </div>
                     {review.is_external && review.external_source && (
                       <p className="text-xs text-muted-foreground">
                         via {review.external_source}
