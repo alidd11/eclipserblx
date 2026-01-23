@@ -70,41 +70,69 @@ export function useFeatureFlag(flagName: string): UseFeatureFlagResult {
 
 // Convenience hook specifically for marketplace feature
 // Sellers with the seller role automatically have access
+// Admins always have access
 export function useMarketplaceAccess() {
   const { user, loading: authLoading } = useAuth();
   const featureFlag = useFeatureFlag('marketplace');
   const [hasSellerRole, setHasSellerRole] = useState(false);
-  const [sellerLoading, setSellerLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [roleLoading, setRoleLoading] = useState(true);
+  const [isMarketplacePublic, setIsMarketplacePublic] = useState(false);
+  const [publicLoading, setPublicLoading] = useState(true);
+
+  // Check if marketplace is public
+  useEffect(() => {
+    async function checkPublicStatus() {
+      try {
+        const { data } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'marketplace_public')
+          .maybeSingle();
+        
+        const val = data?.value;
+        setIsMarketplacePublic(val === true || val === 'true');
+      } catch (err) {
+        console.error('Error checking marketplace public status:', err);
+      } finally {
+        setPublicLoading(false);
+      }
+    }
+
+    checkPublicStatus();
+  }, []);
 
   useEffect(() => {
     if (authLoading || !user) {
-      setSellerLoading(false);
+      setRoleLoading(false);
       return;
     }
 
-    async function checkSellerRole() {
+    async function checkRoles() {
       try {
         const { data } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'seller')
-          .maybeSingle();
+          .eq('user_id', user.id);
         
-        setHasSellerRole(!!data);
+        const roles = data?.map(r => r.role) || [];
+        setHasSellerRole(roles.includes('seller'));
+        setIsAdmin(roles.includes('admin'));
       } catch (err) {
-        console.error('Error checking seller role:', err);
+        console.error('Error checking roles:', err);
       } finally {
-        setSellerLoading(false);
+        setRoleLoading(false);
       }
     }
 
-    checkSellerRole();
+    checkRoles();
   }, [user, authLoading]);
 
   return {
-    hasAccess: featureFlag.hasAccess || hasSellerRole,
-    loading: featureFlag.loading || sellerLoading,
+    hasAccess: isMarketplacePublic || featureFlag.hasAccess || hasSellerRole || isAdmin,
+    isAdmin,
+    isMarketplacePublic,
+    loading: featureFlag.loading || roleLoading || publicLoading,
     error: featureFlag.error,
   };
 }
