@@ -92,7 +92,7 @@ export default function Affiliate() {
     enabled: !!user?.id && application?.status === 'approved',
   });
 
-  // Check Stripe Connect status
+  // Check Stripe Connect status - always check for approved affiliates so they can switch to Stripe
   const { data: connectStatus, isLoading: connectStatusLoading } = useQuery({
     queryKey: ['affiliate-connect-status', user?.id],
     queryFn: async () => {
@@ -100,7 +100,7 @@ export default function Affiliate() {
       if (error) throw error;
       return data as { hasAccount: boolean; isOnboarded: boolean; canReceivePayments: boolean; accountId: string | null };
     },
-    enabled: !!user?.id && application?.status === 'approved' && application?.preferred_payout_method === 'stripe',
+    enabled: !!user?.id && application?.status === 'approved',
   });
 
   // Get recent commissions
@@ -303,8 +303,9 @@ export default function Affiliate() {
   const isLoading = applicationLoading || balanceLoading || settingsLoading;
 
   // Determine if user can use Stripe payouts
-  const canUseStripe = application?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments;
-  const needsStripeOnboarding = application?.preferred_payout_method === 'stripe' && !connectStatus?.canReceivePayments;
+  const canUseStripe = connectStatus?.canReceivePayments === true;
+  // Show Stripe onboarding if user hasn't connected yet (regardless of preferred method)
+  const needsStripeOnboarding = application?.status === 'approved' && !connectStatus?.canReceivePayments;
 
   // Benefits for the landing page
   const benefits = [
@@ -770,7 +771,7 @@ export default function Affiliate() {
                       <Clock className="h-5 w-5 text-yellow-500" />
                       <span className="text-sm font-medium text-yellow-500">Payout request pending</span>
                     </div>
-                  ) : availableBalance >= affiliateSettings.minimumPayout ? (
+                  ) : (
                     <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">£</span>
@@ -783,13 +784,14 @@ export default function Affiliate() {
                           value={payoutAmount}
                           onChange={(e) => setPayoutAmount(e.target.value)}
                           className="pl-7 w-full sm:w-32 h-12 text-lg"
+                          disabled={availableBalance < affiliateSettings.minimumPayout}
                         />
                       </div>
                       <Button
                         size="lg"
                         className="gradient-button h-12 px-8 text-base font-semibold"
                         onClick={handleRequestPayout}
-                        disabled={requestPayoutMutation.isPending || !payoutAmount}
+                        disabled={requestPayoutMutation.isPending || !payoutAmount || availableBalance < affiliateSettings.minimumPayout}
                       >
                         {requestPayoutMutation.isPending ? (
                           <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -799,21 +801,22 @@ export default function Affiliate() {
                         {canUseStripe ? 'Instant Payout' : 'Cash Out'}
                       </Button>
                     </div>
-                  ) : (
-                    <div className="px-4 py-3 bg-muted/50 rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        Minimum balance for payout: <span className="font-semibold text-foreground">£{affiliateSettings.minimumPayout}</span>. Via Stripe (instant) or PayPal (1-3 days).
-                      </p>
-                    </div>
                   )}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-right">
-                    <span>{affiliateSettings.commissionRate}% commission on all referred sales</span>
-                    {canUseStripe && (
-                      <Badge variant="outline" className="text-green-500 border-green-500/30">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Stripe Connected
-                      </Badge>
+                  <div className="flex flex-col gap-1 md:items-end">
+                    {availableBalance < affiliateSettings.minimumPayout && !hasPendingPayout && (
+                      <p className="text-xs text-muted-foreground">
+                        Minimum balance for payout: £{affiliateSettings.minimumPayout}
+                      </p>
                     )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{affiliateSettings.commissionRate}% commission on all referred sales</span>
+                      {canUseStripe && (
+                        <Badge variant="outline" className="text-green-500 border-green-500/30">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Stripe Connected
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
