@@ -14,6 +14,7 @@ import { Check, X, Sparkles, Trash2, Plus, Globe, Loader2, Bell, Fingerprint, Ch
 import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
 import { AffiliateSettingsCard } from '@/components/admin/AffiliateSettingsCard';
 import { StaffThemeCard } from '@/components/admin/StaffThemeCard';
+import { MarketplaceControlsCard } from '@/components/admin/MarketplaceControlsCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -804,6 +805,9 @@ export default function AdminSettings() {
           {/* Admin-Only Settings */}
           {isAdmin && (
             <>
+              {/* Marketplace Controls */}
+              <MarketplaceControlsCard />
+
               {/* Global Notification Controls */}
               <Card className="bg-card border-border">
                 <CardHeader>

@@ -3524,6 +3524,7 @@ export type Database = {
           hero_title: string | null
           id: string
           is_active: boolean | null
+          is_testing: boolean
           is_trusted: boolean | null
           is_verified: boolean | null
           layout_style: string | null
@@ -3591,6 +3592,7 @@ export type Database = {
           hero_title?: string | null
           id?: string
           is_active?: boolean | null
+          is_testing?: boolean
           is_trusted?: boolean | null
           is_verified?: boolean | null
           layout_style?: string | null
@@ -3658,6 +3660,7 @@ export type Database = {
           hero_title?: string | null
           id?: string
           is_active?: boolean | null
+          is_testing?: boolean
           is_trusted?: boolean | null
           is_verified?: boolean | null
           layout_style?: string | null

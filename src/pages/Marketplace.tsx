@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Store, ChevronRight, ShieldCheck, Award, Users, Search, X, Package } from 'lucide-react';
+import { Store, ChevronRight, ShieldCheck, Award, Users, Search, X, Package, FlaskConical } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 import { TopSellersCard } from '@/components/marketplace/TopSellersCard';
 import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
 import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
+import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
 
 interface StoreData {
   id: string;
@@ -26,6 +27,7 @@ interface StoreData {
   is_verified: boolean;
   is_trusted: boolean;
   follower_count: number;
+  is_testing?: boolean;
 }
 
 interface ProductResult {
@@ -37,7 +39,7 @@ interface ProductResult {
   stores: { name: string; slug: string } | null;
 }
 
-function StoreCard({ store }: { store: StoreData }) {
+function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingBadge?: boolean }) {
   const accentColor = store.accent_color || '#8B5CF6';
   
   return (
@@ -53,6 +55,15 @@ function StoreCard({ store }: { store: StoreData }) {
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+          {/* Testing Badge */}
+          {showTestingBadge && store.is_testing && (
+            <div className="absolute top-2 right-2">
+              <Badge className="bg-orange-500/90 text-white border-0 text-[10px] gap-1">
+                <FlaskConical className="h-2.5 w-2.5" />
+                Testing
+              </Badge>
+            </div>
+          )}
         </div>
         
         <CardContent className="pt-0 -mt-8 relative">
@@ -138,7 +149,7 @@ function StoreCardSkeleton() {
 
 export default function Marketplace() {
   const navigate = useNavigate();
-  const { hasAccess, loading: accessLoading } = useMarketplaceAccess();
+  const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -150,21 +161,27 @@ export default function Marketplace() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
   
-  // Fetch all approved stores
+  // Fetch all approved stores (filter testing stores for non-admins)
   const { data: stores, isLoading: storesLoading } = useQuery({
-    queryKey: ['marketplace-stores'],
+    queryKey: ['marketplace-stores', isAdmin],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('stores')
-        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count')
+        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count, is_testing')
         .eq('status', 'approved')
         .eq('is_active', true)
         .order('is_trusted', { ascending: false })
         .order('is_verified', { ascending: false })
         .order('follower_count', { ascending: false });
       
+      // Non-admins can't see testing stores
+      if (!isAdmin) {
+        query = query.eq('is_testing', false);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
-      return data as StoreData[];
+      return data as (StoreData & { is_testing?: boolean })[];
     },
     enabled: hasAccess,
   });
@@ -239,6 +256,35 @@ export default function Marketplace() {
   // First 3 rows = 9 stores (on large screens), then featured products, then remaining stores
   const firstBatchStores = storesList.slice(0, 9);
   const remainingStores = storesList.slice(9);
+
+  // Show seller application process if marketplace is not public (for non-admin users)
+  if (!isMarketplacePublic && !isAdmin) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
+          {/* Hero Section */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Store className="h-4 w-4" />
+              Eclipse Marketplace
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              Coming Soon
+            </h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
+              The Eclipse Marketplace is preparing for launch. Want to be one of our first sellers? 
+              Apply now to set up your store and be ready when we go live!
+            </p>
+          </div>
+
+          {/* Seller Application Section */}
+          <div className="max-w-2xl mx-auto">
+            <BecomeSellerCard />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -378,7 +424,7 @@ export default function Marketplace() {
               ))
             ) : firstBatchStores.length > 0 ? (
               firstBatchStores.map((store) => (
-                <StoreCard key={store.id} store={store} />
+                <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))
             ) : !isSearching ? (
               <div className="col-span-full text-center py-12">
@@ -405,7 +451,7 @@ export default function Marketplace() {
             <h2 className="text-xl font-semibold mb-4">More Stores</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {remainingStores.map((store) => (
-                <StoreCard key={store.id} store={store} />
+                <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))}
             </div>
           </section>
