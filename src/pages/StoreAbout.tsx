@@ -5,6 +5,7 @@ import { StoreLayout } from '@/components/store/StoreLayout';
 import { ChevronLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export default function StoreAbout() {
   const { slug } = useParams<{ slug: string }>();
@@ -101,9 +102,9 @@ export default function StoreAbout() {
 
         {/* About Content */}
         <div className="prose prose-sm max-w-none dark:prose-invert text-center mx-auto max-w-2xl">
-          {(store as any).about_content ? (
+        {(store as any).about_content ? (
             <div 
-              dangerouslySetInnerHTML={{ __html: (store as any).about_content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml((store as any).about_content) }}
               className={`${isDarkTheme ? 'text-zinc-300' : 'text-foreground'}`}
             />
           ) : store.bio ? (
