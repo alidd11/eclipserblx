@@ -141,22 +141,28 @@ export type Database = {
       affiliate_balances: {
         Row: {
           available_balance: number
+          total_clicks: number | null
           total_earned: number
           total_paid: number
+          total_signups: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           available_balance?: number
+          total_clicks?: number | null
           total_earned?: number
           total_paid?: number
+          total_signups?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           available_balance?: number
+          total_clicks?: number | null
           total_earned?: number
           total_paid?: number
+          total_signups?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -1981,6 +1987,33 @@ export type Database = {
           created_at?: string
           id?: string
           identifier?: string
+        }
+        Relationships: []
+      }
+      referral_clicks: {
+        Row: {
+          created_at: string | null
+          id: string
+          referral_code: string
+          referrer_id: string
+          user_agent: string | null
+          visitor_ip_hash: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referral_code: string
+          referrer_id: string
+          user_agent?: string | null
+          visitor_ip_hash?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referral_code?: string
+          referrer_id?: string
+          user_agent?: string | null
+          visitor_ip_hash?: string | null
         }
         Relationships: []
       }

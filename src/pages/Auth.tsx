@@ -48,17 +48,42 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   const { toast } = useToast();
 
   // Check for password reset flow (when user clicks reset link from email)
-  // Also check for referral code
+  // Also check for referral code and track clicks
   useEffect(() => {
     const type = searchParams.get('type');
     if (type === 'recovery') {
       setMode('reset');
     }
     
-    // Store referral code if present
+    // Store referral code if present and track the click
     const refCode = searchParams.get('ref');
     if (refCode) {
       sessionStorage.setItem('pendingReferralCode', refCode);
+      
+      // Track the referral link click (fire and forget)
+      const trackClick = async () => {
+        try {
+          // Find the referrer by their referral code
+          const { data: referrerProfile } = await supabase
+            .from('profiles')
+            .select('user_id')
+            .eq('referral_code', refCode.toUpperCase())
+            .single();
+          
+          if (referrerProfile) {
+            // Record the click
+            await supabase.from('referral_clicks').insert({
+              referral_code: refCode.toUpperCase(),
+              referrer_id: referrerProfile.user_id,
+              user_agent: navigator.userAgent.substring(0, 500),
+            });
+          }
+        } catch (err) {
+          console.error('Failed to track referral click:', err);
+        }
+      };
+      
+      trackClick();
     }
   }, [searchParams]);
 

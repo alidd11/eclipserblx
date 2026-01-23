@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   DollarSign, TrendingUp, Loader2, CheckCircle, AlertCircle,
   ArrowUpRight, Clock, Send, Users, Gift, Zap, Copy, ExternalLink,
-  CreditCard, BadgePercent, Star, Construction
+  CreditCard, BadgePercent, Star, Construction, MousePointerClick, UserPlus
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -205,6 +205,9 @@ export default function Affiliate() {
   const availableBalance = (balance?.available_balance || 0) / 100;
   const totalEarned = (balance?.total_earned || 0) / 100;
   const totalPaid = (balance?.total_paid || 0) / 100;
+  const totalClicks = balance?.total_clicks || 0;
+  const totalSignups = balance?.total_signups || 0;
+  const conversionRate = totalClicks > 0 ? ((totalSignups / totalClicks) * 100).toFixed(1) : '0.0';
   const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
 
   const isLoading = applicationLoading || balanceLoading || settingsLoading;
@@ -628,42 +631,68 @@ export default function Affiliate() {
           </Card>
 
           {/* Stats */}
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <Card className="bg-card border-border">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <DollarSign className="h-6 w-6 text-primary" />
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <DollarSign className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-3xl font-bold">£{availableBalance.toFixed(2)}</p>
-                    <p className="text-sm text-muted-foreground">Available</p>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">£{availableBalance.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">Available</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-muted-foreground" />
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <TrendingUp className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <div>
-                    <p className="text-3xl font-bold">£{totalEarned.toFixed(2)}</p>
-                    <p className="text-sm text-muted-foreground">Total Earned</p>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">£{totalEarned.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">Total Earned</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                    <CreditCard className="h-6 w-6 text-muted-foreground" />
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <MousePointerClick className="h-5 w-5 text-blue-500" />
                   </div>
-                  <div>
-                    <p className="text-3xl font-bold">£{totalPaid.toFixed(2)}</p>
-                    <p className="text-sm text-muted-foreground">Total Paid Out</p>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">{totalClicks.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Link Clicks</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                    <UserPlus className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">{totalSignups.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Signups</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border col-span-2 lg:col-span-1">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                    <BadgePercent className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold">{conversionRate}%</p>
+                    <p className="text-xs text-muted-foreground">Conversion</p>
                   </div>
                 </div>
               </CardContent>
