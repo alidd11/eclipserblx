@@ -353,8 +353,8 @@ export default function SellerStoreDetail() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <Package className="h-4 w-4" />
@@ -365,7 +365,7 @@ export default function SellerStoreDetail() {
               <p className="text-2xl font-bold">{stats?.productCount || 0}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
@@ -376,7 +376,7 @@ export default function SellerStoreDetail() {
               <p className="text-2xl font-bold">{stats?.orderCount || 0}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
@@ -387,7 +387,7 @@ export default function SellerStoreDetail() {
               <p className="text-2xl font-bold">${(stats?.totalRevenue || 0).toFixed(2)}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <User className="h-4 w-4" />

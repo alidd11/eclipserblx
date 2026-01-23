@@ -74,11 +74,15 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.4 }}
-            className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="mt-4 flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible"
           >
-            <StatsCard />
-            <ReviewCard />
-            <div className="sm:col-span-2 lg:col-span-1">
+            <div className="min-w-[280px] flex-shrink-0 md:min-w-0">
+              <StatsCard />
+            </div>
+            <div className="min-w-[280px] flex-shrink-0 md:min-w-0">
+              <ReviewCard />
+            </div>
+            <div className="min-w-[280px] flex-shrink-0 md:min-w-0">
               <DiscordWidget />
             </div>
           </motion.div>

@@ -339,8 +339,8 @@ export default function ContactMessages() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -349,7 +349,7 @@ export default function ContactMessages() {
               <p className="text-2xl font-bold mt-1">{stats.total}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-destructive" />
@@ -358,7 +358,7 @@ export default function ContactMessages() {
               <p className="text-2xl font-bold mt-1">{stats.unread}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4 text-muted-foreground" />
@@ -367,7 +367,7 @@ export default function ContactMessages() {
               <p className="text-2xl font-bold mt-1">{stats.read}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[130px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
