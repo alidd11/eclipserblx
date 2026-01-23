@@ -46,43 +46,43 @@ Deno.serve(async (req) => {
     console.log("Sending affiliate announcement with settings:", { commissionRate, minimumPayout, cookieDays });
 
     const embed = {
-      title: "🚀 EARN MONEY WITH US! 💸",
-      description: "**Hey fam!** 👋\n\nWe're all about building this community together — and now YOU can get paid for being part of it!\n\nIntroducing our **Affiliate Programme** where you earn **real cash** just for spreading the word! 🔥",
-      color: 0x00D26A, // Vibrant green for money/success
+      title: "💼 Affiliate Programme",
+      description: "Join our Affiliate Programme and earn commission on every sale you refer. It's simple, transparent, and rewarding.\n\n━━━━━━━━━━━━━━━━━━━━━━",
+      color: 0x5865F2, // Discord blurple for professional look
       fields: [
         {
-          name: "💰 EARN " + commissionRate + "% ON EVERY SALE",
-          value: "That's right — every time someone buys through YOUR link, you get paid. No cap, no limits. The more you share, the more you make!",
+          name: "📈 Commission Rate",
+          value: `Earn **${commissionRate}%** commission on every successful purchase made through your unique referral link.\n\u200B`,
           inline: false,
         },
         {
-          name: "🎮 PERFECT FOR:",
-          value: "• Content creators & streamers\n• Discord server owners\n• Social media influencers\n• Or literally ANYONE with friends!",
+          name: "👥 Who Can Join?",
+          value: "• Content creators & streamers\n• Discord community owners\n• Social media influencers\n• Anyone with an audience\n\u200B",
           inline: false,
         },
         {
-          name: "⚡ HOW EASY IS IT?",
-          value: "1️⃣ Create an account (free!)\n2️⃣ Grab your unique link from the **Earn** tab\n3️⃣ Share it anywhere — Discord, Twitter, TikTok, wherever!\n4️⃣ Watch the money roll in 💵",
+          name: "🚀 Getting Started",
+          value: "**1.** Create a free account on our website\n**2.** Navigate to the **Earn** section\n**3.** Copy your unique referral link\n**4.** Share with your audience\n\u200B",
           inline: false,
         },
         {
-          name: "📊 FULL TRANSPARENCY",
-          value: `Track everything in real-time:\n• Link clicks\n• Sign-ups\n• Conversion rate\n• Your earnings\n\n**Cookie lasts ${cookieDays} days** — so even if they buy later, you still get paid!`,
+          name: "📊 Real-Time Analytics",
+          value: `Track your performance with detailed statistics:\n• Total link clicks\n• Sign-up conversions\n• Pending & confirmed earnings\n\nYour referral cookie is valid for **${cookieDays} days**, ensuring you receive credit for delayed purchases.\n\u200B`,
           inline: false,
         },
         {
-          name: "💳 CASH OUT ANYTIME",
-          value: `Hit **£${minimumPayout}** and request your payout instantly via PayPal. It's YOUR money, get it when you want it!`,
+          name: "💳 Payouts",
+          value: `Request a payout once you reach the **£${minimumPayout}** minimum threshold. Payments are processed via PayPal.\n\u200B`,
           inline: false,
         },
         {
-          name: "🤝 LET'S GROW TOGETHER",
-          value: "This isn't just about making money — it's about building something awesome as a community. When you win, we ALL win!\n\n**Ready to start earning?** Sign up now and check out the Earn section! 🎯",
+          name: "🔗 Join Now",
+          value: "Visit our website and sign up today to start earning. If you have any questions, feel free to reach out to our support team.",
           inline: false,
         },
       ],
       footer: {
-        text: "💜 Thanks for being part of the fam — let's get this bread together!",
+        text: "Thank you for supporting our community",
       },
       timestamp: new Date().toISOString(),
     };
