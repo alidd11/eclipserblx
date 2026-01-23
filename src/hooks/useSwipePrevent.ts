@@ -4,9 +4,10 @@ import { useEffect } from 'react';
  * Prevents browser back/forward navigation via horizontal swipe gestures.
  * Only active in standalone PWA mode.
  *
- * Uses a wider edge zone (100px) and immediately prevents any rightward
- * swipe from the left edge to stop iOS Safari from interpreting it as a
- * "back" navigation gesture.
+ * Uses multiple strategies:
+ * 1. CSS touch-action and overscroll-behavior (in index.css)
+ * 2. JavaScript touchmove prevention for edge swipes
+ * 3. History manipulation to block navigation
  */
 export function useSwipePrevent() {
   useEffect(() => {
@@ -17,12 +18,27 @@ export function useSwipePrevent() {
 
     if (!isStandalone) return;
 
-    const EDGE_ZONE_PX = 100; // Match AdminLayout for consistency
+    // Strategy 1: Push extra history entry to trap back navigation
+    // This prevents the back gesture from leaving the app
+    const pushState = () => {
+      if (window.history.state?.preventBack !== true) {
+        window.history.pushState({ preventBack: true }, '');
+      }
+    };
+    pushState();
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Re-push the state to trap the user in the app
+      pushState();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Strategy 2: Touch event prevention for edge swipes
+    const EDGE_ZONE_PX = 50; // Smaller zone for more precise detection
     let touchStartX = 0;
     let touchStartY = 0;
-    let isLeftEdge = false;
-    let isRightEdge = false;
-    let isExemptStart = false;
+    let isHorizontalSwipe = false;
 
     const isGestureExemptTarget = (target: EventTarget | null) => {
       const el = target as Element | null;
@@ -30,35 +46,31 @@ export function useSwipePrevent() {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Allow gestures / taps on exempt UI (e.g. chat widget in corner)
-      isExemptStart = isGestureExemptTarget(e.target);
-      if (isExemptStart) {
-        touchStartX = 0;
-        touchStartY = 0;
-        isLeftEdge = false;
-        isRightEdge = false;
-        return;
-      }
+      if (isGestureExemptTarget(e.target)) return;
 
-      const x = e.touches[0].clientX;
-      touchStartX = x;
-      touchStartY = e.touches[0].clientY;
-      isLeftEdge = x < EDGE_ZONE_PX;
-      isRightEdge = x > window.innerWidth - EDGE_ZONE_PX;
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      isHorizontalSwipe = false;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (isExemptStart) return;
       if (!touchStartX) return;
-      if (!isLeftEdge && !isRightEdge) return;
 
-      const touchX = e.touches[0].clientX;
-      const deltaX = touchX - touchStartX;
+      const touch = e.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartX);
+      const deltaY = Math.abs(touch.clientY - touchStartY);
 
-      // Immediately prevent browser navigation for any horizontal movement from edge
-      // Left edge + rightward swipe = back gesture
-      // Right edge + leftward swipe = forward gesture
-      if ((isLeftEdge && deltaX > 0) || (isRightEdge && deltaX < 0)) {
+      // Detect if this is primarily a horizontal swipe
+      if (!isHorizontalSwipe && deltaX > 10) {
+        isHorizontalSwipe = deltaX > deltaY * 1.5;
+      }
+
+      // Block horizontal swipes from edges
+      const isFromLeftEdge = touchStartX < EDGE_ZONE_PX;
+      const isFromRightEdge = touchStartX > window.innerWidth - EDGE_ZONE_PX;
+
+      if (isHorizontalSwipe && (isFromLeftEdge || isFromRightEdge)) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -67,9 +79,7 @@ export function useSwipePrevent() {
     const handleTouchEnd = () => {
       touchStartX = 0;
       touchStartY = 0;
-      isLeftEdge = false;
-      isRightEdge = false;
-      isExemptStart = false;
+      isHorizontalSwipe = false;
     };
 
     // Use capture phase to intercept before any other handlers
@@ -78,6 +88,7 @@ export function useSwipePrevent() {
     document.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true });
 
     return () => {
+      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('touchstart', handleTouchStart, { capture: true });
       document.removeEventListener('touchmove', handleTouchMove, { capture: true });
       document.removeEventListener('touchend', handleTouchEnd, { capture: true });

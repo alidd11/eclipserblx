@@ -850,3 +850,15 @@
   background: hsl(var(--primary) / 0.3);
   color: hsl(var(--foreground));
 }
+
+/* PWA swipe-back prevention - iOS Safari uses overscroll for back navigation */
+@media (display-mode: standalone) {
+  html, body {
+    overscroll-behavior-x: none;
+  }
+  
+  /* Prevent horizontal pan gestures on the entire page */
+  body {
+    touch-action: pan-y pinch-zoom;
+  }
+}
