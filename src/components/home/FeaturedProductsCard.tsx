@@ -106,7 +106,7 @@ export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function Fea
 
   return (
     <div 
-      className="rounded-2xl border border-border bg-card p-5"
+      className="rounded-2xl border border-border bg-card p-5 h-full"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
       onTouchStart={handleTouchStart}
