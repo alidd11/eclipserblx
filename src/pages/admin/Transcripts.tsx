@@ -29,7 +29,7 @@ interface Transcript {
   created_at: string;
   closed_at?: string;
   customer_name?: string;
-  customer_email?: string;
+  customer_id?: string;
   messages?: TranscriptMessage[];
 }
 
@@ -53,12 +53,12 @@ export default function Transcripts() {
       
       return (conversations || []).map(conv => ({
         id: conv.id,
-        title: conv.customer_name || conv.customer_email || 'Unknown Customer',
+        title: conv.customer_name || 'Unknown Customer',
         subtitle: conv.issue_category || 'General Inquiry',
         created_at: conv.created_at,
         closed_at: conv.updated_at,
         customer_name: conv.customer_name,
-        customer_email: conv.customer_email,
+        customer_id: conv.user_id,
       })) as Transcript[];
     },
   });
@@ -131,7 +131,7 @@ export default function Transcripts() {
         created_at: msg.created_at,
         closed_at: msg.responded_at,
         customer_name: msg.name,
-        customer_email: msg.email,
+        customer_id: msg.id.substring(0, 8).toUpperCase(),
       })) as Transcript[];
     },
   });
@@ -276,7 +276,7 @@ export default function Transcripts() {
     return transcripts.filter(t => 
       t.title.toLowerCase().includes(query) ||
       t.subtitle?.toLowerCase().includes(query) ||
-      t.customer_email?.toLowerCase().includes(query)
+      t.customer_id?.toLowerCase().includes(query)
     );
   };
 
@@ -418,9 +418,9 @@ export default function Transcripts() {
                       {/* Expanded Messages */}
                       {expandedTranscript === transcript.id && (
                         <div className="border-t border-border">
-                          {transcript.customer_email && (
+                          {transcript.customer_id && (
                             <div className="px-4 py-2 bg-muted/30 text-sm text-muted-foreground border-b border-border">
-                              Email: {transcript.customer_email}
+                              Customer ID: {transcript.customer_id.substring(0, 8).toUpperCase()}
                             </div>
                           )}
                           <ScrollArea className="h-[300px]">
