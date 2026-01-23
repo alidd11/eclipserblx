@@ -8,18 +8,27 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 
 interface DiscordSettings {
   discord_invite_url: string;
   discord_webhook_url: string;
   review_discord_webhook_url: string;
   affiliate_discord_webhook_url: string;
+  eclipse_plus_discord_webhook_url: string;
   discord_widget_server_id: string;
 }
 
@@ -45,6 +54,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   discord_webhook_url: '',
   review_discord_webhook_url: '',
   affiliate_discord_webhook_url: '',
+  eclipse_plus_discord_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -87,7 +97,14 @@ export default function DiscordSettings() {
     details?: string;
   } | null>(null);
 
-  // Fetch settings from database
+  const [isTestingEclipsePlusWebhook, setIsTestingEclipsePlusWebhook] = useState(false);
+  const [eclipsePlusWebhookTestResult, setEclipsePlusWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+
+  const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<string | null>(null);
   // Fetch boost rewards settings
   const { data: boostSettings } = useQuery({
     queryKey: ['boost-rewards-settings'],
@@ -152,7 +169,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -167,6 +184,8 @@ export default function DiscordSettings() {
           settingsMap.review_discord_webhook_url = String(val);
         } else if (item.key === 'affiliate_discord_webhook_url') {
           settingsMap.affiliate_discord_webhook_url = String(val);
+        } else if (item.key === 'eclipse_plus_discord_webhook_url') {
+          settingsMap.eclipse_plus_discord_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -529,6 +548,97 @@ export default function DiscordSettings() {
     }
   };
 
+  const handleTestEclipsePlusWebhook = async () => {
+    if (!user?.id) {
+      toast.error('You must be logged in');
+      return;
+    }
+    
+    if (!formData.eclipse_plus_discord_webhook_url) {
+      toast.error('Please enter an Eclipse+ Webhook URL first');
+      return;
+    }
+    
+    setIsTestingEclipsePlusWebhook(true);
+    setEclipsePlusWebhookTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-eclipse-plus-announcement', {
+        body: {},
+      });
+      
+      if (error) {
+        setEclipsePlusWebhookTestResult({
+          success: false,
+          message: 'Function invocation failed',
+          details: error.message,
+        });
+        toast.error('Eclipse+ webhook failed');
+      } else if (data?.success) {
+        setEclipsePlusWebhookTestResult({
+          success: true,
+          message: 'Eclipse+ announcement sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Eclipse+ announcement sent successfully!');
+      } else {
+        setEclipsePlusWebhookTestResult({
+          success: false,
+          message: data?.error || 'Unknown error',
+          details: data?.details,
+        });
+        toast.error('Eclipse+ webhook failed');
+      }
+    } catch (err: any) {
+      console.error('Eclipse+ webhook error:', err);
+      setEclipsePlusWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to send Eclipse+ announcement');
+    } finally {
+      setIsTestingEclipsePlusWebhook(false);
+    }
+  };
+
+  const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus') => {
+    if (!user?.id) {
+      toast.error('You must be logged in');
+      return;
+    }
+
+    const functionName = type === 'affiliate' ? 'send-affiliate-announcement' : 'send-eclipse-plus-announcement';
+    const webhookKey = type === 'affiliate' ? 'affiliate_discord_webhook_url' : 'eclipse_plus_discord_webhook_url';
+    const label = type === 'affiliate' ? 'Affiliate' : 'Eclipse+';
+
+    if (!formData[webhookKey]) {
+      toast.error(`Please configure the ${label} webhook URL first`);
+      return;
+    }
+
+    setIsSendingAnnouncement(type);
+
+    try {
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: {},
+      });
+
+      if (error) {
+        toast.error(`${label} announcement failed: ${error.message}`);
+      } else if (data?.success) {
+        toast.success(`${label} announcement sent to Discord!`);
+      } else {
+        toast.error(data?.error || `${label} announcement failed`);
+      }
+    } catch (err: any) {
+      console.error(`${label} announcement error:`, err);
+      toast.error(`Failed to send ${label} announcement`);
+    } finally {
+      setIsSendingAnnouncement(null);
+    }
+  };
+
   const TestResultBadge = ({ result }: { result: { success: boolean; message: string; details?: string } | null }) => {
     if (!result) return null;
     
@@ -576,14 +686,57 @@ export default function DiscordSettings() {
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[#5865F2]/20">
-                <MessageSquare className="h-6 w-6 text-[#5865F2]" />
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#5865F2]/20">
+                  <MessageSquare className="h-6 w-6 text-[#5865F2]" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
+                  <CardDescription>Manage your Discord integrations and webhooks</CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
-                <CardDescription>Manage your Discord integrations and webhooks</CardDescription>
-              </div>
+              
+              {/* Announcement Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    {isSendingAnnouncement ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Megaphone className="h-4 w-4" />
+                    )}
+                    Send Announcement
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Select Announcement</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => handleSendAnnouncementFromDropdown('affiliate')}
+                    disabled={isSendingAnnouncement !== null || !formData.affiliate_discord_webhook_url}
+                    className="gap-2"
+                  >
+                    <Gift className="h-4 w-4 text-green-400" />
+                    <div>
+                      <p className="font-medium">Affiliate Programme</p>
+                      <p className="text-xs text-muted-foreground">Promote affiliate sign-ups</p>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleSendAnnouncementFromDropdown('eclipse_plus')}
+                    disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url}
+                    className="gap-2"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                    <div>
+                      <p className="font-medium">Eclipse+ Membership</p>
+                      <p className="text-xs text-muted-foreground">Promote premium membership</p>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardHeader>
         </Card>
@@ -618,6 +771,10 @@ export default function DiscordSettings() {
               <TabsTrigger value="affiliate" className="gap-2">
                 <Gift className="h-4 w-4 hidden sm:block" />
                 Affiliate
+              </TabsTrigger>
+              <TabsTrigger value="eclipse-plus" className="gap-2">
+                <Sparkles className="h-4 w-4 hidden sm:block" />
+                Eclipse+
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1173,6 +1330,84 @@ export default function DiscordSettings() {
                     <li>Minimum payout threshold</li>
                     <li>Cookie duration (referral tracking period)</li>
                   </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Eclipse+ Webhook Tab */}
+          <TabsContent value="eclipse-plus">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                  <CardTitle>Eclipse+ Membership Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Send Eclipse+ membership announcements to Discord
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="eclipsePlusWebhook">Webhook URL</Label>
+                  <Input
+                    id="eclipsePlusWebhook"
+                    value={formData.eclipse_plus_discord_webhook_url}
+                    onChange={(e) => handleChange('eclipse_plus_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for Eclipse+ membership announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Send className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Send Announcement</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Send the Eclipse+ membership advertisement to your Discord channel to attract new subscribers.
+                  </p>
+                  <Button
+                    onClick={handleTestEclipsePlusWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingEclipsePlusWebhook || !formData.eclipse_plus_discord_webhook_url}
+                  >
+                    {isTestingEclipsePlusWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Announcement
+                  </Button>
+                  <TestResultBadge result={eclipsePlusWebhookTestResult} />
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Professional Eclipse+ membership advertisement</li>
+                    <li>30% discount on all products</li>
+                    <li>Monthly free product claim</li>
+                    <li>Discord role assignment feature</li>
+                    <li>Pricing information (£4.99/month)</li>
+                  </ul>
+                </div>
+
+                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-amber-400">Premium Announcement</p>
+                      <p className="text-sm text-muted-foreground">
+                        This announcement showcases the exclusive benefits of Eclipse+ membership 
+                        with a gold-themed design to attract premium subscribers.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
