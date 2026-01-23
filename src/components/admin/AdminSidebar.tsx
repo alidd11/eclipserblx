@@ -112,10 +112,10 @@ const navGroups: NavGroup[] = [
   },
   {
     id: 'users-analytics',
-    title: 'Users',
+    title: 'Customers',
     icon: Users,
     items: [
-      { title: 'Users', icon: Users, href: '/admin/users', roles: ['admin'] },
+      { title: 'Customers', icon: Users, href: '/admin/users', roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
     ],
