@@ -259,11 +259,11 @@ export default function DiscordModmail() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "open":
-        return <Badge variant="default" className="bg-green-500">Open</Badge>;
+        return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">Open</Badge>;
       case "claimed":
-        return <Badge variant="secondary">Claimed</Badge>;
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">In Progress</Badge>;
       case "closed":
-        return <Badge variant="outline">Closed</Badge>;
+        return <Badge variant="secondary">Closed</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -274,11 +274,11 @@ export default function DiscordModmail() {
       case "urgent":
         return <Badge variant="destructive">Urgent</Badge>;
       case "high":
-        return <Badge className="bg-orange-500">High</Badge>;
+        return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">High</Badge>;
       case "normal":
         return null;
       case "low":
-        return <Badge variant="outline">Low</Badge>;
+        return <Badge variant="outline" className="bg-muted text-muted-foreground">Low</Badge>;
       default:
         return null;
     }
@@ -300,10 +300,10 @@ export default function DiscordModmail() {
 
   return (
     <AdminLayout>
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
               <MessageSquare className="h-6 w-6" />
               Discord Modmail
             </h1>
@@ -318,23 +318,29 @@ export default function DiscordModmail() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 md:gap-3">
-          <Card className="bg-card">
-            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
-              <div className="text-xl md:text-2xl font-bold text-green-500">{openTickets.length}</div>
-              <p className="text-xs md:text-sm text-muted-foreground">Open</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Open</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-green-500">{openTickets.length}</p>
             </CardContent>
           </Card>
-          <Card className="bg-card">
-            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
-              <div className="text-xl md:text-2xl font-bold text-blue-500">{claimedTickets.length}</div>
-              <p className="text-xs md:text-sm text-muted-foreground">In Progress</p>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">In Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-blue-500">{claimedTickets.length}</p>
             </CardContent>
           </Card>
-          <Card className="bg-card">
-            <CardContent className="p-3 md:pt-4 md:px-4 text-center">
-              <div className="text-xl md:text-2xl font-bold">{tickets.length}</div>
-              <p className="text-xs md:text-sm text-muted-foreground">Total Active</p>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Total Active</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{tickets.length}</p>
             </CardContent>
           </Card>
         </div>
