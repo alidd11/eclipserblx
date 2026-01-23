@@ -24,6 +24,30 @@ import {
 import { toast } from 'sonner';
 import { EarningsCalculator } from '@/components/seller/EarningsCalculator';
 
+function getEdgeFunctionErrorMessage(err: unknown): string {
+  if (!err) return 'Unknown error';
+  if (typeof err === 'string') return err;
+
+  const anyErr = err as any;
+
+  // Supabase FunctionsHttpError often stores the real JSON body here.
+  const body = anyErr?.context?.body;
+  if (body) {
+    if (typeof body === 'string') {
+      try {
+        const parsed = JSON.parse(body);
+        if (parsed?.error) return String(parsed.error);
+      } catch {
+        // ignore
+      }
+      return body;
+    }
+    if (typeof body === 'object' && body?.error) return String(body.error);
+  }
+
+  return anyErr?.message || 'Unknown error';
+}
+
 const COUNTRIES = [
   { code: 'GB', name: 'United Kingdom' },
   { code: 'US', name: 'United States' },
@@ -164,7 +188,8 @@ export default function SellerSettingsPayments() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to setup Stripe Connect: ' + error.message);
+      const message = getEdgeFunctionErrorMessage(error);
+      toast.error(`Failed to setup Stripe Connect: ${message}`);
     },
   });
 
