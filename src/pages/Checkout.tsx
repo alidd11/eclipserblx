@@ -220,7 +220,7 @@ export default function Checkout() {
 
   return (
     <MainLayout>
-      <div className="container py-8 max-w-4xl space-y-8 overflow-x-hidden">
+      <div className="container py-8 max-w-4xl space-y-8 overflow-x-hidden px-4 sm:px-6 w-full box-border">
         <Link to="/cart" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" />
           Back to Cart
@@ -228,9 +228,9 @@ export default function Checkout() {
 
         <h1 className="text-3xl md:text-4xl font-display font-bold">Checkout</h1>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-6 w-full min-w-0">
           {/* Order Summary - Now First on Mobile */}
-          <div className="order-first lg:order-last gaming-card p-6 h-fit space-y-6">
+          <div className="order-first lg:order-last gaming-card p-4 sm:p-6 h-fit space-y-6 min-w-0 overflow-hidden">
             <h2 className="text-xl font-display font-bold">Order Summary</h2>
             
             <div className="space-y-3">
@@ -245,7 +245,7 @@ export default function Checkout() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <p className="font-medium truncate text-sm">{item.name}</p>
                     <p className="text-xs text-muted-foreground">Digital Product</p>
                   </div>
@@ -335,10 +335,10 @@ export default function Checkout() {
           </div>
 
             {/* Discount & Payment */}
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-0 overflow-hidden">
             {/* Only show discount code section if Eclipse+ discount is NOT applied */}
             {!(isSubscribed && eclipseDiscount > 0) && (
-              <div className="gaming-card p-6 space-y-4">
+              <div className="gaming-card p-4 sm:p-6 space-y-4">
                 <h2 className="text-xl font-display font-bold flex items-center gap-2">
                   <Tag className="h-5 w-5" />
                   Discount Code
@@ -386,7 +386,7 @@ export default function Checkout() {
               </div>
             )}
 
-            <div className="gaming-card p-6 space-y-4">
+            <div className="gaming-card p-4 sm:p-6 space-y-4">
               <h2 className="text-xl font-display font-bold flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
                 Payment
