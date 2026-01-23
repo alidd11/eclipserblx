@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
         },
         {
           name: "💳 Payouts",
-          value: `Request a payout once you reach the **£${minimumPayout}** minimum threshold. Payments are processed securely via Stripe Connect.\n\u200B`,
+          value: `Request a payout once you reach the **£${minimumPayout}** minimum threshold. Payments are processed via PayPal.\n\u200B`,
           inline: false,
         },
         {

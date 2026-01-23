@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -21,9 +20,6 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -64,24 +60,19 @@ serve(async (req) => {
 
     logStep("Balance check passed", { available: balance.available_balance, requested: amount });
 
-    // Check user has a valid Stripe Connect account
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('stripe_account_id')
+    // Get user's affiliate application to check PayPal email
+    const { data: application } = await supabaseClient
+      .from('affiliate_applications')
+      .select('paypal_email')
       .eq('user_id', user.id)
+      .eq('status', 'approved')
       .single();
 
-    if (!profile?.stripe_account_id) {
-      throw new Error("Please set up your payout account first");
+    if (!application?.paypal_email) {
+      throw new Error("Please add your PayPal email to receive payouts. Contact support to update your details.");
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-
-    // Verify account can receive payouts
-    const account = await stripe.accounts.retrieve(profile.stripe_account_id);
-    if (!account.payouts_enabled) {
-      throw new Error("Your payout account is not fully set up. Please complete onboarding.");
-    }
+    logStep("PayPal email verified", { email: application.paypal_email });
 
     // Check for pending payouts
     const { data: pendingPayouts } = await supabaseClient
@@ -110,13 +101,13 @@ serve(async (req) => {
 
     logStep("Balance deducted", { previousBalance: balance.available_balance, newBalance, amount });
 
-    // Create payout request
+    // Create payout request with PayPal email
     const { data: payout, error: payoutError } = await supabaseClient
       .from('affiliate_payouts')
       .insert({
         user_id: user.id,
         amount: amount,
-        stripe_account_id: profile.stripe_account_id,
+        paypal_email: application.paypal_email,
         status: 'pending',
       })
       .select()
@@ -134,12 +125,12 @@ serve(async (req) => {
       throw new Error("Failed to create payout request");
     }
 
-    logStep("Payout request created", { payoutId: payout.id, amount });
+    logStep("Payout request created", { payoutId: payout.id, amount, paypalEmail: application.paypal_email });
 
     return new Response(JSON.stringify({ 
       success: true,
       payoutId: payout.id,
-      message: "Payout request submitted successfully",
+      message: "Payout request submitted successfully. Payment will be sent to your PayPal.",
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

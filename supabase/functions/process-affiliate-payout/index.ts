@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -19,9 +18,6 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -58,52 +54,32 @@ serve(async (req) => {
     if (payoutError || !payout) throw new Error("Payout not found");
     if (payout.status !== 'pending') throw new Error("Payout is not pending");
 
-    logStep("Processing payout", { payoutId, amount: payout.amount, userId: payout.user_id });
-
-    // Get user's Stripe Connect account
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('stripe_account_id')
-      .eq('user_id', payout.user_id)
-      .single();
-
-    if (!profile?.stripe_account_id) {
-      throw new Error("User does not have a Stripe Connect account");
+    if (!payout.paypal_email) {
+      throw new Error("No PayPal email associated with this payout request");
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-
-    // Check account status
-    const account = await stripe.accounts.retrieve(profile.stripe_account_id);
-    if (!account.payouts_enabled) {
-      throw new Error("User's Stripe account cannot receive payouts");
-    }
-
-    // Create transfer to connected account
-    const transfer = await stripe.transfers.create({
-      amount: payout.amount, // Amount in pence
-      currency: 'gbp',
-      destination: profile.stripe_account_id,
-      transfer_group: `PAYOUT_${payoutId}`,
-      metadata: {
-        payout_id: payoutId,
-        user_id: payout.user_id,
-      },
+    logStep("Processing payout", { 
+      payoutId, 
+      amount: payout.amount, 
+      userId: payout.user_id,
+      paypalEmail: payout.paypal_email 
     });
 
-    logStep("Transfer created", { transferId: transfer.id, amount: transfer.amount });
-
-    // Update payout record
-    await supabaseClient
+    // Mark as completed - staff will manually send PayPal payment
+    // This function just updates the status for record keeping
+    const { error: updateError } = await supabaseClient
       .from('affiliate_payouts')
       .update({
         status: 'completed',
-        stripe_account_id: profile.stripe_account_id,
-        stripe_transfer_id: transfer.id,
         processed_at: new Date().toISOString(),
         processed_by: staffUser.id,
+        notes: `PayPal payment to be sent to: ${payout.paypal_email}`,
       })
       .eq('id', payoutId);
+
+    if (updateError) {
+      throw new Error("Failed to update payout status");
+    }
 
     // Update total_paid in affiliate_balances
     const { data: currentBalance } = await supabaseClient
@@ -122,11 +98,17 @@ serve(async (req) => {
         .eq('user_id', payout.user_id);
     }
 
-    logStep("Payout completed", { payoutId, transferId: transfer.id });
+    logStep("Payout marked as completed", { 
+      payoutId, 
+      paypalEmail: payout.paypal_email,
+      amount: `£${(payout.amount / 100).toFixed(2)}` 
+    });
 
     return new Response(JSON.stringify({ 
       success: true,
-      transferId: transfer.id,
+      message: `Payout marked as completed. Please send £${(payout.amount / 100).toFixed(2)} to ${payout.paypal_email} via PayPal.`,
+      paypalEmail: payout.paypal_email,
+      amount: payout.amount,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
