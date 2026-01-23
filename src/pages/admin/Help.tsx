@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { 
   LayoutDashboard, 
   Package, 
@@ -17,13 +18,29 @@ import {
   Download,
   HelpCircle,
   BookOpen,
-  Zap
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2
 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+
+// Map display roles to database role values
+const ROLE_MAP: Record<string, string[]> = {
+  'All Staff': ['admin', 'product_manager', 'order_manager', 'support_agent', 'analyst', 'recruiter'],
+  'Admin': ['admin'],
+  'Product Manager': ['product_manager'],
+  'Order Manager': ['order_manager'],
+  'Support Agent': ['support_agent'],
+  'Analyst': ['analyst'],
+  'Recruiter': ['recruiter'],
+};
 
 const dashboardSections = [
   {
@@ -43,7 +60,7 @@ const dashboardSections = [
     title: 'Analytics',
     icon: BarChart3,
     description: 'Comprehensive metrics and performance data.',
-    roles: ['Admin'],
+    roles: ['Admin', 'Analyst'],
     features: [
       'Sales metrics and order statistics',
       'Customer growth and user analytics',
@@ -195,30 +212,111 @@ const dashboardSections = [
   }
 ];
 
+// Quick tips with role filters and merged getting started checklist items
 const quickTips = [
   {
     icon: Clock,
     title: 'Always Clock In',
-    description: 'Start your shift by clocking in on the Dashboard. This helps track work hours and ensures accurate records.'
+    description: 'Start your shift by clocking in on the Dashboard. This helps track work hours and ensures accurate records.',
+    roles: ['All Staff'],
+    isGettingStarted: true,
+    order: 1
+  },
+  {
+    icon: MessageCircle,
+    title: 'Check Live Chat First',
+    description: 'When starting your shift, check Live Chat for any waiting customer inquiries that need attention.',
+    roles: ['Admin', 'Support Agent'],
+    isGettingStarted: true,
+    order: 2
+  },
+  {
+    icon: ShoppingCart,
+    title: 'Review Pending Orders',
+    description: 'Review pending orders and process any that need action to keep customers happy.',
+    roles: ['Admin', 'Order Manager'],
+    isGettingStarted: true,
+    order: 3
+  },
+  {
+    icon: Mail,
+    title: 'Check Staff Messages',
+    description: 'Check Staff Messages for any team announcements or updates from other staff members.',
+    roles: ['All Staff'],
+    isGettingStarted: true,
+    order: 4
+  },
+  {
+    icon: Clock,
+    title: 'Clock Out with Notes',
+    description: 'Remember to clock out with notes about your session when you finish your shift.',
+    roles: ['All Staff'],
+    isGettingStarted: true,
+    order: 5
   },
   {
     icon: Zap,
     title: 'Use Quick Responses',
-    description: 'In Live Chat, use the quick response button to insert pre-written professional replies for common questions.'
+    description: 'In Live Chat, use the quick response button to insert pre-written professional replies for common questions.',
+    roles: ['Admin', 'Support Agent'],
+    isGettingStarted: false
   },
   {
     icon: Shield,
     title: 'Role-Based Access',
-    description: 'You only see menu items and features relevant to your assigned roles. Admins have full access to everything.'
+    description: 'You only see menu items and features relevant to your assigned roles. Admins have full access to everything.',
+    roles: ['All Staff'],
+    isGettingStarted: false
   },
   {
     icon: Download,
     title: 'Export Data',
-    description: 'Many pages support exporting data as CSV for reporting. Look for export buttons in Analytics and Income pages.'
+    description: 'Many pages support exporting data as CSV for reporting. Look for export buttons in Analytics and Income pages.',
+    roles: ['Admin', 'Analyst'],
+    isGettingStarted: false
+  },
+  {
+    icon: Package,
+    title: 'Product Media',
+    description: 'Drag and drop to reorder product images. The first image becomes the thumbnail shown in listings.',
+    roles: ['Admin', 'Product Manager'],
+    isGettingStarted: false
+  },
+  {
+    icon: FileText,
+    title: 'Application Notes',
+    description: 'Add internal notes to job applications to share insights with other recruiters reviewing the same applicant.',
+    roles: ['Admin', 'Recruiter'],
+    isGettingStarted: false
   }
 ];
 
 export default function AdminHelp() {
+  const { roles, isAdmin } = useAdminAuth();
+  const [quickTipsOpen, setQuickTipsOpen] = useState(true);
+
+  // Check if user has access to a section based on their roles
+  const hasAccessToSection = (sectionRoles: string[]) => {
+    if (isAdmin) return true;
+    
+    return sectionRoles.some(displayRole => {
+      const dbRoles = ROLE_MAP[displayRole] || [];
+      return dbRoles.some(dbRole => roles.includes(dbRole as any));
+    });
+  };
+
+  // Filter sections based on user's roles
+  const visibleSections = dashboardSections.filter(section => hasAccessToSection(section.roles));
+
+  // Filter tips based on user's roles
+  const visibleTips = quickTips.filter(tip => hasAccessToSection(tip.roles));
+
+  // Separate getting started items from other tips
+  const gettingStartedTips = visibleTips
+    .filter(tip => tip.isGettingStarted)
+    .sort((a, b) => (a.order || 99) - (b.order || 99));
+  const otherTips = visibleTips.filter(tip => !tip.isGettingStarted);
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -236,178 +334,128 @@ export default function AdminHelp() {
           </CardHeader>
         </Card>
 
-        {/* Quick Tips */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <HelpCircle className="h-5 w-5" />
-              Quick Tips
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {quickTips.map((tip, index) => (
-                <div key={index} className="flex gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10 h-fit">
-                    <tip.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{tip.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{tip.description}</p>
-                  </div>
+        {/* Quick Tips - Collapsible */}
+        <Collapsible open={quickTipsOpen} onOpenChange={setQuickTipsOpen}>
+          <Card className="bg-card border-border">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <HelpCircle className="h-5 w-5" />
+                    Quick Tips & Getting Started
+                  </CardTitle>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    {quickTipsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                {/* Getting Started Checklist */}
+                {gettingStartedTips.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Getting Started Checklist
+                    </h4>
+                    <div className="space-y-2">
+                      {gettingStartedTips.map((tip, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold flex-shrink-0">
+                            {tip.order}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{tip.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{tip.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-        {/* Dashboard Sections */}
+                {/* Other Tips */}
+                {otherTips.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      Pro Tips
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {otherTips.map((tip, index) => (
+                        <div key={index} className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                          <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10 h-fit">
+                            <tip.icon className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{tip.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tip.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
+        {/* Dashboard Sections - Filtered by role */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <LayoutDashboard className="h-5 w-5" />
-              Dashboard Sections
+              Your Dashboard Sections
             </CardTitle>
-            <CardDescription>Click on any section to learn more about its features</CardDescription>
+            <CardDescription>
+              Features available to you based on your roles
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              {dashboardSections.map((section, index) => (
-                <AccordionItem key={index} value={`section-${index}`}>
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10">
-                        <section.icon className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium">{section.title}</span>
-                          <div className="flex gap-1 flex-wrap">
-                            {section.roles.map((role) => (
-                              <Badge key={role} variant="secondary" className="text-[10px] px-1.5 py-0">
-                                {role}
-                              </Badge>
-                            ))}
-                          </div>
+            {visibleSections.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No sections available for your current role.
+              </p>
+            ) : (
+              <Accordion type="single" collapsible className="w-full">
+                {visibleSections.map((section, index) => (
+                  <AccordionItem key={index} value={`section-${index}`}>
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center gap-3 text-left">
+                        <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10">
+                          <section.icon className="h-4 w-4 text-primary" />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium">{section.title}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                            {section.description}
+                          </p>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="pl-11 pr-2 pb-2">
+                        <p className="text-sm text-muted-foreground mb-3 sm:hidden">
                           {section.description}
                         </p>
+                        <ul className="space-y-2">
+                          {section.features.map((feature, featureIndex) => (
+                            <li key={featureIndex} className="flex items-start gap-2 text-sm">
+                              <span className="text-primary mt-1">•</span>
+                              <span className="text-muted-foreground">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pl-11 pr-2 pb-2">
-                      <p className="text-sm text-muted-foreground mb-3 sm:hidden">
-                        {section.description}
-                      </p>
-                      <ul className="space-y-2">
-                        {section.features.map((feature, featureIndex) => (
-                          <li key={featureIndex} className="flex items-start gap-2 text-sm">
-                            <span className="text-primary mt-1">•</span>
-                            <span className="text-muted-foreground">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-
-        {/* Role Permissions */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Shield className="h-5 w-5" />
-              Role Permissions
-            </CardTitle>
-            <CardDescription>Understanding what each role can access</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Admin</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Full access to all dashboard features including user management, income analytics, audit logs, and system settings. Can assign roles to other users (except Admin role which requires primary admin).
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 mb-2">Product Manager</Badge>
-                  <p className="text-xs text-muted-foreground">
-                    Manage products, categories, images, and downloadable files.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30 mb-2">Order Manager</Badge>
-                  <p className="text-xs text-muted-foreground">
-                    View and manage orders, process refunds, and handle order inquiries.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 mb-2">Support Agent</Badge>
-                  <p className="text-xs text-muted-foreground">
-                    Access live chat to respond to customer support inquiries in real-time.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 mb-2">Recruiter</Badge>
-                  <p className="text-xs text-muted-foreground">
-                    Review job applications, contact applicants, and manage hiring pipeline.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted/50 border border-border sm:col-span-2">
-                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 mb-2">Analyst</Badge>
-                  <p className="text-xs text-muted-foreground">
-                    View analytics and reports for business insights (analytics access only).
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Getting Started */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Zap className="h-5 w-5" />
-              Getting Started Checklist
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">1</div>
-                <p className="text-sm">Clock in when you start your shift using the Duty Status card on the Dashboard</p>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">2</div>
-                <p className="text-sm">Check Live Chat for any waiting customer inquiries that need attention</p>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">3</div>
-                <p className="text-sm">Review pending orders and process any that need action</p>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">4</div>
-                <p className="text-sm">Check Staff Messages for any team announcements or updates</p>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">5</div>
-                <p className="text-sm">Remember to clock out with notes about your session when you finish</p>
-              </div>
-            </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )}
           </CardContent>
         </Card>
       </div>
