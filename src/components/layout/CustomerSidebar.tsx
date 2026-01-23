@@ -220,6 +220,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: 'Home', icon: Home, href: '/' },
         { title: 'My Account', icon: User, href: '/account' },
+        // Only show affiliate link if program is enabled
+        ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate Dashboard', icon: TrendingUp, href: '/affiliate' }] : []),
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'My Messages', icon: Bell, href: '/messages', showNotificationDot: true },
@@ -246,15 +248,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' },
       ],
     },
-    // Only show affiliate section if program is enabled
-    ...(affiliateSettings.isEnabled ? [{
-      id: 'affiliate',
-      title: 'Earn',
-      icon: TrendingUp,
-      items: [
-        { title: 'Affiliate Dashboard', icon: TrendingUp, href: '/affiliate' },
-      ],
-    }] : []),
     {
       id: 'community',
       title: 'Community',
