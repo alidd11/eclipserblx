@@ -52,6 +52,7 @@ const navGroups: NavGroup[] = [
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
       { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', roles: ['admin'], dividerAfter: true },
+      { title: 'Discord Outreach', icon: Megaphone, href: '/admin/discord-outreach', roles: ['admin', 'recruiter'] },
       { title: 'Bot Queue', icon: Bell, href: '/admin/bot-queue', roles: [] },
     ],
   },

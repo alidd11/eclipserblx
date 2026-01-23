@@ -812,6 +812,63 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_outreach: {
+        Row: {
+          contact_discord: string | null
+          contact_name: string | null
+          contacted_at: string
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decision: string | null
+          id: string
+          last_followup_at: string | null
+          member_count: number | null
+          notes: string | null
+          server_id: string | null
+          server_name: string
+          server_type: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact_discord?: string | null
+          contact_name?: string | null
+          contacted_at?: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decision?: string | null
+          id?: string
+          last_followup_at?: string | null
+          member_count?: number | null
+          notes?: string | null
+          server_id?: string | null
+          server_name: string
+          server_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact_discord?: string | null
+          contact_name?: string | null
+          contacted_at?: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decision?: string | null
+          id?: string
+          last_followup_at?: string | null
+          member_count?: number | null
+          notes?: string | null
+          server_id?: string | null
+          server_name?: string
+          server_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discount_codes: {
         Row: {
           category_ids: string[] | null
