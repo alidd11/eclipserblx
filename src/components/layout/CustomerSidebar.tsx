@@ -220,14 +220,21 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: 'Home', icon: Home, href: '/' },
         { title: 'My Account', icon: User, href: '/account' },
-        // Add Seller Dashboard for sellers right after Account
-        ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'My Messages', icon: Bell, href: '/messages', showNotificationDot: true },
-        { title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' },
       ],
     },
+    // Only show seller section for sellers
+    ...(isSeller ? [{
+      id: 'selling',
+      title: 'Selling',
+      icon: Store,
+      items: [
+        { title: 'Seller Dashboard', icon: Store, href: '/seller' },
+        { title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' },
+      ],
+    }] : []),
     {
       id: 'products',
       title: 'Products',
