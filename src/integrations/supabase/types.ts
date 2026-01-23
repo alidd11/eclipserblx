@@ -821,6 +821,7 @@ export type Database = {
           created_by: string | null
           decided_at: string | null
           decision: string | null
+          discord_invite: string | null
           id: string
           last_followup_at: string | null
           member_count: number | null
@@ -839,6 +840,7 @@ export type Database = {
           created_by?: string | null
           decided_at?: string | null
           decision?: string | null
+          discord_invite?: string | null
           id?: string
           last_followup_at?: string | null
           member_count?: number | null
@@ -857,6 +859,7 @@ export type Database = {
           created_by?: string | null
           decided_at?: string | null
           decision?: string | null
+          discord_invite?: string | null
           id?: string
           last_followup_at?: string | null
           member_count?: number | null

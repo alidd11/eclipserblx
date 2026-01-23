@@ -58,6 +58,7 @@ interface OutreachRecord {
   id: string;
   server_name: string;
   server_id: string | null;
+  discord_invite: string | null;
   contact_name: string | null;
   contact_discord: string | null;
   member_count: number | null;
@@ -105,6 +106,7 @@ export default function DiscordOutreach() {
   const [formData, setFormData] = useState({
     server_name: "",
     server_id: "",
+    discord_invite: "",
     contact_name: "",
     contact_discord: "",
     member_count: "",
@@ -158,6 +160,7 @@ export default function DiscordOutreach() {
       const payload = {
         server_name: data.server_name,
         server_id: data.server_id || null,
+        discord_invite: data.discord_invite || null,
         contact_name: data.contact_name || null,
         contact_discord: data.contact_discord || null,
         member_count: data.member_count ? parseInt(data.member_count) : null,
@@ -251,6 +254,7 @@ export default function DiscordOutreach() {
     setFormData({
       server_name: "",
       server_id: "",
+      discord_invite: "",
       contact_name: "",
       contact_discord: "",
       member_count: "",
@@ -266,6 +270,7 @@ export default function DiscordOutreach() {
     setFormData({
       server_name: record.server_name,
       server_id: record.server_id || "",
+      discord_invite: record.discord_invite || "",
       contact_name: record.contact_name || "",
       contact_discord: record.contact_discord || "",
       member_count: record.member_count?.toString() || "",
@@ -489,6 +494,14 @@ export default function DiscordOutreach() {
                   placeholder="Discord Server ID"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Discord Invite Link</Label>
+              <Input
+                value={formData.discord_invite}
+                onChange={(e) => setFormData({ ...formData, discord_invite: e.target.value })}
+                placeholder="https://discord.gg/..."
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
