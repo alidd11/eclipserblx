@@ -386,6 +386,16 @@ export default function StaffProfile() {
                 <span className="text-sm text-muted-foreground">Staff ID</span>
                 <span className="font-mono text-sm">{profile.staff_id || 'N/A'}</span>
               </div>
+              {/* Hide email for primary admin, show for others */}
+              {profile.email !== 'alicanimir1@gmail.com' && (
+                <>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Email</span>
+                    <span className="text-sm">{profile.email}</span>
+                  </div>
+                </>
+              )}
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Account Created</span>
