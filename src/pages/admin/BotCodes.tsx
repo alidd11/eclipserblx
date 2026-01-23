@@ -256,8 +256,8 @@ export default function AdminBotCodes() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Codes</CardTitle>
             </CardHeader>
@@ -265,7 +265,7 @@ export default function AdminBotCodes() {
               <div className="text-2xl font-bold">{totalCodes}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
             </CardHeader>
@@ -273,7 +273,7 @@ export default function AdminBotCodes() {
               <div className="text-2xl font-bold text-primary">{activeCodes}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Claimed</CardTitle>
             </CardHeader>
@@ -281,7 +281,7 @@ export default function AdminBotCodes() {
               <div className="text-2xl font-bold text-green-600">{usedCodes}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Expired</CardTitle>
             </CardHeader>

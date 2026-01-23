@@ -356,8 +356,8 @@ export default function SellerSupport() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 mb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
@@ -368,7 +368,7 @@ export default function SellerSupport() {
               <p className="text-3xl font-bold">{openTickets.length}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -381,7 +381,7 @@ export default function SellerSupport() {
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />

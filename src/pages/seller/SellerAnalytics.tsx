@@ -194,16 +194,16 @@ export default function SellerAnalytics() {
 
         {isLoading ? (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+              {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 min-w-[140px] flex-shrink-0 md:min-w-0" />)}
             </div>
             <Skeleton className="h-80" />
           </div>
         ) : processedData ? (
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <Card>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
+              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Eye className="h-4 w-4" />
@@ -213,7 +213,7 @@ export default function SellerAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <MousePointer className="h-4 w-4" />
@@ -223,7 +223,7 @@ export default function SellerAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <ShoppingCart className="h-4 w-4" />
@@ -233,7 +233,7 @@ export default function SellerAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <CreditCard className="h-4 w-4" />
@@ -243,7 +243,7 @@ export default function SellerAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <TrendingUp className="h-4 w-4" />

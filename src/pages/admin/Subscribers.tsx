@@ -274,8 +274,8 @@ export default function Subscribers() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -286,7 +286,7 @@ export default function Subscribers() {
               <p className="text-2xl font-bold">{stats.total}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <Bell className="h-4 w-4" />
@@ -297,7 +297,7 @@ export default function Subscribers() {
               <p className="text-2xl font-bold">{stats.updates}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
@@ -308,7 +308,7 @@ export default function Subscribers() {
               <p className="text-2xl font-bold">{stats.discounts}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <Newspaper className="h-4 w-4" />

@@ -249,8 +249,8 @@ const AffiliateApplications = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-yellow-500/10">
@@ -263,7 +263,7 @@ const AffiliateApplications = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-green-500/10">
@@ -276,7 +276,7 @@ const AffiliateApplications = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-red-500/10">
@@ -289,7 +289,7 @@ const AffiliateApplications = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">

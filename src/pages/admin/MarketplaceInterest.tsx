@@ -65,8 +65,8 @@ export default function MarketplaceInterest() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Interested</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -78,7 +78,7 @@ export default function MarketplaceInterest() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Registered Today</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -90,7 +90,7 @@ export default function MarketplaceInterest() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Latest Registration</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
