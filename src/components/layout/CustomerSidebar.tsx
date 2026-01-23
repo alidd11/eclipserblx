@@ -249,10 +249,10 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     // Only show affiliate section if program is enabled
     ...(affiliateSettings.isEnabled ? [{
       id: 'affiliate',
-      title: 'Affiliate',
+      title: 'Earn',
       icon: TrendingUp,
       items: [
-        { title: 'Affiliate Program', icon: TrendingUp, href: '/affiliate' },
+        { title: 'Affiliate Dashboard', icon: TrendingUp, href: '/affiliate' },
       ],
     }] : []),
     {
