@@ -77,14 +77,10 @@ Deno.serve(async (req) => {
         },
         {
           name: "🔗 Join Now",
-          value: "Visit our website and sign up today to start earning. If you have any questions, feel free to reach out to our support team.",
+          value: "[**Click here to get started →**](https://roleplay-hub-shop.lovable.app/affiliate)\n\nIf you have any questions, feel free to reach out to our support team.",
           inline: false,
         },
       ],
-      footer: {
-        text: "Thank you for supporting our community",
-      },
-      timestamp: new Date().toISOString(),
     };
 
     const response = await fetch(webhookUrl, {
