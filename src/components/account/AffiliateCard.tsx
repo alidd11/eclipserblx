@@ -600,7 +600,7 @@ export function AffiliateCard() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Minimum payout: £{MINIMUM_PAYOUT}. {canUseStripe ? 'Instant via Stripe.' : 'Via PayPal (1-3 days).'}
+              Minimum payout: £{MINIMUM_PAYOUT}. {canUseStripe ? 'Instant via Stripe.' : 'Via Stripe (instant) or PayPal (1-3 days).'}
             </p>
           </div>
         )}
