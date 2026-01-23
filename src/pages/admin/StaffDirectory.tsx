@@ -101,9 +101,28 @@ export default function StaffDirectory() {
         });
       });
 
-      return Array.from(staffMap.values()).sort((a, b) => 
-        (a.display_name || 'Unknown').localeCompare(b.display_name || 'Unknown')
-      );
+      // Sort by role hierarchy: admin > product_manager > order_manager > support_agent > analyst > recruiter
+      const ROLE_HIERARCHY: Record<AppRole, number> = {
+        admin: 0,
+        product_manager: 1,
+        order_manager: 2,
+        support_agent: 3,
+        analyst: 4,
+        recruiter: 5,
+      };
+
+      const getHighestRoleRank = (roles: AppRole[]): number => {
+        if (roles.length === 0) return 999;
+        return Math.min(...roles.map(role => ROLE_HIERARCHY[role] ?? 999));
+      };
+
+      return Array.from(staffMap.values()).sort((a, b) => {
+        const rankA = getHighestRoleRank(a.roles);
+        const rankB = getHighestRoleRank(b.roles);
+        // Sort by rank first, then alphabetically by name
+        if (rankA !== rankB) return rankA - rankB;
+        return (a.display_name || 'Unknown').localeCompare(b.display_name || 'Unknown');
+      });
     },
     enabled: isAdmin,
   });

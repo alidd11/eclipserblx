@@ -331,7 +331,7 @@ export default function AdminDashboard() {
     { title: 'View Orders', href: '/admin/orders', icon: ShoppingCart, description: 'Manage orders' },
     { title: 'Live Chat', href: '/admin/live-chat', icon: MessageCircle, description: 'Support customers' },
     { title: 'Applications', href: '/admin/applications', icon: FileText, description: 'Review applications' },
-    { title: 'Manage Users', href: '/admin/users', icon: Users, description: 'User management' },
+    { title: 'Manage Customers', href: '/admin/users', icon: Users, description: 'Customer management' },
   ];
 
   const formatDuration = (minutes: number | null) => {

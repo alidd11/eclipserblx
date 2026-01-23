@@ -62,7 +62,6 @@ const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
 export default function AdminUsers() {
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<AppRole | 'all' | 'customer'>('all');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<AppRole | ''>('');
   const [ipBanDialogUser, setIpBanDialogUser] = useState<any>(null);
@@ -364,53 +363,29 @@ export default function AdminUsers() {
     return true;
   };
 
-  // Filter profiles by role
+  // Filter profiles to only show customers (users without any staff roles)
   const filteredProfiles = profiles?.filter((profile) => {
-    if (roleFilter === 'all') return true;
-    
     const roles = getUserRoles(profile.user_id);
-    
-    if (roleFilter === 'customer') {
-      return roles.length === 0;
-    }
-    
-    return roles.some(r => r.role === roleFilter);
+    // Only show users who have no roles (pure customers)
+    return roles.length === 0;
   });
 
   return (
     <AdminLayout requiredRoles={['admin']}>
       <div className="space-y-6 min-h-0">
         <div>
-          <h1 className="text-3xl font-display font-bold">Users & Roles</h1>
-          <p className="text-muted-foreground">Manage user accounts and permissions</p>
+          <h1 className="text-3xl font-display font-bold">Customers</h1>
+          <p className="text-muted-foreground">Manage customer accounts</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by customer ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-card"
-            />
-          </div>
-          
-          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as AppRole | 'all' | 'customer')}>
-            <SelectTrigger className="w-[140px] sm:w-[180px] bg-card shrink-0">
-              <Filter className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Users</SelectItem>
-              <SelectItem value="customer">Customers</SelectItem>
-              {ROLES.map((role) => (
-                <SelectItem key={role.value} value={role.value}>
-                  {role.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by customer ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 bg-card"
+          />
         </div>
 
         {/* Desktop Table View */}
@@ -433,7 +408,7 @@ export default function AdminUsers() {
               ) : filteredProfiles?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                    {roleFilter !== 'all' ? 'No users found with this role' : 'No users found'}
+                    No customers found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -513,7 +488,7 @@ export default function AdminUsers() {
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : filteredProfiles?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {roleFilter !== 'all' ? 'No users found with this role' : 'No users found'}
+              No customers found
             </div>
           ) : (
             filteredProfiles?.map((profile) => {
