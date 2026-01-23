@@ -47,6 +47,14 @@ export default function Affiliate() {
     preferred_method: 'stripe' as 'stripe' | 'paypal',
     paypal_email: '',
   });
+  const [paypalEmailError, setPaypalEmailError] = useState<string | null>(null);
+
+  // Email validation helper
+  const validateEmail = (email: string): boolean => {
+    if (!email) return true; // Empty is allowed (validation happens on save)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   // Handle Stripe onboarding return
   useEffect(() => {
@@ -1055,9 +1063,20 @@ export default function Affiliate() {
                         type="email"
                         placeholder="your@email.com"
                         value={payoutSettings.paypal_email}
-                        onChange={(e) => setPayoutSettings(prev => ({ ...prev, paypal_email: e.target.value }))}
-                        className="mt-1"
+                        onChange={(e) => {
+                          const email = e.target.value;
+                          setPayoutSettings(prev => ({ ...prev, paypal_email: email }));
+                          if (email && !validateEmail(email)) {
+                            setPaypalEmailError('Please enter a valid email address');
+                          } else {
+                            setPaypalEmailError(null);
+                          }
+                        }}
+                        className={`mt-1 ${paypalEmailError ? 'border-destructive' : ''}`}
                       />
+                      {paypalEmailError && (
+                        <p className="text-xs text-destructive mt-1">{paypalEmailError}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1067,10 +1086,18 @@ export default function Affiliate() {
 
               <div className="flex justify-end">
                 <Button
-                  onClick={() => updatePayoutSettingsMutation.mutate(payoutSettings)}
+                  onClick={() => {
+                    // Validate email before saving
+                    if (payoutSettings.paypal_email && !validateEmail(payoutSettings.paypal_email)) {
+                      setPaypalEmailError('Please enter a valid email address');
+                      return;
+                    }
+                    updatePayoutSettingsMutation.mutate(payoutSettings);
+                  }}
                   disabled={
                     updatePayoutSettingsMutation.isPending ||
-                    (payoutSettings.preferred_method === 'paypal' && !payoutSettings.paypal_email)
+                    (payoutSettings.preferred_method === 'paypal' && !payoutSettings.paypal_email) ||
+                    !!paypalEmailError
                   }
                 >
                   {updatePayoutSettingsMutation.isPending ? (
