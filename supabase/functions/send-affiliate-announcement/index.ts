@@ -42,43 +42,43 @@ Deno.serve(async (req) => {
     const cookieDays = settingsMap["affiliate_cookie_days"] || "30";
 
     const embed = {
-      title: "💰 Affiliate Programme",
-      description: "Join our affiliate programme and start earning money by sharing products you love!",
-      color: 0x7C3AED, // Purple color
+      title: "🚀 EARN MONEY WITH US! 💸",
+      description: "**Hey fam!** 👋\n\nWe're all about building this community together — and now YOU can get paid for being part of it!\n\nIntroducing our **Affiliate Programme** where you earn **real cash** just for spreading the word! 🔥",
+      color: 0x00D26A, // Vibrant green for money/success
       fields: [
         {
-          name: "🎯 How It Works",
-          value: "1. Sign up for an account\n2. Go to the **Earn** section in your dashboard\n3. Copy your unique referral link\n4. Share it with friends and followers\n5. Earn commission on every sale!",
+          name: "💰 EARN " + commissionRate + "% ON EVERY SALE",
+          value: "That's right — every time someone buys through YOUR link, you get paid. No cap, no limits. The more you share, the more you make!",
           inline: false,
         },
         {
-          name: "💵 Commission Rate",
-          value: `**${commissionRate}%** on every sale`,
-          inline: true,
-        },
-        {
-          name: "📅 Cookie Duration",
-          value: `**${cookieDays} days** tracking`,
-          inline: true,
-        },
-        {
-          name: "💳 Minimum Payout",
-          value: `**$${minimumPayout}** via PayPal`,
-          inline: true,
-        },
-        {
-          name: "📊 Track Your Performance",
-          value: "• View link clicks in real-time\n• Track signups from your referrals\n• Monitor your conversion rate\n• See all your earnings and payouts",
+          name: "🎮 PERFECT FOR:",
+          value: "• Content creators & streamers\n• Discord server owners\n• Social media influencers\n• Or literally ANYONE with friends!",
           inline: false,
         },
         {
-          name: "✨ Why Join?",
-          value: "• **Passive income** - Earn while you sleep\n• **No limits** - Unlimited earning potential\n• **Easy payouts** - Request anytime you hit minimum\n• **Real-time stats** - Full transparency on performance",
+          name: "⚡ HOW EASY IS IT?",
+          value: "1️⃣ Create an account (free!)\n2️⃣ Grab your unique link from the **Earn** tab\n3️⃣ Share it anywhere — Discord, Twitter, TikTok, wherever!\n4️⃣ Watch the money roll in 💵",
+          inline: false,
+        },
+        {
+          name: "📊 FULL TRANSPARENCY",
+          value: `Track everything in real-time:\n• Link clicks\n• Sign-ups\n• Conversion rate\n• Your earnings\n\n**Cookie lasts ${cookieDays} days** — so even if they buy later, you still get paid!`,
+          inline: false,
+        },
+        {
+          name: "💳 CASH OUT ANYTIME",
+          value: `Hit **$${minimumPayout}** and request your payout instantly via PayPal. It's YOUR money, get it when you want it!`,
+          inline: false,
+        },
+        {
+          name: "🤝 LET'S GROW TOGETHER",
+          value: "This isn't just about making money — it's about building something awesome as a community. When you win, we ALL win!\n\n**Ready to start earning?** Sign up now and check out the Earn section! 🎯",
           inline: false,
         },
       ],
       footer: {
-        text: "Start earning today! Sign up and visit the Earn section.",
+        text: "💜 Thanks for being part of the fam — let's get this bread together!",
       },
       timestamp: new Date().toISOString(),
     };
