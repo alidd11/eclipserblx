@@ -451,11 +451,27 @@ function AdminChatContent() {
     }
   }, []);
 
-  // Auto-scroll on new messages
+  // Auto-scroll on new messages - use multiple staggered scrolls to ensure content is rendered
   useEffect(() => {
-    scrollToBottom();
-    const timeoutId = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timeoutId);
+    if (messages.length === 0) return;
+    
+    // Use requestAnimationFrame to wait for DOM to be painted
+    const raf = requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+    
+    // Multiple staggered scrolls to handle async rendering
+    const timers = [
+      setTimeout(scrollToBottom, 50),
+      setTimeout(scrollToBottom, 150),
+      setTimeout(scrollToBottom, 300),
+      setTimeout(scrollToBottom, 500),
+    ];
+    
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(t => clearTimeout(t));
+    };
   }, [messages, scrollToBottom]);
 
   // Handle viewport resize for keyboard - scroll chat to bottom when keyboard opens
