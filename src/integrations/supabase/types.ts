@@ -869,6 +869,47 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_outreach_activity: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["outreach_activity_type"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+          outreach_id: string
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["outreach_activity_type"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          outreach_id: string
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["outreach_activity_type"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          outreach_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_outreach_activity_outreach_id_fkey"
+            columns: ["outreach_id"]
+            isOneToOne: false
+            referencedRelation: "discord_outreach"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_codes: {
         Row: {
           category_ids: string[] | null
@@ -3999,6 +4040,13 @@ export type Database = {
         | "analyst"
         | "recruiter"
         | "seller"
+      outreach_activity_type:
+        | "created"
+        | "contacted"
+        | "follow_up"
+        | "status_change"
+        | "decision"
+        | "note"
       store_team_role: "manager" | "editor" | "viewer"
     }
     CompositeTypes: {
@@ -4135,6 +4183,14 @@ export const Constants = {
         "analyst",
         "recruiter",
         "seller",
+      ],
+      outreach_activity_type: [
+        "created",
+        "contacted",
+        "follow_up",
+        "status_change",
+        "decision",
+        "note",
       ],
       store_team_role: ["manager", "editor", "viewer"],
     },
