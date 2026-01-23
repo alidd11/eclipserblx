@@ -80,6 +80,11 @@ serve(async (req) => {
           type: 'affiliate',
         },
         capabilities: {
+          // Stripe may require platforms to request card_payments alongside transfers unless
+          // the platform has special approval to request transfers-only.
+          // We are NOT charging cards on these affiliate accounts, but requesting this
+          // capability avoids the platform-level restriction.
+          card_payments: { requested: true },
           transfers: { requested: true },
         },
       });
