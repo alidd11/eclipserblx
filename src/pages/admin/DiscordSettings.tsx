@@ -589,36 +589,38 @@ export default function DiscordSettings() {
         </Card>
 
         <Tabs defaultValue="invite" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-flex">
-            <TabsTrigger value="invite" className="gap-2">
-              <Link2 className="h-4 w-4 hidden sm:block" />
-              Invite
-            </TabsTrigger>
-            <TabsTrigger value="widget" className="gap-2">
-              <Users className="h-4 w-4 hidden sm:block" />
-              Widget
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
-              <Webhook className="h-4 w-4 hidden sm:block" />
-              Orders
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="gap-2">
-              <Star className="h-4 w-4 hidden sm:block" />
-              Reviews
-            </TabsTrigger>
-            <TabsTrigger value="roles" className="gap-2">
-              <MessageSquare className="h-4 w-4 hidden sm:block" />
-              Roles
-            </TabsTrigger>
-            <TabsTrigger value="boosts" className="gap-2">
-              <Zap className="h-4 w-4 hidden sm:block" />
-              Boosts
-            </TabsTrigger>
-            <TabsTrigger value="affiliate" className="gap-2">
-              <Gift className="h-4 w-4 hidden sm:block" />
-              Affiliate
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-max">
+              <TabsTrigger value="invite" className="gap-2">
+                <Link2 className="h-4 w-4 hidden sm:block" />
+                Invite
+              </TabsTrigger>
+              <TabsTrigger value="widget" className="gap-2">
+                <Users className="h-4 w-4 hidden sm:block" />
+                Widget
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="gap-2">
+                <Webhook className="h-4 w-4 hidden sm:block" />
+                Orders
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="gap-2">
+                <Star className="h-4 w-4 hidden sm:block" />
+                Reviews
+              </TabsTrigger>
+              <TabsTrigger value="roles" className="gap-2">
+                <MessageSquare className="h-4 w-4 hidden sm:block" />
+                Roles
+              </TabsTrigger>
+              <TabsTrigger value="boosts" className="gap-2">
+                <Zap className="h-4 w-4 hidden sm:block" />
+                Boosts
+              </TabsTrigger>
+              <TabsTrigger value="affiliate" className="gap-2">
+                <Gift className="h-4 w-4 hidden sm:block" />
+                Affiliate
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Discord Invite Link Tab */}
           <TabsContent value="invite">
