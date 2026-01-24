@@ -38,7 +38,7 @@ export function CategoriesGridCard() {
       
       if (error) throw error;
       
-      // Get product counts for each category
+      // Get product counts for each category - only marketplace products (with store_id)
       const now = new Date().toISOString();
       const categoriesWithCounts = await Promise.all(
         (data || []).map(async (category) => {
@@ -47,6 +47,7 @@ export function CategoriesGridCard() {
             .select('id', { count: 'exact', head: true })
             .eq('category_id', category.id)
             .eq('is_active', true)
+            .not('store_id', 'is', null) // Only marketplace products
             .or(`release_at.is.null,release_at.lte.${now}`);
           
           return {
@@ -72,7 +73,7 @@ export function CategoriesGridCard() {
             Categories
           </div>
           <Link 
-            to="/categories" 
+            to="/categories?source=marketplace" 
             className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
           >
             View all
@@ -92,7 +93,7 @@ export function CategoriesGridCard() {
             {categories.slice(0, 6).map((category) => (
               <Link
                 key={category.id}
-                to={`/products?category=${category.slug}`}
+                to={`/products?category=${category.slug}&source=marketplace`}
                 className="group flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-transparent hover:border-primary/20 transition-all"
               >
                 <span className="text-2xl">

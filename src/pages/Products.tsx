@@ -27,6 +27,7 @@ export default function Products() {
   const navigate = useNavigate();
   const categorySlug = searchParams.get('category');
   const featuredOnly = searchParams.get('featured') === 'true';
+  const sourceFilter = searchParams.get('source');
   const pageParam = searchParams.get('page');
   const [search, setSearch] = useState('');
   const [categoriesOpen, setCategoriesOpen] = useState(false);
@@ -60,7 +61,7 @@ export default function Products() {
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products', categorySlug, search, featuredOnly, sortBy],
+    queryKey: ['products', categorySlug, search, featuredOnly, sortBy, sourceFilter],
     queryFn: async () => {
       let query = supabase
         .from('products')
@@ -79,6 +80,11 @@ export default function Products() {
 
       if (featuredOnly) {
         query = query.eq('is_featured', true);
+      }
+
+      // Filter to marketplace-only products when source=marketplace
+      if (sourceFilter === 'marketplace') {
+        query = query.not('store_id', 'is', null);
       }
 
       if (search) {
