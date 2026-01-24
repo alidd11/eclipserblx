@@ -1,74 +1,94 @@
 
-# Marketplace Categories - Show Only Marketplace Products
+# Fix Marketplace Categories to Only Show Marketplace Products
 
-## Your Request
-Update the Categories card on the Marketplace page so it only shows products from marketplace stores (like clearlydev), excluding products from the main Eclipse store.
+## Problem
+The Categories card on the Marketplace page currently shows product counts that include the main Eclipse store. As shown in your screenshot:
+- "3D Models" shows 22 items (includes Eclipse store products)
+- "Bots" shows 1 item (includes Eclipse store products)
 
----
-
-## What Will Change
-
-| Current Behavior | New Behavior |
-|------------------|--------------|
-| Category counts include ALL products | Counts only products from marketplace stores |
-| Links go to `/products?category=X` (shows all products) | Links go to `/products?category=X&source=marketplace` |
-| "View all" goes to `/categories` | "View all" goes to `/categories?source=marketplace` |
+When clicking these categories, users are taken to pages showing all products instead of just marketplace products.
 
 ---
 
-## Implementation
+## Solution Overview
 
-### 1. Update CategoriesGridCard Component
-**File:** `src/components/marketplace/CategoriesGridCard.tsx`
+| Component | Current Issue | Fix |
+|-----------|---------------|-----|
+| Categories Card counts | Counts all products | Only count products with `store_id` (marketplace) |
+| Category links | Go to `/products?category=X` | Add `&source=marketplace` parameter |
+| "View all" link | Goes to `/categories` | Go to `/categories?source=marketplace` |
+| Products page | No source filtering | Filter by `store_id` when `source=marketplace` |
+| Categories page | No source filtering | Pass through source parameter to links |
 
-- Modify the product count query to only count products where `store_id` is NOT null (marketplace products only)
-- Update category links to include `&source=marketplace` parameter
-- Update "View all" link to include `?source=marketplace`
+---
 
+## Files to Update
+
+### 1. CategoriesGridCard.tsx
+Update the marketplace categories component to:
+- Filter product counts to only include marketplace products (where `store_id IS NOT NULL`)
+- Add `source=marketplace` to all navigation links
+
+### 2. Products.tsx  
+Add support for the `source=marketplace` query parameter:
+- Read the `source` parameter from URL
+- When `source=marketplace`, add `.not('store_id', 'is', null)` to the query
+- This excludes Eclipse store products (which have no `store_id`)
+
+### 3. Categories.tsx
+Update the full categories page to:
+- Read `source` parameter from URL
+- When `source=marketplace`, filter product counts to marketplace-only
+- Pass `source=marketplace` through to product links
+
+---
+
+## Technical Details
+
+### Query Change for Marketplace-Only Products
 ```typescript
-// Updated count query - only marketplace products
+// Current (counts ALL products)
+const { count } = await supabase
+  .from('products')
+  .select('id', { count: 'exact', head: true })
+  .eq('category_id', category.id)
+  .eq('is_active', true);
+
+// Fixed (counts only marketplace products)
 const { count } = await supabase
   .from('products')
   .select('id', { count: 'exact', head: true })
   .eq('category_id', category.id)
   .eq('is_active', true)
-  .not('store_id', 'is', null)  // Only marketplace products
-  .or(`release_at.is.null,release_at.lte.${now}`);
+  .not('store_id', 'is', null);  // Excludes Eclipse store
+```
 
-// Updated links
+### Link Updates
+```typescript
+// Current
+<Link to={`/products?category=${category.slug}`}>
+<Link to="/categories">
+
+// Fixed
 <Link to={`/products?category=${category.slug}&source=marketplace`}>
 <Link to="/categories?source=marketplace">
 ```
 
-### 2. Update Products Page to Handle Source Filter
-**File:** `src/pages/Products.tsx`
-
-- Read new `source` query parameter
-- When `source=marketplace`, filter to only show products with a `store_id` (excluding main store)
-
+### Products Page Filter
 ```typescript
 const sourceFilter = searchParams.get('source');
 
-// In query function:
+// In the query function:
 if (sourceFilter === 'marketplace') {
   query = query.not('store_id', 'is', null);
 }
 ```
 
-### 3. Update Categories Page (Optional)
-**File:** `src/pages/Categories.tsx`
-
-- Pass through the `source=marketplace` parameter to product links
-- Update product counts to respect the source filter
-
 ---
 
-## Summary
-
-| File | Changes |
-|------|---------|
-| `CategoriesGridCard.tsx` | Filter counts to marketplace-only, update links |
-| `Products.tsx` | Add `source=marketplace` filter support |
-| `Categories.tsx` | Pass through source filter (optional) |
-
-This ensures when users browse categories from the Marketplace page, they only see products from marketplace sellers like clearlydev, not from the main Eclipse store.
+## Expected Result
+After these changes:
+- Categories card will show accurate counts for marketplace products only
+- Clicking a category navigates to `/products?category=X&source=marketplace`
+- The products page will only display marketplace seller products
+- "View all" will show marketplace-filtered categories
