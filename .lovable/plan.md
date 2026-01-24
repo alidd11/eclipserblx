@@ -1,144 +1,227 @@
 
 
-# Improving Product Discovery: All Products vs Featured
+# Improving Customer Sidebar Organization
 
-## Current Problem
+## Current Structure Analysis
 
-The "All Products" (`/products`) and "Featured Products" (`/products?featured=true`) pages are functionally identical - just a filtered product grid. This creates:
+The sidebar currently has **6 navigation groups** plus a dynamic **Categories** section:
 
-- **Poor user experience**: No distinct "curated" feeling for featured items
-- **Missed marketing potential**: Featured products deserve premium presentation
-- **Navigation confusion**: Multiple paths to similar content
+| Group | Items | Purpose |
+|-------|-------|---------|
+| Home | 6 items | Personal hub (Account, Cart, Wishlist, Messages, Affiliate) |
+| Selling | 2 items | Seller-only (Dashboard, Store Messages) |
+| Products | 4 items | Shop navigation (All, Featured, Eclipse+, Marketplace) |
+| Categories | Dynamic | Database-driven product categories |
+| Community | 3 items | Social (Forum, Jobs, Discord) |
+| Support | 4 items | Help (Help Center, Contact, FAQ, Status) |
+| Legal | 3 items | Policies (Terms, Privacy, Refunds) |
+
+**Total: ~22+ navigation items** - This creates cognitive overload for customers.
 
 ---
 
-## Proposed Solution: Curated Collections System
+## Identified Problems
 
-Transform the "Featured" concept into a proper **Collections** experience, giving Eclipse distinct discovery destinations.
+1. **Home group is overloaded** - Mixes personal items (Account, Cart) with discovery features
+2. **Products vs Categories duplication** - "All Products" appears, then a separate "All Categories" link
+3. **Legal section rarely used** - Takes up valuable real estate
+4. **No clear shopping journey** - Discovery and personal items are intermixed
+5. **Featured is buried** - Should be more prominent for marketing
+6. **My Messages naming** - Could be clearer (e.g., "Notifications" or "Inbox")
 
-### Option A: Dedicated Featured Page (Recommended)
+---
 
-Create a standalone `/featured` route with a premium, editorial-style layout:
+## Proposed Reorganization
+
+Restructure around the customer journey: **Discover → Shop → Manage**
+
+### New Structure
 
 ```text
-┌─────────────────────────────────────────────────────────┐
-│                    STAFF PICKS                          │
-│         Hand-selected by the Eclipse team               │
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │           HERO FEATURED PRODUCT                   │  │
-│  │      (Large showcase with description)            │  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                         │
-│  Featured Collection (3-4 products in large cards)      │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐    │
-│  │         │  │         │  │         │  │         │    │
-│  └─────────┘  └─────────┘  └─────────┘  └─────────┘    │
-│                                                         │
-│  ────────────── New This Week ──────────────            │
-│  (Products added in last 7 days)                        │
-│                                                         │
-│  ────────────── Popular Now ──────────────              │
-│  (Sorted by download count)                             │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+[LOGO]
+
+── QUICK ACCESS ──────────────────
+   Home
+   Search (inline trigger)
+   
+── DISCOVER ──────────────────────
+   Featured (Staff Picks)
+   New Arrivals
+   Popular
+   Eclipse+ Exclusives
+   Marketplace
+
+── SHOP ──────────────────────────
+   All Products
+   Categories (expandable)
+     ├─ Eclipse Savers
+     ├─ Scripts
+     │   ├─ Combat
+     │   └─ Utilities
+     └─ ...
+
+── COMMUNITY ─────────────────────
+   Forum
+   Jobs
+   Discord
+
+── MY ACCOUNT ────────────────────
+   Profile & Settings
+   My Cart (with count badge)
+   Wishlist
+   My Purchases/Downloads
+   Notifications (with unread badge)
+   [Seller Dashboard - if seller]
+
+── HELP ──────────────────────────
+   Help Center
+   Contact Us
+   System Status (with dot)
+   
+[LEGAL LINKS - footer style]
+   Terms · Privacy · Refunds
 ```
 
-**Benefits:**
-- Distinct URL for marketing campaigns (`eclipsestore.com/featured`)
-- Premium presentation for curated content
-- Combines featured + new + popular in one discovery page
+---
+
+## Key Changes
+
+### 1. Consolidate Quick Actions at Top
+Move the most-used items (Home, Search) to a persistent non-collapsible header area.
+
+### 2. Create "Discover" Section
+Group all curated/editorial content together:
+- Featured (renamed from "Featured")
+- Add "New Arrivals" link to `/featured#new-this-week`
+- Add "Popular" link to `/featured#popular-picks`
+- Eclipse+ and Marketplace
+
+### 3. Separate "Shop" from "Discover"
+- "All Products" as the main browsing entry point
+- Categories as an expandable subsection (already implemented well)
+
+### 4. Rename "Home" to "My Account"
+Move personal items into a clearly labeled section at the bottom:
+- Clearer mental model: "stuff about me" vs "stuff to buy"
+- Add "My Purchases" link directly (currently only accessible from Account page)
+
+### 5. Compress Legal Links
+Move Terms/Privacy/Refunds into a compact footer row using small text links instead of full navigation items.
+
+### 6. Add Visual Hierarchy
+- Use subtle section dividers
+- Add icons to section headers
+- Show cart count badge inline
 
 ---
 
-### Option B: Collections/Curated Pages
-
-Expand beyond "Featured" to multiple curated experiences:
-
-| Route | Purpose | Content |
-|-------|---------|---------|
-| `/collections/staff-picks` | Hand-curated by team | Featured products |
-| `/collections/new-arrivals` | Discovery for new items | Products from last 7 days |
-| `/collections/trending` | Social proof | Top downloaded this month |
-| `/collections/on-sale` | Promotions | Discounted products |
-
----
-
-## Recommended Changes
-
-### 1. New Dedicated Featured Page (`/featured`)
-
-Create `src/pages/Featured.tsx` with:
-- Hero section showcasing the #1 featured product
-- Curated grid (larger cards than standard grid)
-- "New This Week" section
-- "Community Favorites" section (most downloaded)
-- Editorial copy explaining why these are hand-picked
-
-### 2. Update Navigation
-
-Add "Featured" as a top-level navigation item:
-
-| Current | Proposed |
-|---------|----------|
-| Products, Categories, Eclipse+ | **Featured**, Products, Categories, Eclipse+ |
-
-Or rename:
-- "Products" → "All Products"  
-- Add "Staff Picks" in nav
-
-### 3. Remove Redundant Filter
-
-- Remove or repurpose the `?featured=true` query parameter
-- Update all links (homepage FeaturedProductsCard, etc.) to point to `/featured`
-
-### 4. Differentiate All Products
-
-Keep `/products` as the comprehensive browsing experience with:
-- All sorting options
-- Category filtering
-- Search
-- Pagination
-
----
-
-## Technical Changes Required
-
-### Files to Create
-1. `src/pages/Featured.tsx` - New dedicated featured page
+## Technical Implementation
 
 ### Files to Modify
-1. `src/App.tsx` - Add `/featured` route
-2. `src/components/layout/Header.tsx` - Add "Featured" to navigation
-3. `src/components/home/FeaturedProducts.tsx` - Update "View All" link to `/featured`
-4. `src/components/home/FeaturedProductsCard.tsx` - Update "View all" link to `/featured`
-5. `src/pages/Products.tsx` - Remove featured filter logic (optional, can keep for backwards compatibility)
+1. `src/components/layout/CustomerSidebar.tsx` - Restructure navGroups array
 
-### New Page Structure
+### Changes Required
 
-The Featured page would include:
-- Hero featured product with large image and call-to-action
-- Curated selection grid (6-8 products, larger card format)
-- "New This Week" horizontal scroll section
-- "Popular Picks" section based on downloads
-- Consistent Eclipse branding with the "visual restraint" design philosophy
+**Reorganize navGroups array:**
+```typescript
+const navGroups: NavGroup[] = [
+  {
+    id: 'discover',
+    title: 'Discover',
+    icon: Sparkles,
+    items: [
+      { title: 'Featured', icon: Star, href: '/featured' },
+      { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+      { title: 'Marketplace', icon: Store, href: '/marketplace' },
+    ],
+  },
+  {
+    id: 'shop',
+    title: 'Shop',
+    icon: Package,
+    items: [
+      { title: 'All Products', icon: Grid3X3, href: '/products' },
+    ],
+    // Categories section renders after this
+  },
+  {
+    id: 'community',
+    title: 'Community',
+    icon: MessageSquare,
+    items: [
+      { title: 'Forum', icon: MessageSquare, href: '/forum' },
+      { title: 'Jobs', icon: Briefcase, href: '/jobs' },
+      { title: 'Discord', icon: DiscordIcon, href: discordUrl, external: true },
+    ],
+  },
+  {
+    id: 'account',
+    title: 'My Account',
+    icon: User,
+    items: [
+      { title: 'Profile', icon: User, href: '/account' },
+      { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
+      { title: 'Wishlist', icon: Heart, href: '/wishlist' },
+      { title: 'My Purchases', icon: Download, href: '/downloads' },
+      { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
+      // Affiliate conditionally added
+      // Seller Dashboard conditionally added
+    ],
+  },
+  {
+    id: 'help',
+    title: 'Help',
+    icon: HelpCircle,
+    items: [
+      { title: 'Help Center', icon: HelpCircle, href: '/support' },
+      { title: 'Contact Us', icon: Mail, href: '/contact' },
+      { title: 'FAQ', icon: FileQuestion, href: '/faq' },
+      { title: 'System Status', icon: Activity, href: '/status', showStatusDot: true },
+    ],
+  },
+];
+```
+
+**Add compact legal footer:**
+```typescript
+// In the sidebar footer area
+<div className="p-2 border-t border-border text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 justify-center">
+  <Link to="/terms">Terms</Link>
+  <Link to="/privacy">Privacy</Link>
+  <Link to="/refunds">Refunds</Link>
+</div>
+```
+
+**Add persistent Home link at top (non-collapsible):**
+```typescript
+// Before the scrollable nav groups
+<div className="px-2 py-1 border-b border-border">
+  <NavLink to="/" className="...">
+    <Home className="h-4 w-4" />
+    <span>Home</span>
+  </NavLink>
+</div>
+```
 
 ---
 
-## Marketing Benefits
+## Benefits
 
-1. **Shareable URL**: `eclipsestore.com/featured` for social media, Discord, emails
-2. **Campaign Landing**: Use for promotional campaigns and announcements
-3. **SEO Value**: Distinct page can rank for "best Roblox assets" etc.
-4. **User Journey**: Clear distinction between "discover curated" vs "browse all"
-5. **Content Freshness**: Weekly rotation creates return visits
+| Before | After |
+|--------|-------|
+| 6 groups + categories | 5 groups + categories |
+| 22+ clickable items | ~18 items (Legal moved to footer) |
+| Mixed personal/shopping | Clear journey: Discover → Shop → Account |
+| Legal taking full rows | Compact footer links |
+| "Home" group unclear | "My Account" clearly personal |
+| Featured buried in "Products" | Featured leads "Discover" section |
 
 ---
 
-## Questions to Confirm
+## Mobile Considerations
 
-Before implementation, please confirm:
-- Do you prefer Option A (single Featured page) or Option B (multiple Collections)?
-- Should "Featured" appear in the main header navigation alongside Products?
-- Would you like the hero section to auto-rotate between featured products or show a static "Product of the Week"?
+The same structure works well for the mobile drawer:
+- Top sections (Discover, Shop) are what customers engage with most
+- Personal account items are lower but still accessible
+- Legal links compressed to footer saves scroll depth
 
