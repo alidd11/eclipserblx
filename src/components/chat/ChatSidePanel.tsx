@@ -18,6 +18,7 @@ import { CodeVerificationMessage } from './CodeVerificationMessage';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { notifyNewLiveChat } from '@/lib/pushNotifications';
 
 interface SecureData {
   verified: boolean;
@@ -296,6 +297,13 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
       setConversation(newConv);
       await loadMessages(newConv.id);
       setIssueDescription('');
+
+      // Notify staff about the new live chat
+      notifyNewLiveChat({
+        id: newConv.id,
+        customer_name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'Customer',
+        issue_category: issueCategory,
+      }).catch(err => console.error('Failed to send push notification:', err));
     } catch (error) {
       console.error('Error starting conversation:', error);
       toast.error('Failed to start conversation');
