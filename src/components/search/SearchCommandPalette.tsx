@@ -34,7 +34,7 @@ const navigationItems = [
   { title: 'Home', icon: Home, href: '/', keywords: ['home', 'main', 'start'] },
   { title: 'All Products', icon: Package, href: '/products', keywords: ['products', 'shop', 'store', 'items'] },
   { title: 'Categories', icon: Grid3X3, href: '/categories', keywords: ['categories', 'browse', 'types'] },
-  { title: 'Featured Products', icon: Star, href: '/products?featured=true', keywords: ['featured', 'popular', 'best'] },
+  { title: 'Featured', icon: Star, href: '/featured', keywords: ['featured', 'popular', 'best'] },
   { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus', keywords: ['eclipse plus', 'subscription', 'premium', 'membership'] },
   { title: 'Forum', icon: MessageSquare, href: '/forum', keywords: ['forum', 'community', 'discuss', 'chat'] },
   { title: 'Jobs', icon: Briefcase, href: '/jobs', keywords: ['jobs', 'careers', 'work', 'hiring'] },

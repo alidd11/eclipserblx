@@ -5,7 +5,7 @@ const footerLinks = {
   shop: [
     { href: '/products', label: 'All Products' },
     { href: '/categories', label: 'Categories' },
-    { href: '/products?featured=true', label: 'Featured' },
+    { href: '/featured', label: 'Featured' },
   ],
   support: [
     { href: '/support', label: 'Help Center' },

@@ -243,7 +243,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Package,
       items: [
         { title: 'All Products', icon: Grid3X3, href: '/products' },
-        { title: 'Featured', icon: Star, href: '/products?featured=true' },
+        { title: 'Featured', icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' },
       ],
