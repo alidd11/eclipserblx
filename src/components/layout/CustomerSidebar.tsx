@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
-  HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
-  RotateCcw, ChevronDown, ChevronLeft, ChevronRight, ShoppingCart, 
-  User, LogOut, LucideIcon, Home, Search, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText
+  HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
+  User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
+  Sparkles, Download
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -211,42 +211,38 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  // Navigation groups
+  // Navigation groups - reorganized for better customer journey
   const navGroups: NavGroup[] = [
     {
-      id: 'home',
-      title: 'Home',
+      id: 'quick-access',
+      title: 'Quick Access',
       icon: Home,
       items: [
         { title: 'Home', icon: Home, href: '/' },
-        { title: 'My Account', icon: User, href: '/account' },
-        // Only show affiliate link if program is enabled
-        ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate Dashboard', icon: TrendingUp, href: '/affiliate' }] : []),
-        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
-        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
-        { title: 'My Messages', icon: Bell, href: '/messages', showNotificationDot: true },
+        // Seller Dashboard - conditional, prominently positioned
+        ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
+        // Affiliate Dashboard - conditional
+        ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
-    // Only show seller section for sellers
-    ...(isSeller ? [{
-      id: 'selling',
-      title: 'Selling',
-      icon: Store,
-      items: [
-        { title: 'Seller Dashboard', icon: Store, href: '/seller' },
-        { title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' },
-      ],
-    }] : []),
     {
-      id: 'products',
-      title: 'Products',
+      id: 'discover',
+      title: 'Discover',
+      icon: Sparkles,
+      items: [
+        { title: 'Featured', icon: Star, href: '/featured' },
+        { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+        { title: 'Marketplace', icon: Store, href: '/marketplace' },
+      ],
+    },
+    {
+      id: 'shop',
+      title: 'Shop',
       icon: Package,
       items: [
         { title: 'All Products', icon: Grid3X3, href: '/products' },
-        { title: 'Featured', icon: Star, href: '/featured' },
-        { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        { title: 'Eclipse Marketplace', icon: Store, href: '/marketplace' },
       ],
+      // Categories section rendered after this group
     },
     {
       id: 'community',
@@ -259,24 +255,28 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       ],
     },
     {
-      id: 'support',
-      title: 'Support',
+      id: 'account',
+      title: 'My Account',
+      icon: User,
+      items: [
+        { title: 'Profile', icon: User, href: '/account' },
+        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
+        { title: 'My Purchases', icon: Download, href: '/downloads' },
+        { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
+        // Store Messages for sellers
+        ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
+      ],
+    },
+    {
+      id: 'help',
+      title: 'Help',
       icon: HelpCircle,
       items: [
         { title: 'Help Center', icon: HelpCircle, href: '/support' },
         { title: 'Contact Us', icon: Mail, href: '/contact' },
         { title: 'FAQ', icon: FileQuestion, href: '/faq' },
         { title: 'System Status', icon: Activity, href: '/status', showStatusDot: true },
-      ],
-    },
-    {
-      id: 'legal',
-      title: 'Legal',
-      icon: FileText,
-      items: [
-        { title: 'Terms of Service', icon: FileText, href: '/terms' },
-        { title: 'Privacy Policy', icon: Shield, href: '/privacy' },
-        { title: 'Refund Policy', icon: RotateCcw, href: '/refunds' },
       ],
     },
   ];
@@ -498,8 +498,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // HOME group: always expanded, non-collapsible, no header
-    if (group.id === 'home') {
+    // QUICK-ACCESS group: always expanded, non-collapsible, no header
+    if (group.id === 'quick-access') {
       return (
         <div key={group.id} className="mb-1 space-y-0.5">
           {group.items.map(renderNavItem)}
@@ -901,14 +901,23 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
       {/* Navigation */}
       <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map((group, index) => (
+        {navGroups.map((group) => (
           <div key={group.id}>
             {renderGroup(group)}
-            {/* Insert categories section after Products group */}
-            {group.id === 'products' && renderCategoriesSection()}
+            {/* Insert categories section after Shop group */}
+            {group.id === 'shop' && renderCategoriesSection()}
           </div>
         ))}
       </nav>
+
+      {/* Legal Footer - compact links */}
+      {!isCollapsed && (
+        <div className="p-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center">
+          <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
+          <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
+          <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
+        </div>
+      )}
 
 
       {/* Sign Out Dialog */}
