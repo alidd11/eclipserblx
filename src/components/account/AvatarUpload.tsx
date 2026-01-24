@@ -9,12 +9,15 @@ import { performSecurityScan } from '@/lib/secureFileUpload';
 interface AvatarUploadProps {
   userId: string;
   currentAvatarUrl: string | null;
+  discordAvatarUrl?: string | null;
   displayName: string;
   onAvatarChange: (url: string) => void;
   compact?: boolean;
 }
 
-export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarChange, compact = false }: AvatarUploadProps) {
+export function AvatarUpload({ userId, currentAvatarUrl, discordAvatarUrl, displayName, onAvatarChange, compact = false }: AvatarUploadProps) {
+  // Prioritize Discord avatar when linked, fallback to uploaded avatar
+  const displayAvatarUrl = discordAvatarUrl || currentAvatarUrl;
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,7 +134,7 @@ export function AvatarUpload({ userId, currentAvatarUrl, displayName, onAvatarCh
             ? 'border-primary ring-2 ring-primary/30 scale-105' 
             : 'border-border hover:border-primary/50'
         }`}>
-          <AvatarImage src={currentAvatarUrl || undefined} alt={displayName} />
+          <AvatarImage src={displayAvatarUrl || undefined} alt={displayName} />
           <AvatarFallback className={`${compact ? 'text-base' : 'text-lg'} bg-primary/10 text-primary`}>
             {displayName ? getInitials(displayName) : <User className={compact ? "h-6 w-6" : "h-8 w-8"} />}
           </AvatarFallback>

@@ -558,6 +558,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
+                discordAvatarUrl={discordAvatar?.avatar_url || null}
                 displayName={profile?.display_name || fallbackDisplayName || ''}
                 onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
                 compact
