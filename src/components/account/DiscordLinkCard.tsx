@@ -272,12 +272,6 @@ export const DiscordLinkCard = ({
               </p>
             )}
           </div>
-        ) : accountsLocked ? (
-          <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground">
-              Your linked accounts are locked. Contact staff to make changes.
-            </p>
-          </div>
         ) : (
           <div className="space-y-4">
             <Button
