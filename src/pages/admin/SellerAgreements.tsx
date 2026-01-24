@@ -147,10 +147,10 @@ export default function SellerAgreements() {
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-amber-500">Action Required</h3>
+                  <h3 className="font-semibold text-amber-500">Stores Inactive Until Signed</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {pendingCount} store{pendingCount !== 1 ? 's have' : ' has'} not yet signed the 
-                    Seller Terms of Service. Consider reaching out to remind them.
+                    {pendingCount} store{pendingCount !== 1 ? 's are' : ' is'} currently inactive because they 
+                    have not signed the Seller Terms of Service.
                   </p>
                 </div>
               </div>
@@ -234,10 +234,7 @@ export default function SellerAgreements() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div>
-                              <p className="text-sm">{store.owner_name || 'Unknown'}</p>
-                              <p className="text-xs text-muted-foreground">{store.owner_email}</p>
-                            </div>
+                            <p className="text-sm">{store.owner_name || 'Unknown'}</p>
                           </TableCell>
                           <TableCell>
                             <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
