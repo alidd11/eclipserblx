@@ -1,108 +1,77 @@
 
 
-# Category-Specific Discord Forum Channels
+# Admin Categories Management Page
 
 ## Overview
-Update the product Discord notification system so that each product category posts to its own dedicated Discord forum channel. Instead of a single `product_forum_webhook_url`, you'll configure a separate webhook URL for each category.
+Create a new admin page where you can add, edit, reorder, and delete product categories with a simple, user-friendly interface.
 
-## How It Will Work
+## What You'll Be Able To Do
 
-### Current Setup
-Right now, all products go to one Discord forum channel using `product_forum_webhook_url`.
+| Action | Description |
+|--------|-------------|
+| **Add** | Create new categories with name, description, and icon |
+| **Edit** | Update any category's details |
+| **Reorder** | Drag and drop to change display order |
+| **Delete** | Remove categories (with safety check for products) |
 
-### New Setup
-Each of your 6 categories will have its own webhook URL:
+## How It Will Look
 
-| Category | Setting Key | Discord Channel |
-|----------|-------------|-----------------|
-| 3D Models | `product_webhook_3d_models` | Your 3D Models forum |
-| Bots | `product_webhook_bots` | Your Bots forum |
-| Eclipse Savers | `product_webhook_eclipse_savers` | Your Savers forum |
-| Scripts & Systems | `product_webhook_scripts_systems` | Your Scripts forum |
-| UI Kits | `product_webhook_ui_kits` | Your UI Kits forum |
-| Vehicle Liveries | `product_webhook_vehicle_liveries` | Your Liveries forum |
+The page will display a simple table/list of all categories with:
+- **Drag handle** on the left for reordering
+- **Icon** preview
+- **Name** and **slug** (auto-generated from name)
+- **Description** (optional)
+- **Product count** showing how many products use this category
+- **Edit** and **Delete** buttons
 
----
+### Add/Edit Dialog
+When adding or editing a category:
+- **Name** - The display name (e.g., "Vehicle Liveries")
+- **Slug** - Auto-generated from name (e.g., "vehicle-liveries"), but editable
+- **Description** - Optional description text
+- **Icon** - Dropdown to select from available Lucide icons (Car, Code, Box, Layout, Percent, Bot, etc.)
 
-## User Experience
+## Safety Features
 
-### Configuration
-1. Go to **Admin > Discord Settings > Products** tab
-2. You'll see a list of all your categories
-3. Paste each category's Discord forum webhook URL in its field
-4. Click **Save**
-5. Optionally test each webhook individually
+### Delete Protection
+- If a category has products assigned, you'll see a warning
+- Option to either reassign products to another category or proceed anyway (products become "Uncategorized")
 
-### When Uploading Products
-1. Create a new product as normal
-2. Select its category (e.g., "Bots")
-3. Save the product
-4. The system automatically sends the notification to the **Bots** forum channel
-5. If no webhook is configured for that category, it skips silently
+### Slug Validation
+- Slugs must be unique
+- System prevents duplicate slugs
 
----
-
-## Changes Required
-
-### 1. Discord Settings Page Update
-**File**: `src/pages/admin/DiscordSettings.tsx`
-
-- Remove the single `product_forum_webhook_url` field
-- Replace with a dynamic list showing each category from the database
-- Each category row has its own webhook URL input
-- Add a "Test" button for each category's webhook
-- Categories are loaded from the database automatically
-
-### 2. Edge Function Update
-**File**: `supabase/functions/send-product-discord-webhook/index.ts`
-
-- Accept `category_id` in the payload (already has `category_name`)
-- Look up the webhook using the category slug: `product_webhook_{category_slug}`
-- If no webhook is configured for that category, skip gracefully
-- Keep the same embed format and forum post creation
-
-### 3. Products Page Update
-**File**: `src/pages/admin/Products.tsx`
-
-- Pass the `category_id` to the webhook function (minor update)
-- The category name is already being passed
+## Navigation
+The page will be added to the admin sidebar under **Store** section:
+- Products
+- **Categories** (new)
+- Orders
+- Reviews
+- Discounts
 
 ---
 
-## Technical Details
+## Technical Implementation
 
-### New Settings Keys Format
-```text
-product_webhook_3d_models
-product_webhook_bots
-product_webhook_eclipse_savers
-product_webhook_scripts_systems
-product_webhook_ui_kits
-product_webhook_vehicle_liveries
-```
+### New Files
+| File | Purpose |
+|------|---------|
+| `src/pages/admin/Categories.tsx` | Main categories management page |
 
-### Flow Diagram
-```text
-Admin uploads product (Category: Bots)
-          ↓
-Products.tsx calls edge function with category info
-          ↓
-Edge function looks up "product_webhook_bots" setting
-          ↓
-If webhook exists → Post to Bots forum channel
-If no webhook → Skip silently (no error)
-```
-
-### Files to Modify
+### Modified Files
 | File | Changes |
 |------|---------|
-| `src/pages/admin/DiscordSettings.tsx` | Replace single webhook with category-based list |
-| `supabase/functions/send-product-discord-webhook/index.ts` | Look up webhook by category slug |
-| `src/pages/admin/Products.tsx` | Pass category_id to webhook function |
+| `src/components/admin/AdminSidebar.tsx` | Add "Categories" nav item under Store |
+| `src/App.tsx` | Add route for `/admin/categories` |
 
----
+### Database Changes
+None required - the `categories` table already has all needed columns:
+- `id`, `name`, `slug`, `description`, `icon`, `display_order`, `parent_id`
 
-## Fallback Behaviour
-- If a category doesn't have a webhook configured, the product is created normally but no Discord notification is sent
-- If **all** categories should go to one channel as a fallback, we can add a "Default Webhook" option that's used when no category-specific one exists
+### Features
+1. **CRUD Operations**: Create, read, update, delete categories via Supabase
+2. **Drag-and-Drop Reordering**: Using `@dnd-kit` (already installed) to reorder categories
+3. **Product Count Display**: Shows number of products in each category
+4. **Icon Picker**: Dropdown of common Lucide icons to choose from
+5. **Auto-slug Generation**: Automatically creates URL-safe slug from category name
 
