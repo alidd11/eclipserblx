@@ -42,40 +42,62 @@ Deno.serve(async (req) => {
 
     const embed = {
       title: "🏪 Eclipse Marketplace",
-      description: "Discover amazing products from talented creators in our community marketplace. Buy, sell, and connect with fellow Roblox developers!\n\n━━━━━━━━━━━━━━━━━━━━━━",
+      description: "Discover amazing products from talented creators in our community marketplace. Buy, sell, and connect with fellow Roblox developers!",
       color: 0x9b59b6, // Purple for marketplace theme
       fields: [
         {
+          name: "\u200B",
+          value: "━━━━━━━━━━━━━━━━━━━━━━",
+          inline: false,
+        },
+        {
           name: "🛍️ Shop Unique Products",
-          value: "Browse a curated selection of **scripts, models, GFX, and more** from community sellers.\n\u200B",
+          value: "Browse a curated selection of **scripts, models, GFX, and more** from community sellers.\n\n[**Browse the Marketplace →**](https://roleplay-hub-shop.lovable.app/marketplace)",
+          inline: false,
+        },
+        {
+          name: "\u200B",
+          value: "\u200B",
           inline: false,
         },
         {
           name: "💰 Become a Seller",
-          value: "Turn your skills into income! Join our seller programme and reach **thousands of potential buyers**.\n\u200B",
+          value: "Turn your skills into income! Join our seller programme and reach **thousands of potential buyers**.\n\n[**Apply to Sell →**](https://roleplay-hub-shop.lovable.app/become-seller)",
+          inline: false,
+        },
+        {
+          name: "\u200B",
+          value: "\u200B",
           inline: false,
         },
         {
           name: "🔒 Secure Transactions",
-          value: "Every purchase is protected with **secure payment processing** via Stripe.\n\u200B",
+          value: "Every purchase is protected with **secure payment processing** via Stripe.",
+          inline: false,
+        },
+        {
+          name: "\u200B",
+          value: "\u200B",
           inline: false,
         },
         {
           name: "⭐ Seller Benefits",
-          value: "• Keep **85% of sales** (15% platform fee)\n• Build your own **branded storefront**\n• Direct **Discord notifications** for orders\n• Detailed **analytics dashboard**\n\u200B",
+          value: "• Keep **85% of sales** (15% platform fee)\n• Build your own **branded storefront**\n• Direct **Discord notifications** for orders\n• Detailed **analytics dashboard**",
           inline: false,
         },
         {
-          name: "🚀 Get Started",
-          value: "[**Browse the Marketplace →**](https://roleplay-hub-shop.lovable.app/marketplace)\n[**Become a Seller →**](https://roleplay-hub-shop.lovable.app/become-seller)\n\nJoin our growing community of creators today!",
+          name: "\u200B",
+          value: "\u200B",
+          inline: false,
+        },
+        {
+          name: "🚀 Need Help?",
+          value: "Questions? Visit our [**Support Page →**](https://roleplay-hub-shop.lovable.app/support)\n\nJoin our growing community of creators today!",
           inline: false,
         },
       ],
       thumbnail: {
-        url: "https://cdn.discordapp.com/emojis/1084184853853491200.webp", // Store emoji
-      },
-      footer: {
-        text: "Eclipse Marketplace • Community Creations",
+        url: "https://cdn.discordapp.com/emojis/1084184853853491200.webp",
       },
     };
 
