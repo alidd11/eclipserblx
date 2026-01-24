@@ -345,6 +345,27 @@ export default function AdminProducts() {
               console.log('New product notifications sent:', result.data);
             }
           });
+
+          // Send Discord webhook for new product (forum announcement)
+          supabase.functions.invoke('send-product-discord-webhook', {
+            body: {
+              product_id: newProduct.id,
+              product_name: payload.name,
+              product_slug: payload.slug,
+              product_price: payload.price,
+              product_description: payload.description,
+              product_images: payload.images,
+              category_name: categoryName,
+              robux_price: payload.robux_price,
+              robux_enabled: payload.robux_enabled,
+            },
+          }).then(result => {
+            if (result.error) {
+              console.error('Failed to send Discord webhook:', result.error);
+            } else if (result.data?.success) {
+              console.log('Discord product notification sent:', result.data);
+            }
+          });
         }
       }
     },
