@@ -297,9 +297,15 @@ export const DiscordLinkCard = ({
                 </>
               )}
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              You'll be redirected to Discord to authorize the connection
-            </p>
+            {accountsLocked ? (
+              <p className="text-xs text-amber-500/80 text-center">
+                ⚠️ As a seller, once linked this account cannot be unlinked. Contact staff if you need to make changes later.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center">
+                You'll be redirected to Discord to authorize the connection
+              </p>
+            )}
           </div>
         )}
       </CardContent>
