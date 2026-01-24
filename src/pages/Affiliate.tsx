@@ -203,14 +203,16 @@ export default function Affiliate() {
 
       if (error) throw error;
 
-      // Create affiliate balance record
+      // Create affiliate balance record with correct column names
       const { error: balanceError } = await supabase
         .from('affiliate_balances')
         .upsert({
           user_id: user.id,
-          balance: 0,
           total_earned: 0,
-          total_withdrawn: 0,
+          available_balance: 0,
+          total_paid: 0,
+          total_clicks: 0,
+          total_signups: 0,
         }, { onConflict: 'user_id' });
 
       if (balanceError) throw balanceError;
