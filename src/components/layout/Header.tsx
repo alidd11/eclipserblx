@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -15,6 +15,7 @@ import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { hapticTap } from '@/lib/haptics';
 
 const navLinks = [
+  { href: '/featured', label: 'Featured', icon: Sparkles },
   { href: '/products', label: 'Products', icon: Package },
   { href: '/categories', label: 'Categories', icon: Grid3X3 },
   { href: '/eclipse-plus', label: 'Eclipse+', icon: Circle },

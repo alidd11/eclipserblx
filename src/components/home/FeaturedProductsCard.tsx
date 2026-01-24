@@ -253,7 +253,7 @@ export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function Fea
           ))}
         </div>
         <Link 
-          to="/products?featured=true" 
+          to="/featured" 
           className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
         >
           View all

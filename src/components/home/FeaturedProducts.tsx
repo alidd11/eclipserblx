@@ -110,7 +110,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
               Hand-picked assets loved by the community
             </p>
           </div>
-          <Link to="/products?featured=true" className="hidden sm:block">
+          <Link to="/featured" className="hidden sm:block">
             <Button variant="outline">
               View All
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -236,7 +236,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         )}
 
         <div className="mt-8 text-center sm:hidden">
-          <Link to="/products?featured=true">
+          <Link to="/featured">
             <Button variant="outline">
               View All Featured
               <ArrowRight className="ml-2 h-4 w-4" />
