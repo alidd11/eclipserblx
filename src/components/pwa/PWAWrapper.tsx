@@ -7,7 +7,7 @@ import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
 import { useSwipePrevent } from '@/hooks/useSwipePrevent';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useOrientationLock } from '@/hooks/useOrientationLock';
+import { OrientationLockOverlay } from '@/components/pwa/OrientationLockOverlay';
 import { toast } from 'sonner';
 
 interface PWAWrapperProps {
@@ -35,9 +35,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   // Prevent swipe navigation in PWA
   useSwipePrevent();
-
-  // Lock orientation to portrait in PWA
-  useOrientationLock();
 
   // Dynamic theme color for PWA
   useThemeColor();
@@ -133,6 +130,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   return (
     <>
+      {/* Orientation lock overlay - blocks landscape mode in PWA */}
+      <OrientationLockOverlay />
+      
       {/* Pull-to-refresh indicator */}
       <AnimatePresence>
         {pullDistance > 10 && isStandalone && (
