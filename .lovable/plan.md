@@ -1,77 +1,144 @@
 
 
-# Admin Categories Management Page
+# Improving Product Discovery: All Products vs Featured
 
-## Overview
-Create a new admin page where you can add, edit, reorder, and delete product categories with a simple, user-friendly interface.
+## Current Problem
 
-## What You'll Be Able To Do
+The "All Products" (`/products`) and "Featured Products" (`/products?featured=true`) pages are functionally identical - just a filtered product grid. This creates:
 
-| Action | Description |
-|--------|-------------|
-| **Add** | Create new categories with name, description, and icon |
-| **Edit** | Update any category's details |
-| **Reorder** | Drag and drop to change display order |
-| **Delete** | Remove categories (with safety check for products) |
-
-## How It Will Look
-
-The page will display a simple table/list of all categories with:
-- **Drag handle** on the left for reordering
-- **Icon** preview
-- **Name** and **slug** (auto-generated from name)
-- **Description** (optional)
-- **Product count** showing how many products use this category
-- **Edit** and **Delete** buttons
-
-### Add/Edit Dialog
-When adding or editing a category:
-- **Name** - The display name (e.g., "Vehicle Liveries")
-- **Slug** - Auto-generated from name (e.g., "vehicle-liveries"), but editable
-- **Description** - Optional description text
-- **Icon** - Dropdown to select from available Lucide icons (Car, Code, Box, Layout, Percent, Bot, etc.)
-
-## Safety Features
-
-### Delete Protection
-- If a category has products assigned, you'll see a warning
-- Option to either reassign products to another category or proceed anyway (products become "Uncategorized")
-
-### Slug Validation
-- Slugs must be unique
-- System prevents duplicate slugs
-
-## Navigation
-The page will be added to the admin sidebar under **Store** section:
-- Products
-- **Categories** (new)
-- Orders
-- Reviews
-- Discounts
+- **Poor user experience**: No distinct "curated" feeling for featured items
+- **Missed marketing potential**: Featured products deserve premium presentation
+- **Navigation confusion**: Multiple paths to similar content
 
 ---
 
-## Technical Implementation
+## Proposed Solution: Curated Collections System
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `src/pages/admin/Categories.tsx` | Main categories management page |
+Transform the "Featured" concept into a proper **Collections** experience, giving Eclipse distinct discovery destinations.
 
-### Modified Files
-| File | Changes |
-|------|---------|
-| `src/components/admin/AdminSidebar.tsx` | Add "Categories" nav item under Store |
-| `src/App.tsx` | Add route for `/admin/categories` |
+### Option A: Dedicated Featured Page (Recommended)
 
-### Database Changes
-None required - the `categories` table already has all needed columns:
-- `id`, `name`, `slug`, `description`, `icon`, `display_order`, `parent_id`
+Create a standalone `/featured` route with a premium, editorial-style layout:
 
-### Features
-1. **CRUD Operations**: Create, read, update, delete categories via Supabase
-2. **Drag-and-Drop Reordering**: Using `@dnd-kit` (already installed) to reorder categories
-3. **Product Count Display**: Shows number of products in each category
-4. **Icon Picker**: Dropdown of common Lucide icons to choose from
-5. **Auto-slug Generation**: Automatically creates URL-safe slug from category name
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    STAFF PICKS                          │
+│         Hand-selected by the Eclipse team               │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │           HERO FEATURED PRODUCT                   │  │
+│  │      (Large showcase with description)            │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  Featured Collection (3-4 products in large cards)      │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐    │
+│  │         │  │         │  │         │  │         │    │
+│  └─────────┘  └─────────┘  └─────────┘  └─────────┘    │
+│                                                         │
+│  ────────────── New This Week ──────────────            │
+│  (Products added in last 7 days)                        │
+│                                                         │
+│  ────────────── Popular Now ──────────────              │
+│  (Sorted by download count)                             │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Benefits:**
+- Distinct URL for marketing campaigns (`eclipsestore.com/featured`)
+- Premium presentation for curated content
+- Combines featured + new + popular in one discovery page
+
+---
+
+### Option B: Collections/Curated Pages
+
+Expand beyond "Featured" to multiple curated experiences:
+
+| Route | Purpose | Content |
+|-------|---------|---------|
+| `/collections/staff-picks` | Hand-curated by team | Featured products |
+| `/collections/new-arrivals` | Discovery for new items | Products from last 7 days |
+| `/collections/trending` | Social proof | Top downloaded this month |
+| `/collections/on-sale` | Promotions | Discounted products |
+
+---
+
+## Recommended Changes
+
+### 1. New Dedicated Featured Page (`/featured`)
+
+Create `src/pages/Featured.tsx` with:
+- Hero section showcasing the #1 featured product
+- Curated grid (larger cards than standard grid)
+- "New This Week" section
+- "Community Favorites" section (most downloaded)
+- Editorial copy explaining why these are hand-picked
+
+### 2. Update Navigation
+
+Add "Featured" as a top-level navigation item:
+
+| Current | Proposed |
+|---------|----------|
+| Products, Categories, Eclipse+ | **Featured**, Products, Categories, Eclipse+ |
+
+Or rename:
+- "Products" → "All Products"  
+- Add "Staff Picks" in nav
+
+### 3. Remove Redundant Filter
+
+- Remove or repurpose the `?featured=true` query parameter
+- Update all links (homepage FeaturedProductsCard, etc.) to point to `/featured`
+
+### 4. Differentiate All Products
+
+Keep `/products` as the comprehensive browsing experience with:
+- All sorting options
+- Category filtering
+- Search
+- Pagination
+
+---
+
+## Technical Changes Required
+
+### Files to Create
+1. `src/pages/Featured.tsx` - New dedicated featured page
+
+### Files to Modify
+1. `src/App.tsx` - Add `/featured` route
+2. `src/components/layout/Header.tsx` - Add "Featured" to navigation
+3. `src/components/home/FeaturedProducts.tsx` - Update "View All" link to `/featured`
+4. `src/components/home/FeaturedProductsCard.tsx` - Update "View all" link to `/featured`
+5. `src/pages/Products.tsx` - Remove featured filter logic (optional, can keep for backwards compatibility)
+
+### New Page Structure
+
+The Featured page would include:
+- Hero featured product with large image and call-to-action
+- Curated selection grid (6-8 products, larger card format)
+- "New This Week" horizontal scroll section
+- "Popular Picks" section based on downloads
+- Consistent Eclipse branding with the "visual restraint" design philosophy
+
+---
+
+## Marketing Benefits
+
+1. **Shareable URL**: `eclipsestore.com/featured` for social media, Discord, emails
+2. **Campaign Landing**: Use for promotional campaigns and announcements
+3. **SEO Value**: Distinct page can rank for "best Roblox assets" etc.
+4. **User Journey**: Clear distinction between "discover curated" vs "browse all"
+5. **Content Freshness**: Weekly rotation creates return visits
+
+---
+
+## Questions to Confirm
+
+Before implementation, please confirm:
+- Do you prefer Option A (single Featured page) or Option B (multiple Collections)?
+- Should "Featured" appear in the main header navigation alongside Products?
+- Would you like the hero section to auto-rotate between featured products or show a static "Product of the Week"?
 
