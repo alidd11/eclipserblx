@@ -36,6 +36,7 @@ interface DiscordSettings {
   review_discord_webhook_url: string;
   affiliate_discord_webhook_url: string;
   eclipse_plus_discord_webhook_url: string;
+  marketplace_discord_webhook_url: string;
   discord_widget_server_id: string;
 }
 
@@ -75,6 +76,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   review_discord_webhook_url: '',
   affiliate_discord_webhook_url: '',
   eclipse_plus_discord_webhook_url: '',
+  marketplace_discord_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -120,6 +122,13 @@ export default function DiscordSettings() {
 
   const [isTestingEclipsePlusWebhook, setIsTestingEclipsePlusWebhook] = useState(false);
   const [eclipsePlusWebhookTestResult, setEclipsePlusWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+
+  const [isTestingMarketplaceWebhook, setIsTestingMarketplaceWebhook] = useState(false);
+  const [marketplaceWebhookTestResult, setMarketplaceWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -190,7 +199,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -207,6 +216,8 @@ export default function DiscordSettings() {
           settingsMap.affiliate_discord_webhook_url = String(val);
         } else if (item.key === 'eclipse_plus_discord_webhook_url') {
           settingsMap.eclipse_plus_discord_webhook_url = String(val);
+        } else if (item.key === 'marketplace_discord_webhook_url') {
+          settingsMap.marketplace_discord_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -683,6 +694,60 @@ export default function DiscordSettings() {
     }
   };
 
+  const handleTestMarketplaceWebhook = async () => {
+    if (!user?.id) {
+      toast.error('You must be logged in');
+      return;
+    }
+    
+    if (!formData.marketplace_discord_webhook_url) {
+      toast.error('Please enter a Marketplace Webhook URL first');
+      return;
+    }
+    
+    setIsTestingMarketplaceWebhook(true);
+    setMarketplaceWebhookTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-marketplace-announcement', {
+        body: {},
+      });
+      
+      if (error) {
+        setMarketplaceWebhookTestResult({
+          success: false,
+          message: 'Function invocation failed',
+          details: error.message,
+        });
+        toast.error('Marketplace webhook failed');
+      } else if (data?.success) {
+        setMarketplaceWebhookTestResult({
+          success: true,
+          message: 'Marketplace announcement sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Marketplace announcement sent successfully!');
+      } else {
+        setMarketplaceWebhookTestResult({
+          success: false,
+          message: data?.error || 'Unknown error',
+          details: data?.details,
+        });
+        toast.error('Marketplace webhook failed');
+      }
+    } catch (err: any) {
+      console.error('Marketplace webhook error:', err);
+      setMarketplaceWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to send Marketplace announcement');
+    } finally {
+      setIsTestingMarketplaceWebhook(false);
+    }
+  };
+
   const handleTestCategoryWebhook = async (categorySlug: string, categoryName: string) => {
     if (!user?.id) {
       toast.error('You must be logged in');
@@ -810,15 +875,33 @@ export default function DiscordSettings() {
     saveCategoryWebhooksMutation.mutate(categoryWebhookForm);
   };
 
-  const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus') => {
+  const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus' | 'marketplace') => {
     if (!user?.id) {
       toast.error('You must be logged in');
       return;
     }
 
-    const functionName = type === 'affiliate' ? 'send-affiliate-announcement' : 'send-eclipse-plus-announcement';
-    const webhookKey = type === 'affiliate' ? 'affiliate_discord_webhook_url' : 'eclipse_plus_discord_webhook_url';
-    const label = type === 'affiliate' ? 'Affiliate' : 'Eclipse+';
+    let functionName: string;
+    let webhookKey: keyof DiscordSettings;
+    let label: string;
+
+    switch (type) {
+      case 'affiliate':
+        functionName = 'send-affiliate-announcement';
+        webhookKey = 'affiliate_discord_webhook_url';
+        label = 'Affiliate';
+        break;
+      case 'eclipse_plus':
+        functionName = 'send-eclipse-plus-announcement';
+        webhookKey = 'eclipse_plus_discord_webhook_url';
+        label = 'Eclipse+';
+        break;
+      case 'marketplace':
+        functionName = 'send-marketplace-announcement';
+        webhookKey = 'marketplace_discord_webhook_url';
+        label = 'Marketplace';
+        break;
+    }
 
     if (!formData[webhookKey]) {
       toast.error(`Please configure the ${label} webhook URL first`);
@@ -964,6 +1047,12 @@ export default function DiscordSettings() {
                       Products
                     </div>
                   </SelectItem>
+                  <SelectItem value="marketplace">
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="h-4 w-4" />
+                      Marketplace
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1010,6 +1099,10 @@ export default function DiscordSettings() {
                 <Package className="h-4 w-4 hidden sm:block" />
                 Products
               </TabsTrigger>
+              <TabsTrigger value="marketplace" className="gap-2">
+                <Megaphone className="h-4 w-4 hidden sm:block" />
+                Marketplace
+              </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
               <DropdownMenu>
@@ -1052,6 +1145,21 @@ export default function DiscordSettings() {
                     <div className="flex-1">
                       <p className="font-medium text-sm">Eclipse+ Membership</p>
                       <p className="text-xs text-muted-foreground">Promote premium membership</p>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleSendAnnouncementFromDropdown('marketplace')}
+                    disabled={isSendingAnnouncement === 'marketplace' || !formData.marketplace_discord_webhook_url}
+                    className="flex items-center gap-3 py-3 cursor-pointer"
+                  >
+                    {isSendingAnnouncement === 'marketplace' ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+                    ) : (
+                      <Megaphone className="h-5 w-5 text-purple-400" />
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Marketplace</p>
+                      <p className="text-xs text-muted-foreground">Promote the marketplace</p>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -1803,6 +1911,85 @@ export default function DiscordSettings() {
                     <li>Up to 4 product images</li>
                     <li>Direct link to product page</li>
                   </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Marketplace Marketing Tab */}
+          <TabsContent value="marketplace">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-purple-400" />
+                  <CardTitle>Marketplace Marketing Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Send marketplace announcements to Discord to attract buyers and sellers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="marketplaceWebhook">Webhook URL</Label>
+                  <Input
+                    id="marketplaceWebhook"
+                    value={formData.marketplace_discord_webhook_url}
+                    onChange={(e) => handleChange('marketplace_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for marketplace marketing announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Send className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Send Announcement</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Send the marketplace advertisement to your Discord channel to attract buyers and sellers.
+                  </p>
+                  <Button
+                    onClick={handleTestMarketplaceWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingMarketplaceWebhook || !formData.marketplace_discord_webhook_url}
+                  >
+                    {isTestingMarketplaceWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Announcement
+                  </Button>
+                  <TestResultBadge result={marketplaceWebhookTestResult} />
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Eye-catching marketplace advertisement</li>
+                    <li>Browse unique products section</li>
+                    <li>Become a seller benefits</li>
+                    <li>Verified quality and secure transactions</li>
+                    <li>Seller commission rates (85%)</li>
+                    <li>Links to marketplace and seller signup</li>
+                  </ul>
+                </div>
+
+                <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Megaphone className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-purple-400">Marketing Announcement</p>
+                      <p className="text-sm text-muted-foreground">
+                        This announcement showcases the marketplace with a purple-themed design 
+                        to attract both buyers and sellers to your community marketplace.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
