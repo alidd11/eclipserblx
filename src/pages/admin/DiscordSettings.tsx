@@ -893,81 +893,79 @@ export default function DiscordSettings() {
     <AdminLayout>
       <div className="space-y-6">
         <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[#5865F2]/20">
-                  <MessageSquare className="h-6 w-6 text-[#5865F2]" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
-                  <CardDescription className="hidden sm:block">Manage your Discord integrations and webhooks</CardDescription>
-                </div>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[#5865F2]/20">
+                <MessageSquare className="h-6 w-6 text-[#5865F2]" />
               </div>
-              {/* Mobile dropdown in header */}
-              <div className="sm:hidden">
-                <Select value={activeTab} onValueChange={setActiveTab}>
-                  <SelectTrigger className="w-[130px] bg-background">
-                    <SelectValue placeholder="Section" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border z-50">
-                    <SelectItem value="invite">
-                      <div className="flex items-center gap-2">
-                        <Link2 className="h-4 w-4" />
-                        Invite
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="widget">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Widget
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="orders">
-                      <div className="flex items-center gap-2">
-                        <Webhook className="h-4 w-4" />
-                        Orders
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="reviews">
-                      <div className="flex items-center gap-2">
-                        <Star className="h-4 w-4" />
-                        Reviews
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="roles">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        Roles
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="boosts">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4" />
-                        Boosts
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="affiliate">
-                      <div className="flex items-center gap-2">
-                        <Gift className="h-4 w-4" />
-                        Affiliate
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="eclipse-plus">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
-                        Eclipse+
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="products">
-                      <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        Products
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
+                <CardDescription className="hidden sm:block">Manage your Discord integrations and webhooks</CardDescription>
               </div>
+            </div>
+            {/* Mobile dropdown below title */}
+            <div className="sm:hidden pt-3">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Select section" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border z-50">
+                  <SelectItem value="invite">
+                    <div className="flex items-center gap-2">
+                      <Link2 className="h-4 w-4" />
+                      Invite
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="widget">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Widget
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="orders">
+                    <div className="flex items-center gap-2">
+                      <Webhook className="h-4 w-4" />
+                      Orders
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="reviews">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      Reviews
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="roles">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Roles
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="boosts">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      Boosts
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="affiliate">
+                    <div className="flex items-center gap-2">
+                      <Gift className="h-4 w-4" />
+                      Affiliate
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="eclipse-plus">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      Eclipse+
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="products">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      Products
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardHeader>
         </Card>
