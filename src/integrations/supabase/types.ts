@@ -189,6 +189,8 @@ export type Database = {
           order_id: string
           order_total: number
           referred_user_id: string
+          refund_id: string | null
+          reversed_at: string | null
           status: string
         }
         Insert: {
@@ -200,6 +202,8 @@ export type Database = {
           order_id: string
           order_total: number
           referred_user_id: string
+          refund_id?: string | null
+          reversed_at?: string | null
           status?: string
         }
         Update: {
@@ -211,6 +215,8 @@ export type Database = {
           order_id?: string
           order_total?: number
           referred_user_id?: string
+          refund_id?: string | null
+          reversed_at?: string | null
           status?: string
         }
         Relationships: [
@@ -1605,6 +1611,9 @@ export type Database = {
           id: string
           payment_id: string | null
           payment_method: string | null
+          refund_amount: number | null
+          refund_id: string | null
+          refunded_at: string | null
           status: string
           subtotal: number
           total: number
@@ -1619,6 +1628,9 @@ export type Database = {
           id?: string
           payment_id?: string | null
           payment_method?: string | null
+          refund_amount?: number | null
+          refund_id?: string | null
+          refunded_at?: string | null
           status?: string
           subtotal: number
           total: number
@@ -1633,6 +1645,9 @@ export type Database = {
           id?: string
           payment_id?: string | null
           payment_method?: string | null
+          refund_amount?: number | null
+          refund_id?: string | null
+          refunded_at?: string | null
           status?: string
           subtotal?: number
           total?: number
@@ -2736,6 +2751,8 @@ export type Database = {
           order_id: string | null
           order_item_id: string | null
           platform_fee: number | null
+          refund_id: string | null
+          refunded_at: string | null
           seller_id: string
           status: string | null
           store_id: string
@@ -2754,6 +2771,8 @@ export type Database = {
           order_id?: string | null
           order_item_id?: string | null
           platform_fee?: number | null
+          refund_id?: string | null
+          refunded_at?: string | null
           seller_id: string
           status?: string | null
           store_id: string
@@ -2772,6 +2791,8 @@ export type Database = {
           order_id?: string | null
           order_item_id?: string | null
           platform_fee?: number | null
+          refund_id?: string | null
+          refunded_at?: string | null
           seller_id?: string
           status?: string | null
           store_id?: string
@@ -4075,6 +4096,14 @@ export type Database = {
       is_username_available: { Args: { username: string }; Returns: boolean }
       record_rate_limit: {
         Args: { p_action_type: string; p_identifier: string }
+        Returns: undefined
+      }
+      reverse_affiliate_commission: {
+        Args: { p_order_id: string; p_refund_id: string }
+        Returns: undefined
+      }
+      reverse_seller_earnings: {
+        Args: { p_order_id: string; p_refund_id: string }
         Returns: undefined
       }
       revert_expired_custom_rates: { Args: never; Returns: undefined }
