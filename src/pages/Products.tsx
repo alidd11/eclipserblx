@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Filter, Search, ChevronDown, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
@@ -24,6 +24,7 @@ const PRODUCTS_PER_PAGE_MOBILE = 12;
 export default function Products() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const categorySlug = searchParams.get('category');
   const featuredOnly = searchParams.get('featured') === 'true';
   const pageParam = searchParams.get('page');
@@ -31,6 +32,15 @@ export default function Products() {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('smart');
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+
+  // Backwards compatibility: old Featured link used /products?featured=true.
+  // In PWA contexts, users can get "stuck" on that URL via cache/route restore.
+  // Redirect to the new curated Featured page.
+  useEffect(() => {
+    if (featuredOnly) {
+      navigate('/featured', { replace: true });
+    }
+  }, [featuredOnly, navigate]);
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['products'] });
