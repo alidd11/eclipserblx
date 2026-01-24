@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save, Star } from 'lucide-react';
+import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save, Star, Receipt } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -517,6 +517,17 @@ export default function Downloads() {
                                   </Link>
                                 </Button>
                               )}
+                              {/* Receipt Button - Desktop */}
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Link to={`/order-success?order_id=${item.orderId}`}>
+                                  <Receipt className="h-4 w-4 mr-2" />
+                                  Receipt
+                                </Link>
+                              </Button>
                             </div>
                           </div>
                           
@@ -705,6 +716,18 @@ export default function Downloads() {
                                 </Link>
                               </Button>
                             )}
+                            {/* Receipt Button - Mobile */}
+                            <Button
+                              asChild
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            >
+                              <Link to={`/order-success?order_id=${item.orderId}`}>
+                                <Receipt className="h-4 w-4 mr-2" />
+                                Receipt
+                              </Link>
+                            </Button>
                           </div>
                         </div>
                       </div>
