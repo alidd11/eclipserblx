@@ -1,64 +1,74 @@
 
+# Marketplace Categories - Show Only Marketplace Products
 
-# Customer Sidebar Reorganization - COMPLETED
+## Your Request
+Update the Categories card on the Marketplace page so it only shows products from marketplace stores (like clearlydev), excluding products from the main Eclipse store.
 
-## Implementation Summary
+---
 
-Reorganized the customer sidebar navigation into a cleaner, journey-focused structure:
+## What Will Change
 
-### New Structure
+| Current Behavior | New Behavior |
+|------------------|--------------|
+| Category counts include ALL products | Counts only products from marketplace stores |
+| Links go to `/products?category=X` (shows all products) | Links go to `/products?category=X&source=marketplace` |
+| "View all" goes to `/categories` | "View all" goes to `/categories?source=marketplace` |
 
-```text
-[LOGO]
+---
 
-── QUICK ACCESS (always expanded) ──
-   Home
-   Seller Dashboard (if seller)
-   Affiliate (if enabled)
+## Implementation
 
-── DISCOVER ──────────────────────
-   Featured
-   Eclipse+
-   Marketplace
+### 1. Update CategoriesGridCard Component
+**File:** `src/components/marketplace/CategoriesGridCard.tsx`
 
-── SHOP ──────────────────────────
-   All Products
-   Categories (expandable, dynamic)
+- Modify the product count query to only count products where `store_id` is NOT null (marketplace products only)
+- Update category links to include `&source=marketplace` parameter
+- Update "View all" link to include `?source=marketplace`
 
-── COMMUNITY ─────────────────────
-   Forum
-   Jobs
-   Discord
+```typescript
+// Updated count query - only marketplace products
+const { count } = await supabase
+  .from('products')
+  .select('id', { count: 'exact', head: true })
+  .eq('category_id', category.id)
+  .eq('is_active', true)
+  .not('store_id', 'is', null)  // Only marketplace products
+  .or(`release_at.is.null,release_at.lte.${now}`);
 
-── MY ACCOUNT ────────────────────
-   Profile
-   My Cart
-   Wishlist
-   My Purchases
-   Notifications
-   Store Messages (if seller)
-
-── HELP ──────────────────────────
-   Help Center
-   Contact Us
-   FAQ
-   System Status
-
-[LEGAL FOOTER]
-   Terms · Privacy · Refunds
+// Updated links
+<Link to={`/products?category=${category.slug}&source=marketplace`}>
+<Link to="/categories?source=marketplace">
 ```
 
-### Changes Made
+### 2. Update Products Page to Handle Source Filter
+**File:** `src/pages/Products.tsx`
 
-| Before | After |
-|--------|-------|
-| 6 groups + categories | 6 groups + categories + footer |
-| "Home" group with 6 mixed items | "Quick Access" with 1-3 focused items |
-| Separate "Selling" group | Seller items in Quick Access + Account |
-| "Legal" group with 3 full items | Compact footer row |
-| "My Messages" | Renamed to "Notifications" |
-| No direct "My Purchases" | Direct link to /downloads |
-| "Products" group | Split into "Discover" + "Shop" |
+- Read new `source` query parameter
+- When `source=marketplace`, filter to only show products with a `store_id` (excluding main store)
 
-### File Modified
-- `src/components/layout/CustomerSidebar.tsx`
+```typescript
+const sourceFilter = searchParams.get('source');
+
+// In query function:
+if (sourceFilter === 'marketplace') {
+  query = query.not('store_id', 'is', null);
+}
+```
+
+### 3. Update Categories Page (Optional)
+**File:** `src/pages/Categories.tsx`
+
+- Pass through the `source=marketplace` parameter to product links
+- Update product counts to respect the source filter
+
+---
+
+## Summary
+
+| File | Changes |
+|------|---------|
+| `CategoriesGridCard.tsx` | Filter counts to marketplace-only, update links |
+| `Products.tsx` | Add `source=marketplace` filter support |
+| `Categories.tsx` | Pass through source filter (optional) |
+
+This ensures when users browse categories from the Marketplace page, they only see products from marketplace sellers like clearlydev, not from the main Eclipse store.
