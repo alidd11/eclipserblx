@@ -181,6 +181,12 @@ export default function Affiliate() {
   const submitApplicationMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id || !user?.email) throw new Error('Not authenticated');
+      if (!profile) throw new Error('Profile not loaded. Please try again.');
+      if (!profile.display_name) throw new Error('Please set a display name in your account settings before applying.');
+      if (!applicationForm.promotion_method.trim()) throw new Error('Please describe how you will promote us.');
+      if (applicationForm.preferred_payout_method === 'paypal' && !applicationForm.paypal_email.trim()) {
+        throw new Error('PayPal email is required when selecting PayPal as payout method.');
+      }
       
       // Insert application with auto-approved status
       const { data: application, error } = await supabase
@@ -188,12 +194,12 @@ export default function Affiliate() {
         .insert({
           user_id: user.id,
           email: user.email,
-          display_name: profile?.display_name || null,
-          paypal_email: applicationForm.paypal_email || null,
-          discord_username: applicationForm.discord_username || null,
-          promotion_method: applicationForm.promotion_method,
-          audience_size: applicationForm.audience_size || null,
-          notes: applicationForm.notes || null,
+          display_name: profile.display_name,
+          paypal_email: applicationForm.paypal_email.trim() || null,
+          discord_username: applicationForm.discord_username.trim() || null,
+          promotion_method: applicationForm.promotion_method.trim(),
+          audience_size: applicationForm.audience_size.trim() || null,
+          notes: applicationForm.notes.trim() || null,
           preferred_payout_method: applicationForm.preferred_payout_method,
           status: 'approved',
           reviewed_at: new Date().toISOString(),
@@ -654,12 +660,22 @@ export default function Affiliate() {
                   />
                 </div>
 
+                {!profile?.display_name && (
+                  <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                    <p className="text-sm text-yellow-500 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      Please <Link to="/account" className="underline font-medium">set a display name</Link> before applying.
+                    </p>
+                  </div>
+                )}
+
                 <Button
                   className="w-full gradient-button"
                   onClick={() => submitApplicationMutation.mutate()}
                   disabled={
-                    !applicationForm.promotion_method || 
-                    (applicationForm.preferred_payout_method === 'paypal' && !applicationForm.paypal_email) ||
+                    !profile?.display_name ||
+                    !applicationForm.promotion_method.trim() || 
+                    (applicationForm.preferred_payout_method === 'paypal' && !applicationForm.paypal_email.trim()) ||
                     submitApplicationMutation.isPending
                   }
                 >
