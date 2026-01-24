@@ -183,8 +183,10 @@ export function GrantEclipsePlusDialog({
       }
 
       // Step 7: Send Discord webhook if user has Discord linked
+      let discordRoleAssigned = false;
+      let discordRoleMessage = '';
       try {
-        await supabase.functions.invoke('send-discord-webhook', {
+        const { data: discordResult } = await supabase.functions.invoke('send-discord-webhook', {
           body: {
             user_id: targetUser.user_id,
             event: 'subscription_activated',
@@ -192,14 +194,37 @@ export function GrantEclipsePlusDialog({
             granted_by_admin: true,
           },
         });
-        console.log('Discord webhook sent for Eclipse+ grant');
+        
+        if (discordResult?.success) {
+          discordRoleAssigned = true;
+          discordRoleMessage = 'Discord role assigned!';
+        } else if (discordResult?.skipped) {
+          discordRoleMessage = 'Discord role skipped - user has not linked Discord';
+        } else if (discordResult?.code === 'USER_NOT_IN_GUILD') {
+          discordRoleMessage = 'Discord role skipped - user not in server';
+        } else if (discordResult?.error) {
+          discordRoleMessage = `Discord role failed: ${discordResult.error}`;
+        }
+        
+        console.log('Discord webhook result:', discordResult);
       } catch (discordError) {
-        console.log('Discord webhook not sent (user may not have Discord linked):', discordError);
+        console.log('Discord webhook error:', discordError);
+        discordRoleMessage = 'Discord role skipped - webhook error';
       }
 
-      toast.success(
-        `Eclipse+ granted to ${targetUser.display_name || targetUser.email} for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''}`
-      );
+      // Show success with Discord status
+      if (discordRoleAssigned) {
+        toast.success(
+          `Eclipse+ granted to ${targetUser.display_name || targetUser.email} for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''} • Discord role assigned ✓`
+        );
+      } else {
+        toast.success(
+          `Eclipse+ granted to ${targetUser.display_name || targetUser.email} for ${durationDays} day${parseInt(durationDays) > 1 ? 's' : ''}`
+        );
+        if (discordRoleMessage) {
+          toast.info(discordRoleMessage, { duration: 5000 });
+        }
+      }
 
       handleClose();
       onSuccess?.();
