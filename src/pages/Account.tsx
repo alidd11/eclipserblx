@@ -20,6 +20,7 @@ import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
 import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
 
 import { AvatarUpload } from '@/components/account/AvatarUpload';
+import { DiscordLinkCard } from '@/components/account/DiscordLinkCard';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
 import { ReferralCard } from '@/components/account/ReferralCard';
 import { AffiliateCard } from '@/components/account/AffiliateCard';
@@ -53,12 +54,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [savingUsername, setSavingUsername] = useState(false);
-  
-  // Discord link state
-  const [discordId, setDiscordId] = useState('');
-  const [discordUsername, setDiscordUsername] = useState('');
-  const [isLinkingDiscord, setIsLinkingDiscord] = useState(false);
-  const [isUnlinkingDiscord, setIsUnlinkingDiscord] = useState(false);
   
   // Roblox link state
   const [robloxInputUsername, setRobloxInputUsername] = useState('');
@@ -691,150 +686,18 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </div>
             </div>
             
-            {/* Discord Section */}
-            <div className="p-3 rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2 mb-2">
-                <svg className="w-4 h-4 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-                </svg>
-                <p className="text-xs font-medium text-muted-foreground">Discord Integration</p>
-              </div>
-              
-              {profile?.discord_id ? (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    {discordAvatar?.avatar_url ? (
-                      <img 
-                        src={discordAvatar.avatar_url} 
-                        alt="Discord Avatar" 
-                        className="w-8 h-8 rounded-full object-cover ring-2 ring-[#5865F2]/30"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-[#5865F2] flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-medium text-sm truncate">
-                          {profile?.discord_username || 'Connected'}
-                        </p>
-                        {isSubscribed && (
-                          <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] px-1.5 py-0 h-4">
-                            <Sparkles className="w-2 h-2 mr-0.5" />
-                            Role Active
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground font-mono truncate">
-                        {profile.discord_id}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={async () => {
-                      setIsUnlinkingDiscord(true);
-                      try {
-                        if (isSubscribed && profile?.discord_id) {
-                          try {
-                            await supabase.functions.invoke('send-discord-webhook', {
-                              body: { user_id: user.id, event: 'subscription_deactivated', granted_by_admin: false },
-                            });
-                          } catch (e) { console.error('Webhook error:', e); }
-                        }
-                        const { error } = await supabase.from('profiles').update({ discord_id: null, discord_username: null }).eq('user_id', user.id);
-                        if (error) throw error;
-                        queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-                        queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
-                      } catch (error) {
-                        console.error('Failed to unlink Discord:', error);
-                      } finally {
-                        setIsUnlinkingDiscord(false);
-                      }
-                    }}
-                    disabled={isUnlinkingDiscord || (profile as any)?.accounts_locked}
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-                  >
-                    {isUnlinkingDiscord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (profile as any)?.accounts_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlink className="w-3.5 h-3.5" />}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Discord User ID"
-                        value={discordId}
-                        onChange={(e) => setDiscordId(e.target.value)}
-                        className="font-mono h-8 text-xs"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Username (optional)"
-                        value={discordUsername}
-                        onChange={(e) => setDiscordUsername(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={async () => {
-                        if (!discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())) return;
-                        setIsLinkingDiscord(true);
-                        try {
-                          const { error } = await supabase.from('profiles').update({
-                            discord_id: discordId.trim(),
-                            discord_username: discordUsername.trim() || null,
-                          }).eq('user_id', user.id);
-                          if (error) throw error;
-                          if (isSubscribed) {
-                            try {
-                              await supabase.functions.invoke('send-discord-webhook', {
-                                body: { user_id: user.id, event: 'subscription_activated', granted_by_admin: false },
-                              });
-                            } catch (e) { console.error('Webhook error:', e); }
-                          }
-                          setDiscordId('');
-                          setDiscordUsername('');
-                          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-                        } catch (error) {
-                          console.error('Failed to link Discord:', error);
-                        } finally {
-                          setIsLinkingDiscord(false);
-                        }
-                      }}
-                      disabled={isLinkingDiscord || !discordId.trim() || !/^\d{17,19}$/.test(discordId.trim())}
-                      size="sm"
-                      className="h-8 bg-[#5865F2] hover:bg-[#4752C4] text-xs"
-                    >
-                      {isLinkingDiscord ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Link2 className="w-3 h-3 mr-1.5" />}
-                      Link
-                    </Button>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <HelpCircle className="w-4 h-4" />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>How to find your Discord ID</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Discord Section - Using OAuth Component */}
+            <DiscordLinkCard
+              userId={user.id}
+              currentDiscordId={profile?.discord_id || null}
+              currentDiscordUsername={profile?.discord_username || null}
+              hasEclipsePlus={isSubscribed}
+              accountsLocked={(profile as any)?.accounts_locked}
+              onUpdate={() => {
+                queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
+              }}
+            />
             
             {/* Roblox Section */}
             <div className="p-3 rounded-lg bg-muted/30">
