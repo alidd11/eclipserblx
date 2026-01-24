@@ -75,7 +75,7 @@ export function RobloxLinkCard({ userId, robloxUserId, robloxUsername, accountsL
         .from('profiles')
         .update({
           roblox_user_id: verifiedData.id,
-          roblox_username: verifiedData.displayName || verifiedData.name,
+          roblox_username: verifiedData.name,
         })
         .eq('user_id', userId);
 
