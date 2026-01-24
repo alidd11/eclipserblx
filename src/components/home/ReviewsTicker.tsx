@@ -143,7 +143,6 @@ export const ReviewsTicker = memo(function ReviewsTicker() {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 will-change-transform"
           >
-            {/* Stars */}
             <div className="flex items-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -156,13 +155,9 @@ export const ReviewsTicker = memo(function ReviewsTicker() {
                 />
               ))}
             </div>
-
-            {/* Review Content */}
             <p className="text-sm text-muted-foreground line-clamp-2 italic">
               "{currentReview.content}"
             </p>
-
-            {/* Author */}
             <p className="text-xs text-primary mt-1 font-medium">
               — {currentReview.display_name}
             </p>

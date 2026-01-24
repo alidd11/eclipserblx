@@ -173,7 +173,6 @@ export const ReviewCard = memo(function ReviewCard() {
               transition={{ duration: 0.3 }}
               className="absolute inset-0"
             >
-              {/* Stars for this review */}
               <div className="flex items-center gap-0.5 mb-2">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -186,13 +185,9 @@ export const ReviewCard = memo(function ReviewCard() {
                   />
                 ))}
               </div>
-
-              {/* Review text */}
               <p className="text-sm text-foreground line-clamp-2 leading-relaxed">
                 "{currentReview.content}"
               </p>
-
-              {/* Author */}
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
                   {currentReview.display_name.charAt(0)}

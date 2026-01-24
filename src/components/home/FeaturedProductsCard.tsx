@@ -141,7 +141,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 
       {/* Product display */}
       <div className="h-24 relative overflow-hidden">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {currentProduct && (
             <motion.div
               key={currentProduct.id}
@@ -151,85 +151,84 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
               transition={{ duration: 0.3 }}
               className="absolute inset-0"
             >
-              <Link to={`/products/${currentProduct.slug}`} className="flex gap-3 h-full group">
-                {/* Product image/video */}
-                <div className="relative w-24 h-full flex-shrink-0 rounded-xl overflow-hidden border border-border">
-                  {(() => {
-                    const displayMedia = getFirstMediaPrioritizeVideo(currentProduct.images);
-                    const isVideo = isVideoUrl(displayMedia);
-                    
-                    if (displayMedia) {
-                      if (isVideo) {
-                        return (
-                          <>
-                            <video 
-                              src={displayMedia} 
-                              autoPlay
-                              muted
-                              loop
-                              playsInline
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
-                                <Play className="h-3 w-3 text-white ml-0.5" fill="white" />
+              <div className="h-full">
+                <Link to={`/products/${currentProduct.slug}`} className="flex gap-3 h-full group">
+                  <div className="relative w-24 h-full flex-shrink-0 rounded-xl overflow-hidden border border-border">
+                    {(() => {
+                      const displayMedia = getFirstMediaPrioritizeVideo(currentProduct.images);
+                      const isVideo = isVideoUrl(displayMedia);
+                      
+                      if (displayMedia) {
+                        if (isVideo) {
+                          return (
+                            <>
+                              <video 
+                                src={displayMedia} 
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+                                  <Play className="h-3 w-3 text-white ml-0.5" fill="white" />
+                                </div>
                               </div>
-                            </div>
-                          </>
+                            </>
+                          );
+                        }
+                        return (
+                          <img 
+                            src={displayMedia} 
+                            alt={currentProduct.name}
+                            className="w-full h-full object-cover"
+                          />
                         );
                       }
                       return (
-                        <img 
-                          src={displayMedia} 
-                          alt={currentProduct.name}
-                          className="w-full h-full object-cover"
-                        />
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                        </div>
                       );
-                    }
-                    return (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                    })()}
+                    {currentProduct.is_featured && (
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-black">
+                        HOT
                       </div>
-                    );
-                  })()}
-                  {currentProduct.is_featured && (
-                    <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-black">
-                      HOT
-                    </div>
-                  )}
-                </div>
-                
-                {/* Product info */}
-                <div className="flex-1 flex flex-col justify-between py-0.5">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5">
-                      {currentProduct.categories?.name || 'Product'}
-                    </p>
-                    <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                      {currentProduct.name}
-                    </h3>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs text-muted-foreground line-through">
-                        £{Number(currentProduct.price).toFixed(2)}
+                  <div className="flex-1 flex flex-col justify-between py-0.5">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5">
+                        {currentProduct.categories?.name || 'Product'}
+                      </p>
+                      <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                        {currentProduct.name}
+                      </h3>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-muted-foreground line-through">
+                          £{Number(currentProduct.price).toFixed(2)}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-sm text-amber-500">
+                            £{getMemberPrice(currentProduct.price, currentProduct.category_id).toFixed(2)}
+                          </span>
+                          <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
+                            <Crown className="h-2 w-2" />
+                            {getDiscountPercent(currentProduct.category_id)}%
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        View <ArrowRight className="h-3 w-3" />
                       </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm text-amber-500">
-                          £{getMemberPrice(currentProduct.price, currentProduct.category_id).toFixed(2)}
-                        </span>
-                        <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                          <Crown className="h-2 w-2" />
-                          {getDiscountPercent(currentProduct.category_id)}%
-                        </span>
-                      </div>
                     </div>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      View <ArrowRight className="h-3 w-3" />
-                    </span>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
