@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Link2, Unlink, Sparkles, Loader2 } from "lucide-react";
+import { Link2, Unlink, Sparkles, Loader2, Copy, Check } from "lucide-react";
 
 interface DiscordLinkCardProps {
   userId: string;
@@ -27,7 +27,8 @@ const getDiscordClientId = () => {
 };
 
 const getRedirectUri = () => {
-  return `${window.location.origin}/account`;
+  // Use URL() to avoid subtle slash / encoding mismatches.
+  return new URL("/account", window.location.origin).toString();
 };
 
 const getDiscordOAuthUrl = () => {
@@ -48,7 +49,23 @@ export const DiscordLinkCard = ({
   const [isLinking, setIsLinking] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  const [copiedRedirect, setCopiedRedirect] = useState(false);
   const { toast } = useToast();
+
+  const copyRedirectUri = async () => {
+    const redirectUri = getRedirectUri();
+    try {
+      await navigator.clipboard.writeText(redirectUri);
+      setCopiedRedirect(true);
+      setTimeout(() => setCopiedRedirect(false), 1500);
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy the redirect URI. Please copy it manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Handle OAuth callback when component mounts
   useEffect(() => {
@@ -307,6 +324,32 @@ export const DiscordLinkCard = ({
                 </>
               )}
             </Button>
+
+            <details className="rounded-lg border border-border/50 bg-muted/30 p-3">
+              <summary className="cursor-pointer text-xs text-muted-foreground">
+                Having trouble linking? Show redirect details
+              </summary>
+              <div className="mt-3 space-y-2">
+                <div className="text-xs">
+                  <p className="text-muted-foreground">Redirect URI in use (must match Discord exactly):</p>
+                  <p className="mt-1 break-all font-mono text-foreground/90">{getRedirectUri()}</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={copyRedirectUri}>
+                  {copiedRedirect ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy redirect URI
+                    </>
+                  )}
+                </Button>
+              </div>
+            </details>
+
             {accountsLocked ? (
               <p className="text-xs text-amber-500/80 text-center">
                 ⚠️ As a seller, once linked this account cannot be unlinked. Contact staff if you need to make changes later.
