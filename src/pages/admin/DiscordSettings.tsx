@@ -29,8 +29,20 @@ interface DiscordSettings {
   review_discord_webhook_url: string;
   affiliate_discord_webhook_url: string;
   eclipse_plus_discord_webhook_url: string;
-  product_forum_webhook_url: string;
   discord_widget_server_id: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface CategoryWebhook {
+  category_id: string;
+  category_name: string;
+  category_slug: string;
+  webhook_url: string;
 }
 
 interface BoostTrial {
@@ -56,7 +68,6 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   review_discord_webhook_url: '',
   affiliate_discord_webhook_url: '',
   eclipse_plus_discord_webhook_url: '',
-  product_forum_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -101,13 +112,6 @@ export default function DiscordSettings() {
 
   const [isTestingEclipsePlusWebhook, setIsTestingEclipsePlusWebhook] = useState(false);
   const [eclipsePlusWebhookTestResult, setEclipsePlusWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-
-  const [isTestingProductWebhook, setIsTestingProductWebhook] = useState(false);
-  const [productWebhookTestResult, setProductWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -178,7 +182,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'product_forum_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -195,8 +199,6 @@ export default function DiscordSettings() {
           settingsMap.affiliate_discord_webhook_url = String(val);
         } else if (item.key === 'eclipse_plus_discord_webhook_url') {
           settingsMap.eclipse_plus_discord_webhook_url = String(val);
-        } else if (item.key === 'product_forum_webhook_url') {
-          settingsMap.product_forum_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -205,6 +207,66 @@ export default function DiscordSettings() {
       return { ...DEFAULT_SETTINGS, ...settingsMap };
     },
   });
+
+  // Fetch categories for product webhooks
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .order('display_order');
+      if (error) throw error;
+      return data as Category[];
+    },
+  });
+
+  // Fetch category webhooks
+  const { data: categoryWebhooks, refetch: refetchCategoryWebhooks } = useQuery({
+    queryKey: ['category-webhooks'],
+    queryFn: async () => {
+      if (!categories?.length) return [];
+      
+      const webhookKeys = categories.map(c => `product_webhook_${c.slug}`);
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', webhookKeys);
+      
+      if (error) throw error;
+      
+      return categories.map(cat => ({
+        category_id: cat.id,
+        category_name: cat.name,
+        category_slug: cat.slug,
+        webhook_url: (() => {
+          const setting = data?.find(s => s.key === `product_webhook_${cat.slug}`);
+          if (!setting?.value) return '';
+          const val = typeof setting.value === 'string' 
+            ? setting.value.replace(/^"|"$/g, '') 
+            : String(setting.value);
+          return val;
+        })(),
+      })) as CategoryWebhook[];
+    },
+    enabled: !!categories?.length,
+  });
+
+  // State for category webhooks
+  const [categoryWebhookForm, setCategoryWebhookForm] = useState<Record<string, string>>({});
+  const [testingCategory, setTestingCategory] = useState<string | null>(null);
+  const [categoryTestResults, setCategoryTestResults] = useState<Record<string, { success: boolean; message: string; details?: string }>>({});
+
+  // Initialize category webhook form when data loads
+  useEffect(() => {
+    if (categoryWebhooks) {
+      const formData: Record<string, string> = {};
+      categoryWebhooks.forEach(cw => {
+        formData[cw.category_slug] = cw.webhook_url;
+      });
+      setCategoryWebhookForm(formData);
+    }
+  }, [categoryWebhooks]);
 
   useEffect(() => {
     if (settings) {
@@ -613,75 +675,131 @@ export default function DiscordSettings() {
     }
   };
 
-  const handleTestProductWebhook = async () => {
+  const handleTestCategoryWebhook = async (categorySlug: string, categoryName: string) => {
     if (!user?.id) {
       toast.error('You must be logged in');
       return;
     }
     
-    if (!formData.product_forum_webhook_url) {
-      toast.error('Please enter a Product Forum Webhook URL first');
+    const webhookUrl = categoryWebhookForm[categorySlug];
+    if (!webhookUrl) {
+      toast.error(`Please enter a webhook URL for ${categoryName} first`);
       return;
     }
     
-    setIsTestingProductWebhook(true);
-    setProductWebhookTestResult(null);
+    setTestingCategory(categorySlug);
+    setCategoryTestResults(prev => ({ ...prev, [categorySlug]: undefined as any }));
     
     try {
       const { data, error } = await supabase.functions.invoke('send-product-discord-webhook', {
         body: {
           product_id: 'test-product-id',
-          product_name: 'Test Product',
+          product_name: `Test ${categoryName} Product`,
           product_slug: 'test-product',
           product_price: 9.99,
-          product_description: 'This is a test product notification. The webhook is working correctly!',
+          product_description: `This is a test product notification for the ${categoryName} category. The webhook is working correctly!`,
           product_images: [],
-          category_name: 'Premium',
+          category_name: categoryName,
+          category_slug: categorySlug,
           robux_price: 1000,
           robux_enabled: true,
         },
       });
       
       if (error) {
-        setProductWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Product webhook test failed');
+        setCategoryTestResults(prev => ({
+          ...prev,
+          [categorySlug]: {
+            success: false,
+            message: 'Function invocation failed',
+            details: error.message,
+          },
+        }));
+        toast.error(`${categoryName} webhook test failed`);
       } else if (data?.skipped) {
-        setProductWebhookTestResult({
-          success: false,
-          message: 'Webhook skipped',
-          details: data.message || 'No webhook URL configured',
-        });
-        toast.warning('Webhook skipped - no URL configured');
+        setCategoryTestResults(prev => ({
+          ...prev,
+          [categorySlug]: {
+            success: false,
+            message: 'Webhook skipped',
+            details: data.message || 'No webhook URL configured',
+          },
+        }));
+        toast.warning(`${categoryName} webhook skipped - check configuration`);
       } else if (data?.success) {
-        setProductWebhookTestResult({
-          success: true,
-          message: 'Test product notification sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Product webhook test sent successfully!');
+        setCategoryTestResults(prev => ({
+          ...prev,
+          [categorySlug]: {
+            success: true,
+            message: 'Test notification sent!',
+            details: 'Check your Discord channel',
+          },
+        }));
+        toast.success(`${categoryName} webhook test sent successfully!`);
       } else {
-        setProductWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Product webhook test failed');
+        setCategoryTestResults(prev => ({
+          ...prev,
+          [categorySlug]: {
+            success: false,
+            message: data?.error || 'Unknown error',
+            details: data?.details,
+          },
+        }));
+        toast.error(`${categoryName} webhook test failed`);
       }
     } catch (err: any) {
-      console.error('Product webhook test error:', err);
-      setProductWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to test product webhook');
+      console.error('Category webhook test error:', err);
+      setCategoryTestResults(prev => ({
+        ...prev,
+        [categorySlug]: {
+          success: false,
+          message: 'Request failed',
+          details: err.message,
+        },
+      }));
+      toast.error(`Failed to test ${categoryName} webhook`);
     } finally {
-      setIsTestingProductWebhook(false);
+      setTestingCategory(null);
     }
+  };
+
+  // Save category webhooks
+  const saveCategoryWebhooksMutation = useMutation({
+    mutationFn: async (webhooks: Record<string, string>) => {
+      for (const [slug, url] of Object.entries(webhooks)) {
+        const key = `product_webhook_${slug}`;
+        const { data: existing } = await supabase
+          .from('settings')
+          .select('id')
+          .eq('key', key)
+          .maybeSingle();
+
+        if (existing) {
+          const { error } = await supabase
+            .from('settings')
+            .update({ value: JSON.stringify(url) })
+            .eq('key', key);
+          if (error) throw error;
+        } else if (url) {
+          const { error } = await supabase
+            .from('settings')
+            .insert([{ key, value: JSON.stringify(url) }]);
+          if (error) throw error;
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['category-webhooks'] });
+      toast.success('Product webhook settings saved');
+    },
+    onError: (error) => {
+      console.error('Failed to save category webhooks:', error);
+      toast.error('Failed to save product webhook settings');
+    },
+  });
+
+  const handleSaveCategoryWebhooks = () => {
+    saveCategoryWebhooksMutation.mutate(categoryWebhookForm);
   };
 
   const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus') => {
@@ -1508,50 +1626,100 @@ export default function DiscordSettings() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Package className="h-5 w-5 text-primary" />
-                  <CardTitle>Product Forum Webhook</CardTitle>
+                  <CardTitle>Category Product Webhooks</CardTitle>
                 </div>
                 <CardDescription>
-                  Automatically post new products to Discord when they are created
+                  Configure a separate Discord forum webhook for each product category
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="productWebhook">Webhook URL</Label>
-                  <Input
-                    id="productWebhook"
-                    value={formData.product_forum_webhook_url}
-                    onChange={(e) => handleChange('product_forum_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a webhook for your products/announcements channel in Discord
-                  </p>
+              <CardContent className="space-y-6">
+                <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Package className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-primary">Automatic Category Routing</p>
+                      <p className="text-sm text-muted-foreground">
+                        When you create a new product, it will automatically be posted to the Discord forum 
+                        channel for its category. If no webhook is configured for a category, the notification is skipped.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Test Webhook</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send a sample product notification to verify your webhook is configured correctly.
-                  </p>
-                  <Button
-                    onClick={handleTestProductWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingProductWebhook || !formData.product_forum_webhook_url}
-                  >
-                    {isTestingProductWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Test Product
-                  </Button>
-                  <TestResultBadge result={productWebhookTestResult} />
+                <div className="space-y-4">
+                  {categories?.map((category) => (
+                    <div key={category.id} className="border border-border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">{category.name}</Badge>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            product_webhook_{category.slug}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Input
+                          value={categoryWebhookForm[category.slug] || ''}
+                          onChange={(e) => setCategoryWebhookForm(prev => ({
+                            ...prev,
+                            [category.slug]: e.target.value,
+                          }))}
+                          placeholder="https://discord.com/api/webhooks/..."
+                          className="bg-background flex-1"
+                        />
+                        <Button
+                          onClick={() => handleTestCategoryWebhook(category.slug, category.name)}
+                          variant="outline"
+                          size="sm"
+                          disabled={testingCategory === category.slug || !categoryWebhookForm[category.slug]}
+                        >
+                          {testingCategory === category.slug ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {categoryTestResults[category.slug] && (
+                        <div className={`text-xs p-2 rounded ${
+                          categoryTestResults[category.slug].success 
+                            ? 'bg-green-500/10 text-green-500' 
+                            : 'bg-destructive/10 text-destructive'
+                        }`}>
+                          <div className="flex items-center gap-1">
+                            {categoryTestResults[category.slug].success ? (
+                              <CheckCircle2 className="h-3 w-3" />
+                            ) : (
+                              <XCircle className="h-3 w-3" />
+                            )}
+                            <span>{categoryTestResults[category.slug].message}</span>
+                          </div>
+                          {categoryTestResults[category.slug].details && (
+                            <p className="mt-1 opacity-75">{categoryTestResults[category.slug].details}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {!categories?.length && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No categories found. Create categories first to configure webhooks.</p>
+                    </div>
+                  )}
                 </div>
+
+                <Button
+                  onClick={handleSaveCategoryWebhooks}
+                  className="w-full"
+                  disabled={saveCategoryWebhooksMutation.isPending}
+                >
+                  {saveCategoryWebhooksMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Save Product Webhooks
+                </Button>
 
                 <div className="bg-muted/50 p-4 rounded-lg space-y-2">
                   <p className="text-sm font-medium">What gets sent automatically:</p>
@@ -1562,19 +1730,6 @@ export default function DiscordSettings() {
                     <li>Up to 4 product images</li>
                     <li>Direct link to product page</li>
                   </ul>
-                </div>
-
-                <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Package className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-primary">Automatic Notifications</p>
-                      <p className="text-sm text-muted-foreground">
-                        When you create a new product in the admin dashboard, a notification 
-                        will automatically be sent to this Discord channel.
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>

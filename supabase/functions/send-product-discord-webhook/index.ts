@@ -13,8 +13,19 @@ interface ProductPayload {
   product_description?: string;
   product_images?: string[];
   category_name?: string;
+  category_slug?: string;
   robux_price?: number;
   robux_enabled?: boolean;
+}
+
+// Helper to convert category name to slug format
+function categoryNameToSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/-+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }
 
 Deno.serve(async (req) => {
@@ -33,11 +44,30 @@ Deno.serve(async (req) => {
     const payload: ProductPayload = await req.json();
     console.log("Received payload:", JSON.stringify(payload));
 
-    // Fetch the webhook URL from settings
+    // Determine the category slug for webhook lookup
+    let categorySlug = payload.category_slug;
+    if (!categorySlug && payload.category_name) {
+      categorySlug = categoryNameToSlug(payload.category_name);
+    }
+
+    console.log("Looking up webhook for category slug:", categorySlug);
+
+    // Build the settings key for this category
+    const settingsKey = categorySlug ? `product_webhook_${categorySlug}` : null;
+
+    if (!settingsKey) {
+      console.log("No category provided, skipping webhook");
+      return new Response(
+        JSON.stringify({ skipped: true, message: "No category provided" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fetch the webhook URL for this category from settings
     const { data: settingsData, error: settingsError } = await supabase
       .from("settings")
       .select("value")
-      .eq("key", "product_forum_webhook_url")
+      .eq("key", settingsKey)
       .maybeSingle();
 
     if (settingsError) {
@@ -49,9 +79,9 @@ Deno.serve(async (req) => {
     }
 
     if (!settingsData?.value) {
-      console.log("No product forum webhook URL configured");
+      console.log(`No webhook configured for category: ${categorySlug} (key: ${settingsKey})`);
       return new Response(
-        JSON.stringify({ skipped: true, message: "No webhook URL configured" }),
+        JSON.stringify({ skipped: true, message: `No webhook URL configured for category: ${payload.category_name || categorySlug}` }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -66,6 +96,8 @@ Deno.serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`Using webhook for category "${payload.category_name}": ${settingsKey}`);
 
     // Build the description
     const description = payload.product_description 
@@ -168,7 +200,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log("Sending webhook to Discord forum channel...");
+    console.log(`Sending webhook to Discord forum channel for category: ${payload.category_name}`);
 
     // For forum channels, we need to create a new thread using thread_name
     // This creates a new post in the forum channel
@@ -197,10 +229,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log("Product Discord notification sent successfully");
+    console.log(`Product Discord notification sent successfully to ${payload.category_name} forum`);
 
     return new Response(
-      JSON.stringify({ success: true, message: "Product notification sent to Discord" }),
+      JSON.stringify({ success: true, message: `Product notification sent to ${payload.category_name} Discord forum` }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
