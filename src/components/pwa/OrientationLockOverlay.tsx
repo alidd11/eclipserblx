@@ -1,15 +1,25 @@
 import { useState, useEffect } from 'react';
 import { RotateCcw } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Renders a full-screen blocking overlay when in landscape mode on PWA/mobile.
  * Uses JavaScript-based detection which is more reliable than CSS on iOS Safari.
+ * 
+ * NOTE: On native Capacitor apps, true orientation locking is handled by the
+ * @capacitor/screen-orientation plugin, so this overlay is not needed.
  */
 export function OrientationLockOverlay() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
+  // Skip entirely on native platforms where true orientation lock is active
+  const isNative = Capacitor.isNativePlatform();
+
   useEffect(() => {
+    // Don't set up anything on native platforms
+    if (isNative) return;
+
     // Check if running as PWA
     const standalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -20,10 +30,11 @@ export function OrientationLockOverlay() {
     if (standalone) {
       document.documentElement.classList.add('pwa-standalone');
     }
-  }, []);
+  }, [isNative]);
 
   useEffect(() => {
-    if (!isStandalone) return;
+    // Skip on native or non-standalone
+    if (isNative || !isStandalone) return;
 
     const checkOrientation = () => {
       // Multiple detection methods for reliability
@@ -57,9 +68,10 @@ export function OrientationLockOverlay() {
       mediaQuery.removeEventListener('change', checkOrientation);
       clearInterval(interval);
     };
-  }, [isStandalone]);
+  }, [isNative, isStandalone]);
 
-  if (!showOverlay) return null;
+  // Don't render on native platforms or when not needed
+  if (isNative || !showOverlay) return null;
 
   return (
     <div 
