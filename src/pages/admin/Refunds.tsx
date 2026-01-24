@@ -218,7 +218,7 @@ export default function AdminRefunds() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           <Card className="bg-card/50 backdrop-blur border-border/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">

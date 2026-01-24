@@ -144,27 +144,27 @@ export default function SellerPayouts() {
           </Select>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
                 Pending Payouts
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <div className="text-lg md:text-2xl font-bold">
                 £{pendingTotal.toFixed(2)}
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
                 Pending Requests
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <div className="text-lg md:text-2xl font-bold">
                 {payouts?.filter((p: any) => p.status === "pending").length || 0}
               </div>
             </CardContent>
