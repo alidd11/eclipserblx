@@ -1,94 +1,88 @@
 
-# Fix Marketplace Categories to Only Show Marketplace Products
+# Capacitor Native Screen Orientation Lock Implementation
 
-## Problem
-The Categories card on the Marketplace page currently shows product counts that include the main Eclipse store. As shown in your screenshot:
-- "3D Models" shows 22 items (includes Eclipse store products)
-- "Bots" shows 1 item (includes Eclipse store products)
+## Overview
+This plan adds true native screen orientation locking for iOS and Android using the `@capacitor/screen-orientation` plugin. This will physically prevent the device from rotating to landscape mode when running as a native app, providing a better experience than the current overlay-based solution which only blocks the UI after rotation.
 
-When clicking these categories, users are taken to pages showing all products instead of just marketplace products.
+## What This Solves
+- **Current behavior**: The app rotates to landscape, then shows a blocking overlay asking users to rotate back
+- **New behavior**: The device will refuse to rotate at all, keeping the app locked to portrait mode at the OS level
 
----
+## Implementation Strategy
 
-## Solution Overview
-
-| Component | Current Issue | Fix |
-|-----------|---------------|-----|
-| Categories Card counts | Counts all products | Only count products with `store_id` (marketplace) |
-| Category links | Go to `/products?category=X` | Add `&source=marketplace` parameter |
-| "View all" link | Goes to `/categories` | Go to `/categories?source=marketplace` |
-| Products page | No source filtering | Filter by `store_id` when `source=marketplace` |
-| Categories page | No source filtering | Pass through source parameter to links |
-
----
-
-## Files to Update
-
-### 1. CategoriesGridCard.tsx
-Update the marketplace categories component to:
-- Filter product counts to only include marketplace products (where `store_id IS NOT NULL`)
-- Add `source=marketplace` to all navigation links
-
-### 2. Products.tsx  
-Add support for the `source=marketplace` query parameter:
-- Read the `source` parameter from URL
-- When `source=marketplace`, add `.not('store_id', 'is', null)` to the query
-- This excludes Eclipse store products (which have no `store_id`)
-
-### 3. Categories.tsx
-Update the full categories page to:
-- Read `source` parameter from URL
-- When `source=marketplace`, filter product counts to marketplace-only
-- Pass `source=marketplace` through to product links
+The solution uses a layered approach:
+1. **Native apps (Capacitor)**: Use the Screen Orientation plugin for true OS-level locking
+2. **PWA fallback**: Keep the existing overlay for web/PWA users where native locking isn't available
 
 ---
 
 ## Technical Details
 
-### Query Change for Marketplace-Only Products
-```typescript
-// Current (counts ALL products)
-const { count } = await supabase
-  .from('products')
-  .select('id', { count: 'exact', head: true })
-  .eq('category_id', category.id)
-  .eq('is_active', true);
+### 1. Install the Capacitor Screen Orientation Plugin
 
-// Fixed (counts only marketplace products)
-const { count } = await supabase
-  .from('products')
-  .select('id', { count: 'exact', head: true })
-  .eq('category_id', category.id)
-  .eq('is_active', true)
-  .not('store_id', 'is', null);  // Excludes Eclipse store
+Add the `@capacitor/screen-orientation` package to dependencies.
+
+### 2. Create Native Orientation Utility (`src/lib/nativeOrientation.ts`)
+
+A new utility module following the same pattern as `nativeKeyboard.ts`:
+
+```text
+┌─────────────────────────────────────────────────┐
+│            nativeOrientation.ts                 │
+├─────────────────────────────────────────────────┤
+│ initNativeOrientation()                         │
+│   - Checks if running on native platform        │
+│   - Locks orientation to portrait               │
+│   - Returns early on web/PWA                    │
+├─────────────────────────────────────────────────┤
+│ lockToPortrait()                                │
+│   - Locks screen to portrait mode               │
+├─────────────────────────────────────────────────┤
+│ unlockOrientation()                             │
+│   - Allows all orientations (if needed later)   │
+├─────────────────────────────────────────────────┤
+│ isOrientationLockSupported()                    │
+│   - Returns true on native platforms            │
+└─────────────────────────────────────────────────┘
 ```
 
-### Link Updates
-```typescript
-// Current
-<Link to={`/products?category=${category.slug}`}>
-<Link to="/categories">
+### 3. Update App Initialization (`src/main.tsx`)
 
-// Fixed
-<Link to={`/products?category=${category.slug}&source=marketplace`}>
-<Link to="/categories?source=marketplace">
-```
+Initialize the native orientation lock when the app starts, alongside the existing native keyboard initialization.
 
-### Products Page Filter
-```typescript
-const sourceFilter = searchParams.get('source');
+### 4. Update OrientationLockOverlay Component
 
-// In the query function:
-if (sourceFilter === 'marketplace') {
-  query = query.not('store_id', 'is', null);
-}
-```
+Modify the existing overlay to:
+- Skip rendering entirely when running on native platforms (where true locking is active)
+- Continue showing the overlay for PWA/web users where native locking isn't available
+
+### 5. Update Capacitor Config (`capacitor.config.ts`)
+
+Add the ScreenOrientation plugin configuration (though the plugin works with defaults).
 
 ---
 
-## Expected Result
-After these changes:
-- Categories card will show accurate counts for marketplace products only
-- Clicking a category navigates to `/products?category=X&source=marketplace`
-- The products page will only display marketplace seller products
-- "View all" will show marketplace-filtered categories
+## Files to Create/Modify
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `package.json` | Modify | Add `@capacitor/screen-orientation` dependency |
+| `src/lib/nativeOrientation.ts` | Create | Native orientation lock utilities |
+| `src/main.tsx` | Modify | Initialize orientation lock on app start |
+| `src/components/pwa/OrientationLockOverlay.tsx` | Modify | Skip overlay on native platforms |
+| `capacitor.config.ts` | Modify | Add ScreenOrientation plugin config (optional) |
+
+---
+
+## User Steps After Implementation
+
+After I implement these changes, you'll need to run these commands in your local project:
+
+1. **Pull the latest changes**: `git pull`
+2. **Install new dependency**: `npm install`
+3. **Sync with native projects**: `npx cap sync`
+4. **Rebuild and run**:
+   - iOS: `npx cap run ios`
+   - Android: `npx cap run android`
+
+The orientation lock will now be enforced at the native OS level, preventing physical rotation entirely.
