@@ -201,3 +201,6 @@ verify_jwt = false
 
 [functions.send-eclipse-plus-announcement]
 verify_jwt = false
+
+[functions.send-product-discord-webhook]
+verify_jwt = false

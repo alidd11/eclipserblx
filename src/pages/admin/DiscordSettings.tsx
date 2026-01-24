@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ interface DiscordSettings {
   review_discord_webhook_url: string;
   affiliate_discord_webhook_url: string;
   eclipse_plus_discord_webhook_url: string;
+  product_forum_webhook_url: string;
   discord_widget_server_id: string;
 }
 
@@ -55,6 +56,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   review_discord_webhook_url: '',
   affiliate_discord_webhook_url: '',
   eclipse_plus_discord_webhook_url: '',
+  product_forum_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -99,6 +101,13 @@ export default function DiscordSettings() {
 
   const [isTestingEclipsePlusWebhook, setIsTestingEclipsePlusWebhook] = useState(false);
   const [eclipsePlusWebhookTestResult, setEclipsePlusWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+
+  const [isTestingProductWebhook, setIsTestingProductWebhook] = useState(false);
+  const [productWebhookTestResult, setProductWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -169,7 +178,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'product_forum_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -186,6 +195,8 @@ export default function DiscordSettings() {
           settingsMap.affiliate_discord_webhook_url = String(val);
         } else if (item.key === 'eclipse_plus_discord_webhook_url') {
           settingsMap.eclipse_plus_discord_webhook_url = String(val);
+        } else if (item.key === 'product_forum_webhook_url') {
+          settingsMap.product_forum_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -602,6 +613,77 @@ export default function DiscordSettings() {
     }
   };
 
+  const handleTestProductWebhook = async () => {
+    if (!user?.id) {
+      toast.error('You must be logged in');
+      return;
+    }
+    
+    if (!formData.product_forum_webhook_url) {
+      toast.error('Please enter a Product Forum Webhook URL first');
+      return;
+    }
+    
+    setIsTestingProductWebhook(true);
+    setProductWebhookTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-product-discord-webhook', {
+        body: {
+          product_id: 'test-product-id',
+          product_name: 'Test Product',
+          product_slug: 'test-product',
+          product_price: 9.99,
+          product_description: 'This is a test product notification. The webhook is working correctly!',
+          product_images: [],
+          category_name: 'Premium',
+          robux_price: 1000,
+          robux_enabled: true,
+        },
+      });
+      
+      if (error) {
+        setProductWebhookTestResult({
+          success: false,
+          message: 'Function invocation failed',
+          details: error.message,
+        });
+        toast.error('Product webhook test failed');
+      } else if (data?.skipped) {
+        setProductWebhookTestResult({
+          success: false,
+          message: 'Webhook skipped',
+          details: data.message || 'No webhook URL configured',
+        });
+        toast.warning('Webhook skipped - no URL configured');
+      } else if (data?.success) {
+        setProductWebhookTestResult({
+          success: true,
+          message: 'Test product notification sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Product webhook test sent successfully!');
+      } else {
+        setProductWebhookTestResult({
+          success: false,
+          message: data?.error || 'Unknown error',
+          details: data?.details,
+        });
+        toast.error('Product webhook test failed');
+      }
+    } catch (err: any) {
+      console.error('Product webhook test error:', err);
+      setProductWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to test product webhook');
+    } finally {
+      setIsTestingProductWebhook(false);
+    }
+  };
+
   const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus') => {
     if (!user?.id) {
       toast.error('You must be logged in');
@@ -732,6 +814,10 @@ export default function DiscordSettings() {
               <TabsTrigger value="eclipse-plus" className="gap-2">
                 <Sparkles className="h-4 w-4 hidden sm:block" />
                 Eclipse+
+              </TabsTrigger>
+              <TabsTrigger value="products" className="gap-2">
+                <Package className="h-4 w-4 hidden sm:block" />
+                Products
               </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
@@ -1408,6 +1494,84 @@ export default function DiscordSettings() {
                       <p className="text-sm text-muted-foreground">
                         This announcement showcases the exclusive benefits of Eclipse+ membership 
                         with a gold-themed design to attract premium subscribers.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Products Forum Webhook Tab */}
+          <TabsContent value="products">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <CardTitle>Product Forum Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Automatically post new products to Discord when they are created
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="productWebhook">Webhook URL</Label>
+                  <Input
+                    id="productWebhook"
+                    value={formData.product_forum_webhook_url}
+                    onChange={(e) => handleChange('product_forum_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a webhook for your products/announcements channel in Discord
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Send className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Test Webhook</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Send a sample product notification to verify your webhook is configured correctly.
+                  </p>
+                  <Button
+                    onClick={handleTestProductWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingProductWebhook || !formData.product_forum_webhook_url}
+                  >
+                    {isTestingProductWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Test Product
+                  </Button>
+                  <TestResultBadge result={productWebhookTestResult} />
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent automatically:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Product name and description</li>
+                    <li>Category-specific disclaimer</li>
+                    <li>Purchase locations (Robux, GBP, Eclipse+ price)</li>
+                    <li>Up to 4 product images</li>
+                    <li>Direct link to product page</li>
+                  </ul>
+                </div>
+
+                <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Package className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-primary">Automatic Notifications</p>
+                      <p className="text-sm text-muted-foreground">
+                        When you create a new product in the admin dashboard, a notification 
+                        will automatically be sent to this Discord channel.
                       </p>
                     </div>
                   </div>
