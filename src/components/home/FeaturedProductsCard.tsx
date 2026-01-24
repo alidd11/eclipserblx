@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useRef, forwardRef } from 'react';
+import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, Play } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 
-export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function FeaturedProductsCard(_, ref) {
+export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
@@ -262,4 +262,4 @@ export const FeaturedProductsCard = memo(forwardRef<HTMLDivElement>(function Fea
       </div>
     </div>
   );
-}));
+});

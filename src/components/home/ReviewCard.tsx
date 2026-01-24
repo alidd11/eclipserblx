@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useRef, forwardRef } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +15,7 @@ interface Review {
 
 const SWIPE_THRESHOLD = 50;
 
-export const ReviewCard = memo(forwardRef<HTMLDivElement, object>(function ReviewCard(_props, ref) {
+export const ReviewCard = memo(function ReviewCard() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef(0);
@@ -138,7 +138,6 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement, object>(function Revie
 
   return (
     <div 
-      ref={ref}
       className="rounded-2xl border border-border bg-card p-5 h-full touch-pan-x relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -251,6 +250,4 @@ export const ReviewCard = memo(forwardRef<HTMLDivElement, object>(function Revie
       </div>
     </div>
   );
-}));
-
-ReviewCard.displayName = 'ReviewCard';
+});
