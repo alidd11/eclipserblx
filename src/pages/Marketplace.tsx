@@ -186,7 +186,7 @@ export default function Marketplace() {
     enabled: hasAccess,
   });
 
-  // Search products when query is present
+  // Search products when query is present - only marketplace products (with store_id)
   const { data: searchProducts, isLoading: searchProductsLoading } = useQuery({
     queryKey: ['marketplace-search-products', debouncedQuery],
     queryFn: async () => {
@@ -194,16 +194,16 @@ export default function Marketplace() {
       const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, stores (name, slug, is_active)')
+        .select('id, name, slug, price, images, stores!inner (name, slug, is_active)')
         .eq('is_active', true)
+        .eq('stores.is_active', true)
+        .not('store_id', 'is', null) // Only marketplace products
         .or(`release_at.is.null,release_at.lte.${now}`)
         .ilike('name', `%${debouncedQuery}%`)
         .limit(10);
       
       if (error) throw error;
-      // Include products without stores (Eclipse main store) or with active stores
-      const filtered = (data || []).filter(p => !p.stores || p.stores.is_active !== false);
-      return filtered as unknown as ProductResult[];
+      return (data || []) as unknown as ProductResult[];
     },
     enabled: hasAccess && debouncedQuery.length >= 2,
   });
