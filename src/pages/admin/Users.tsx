@@ -126,6 +126,31 @@ export default function AdminUsers() {
 
   const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
 
+  // Fetch role hierarchy levels from database
+  const { data: roleHierarchy } = useQuery({
+    queryKey: ['role-hierarchy'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('role_hierarchy')
+        .select('role, hierarchy_level');
+      if (error) throw error;
+      return data as { role: string; hierarchy_level: number }[];
+    },
+  });
+
+  // Fetch current user's max hierarchy level
+  const { data: currentUserHierarchy } = useQuery({
+    queryKey: ['current-user-hierarchy', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const { data, error } = await supabase
+        .rpc('get_user_max_hierarchy', { _user_id: user.id });
+      if (error) throw error;
+      return data ?? 0;
+    },
+    enabled: !!user?.id,
+  });
+
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['admin-profiles', search],
     queryFn: async () => {
@@ -249,7 +274,12 @@ export default function AdminUsers() {
       toast.success('Role added');
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      // Detect hierarchy-related errors and show user-friendly message
+      if (error.message?.includes('hierarchy') || error.message?.includes('privilege')) {
+        toast.error("You don't have permission to assign this role");
+      } else {
+        toast.error(error.message);
+      }
     },
   });
 
@@ -349,10 +379,33 @@ export default function AdminUsers() {
     return ROLES.filter(r => {
       // Exclude roles the user already has
       if (existing.includes(r.value)) return false;
-      // Only primary admin can assign admin role
+      
+      // Get the target role's hierarchy level from database
+      const targetLevel = roleHierarchy?.find(h => h.role === r.value)?.hierarchy_level ?? 999;
+      
+      // Only show roles at or below current user's hierarchy level
+      if ((currentUserHierarchy ?? 0) < targetLevel) return false;
+      
+      // Special case: Only primary admin can assign admin role (extra protection)
       if (r.value === 'admin' && !isPrimaryAdmin) return false;
+      
       return true;
     });
+  };
+
+  // Check if current user can remove a specific role
+  const canRemoveRole = (role: AppRole) => {
+    // Primary admin can remove any role
+    if (isPrimaryAdmin) return true;
+    
+    // Admin role can only be removed by primary admin
+    if (role === 'admin') return false;
+    
+    // Get the target role's hierarchy level
+    const targetLevel = roleHierarchy?.find(h => h.role === role)?.hierarchy_level ?? 999;
+    
+    // Can only remove roles at or below current user's hierarchy level
+    return (currentUserHierarchy ?? 0) >= targetLevel;
   };
 
   const canDeleteUser = (profile: any) => {
@@ -586,8 +639,8 @@ export default function AdminUsers() {
                     getUserRoles(selectedUser.user_id).map((r) => (
                       <Badge key={r.id} variant="outline" className="gap-1 py-1.5 px-2">
                         {ROLES.find(role => role.value === r.role)?.label || r.role}
-                        {/* Only show remove button if: not admin role, OR current user is primary admin */}
-                        {(r.role !== 'admin' || isPrimaryAdmin) && (
+                        {/* Only show remove button if user has permission based on hierarchy */}
+                        {canRemoveRole(r.role) && (
                           <button
                             onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role, targetEmail: selectedUser.email })}
                             className="ml-1 hover:text-destructive touch-manipulation"

@@ -60,9 +60,22 @@ export default function StaffDirectory() {
   // Check if user is admin
   const isAdmin = hasRole('admin');
 
+  // Fetch role hierarchy from database for consistent sorting
+  const { data: roleHierarchyData } = useQuery({
+    queryKey: ['role-hierarchy'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('role_hierarchy')
+        .select('role, hierarchy_level');
+      if (error) throw error;
+      return data as { role: string; hierarchy_level: number }[];
+    },
+    enabled: isAdmin,
+  });
+
   // Fetch staff members with their roles
   const { data: staffMembers = [], isLoading: staffLoading } = useQuery({
-    queryKey: ['staff-directory'],
+    queryKey: ['staff-directory', roleHierarchyData],
     queryFn: async () => {
       // Get all user roles
       const { data: roles, error: rolesError } = await supabase
@@ -84,6 +97,25 @@ export default function StaffDirectory() {
 
       if (profilesError) throw profilesError;
 
+      // Build dynamic hierarchy map from database
+      const ROLE_HIERARCHY: Record<string, number> = {};
+      if (roleHierarchyData) {
+        roleHierarchyData.forEach(h => {
+          // Convert hierarchy_level to rank (higher level = lower rank number for sorting)
+          ROLE_HIERARCHY[h.role] = 100 - h.hierarchy_level;
+        });
+      } else {
+        // Fallback if data not loaded yet
+        Object.assign(ROLE_HIERARCHY, {
+          admin: 0,
+          product_manager: 50,
+          order_manager: 50,
+          support_agent: 70,
+          analyst: 70,
+          recruiter: 70,
+        });
+      }
+
       // Combine data
       const staffMap = new Map<string, StaffMember>();
 
@@ -101,16 +133,6 @@ export default function StaffDirectory() {
         });
       });
 
-      // Sort by role hierarchy: admin > product_manager > order_manager > support_agent > analyst > recruiter
-      const ROLE_HIERARCHY: Record<AppRole, number> = {
-        admin: 0,
-        product_manager: 1,
-        order_manager: 2,
-        support_agent: 3,
-        analyst: 4,
-        recruiter: 5,
-      };
-
       const getHighestRoleRank = (roles: AppRole[]): number => {
         if (roles.length === 0) return 999;
         return Math.min(...roles.map(role => ROLE_HIERARCHY[role] ?? 999));
@@ -124,7 +146,7 @@ export default function StaffDirectory() {
         return (a.display_name || 'Unknown').localeCompare(b.display_name || 'Unknown');
       });
     },
-    enabled: isAdmin,
+    enabled: isAdmin && !!roleHierarchyData,
   });
 
   // Fetch staff ID logs
