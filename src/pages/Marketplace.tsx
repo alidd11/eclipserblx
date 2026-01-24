@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
-import { TopSellersCard } from '@/components/marketplace/TopSellersCard';
+
 import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
 import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
@@ -416,13 +416,10 @@ export default function Marketplace() {
           </section>
         )}
 
-        {/* Featured Products & Top Seller - Show at top when not searching */}
+        {/* Featured Products - Show at top when not searching */}
         {!isSearching && (
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="lg:col-span-2">
-              <FeaturedProductsCard />
-            </div>
-            <TopSellersCard />
+          <section>
+            <FeaturedProductsCard />
           </section>
         )}
 
