@@ -168,13 +168,20 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log("Sending webhook to Discord...");
+    console.log("Sending webhook to Discord forum channel...");
 
-    // Send to Discord
+    // For forum channels, we need to create a new thread using thread_name
+    // This creates a new post in the forum channel
+    const forumPayload: Record<string, unknown> = {
+      embeds,
+      thread_name: `Eclipse - ${payload.product_name}`, // This creates a new forum post
+    };
+
+    // Send to Discord forum channel
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds }),
+      body: JSON.stringify(forumPayload),
     });
 
     if (!response.ok) {
