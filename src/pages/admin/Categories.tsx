@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, GripVertical, Car, Code, Box, Layout, Percent, Bot, Gamepad2, Palette, Zap, Shield, Wrench, Sparkles, Package, FileCode, Layers } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, Car, Code, Box, Layout, Percent, Bot, Gamepad2, Palette, Zap, Shield, Wrench, Sparkles, Package, FileCode, Layers, ChevronDown } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -75,7 +76,7 @@ const generateSlug = (name: string) => {
     .replace(/^-+|-+$/g, '');
 };
 
-// Sortable row component
+// Sortable row component for desktop table
 function SortableRow({ 
   category, 
   onEdit, 
@@ -144,6 +145,90 @@ function SortableRow({
         </div>
       </TableCell>
     </TableRow>
+  );
+}
+
+// Sortable card component for mobile
+function SortableMobileCard({ 
+  category, 
+  onEdit, 
+  onDelete 
+}: { 
+  category: Category & { product_count: number }; 
+  onEdit: () => void; 
+  onDelete: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const IconComponent = getIconComponent(category.icon);
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style}
+      className={cn("border rounded-lg bg-card", isDragging && "opacity-50")}
+    >
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full p-4 flex items-center gap-3 text-left">
+            <button
+              {...attributes}
+              {...listeners}
+              onClick={(e) => e.stopPropagation()}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded touch-none"
+            >
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <div className="p-2 rounded bg-muted">
+              <IconComponent className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium truncate">{category.name}</p>
+              <p className="text-xs text-muted-foreground">{category.product_count} products</p>
+            </div>
+            <ChevronDown className={cn(
+              "h-4 w-4 text-muted-foreground transition-transform",
+              isOpen && "rotate-180"
+            )} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-4 space-y-3 border-t pt-3">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Slug</p>
+              <p className="font-mono text-sm">{category.slug}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Description</p>
+              <p className="text-sm">{category.description || '—'}</p>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={onDelete}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }
 
@@ -397,34 +482,54 @@ export default function AdminCategories() {
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
               >
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10"></TableHead>
-                      <TableHead className="w-16">Icon</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Slug</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-center">Products</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <SortableContext
-                      items={categories.map(c => c.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {categories.map(category => (
-                        <SortableRow
-                          key={category.id}
-                          category={category}
-                          onEdit={() => openEdit(category)}
-                          onDelete={() => openDelete(category)}
-                        />
-                      ))}
-                    </SortableContext>
-                  </TableBody>
-                </Table>
+                {/* Desktop Table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10"></TableHead>
+                        <TableHead className="w-16">Icon</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Slug</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="text-center">Products</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <SortableContext
+                        items={categories.map(c => c.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {categories.map(category => (
+                          <SortableRow
+                            key={category.id}
+                            category={category}
+                            onEdit={() => openEdit(category)}
+                            onDelete={() => openDelete(category)}
+                          />
+                        ))}
+                      </SortableContext>
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-2">
+                  <SortableContext
+                    items={categories.map(c => c.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {categories.map(category => (
+                      <SortableMobileCard
+                        key={category.id}
+                        category={category}
+                        onEdit={() => openEdit(category)}
+                        onDelete={() => openDelete(category)}
+                      />
+                    ))}
+                  </SortableContext>
+                </div>
               </DndContext>
             )}
           </CardContent>
