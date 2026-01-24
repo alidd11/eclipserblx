@@ -894,84 +894,85 @@ export default function DiscordSettings() {
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[#5865F2]/20">
-                <MessageSquare className="h-6 w-6 text-[#5865F2]" />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#5865F2]/20">
+                  <MessageSquare className="h-6 w-6 text-[#5865F2]" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
+                  <CardDescription className="hidden sm:block">Manage your Discord integrations and webhooks</CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
-                <CardDescription>Manage your Discord integrations and webhooks</CardDescription>
+              {/* Mobile dropdown in header */}
+              <div className="sm:hidden">
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger className="w-[130px] bg-background">
+                    <SelectValue placeholder="Section" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border z-50">
+                    <SelectItem value="invite">
+                      <div className="flex items-center gap-2">
+                        <Link2 className="h-4 w-4" />
+                        Invite
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="widget">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Widget
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="orders">
+                      <div className="flex items-center gap-2">
+                        <Webhook className="h-4 w-4" />
+                        Orders
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="reviews">
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        Reviews
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="roles">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        Roles
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="boosts">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4" />
+                        Boosts
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="affiliate">
+                      <div className="flex items-center gap-2">
+                        <Gift className="h-4 w-4" />
+                        Affiliate
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="eclipse-plus">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Eclipse+
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="products">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        Products
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardHeader>
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Mobile dropdown navigation */}
-          <div className="sm:hidden">
-            <Select value={activeTab} onValueChange={(v) => setActiveTab(v)}>
-              <SelectTrigger className="w-full bg-card">
-                <SelectValue placeholder="Select section" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border z-50">
-                <SelectItem value="invite">
-                  <div className="flex items-center gap-2">
-                    <Link2 className="h-4 w-4" />
-                    Invite
-                  </div>
-                </SelectItem>
-                <SelectItem value="widget">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Widget
-                  </div>
-                </SelectItem>
-                <SelectItem value="orders">
-                  <div className="flex items-center gap-2">
-                    <Webhook className="h-4 w-4" />
-                    Orders
-                  </div>
-                </SelectItem>
-                <SelectItem value="reviews">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4" />
-                    Reviews
-                  </div>
-                </SelectItem>
-                <SelectItem value="roles">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Roles
-                  </div>
-                </SelectItem>
-                <SelectItem value="boosts">
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4" />
-                    Boosts
-                  </div>
-                </SelectItem>
-                <SelectItem value="affiliate">
-                  <div className="flex items-center gap-2">
-                    <Gift className="h-4 w-4" />
-                    Affiliate
-                  </div>
-                </SelectItem>
-                <SelectItem value="eclipse-plus">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    Eclipse+
-                  </div>
-                </SelectItem>
-                <SelectItem value="products">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
-                    Products
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Desktop tabs navigation */}
           <div className="hidden sm:block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList className="inline-flex w-auto min-w-max">
@@ -1058,51 +1059,6 @@ export default function DiscordSettings() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </TabsList>
-          </div>
-
-          {/* Mobile announce button */}
-          <div className="sm:hidden">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full gap-2">
-                  {isSendingAnnouncement ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Megaphone className="h-4 w-4" />
-                  )}
-                  Send Announcement
-                  <ChevronDown className="h-4 w-4 ml-auto opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-[calc(100vw-2rem)] bg-card border-border z-50">
-                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-                  Send Announcement
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleSendAnnouncementFromDropdown('affiliate')}
-                  disabled={isSendingAnnouncement !== null || !formData.affiliate_discord_webhook_url}
-                  className="gap-3 cursor-pointer"
-                >
-                  <Gift className="h-4 w-4 text-emerald-500" />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">Affiliate Programme</p>
-                    <p className="text-xs text-muted-foreground">Promote affiliate sign-ups</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleSendAnnouncementFromDropdown('eclipse_plus')}
-                  disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url}
-                  className="gap-3 cursor-pointer"
-                >
-                  <Sparkles className="h-4 w-4 text-amber-500" />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">Eclipse+ Membership</p>
-                    <p className="text-xs text-muted-foreground">Promote premium membership</p>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
 
           {/* Discord Invite Link Tab */}
