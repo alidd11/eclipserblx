@@ -1,108 +1,108 @@
 
 
-# New Product Discord Forum Webhook
+# Category-Specific Discord Forum Channels
 
 ## Overview
-Create an automated Discord webhook notification that sends a rich, professional product embed to a "forum channel" whenever a new product is uploaded via the admin dashboard. The embed will match the template shown in the reference image with product details, purchase options, and images.
+Update the product Discord notification system so that each product category posts to its own dedicated Discord forum channel. Instead of a single `product_forum_webhook_url`, you'll configure a separate webhook URL for each category.
 
-## What This Will Do
-- When an admin creates a new product in the dashboard, a formatted Discord notification is automatically sent
-- The notification will include product information, features, category disclaimer, purchase locations (Robux/GBP/Eclipse+ pricing), and product images
-- A new webhook URL setting will be added for the "Products Forum" channel
-- The feature integrates into the existing "Announce" dropdown menu for easy configuration
+## How It Will Work
+
+### Current Setup
+Right now, all products go to one Discord forum channel using `product_forum_webhook_url`.
+
+### New Setup
+Each of your 6 categories will have its own webhook URL:
+
+| Category | Setting Key | Discord Channel |
+|----------|-------------|-----------------|
+| 3D Models | `product_webhook_3d_models` | Your 3D Models forum |
+| Bots | `product_webhook_bots` | Your Bots forum |
+| Eclipse Savers | `product_webhook_eclipse_savers` | Your Savers forum |
+| Scripts & Systems | `product_webhook_scripts_systems` | Your Scripts forum |
+| UI Kits | `product_webhook_ui_kits` | Your UI Kits forum |
+| Vehicle Liveries | `product_webhook_vehicle_liveries` | Your Liveries forum |
+
+---
+
+## User Experience
+
+### Configuration
+1. Go to **Admin > Discord Settings > Products** tab
+2. You'll see a list of all your categories
+3. Paste each category's Discord forum webhook URL in its field
+4. Click **Save**
+5. Optionally test each webhook individually
+
+### When Uploading Products
+1. Create a new product as normal
+2. Select its category (e.g., "Bots")
+3. Save the product
+4. The system automatically sends the notification to the **Bots** forum channel
+5. If no webhook is configured for that category, it skips silently
 
 ---
 
 ## Changes Required
 
-### 1. New Backend Function
-Create `supabase/functions/send-product-discord-webhook/index.ts`:
-- Accepts product details (id, name, description, price, robux_price, category, images)
-- Fetches the `product_forum_webhook_url` from settings
-- Builds a Discord embed matching the template style:
-  - **Title**: Product name
-  - **Product Information**: Description about the product
-  - **Features List**: Extracted bullet points (if available in description)
-  - **Category Disclaimer**: Auto-generated based on category (e.g., "Savers", "Premium")
-  - **Purchase Locations**: Robux price, GBP price, Eclipse+ discounted price
-  - **Support Contact**: Standard support message
-  - **Images**: Up to 4 product images as embeds
-  - **Footer**: "The Eclipse Team"
-- Sends to Discord via webhook
+### 1. Discord Settings Page Update
+**File**: `src/pages/admin/DiscordSettings.tsx`
 
-### 2. Discord Settings Update
-Modify `src/pages/admin/DiscordSettings.tsx`:
-- Add `product_forum_webhook_url` to the settings interface
-- Create new "Products" tab for managing the forum webhook
-- Add test functionality for the webhook
-- Update the "Announce" dropdown to include product-related options (if needed for manual triggers)
+- Remove the single `product_forum_webhook_url` field
+- Replace with a dynamic list showing each category from the database
+- Each category row has its own webhook URL input
+- Add a "Test" button for each category's webhook
+- Categories are loaded from the database automatically
 
-### 3. Admin Products Integration
-Modify `src/pages/admin/Products.tsx`:
-- After successfully creating a new product, call the `send-product-discord-webhook` function
-- This happens in the existing `saveMutation` alongside the push notification logic
+### 2. Edge Function Update
+**File**: `supabase/functions/send-product-discord-webhook/index.ts`
 
-### 4. Configuration
-Update `supabase/config.toml`:
-- Register the new edge function
+- Accept `category_id` in the payload (already has `category_name`)
+- Look up the webhook using the category slug: `product_webhook_{category_slug}`
+- If no webhook is configured for that category, skip gracefully
+- Keep the same embed format and forum post creation
+
+### 3. Products Page Update
+**File**: `src/pages/admin/Products.tsx`
+
+- Pass the `category_id` to the webhook function (minor update)
+- The category name is already being passed
 
 ---
 
 ## Technical Details
 
-### Discord Embed Structure
+### New Settings Keys Format
 ```text
-┌─────────────────────────────────────────────┐
-│ 🏠 Eclipse - [Product Name]                 │
-├─────────────────────────────────────────────┤
-│ **Product Information**                     │
-│ The following product is made for Roblox.   │
-│                                             │
-│ [Product description from database]         │
-│                                             │
-│ **Features List**                           │
-│ - Feature 1                                 │
-│ - Feature 2                                 │
-│ - Feature 3                                 │
-│                                             │
-│ **[Category] Disclaimer**                   │
-│ [Auto-generated category info]              │
-│                                             │
-│ **Purchase Locations**                      │
-│ 🔵 [Robux Price] - Eclipse Roblox Hub       │
-│ 💷 [GBP Price] - Our Store                  │
-│ 🌙 30% Off - Buy Now (Eclipse+ members)     │
-│                                             │
-│ For assistance, contact @support            │
-├─────────────────────────────────────────────┤
-│ [Product Image 1]                           │
-│ [Product Image 2]                           │
-├─────────────────────────────────────────────┤
-│ 🌑 The Eclipse Team                         │
-└─────────────────────────────────────────────┘
+product_webhook_3d_models
+product_webhook_bots
+product_webhook_eclipse_savers
+product_webhook_scripts_systems
+product_webhook_ui_kits
+product_webhook_vehicle_liveries
 ```
 
-### Files to Create
-| File | Purpose |
-|------|---------|
-| `supabase/functions/send-product-discord-webhook/index.ts` | New edge function for product announcements |
+### Flow Diagram
+```text
+Admin uploads product (Category: Bots)
+          ↓
+Products.tsx calls edge function with category info
+          ↓
+Edge function looks up "product_webhook_bots" setting
+          ↓
+If webhook exists → Post to Bots forum channel
+If no webhook → Skip silently (no error)
+```
 
 ### Files to Modify
 | File | Changes |
 |------|---------|
-| `supabase/config.toml` | Register new function |
-| `src/pages/admin/DiscordSettings.tsx` | Add "Products" tab + webhook setting |
-| `src/pages/admin/Products.tsx` | Trigger webhook on product creation |
-
-### Database Setting
-A new setting key `product_forum_webhook_url` will be used to store the Discord webhook URL for the products forum channel.
+| `src/pages/admin/DiscordSettings.tsx` | Replace single webhook with category-based list |
+| `supabase/functions/send-product-discord-webhook/index.ts` | Look up webhook by category slug |
+| `src/pages/admin/Products.tsx` | Pass category_id to webhook function |
 
 ---
 
-## User Experience
-1. Admin navigates to **Discord Settings → Products** tab
-2. Admin pastes their Discord webhook URL for the products forum channel
-3. Admin clicks "Save" (or tests with "Test Webhook")
-4. When any new product is created in the Admin Products page, a formatted notification is automatically sent to the configured channel
-5. The notification matches the professional template shown in the reference image
+## Fallback Behaviour
+- If a category doesn't have a webhook configured, the product is created normally but no Discord notification is sent
+- If **all** categories should go to one channel as a fallback, we can add a "Default Webhook" option that's used when no category-specific one exists
 
