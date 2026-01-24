@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare, Package, ArrowRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -7,16 +7,46 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FeaturedProducts } from '@/components/home/FeaturedProducts';
 
 export default function Categories() {
+  const [searchParams] = useSearchParams();
+  const sourceFilter = searchParams.get('source');
+  const isMarketplace = sourceFilter === 'marketplace';
+
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['categories-page'],
+    queryKey: ['categories-page', sourceFilter],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
-        .select('*, products:products(count)')
+        .select('id, name, slug, description, display_order')
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      return data;
+
+      // Get product counts for each category with source filter
+      const now = new Date().toISOString();
+      const categoriesWithCounts = await Promise.all(
+        (data || []).map(async (category) => {
+          let countQuery = supabase
+            .from('products')
+            .select('id', { count: 'exact', head: true })
+            .eq('category_id', category.id)
+            .eq('is_active', true)
+            .or(`release_at.is.null,release_at.lte.${now}`);
+          
+          // Filter to marketplace-only products when source=marketplace
+          if (isMarketplace) {
+            countQuery = countQuery.not('store_id', 'is', null);
+          }
+          
+          const { count } = await countQuery;
+          
+          return {
+            ...category,
+            product_count: count || 0,
+          };
+        })
+      );
+
+      return categoriesWithCounts;
     },
   });
 
@@ -68,12 +98,12 @@ export default function Categories() {
             {categories?.map((category, index) => {
               const gradient = gradientMap[index % 6];
               const iconColor = iconColorMap[index % 6];
-              const productCount = category.products?.[0]?.count || 0;
+              const productCount = category.product_count || 0;
 
               return (
                 <Link
                   key={category.id}
-                  to={`/products?category=${category.slug}`}
+                  to={`/products?category=${category.slug}${isMarketplace ? '&source=marketplace' : ''}`}
                   className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
