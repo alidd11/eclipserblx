@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save, Star, Receipt } from 'lucide-react';
+import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save, Star, Receipt, Check, ChevronRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
@@ -74,6 +75,10 @@ export default function Downloads() {
   const [editingDiscord, setEditingDiscord] = useState<string | null>(null);
   const [validatingDiscord, setValidatingDiscord] = useState(false);
   const [discordInput, setDiscordInput] = useState('');
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isBatchDownloading, setIsBatchDownloading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
   // Fetch bot installation codes for the user
   const { data: botCodes } = useQuery({
@@ -329,6 +334,93 @@ export default function Downloads() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  // Toggle item selection
+  const toggleItemSelection = (itemId: string) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  // Select/deselect all downloadable items (non-bot items with assets)
+  const toggleSelectAll = () => {
+    const downloadableIds = downloadableItems
+      .filter(item => item.product?.asset_file_url && item.product?.category_id !== BOT_CATEGORY_ID)
+      .map(item => item.id);
+    
+    const allSelected = downloadableIds.every(id => selectedItems.has(id));
+    
+    if (allSelected) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(downloadableIds));
+    }
+  };
+
+  // Download all selected items
+  const handleDownloadSelected = async () => {
+    const itemsToDownload = downloadableItems.filter(
+      item => selectedItems.has(item.id) && 
+      item.product?.asset_file_url && 
+      item.product?.category_id !== BOT_CATEGORY_ID
+    );
+
+    if (itemsToDownload.length === 0) {
+      toast.error('No items selected for download');
+      return;
+    }
+
+    setIsBatchDownloading(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const item of itemsToDownload) {
+      try {
+        if (!item.product_id || !session?.access_token) continue;
+
+        const { data, error } = await supabase.functions.invoke('download-asset', {
+          body: { 
+            productId: item.product_id,
+            orderItemId: item.id
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error || data?.error) {
+          failCount++;
+          continue;
+        }
+
+        if (data?.downloadUrl) {
+          // Open in new tab for batch downloads
+          window.open(data.downloadUrl, '_blank');
+          successCount++;
+          // Small delay between downloads to prevent browser blocking
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (err) {
+        console.error('Batch download error:', err);
+        failCount++;
+      }
+    }
+
+    setIsBatchDownloading(false);
+    
+    if (successCount > 0) {
+      showSuccessNotification('Downloads Started', `${successCount} file(s) downloading`);
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} file(s) failed to download`);
+    }
+  };
+
   // Helper to check if an item is a bot product
   const isBotProduct = (item: OrderItem) => {
     return item.product?.category_id === BOT_CATEGORY_ID;
@@ -361,6 +453,20 @@ export default function Downloads() {
       orderDate: order.created_at,
     }))
   ) || [];
+
+  // Pagination
+  const totalPages = Math.ceil(downloadableItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = downloadableItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Count selectable items (non-bot with assets)
+  const selectableItems = downloadableItems.filter(
+    item => item.product?.asset_file_url && item.product?.category_id !== BOT_CATEGORY_ID
+  );
+  const allSelectableSelected = selectableItems.length > 0 && 
+    selectableItems.every(item => selectedItems.has(item.id));
 
   return (
     <MainLayout>
@@ -411,7 +517,42 @@ export default function Downloads() {
               </div>
             ) : (
               <div className="space-y-4">
-                {downloadableItems.map((item) => {
+                {/* Download All Header */}
+                {selectableItems.length > 0 && (
+                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 border border-border">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="select-all"
+                        checked={allSelectableSelected}
+                        onCheckedChange={toggleSelectAll}
+                        disabled={isBatchDownloading}
+                      />
+                      <label htmlFor="select-all" className="text-sm cursor-pointer">
+                        {allSelectableSelected ? 'Deselect all' : 'Select all'} ({selectableItems.length})
+                      </label>
+                    </div>
+                    <Button
+                      onClick={handleDownloadSelected}
+                      disabled={selectedItems.size === 0 || isBatchDownloading}
+                      className="gradient-button border-0"
+                      size="sm"
+                    >
+                      {isBatchDownloading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Downloading...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Selected ({selectedItems.size})
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {paginatedItems.map((item) => {
                   const isDownloading = downloading === item.id;
                   const hasAsset = !!item.product?.asset_file_url;
                   const isBot = isBotProduct(item);
@@ -422,7 +563,18 @@ export default function Downloads() {
                       key={`${item.orderId}-${item.id}`} 
                       className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
                     >
-                      <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-4">
+                        {/* Selection Checkbox - only for downloadable non-bot items */}
+                        {!isBot && hasAsset && (
+                          <div className="flex-shrink-0 pt-1">
+                            <Checkbox
+                              checked={selectedItems.has(item.id)}
+                              onCheckedChange={() => toggleItemSelection(item.id)}
+                              disabled={isBatchDownloading}
+                            />
+                          </div>
+                        )}
+                        
                         {/* Product Image */}
                         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                           {item.product?.images?.[0] ? (
@@ -734,6 +886,31 @@ export default function Downloads() {
                     </div>
                   );
                 })}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm text-muted-foreground px-2">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
