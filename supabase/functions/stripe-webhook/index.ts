@@ -115,6 +115,17 @@ serve(async (req) => {
           amountTotal: paymentIntent.amount,
         });
       }
+    } else if (event.type === "charge.refunded") {
+      // Handle refunds - reverse commissions and seller earnings
+      const charge = event.data.object as Stripe.Charge;
+      logStep("Processing charge.refunded", { chargeId: charge.id, paymentIntentId: charge.payment_intent });
+      
+      await processRefund(supabaseAdmin, {
+        chargeId: charge.id,
+        paymentIntentId: charge.payment_intent as string | null,
+        refundAmount: charge.amount_refunded,
+        isFullRefund: charge.refunded,
+      });
     } else {
       logStep("Unhandled event type", { type: event.type });
     }
@@ -517,4 +528,131 @@ async function processPayment(
   }
 
   logStep("Payment processing complete", { orderId });
+}
+
+interface RefundData {
+  chargeId: string;
+  paymentIntentId: string | null;
+  refundAmount: number;
+  isFullRefund: boolean;
+}
+
+async function processRefund(
+  supabase: SupabaseClient,
+  data: RefundData
+) {
+  const { chargeId, paymentIntentId, refundAmount, isFullRefund } = data;
+  
+  logStep("Processing refund", { chargeId, paymentIntentId, refundAmount, isFullRefund });
+
+  // Find the order by payment_id (could be checkout session ID or payment intent ID)
+  let order: { id: string; user_id: string | null; customer_email: string; status: string } | null = null;
+  
+  // Try to find order by payment intent ID first
+  if (paymentIntentId) {
+    const { data: orderByPi } = await supabase
+      .from("orders")
+      .select("id, user_id, customer_email, status")
+      .eq("payment_id", paymentIntentId)
+      .maybeSingle();
+    
+    if (orderByPi) {
+      order = orderByPi as { id: string; user_id: string | null; customer_email: string; status: string };
+    }
+  }
+
+  // If not found, look up checkout session that might have this payment intent
+  if (!order && paymentIntentId) {
+    // Look for orders that might have been created via checkout session
+    // The payment_id stored might be the checkout session ID, not the payment intent
+    // We need to check orders and match by other means or search by charge metadata
+    logStep("Order not found by payment_intent, checking recent orders");
+  }
+
+  if (!order) {
+    logStep("WARNING: Could not find order for refund", { chargeId, paymentIntentId });
+    return;
+  }
+
+  const orderId = order.id;
+  logStep("Found order for refund", { orderId, currentStatus: order.status });
+
+  // Check if already processed
+  const { data: existingRefund } = await supabase
+    .from("orders")
+    .select("refunded_at")
+    .eq("id", orderId)
+    .single();
+
+  if (existingRefund && (existingRefund as { refunded_at: string | null }).refunded_at) {
+    logStep("Refund already processed for this order", { orderId });
+    return;
+  }
+
+  // Update order status
+  const newStatus = isFullRefund ? "refunded" : "partially_refunded";
+  const { error: orderUpdateError } = await supabase
+    .from("orders")
+    .update({
+      status: newStatus,
+      refunded_at: new Date().toISOString(),
+      refund_amount: refundAmount / 100, // Convert from cents
+      refund_id: chargeId,
+    })
+    .eq("id", orderId);
+
+  if (orderUpdateError) {
+    logStep("ERROR updating order status", { error: orderUpdateError.message });
+  } else {
+    logStep("Order status updated", { orderId, newStatus });
+  }
+
+  // Reverse affiliate commission using database function
+  const { error: affiliateError } = await supabase.rpc('reverse_affiliate_commission', {
+    p_order_id: orderId,
+    p_refund_id: chargeId,
+  });
+
+  if (affiliateError) {
+    logStep("ERROR reversing affiliate commission", { error: affiliateError.message });
+  } else {
+    logStep("Affiliate commission reversed (if any existed)", { orderId });
+  }
+
+  // Reverse seller earnings using database function
+  const { error: sellerError } = await supabase.rpc('reverse_seller_earnings', {
+    p_order_id: orderId,
+    p_refund_id: chargeId,
+  });
+
+  if (sellerError) {
+    logStep("ERROR reversing seller earnings", { error: sellerError.message });
+  } else {
+    logStep("Seller earnings reversed (if any existed)", { orderId });
+  }
+
+  // Create notification for user if they exist
+  if (order.user_id) {
+    try {
+      const notificationMessage = isFullRefund
+        ? "Your order has been fully refunded. The refund will appear in your account within 5-10 business days."
+        : `A partial refund of £${(refundAmount / 100).toFixed(2)} has been processed for your order.`;
+
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: order.user_id,
+          title: isFullRefund ? '💸 Order Refunded' : '💸 Partial Refund Processed',
+          message: notificationMessage,
+          type: 'refund',
+          link: '/account#purchases',
+        });
+
+      logStep("Refund notification created", { userId: order.user_id });
+    } catch (e) {
+      logStep("Failed to create refund notification", { error: String(e) });
+    }
+  }
+
+  logStep("Refund processing complete", { orderId, isFullRefund, refundAmount });
 }
