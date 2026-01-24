@@ -92,13 +92,27 @@ serve(async (req) => {
           productName: reminder.product_name 
         });
 
+        // Fetch product slug for proper link
+        let productLink = "/products";
+        if (reminder.product_id) {
+          const { data: product } = await supabase
+            .from("products")
+            .select("slug")
+            .eq("id", reminder.product_id)
+            .single();
+          
+          if (product?.slug) {
+            productLink = `/products/${product.slug}#reviews`;
+          }
+        }
+
         // Create in-app notification
         await supabase.from("notifications").insert({
           user_id: reminder.user_id,
           type: "review_reminder",
           title: "Share Your Experience! ⭐",
           message: `How are you enjoying ${reminder.product_name}? We'd love to hear your thoughts! Leave a review and help others decide.`,
-          link: reminder.product_id ? `/products/${reminder.product_id}#reviews` : "/products",
+          link: productLink,
         });
 
         // Send push notification
@@ -113,7 +127,7 @@ serve(async (req) => {
               userId: reminder.user_id,
               title: "Share Your Experience! ⭐",
               body: `How are you enjoying ${reminder.product_name}? Leave a review!`,
-              url: reminder.product_id ? `/products/${reminder.product_id}#reviews` : "/products",
+              url: productLink,
               tag: `review-reminder-${reminder.id}-${reminderType}`,
             }),
           });

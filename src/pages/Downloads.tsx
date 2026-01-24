@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save } from 'lucide-react';
+import { Download, Package, ChevronLeft, FileDown, CheckCircle, Loader2, Bot, Key, Copy, HardDrive, ExternalLink, Save, Star } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +30,7 @@ interface OrderItem {
   product?: {
     id: string;
     name: string;
+    slug: string;
     images: string[] | null;
     asset_file_url: string | null;
     category_id: string | null;
@@ -182,6 +183,7 @@ export default function Downloads() {
             product:products (
               id,
               name,
+              slug,
               images,
               asset_file_url,
               category_id
@@ -208,19 +210,20 @@ export default function Downloads() {
               product_name,
               price,
               product_id,
-              product:products (
-                id,
-                name,
-                images,
-                asset_file_url,
-                category_id
-              )
+            product:products (
+              id,
+              name,
+              slug,
+              images,
+              asset_file_url,
+              category_id
             )
-          `)
-          .eq('customer_email', user.email)
-          .is('user_id', null)
-          .in('status', ['paid', 'completed'])
-          .order('created_at', { ascending: false });
+          )
+        `)
+        .eq('customer_email', user.email)
+        .is('user_id', null)
+        .in('status', ['paid', 'completed'])
+        .order('created_at', { ascending: false });
         
         if (!emailError && emailOrders) {
           // Merge and deduplicate
@@ -500,6 +503,20 @@ export default function Downloads() {
                                   )}
                                 </Button>
                               )}
+                              {/* Leave Review Button - Desktop */}
+                              {item.product?.slug && (
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10"
+                                >
+                                  <Link to={`/products/${item.product.slug}#reviews`}>
+                                    <Star className="h-4 w-4 mr-2" />
+                                    Leave Review
+                                  </Link>
+                                </Button>
+                              )}
                             </div>
                           </div>
                           
@@ -635,8 +652,8 @@ export default function Downloads() {
                             </div>
                           )}
                           
-                          {/* Action Button - Mobile */}
-                          <div className="sm:hidden pt-2">
+                          {/* Action Buttons - Mobile */}
+                          <div className="sm:hidden pt-2 space-y-2">
                             {isBot ? (
                               <Button
                                 asChild
@@ -672,6 +689,20 @@ export default function Downloads() {
                                     Download
                                   </>
                                 )}
+                              </Button>
+                            )}
+                            {/* Leave Review Button - Mobile */}
+                            {item.product?.slug && (
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 w-full"
+                              >
+                                <Link to={`/products/${item.product.slug}#reviews`}>
+                                  <Star className="h-4 w-4 mr-2" />
+                                  Leave Review
+                                </Link>
                               </Button>
                             )}
                           </div>
