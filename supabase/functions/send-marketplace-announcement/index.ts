@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       fields: [
         {
           name: "🛍️ Shop Unique Products",
-          value: "Browse a curated selection of **scripts, models, GFX, and more** from verified community sellers.\n\u200B",
+          value: "Browse a curated selection of **scripts, models, GFX, and more** from community sellers.\n\u200B",
           inline: false,
         },
         {
@@ -56,13 +56,8 @@ Deno.serve(async (req) => {
           inline: false,
         },
         {
-          name: "✅ Verified Quality",
-          value: "All marketplace products are reviewed to ensure **quality and safety** for buyers.\n\u200B",
-          inline: false,
-        },
-        {
           name: "🔒 Secure Transactions",
-          value: "Every purchase is protected with **secure payment processing** and buyer protection.\n\u200B",
+          value: "Every purchase is protected with **secure payment processing** via Stripe.\n\u200B",
           inline: false,
         },
         {
