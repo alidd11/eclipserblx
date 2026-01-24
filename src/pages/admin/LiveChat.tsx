@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, Archive, RefreshCw, AlertCircle, Upload, Copy, Check, ShoppingBag, ChevronUp } from 'lucide-react';
+import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, RefreshCw, AlertCircle, Upload, Copy, Check, ShoppingBag, ChevronUp } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,7 +161,7 @@ export default function AdminLiveChat() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [customerTyping, setCustomerTyping] = useState(false);
-  const [chatFilter, setChatFilter] = useState<'active' | 'closed'>('active');
+  
   const [customerProfiles, setCustomerProfiles] = useState<Record<string, { customer_id: string | null }>>({});
   const [customerOrders, setCustomerOrders] = useState<Array<{ id: string; total: number; status: string; created_at: string; items: Array<{ product_name: string; price: number }> }>>([]);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
@@ -679,31 +678,23 @@ export default function AdminLiveChat() {
             selectedConversation ? "hidden lg:flex" : "flex"
           )}>
             <div className="p-2.5 lg:p-4 border-b border-border bg-muted/50 shrink-0">
-              <Tabs value={chatFilter} onValueChange={(v) => setChatFilter(v as 'active' | 'closed')}>
-                <TabsList className="w-full h-9">
-                  <TabsTrigger value="active" className="flex-1 text-xs">Active</TabsTrigger>
-                  <TabsTrigger value="closed" className="flex-1 text-xs">
-                    <Archive className="h-3 w-3 mr-1" />
-                    Closed
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <h3 className="font-medium text-sm">Active Conversations</h3>
             </div>
             <ScrollArea className="flex-1 min-h-0">
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
-              ) : conversations.filter(c => chatFilter === 'active' ? c.status !== 'closed' : c.status === 'closed').length === 0 ? (
+              ) : conversations.filter(c => c.status !== 'closed').length === 0 ? (
                 <div className="p-4 text-center text-muted-foreground">
-                  {chatFilter === 'active' ? 'No active conversations' : 'No closed conversations'}
+                  No active conversations
                 </div>
               ) : (
                 <div className="divide-y divide-border">
                   {conversations
-                    .filter(c => chatFilter === 'active' ? c.status !== 'closed' : c.status === 'closed')
+                    .filter(c => c.status !== 'closed')
                     .map((conv) => (
                     <button
                       key={conv.id}
-                      onClick={() => chatFilter === 'active' && conv.status !== 'closed' ? claimConversation(conv) : setSelectedConversation(conv)}
+                      onClick={() => conv.status !== 'closed' ? claimConversation(conv) : setSelectedConversation(conv)}
                       className={cn(
                         'w-full p-3 lg:p-4 text-left hover:bg-muted/50 transition-colors touch-manipulation',
                         selectedConversation?.id === conv.id && 'bg-muted'
