@@ -346,6 +346,13 @@ export default function AdminProducts() {
             }
           });
 
+          // Get category slug for webhook lookup
+          let categorySlug: string | undefined;
+          if (payload.category_id) {
+            const category = categories?.find(c => c.id === payload.category_id);
+            categorySlug = category?.slug;
+          }
+
           // Send Discord webhook for new product (forum announcement)
           supabase.functions.invoke('send-product-discord-webhook', {
             body: {
@@ -356,6 +363,7 @@ export default function AdminProducts() {
               product_description: payload.description,
               product_images: payload.images,
               category_name: categoryName,
+              category_slug: categorySlug,
               robux_price: payload.robux_price,
               robux_enabled: payload.robux_enabled,
             },
