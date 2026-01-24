@@ -16,7 +16,15 @@ interface DiscordLinkCardProps {
 }
 
 // Discord OAuth configuration
-const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
+// Client ID is public; keep env var support, but fall back to the known app id to avoid blocking linking
+// when the build environment doesn't inject VITE_* vars (common in preview/mobile webviews).
+const DEFAULT_DISCORD_CLIENT_ID = "1460773107446059273";
+
+const getDiscordClientId = () => {
+  const envId = import.meta.env.VITE_DISCORD_CLIENT_ID;
+  const resolved = (typeof envId === "string" ? envId : "").trim();
+  return resolved || DEFAULT_DISCORD_CLIENT_ID;
+};
 
 const getRedirectUri = () => {
   return `${window.location.origin}/account`;
@@ -25,7 +33,8 @@ const getRedirectUri = () => {
 const getDiscordOAuthUrl = () => {
   const redirectUri = encodeURIComponent(getRedirectUri());
   const scope = encodeURIComponent("identify");
-  return `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+  const clientId = encodeURIComponent(getDiscordClientId());
+  return `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
 };
 
 export const DiscordLinkCard = ({
@@ -129,7 +138,8 @@ export const DiscordLinkCard = ({
   }, [userId, currentDiscordId, hasEclipsePlus, onUpdate, toast]);
 
   const handleLinkWithOAuth = () => {
-    if (!DISCORD_CLIENT_ID) {
+    const clientId = getDiscordClientId();
+    if (!clientId) {
       toast({
         title: "Configuration Error",
         description: "Discord OAuth is not configured. Please contact support.",
