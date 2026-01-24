@@ -373,7 +373,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         .from('profiles')
         .update({
           roblox_user_id: robloxVerifiedData.id,
-          roblox_username: robloxVerifiedData.displayName || robloxVerifiedData.name,
+          roblox_username: robloxVerifiedData.name,
         })
         .eq('user_id', user.id);
       
