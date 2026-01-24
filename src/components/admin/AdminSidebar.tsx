@@ -77,6 +77,7 @@ const navGroups: NavGroup[] = [
     icon: Package,
     items: [
       { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager'] },
+      { title: 'Categories', icon: FolderOpen, href: '/admin/categories', roles: ['admin'] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
       { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
       { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },

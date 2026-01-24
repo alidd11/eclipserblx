@@ -63,6 +63,7 @@ const AdminStaffMessages = lazy(() => import("./pages/admin/StaffMessages"));
 const AdminChat = lazy(() => import("./pages/admin/AdminChat"));
 
 const AdminProducts = lazy(() => import("./pages/admin/Products"));
+const AdminCategories = lazy(() => import("./pages/admin/Categories"));
 const AdminDiscounts = lazy(() => import("./pages/admin/Discounts"));
 const AdminOrders = lazy(() => import("./pages/admin/Orders"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
@@ -241,6 +242,7 @@ const App = () => (
                   <Route path="/admin/admin-chat" element={<AdminChat />} />
                   
                   <Route path="/admin/products" element={<AdminProducts />} />
+                  <Route path="/admin/categories" element={<AdminCategories />} />
                   <Route path="/admin/discounts" element={<AdminDiscounts />} />
                   <Route path="/admin/orders" element={<AdminOrders />} />
                   <Route path="/admin/users" element={<AdminUsers />} />
