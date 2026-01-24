@@ -77,6 +77,8 @@ export default function StorePage() {
   const activeTab = searchParams.get('tab');
   const [bioExpanded, setBioExpanded] = useState(false);
 
+  const CURRENT_TOS_VERSION = "1.0";
+
   // Fetch store details first to get the ID for analytics
   const { data: store, isLoading: storeLoading, error } = useQuery({
     queryKey: ['public-store', storeSlug],
@@ -90,6 +92,20 @@ export default function StorePage() {
         .single();
 
       if (error) throw error;
+
+      // Check if store has signed the current TOS version
+      const { data: agreement } = await supabase
+        .from('seller_agreements')
+        .select('id')
+        .eq('store_id', data.id)
+        .eq('agreement_version', CURRENT_TOS_VERSION)
+        .maybeSingle();
+
+      // Store must have signed agreement to be visible
+      if (!agreement) {
+        throw new Error('Store agreement not signed');
+      }
+
       return data;
     },
     enabled: !!storeSlug,
