@@ -2309,6 +2309,24 @@ export type Database = {
         }
         Relationships: []
       }
+      role_hierarchy: {
+        Row: {
+          created_at: string | null
+          hierarchy_level: number
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          hierarchy_level?: number
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string | null
+          hierarchy_level?: number
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           created_at: string
@@ -3981,18 +3999,21 @@ export type Database = {
       user_roles: {
         Row: {
           created_at: string
+          hierarchy_level: number | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
+          hierarchy_level?: number | null
           id?: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
+          hierarchy_level?: number | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
@@ -4034,6 +4055,17 @@ export type Database = {
     }
     Functions: {
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
+      can_assign_role: {
+        Args: {
+          _assigner_id: string
+          _target_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      can_manage_user_roles: {
+        Args: { _assigner_id: string; _target_user_id: string }
+        Returns: boolean
+      }
       can_user_download: { Args: { _user_id: string }; Returns: boolean }
       check_and_award_badges: {
         Args: { _user_id: string }
@@ -4069,6 +4101,7 @@ export type Database = {
       generate_ticket_number: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_user_email: { Args: { _user_id: string }; Returns: string }
+      get_user_max_hierarchy: { Args: { _user_id: string }; Returns: number }
       has_permission: {
         Args: { _permission_name: string; _user_id: string }
         Returns: boolean
