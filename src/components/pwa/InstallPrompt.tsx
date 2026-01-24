@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { X, Download, Smartphone, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,7 @@ function isStandalone(): boolean {
          (navigator as any).standalone === true;
 }
 
-export function InstallPrompt() {
+export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_, ref) {
   const location = useLocation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -101,6 +101,7 @@ export function InstallPrompt() {
   return (
     <AnimatePresence>
       <motion.div
+        ref={ref}
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
@@ -168,4 +169,4 @@ export function InstallPrompt() {
       </motion.div>
     </AnimatePresence>
   );
-}
+});
