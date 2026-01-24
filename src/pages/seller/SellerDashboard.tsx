@@ -20,11 +20,34 @@ import {
   CheckCircle,
   Copy,
   ExternalLink,
-  LayoutGrid
+  LayoutGrid,
+  Scale,
+  AlertTriangle
 } from 'lucide-react';
+
+const CURRENT_TOS_VERSION = "1.0";
 
 export default function SellerDashboard() {
   const { store, balance } = useSellerStatus();
+
+  // Check if TOS is signed
+  const { data: hasSignedTos, isLoading: tosLoading } = useQuery({
+    queryKey: ['seller-tos-signed', store?.id, CURRENT_TOS_VERSION],
+    queryFn: async () => {
+      if (!store?.id) return false;
+      
+      const { data, error } = await supabase
+        .from('seller_agreements')
+        .select('id')
+        .eq('store_id', store.id)
+        .eq('agreement_version', CURRENT_TOS_VERSION)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return !!data;
+    },
+    enabled: !!store?.id,
+  });
 
   // Fetch recent orders for this seller
   const { data: recentOrders, isLoading: ordersLoading } = useQuery({
@@ -88,6 +111,33 @@ export default function SellerDashboard() {
   return (
     <SellerLayout>
       <div className="max-w-6xl mx-auto">
+        {/* TOS Warning Banner */}
+        {!tosLoading && !hasSignedTos && (
+          <Card className="mb-6 border-amber-500/50 bg-amber-500/5">
+            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="p-2 rounded-lg bg-amber-500/10">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-amber-600 dark:text-amber-400">
+                    Store Inactive - Agreement Required
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your store is not visible to customers until you sign the Seller Terms of Service.
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="w-full sm:w-auto">
+                <Link to="/seller/documents/terms">
+                  <Scale className="h-4 w-4 mr-2" />
+                  Sign Agreement
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
