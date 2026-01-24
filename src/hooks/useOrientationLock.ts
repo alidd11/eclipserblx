@@ -1,48 +1,60 @@
 import { useEffect } from 'react';
 
 /**
- * Locks the screen orientation to portrait mode in PWA/standalone mode
- * Uses the Screen Orientation API which is supported in most modern browsers
+ * Locks the screen orientation to portrait mode in PWA/standalone mode.
+ * Uses CSS class for reliable blocking since Screen Orientation API
+ * requires fullscreen on most browsers/iOS doesn't support it at all.
  */
 export function useOrientationLock() {
   useEffect(() => {
-    // Only attempt lock in standalone PWA mode
+    // Check if we're in standalone PWA mode
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
 
-    if (!isStandalone) return;
+    // Add class to html for CSS-based orientation lock
+    if (isStandalone) {
+      document.documentElement.classList.add('pwa-standalone');
+    }
 
+    // Try the Screen Orientation API (works on Android Chrome)
     const lockOrientation = async () => {
       try {
-        // Check if Screen Orientation API is available
-        const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> };
+        const orientation = screen.orientation as ScreenOrientation & { 
+          lock?: (orientation: string) => Promise<void> 
+        };
         
         if (orientation && typeof orientation.lock === 'function') {
           await orientation.lock('portrait-primary');
-          console.log('[OrientationLock] Locked to portrait');
+          console.log('[OrientationLock] Locked to portrait via API');
         }
       } catch (error) {
-        // Lock may fail if not in fullscreen or not supported
-        // This is expected on some devices/browsers
-        console.log('[OrientationLock] Could not lock orientation:', error);
+        // Expected to fail on iOS and when not fullscreen
+        console.log('[OrientationLock] API lock not available, using CSS fallback');
       }
     };
 
-    lockOrientation();
+    if (isStandalone) {
+      lockOrientation();
+    }
 
-    // Also try to lock when entering fullscreen
-    const handleFullscreenChange = () => {
-      if (document.fullscreenElement) {
+    // Handle orientation changes to re-attempt lock
+    const handleOrientationChange = () => {
+      if (isStandalone) {
         lockOrientation();
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    // Listen for orientation changes
+    screen.orientation?.addEventListener('change', handleOrientationChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      // Optionally unlock on cleanup
+      screen.orientation?.removeEventListener('change', handleOrientationChange);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      
+      // Don't remove the class on cleanup - we want it persistent
+      // Only try to unlock if we're unmounting completely
       try {
         const orientation = screen.orientation as ScreenOrientation & { unlock?: () => void };
         if (orientation && typeof orientation.unlock === 'function') {
