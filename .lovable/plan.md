@@ -1,60 +1,31 @@
 
 
-# Improving Customer Sidebar Organization
+# Updated Customer Sidebar Reorganization
 
-## Current Structure Analysis
-
-The sidebar currently has **6 navigation groups** plus a dynamic **Categories** section:
-
-| Group | Items | Purpose |
-|-------|-------|---------|
-| Home | 6 items | Personal hub (Account, Cart, Wishlist, Messages, Affiliate) |
-| Selling | 2 items | Seller-only (Dashboard, Store Messages) |
-| Products | 4 items | Shop navigation (All, Featured, Eclipse+, Marketplace) |
-| Categories | Dynamic | Database-driven product categories |
-| Community | 3 items | Social (Forum, Jobs, Discord) |
-| Support | 4 items | Help (Help Center, Contact, FAQ, Status) |
-| Legal | 3 items | Policies (Terms, Privacy, Refunds) |
-
-**Total: ~22+ navigation items** - This creates cognitive overload for customers.
+## Your Request
+Keep the **Seller Dashboard** and **Affiliate Dashboard** in a prominent "Quick Access" section at the top of the sidebar, rather than moving them down to "My Account."
 
 ---
 
-## Identified Problems
-
-1. **Home group is overloaded** - Mixes personal items (Account, Cart) with discovery features
-2. **Products vs Categories duplication** - "All Products" appears, then a separate "All Categories" link
-3. **Legal section rarely used** - Takes up valuable real estate
-4. **No clear shopping journey** - Discovery and personal items are intermixed
-5. **Featured is buried** - Should be more prominent for marketing
-6. **My Messages naming** - Could be clearer (e.g., "Notifications" or "Inbox")
-
----
-
-## Proposed Reorganization
-
-Restructure around the customer journey: **Discover → Shop → Manage**
-
-### New Structure
+## Revised Structure
 
 ```text
 [LOGO]
 
 ── QUICK ACCESS ──────────────────
    Home
+   Seller Dashboard (if seller)
+   Affiliate Dashboard (if enabled)
    Search (inline trigger)
-   
+
 ── DISCOVER ──────────────────────
-   Featured (Staff Picks)
-   New Arrivals
-   Popular
-   Eclipse+ Exclusives
+   Featured
+   Eclipse+
    Marketplace
 
 ── SHOP ──────────────────────────
    All Products
    Categories (expandable)
-     ├─ Eclipse Savers
      ├─ Scripts
      │   ├─ Combat
      │   └─ Utilities
@@ -66,65 +37,55 @@ Restructure around the customer journey: **Discover → Shop → Manage**
    Discord
 
 ── MY ACCOUNT ────────────────────
-   Profile & Settings
+   Profile
    My Cart (with count badge)
    Wishlist
-   My Purchases/Downloads
+   My Purchases
    Notifications (with unread badge)
-   [Seller Dashboard - if seller]
 
 ── HELP ──────────────────────────
    Help Center
    Contact Us
+   FAQ
    System Status (with dot)
-   
-[LEGAL LINKS - footer style]
+
+[LEGAL FOOTER]
    Terms · Privacy · Refunds
 ```
 
 ---
 
-## Key Changes
+## Key Changes from Original Plan
 
-### 1. Consolidate Quick Actions at Top
-Move the most-used items (Home, Search) to a persistent non-collapsible header area.
-
-### 2. Create "Discover" Section
-Group all curated/editorial content together:
-- Featured (renamed from "Featured")
-- Add "New Arrivals" link to `/featured#new-this-week`
-- Add "Popular" link to `/featured#popular-picks`
-- Eclipse+ and Marketplace
-
-### 3. Separate "Shop" from "Discover"
-- "All Products" as the main browsing entry point
-- Categories as an expandable subsection (already implemented well)
-
-### 4. Rename "Home" to "My Account"
-Move personal items into a clearly labeled section at the bottom:
-- Clearer mental model: "stuff about me" vs "stuff to buy"
-- Add "My Purchases" link directly (currently only accessible from Account page)
-
-### 5. Compress Legal Links
-Move Terms/Privacy/Refunds into a compact footer row using small text links instead of full navigation items.
-
-### 6. Add Visual Hierarchy
-- Use subtle section dividers
-- Add icons to section headers
-- Show cart count badge inline
+| Original Plan | Updated Plan |
+|---------------|--------------|
+| Seller/Affiliate moved to "My Account" at bottom | Seller/Affiliate stay in top "Quick Access" section |
+| Mixed with personal items (Cart, Wishlist) | Prominently positioned above all browsing groups |
+| Could be missed on first scroll | Immediately visible for power users |
 
 ---
 
 ## Technical Implementation
 
-### Files to Modify
-1. `src/components/layout/CustomerSidebar.tsx` - Restructure navGroups array
+### File to Modify
+`src/components/layout/CustomerSidebar.tsx`
 
-### Changes Required
+### Updated navGroups Structure
 
-**Reorganize navGroups array:**
 ```typescript
 const navGroups: NavGroup[] = [
+  {
+    id: 'quick-access',
+    title: 'Quick Access',
+    icon: Home,
+    items: [
+      { title: 'Home', icon: Home, href: '/' },
+      // Seller Dashboard - conditional
+      ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
+      // Affiliate Dashboard - conditional  
+      ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
+    ],
+  },
   {
     id: 'discover',
     title: 'Discover',
@@ -142,7 +103,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'All Products', icon: Grid3X3, href: '/products' },
     ],
-    // Categories section renders after this
+    // Categories section rendered after this group
   },
   {
     id: 'community',
@@ -164,8 +125,8 @@ const navGroups: NavGroup[] = [
       { title: 'Wishlist', icon: Heart, href: '/wishlist' },
       { title: 'My Purchases', icon: Download, href: '/downloads' },
       { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
-      // Affiliate conditionally added
-      // Seller Dashboard conditionally added
+      // Store Messages for sellers
+      ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
     ],
   },
   {
@@ -182,46 +143,45 @@ const navGroups: NavGroup[] = [
 ];
 ```
 
-**Add compact legal footer:**
-```typescript
-// In the sidebar footer area
-<div className="p-2 border-t border-border text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 justify-center">
-  <Link to="/terms">Terms</Link>
-  <Link to="/privacy">Privacy</Link>
-  <Link to="/refunds">Refunds</Link>
+### Additional Changes
+
+1. **Remove separate "Selling" group** - Seller Dashboard moves to Quick Access, Store Messages moves to My Account
+
+2. **Add compact legal footer**:
+```tsx
+<div className="p-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center">
+  <Link to="/terms" className="hover:underline">Terms</Link>
+  <Link to="/privacy" className="hover:underline">Privacy</Link>
+  <Link to="/refunds" className="hover:underline">Refunds</Link>
 </div>
 ```
 
-**Add persistent Home link at top (non-collapsible):**
-```typescript
-// Before the scrollable nav groups
-<div className="px-2 py-1 border-b border-border">
-  <NavLink to="/" className="...">
-    <Home className="h-4 w-4" />
-    <span>Home</span>
-  </NavLink>
-</div>
-```
+3. **Add Sparkles icon import** for the Discover section header
+
+4. **Add Download icon import** for the new "My Purchases" link
 
 ---
 
 ## Benefits
 
-| Before | After |
-|--------|-------|
-| 6 groups + categories | 5 groups + categories |
-| 22+ clickable items | ~18 items (Legal moved to footer) |
-| Mixed personal/shopping | Clear journey: Discover → Shop → Account |
-| Legal taking full rows | Compact footer links |
-| "Home" group unclear | "My Account" clearly personal |
-| Featured buried in "Products" | Featured leads "Discover" section |
+| Benefit | Description |
+|---------|-------------|
+| Seller-first experience | Active sellers see their dashboard immediately |
+| Affiliate prominence | Affiliates don't need to hunt for their dashboard |
+| Clear customer journey | Discover → Shop → Account flow maintained |
+| Reduced clutter | Legal links compressed to footer (~3 fewer nav items) |
+| Direct access | "My Purchases" now has direct sidebar link |
 
 ---
 
-## Mobile Considerations
+## Summary of Changes
 
-The same structure works well for the mobile drawer:
-- Top sections (Discover, Shop) are what customers engage with most
-- Personal account items are lower but still accessible
-- Legal links compressed to footer saves scroll depth
+| Current | New |
+|---------|-----|
+| 6 nav groups + categories | 5 nav groups + categories + footer |
+| "Home" group with 6 mixed items | "Quick Access" with 1-3 focused items |
+| Separate "Selling" group | Seller items integrated into Quick Access + Account |
+| "Legal" group with 3 full items | Compact footer row |
+| "My Messages" | Renamed to "Notifications" |
+| No direct "My Purchases" | Direct link to /downloads |
 
