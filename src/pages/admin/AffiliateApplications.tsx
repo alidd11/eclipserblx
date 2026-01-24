@@ -249,54 +249,54 @@ const AffiliateApplications = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-yellow-500/10">
-                  <Clock className="w-5 h-5 text-yellow-500" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Card>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/10">
+                  <Clock className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats?.pending || 0}</p>
+                  <p className="text-lg md:text-2xl font-bold">{stats?.pending || 0}</p>
                   <p className="text-xs text-muted-foreground">Pending</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <Check className="w-5 h-5 text-green-500" />
+          <Card>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
+                  <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats?.approved || 0}</p>
+                  <p className="text-lg md:text-2xl font-bold">{stats?.approved || 0}</p>
                   <p className="text-xs text-muted-foreground">Approved</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-500/10">
-                  <X className="w-5 h-5 text-red-500" />
+          <Card>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-red-500/10">
+                  <X className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats?.rejected || 0}</p>
+                  <p className="text-lg md:text-2xl font-bold">{stats?.rejected || 0}</p>
                   <p className="text-xs text-muted-foreground">Rejected</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="w-5 h-5 text-primary" />
+          <Card>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+                  <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats?.total || 0}</p>
+                  <p className="text-lg md:text-2xl font-bold">{stats?.total || 0}</p>
                   <p className="text-xs text-muted-foreground">Total</p>
                 </div>
               </div>

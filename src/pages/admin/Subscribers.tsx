@@ -274,49 +274,49 @@ export default function Subscribers() {
         </div>
 
         {/* Stats Cards */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Total Subscribers
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <Users className="h-3 w-3 md:h-4 md:w-4" />
+                Total
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.total}</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.total}</p>
             </CardContent>
           </Card>
-          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                Product Updates
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <Bell className="h-3 w-3 md:h-4 md:w-4" />
+                Updates
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.updates}</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.updates}</p>
             </CardContent>
           </Card>
-          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <Tag className="h-3 w-3 md:h-4 md:w-4" />
                 Discounts
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.discounts}</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.discounts}</p>
             </CardContent>
           </Card>
-          <Card className="min-w-[150px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Newspaper className="h-4 w-4" />
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <Newspaper className="h-3 w-3 md:h-4 md:w-4" />
                 Newsletters
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.newsletters}</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.newsletters}</p>
             </CardContent>
           </Card>
         </div>
