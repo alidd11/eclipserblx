@@ -29,6 +29,7 @@ import NotFound from "./pages/NotFound";
 const Account = lazy(() => import("./pages/Account"));
 const Downloads = lazy(() => import("./pages/Downloads"));
 const Products = lazy(() => import("./pages/Products"));
+const Featured = lazy(() => import("./pages/Featured"));
 const Categories = lazy(() => import("./pages/Categories"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Cart = lazy(() => import("./pages/Cart"));
@@ -185,6 +186,7 @@ const App = () => (
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/downloads" element={<Downloads />} />
                   <Route path="/products" element={<Products />} />
+                  <Route path="/featured" element={<Featured />} />
                   <Route path="/categories" element={<Categories />} />
                   <Route path="/products/:slug" element={<ProductDetail />} />
                   <Route path="/cart" element={<Cart />} />
