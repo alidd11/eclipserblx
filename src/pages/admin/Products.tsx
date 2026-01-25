@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar, Store } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -50,6 +50,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 
+// Eclipse Store ID for marketplace sync
+const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
+
 interface ProductForm {
   id?: string;
   name: string;
@@ -67,16 +70,8 @@ interface ProductForm {
   robux_enabled: boolean;
   robux_product_id: string;
   robux_price: string;
-}
-
-interface MassEditForm {
-  category_id: string | null;
-  is_active: boolean | null;
-  is_featured: boolean | null;
-  price_adjustment_enabled: boolean;
-  price_adjustment_type: 'percentage' | 'fixed';
-  price_adjustment_value: string;
-  price_adjustment_direction: 'increase' | 'decrease';
+  // Marketplace sync
+  sync_to_marketplace: boolean;
 }
 
 const emptyForm: ProductForm = {
@@ -94,7 +89,18 @@ const emptyForm: ProductForm = {
   robux_enabled: false,
   robux_product_id: '',
   robux_price: '',
+  sync_to_marketplace: true, // Default to syncing
 };
+
+interface MassEditForm {
+  category_id: string | null;
+  is_active: boolean | null;
+  is_featured: boolean | null;
+  price_adjustment_enabled: boolean;
+  price_adjustment_type: 'percentage' | 'fixed';
+  price_adjustment_value: string;
+  price_adjustment_direction: 'increase' | 'decrease';
+}
 
 const emptyMassEditForm: MassEditForm = {
   category_id: null,
@@ -309,6 +315,10 @@ export default function AdminProducts() {
           typeof robuxPriceValue === 'number' && Number.isFinite(robuxPriceValue)
             ? robuxPriceValue
             : null,
+        // Marketplace sync: link to Eclipse Store if enabled
+        store_id: data.sync_to_marketplace ? ECLIPSE_STORE_ID : null,
+        moderation_status: data.sync_to_marketplace ? 'approved' : null,
+        is_seller_product: false, // Distinguishes from community seller products
       };
 
       const isNewProduct = !data.id;
@@ -526,6 +536,7 @@ export default function AdminProducts() {
       robux_enabled: !!product.robux_enabled,
       robux_product_id: product.robux_product_id || '',
       robux_price: product.robux_price ? String(product.robux_price) : '',
+      sync_to_marketplace: product.store_id === ECLIPSE_STORE_ID,
     });
     setIsDialogOpen(true);
   };
@@ -1138,6 +1149,24 @@ export default function AdminProducts() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Marketplace Sync Section */}
+            <div className="space-y-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sync_to_marketplace" className="font-medium flex items-center gap-2">
+                  <Store className="h-4 w-4 text-primary" />
+                  Sync to Eclipse Marketplace Store
+                </Label>
+                <Switch
+                  id="sync_to_marketplace"
+                  checked={form.sync_to_marketplace}
+                  onCheckedChange={(checked) => setForm({ ...form, sync_to_marketplace: checked })}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                When enabled, this product will also appear in the marketplace under the Eclipse Store
+              </p>
             </div>
 
             <DialogFooter>
