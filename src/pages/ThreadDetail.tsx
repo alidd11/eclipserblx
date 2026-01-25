@@ -315,30 +315,45 @@ export default function ThreadDetail() {
     },
   });
 
-  // Render markdown images
+  // Render markdown images and links
   const renderContent = (content: string) => {
-    // Replace markdown images with actual img tags
-    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    // Combined regex for images and links: images first (!), then regular links
+    const markdownRegex = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)/g;
     const parts: (string | JSX.Element)[] = [];
     let lastIndex = 0;
     let match;
     let keyIndex = 0;
 
-    while ((match = imageRegex.exec(content)) !== null) {
-      // Add text before the image
+    while ((match = markdownRegex.exec(content)) !== null) {
+      // Add text before the match
       if (match.index > lastIndex) {
         parts.push(content.slice(lastIndex, match.index));
       }
       
-      // Add the image
-      parts.push(
-        <img 
-          key={keyIndex++}
-          src={match[2]} 
-          alt={match[1]} 
-          className="max-w-full h-auto rounded-lg my-2 max-h-96 object-contain"
-        />
-      );
+      if (match[1] !== undefined) {
+        // This is an image: ![alt](url)
+        parts.push(
+          <img 
+            key={keyIndex++}
+            src={match[2]} 
+            alt={match[1]} 
+            className="max-w-full h-auto rounded-lg my-2 max-h-96 object-contain"
+          />
+        );
+      } else {
+        // This is a link: [text](url)
+        parts.push(
+          <a
+            key={keyIndex++}
+            href={match[4]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            {match[3]}
+          </a>
+        );
+      }
       
       lastIndex = match.index + match[0].length;
     }
