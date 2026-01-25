@@ -1,115 +1,76 @@
 
-# Plan: Allow Admins to View Scheduled Products
 
-## Current Situation
-- **Admin Products page**: Already shows all products including scheduled ones with amber "Scheduled" badges
-- **Product Detail page**: Filters out future-scheduled products using `release_at` filter, preventing everyone (including admins) from previewing scheduled products
+# Auto-Delete Previous Product Discord Embeds
 
-## What Needs to Change
+## Overview
 
-The Product Detail page (`src/pages/ProductDetail.tsx`) needs to detect if the current user is an admin/staff member and bypass the `release_at` filter for them.
+When a product webhook is resent (e.g., after editing a product), the system will automatically delete the previous Discord forum thread before creating a new one. This prevents duplicate product listings in your Discord channels.
 
----
+## How It Will Work
+
+1. **Send webhook** → Discord creates a forum thread with the product embed
+2. **Store reference** → Save the thread ID and message ID in the database
+3. **Resend webhook** → Before creating a new thread, delete the old one using the stored IDs
+4. **Update reference** → Replace old IDs with new ones
 
 ## Implementation Details
 
-### 1. Modify Product Detail Page Query
+### Database Changes
 
-**File:** `src/pages/ProductDetail.tsx`
+Add two new columns to the `products` table to track Discord webhook references:
 
-**Changes:**
-- Import and use `useAdminAuth` hook to check if user is staff
-- Modify the product query to:
-  - For regular users: Keep existing filter (only show released products)
-  - For admins/staff: Show all products regardless of `release_at`
-- Add a visual banner for admins indicating the product is scheduled (not yet visible to customers)
+| Column | Type | Purpose |
+|--------|------|---------|
+| `discord_thread_id` | TEXT | The ID of the forum thread created for this product |
+| `discord_message_id` | TEXT | The ID of the initial message in that thread |
 
-### 2. Query Logic Update
+### Edge Function Updates
 
-**Current query (line 57-70):**
-```typescript
-const { data: product, isLoading } = useQuery({
-  queryKey: ['product', slug],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`*, categories(name, slug)`)
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-      .single();
-    if (error) throw error;
-    return data;
-  },
-});
+Modify `send-product-discord-webhook` to:
+
+1. **Check for existing Discord references** before sending
+2. **Delete the previous thread** using the Discord Bot API if a reference exists
+3. **Add `?wait=true`** to the webhook URL to receive the message/thread IDs in the response
+4. **Store the new IDs** in the products table after successful creation
+
+### Discord API Flow
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    Webhook Request                          │
+├─────────────────────────────────────────────────────────────┤
+│  1. Receive product_id                                      │
+│  2. Query products table for existing discord_thread_id     │
+│                                                             │
+│  ┌─ If thread exists ──────────────────────────────────┐    │
+│  │  DELETE /channels/{thread_id}                       │    │
+│  │  (Using Discord Bot Token)                          │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  3. POST to webhook URL with ?wait=true                     │
+│  4. Parse response for id (message) and channel_id (thread) │
+│  5. UPDATE products SET discord_thread_id, discord_message_id│
+│  6. Return success                                          │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Updated approach:**
-```typescript
-const { isStaff, loading: adminLoading } = useAdminAuth();
+### Important Considerations
 
-const { data: product, isLoading } = useQuery({
-  queryKey: ['product', slug, isStaff],
-  queryFn: async () => {
-    let query = supabase
-      .from('products')
-      .select(`*, categories(name, slug)`)
-      .eq('slug', slug)
-      .eq('is_active', true);
+- **Bot Token Required**: The existing `DISCORD_BOT_TOKEN` secret will be used to delete threads (webhooks cannot delete forum threads themselves)
+- **Bot Permissions**: The bot must have "Manage Threads" permission in the forum channels
+- **Graceful Failures**: If deletion fails (thread already deleted, permissions), the new webhook will still be sent
+- **Rate Limiting**: A small delay will be added between delete and create operations
 
-    // Only filter scheduled products for non-staff users
-    if (!isStaff) {
-      query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
-    }
+## Technical Summary
 
-    const { data, error } = await query.single();
-    if (error) throw error;
-    return data;
-  },
-  enabled: !adminLoading, // Wait for role check
-});
-```
-
-### 3. Add Visual Indicator for Scheduled Products
-
-When a staff member views a scheduled product, show a prominent banner:
-
-```tsx
-{isStaff && product?.release_at && new Date(product.release_at) > new Date() && (
-  <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-4 mb-6 flex items-center gap-3">
-    <Clock className="h-5 w-5 text-amber-500" />
-    <div>
-      <p className="font-medium text-amber-600 dark:text-amber-400">
-        Scheduled Product (Admin Preview)
-      </p>
-      <p className="text-sm text-muted-foreground">
-        This product is scheduled to release on {new Date(product.release_at).toLocaleString()}. 
-        It is not visible to customers yet.
-      </p>
-    </div>
-  </div>
-)}
-```
-
-### 4. Update Related Products Query
-
-The related products query also needs the same logic to show scheduled related products to admins:
-
-**File:** `src/pages/ProductDetail.tsx` (line 72-88)
-
-Update to conditionally include scheduled products for staff users.
-
----
-
-## Technical Notes
-
-- The `useAdminAuth` hook is already available at `src/hooks/useAdminAuth.tsx`
-- The `isStaff` property checks if the user has any admin role
-- Query key includes `isStaff` to ensure proper cache separation between admin and customer views
-- The `enabled: !adminLoading` ensures we wait for role verification before fetching
+| Component | Change |
+|-----------|--------|
+| Database | Add `discord_thread_id` and `discord_message_id` columns to `products` |
+| Edge Function | Update `send-product-discord-webhook` to delete old threads and store new IDs |
+| Permissions | Bot needs "Manage Threads" permission in Discord forum channels |
 
 ## Files to Modify
-1. `src/pages/ProductDetail.tsx` - Main changes for admin bypass and visual indicator
 
-## Summary
-This update allows admins and staff to preview scheduled products on the customer-facing product detail page while maintaining the restriction for regular customers. A clear visual banner will indicate when a product is being viewed in "admin preview" mode.
+1. **Database Migration** - Add two columns to products table
+2. **`supabase/functions/send-product-discord-webhook/index.ts`** - Add delete logic and ID storage
+
