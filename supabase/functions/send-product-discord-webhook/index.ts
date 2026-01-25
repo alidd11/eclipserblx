@@ -149,9 +149,6 @@ Deno.serve(async (req) => {
           inline: false,
         },
       ],
-      footer: {
-        text: "🌑 The Eclipse Team",
-      },
       timestamp: new Date().toISOString(),
     };
 
