@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Check, X, Sparkles, Trash2, Plus, Globe, Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Vibrate, Key, RefreshCw, Copy, BellRing } from 'lucide-react';
 import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
 import { AffiliateSettingsCard } from '@/components/admin/AffiliateSettingsCard';
-import { StaffThemeCard } from '@/components/admin/StaffThemeCard';
+
 import { MarketplaceControlsCard } from '@/components/admin/MarketplaceControlsCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -380,8 +380,6 @@ export default function AdminSettings() {
         </Card>
 
         <div className="grid gap-6">
-          {/* Staff Theme Settings */}
-          <StaffThemeCard />
 
           {/* Notifications Settings */}
           <Card className="bg-card border-border">
