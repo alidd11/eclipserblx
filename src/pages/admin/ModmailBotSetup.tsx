@@ -190,7 +190,7 @@ export default function ModmailBotSetup() {
                   <p className="text-sm text-muted-foreground mt-1">
                     The <code className="bg-muted px-1 rounded">dashboard_webhook_secret</code> must match 
                     the <code className="bg-muted px-1 rounded">DISCORD_WEBHOOK_SECRET</code> configured 
-                    in Lovable Cloud secrets. Use a strong, random string (32+ characters).
+                    in Cloud secrets. Use a strong, random string (32+ characters).
                   </p>
                 </div>
               </div>
@@ -262,7 +262,7 @@ export default function ModmailBotSetup() {
               <div className="p-4 border rounded-lg">
                 <p className="font-medium">Staff replies not sending?</p>
                 <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
-                  <li>Verify DISCORD_BOT_TOKEN is set in Lovable Cloud secrets</li>
+                  <li>Verify DISCORD_BOT_TOKEN is set in Cloud secrets</li>
                   <li>Check edge function logs for errors</li>
                   <li>Ensure the bot has permission to DM users</li>
                 </ul>

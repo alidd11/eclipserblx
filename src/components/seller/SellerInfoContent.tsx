@@ -442,7 +442,7 @@ export function SellerInfoContent() {
       <footer className="hidden print:block text-center py-8 border-t border-border">
         <EclipseLogo size="sm" />
         <p className="text-muted-foreground mt-4">
-          Eclipse Marketplace • roleplay-hub-shop.lovable.app
+          Eclipse Marketplace • eclipserblx.com
         </p>
         <p className="text-sm text-muted-foreground mt-2">
           Questions? Join our Discord community or start a live chat.

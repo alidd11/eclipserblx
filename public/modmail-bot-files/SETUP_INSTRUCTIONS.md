@@ -5,7 +5,7 @@ This guide explains how to integrate your Discord Modmail bot with the Eclipse a
 ## Overview
 
 The integration works as follows:
-1. **User DMs the bot** → Bot forwards message to Lovable webhook → Appears in Admin Dashboard
+1. **User DMs the bot** → Bot forwards message to Eclipse webhook → Appears in Admin Dashboard
 2. **Staff replies in Dashboard** → Edge function sends DM to user via Discord API
 
 ---
@@ -84,12 +84,12 @@ Add these lines to your `config.json`:
 
 ## Getting Your Secret Key
 
-The secret key must match what's configured in your Lovable Cloud secrets:
+The secret key must match what's configured in your Cloud secrets:
 - Secret name: `DISCORD_WEBHOOK_SECRET`
 - Use the same value in your bot config
 
-**To set/update the secret in Lovable:**
-1. Go to your Lovable project
+**To set/update the secret:**
+1. Go to your project settings
 2. Navigate to Settings → Cloud → Secrets
 3. Find `DISCORD_WEBHOOK_SECRET` 
 4. Copy its value (or set a new one if needed)
@@ -153,8 +153,8 @@ Use these commands (admin only):
 ### Staff replies not being delivered
 
 1. Check if the user has DMs enabled
-2. Verify `DISCORD_BOT_TOKEN` is set in Lovable secrets
-3. Check edge function logs in Lovable Cloud
+2. Verify `DISCORD_BOT_TOKEN` is set in Cloud secrets
+3. Check edge function logs in Cloud View
 
 ### Common Errors
 
@@ -163,7 +163,7 @@ Use these commands (admin only):
 | `401 Unauthorized` | Secret key mismatch - update bot config |
 | `403 Forbidden` | User has DMs disabled |
 | `404 Not Found` | User deleted their Discord account |
-| `500 Server Error` | Check Lovable edge function logs |
+| `500 Server Error` | Check edge function logs |
 
 ---
 
@@ -205,7 +205,7 @@ Message saved to database
 
 - Always use HTTPS for webhook URLs
 - Keep your webhook secret secure and unique
-- The bot token is stored securely in Lovable Cloud secrets
+- The bot token is stored securely in Cloud secrets
 - All staff actions require authentication
 
 ---
@@ -214,5 +214,5 @@ Message saved to database
 
 If you have issues:
 1. Check the bot console logs
-2. Check Lovable Cloud → Edge Functions → Logs
+2. Check Cloud View → Edge Functions → Logs
 3. Verify all secrets are configured correctly

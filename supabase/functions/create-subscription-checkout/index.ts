@@ -64,7 +64,7 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://eclipse.lovable.app";
+    const origin = req.headers.get("origin") || "https://eclipserblx.com";
 
     // Create checkout session for subscription
     const session = await stripe.checkout.sessions.create({

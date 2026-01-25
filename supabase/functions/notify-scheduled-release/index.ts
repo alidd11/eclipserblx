@@ -35,7 +35,7 @@ async function sendDiscordWebhook(
     const storeName = product.stores?.name || 'Store';
     const categoryName = product.categories?.name || 'Products';
     const formattedPrice = `£${product.price.toFixed(2)}`;
-    const productUrl = `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/products/${product.slug}`;
+    const productUrl = `https://eclipserblx.com/products/${product.slug}`;
     
     // Get the first image if available
     const thumbnailUrl = product.images?.[0] || null;
