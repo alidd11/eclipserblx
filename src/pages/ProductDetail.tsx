@@ -62,12 +62,14 @@ export default function ProductDetail() {
       let query = supabase
         .from('products')
         .select(`*, categories(name, slug)`)
-        .eq('slug', slug)
-        .eq('is_active', true);
+        .eq('slug', slug);
 
-      // Only filter scheduled products for non-staff users
+      // Customers should only see active + released products.
+      // Staff can preview scheduled and inactive products.
       if (!isStaff) {
-        query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
+        query = query
+          .eq('is_active', true)
+          .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
       }
 
       const { data, error } = await query.maybeSingle();
@@ -86,12 +88,14 @@ export default function ProductDetail() {
         .from('products')
         .select(`*, categories(name, slug)`)
         .eq('category_id', product.category_id)
-        .neq('id', product.id)
-        .eq('is_active', true);
+        .neq('id', product.id);
 
-      // Only filter scheduled products for non-staff users
+      // Customers should only see active + released products.
+      // Staff can preview scheduled and inactive products.
       if (!isStaff) {
-        query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
+        query = query
+          .eq('is_active', true)
+          .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
       }
 
       const { data, error } = await query.limit(4);
