@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,7 @@ interface CustomRole {
 export function RoleManagementCard() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRole, setEditRole] = useState<CustomRole | null>(null);
 
@@ -100,7 +102,16 @@ export function RoleManagementCard() {
     setDialogOpen(true);
   };
 
+  // Check if current user can delete a role (admin only + hierarchy check)
+  const canDeleteRole = (role: CustomRole) => {
+    return isAdmin && !role.is_system && canManageRole(role);
+  };
+
   const handleDelete = (role: CustomRole) => {
+    if (!isAdmin) {
+      toast.error('Only administrators can delete roles');
+      return;
+    }
     if (role.is_system) {
       toast.error('System roles cannot be deleted');
       return;
@@ -203,7 +214,7 @@ export function RoleManagementCard() {
                           )}
                         </Tooltip>
                       </TooltipProvider>
-                      {!role.is_system && (
+                      {!role.is_system && isAdmin && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -212,15 +223,20 @@ export function RoleManagementCard() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleDelete(role)}
-                                  disabled={deleteMutation.isPending || !canManageRole(role)}
+                                  disabled={deleteMutation.isPending || !canDeleteRole(role)}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </span>
                             </TooltipTrigger>
-                            {!canManageRole(role) && (
+                            {!canDeleteRole(role) && (
                               <TooltipContent>
-                                <p>Your hierarchy level ({currentUserHierarchy}) is too low to delete this role</p>
+                                <p>
+                                  {!isAdmin 
+                                    ? 'Only administrators can delete roles'
+                                    : `Your hierarchy level (${currentUserHierarchy}) is too low to delete this role`
+                                  }
+                                </p>
                               </TooltipContent>
                             )}
                           </Tooltip>
