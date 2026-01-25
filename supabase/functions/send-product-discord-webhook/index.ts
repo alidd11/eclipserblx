@@ -249,11 +249,13 @@ Deno.serve(async (req) => {
 
     console.log(`Using template and webhook for category "${payload.category_name}"`);
 
-    // Prepare placeholder values
-    const description = payload.product_description
-      ? payload.product_description.replace(/<[^>]*>/g, "").substring(0, 300) + 
-        (payload.product_description.length > 300 ? "..." : "")
+    // Prepare placeholder values - Discord field limit is 1024 chars
+    const rawDescription = payload.product_description
+      ? payload.product_description.replace(/<[^>]*>/g, "")
       : "A new product is now available on Eclipse!";
+    const description = rawDescription.length > 1000 
+      ? rawDescription.substring(0, 997) + "..." 
+      : rawDescription;
 
     const gbpPrice = `£${payload.product_price.toFixed(2)}`;
     const eclipsePlusPrice = `£${(payload.product_price * 0.7).toFixed(2)}`;
