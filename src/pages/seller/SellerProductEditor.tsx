@@ -174,7 +174,7 @@ export default function SellerProductEditor() {
 
         const { error: uploadError } = await supabase.storage
           .from('product-images')
-          .upload(fileName, file);
+          .upload(fileName, file, { contentType: file.type });
 
         if (uploadError) throw uploadError;
 

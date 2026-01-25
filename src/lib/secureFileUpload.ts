@@ -361,7 +361,10 @@ export async function secureUpload(
   try {
     const { data, error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(path, file, { upsert: options.upsert ?? false });
+      .upload(path, file, { 
+        upsert: options.upsert ?? false,
+        contentType: file.type 
+      });
 
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
