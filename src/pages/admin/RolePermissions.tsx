@@ -24,7 +24,7 @@ import {
   Zap
 } from 'lucide-react';
 import { RoleManagementCard } from '@/components/admin/RoleManagementCard';
-import { PermissionManagementCard } from '@/components/admin/PermissionManagementCard';
+
 
 type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
@@ -199,10 +199,7 @@ export default function RolePermissions() {
           </TabsList>
 
           <TabsContent value="manage" className="space-y-6 mt-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <RoleManagementCard />
-              <PermissionManagementCard />
-            </div>
+            <RoleManagementCard />
           </TabsContent>
 
           <TabsContent value="assign" className="space-y-6 mt-6">
