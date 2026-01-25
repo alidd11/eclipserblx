@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadg
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -29,6 +30,7 @@ export default function ProductDetail() {
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
   const { user } = useAuth();
+  const { isStaff, loading: adminLoading } = useAdminAuth();
   const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
@@ -55,32 +57,43 @@ export default function ProductDetail() {
   }, [queryClient, slug]);
 
   const { data: product, isLoading } = useQuery({
-    queryKey: ['product', slug],
+    queryKey: ['product', slug, isStaff],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select(`*, categories(name, slug)`)
         .eq('slug', slug)
-        .eq('is_active', true)
-        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-        .single();
+        .eq('is_active', true);
+
+      // Only filter scheduled products for non-staff users
+      if (!isStaff) {
+        query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
+      }
+
+      const { data, error } = await query.single();
       if (error) throw error;
       return data;
     },
+    enabled: !adminLoading,
   });
 
   const { data: relatedProducts } = useQuery({
-    queryKey: ['related-products', product?.category_id],
+    queryKey: ['related-products', product?.category_id, isStaff],
     queryFn: async () => {
       if (!product?.category_id) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select(`*, categories(name, slug)`)
         .eq('category_id', product.category_id)
         .neq('id', product.id)
-        .eq('is_active', true)
-        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-        .limit(4);
+        .eq('is_active', true);
+
+      // Only filter scheduled products for non-staff users
+      if (!isStaff) {
+        query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
+      }
+
+      const { data, error } = await query.limit(4);
       if (error) throw error;
       return data;
     },
@@ -207,7 +220,10 @@ export default function ProductDetail() {
     minSwipeDistance: 50,
   });
 
-  if (isLoading) {
+  // Check if this is a scheduled product (for admin preview banner)
+  const isScheduledProduct = product?.release_at && new Date(product.release_at) > new Date();
+
+  if (isLoading || adminLoading) {
     return (
       <MainLayout>
         <div className="container py-8 animate-pulse space-y-8">
@@ -267,6 +283,23 @@ export default function ProductDetail() {
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-8 overflow-x-hidden max-w-full">
+        
+        {/* Admin Preview Banner for Scheduled Products */}
+        {isStaff && isScheduledProduct && (
+          <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-4 flex items-center gap-3">
+            <Clock className="h-5 w-5 text-amber-500 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-amber-600 dark:text-amber-400">
+                Scheduled Product (Admin Preview)
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This product is scheduled to release on {new Date(product.release_at!).toLocaleString()}. 
+                It is not visible to customers yet.
+              </p>
+            </div>
+          </div>
+        )}
+        
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto scrollbar-hide max-w-full">
           <Link to="/" className="hover:text-foreground transition-colors flex-shrink-0">Home</Link>
