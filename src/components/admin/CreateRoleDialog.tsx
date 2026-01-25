@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Dialog,
   DialogContent,
@@ -31,12 +32,15 @@ import {
   Star,
   Crown,
   Zap,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CreateRoleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currentUserHierarchy?: number;
   editRole?: {
     id: string;
     name: string;
@@ -75,16 +79,19 @@ const COLOR_OPTIONS = [
   { value: 'bg-teal-500', label: 'Teal' },
 ];
 
-export function CreateRoleDialog({ open, onOpenChange, editRole }: CreateRoleDialogProps) {
+export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0 }: CreateRoleDialogProps) {
   const queryClient = useQueryClient();
   const isEditing = !!editRole;
+  
+  // Calculate max allowed hierarchy level (can only create roles at or below own level)
+  const maxAllowedHierarchy = currentUserHierarchy;
   
   const [formData, setFormData] = useState({
     name: editRole?.name || '',
     display_name: editRole?.display_name || '',
     color: editRole?.color || 'bg-gray-500',
     icon: editRole?.icon || 'shield',
-    hierarchy_level: editRole?.hierarchy_level || 10,
+    hierarchy_level: editRole?.hierarchy_level || Math.min(10, maxAllowedHierarchy),
     description: editRole?.description || '',
   });
 
@@ -175,6 +182,12 @@ export function CreateRoleDialog({ open, onOpenChange, editRole }: CreateRoleDia
     e.preventDefault();
     if (!formData.display_name.trim()) {
       toast.error('Role name is required');
+      return;
+    }
+    
+    // Enforce hierarchy constraint
+    if (formData.hierarchy_level > maxAllowedHierarchy) {
+      toast.error(`You can only create roles with hierarchy level ${maxAllowedHierarchy} or lower`);
       return;
     }
     
@@ -295,13 +308,27 @@ export function CreateRoleDialog({ open, onOpenChange, editRole }: CreateRoleDia
               id="hierarchy"
               type="number"
               min="1"
-              max="99"
+              max={maxAllowedHierarchy}
               value={formData.hierarchy_level}
-              onChange={(e) => setFormData(prev => ({ ...prev, hierarchy_level: parseInt(e.target.value) || 10 }))}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 10;
+                setFormData(prev => ({ 
+                  ...prev, 
+                  hierarchy_level: Math.min(value, maxAllowedHierarchy) 
+                }));
+              }}
             />
             <p className="text-xs text-muted-foreground">
-              Higher levels can manage lower levels. Admin is 100.
+              Higher levels can manage lower levels. Your max: {maxAllowedHierarchy}
             </p>
+            {formData.hierarchy_level > maxAllowedHierarchy && (
+              <Alert variant="destructive" className="py-2">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Level exceeds your hierarchy. Max allowed: {maxAllowedHierarchy}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <div className="space-y-2">

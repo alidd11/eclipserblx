@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Lock, Shield, Users, Package, MessageCircle, BarChart3, FileText, Star, Crown, Zap, Eye } from 'lucide-react';
 import { useState } from 'react';
@@ -36,8 +38,22 @@ interface CustomRole {
 
 export function RoleManagementCard() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRole, setEditRole] = useState<CustomRole | null>(null);
+
+  // Fetch current user's hierarchy level
+  const { data: currentUserHierarchy = 0 } = useQuery({
+    queryKey: ['current-user-hierarchy', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const { data, error } = await supabase
+        .rpc('get_user_max_hierarchy', { _user_id: user.id });
+      if (error) throw error;
+      return data ?? 0;
+    },
+    enabled: !!user?.id,
+  });
 
   const { data: roles, isLoading } = useQuery({
     queryKey: ['custom-roles'],
@@ -69,7 +85,17 @@ export function RoleManagementCard() {
     },
   });
 
+  // Check if current user can manage a specific role
+  const canManageRole = (role: CustomRole) => {
+    // Can only manage roles at or below your hierarchy level
+    return currentUserHierarchy >= role.hierarchy_level;
+  };
+
   const handleEdit = (role: CustomRole) => {
+    if (!canManageRole(role)) {
+      toast.error(`You cannot edit roles with hierarchy level ${role.hierarchy_level} or higher`);
+      return;
+    }
     setEditRole(role);
     setDialogOpen(true);
   };
@@ -77,6 +103,10 @@ export function RoleManagementCard() {
   const handleDelete = (role: CustomRole) => {
     if (role.is_system) {
       toast.error('System roles cannot be deleted');
+      return;
+    }
+    if (!canManageRole(role)) {
+      toast.error(`You cannot delete roles with hierarchy level ${role.hierarchy_level} or higher`);
       return;
     }
     if (confirm(`Are you sure you want to delete the "${role.display_name}" role?`)) {
@@ -152,22 +182,49 @@ export function RoleManagementCard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(role)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(role)}
+                                disabled={!canManageRole(role)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          {!canManageRole(role) && (
+                            <TooltipContent>
+                              <p>Your hierarchy level ({currentUserHierarchy}) is too low to edit this role</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                       {!role.is_system && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(role)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDelete(role)}
+                                  disabled={deleteMutation.isPending || !canManageRole(role)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            {!canManageRole(role) && (
+                              <TooltipContent>
+                                <p>Your hierarchy level ({currentUserHierarchy}) is too low to delete this role</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </div>
                   </div>
@@ -187,6 +244,7 @@ export function RoleManagementCard() {
         open={dialogOpen}
         onOpenChange={handleDialogClose}
         editRole={editRole}
+        currentUserHierarchy={currentUserHierarchy}
       />
     </>
   );
