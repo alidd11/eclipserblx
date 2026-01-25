@@ -329,11 +329,11 @@ Deno.serve(async (req) => {
     const embeds = [embed];
 
     // Add additional images as separate embeds if enabled (up to 3 more for a total of 4)
+    // NOTE: Omitting the 'url' property prevents Discord from grouping images into a grid
     if (template.showAdditionalImages && payload.product_images && payload.product_images.length > 1) {
       const additionalImages = payload.product_images.slice(1, 4);
       for (const imageUrl of additionalImages) {
         embeds.push({
-          url: productUrl,
           image: { url: imageUrl },
           color: colorInt,
         });
