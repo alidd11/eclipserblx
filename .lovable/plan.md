@@ -1,151 +1,113 @@
 
-
-# Frontend Role Hierarchy Filtering Implementation
+# Plan: Sync Main Store Products to Eclipse Marketplace Store
 
 ## Overview
-Update the frontend to filter roles based on the current user's hierarchy level, so staff only see roles they can actually assign. The backend RLS policies will remain in place as a security safety net.
 
-## Current Problem
-- The `availableRoles` function in `src/pages/admin/Users.tsx` only has a hardcoded check for the admin role
-- Any staff member sees all other roles (Product Manager, Order Manager, etc.) regardless of their own rank
-- When they try to assign a higher role, the database blocks it with a generic error
-- The `StaffDirectory.tsx` uses a separate hardcoded `ROLE_HIERARCHY` for sorting (inconsistent with database)
+This plan implements automatic synchronization so that whenever a product is uploaded via the Admin Products page (main store), it also gets linked to the Eclipse Store in the marketplace. This ensures the same products appear both in the main catalog and under the Eclipse Store.
 
-## Solution
+## Current Architecture
 
-### 1. Fetch Role Hierarchy from Database
+| Store Type | `store_id` | `is_seller_product` | Where Managed |
+|------------|------------|---------------------|---------------|
+| Main Store | `NULL` | `false` | Admin → Products |
+| Eclipse Store (Marketplace) | `83b5dde6-...` | `true` | Should auto-sync |
 
-**Add a new query in `src/pages/admin/Users.tsx`:**
-- Fetch the `role_hierarchy` table to get hierarchy levels for all roles
-- Fetch the current user's max hierarchy level using an RPC call to `get_user_max_hierarchy`
+The Eclipse Store ID is: `83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a`
+
+## Implementation Approach
+
+Rather than duplicating products (which would create data inconsistency), we'll modify the admin product save logic to **optionally link main store products to the Eclipse Store** by setting their `store_id` to the Eclipse Store ID while keeping `is_seller_product = false` to distinguish them from community seller uploads.
+
+---
+
+## Technical Changes
+
+### 1. Update Admin Products Page
+
+**File:** `src/pages/admin/Products.tsx`
+
+Add a setting/toggle for "Sync to Eclipse Marketplace Store" when creating/editing products:
+
+- Add a new form field `sync_to_marketplace: boolean` (default: `true`)
+- When saving a product with this option enabled, set:
+  - `store_id = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a'` (Eclipse Store ID)
+  - `moderation_status = 'approved'` (auto-approved since it's from admin)
+  - Keep `is_seller_product = false` to identify it as an official product
+
+**Key code changes in `saveMutation`:**
 
 ```typescript
-// Fetch role hierarchy levels
-const { data: roleHierarchy } = useQuery({
-  queryKey: ['role-hierarchy'],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from('role_hierarchy')
-      .select('role, hierarchy_level');
-    if (error) throw error;
-    return data;
-  },
-});
+const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
 
-// Fetch current user's max hierarchy level
-const { data: currentUserHierarchy } = useQuery({
-  queryKey: ['current-user-hierarchy', user?.id],
-  queryFn: async () => {
-    if (!user?.id) return 0;
-    const { data, error } = await supabase
-      .rpc('get_user_max_hierarchy', { _user_id: user.id });
-    if (error) throw error;
-    return data ?? 0;
-  },
-  enabled: !!user?.id,
-});
-```
-
-### 2. Update `availableRoles` Function
-
-**Modify the filtering logic:**
-```typescript
-const availableRoles = (userId: string) => {
-  const existing = getUserRoles(userId).map(r => r.role);
-  
-  return ROLES.filter(r => {
-    // Exclude roles the user already has
-    if (existing.includes(r.value)) return false;
-    
-    // Get the target role's hierarchy level
-    const targetLevel = roleHierarchy?.find(h => h.role === r.value)?.hierarchy_level ?? 999;
-    
-    // Only show roles at or below current user's hierarchy level
-    if ((currentUserHierarchy ?? 0) < targetLevel) return false;
-    
-    // Special case: Only primary admin can assign admin role (extra protection)
-    if (r.value === 'admin' && !isPrimaryAdmin) return false;
-    
-    return true;
-  });
+const payload = {
+  // ... existing fields
+  store_id: data.sync_to_marketplace ? ECLIPSE_STORE_ID : null,
+  moderation_status: 'approved',
+  is_seller_product: false, // Distinguishes from community seller products
 };
 ```
 
-### 3. Check if User Can Be Managed
+### 2. Add Marketplace Sync Toggle to Product Form
 
-**Add helper to check if current user can manage target user:**
-```typescript
-const { data: manageableUsers } = useQuery({
-  queryKey: ['manageable-users', user?.id, profiles],
-  queryFn: async () => {
-    if (!user?.id || !profiles) return new Set<string>();
-    
-    // Get hierarchy level for each user with roles
-    const checks = await Promise.all(
-      profiles.map(async (profile) => {
-        const { data } = await supabase
-          .rpc('can_manage_user_roles', { 
-            _assigner_id: user.id, 
-            _target_user_id: profile.user_id 
-          });
-        return { userId: profile.user_id, canManage: data ?? false };
-      })
-    );
-    
-    return new Set(checks.filter(c => c.canManage).map(c => c.userId));
-  },
-  enabled: !!user?.id && !!profiles?.length,
-});
+Add a UI toggle in the product creation/edit dialog:
+
+```text
+┌─────────────────────────────────────────────────────┐
+│ ☑️ Sync to Eclipse Marketplace Store                │
+│    This product will appear in the marketplace      │
+│    under the Eclipse Store                          │
+└─────────────────────────────────────────────────────┘
 ```
 
-### 4. Disable Actions for Higher-Ranked Users
+### 3. Update Product Form Interface
 
-**In the UI, disable role management buttons for users you cannot manage:**
-- Grey out the "Roles" button
-- Show a tooltip explaining why ("Requires higher privilege level")
-- Prevent opening the role management dialog
+**Add new field to `ProductForm` interface:**
 
-### 5. Update StaffDirectory.tsx
+```typescript
+interface ProductForm {
+  // ... existing fields
+  sync_to_marketplace: boolean;
+}
+```
 
-**Replace hardcoded hierarchy with database values:**
-- Fetch from `role_hierarchy` table instead of using `ROLE_HIERARCHY` constant
-- Sort staff members using the database hierarchy levels
-- This ensures consistency across the application
+**Update `emptyForm` default:**
 
-### 6. Improve Error Messages
+```typescript
+const emptyForm: ProductForm = {
+  // ... existing fields
+  sync_to_marketplace: true, // Default to syncing
+};
+```
 
-**Update the `addRoleMutation` error handler:**
-- Detect hierarchy-related errors
-- Show a user-friendly message like "You don't have permission to assign this role"
+### 4. Handle Product Updates
 
-## Files to Modify
+When editing an existing product:
+- If `sync_to_marketplace` is toggled ON: Set `store_id` to Eclipse Store ID
+- If `sync_to_marketplace` is toggled OFF: Set `store_id` to `null`
 
-1. **`src/pages/admin/Users.tsx`**
-   - Add queries for `role_hierarchy` and `get_user_max_hierarchy`
-   - Update `availableRoles` function to filter by hierarchy
-   - Add query for `can_manage_user_roles` checks
-   - Disable "Roles" button for users that cannot be managed
-   - Update error handling for better messages
+This ensures products can be added/removed from the marketplace after creation.
 
-2. **`src/pages/admin/StaffDirectory.tsx`**
-   - Fetch `role_hierarchy` from database
-   - Replace hardcoded `ROLE_HIERARCHY` with fetched data
-   - Update sorting logic
+### 5. Populate Form on Edit
 
-## Visual Changes
+When loading a product for editing, check if it's linked to the Eclipse Store:
 
-### Before
-- Staff sees all roles in dropdown regardless of their rank
-- Clicking assign on a higher role shows generic database error
+```typescript
+sync_to_marketplace: product.store_id === ECLIPSE_STORE_ID
+```
 
-### After
-- Dropdown only shows roles at or below user's level
-- "Roles" button is disabled/hidden for users with higher rank
-- Clear visual indication when you cannot manage someone
-- Informative tooltip explaining hierarchy restrictions
+---
 
-## Security Notes
-- Frontend filtering is for UX only - the RLS policies remain the true security boundary
-- Backend will still reject any unauthorized role assignments
-- This change prevents user confusion, not security bypasses
+## Summary of Files to Modify
 
+| File | Changes |
+|------|---------|
+| `src/pages/admin/Products.tsx` | Add sync toggle, update form interface, modify save logic to set `store_id` |
+
+---
+
+## Benefits
+
+- **No Data Duplication**: Single product record serves both main store and marketplace
+- **Easy Management**: Toggle on/off from admin panel
+- **Consistent Data**: Changes to products automatically reflect everywhere
+- **Backward Compatible**: Existing products remain unchanged until edited
