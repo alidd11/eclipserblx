@@ -1,113 +1,115 @@
 
-# Plan: Sync Main Store Products to Eclipse Marketplace Store
+# Plan: Allow Admins to View Scheduled Products
 
-## Overview
+## Current Situation
+- **Admin Products page**: Already shows all products including scheduled ones with amber "Scheduled" badges
+- **Product Detail page**: Filters out future-scheduled products using `release_at` filter, preventing everyone (including admins) from previewing scheduled products
 
-This plan implements automatic synchronization so that whenever a product is uploaded via the Admin Products page (main store), it also gets linked to the Eclipse Store in the marketplace. This ensures the same products appear both in the main catalog and under the Eclipse Store.
+## What Needs to Change
 
-## Current Architecture
-
-| Store Type | `store_id` | `is_seller_product` | Where Managed |
-|------------|------------|---------------------|---------------|
-| Main Store | `NULL` | `false` | Admin → Products |
-| Eclipse Store (Marketplace) | `83b5dde6-...` | `true` | Should auto-sync |
-
-The Eclipse Store ID is: `83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a`
-
-## Implementation Approach
-
-Rather than duplicating products (which would create data inconsistency), we'll modify the admin product save logic to **optionally link main store products to the Eclipse Store** by setting their `store_id` to the Eclipse Store ID while keeping `is_seller_product = false` to distinguish them from community seller uploads.
+The Product Detail page (`src/pages/ProductDetail.tsx`) needs to detect if the current user is an admin/staff member and bypass the `release_at` filter for them.
 
 ---
 
-## Technical Changes
+## Implementation Details
 
-### 1. Update Admin Products Page
+### 1. Modify Product Detail Page Query
 
-**File:** `src/pages/admin/Products.tsx`
+**File:** `src/pages/ProductDetail.tsx`
 
-Add a setting/toggle for "Sync to Eclipse Marketplace Store" when creating/editing products:
+**Changes:**
+- Import and use `useAdminAuth` hook to check if user is staff
+- Modify the product query to:
+  - For regular users: Keep existing filter (only show released products)
+  - For admins/staff: Show all products regardless of `release_at`
+- Add a visual banner for admins indicating the product is scheduled (not yet visible to customers)
 
-- Add a new form field `sync_to_marketplace: boolean` (default: `true`)
-- When saving a product with this option enabled, set:
-  - `store_id = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a'` (Eclipse Store ID)
-  - `moderation_status = 'approved'` (auto-approved since it's from admin)
-  - Keep `is_seller_product = false` to identify it as an official product
+### 2. Query Logic Update
 
-**Key code changes in `saveMutation`:**
-
+**Current query (line 57-70):**
 ```typescript
-const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
-
-const payload = {
-  // ... existing fields
-  store_id: data.sync_to_marketplace ? ECLIPSE_STORE_ID : null,
-  moderation_status: 'approved',
-  is_seller_product: false, // Distinguishes from community seller products
-};
+const { data: product, isLoading } = useQuery({
+  queryKey: ['product', slug],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`*, categories(name, slug)`)
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+});
 ```
 
-### 2. Add Marketplace Sync Toggle to Product Form
-
-Add a UI toggle in the product creation/edit dialog:
-
-```text
-┌─────────────────────────────────────────────────────┐
-│ ☑️ Sync to Eclipse Marketplace Store                │
-│    This product will appear in the marketplace      │
-│    under the Eclipse Store                          │
-└─────────────────────────────────────────────────────┘
-```
-
-### 3. Update Product Form Interface
-
-**Add new field to `ProductForm` interface:**
-
+**Updated approach:**
 ```typescript
-interface ProductForm {
-  // ... existing fields
-  sync_to_marketplace: boolean;
-}
+const { isStaff, loading: adminLoading } = useAdminAuth();
+
+const { data: product, isLoading } = useQuery({
+  queryKey: ['product', slug, isStaff],
+  queryFn: async () => {
+    let query = supabase
+      .from('products')
+      .select(`*, categories(name, slug)`)
+      .eq('slug', slug)
+      .eq('is_active', true);
+
+    // Only filter scheduled products for non-staff users
+    if (!isStaff) {
+      query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
+    }
+
+    const { data, error } = await query.single();
+    if (error) throw error;
+    return data;
+  },
+  enabled: !adminLoading, // Wait for role check
+});
 ```
 
-**Update `emptyForm` default:**
+### 3. Add Visual Indicator for Scheduled Products
 
-```typescript
-const emptyForm: ProductForm = {
-  // ... existing fields
-  sync_to_marketplace: true, // Default to syncing
-};
+When a staff member views a scheduled product, show a prominent banner:
+
+```tsx
+{isStaff && product?.release_at && new Date(product.release_at) > new Date() && (
+  <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-4 mb-6 flex items-center gap-3">
+    <Clock className="h-5 w-5 text-amber-500" />
+    <div>
+      <p className="font-medium text-amber-600 dark:text-amber-400">
+        Scheduled Product (Admin Preview)
+      </p>
+      <p className="text-sm text-muted-foreground">
+        This product is scheduled to release on {new Date(product.release_at).toLocaleString()}. 
+        It is not visible to customers yet.
+      </p>
+    </div>
+  </div>
+)}
 ```
 
-### 4. Handle Product Updates
+### 4. Update Related Products Query
 
-When editing an existing product:
-- If `sync_to_marketplace` is toggled ON: Set `store_id` to Eclipse Store ID
-- If `sync_to_marketplace` is toggled OFF: Set `store_id` to `null`
+The related products query also needs the same logic to show scheduled related products to admins:
 
-This ensures products can be added/removed from the marketplace after creation.
+**File:** `src/pages/ProductDetail.tsx` (line 72-88)
 
-### 5. Populate Form on Edit
-
-When loading a product for editing, check if it's linked to the Eclipse Store:
-
-```typescript
-sync_to_marketplace: product.store_id === ECLIPSE_STORE_ID
-```
+Update to conditionally include scheduled products for staff users.
 
 ---
 
-## Summary of Files to Modify
+## Technical Notes
 
-| File | Changes |
-|------|---------|
-| `src/pages/admin/Products.tsx` | Add sync toggle, update form interface, modify save logic to set `store_id` |
+- The `useAdminAuth` hook is already available at `src/hooks/useAdminAuth.tsx`
+- The `isStaff` property checks if the user has any admin role
+- Query key includes `isStaff` to ensure proper cache separation between admin and customer views
+- The `enabled: !adminLoading` ensures we wait for role verification before fetching
 
----
+## Files to Modify
+1. `src/pages/ProductDetail.tsx` - Main changes for admin bypass and visual indicator
 
-## Benefits
-
-- **No Data Duplication**: Single product record serves both main store and marketplace
-- **Easy Management**: Toggle on/off from admin panel
-- **Consistent Data**: Changes to products automatically reflect everywhere
-- **Backward Compatible**: Existing products remain unchanged until edited
+## Summary
+This update allows admins and staff to preview scheduled products on the customer-facing product detail page while maintaining the restriction for regular customers. A clear visual banner will indicate when a product is being viewed in "admin preview" mode.
