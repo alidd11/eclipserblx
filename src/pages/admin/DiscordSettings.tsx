@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ProductWebhookTemplateEditor } from '@/components/admin/ProductWebhookTemplateEditor';
 
 interface DiscordSettings {
   discord_invite_url: string;
@@ -1803,117 +1804,141 @@ export default function DiscordSettings() {
 
           {/* Products Forum Webhook Tab */}
           <TabsContent value="products">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-primary" />
-                  <CardTitle>Category Product Webhooks</CardTitle>
-                </div>
-                <CardDescription>
-                  Configure a separate Discord forum webhook for each product category
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Package className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-primary">Automatic Category Routing</p>
-                      <p className="text-sm text-muted-foreground">
-                        When you create a new product, it will automatically be posted to the Discord forum 
-                        channel for its category. If no webhook is configured for a category, the notification is skipped.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+            <div className="space-y-6">
+              {/* Sub-tabs for Products section */}
+              <Tabs defaultValue="webhooks" className="space-y-4">
+                <TabsList className="w-full sm:w-auto">
+                  <TabsTrigger value="webhooks" className="gap-2">
+                    <Webhook className="h-4 w-4" />
+                    Category Webhooks
+                  </TabsTrigger>
+                  <TabsTrigger value="template" className="gap-2">
+                    <Palette className="h-4 w-4" />
+                    Embed Template
+                  </TabsTrigger>
+                </TabsList>
 
-                <div className="space-y-4">
-                  {categories?.map((category) => (
-                    <div key={category.id} className="border border-border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">{category.name}</Badge>
-                          <span className="text-xs text-muted-foreground font-mono">
-                            product_webhook_{category.slug}
-                          </span>
-                        </div>
+                {/* Category Webhooks Sub-tab */}
+                <TabsContent value="webhooks">
+                  <Card className="bg-card border-border">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Package className="h-5 w-5 text-primary" />
+                        <CardTitle>Category Product Webhooks</CardTitle>
                       </div>
-                      
-                      <div className="flex gap-2">
-                        <Input
-                          value={categoryWebhookForm[category.slug] || ''}
-                          onChange={(e) => setCategoryWebhookForm(prev => ({
-                            ...prev,
-                            [category.slug]: e.target.value,
-                          }))}
-                          placeholder="https://discord.com/api/webhooks/..."
-                          className="bg-background flex-1"
-                        />
-                        <Button
-                          onClick={() => handleTestCategoryWebhook(category.slug, category.name)}
-                          variant="outline"
-                          size="sm"
-                          disabled={testingCategory === category.slug || !categoryWebhookForm[category.slug]}
-                        >
-                          {testingCategory === category.slug ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      
-                      {categoryTestResults[category.slug] && (
-                        <div className={`text-xs p-2 rounded ${
-                          categoryTestResults[category.slug].success 
-                            ? 'bg-green-500/10 text-green-500' 
-                            : 'bg-destructive/10 text-destructive'
-                        }`}>
-                          <div className="flex items-center gap-1">
-                            {categoryTestResults[category.slug].success ? (
-                              <CheckCircle2 className="h-3 w-3" />
-                            ) : (
-                              <XCircle className="h-3 w-3" />
-                            )}
-                            <span>{categoryTestResults[category.slug].message}</span>
+                      <CardDescription>
+                        Configure a separate Discord forum webhook for each product category
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
+                        <div className="flex gap-2">
+                          <Package className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-primary">Automatic Category Routing</p>
+                            <p className="text-sm text-muted-foreground">
+                              When you create a new product, it will automatically be posted to the Discord forum 
+                              channel for its category. If no webhook is configured for a category, the notification is skipped.
+                            </p>
                           </div>
-                          {categoryTestResults[category.slug].details && (
-                            <p className="mt-1 opacity-75">{categoryTestResults[category.slug].details}</p>
-                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                  
-                  {!categories?.length && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No categories found. Create categories first to configure webhooks.</p>
-                    </div>
-                  )}
-                </div>
+                      </div>
 
-                <Button
-                  onClick={handleSaveCategoryWebhooks}
-                  className="w-full"
-                  disabled={saveCategoryWebhooksMutation.isPending}
-                >
-                  {saveCategoryWebhooksMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Save Product Webhooks
-                </Button>
+                      <div className="space-y-4">
+                        {categories?.map((category) => (
+                          <div key={category.id} className="border border-border rounded-lg p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary">{category.name}</Badge>
+                                <span className="text-xs text-muted-foreground font-mono">
+                                  product_webhook_{category.slug}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Input
+                                value={categoryWebhookForm[category.slug] || ''}
+                                onChange={(e) => setCategoryWebhookForm(prev => ({
+                                  ...prev,
+                                  [category.slug]: e.target.value,
+                                }))}
+                                placeholder="https://discord.com/api/webhooks/..."
+                                className="bg-background flex-1"
+                              />
+                              <Button
+                                onClick={() => handleTestCategoryWebhook(category.slug, category.name)}
+                                variant="outline"
+                                size="sm"
+                                disabled={testingCategory === category.slug || !categoryWebhookForm[category.slug]}
+                              >
+                                {testingCategory === category.slug ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Send className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                            
+                            {categoryTestResults[category.slug] && (
+                              <div className={`text-xs p-2 rounded ${
+                                categoryTestResults[category.slug].success 
+                                  ? 'bg-green-500/10 text-green-500' 
+                                  : 'bg-destructive/10 text-destructive'
+                              }`}>
+                                <div className="flex items-center gap-1">
+                                  {categoryTestResults[category.slug].success ? (
+                                    <CheckCircle2 className="h-3 w-3" />
+                                  ) : (
+                                    <XCircle className="h-3 w-3" />
+                                  )}
+                                  <span>{categoryTestResults[category.slug].message}</span>
+                                </div>
+                                {categoryTestResults[category.slug].details && (
+                                  <p className="mt-1 opacity-75">{categoryTestResults[category.slug].details}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {!categories?.length && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p>No categories found. Create categories first to configure webhooks.</p>
+                          </div>
+                        )}
+                      </div>
 
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent automatically:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Product name and description</li>
-                    <li>Category-specific disclaimer</li>
-                    <li>Purchase locations (Robux, GBP, Eclipse+ price)</li>
-                    <li>Up to 4 product images</li>
-                    <li>Direct link to product page</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+                      <Button
+                        onClick={handleSaveCategoryWebhooks}
+                        className="w-full"
+                        disabled={saveCategoryWebhooksMutation.isPending}
+                      >
+                        {saveCategoryWebhooksMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        Save Product Webhooks
+                      </Button>
+
+                      <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                        <p className="text-sm font-medium">What gets sent automatically:</p>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Product name and description</li>
+                          <li>Category-specific disclaimer</li>
+                          <li>Purchase locations (Robux, GBP, Eclipse+ price)</li>
+                          <li>Up to 4 product images</li>
+                          <li>Direct link to product page</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Template Editor Sub-tab */}
+                <TabsContent value="template">
+                  <ProductWebhookTemplateEditor />
+                </TabsContent>
+              </Tabs>
+            </div>
           </TabsContent>
 
           {/* Marketplace Marketing Tab */}
