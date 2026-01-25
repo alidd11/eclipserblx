@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
@@ -33,6 +34,8 @@ export default function Products() {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('smart');
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+
+  const { isStaff, loading: adminLoading } = useAdminAuth();
 
   // Backwards compatibility: old Featured link used /products?featured=true.
   // In PWA contexts, users can get "stuck" on that URL via cache/route restore.
@@ -61,15 +64,19 @@ export default function Products() {
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products', categorySlug, search, featuredOnly, sortBy, sourceFilter],
+    queryKey: ['products', categorySlug, search, featuredOnly, sortBy, sourceFilter, isStaff],
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug), stores(is_active)`)
-        .eq('is_active', true);
+        .select(`*, categories(name, slug), stores(is_active)`);
 
-      // Filter out products that are scheduled for the future
-      query = query.or('release_at.is.null,release_at.lte.' + new Date().toISOString());
+      // Customers should only see active + released products.
+      // Staff can preview scheduled and inactive products.
+      if (!isStaff) {
+        query = query
+          .eq('is_active', true)
+          .or('release_at.is.null,release_at.lte.' + new Date().toISOString());
+      }
 
       if (categorySlug) {
         const category = categories?.find(c => c.slug === categorySlug);
@@ -138,7 +145,8 @@ export default function Products() {
       
       return sorted;
     },
-    enabled: categories !== undefined || !categorySlug,
+    enabled: !adminLoading && (categories !== undefined || !categorySlug),
+    staleTime: 0, // Ensure staff role changes are reflected immediately
   });
 
   const sortOptions = [
