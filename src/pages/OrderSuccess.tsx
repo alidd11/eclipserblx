@@ -14,10 +14,10 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const { clearCart } = useCart();
   
-  // Support session_id (from Stripe Checkout), payment_intent (from Apple/Google Pay), and id (legacy)
+  // Support session_id (from Stripe Checkout), payment_intent (from Apple/Google Pay), order_id (from receipts), and id (legacy)
   const sessionId = searchParams.get('session_id');
   const paymentIntentId = searchParams.get('payment_intent');
-  const orderId = searchParams.get('id');
+  const orderId = searchParams.get('order_id') || searchParams.get('id');
   
   const [verifiedOrderId, setVerifiedOrderId] = useState<string | null>(orderId);
   const [isVerifying, setIsVerifying] = useState(!!(sessionId || paymentIntentId) && !orderId);
