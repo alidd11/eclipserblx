@@ -136,6 +136,8 @@ export default function DiscordSettings() {
   } | null>(null);
 
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<string | null>(null);
+  const [isResendingAllProducts, setIsResendingAllProducts] = useState(false);
+  const [resendProgress, setResendProgress] = useState<{ current: number; total: number; success: number; failed: number } | null>(null);
   // Fetch boost rewards settings
   const { data: boostSettings } = useQuery({
     queryKey: ['boost-rewards-settings'],
@@ -874,6 +876,90 @@ export default function DiscordSettings() {
 
   const handleSaveCategoryWebhooks = () => {
     saveCategoryWebhooksMutation.mutate(categoryWebhookForm);
+  };
+
+  // Resend all product webhooks
+  const handleResendAllProductWebhooks = async () => {
+    setIsResendingAllProducts(true);
+    setResendProgress(null);
+
+    try {
+      // Fetch all active products with their category info
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, name, slug, price, description, images, robux_price, robux_enabled, category_id, categories(name, slug)')
+        .eq('is_active', true);
+
+      if (error) {
+        throw error;
+      }
+
+      if (!products?.length) {
+        toast.error('No active products found');
+        setIsResendingAllProducts(false);
+        return;
+      }
+
+      setResendProgress({ current: 0, total: products.length, success: 0, failed: 0 });
+
+      let successCount = 0;
+      let failedCount = 0;
+
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        const category = product.categories as { name: string; slug: string } | null;
+
+        try {
+          const { error: webhookError } = await supabase.functions.invoke('send-product-discord-webhook', {
+            body: {
+              product_id: product.id,
+              product_name: product.name,
+              product_slug: product.slug,
+              product_price: product.price,
+              product_description: product.description,
+              product_images: product.images,
+              category_name: category?.name,
+              category_slug: category?.slug,
+              robux_price: product.robux_price,
+              robux_enabled: product.robux_enabled,
+            },
+          });
+
+          if (webhookError) {
+            console.error(`Webhook failed for ${product.name}:`, webhookError);
+            failedCount++;
+          } else {
+            successCount++;
+          }
+        } catch (err) {
+          console.error(`Webhook error for ${product.name}:`, err);
+          failedCount++;
+        }
+
+        setResendProgress({
+          current: i + 1,
+          total: products.length,
+          success: successCount,
+          failed: failedCount,
+        });
+
+        // Small delay to avoid rate limiting
+        if (i < products.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      if (failedCount === 0) {
+        toast.success(`All ${successCount} product webhooks sent successfully!`);
+      } else {
+        toast.warning(`Sent ${successCount} webhooks, ${failedCount} failed`);
+      }
+    } catch (err: any) {
+      console.error('Failed to resend product webhooks:', err);
+      toast.error('Failed to resend product webhooks: ' + err.message);
+    } finally {
+      setIsResendingAllProducts(false);
+    }
   };
 
   const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus' | 'marketplace') => {
@@ -1910,14 +1996,49 @@ export default function DiscordSettings() {
                         )}
                       </div>
 
-                      <Button
-                        onClick={handleSaveCategoryWebhooks}
-                        className="w-full"
-                        disabled={saveCategoryWebhooksMutation.isPending}
-                      >
-                        {saveCategoryWebhooksMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        Save Product Webhooks
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={handleSaveCategoryWebhooks}
+                          className="flex-1"
+                          disabled={saveCategoryWebhooksMutation.isPending}
+                        >
+                          {saveCategoryWebhooksMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Save Product Webhooks
+                        </Button>
+                        <Button
+                          onClick={handleResendAllProductWebhooks}
+                          variant="secondary"
+                          disabled={isResendingAllProducts}
+                          className="gap-2"
+                        >
+                          {isResendingAllProducts ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                          Resend All Product Webhooks
+                        </Button>
+                      </div>
+
+                      {resendProgress && (
+                        <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span>Progress: {resendProgress.current}/{resendProgress.total}</span>
+                            <span className="text-muted-foreground">
+                              <span className="text-green-500">{resendProgress.success} sent</span>
+                              {resendProgress.failed > 0 && (
+                                <span className="text-destructive ml-2">{resendProgress.failed} failed</span>
+                              )}
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(resendProgress.current / resendProgress.total) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       <div className="bg-muted/50 p-4 rounded-lg space-y-2">
                         <p className="text-sm font-medium">What gets sent automatically:</p>
