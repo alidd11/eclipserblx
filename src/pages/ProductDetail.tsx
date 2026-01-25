@@ -70,11 +70,12 @@ export default function ProductDetail() {
         query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
       }
 
-      const { data, error } = await query.single();
+      const { data, error } = await query.maybeSingle();
       if (error) throw error;
       return data;
     },
-    enabled: !adminLoading,
+    enabled: !adminLoading && slug !== undefined,
+    staleTime: 0, // Always refetch when isStaff changes
   });
 
   const { data: relatedProducts } = useQuery({
