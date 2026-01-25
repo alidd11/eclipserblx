@@ -113,6 +113,39 @@ function applyPlaceholders(
     .replace(/{robux_line}/g, extras.robuxLine);
 }
 
+// Delete existing Discord thread if it exists
+async function deleteExistingThread(threadId: string, botToken: string): Promise<boolean> {
+  try {
+    console.log(`Attempting to delete existing Discord thread: ${threadId}`);
+    
+    const response = await fetch(`https://discord.com/api/v10/channels/${threadId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bot ${botToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok || response.status === 204) {
+      console.log(`Successfully deleted Discord thread: ${threadId}`);
+      return true;
+    }
+
+    // Thread might already be deleted or bot lacks permissions
+    if (response.status === 404) {
+      console.log(`Thread ${threadId} not found (already deleted)`);
+      return true; // Consider this a success - thread is gone
+    }
+
+    const errorText = await response.text();
+    console.error(`Failed to delete thread ${threadId}: ${response.status} - ${errorText}`);
+    return false;
+  } catch (error) {
+    console.error(`Error deleting thread ${threadId}:`, error);
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -124,10 +157,27 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const payload: ProductPayload = await req.json();
     console.log("Received payload:", JSON.stringify(payload));
+
+    // Check if product has existing Discord thread and delete it
+    if (payload.product_id && discordBotToken) {
+      const { data: existingProduct } = await supabase
+        .from("products")
+        .select("discord_thread_id, discord_message_id")
+        .eq("id", payload.product_id)
+        .maybeSingle();
+
+      if (existingProduct?.discord_thread_id) {
+        console.log(`Product has existing Discord thread: ${existingProduct.discord_thread_id}`);
+        await deleteExistingThread(existingProduct.discord_thread_id, discordBotToken);
+        // Small delay to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
 
     // Determine the category slug for webhook lookup
     let categorySlug = payload.category_slug;
@@ -301,8 +351,12 @@ Deno.serve(async (req) => {
       thread_name: threadName,
     };
 
-    // Send to Discord forum channel
-    const response = await fetch(webhookUrl, {
+    // Send to Discord forum channel with ?wait=true to get the response
+    const webhookUrlWithWait = webhookUrl.includes("?") 
+      ? `${webhookUrl}&wait=true` 
+      : `${webhookUrl}?wait=true`;
+
+    const response = await fetch(webhookUrlWithWait, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(forumPayload),
@@ -321,10 +375,49 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Parse the response to get message and thread IDs
+    let newThreadId: string | null = null;
+    let newMessageId: string | null = null;
+
+    try {
+      const responseData = await response.json();
+      console.log("Discord webhook response:", JSON.stringify(responseData));
+      
+      // For forum webhooks, channel_id is the thread ID
+      newMessageId = responseData.id || null;
+      newThreadId = responseData.channel_id || null;
+      
+      console.log(`New Discord thread ID: ${newThreadId}, message ID: ${newMessageId}`);
+    } catch (e) {
+      console.log("Could not parse webhook response:", e);
+    }
+
+    // Update the product with the new Discord thread/message IDs
+    if (payload.product_id && (newThreadId || newMessageId)) {
+      const { error: updateError } = await supabase
+        .from("products")
+        .update({
+          discord_thread_id: newThreadId,
+          discord_message_id: newMessageId,
+        })
+        .eq("id", payload.product_id);
+
+      if (updateError) {
+        console.error("Failed to update product with Discord IDs:", updateError);
+      } else {
+        console.log(`Updated product ${payload.product_id} with Discord thread ID: ${newThreadId}`);
+      }
+    }
+
     console.log(`Product Discord notification sent successfully to ${payload.category_name} forum`);
 
     return new Response(
-      JSON.stringify({ success: true, message: `Product notification sent to ${payload.category_name} Discord forum` }),
+      JSON.stringify({ 
+        success: true, 
+        message: `Product notification sent to ${payload.category_name} Discord forum`,
+        discord_thread_id: newThreadId,
+        discord_message_id: newMessageId,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
