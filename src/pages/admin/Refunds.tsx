@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -218,62 +219,11 @@ export default function AdminRefunds() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Refunds
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <RotateCcw className="h-5 w-5 text-destructive" />
-                <span className="text-2xl font-bold">{stats.totalRefunds}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Refunded
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-destructive" />
-                <span className="text-2xl font-bold">{formatCurrency(stats.totalRefundedAmount)}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Full Refunds
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <XCircle className="h-5 w-5 text-destructive" />
-                <span className="text-2xl font-bold">{stats.fullRefunds}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Partial Refunds
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-amber-400" />
-                <span className="text-2xl font-bold">{stats.partialRefunds}</span>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <AdminStatCard label="Total Refunds" value={stats.totalRefunds} />
+          <AdminStatCard label="Total Refunded" value={formatCurrency(stats.totalRefundedAmount)} valueColor="destructive" />
+          <AdminStatCard label="Full Refunds" value={stats.fullRefunds} valueColor="destructive" />
+          <AdminStatCard label="Partial Refunds" value={stats.partialRefunds} valueColor="orange" />
         </div>
 
         {/* Filters */}

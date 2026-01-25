@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -326,53 +327,20 @@ export default function SellerTickets() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {escalatedCount > 0 && (
-            <Card className="border-destructive bg-destructive/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-destructive flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  Escalated
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-destructive">{escalatedCount}</p>
-                <p className="text-xs text-muted-foreground">24h+ no response</p>
-              </CardContent>
-            </Card>
+            <AdminStatCard 
+              label="Escalated" 
+              value={escalatedCount} 
+              valueColor="destructive" 
+              subtitle="24h+ no response"
+              className="border-destructive bg-destructive/5"
+            />
           )}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Open</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-500">{openCount}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">In Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-yellow-500">{inProgressCount}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Awaiting Seller</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-orange-500">{awaitingCount}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{tickets?.length || 0}</p>
-            </CardContent>
-          </Card>
+          <AdminStatCard label="Open" value={openCount} valueColor="blue" />
+          <AdminStatCard label="In Progress" value={inProgressCount} valueColor="yellow" />
+          <AdminStatCard label="Awaiting Seller" value={awaitingCount} valueColor="orange" />
+          <AdminStatCard label="Total" value={tickets?.length || 0} />
         </div>
 
         {/* Filters */}

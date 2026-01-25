@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -256,39 +257,11 @@ export default function AdminBotCodes() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Total Codes</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <div className="text-lg md:text-2xl font-bold">{totalCodes}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Active</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <div className="text-lg md:text-2xl font-bold text-primary">{activeCodes}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Claimed</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <div className="text-lg md:text-2xl font-bold text-green-600">{usedCodes}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Expired</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <div className="text-lg md:text-2xl font-bold text-destructive">{expiredCodes}</div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <AdminStatCard label="Total Codes" value={totalCodes} />
+          <AdminStatCard label="Active" value={activeCodes} valueColor="primary" />
+          <AdminStatCard label="Claimed" value={usedCodes} valueColor="green" />
+          <AdminStatCard label="Expired" value={expiredCodes} valueColor="destructive" />
         </div>
 
         {/* Search */}

@@ -6,6 +6,7 @@ import {
   DollarSign, CreditCard, AlertCircle, ExternalLink, Loader2
 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -250,76 +251,12 @@ export default function AdminAffiliates() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card className="bg-card border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.totalAffiliates || 0}</p>
-                  <p className="text-xs text-muted-foreground">Affiliates</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatAmount(stats?.totalCommissions || 0)}</p>
-                  <p className="text-xs text-muted-foreground">Total Commissions</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-yellow-500/10">
-                  <Clock className="h-5 w-5 text-yellow-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatAmount(stats?.pendingCommissions || 0)}</p>
-                  <p className="text-xs text-muted-foreground">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/10">
-                  <CreditCard className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.pendingPayoutCount || 0}</p>
-                  <p className="text-xs text-muted-foreground">Payout Requests</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <DollarSign className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatAmount(stats?.totalPaidOut || 0)}</p>
-                  <p className="text-xs text-muted-foreground">Total Paid Out</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <AdminStatCard label="Affiliates" value={stats?.totalAffiliates || 0} valueColor="primary" />
+          <AdminStatCard label="Total Commissions" value={formatAmount(stats?.totalCommissions || 0)} valueColor="green" />
+          <AdminStatCard label="Pending" value={formatAmount(stats?.pendingCommissions || 0)} valueColor="yellow" />
+          <AdminStatCard label="Payout Requests" value={stats?.pendingPayoutCount || 0} valueColor="orange" />
+          <AdminStatCard label="Total Paid Out" value={formatAmount(stats?.totalPaidOut || 0)} valueColor="blue" />
         </div>
 
         {/* Tabs */}
