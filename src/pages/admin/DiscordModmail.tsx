@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -319,18 +320,9 @@ export default function DiscordModmail() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="p-3">
-            <p className="text-xs text-muted-foreground">Open</p>
-            <p className="text-xl font-bold text-green-500">{openTickets.length}</p>
-          </Card>
-          <Card className="p-3">
-            <p className="text-xs text-muted-foreground">In Progress</p>
-            <p className="text-xl font-bold text-blue-500">{claimedTickets.length}</p>
-          </Card>
-          <Card className="p-3">
-            <p className="text-xs text-muted-foreground">Total Active</p>
-            <p className="text-xl font-bold">{tickets.length}</p>
-          </Card>
+          <AdminStatCard label="Open" value={openTickets.length} valueColor="green" />
+          <AdminStatCard label="In Progress" value={claimedTickets.length} valueColor="blue" />
+          <AdminStatCard label="Total Active" value={tickets.length} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { Activity, LogIn, LogOut, MessageCircle, Ticket, Clock, User, Filter, X } from 'lucide-react';
+import { Activity, LogIn, LogOut, MessageCircle, Ticket, Clock, Filter, X } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -218,52 +219,12 @@ export default function StaffActivityPage() {
         </Card>
 
         {/* Today's Stats */}
-        <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <LogIn className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium text-muted-foreground">Logins Today</span>
-              </div>
-              <p className="text-2xl font-bold">{todayStats?.logins ?? 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageCircle className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium text-muted-foreground">Chats Claimed</span>
-              </div>
-              <p className="text-2xl font-bold">{todayStats?.chats_claimed ?? 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageCircle className="h-4 w-4 text-purple-500" />
-                <span className="text-sm font-medium text-muted-foreground">Chats Completed</span>
-              </div>
-              <p className="text-2xl font-bold">{todayStats?.chats_completed ?? 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Ticket className="h-4 w-4 text-amber-500" />
-                <span className="text-sm font-medium text-muted-foreground">Tickets Claimed</span>
-              </div>
-              <p className="text-2xl font-bold">{todayStats?.tickets_claimed ?? 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Ticket className="h-4 w-4 text-teal-500" />
-                <span className="text-sm font-medium text-muted-foreground">Tickets Completed</span>
-              </div>
-              <p className="text-2xl font-bold">{todayStats?.tickets_completed ?? 0}</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <AdminStatCard label="Logins Today" value={todayStats?.logins ?? 0} valueColor="green" />
+          <AdminStatCard label="Chats Claimed" value={todayStats?.chats_claimed ?? 0} valueColor="blue" />
+          <AdminStatCard label="Chats Completed" value={todayStats?.chats_completed ?? 0} valueColor="primary" />
+          <AdminStatCard label="Tickets Claimed" value={todayStats?.tickets_claimed ?? 0} valueColor="orange" />
+          <AdminStatCard label="Tickets Completed" value={todayStats?.tickets_completed ?? 0} valueColor="green" />
         </div>
 
         {/* Filters */}
