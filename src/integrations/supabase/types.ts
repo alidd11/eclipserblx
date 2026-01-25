@@ -1837,6 +1837,8 @@ export type Database = {
           category_id: string | null
           created_at: string
           description: string | null
+          discord_message_id: string | null
+          discord_thread_id: string | null
           download_count: number | null
           id: string
           images: string[] | null
@@ -1861,6 +1863,8 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          discord_message_id?: string | null
+          discord_thread_id?: string | null
           download_count?: number | null
           id?: string
           images?: string[] | null
@@ -1885,6 +1889,8 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          discord_message_id?: string | null
+          discord_thread_id?: string | null
           download_count?: number | null
           id?: string
           images?: string[] | null
