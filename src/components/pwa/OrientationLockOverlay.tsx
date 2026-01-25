@@ -43,10 +43,15 @@ export function OrientationLockOverlay() {
         window.innerWidth > window.innerHeight ||
         (typeof window.orientation === 'number' && (window.orientation === 90 || window.orientation === -90));
       
-      // Only block on mobile-sized screens (not tablets/desktops)
+      // Check if this is actually a mobile/touch device, not just a small screen
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isMobileDevice = isTouchDevice && isMobileUA;
+      
+      // Only block on actual mobile devices in landscape (not desktop browsers)
       const isMobileSize = window.innerWidth < 1024 || window.innerHeight < 1024;
       
-      setShowOverlay(isLandscape && isMobileSize);
+      setShowOverlay(isLandscape && isMobileSize && isMobileDevice);
     };
 
     // Check immediately
