@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
         },
         {
           name: "🛍️ Shop Unique Products",
-          value: "Browse a curated selection of **scripts, models, GFX, and more** from community sellers.\n\n[**Browse the Marketplace →**](https://roleplay-hub-shop.lovable.app/marketplace)",
+          value: "Browse a curated selection of **scripts, models, GFX, and more** from community sellers.\n\n[**Browse the Marketplace →**](https://eclipserblx.com/marketplace)",
           inline: false,
         },
         {
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
         },
         {
           name: "💰 Become a Seller",
-          value: "Turn your skills into income! Join our seller programme and reach **thousands of potential buyers**.\n\n[**Apply to Sell →**](https://roleplay-hub-shop.lovable.app/become-seller)",
+          value: "Turn your skills into income! Join our seller programme and reach **thousands of potential buyers**.\n\n[**Apply to Sell →**](https://eclipserblx.com/become-seller)",
           inline: false,
         },
         {
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
         },
         {
           name: "🚀 Need Help?",
-          value: "Questions? Visit our [**Support Page →**](https://roleplay-hub-shop.lovable.app/support)\n\nJoin our growing community of creators today!",
+          value: "Questions? Visit our [**Support Page →**](https://eclipserblx.com/support)\n\nJoin our growing community of creators today!",
           inline: false,
         },
       ],

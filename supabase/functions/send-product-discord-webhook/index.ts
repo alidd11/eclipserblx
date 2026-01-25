@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
     const robuxLine = robuxPrice 
       ? `🔵 **${robuxPrice}** - Eclipse Roblox Hub\n` 
       : "";
-    const productUrl = `https://roleplay-hub-shop.lovable.app/product/${payload.product_slug}`;
+    const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
 
     const placeholderExtras = {
       gbpPrice,

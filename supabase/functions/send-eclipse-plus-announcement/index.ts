@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
         },
         {
           name: "🚀 Get Started",
-          value: "[**Subscribe to Eclipse+ →**](https://roleplay-hub-shop.lovable.app/eclipse-plus)\n\nQuestions? Reach out to our support team anytime.",
+          value: "[**Subscribe to Eclipse+ →**](https://eclipserblx.com/eclipse-plus)\n\nQuestions? Reach out to our support team anytime.",
           inline: false,
         },
       ],

@@ -1053,7 +1053,7 @@ function StaffMessagesContent() {
           </div>
         )}
 
-        {/* Lovable-style input bar */}
+        {/* Modern input bar */}
         <div className="flex gap-2 items-center">
           {/* Plus/Attachment button */}
           <Button

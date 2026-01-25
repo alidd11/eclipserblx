@@ -2,12 +2,12 @@
 Dashboard Webhook Cog for Modmail Bot
 =====================================
 This cog handles incoming DMs from users and forwards them to the 
-Lovable admin dashboard via webhook.
+Eclipse admin dashboard via webhook.
 
 Add this file to your `cogs/` folder and load it in your bot.
 
 Configuration required in your bot config:
-- DASHBOARD_WEBHOOK_URL: Your Lovable edge function URL
+- DASHBOARD_WEBHOOK_URL: Your Eclipse edge function URL
 - DASHBOARD_WEBHOOK_SECRET: The secret key for authentication
 """
 
@@ -26,10 +26,10 @@ logger = getLogger(__name__)
 
 class DashboardWebhook(commands.Cog):
     """
-    Forwards incoming modmail DMs to the Lovable admin dashboard.
+    Forwards incoming modmail DMs to the Eclipse admin dashboard.
     
     This cog listens for DMs from users and sends them to your
-    Lovable webhook endpoint for display in the admin panel.
+    Eclipse webhook endpoint for display in the admin panel.
     """
 
     def __init__(self, bot):
@@ -85,7 +85,7 @@ class DashboardWebhook(commands.Cog):
         attachments: Optional[List[Dict[str, str]]] = None
     ) -> bool:
         """
-        Send a message to the Lovable admin dashboard webhook.
+        Send a message to the Eclipse admin dashboard webhook.
         
         Returns True if successful, False otherwise.
         """

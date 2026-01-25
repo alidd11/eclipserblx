@@ -62,7 +62,7 @@ serve(async (req) => {
       logStep("Found Stripe customer", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://eclipse.lovable.app";
+    const origin = req.headers.get("origin") || "https://eclipserblx.com";
     
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
