@@ -35,6 +35,42 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Try to get authenticated user from the request
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      userId = user?.id || null;
+    }
+
+    // Log user IP if authenticated (throttled to once per hour per user)
+    if (userId && clientIp && clientIp !== 'unknown') {
+      // Check if we already logged this user's IP in the last hour
+      const { data: recentLog } = await supabase
+        .from('user_ip_logs')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('ip_address', clientIp)
+        .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .limit(1)
+        .maybeSingle();
+
+      // Only log if no recent entry exists
+      if (!recentLog) {
+        await supabase.from('user_ip_logs').insert({
+          user_id: userId,
+          ip_address: clientIp,
+          action: 'page_visit',
+        });
+        console.log(`Logged IP ${clientIp} for user ${userId}`);
+      }
+    }
+
     // Check if IP is banned and ban is active (not expired)
     const { data: ban, error } = await supabase
       .from('ip_bans')
