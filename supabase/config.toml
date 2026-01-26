@@ -210,3 +210,6 @@ verify_jwt = false
 
 [functions.claim-signup-promotion]
 verify_jwt = false
+
+[functions.send-promotion-discord-webhook]
+verify_jwt = false
