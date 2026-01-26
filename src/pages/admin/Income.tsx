@@ -412,7 +412,7 @@ export default function AdminIncome() {
 
   return (
     <AdminLayout requiredRoles={['admin']}>
-      <div className="space-y-8 max-w-full overflow-x-hidden">
+      <div className="space-y-8 w-full">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
