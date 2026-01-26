@@ -12,7 +12,7 @@ import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { HeaderSearchBar } from './HeaderSearchBar';
-import { CurrencyIndicator } from './CurrencyIndicator';
+import { CurrencySelector } from './CurrencySelector';
 
 const navLinks = [
   { href: '/featured', label: 'Featured', icon: Sparkles },
@@ -121,7 +121,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           {/* Center: Search Bar + Currency (desktop) */}
           <div className="hidden md:flex items-center gap-3 flex-1 max-w-xl mx-4">
             <HeaderSearchBar className="flex-1" />
-            <CurrencyIndicator />
+            <CurrencySelector />
           </div>
 
           {/* Actions */}
@@ -190,7 +190,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             {/* Mobile Search Bar + Currency */}
             <div className="flex items-center gap-2 mb-2">
               <HeaderSearchBar className="flex-1" />
-              <CurrencyIndicator />
+              <CurrencySelector compact />
             </div>
             
             {/* Main Navigation */}
