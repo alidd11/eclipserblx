@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Eclipse+ Product ID
+// Eclipse+ Product ID (legacy - kept for backwards compatibility)
 const ECLIPSE_PLUS_PRODUCT_ID = "prod_Tm3QgFo7Wjg00o";
 
 const logStep = (step: string, details?: unknown) => {
@@ -62,26 +62,43 @@ serve(async (req) => {
         logStep("Found admin-granted subscription", { 
           userId: user.id, 
           endDate: localSub.current_period_end,
+          tier: localSub.tier,
           grantedBy: localSub.granted_by,
-          grantReason: localSub.grant_reason
         });
 
-        // Check if user has claimed their free product this month
-        const currentMonth = new Date().toISOString().slice(0, 7);
-        const { data: claim } = await supabaseClient
-          .from('subscription_free_claims')
-          .select('id, product_id')
-          .eq('user_id', user.id)
-          .eq('claim_period', currentMonth)
+        // Fetch tier details
+        const tier = localSub.tier || 'pro';
+        const { data: tierData } = await supabaseClient
+          .from('subscription_tiers')
+          .select('*')
+          .eq('tier', tier)
           .maybeSingle();
+
+        const freeProductsAllowed = tierData?.free_products_per_month || 1;
+
+        // Count claims this month
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const { count: claimsCount } = await supabaseClient
+          .from('subscription_free_claims')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('claim_period', currentMonth);
+
+        const freeProductsClaimed = claimsCount || 0;
+        const canClaimFree = freeProductsClaimed < freeProductsAllowed;
 
         return new Response(JSON.stringify({
           subscribed: true,
           subscriptionEnd: localSub.current_period_end,
           subscriptionId: null,
-          canClaimFree: !claim,
-          claimedThisMonth: !!claim,
-          claimedProductId: claim?.product_id || null,
+          tier: tier,
+          billingPeriod: localSub.billing_period || 'monthly',
+          discountPercent: tierData?.discount_percentage || 30,
+          freeProductsPerMonth: freeProductsAllowed,
+          freeProductsClaimed: freeProductsClaimed,
+          canClaimFree: canClaimFree,
+          claimedThisMonth: freeProductsClaimed > 0,
+          claimedProductId: null,
           grantedBy: localSub.granted_by,
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -102,7 +119,6 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
-
       return new Response(JSON.stringify({ 
         subscribed: false,
         canClaimFree: false,
@@ -116,26 +132,18 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Check for active Eclipse+ subscription
+    // Check for active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 10,
     });
 
-    // Find Eclipse+ subscription specifically
-    const eclipsePlusSub = subscriptions.data.find((sub: any) => {
-      return sub.items.data.some((item: any) => {
-        const productId = typeof item.price.product === 'string' 
-          ? item.price.product 
-          : item.price.product?.id;
-        return productId === ECLIPSE_PLUS_PRODUCT_ID;
-      });
-    });
+    // Find any Eclipse subscription
+    const activeSub = subscriptions.data[0];
 
-    if (!eclipsePlusSub) {
-      logStep("No active Eclipse+ subscription in Stripe");
-
+    if (!activeSub) {
+      logStep("No active subscription in Stripe");
       return new Response(JSON.stringify({ 
         subscribed: false,
         canClaimFree: false,
@@ -146,21 +154,41 @@ serve(async (req) => {
       });
     }
 
-    const subscriptionEnd = new Date(eclipsePlusSub.current_period_end * 1000).toISOString();
-    const subscriptionStart = new Date(eclipsePlusSub.current_period_start * 1000).toISOString();
-    logStep("Active Eclipse+ subscription found", { 
-      subscriptionId: eclipsePlusSub.id, 
+    // Get tier and billing period from subscription metadata
+    const tier = activeSub.metadata?.tier || 'pro';
+    const billingPeriod = activeSub.metadata?.billing_period || 
+      (activeSub.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly');
+
+    const subscriptionEnd = new Date(activeSub.current_period_end * 1000).toISOString();
+    const subscriptionStart = new Date(activeSub.current_period_start * 1000).toISOString();
+    
+    logStep("Active subscription found", { 
+      subscriptionId: activeSub.id, 
+      tier,
+      billingPeriod,
       endDate: subscriptionEnd 
     });
+
+    // Fetch tier details
+    const { data: tierData } = await supabaseClient
+      .from('subscription_tiers')
+      .select('*')
+      .eq('tier', tier)
+      .maybeSingle();
+
+    const discountPercent = tierData?.discount_percentage || 30;
+    const freeProductsAllowed = tierData?.free_products_per_month || 1;
 
     // Update local subscription record
     await supabaseClient
       .from('subscriptions')
       .upsert({
         user_id: user.id,
-        stripe_subscription_id: eclipsePlusSub.id,
+        stripe_subscription_id: activeSub.id,
         stripe_customer_id: customerId,
         status: 'active',
+        tier: tier,
+        billing_period: billingPeriod,
         current_period_start: subscriptionStart,
         current_period_end: subscriptionEnd,
         updated_at: new Date().toISOString(),
@@ -168,32 +196,40 @@ serve(async (req) => {
         onConflict: 'user_id',
       });
 
-    // Check if user has claimed their free product this month
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-    const { data: claim } = await supabaseClient
+    // Count claims this month
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const { data: claims, count: claimsCount } = await supabaseClient
       .from('subscription_free_claims')
-      .select('id, product_id')
+      .select('id, product_id', { count: 'exact' })
       .eq('user_id', user.id)
-      .eq('claim_period', currentMonth)
-      .maybeSingle();
+      .eq('claim_period', currentMonth);
 
-    const claimedThisMonth = !!claim;
-    const canClaimFree = !claimedThisMonth;
+    const freeProductsClaimed = claimsCount || 0;
+    const canClaimFree = freeProductsClaimed < freeProductsAllowed;
+    const claimedThisMonth = freeProductsClaimed > 0;
+    const lastClaimedProductId = claims && claims.length > 0 ? claims[claims.length - 1]?.product_id : null;
 
     logStep("Subscription check complete", { 
       subscribed: true, 
+      tier,
+      discountPercent,
+      freeProductsPerMonth: freeProductsAllowed,
+      freeProductsClaimed,
       canClaimFree, 
-      claimedThisMonth,
-      currentMonth 
     });
 
     return new Response(JSON.stringify({
       subscribed: true,
       subscriptionEnd,
-      subscriptionId: eclipsePlusSub.id,
+      subscriptionId: activeSub.id,
+      tier,
+      billingPeriod,
+      discountPercent,
+      freeProductsPerMonth: freeProductsAllowed,
+      freeProductsClaimed,
       canClaimFree,
       claimedThisMonth,
-      claimedProductId: claim?.product_id || null,
+      claimedProductId: lastClaimedProductId,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
