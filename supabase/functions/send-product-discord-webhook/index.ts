@@ -273,9 +273,9 @@ Deno.serve(async (req) => {
     const eclipsePlusPrice = `£${(payload.product_price * 0.7).toFixed(2)}`;
     const robuxPrice = payload.robux_enabled && payload.robux_price 
       ? `R$${payload.robux_price.toLocaleString()}` 
-      : null;
-    const robuxLine = robuxPrice 
-      ? `🔵 **${robuxPrice}** — Roblox Hub\n` 
+      : "";
+    const robuxLine = payload.robux_enabled && payload.robux_price 
+      ? `<:Robux:1145238657427578911>  **R$${payload.robux_price.toLocaleString()}** - [Roblox Hub](https://www.roblox.com/games/14585849356/KILLr-Projects-Hub)\n` 
       : "";
     const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
 
@@ -295,17 +295,32 @@ Deno.serve(async (req) => {
       placeholderExtras
     );
 
-    // Build embed fields from template - add spacing using empty name fields between sections
+    // Build embed fields from template
     const embedFields: Array<{ name: string; value: string; inline: boolean }> = [];
-    let isFirstField = true;
     for (const field of template.fields) {
       if (!field.enabled) continue;
 
       // Skip category info field if no category
       if (field.id === "category_info" && !payload.category_name) continue;
 
-      const fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
-      const fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
+      let fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
+      let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
+
+      // For purchase_locations, filter out the Robux line if robux is not enabled
+      if (field.id === "purchase_locations" && (!payload.robux_enabled || !payload.robux_price)) {
+        // Remove lines containing Robux emoji or R$ that have empty/no price
+        fieldValue = fieldValue
+          .split('\n')
+          .filter(line => {
+            // Keep lines that don't mention Robux or have actual robux price
+            const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub');
+            return !isRobuxLine;
+          })
+          .join('\n');
+      }
+
+      // Skip fields with empty values
+      if (!fieldValue || fieldValue.trim() === '') continue;
 
       embedFields.push({
         name: fieldName,
