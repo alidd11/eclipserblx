@@ -295,7 +295,7 @@ Deno.serve(async (req) => {
       placeholderExtras
     );
 
-    // Build embed fields from template
+    // Build embed fields from template - add spacing using empty name fields between sections
     const embedFields: Array<{ name: string; value: string; inline: boolean }> = [];
     let isFirstField = true;
     for (const field of template.fields) {
@@ -305,13 +305,7 @@ Deno.serve(async (req) => {
       if (field.id === "category_info" && !payload.category_name) continue;
 
       const fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
-      let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
-
-      // Add spacing before each field (except the first one) using a blank line prefix
-      if (!isFirstField) {
-        fieldValue = "\u200B\n" + fieldValue; // Zero-width space + newline for visual gap
-      }
-      isFirstField = false;
+      const fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
 
       embedFields.push({
         name: fieldName,
