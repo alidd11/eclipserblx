@@ -26,6 +26,7 @@ import {
   Hash,
   AtSign,
   MapPin,
+  Globe,
 } from 'lucide-react';
 
 interface CustomerProfileDialogProps {
@@ -143,6 +144,25 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
     enabled: !!profile?.user_id && open,
   });
 
+  // Fetch last known IP from audit logs
+  const { data: lastIp } = useQuery({
+    queryKey: ['customer-last-ip', profile?.user_id],
+    queryFn: async () => {
+      if (!profile?.user_id) return null;
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('ip_address, created_at')
+        .eq('user_id', profile.user_id)
+        .not('ip_address', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.user_id && open,
+  });
+
   // Calculate stats
   const totalSpent = orders?.reduce((sum, o) => sum + (o.total || 0), 0) || 0;
   const orderCount = orders?.length || 0;
@@ -220,6 +240,20 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                       Roblox
                     </span>
                     <span className="font-medium">{profile.roblox_username}</span>
+                  </div>
+                )}
+                {lastIp?.ip_address && (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      Last IP
+                    </span>
+                    <div className="text-right">
+                      <span className="font-mono text-sm">{lastIp.ip_address}</span>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(lastIp.created_at), 'MMM d, yyyy')}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
