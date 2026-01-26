@@ -4037,8 +4037,65 @@ export type Database = {
           },
         ]
       }
+      subscription_tiers: {
+        Row: {
+          annual_price_gbp: number
+          created_at: string | null
+          description: string | null
+          discount_percentage: number
+          display_order: number | null
+          features: Json | null
+          free_products_per_month: number
+          id: string
+          is_active: boolean | null
+          monthly_price_gbp: number
+          name: string
+          stripe_annual_price_id: string | null
+          stripe_monthly_price_id: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string | null
+        }
+        Insert: {
+          annual_price_gbp: number
+          created_at?: string | null
+          description?: string | null
+          discount_percentage?: number
+          display_order?: number | null
+          features?: Json | null
+          free_products_per_month?: number
+          id?: string
+          is_active?: boolean | null
+          monthly_price_gbp: number
+          name: string
+          stripe_annual_price_id?: string | null
+          stripe_monthly_price_id?: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string | null
+        }
+        Update: {
+          annual_price_gbp?: number
+          created_at?: string | null
+          description?: string | null
+          discount_percentage?: number
+          display_order?: number | null
+          features?: Json | null
+          free_products_per_month?: number
+          id?: string
+          is_active?: boolean | null
+          monthly_price_gbp?: number
+          name?: string
+          stripe_annual_price_id?: string | null
+          stripe_monthly_price_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
+          billing_period:
+            | Database["public"]["Enums"]["subscription_billing_period"]
+            | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
@@ -4049,10 +4106,14 @@ export type Database = {
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          billing_period?:
+            | Database["public"]["Enums"]["subscription_billing_period"]
+            | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -4063,10 +4124,14 @@ export type Database = {
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          billing_period?:
+            | Database["public"]["Enums"]["subscription_billing_period"]
+            | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -4077,6 +4142,7 @@ export type Database = {
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
           updated_at?: string
           user_id?: string
         }
@@ -4371,6 +4437,8 @@ export type Database = {
         | "decision"
         | "note"
       store_team_role: "manager" | "editor" | "viewer"
+      subscription_billing_period: "monthly" | "annual"
+      subscription_tier: "basic" | "pro" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4516,6 +4584,8 @@ export const Constants = {
         "note",
       ],
       store_team_role: ["manager", "editor", "viewer"],
+      subscription_billing_period: ["monthly", "annual"],
+      subscription_tier: ["basic", "pro", "premium"],
     },
   },
 } as const

@@ -7,9 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Eclipse+ Membership Price ID
-const ECLIPSE_PLUS_PRICE_ID = "price_1SoVK1CjEHxHwNl9aWcBvSeh";
-
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-SUBSCRIPTION-CHECKOUT] ${step}${detailsStr}`);
@@ -42,6 +39,35 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Parse request body for tier and billing period
+    const body = await req.json().catch(() => ({}));
+    const tier = body.tier || 'pro'; // Default to pro tier
+    const billingPeriod = body.billingPeriod || 'monthly'; // Default to monthly
+
+    logStep("Subscription request", { tier, billingPeriod });
+
+    // Fetch tier configuration from database
+    const { data: tierData, error: tierError } = await supabaseClient
+      .from('subscription_tiers')
+      .select('*')
+      .eq('tier', tier)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (tierError) throw new Error(`Error fetching tier: ${tierError.message}`);
+    if (!tierData) throw new Error(`Tier '${tier}' not found or inactive`);
+
+    // Get the appropriate Stripe price ID
+    const priceId = billingPeriod === 'annual' 
+      ? tierData.stripe_annual_price_id 
+      : tierData.stripe_monthly_price_id;
+
+    if (!priceId) {
+      throw new Error(`No Stripe price configured for ${tier} ${billingPeriod}. Please configure the Stripe price IDs in the subscription_tiers table.`);
+    }
+
+    logStep("Using price", { tier, billingPeriod, priceId });
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Check if user already has an active subscription
@@ -60,7 +86,7 @@ serve(async (req) => {
       });
 
       if (subscriptions.data.length > 0) {
-        throw new Error("You already have an active Eclipse+ subscription");
+        throw new Error("You already have an active Eclipse+ subscription. Please manage your existing subscription from your account settings.");
       }
     }
 
@@ -73,21 +99,25 @@ serve(async (req) => {
       customer_creation: customerId ? undefined : 'always',
       line_items: [
         {
-          price: ECLIPSE_PLUS_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/account?subscription=success`,
+      success_url: `${origin}/account?subscription=success&tier=${tier}`,
       cancel_url: `${origin}/eclipse-plus?canceled=true`,
       metadata: {
         user_id: user.id,
         user_email: user.email,
+        tier: tier,
+        billing_period: billingPeriod,
       },
       subscription_data: {
         metadata: {
           user_id: user.id,
           user_email: user.email,
+          tier: tier,
+          billing_period: billingPeriod,
         },
       },
     });
