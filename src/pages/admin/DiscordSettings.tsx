@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +39,7 @@ interface DiscordSettings {
   eclipse_plus_discord_webhook_url: string;
   marketplace_discord_webhook_url: string;
   promotions_discord_webhook_url: string;
+  advertisements_discord_webhook_url: string;
   discord_widget_server_id: string;
 }
 
@@ -80,6 +81,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   eclipse_plus_discord_webhook_url: '',
   marketplace_discord_webhook_url: '',
   promotions_discord_webhook_url: '',
+  advertisements_discord_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -211,7 +213,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -232,6 +234,8 @@ export default function DiscordSettings() {
           settingsMap.marketplace_discord_webhook_url = String(val);
         } else if (item.key === 'promotions_discord_webhook_url') {
           settingsMap.promotions_discord_webhook_url = String(val);
+        } else if (item.key === 'advertisements_discord_webhook_url') {
+          settingsMap.advertisements_discord_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -1269,6 +1273,10 @@ export default function DiscordSettings() {
                 <Palette className="h-4 w-4 hidden sm:block" />
                 Promotions
               </TabsTrigger>
+              <TabsTrigger value="advertisements" className="gap-2">
+                <BadgeDollarSign className="h-4 w-4 hidden sm:block" />
+                Ads
+              </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
               <DropdownMenu>
@@ -2293,6 +2301,67 @@ export default function DiscordSettings() {
                       </p>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Advertisements Webhook Tab */}
+          <TabsContent value="advertisements">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <BadgeDollarSign className="h-5 w-5 text-amber-400" />
+                  <CardTitle>Advertisements Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Configure where Discord advertisement subscriptions post their ads
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="advertisementsWebhook">Webhook URL</Label>
+                  <Input
+                    id="advertisementsWebhook"
+                    value={formData.advertisements_discord_webhook_url}
+                    onChange={(e) => handleChange('advertisements_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook channel for user-submitted advertisements
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent to this channel:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>User-submitted Discord advertisements</li>
+                    <li>Ads from Basic, Pro, and Premium subscription tiers</li>
+                    <li>Embedded ads with images and links</li>
+                    <li>Tier-colored badges (blue, purple, gold)</li>
+                  </ul>
+                </div>
+
+                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <BadgeDollarSign className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-amber-400">Advertisement Subscription System</p>
+                      <p className="text-sm text-muted-foreground">
+                        Users can subscribe to post ads to this channel. Configure the webhook 
+                        before users can start posting advertisements through their subscriptions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
+                  <p className="text-sm text-blue-400">
+                    <strong>Tip:</strong> Create a dedicated #ads or #sponsors channel in your Discord server 
+                    and set up the webhook there to keep user advertisements organized and separate from 
+                    official announcements.
+                  </p>
                 </div>
               </CardContent>
             </Card>
