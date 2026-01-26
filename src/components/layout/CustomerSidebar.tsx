@@ -879,14 +879,22 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     <aside 
       className={cn(
         "bg-card flex flex-col transition-all duration-300 h-screen sticky top-0 shrink-0 pt-[env(safe-area-inset-top)]",
-        !isMobileDrawer && "border-r border-border",
         isCollapsed ? "w-14" : "w-64",
         className
       )}
       data-gesture-exempt="true"
     >
-      {/* Header spacer - matches header height for alignment */}
-      <div className="h-14 sm:h-16 shrink-0" />
+      {/* Header with branding */}
+      <div className="h-14 sm:h-16 flex items-center px-4 shrink-0">
+        <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
+          <EclipseLogo size="sm" />
+          {!isCollapsed && (
+            <span className="brand-text text-base gradient-text">
+              {SITE_NAME}
+            </span>
+          )}
+        </Link>
+      </div>
 
       {/* Collapse Toggle Button - Above Navigation */}
       {!isMobileDrawer && (
