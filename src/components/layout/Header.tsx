@@ -118,16 +118,8 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
           </div>
 
-          {/* Center: Brand + Search Bar + Currency (desktop) */}
+          {/* Center: Search Bar + Currency (desktop) */}
           <div className="hidden md:flex items-center gap-4 flex-1">
-            {/* Website name - separates sidebar from search */}
-            <Link to="/" className="flex items-center gap-2.5 shrink-0">
-              <EclipseLogo size="sm" />
-              <span className="brand-text text-base gradient-text">
-                {SITE_NAME}
-              </span>
-            </Link>
-            
             <HeaderSearchBar className="flex-1 max-w-xl" />
             <CurrencySelector />
           </div>
