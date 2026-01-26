@@ -1223,6 +1223,12 @@ export default function DiscordSettings() {
                       Promotions
                     </div>
                   </SelectItem>
+                  <SelectItem value="advertisements">
+                    <div className="flex items-center gap-2">
+                      <BadgeDollarSign className="h-4 w-4" />
+                      Ads
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
