@@ -65,7 +65,7 @@ const DEFAULT_TEMPLATE: WebhookTemplate = {
     {
       id: "purchase_locations",
       name: "🛒 Purchase Locations",
-      value: "{robux_line}💷 **{gbp_price}** — Our Store\n🌙 **{eclipse_plus_price}** — Eclipse+ (30% off)",
+      value: "{robux_line}💷 **{gbp_price}** — [Our Store]({product_url})",
       inline: false,
       enabled: true,
     },
@@ -253,20 +253,35 @@ Deno.serve(async (req) => {
     // Convert paragraph/line break tags to newlines, then strip remaining HTML
     const rawDescription = payload.product_description
       ? payload.product_description
-          .replace(/<p>\s*<\/p>/gi, "\n\n")  // Empty paragraphs = section breaks
-          .replace(/<\/li>/gi, "\n")  // List items = single newline
+          // First, handle list structures properly
+          .replace(/<ul[^>]*>/gi, "")  // Remove opening ul tags
+          .replace(/<\/ul>/gi, "\n")  // Closing ul = newline
+          .replace(/<ol[^>]*>/gi, "")  // Remove opening ol tags
+          .replace(/<\/ol>/gi, "\n")  // Closing ol = newline
           .replace(/<li[^>]*>/gi, "• ")  // Add bullet for list items
+          .replace(/<\/li>/gi, "\n")  // List item end = newline
+          // Handle paragraphs
+          .replace(/<p>\s*<\/p>/gi, "\n")  // Empty paragraphs = single newline
           .replace(/<\/p>/gi, "\n")  // Regular paragraphs = single newline
-          .replace(/<br\s*\/?>/gi, "\n")  // Line breaks = single newline
           .replace(/<p[^>]*>/gi, "")  // Remove opening p tags
+          // Handle other elements
+          .replace(/<br\s*\/?>/gi, "\n")  // Line breaks = single newline
+          .replace(/<strong[^>]*>/gi, "**")  // Bold start
+          .replace(/<\/strong>/gi, "**")  // Bold end
+          .replace(/<em[^>]*>/gi, "*")  // Italic start
+          .replace(/<\/em>/gi, "*")  // Italic end
           .replace(/<[^>]*>/g, "")  // Strip remaining HTML tags
           .replace(/&nbsp;/g, " ")  // Replace HTML spaces
           .replace(/&amp;/g, "&")  // Replace HTML ampersands
+          .replace(/&lt;/g, "<")  // Replace HTML less than
+          .replace(/&gt;/g, ">")  // Replace HTML greater than
           .replace(/\n{3,}/g, "\n\n")  // Collapse 3+ newlines to double
+          .replace(/• \n/g, "• ")  // Fix bullet followed by immediate newline
+          .replace(/:\s*\n•/g, ":\n•")  // Fix colon spacing before bullets
           .trim()
       : "A new product is now available on Eclipse!";
-    const description = rawDescription.length > 1000 
-      ? rawDescription.substring(0, 997) + "..." 
+    const description = rawDescription.length > 900 
+      ? rawDescription.substring(0, 897) + "..." 
       : rawDescription;
 
     const gbpPrice = `£${payload.product_price.toFixed(2)}`;
@@ -307,15 +322,22 @@ Deno.serve(async (req) => {
       let fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
       let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
 
-      // For purchase_locations, filter out the Robux line if robux is not enabled
-      if (field.id === "purchase_locations" && !hasRobux) {
-        // Remove lines containing Robux emoji, Roblox Hub, or empty robux placeholders
+      // For purchase_locations, filter out Robux line if not enabled, and always remove Eclipse+ price
+      if (field.id === "purchase_locations") {
         fieldValue = fieldValue
           .split('\n')
           .filter(line => {
-            // Keep lines that don't mention Robux
-            const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub') || line.includes('R$');
-            return !isRobuxLine;
+            // Always remove Eclipse+ lines (should not show member pricing in Discord)
+            const isEclipsePlusLine = line.includes('Eclipse+') || line.includes('30% off') || line.includes('30% Off');
+            if (isEclipsePlusLine) return false;
+            
+            // Remove Robux lines if robux is not enabled
+            if (!hasRobux) {
+              const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub') || line.includes('R$');
+              if (isRobuxLine) return false;
+            }
+            
+            return true;
           })
           .join('\n');
       }
