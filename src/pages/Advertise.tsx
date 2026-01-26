@@ -47,7 +47,8 @@ export default function Advertise() {
   const [imageUrl, setImageUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [discordUsername, setDiscordUsername] = useState('');
-  const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
+const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
   // Scheduling state (Pro+ only)
@@ -275,6 +276,41 @@ export default function Advertise() {
     });
   };
 
+  const handleManageSubscription = async () => {
+    if (!user || !session?.access_token) {
+      toast.error('Please sign in to manage your subscription');
+      return;
+    }
+
+    setIsOpeningPortal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      
+      if (data.url) {
+        // In iOS PWA standalone mode, window.open() is blocked - use location.href instead
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                            (window.navigator as any).standalone === true;
+        if (isStandalone) {
+          window.location.href = data.url;
+        } else {
+          window.open(data.url, '_blank');
+        }
+      }
+    } catch (error) {
+      console.error('Portal error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to open subscription management');
+    } finally {
+      setIsOpeningPortal(false);
+    }
+  };
+
   const isLoading = tiersLoading || subLoading || authLoading || profileLoading;
 
   // If user has active subscription, show the ad posting form
@@ -298,9 +334,24 @@ export default function Advertise() {
                     </p>
                   </div>
                 </div>
-                <Badge variant="secondary">
-                  {subscription.billing_period === 'annual' ? 'Annual' : 'Monthly'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">
+                    {subscription.billing_period === 'annual' ? 'Annual' : 'Monthly'}
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleManageSubscription}
+                    disabled={isOpeningPortal}
+                  >
+                    {isOpeningPortal ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                    )}
+                    {isOpeningPortal ? 'Loading...' : 'Manage'}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
