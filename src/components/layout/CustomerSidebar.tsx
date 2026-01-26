@@ -884,17 +884,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )}
       data-gesture-exempt="true"
     >
-      {/* Header with branding */}
-      <div className="h-14 sm:h-16 flex items-center px-4 shrink-0">
-        <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
-          <EclipseLogo size="sm" />
-          {!isCollapsed && (
-            <span className="brand-text text-base gradient-text">
-              {SITE_NAME}
-            </span>
-          )}
-        </Link>
-      </div>
+      {/* Header spacer - matches header height for alignment */}
+      <div className="h-14 sm:h-16 shrink-0" />
 
       {/* Collapse Toggle Button - Above Navigation */}
       {!isMobileDrawer && (
