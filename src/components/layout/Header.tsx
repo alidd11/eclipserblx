@@ -110,20 +110,6 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
 
-            {/* Desktop sidebar toggle - only show when onSidebarToggle provided */}
-            {onSidebarToggle && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden md:flex h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  hapticTap();
-                  onSidebarToggle();
-                }}
-              >
-                <PanelLeft className="h-4 w-4" />
-              </Button>
-            )}
 
             {/* Logo - only show on mobile (sidebar shows it on desktop) */}
             <Link to="/" className="flex items-center gap-2 md:hidden">
