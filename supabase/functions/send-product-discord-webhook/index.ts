@@ -65,7 +65,7 @@ const DEFAULT_TEMPLATE: WebhookTemplate = {
     {
       id: "purchase_locations",
       name: "🛒 Purchase Locations",
-      value: "{robux_line}💷 **{gbp_price}** - Our Store\n🌙 **{eclipse_plus_price}** - Eclipse+ Members (30% off)",
+      value: "{robux_line}💷 **{gbp_price}** — Our Store\n🌙 **{eclipse_plus_price}** — Eclipse+ (30% off)",
       inline: false,
       enabled: true,
     },
@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
       ? `R$${payload.robux_price.toLocaleString()}` 
       : null;
     const robuxLine = robuxPrice 
-      ? `🔵 **${robuxPrice}** - Eclipse Roblox Hub\n` 
+      ? `🔵 **${robuxPrice}** — Roblox Hub\n` 
       : "";
     const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
 
