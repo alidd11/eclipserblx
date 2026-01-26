@@ -340,6 +340,7 @@ export default function AdminProducts() {
             categorySlug = category?.slug;
           }
 
+          console.log('[WEBHOOK] Sending webhook for SINGLE product update:', data.id, payload.name);
           supabase.functions.invoke('send-product-discord-webhook', {
             body: {
               product_id: data.id,
@@ -355,9 +356,9 @@ export default function AdminProducts() {
             },
           }).then(result => {
             if (result.error) {
-              console.error('Failed to send Discord webhook:', result.error);
+              console.error('[WEBHOOK] Failed:', result.error);
             } else if (result.data?.success) {
-              console.log('Discord product webhook updated:', result.data);
+              console.log('[WEBHOOK] Success for:', data.id, result.data);
             }
           });
         }
