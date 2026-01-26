@@ -323,6 +323,23 @@ Deno.serve(async (req) => {
       // Skip fields with empty values
       if (!fieldValue || fieldValue.trim() === '') continue;
 
+      // Skip fields with empty names (Discord requires field names)
+      if (!fieldName || fieldName.trim() === '') {
+        console.log(`Skipping field with empty name: ${field.id}`);
+        continue;
+      }
+
+      // Validate Discord field limits
+      if (fieldName.length > 256) {
+        console.log(`Field name too long (${fieldName.length} chars), truncating: ${field.id}`);
+        fieldName = fieldName.substring(0, 253) + '...';
+      }
+      
+      if (fieldValue.length > 1024) {
+        console.log(`Field value too long (${fieldValue.length} chars), truncating: ${field.id}`);
+        fieldValue = fieldValue.substring(0, 1021) + '...';
+      }
+
       embedFields.push({
         name: fieldName,
         value: fieldValue,
@@ -330,12 +347,38 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate we have at least one field
+    if (embedFields.length === 0) {
+      console.error('No valid embed fields generated, cannot send webhook');
+      return new Response(
+        JSON.stringify({ error: "No valid embed fields generated" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate total fields count
+    if (embedFields.length > 25) {
+      console.log(`Too many fields (${embedFields.length}), limiting to 25`);
+      embedFields.splice(25);
+    }
+
     // Parse color (hex to int)
     const colorInt = parseInt(template.color.replace("#", ""), 16) || 0x9b59b6;
 
+    // Validate embed title
+    let embedTitleFinal = embedTitle;
+    if (!embedTitleFinal || embedTitleFinal.trim() === '') {
+      console.log('Empty embed title, using fallback');
+      embedTitleFinal = `Eclipse - ${payload.product_name}`;
+    }
+    if (embedTitleFinal.length > 256) {
+      console.log(`Embed title too long (${embedTitleFinal.length} chars), truncating`);
+      embedTitleFinal = embedTitleFinal.substring(0, 253) + '...';
+    }
+
     // Build embed
     const embed: Record<string, unknown> = {
-      title: embedTitle,
+      title: embedTitleFinal,
       url: productUrl,
       color: colorInt,
       fields: embedFields,
@@ -381,6 +424,17 @@ Deno.serve(async (req) => {
       embeds,
       thread_name: threadName,
     };
+
+    // Log payload for debugging (limit to first embed only to avoid huge logs)
+    console.log('Sending webhook with payload:', JSON.stringify({
+      thread_name: threadName,
+      embed_title: embed.title,
+      embed_field_count: embedFields.length,
+      embed_count: embeds.length,
+      has_thumbnail: !!embed.thumbnail,
+      has_image: !!embed.image,
+      has_timestamp: !!embed.timestamp
+    }));
 
     // Send to Discord forum channel with ?wait=true to get the response
     const webhookUrlWithWait = webhookUrl.includes("?") 
