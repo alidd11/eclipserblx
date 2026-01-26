@@ -42,7 +42,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, imageUrl, linkUrl, discordUsername, pingType } = await req.json();
+    const { title, description, imageUrl, linkUrl, discordUsername, pingType, scheduledFor } = await req.json();
 
     // Validate inputs
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -65,11 +65,23 @@ serve(async (req) => {
       throw new Error("Invalid link URL");
     }
 
+    // Validate scheduled date if provided
+    let parsedScheduledFor: Date | null = null;
+    if (scheduledFor) {
+      parsedScheduledFor = new Date(scheduledFor);
+      if (isNaN(parsedScheduledFor.getTime())) {
+        throw new Error("Invalid scheduled date");
+      }
+      if (parsedScheduledFor <= new Date()) {
+        throw new Error("Scheduled date must be in the future");
+      }
+    }
+
     const sanitizedTitle = sanitizeText(title);
     const sanitizedDescription = sanitizeText(description);
     const sanitizedDiscordUsername = discordUsername ? sanitizeText(discordUsername) : null;
 
-    logStep("Request received", { title: sanitizedTitle });
+    logStep("Request received", { title: sanitizedTitle, scheduled: !!scheduledFor });
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
@@ -120,6 +132,12 @@ serve(async (req) => {
 
     logStep("Subscription valid", { tier: subscription.tier, adsUsed, adsPerMonth });
 
+    // Check if scheduling is allowed (Pro+ only)
+    const canSchedule = subscription.tier === 'pro' || subscription.tier === 'premium';
+    if (parsedScheduledFor && !canSchedule) {
+      throw new Error("Scheduling is only available for Pro and Premium subscribers");
+    }
+
     // Get webhook URL and partnership ping role ID
     const { data: adSettings } = await supabaseAdmin
       .from("settings")
@@ -167,16 +185,49 @@ serve(async (req) => {
         image_url: imageUrl?.trim() || null,
         link_url: linkUrl?.trim() || null,
         discord_username: sanitizedDiscordUsername,
-        status: "paid",
+        status: parsedScheduledFor ? "scheduled" : "paid",
         price_paid: 0,
         ping_type: selectedPingType,
         ping_price_paid: 0,
+        scheduled_for: parsedScheduledFor?.toISOString() || null,
       })
       .select()
       .single();
 
     if (adError) {
       throw new Error("Failed to create advertisement record");
+    }
+
+    // If scheduled, don't post to Discord now - just save and return
+    if (parsedScheduledFor) {
+      // Update subscription usage
+      const updateData: Record<string, unknown> = {
+        ads_used_this_month: adsUsed + 1,
+        updated_at: new Date().toISOString(),
+      };
+      
+      if (selectedPingType === 'here') {
+        updateData.here_pings_balance = Math.max(0, (subscription.here_pings_balance || 0) - 1);
+      } else if (selectedPingType === 'everyone') {
+        updateData.everyone_pings_balance = Math.max(0, (subscription.everyone_pings_balance || 0) - 1);
+      }
+
+      await supabaseAdmin
+        .from("advertisement_subscriptions")
+        .update(updateData)
+        .eq("id", subscription.id);
+
+      logStep("Advertisement scheduled successfully", { adId: advertisement.id, scheduledFor: parsedScheduledFor.toISOString() });
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        scheduled: true,
+        scheduled_for: parsedScheduledFor.toISOString(),
+        ads_remaining: adsPerMonth - adsUsed - 1,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     // Build Discord embed

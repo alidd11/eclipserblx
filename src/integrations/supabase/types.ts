@@ -914,6 +914,7 @@ export type Database = {
           ping_type: string | null
           posted_at: string | null
           price_paid: number | null
+          scheduled_for: string | null
           status: string
           title: string
           total_clicks: number | null
@@ -935,6 +936,7 @@ export type Database = {
           ping_type?: string | null
           posted_at?: string | null
           price_paid?: number | null
+          scheduled_for?: string | null
           status?: string
           title: string
           total_clicks?: number | null
@@ -956,6 +958,7 @@ export type Database = {
           ping_type?: string | null
           posted_at?: string | null
           price_paid?: number | null
+          scheduled_for?: string | null
           status?: string
           title?: string
           total_clicks?: number | null
