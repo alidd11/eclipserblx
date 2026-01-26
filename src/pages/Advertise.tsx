@@ -235,10 +235,46 @@ export default function Advertise() {
 
               {showPingPurchase && (
                 <div className="pt-4 border-t border-border space-y-4">
+                  {/* Bulk Discount Banner */}
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+                    <p className="text-sm font-medium text-primary mb-2">🎉 Bulk Discounts Available!</p>
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div className="text-center p-1.5 rounded bg-background/50">
+                        <p className="font-bold text-green-500">5%</p>
+                        <p className="text-muted-foreground">5+ pings</p>
+                      </div>
+                      <div className="text-center p-1.5 rounded bg-background/50">
+                        <p className="font-bold text-green-500">10%</p>
+                        <p className="text-muted-foreground">10+ pings</p>
+                      </div>
+                      <div className="text-center p-1.5 rounded bg-background/50">
+                        <p className="font-bold text-green-500">20%</p>
+                        <p className="text-muted-foreground">25+ pings</p>
+                      </div>
+                      <div className="text-center p-1.5 rounded bg-background/50">
+                        <p className="font-bold text-green-500">30%</p>
+                        <p className="text-muted-foreground">50+ pings</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <p className="text-sm text-muted-foreground">Purchase ping credits to use on your ads</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-sm">@here pings (£0.79 each)</Label>
+                      <Label className="text-sm flex items-center gap-2">
+                        @here pings
+                        {herePingsToBuy >= 5 && (
+                          <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-500">
+                            {herePingsToBuy >= 50 ? '30%' : herePingsToBuy >= 25 ? '20%' : herePingsToBuy >= 10 ? '10%' : '5%'} off
+                          </Badge>
+                        )}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {herePingsToBuy >= 5 
+                          ? `£${(0.79 * (1 - (herePingsToBuy >= 50 ? 0.30 : herePingsToBuy >= 25 ? 0.20 : herePingsToBuy >= 10 ? 0.10 : 0.05))).toFixed(2)} each`
+                          : '£0.79 each'
+                        }
+                      </p>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
@@ -247,18 +283,36 @@ export default function Advertise() {
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-12 text-center font-medium">{herePingsToBuy}</span>
+                        <Input
+                          type="number"
+                          value={herePingsToBuy}
+                          onChange={(e) => setHerePingsToBuy(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
+                          className="w-16 text-center"
+                        />
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => setHerePingsToBuy(Math.min(50, herePingsToBuy + 1))}
+                          onClick={() => setHerePingsToBuy(Math.min(100, herePingsToBuy + 1))}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-sm">@everyone pings (£1.49 each)</Label>
+                      <Label className="text-sm flex items-center gap-2">
+                        @everyone pings
+                        {everyonePingsToBuy >= 5 && (
+                          <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-500">
+                            {everyonePingsToBuy >= 50 ? '30%' : everyonePingsToBuy >= 25 ? '20%' : everyonePingsToBuy >= 10 ? '10%' : '5%'} off
+                          </Badge>
+                        )}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {everyonePingsToBuy >= 5 
+                          ? `£${(1.49 * (1 - (everyonePingsToBuy >= 50 ? 0.30 : everyonePingsToBuy >= 25 ? 0.20 : everyonePingsToBuy >= 10 ? 0.10 : 0.05))).toFixed(2)} each`
+                          : '£1.49 each'
+                        }
+                      </p>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
@@ -267,11 +321,16 @@ export default function Advertise() {
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-12 text-center font-medium">{everyonePingsToBuy}</span>
+                        <Input
+                          type="number"
+                          value={everyonePingsToBuy}
+                          onChange={(e) => setEveryonePingsToBuy(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
+                          className="w-16 text-center"
+                        />
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => setEveryonePingsToBuy(Math.min(50, everyonePingsToBuy + 1))}
+                          onClick={() => setEveryonePingsToBuy(Math.min(100, everyonePingsToBuy + 1))}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -279,9 +338,33 @@ export default function Advertise() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between pt-2">
-                    <p className="text-sm font-medium">
-                      Total: {formatCurrency(herePingsToBuy * 0.79 + everyonePingsToBuy * 1.49)}
-                    </p>
+                    <div>
+                      {(() => {
+                        const hereDiscount = herePingsToBuy >= 50 ? 0.30 : herePingsToBuy >= 25 ? 0.20 : herePingsToBuy >= 10 ? 0.10 : herePingsToBuy >= 5 ? 0.05 : 0;
+                        const everyoneDiscount = everyonePingsToBuy >= 50 ? 0.30 : everyonePingsToBuy >= 25 ? 0.20 : everyonePingsToBuy >= 10 ? 0.10 : everyonePingsToBuy >= 5 ? 0.05 : 0;
+                        const originalTotal = herePingsToBuy * 0.79 + everyonePingsToBuy * 1.49;
+                        const discountedTotal = herePingsToBuy * 0.79 * (1 - hereDiscount) + everyonePingsToBuy * 1.49 * (1 - everyoneDiscount);
+                        const savings = originalTotal - discountedTotal;
+                        
+                        return (
+                          <>
+                            <p className="text-sm font-medium">
+                              Total: {formatCurrency(discountedTotal)}
+                              {savings > 0 && (
+                                <span className="text-xs text-muted-foreground line-through ml-2">
+                                  {formatCurrency(originalTotal)}
+                                </span>
+                              )}
+                            </p>
+                            {savings > 0.01 && (
+                              <p className="text-xs text-green-500">
+                                You save {formatCurrency(savings)}!
+                              </p>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
                     <Button 
                       onClick={handlePurchasePings}
                       disabled={purchasePingsMutation.isPending || (herePingsToBuy === 0 && everyonePingsToBuy === 0)}
