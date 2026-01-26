@@ -87,9 +87,9 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border glass-effect pt-[env(safe-area-inset-top)]">
-      <div className="container mx-auto px-4">
-        <div className="flex h-14 sm:h-16 items-center justify-between">
+<header className="sticky top-0 z-50 w-full border-b border-border glass-effect pt-[env(safe-area-inset-top)]">
+      <div className="px-4">
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
           {/* Left side - Mobile menu + Logo + Desktop sidebar toggle */}
           <div className="flex items-center gap-2">
             {/* Mobile menu button - uses onMenuClick if provided, otherwise internal state */}
@@ -119,7 +119,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Center: Search Bar + Currency (desktop) */}
-          <div className="hidden md:flex items-center gap-3 flex-1 max-w-xl mx-4">
+          <div className="hidden md:flex items-center gap-3 flex-1 max-w-2xl">
             <HeaderSearchBar className="flex-1" />
             <CurrencySelector />
           </div>
