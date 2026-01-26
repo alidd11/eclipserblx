@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -35,9 +35,10 @@ type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 interface HeaderProps {
   showDesktopNav?: boolean;
   onMenuClick?: () => void;
+  onSidebarToggle?: () => void;
 }
 
-export const Header = memo(function Header({ showDesktopNav = true, onMenuClick }: HeaderProps) {
+export const Header = memo(function Header({ showDesktopNav = true, onMenuClick, onSidebarToggle }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();

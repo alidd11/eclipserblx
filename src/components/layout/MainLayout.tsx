@@ -28,6 +28,25 @@ function MainLayoutContent({ children }: MainLayoutProps) {
   // Check for scheduled product releases periodically
   useScheduledReleaseCheck();
 
+  // Toggle sidebar function
+  const toggleSidebar = useCallback(() => {
+    hapticTap();
+    setSidebarCollapsed(prev => !prev);
+  }, []);
+
+  // Keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebar]);
+
   // Touch tracking for edge swipe
   const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);
 
@@ -78,7 +97,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         {/* Desktop Sidebar */}
         <CustomerSidebar 
           collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onToggle={toggleSidebar}
           className="hidden md:flex"
         />
         
@@ -100,7 +119,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         
         {/* Main Content - Fixed header with scrollable content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
-          <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} />
+          <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} onSidebarToggle={toggleSidebar} />
           <main className="flex-1 overflow-y-auto overflow-x-hidden">
             {children}
             <Footer />
