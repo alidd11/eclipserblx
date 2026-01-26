@@ -23,6 +23,7 @@ import { sortMediaVideosFirst, isVideoUrl } from '@/lib/mediaUtils';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -32,6 +33,7 @@ export default function ProductDetail() {
   const { user } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
+  const { formatPrice } = useCurrency();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
@@ -478,19 +480,19 @@ export default function ProductDetail() {
                   {/* Regular price - shown prominently when not eligible for discount */}
                   {!isEligible ? (
                     <span className="text-4xl font-bold">
-                      £{product.price.toFixed(2)}
+                      {formatPrice(Number(product.price))}
                     </span>
                   ) : (
                     <>
                       {/* Regular price strikethrough */}
                       <p className="text-lg text-muted-foreground line-through">
-                        £{product.price.toFixed(2)}
+                        {formatPrice(Number(product.price))}
                       </p>
                       {/* Member price prominently displayed */}
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
                           <Sparkles className="h-6 w-6" />
-                          £{memberPrice.toFixed(2)}
+                          {formatPrice(memberPrice)}
                         </span>
                         <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
                           {discountPercent}% off with Eclipse+

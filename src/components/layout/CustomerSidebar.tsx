@@ -873,7 +873,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-card flex flex-col transition-all duration-300 h-screen sticky top-0 shrink-0",
+        "bg-card flex flex-col transition-all duration-300 h-screen sticky top-0 shrink-0 pt-[env(safe-area-inset-top)]",
         !isMobileDrawer && "border-r border-border",
         isCollapsed ? "w-14" : "w-64",
         className
@@ -881,7 +881,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       data-gesture-exempt="true"
     >
       {/* Header */}
-      <div className="h-14 sm:h-16 flex items-center px-4 border-b border-border pt-[env(safe-area-inset-top)]">
+      <div className="h-14 sm:h-16 flex items-center px-4 border-b border-border">
         <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
           <EclipseLogo size="sm" />
           {!isCollapsed && (

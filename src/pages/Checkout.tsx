@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { PaymentMethodDisplay } from '@/components/payments/PaymentMethodDisplay';
@@ -24,6 +25,7 @@ export default function Checkout() {
   const { items, total } = useCart();
   const { user, session, loading } = useAuth();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent } = useSubscription();
+  const { formatPrice } = useCurrency();
   const location = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
@@ -140,7 +142,7 @@ export default function Checkout() {
 
       // Check minimum order (against member subtotal)
       if (discount.min_order_amount && memberSubtotal < discount.min_order_amount) {
-        showErrorNotification('Minimum Not Met', `Minimum order of £${discount.min_order_amount.toFixed(2)} required`);
+        showErrorNotification('Minimum Not Met', `Minimum order of ${formatPrice(Number(discount.min_order_amount))} required`);
         return;
       }
 
@@ -161,7 +163,7 @@ export default function Checkout() {
       });
 
       setDiscountCode('');
-      showSuccessNotification('Discount Applied!', `You saved £${amount.toFixed(2)}`);
+      showSuccessNotification('Discount Applied!', `You saved ${formatPrice(amount)}`);
     } catch (error) {
       showErrorNotification('Error', 'Failed to apply discount');
     } finally {
@@ -252,16 +254,16 @@ export default function Checkout() {
                   <div className="text-right">
                     {item.hasEclipseDiscount ? (
                       <>
-                        <span className="font-medium text-primary">£{item.memberPrice.toFixed(2)}</span>
+                        <span className="font-medium text-primary">{formatPrice(item.memberPrice)}</span>
                         <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground line-through">£{item.originalPrice.toFixed(2)}</span>
+                          <span className="text-xs text-muted-foreground line-through">{formatPrice(item.originalPrice)}</span>
                           <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-amber-500/20 text-amber-400 border-0">
                             -{item.discountPercent}%
                           </Badge>
                         </div>
                       </>
                     ) : (
-                      <span className="font-medium">£{item.memberPrice.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(item.memberPrice)}</span>
                     )}
                   </div>
                 </div>
@@ -271,7 +273,7 @@ export default function Checkout() {
             <div className="border-t border-border pt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>£{total.toFixed(2)}</span>
+                <span>{formatPrice(total)}</span>
               </div>
               
               {isSubscribed && eclipseDiscount > 0 && (
@@ -280,26 +282,26 @@ export default function Checkout() {
                     <Sparkles className="h-3 w-3 text-amber-400" />
                     Eclipse+ Discount
                   </span>
-                  <span className="text-primary">-£{eclipseDiscount.toFixed(2)}</span>
+                  <span className="text-primary">{formatPrice(-eclipseDiscount)}</span>
                 </div>
               )}
               
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Discount Code</span>
                 <span className={discountAmount > 0 ? 'text-primary' : ''}>
-                  {discountAmount > 0 ? `-£${discountAmount.toFixed(2)}` : '£0.00'}
+                  {discountAmount > 0 ? formatPrice(-discountAmount) : formatPrice(0)}
                 </span>
               </div>
               
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                 <span>Total</span>
-                <span>£{finalTotal.toFixed(2)}</span>
+                <span>{formatPrice(finalTotal)}</span>
               </div>
               
               {isSubscribed && eclipseDiscount > 0 && (
                 <p className="text-xs text-amber-400 flex items-center gap-1">
                   <Sparkles className="h-3 w-3" />
-                  You're saving £{eclipseDiscount.toFixed(2)} with Eclipse+!
+                  You're saving {formatPrice(eclipseDiscount)} with Eclipse+!
                 </p>
               )}
             </div>
@@ -323,7 +325,7 @@ export default function Checkout() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-amber-400">
-                      You could save £{potentialSavings.toFixed(2)} with Eclipse+
+                      You could save {formatPrice(potentialSavings)} with Eclipse+
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Get up to 35% off all products + 1 free item monthly for just £4.99/mo
@@ -352,7 +354,7 @@ export default function Checkout() {
                       <span className="text-sm text-muted-foreground">
                         ({appliedDiscount.discount_type === 'percentage' 
                           ? `${appliedDiscount.discount_value}% off` 
-                          : `£${appliedDiscount.discount_value.toFixed(2)} off`})
+                          : `${formatPrice(appliedDiscount.discount_value)} off`})
                       </span>
                     </div>
                     <Button 

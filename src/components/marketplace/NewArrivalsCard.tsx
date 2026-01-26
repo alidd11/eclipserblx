@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface NewProduct {
   id: string;
@@ -21,6 +22,7 @@ interface NewProduct {
 }
 
 export function NewArrivalsCard() {
+  const { formatPrice } = useCurrency();
   const { data: products, isLoading } = useQuery({
     queryKey: ['new-arrivals'],
     queryFn: async () => {
@@ -110,7 +112,7 @@ export function NewArrivalsCard() {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="font-semibold text-sm text-primary">
-                  £{product.price.toFixed(2)}
+                  {formatPrice(Number(product.price))}
                 </span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
               </div>

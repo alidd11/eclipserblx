@@ -8,12 +8,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Heart, ShoppingBag, Trash2, Store, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function Wishlist() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: wishlistItems, isLoading } = useWishlistItems();
   const { removeFromWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
 
   if (!user) {
     return (
@@ -129,7 +131,7 @@ export default function Wishlist() {
 
                           <div className="text-right flex-shrink-0">
                             <p className="text-xl font-bold">
-                              £{product.price.toFixed(2)}
+                              {formatPrice(Number(product.price))}
                             </p>
                             {!product.is_active && (
                               <Badge variant="secondary" className="mt-1">

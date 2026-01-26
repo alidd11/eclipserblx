@@ -7,9 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/hooks/useCart';
 import { useBadges } from '@/hooks/useBadges';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function OrderSuccess() {
   const { checkBadges } = useBadges();
+  const { formatPrice } = useCurrency();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
@@ -131,7 +133,7 @@ export default function OrderSuccess() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold">£{order.total.toFixed(2)}</span>
+                  <span className="font-bold">{formatPrice(Number(order.total))}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Status</span>
