@@ -238,7 +238,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Featured', icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: 'Marketplace', icon: Store, href: '/marketplace' },
-        { title: 'Advertise', icon: Megaphone, href: '/advertise' },
+        { title: 'Advertise With Us', icon: Megaphone, href: '/advertise' },
       ],
     },
     // Note: "Browse" section with All Products + Categories is rendered via renderCategoriesSection()
