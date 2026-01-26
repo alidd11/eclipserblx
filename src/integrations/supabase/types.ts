@@ -2005,6 +2005,120 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_claims: {
+        Row: {
+          claimed_at: string | null
+          discount_code_id: string | null
+          id: string
+          promotion_id: string
+          subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          discount_code_id?: string | null
+          id?: string
+          promotion_id: string
+          subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          discount_code_id?: string | null
+          id?: string
+          promotion_id?: string
+          subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_claims_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_claims_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "promotions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_claims_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      promotions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          current_claims: number | null
+          description: string | null
+          discount_code_id: string | null
+          eclipse_plus_days: number | null
+          ends_at: string | null
+          id: string
+          is_active: boolean | null
+          max_claims: number | null
+          name: string
+          new_users_only: boolean | null
+          promotion_type: string
+          require_email_verified: boolean | null
+          starts_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          current_claims?: number | null
+          description?: string | null
+          discount_code_id?: string | null
+          eclipse_plus_days?: number | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_claims?: number | null
+          name: string
+          new_users_only?: boolean | null
+          promotion_type: string
+          require_email_verified?: boolean | null
+          starts_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          current_claims?: number | null
+          description?: string | null
+          discount_code_id?: string | null
+          eclipse_plus_days?: number | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_claims?: number | null
+          name?: string
+          new_users_only?: boolean | null
+          promotion_type?: string
+          require_email_verified?: boolean | null
+          starts_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth_key: string
