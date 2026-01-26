@@ -887,7 +887,7 @@ export default function DiscordSettings() {
       // Fetch all active products with their category info
       const { data: products, error } = await supabase
         .from('products')
-        .select('id, name, slug, price, description, images, robux_price, robux_enabled, category_id, categories(name, slug)')
+        .select('id, name, slug, price, description, images, robux_price, robux_enabled, is_resellable, category_id, categories(name, slug)')
         .eq('is_active', true);
 
       if (error) {
@@ -922,6 +922,7 @@ export default function DiscordSettings() {
               category_slug: category?.slug,
               robux_price: product.robux_price,
               robux_enabled: product.robux_enabled,
+              is_resellable: product.is_resellable,
             },
           });
 

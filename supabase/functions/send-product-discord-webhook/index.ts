@@ -16,6 +16,7 @@ interface ProductPayload {
   category_slug?: string;
   robux_price?: number;
   robux_enabled?: boolean;
+  is_resellable?: boolean;
 }
 
 interface WebhookField {
@@ -65,7 +66,7 @@ const DEFAULT_TEMPLATE: WebhookTemplate = {
     {
       id: "purchase_locations",
       name: "🛒 Purchase Locations",
-      value: "{robux_line}💷 **{gbp_price}** — [Our Store]({product_url})",
+      value: "{robux_line}💷 **{gbp_price}** — [Our Store]({product_url}){eclipse_plus_line}",
       inline: false,
       enabled: true,
     },
@@ -98,6 +99,7 @@ function applyPlaceholders(
     eclipsePlusPrice: string;
     robuxPrice: string;
     robuxLine: string;
+    eclipsePlusLine: string;
     description: string;
     productUrl: string;
   }
@@ -110,7 +112,8 @@ function applyPlaceholders(
     .replace(/{gbp_price}/g, extras.gbpPrice)
     .replace(/{eclipse_plus_price}/g, extras.eclipsePlusPrice)
     .replace(/{robux_price}/g, extras.robuxPrice)
-    .replace(/{robux_line}/g, extras.robuxLine);
+    .replace(/{robux_line}/g, extras.robuxLine)
+    .replace(/{eclipse_plus_line}/g, extras.eclipsePlusLine);
 }
 
 // Delete existing Discord thread if it exists
@@ -295,11 +298,22 @@ Deno.serve(async (req) => {
       : "";
     const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
 
+    // Check if product is eligible for Eclipse+ discount (not resellable, not Eclipse Savers category)
+    const isEclipseSavers = payload.category_slug === "eclipse_savers" || 
+                            payload.category_name?.toLowerCase() === "eclipse savers";
+    const isEligibleForEclipsePlus = !payload.is_resellable && !isEclipseSavers;
+    
+    // Only show Eclipse+ line if product is eligible for the discount
+    const eclipsePlusLine = isEligibleForEclipsePlus 
+      ? `\n🌙 **${eclipsePlusPrice}** — Eclipse+ (30% off)`
+      : "";
+
     const placeholderExtras = {
       gbpPrice,
       eclipsePlusPrice,
       robuxPrice,
       robuxLine,
+      eclipsePlusLine,
       description,
       productUrl,
     };
@@ -322,22 +336,14 @@ Deno.serve(async (req) => {
       let fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
       let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
 
-      // For purchase_locations, filter out Robux line if not enabled, and always remove Eclipse+ price
-      if (field.id === "purchase_locations") {
+      // For purchase_locations, filter out Robux line if not enabled
+      if (field.id === "purchase_locations" && !hasRobux) {
         fieldValue = fieldValue
           .split('\n')
           .filter(line => {
-            // Always remove Eclipse+ lines (should not show member pricing in Discord)
-            const isEclipsePlusLine = line.includes('Eclipse+') || line.includes('30% off') || line.includes('30% Off');
-            if (isEclipsePlusLine) return false;
-            
             // Remove Robux lines if robux is not enabled
-            if (!hasRobux) {
-              const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub') || line.includes('R$');
-              if (isRobuxLine) return false;
-            }
-            
-            return true;
+            const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub') || line.includes('R$');
+            return !isRobuxLine;
           })
           .join('\n');
       }
