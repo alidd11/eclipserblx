@@ -19,6 +19,7 @@ interface FreeProductClaimProps {
   productId: string;
   productName: string;
   categoryId?: string | null;
+  isResellable?: boolean;
   onClaimed?: () => void;
 }
 
@@ -26,6 +27,7 @@ export function FreeProductClaim({
   productId, 
   productName, 
   categoryId,
+  isResellable,
   onClaimed 
 }: FreeProductClaimProps) {
   const navigate = useNavigate();
@@ -46,10 +48,10 @@ export function FreeProductClaim({
     return null;
   }
 
-  // Check if this product is eligible for free claim
-  const isEligible = isEligibleForFreeClaim(categoryId);
+  // Check if this product is eligible for free claim (not resellable)
+  const isEligible = isEligibleForFreeClaim(categoryId, isResellable);
   
-  // Don't show if product is not eligible (e.g., bot products)
+  // Don't show if product is not eligible (e.g., bot products or resellable)
   if (!isEligible) {
     return null;
   }

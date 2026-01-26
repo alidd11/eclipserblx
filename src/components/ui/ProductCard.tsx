@@ -25,9 +25,10 @@ interface ProductCardProps {
   storeLogo?: string | null;
   isVerified?: boolean;
   isTrusted?: boolean;
+  isResellable?: boolean;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const inCart = isInCart(id);
@@ -40,10 +41,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   // Check if product is new (within last 3 days)
   const isNew = createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
-  // Always show member price for eligible products
-  const isEligible = isEligibleForDiscount(categoryId);
-  const memberPrice = getMemberPrice(price, categoryId);
-  const discountPercent = getDiscountPercent(categoryId);
+  // Always show member price for eligible products (not resellable)
+  const isEligible = isEligibleForDiscount(categoryId, isResellable);
+  const memberPrice = getMemberPrice(price, categoryId, isResellable);
+  const discountPercent = getDiscountPercent(categoryId, isResellable);
   const hasMemberDiscount = isEligible && memberPrice < price;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {

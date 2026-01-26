@@ -76,6 +76,7 @@ export const RecommendedProducts = ({
               storeLogo={product.stores?.logo_url}
               isVerified={product.stores?.is_verified}
               isTrusted={product.stores?.is_trusted}
+              isResellable={(product as any).is_resellable}
             />
           ))}
         </div>

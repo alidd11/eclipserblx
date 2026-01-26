@@ -143,6 +143,7 @@ export default function Featured() {
                     storeLogo={product.stores?.logo_url}
                     isVerified={product.stores?.is_verified}
                     isTrusted={product.stores?.is_trusted}
+                    isResellable={product.is_resellable}
                   />
                 ))}
               </div>
@@ -205,6 +206,7 @@ export default function Featured() {
                     storeLogo={product.stores?.logo_url}
                     isVerified={product.stores?.is_verified}
                     isTrusted={product.stores?.is_trusted}
+                    isResellable={product.is_resellable}
                   />
                 ))}
               </div>
@@ -280,6 +282,7 @@ export default function Featured() {
                     storeLogo={product.stores?.logo_url}
                     isVerified={product.stores?.is_verified}
                     isTrusted={product.stores?.is_trusted}
+                    isResellable={product.is_resellable}
                   />
                 ))}
               </div>
