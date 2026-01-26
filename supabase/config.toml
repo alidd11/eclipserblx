@@ -213,3 +213,12 @@ verify_jwt = false
 
 [functions.send-promotion-discord-webhook]
 verify_jwt = false
+
+[functions.create-advertisement-checkout]
+verify_jwt = false
+
+[functions.send-advertisement-discord-webhook]
+verify_jwt = false
+
+[functions.verify-advertisement-payment]
+verify_jwt = false
