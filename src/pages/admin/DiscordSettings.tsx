@@ -38,6 +38,7 @@ interface DiscordSettings {
   affiliate_discord_webhook_url: string;
   eclipse_plus_discord_webhook_url: string;
   marketplace_discord_webhook_url: string;
+  promotions_discord_webhook_url: string;
   discord_widget_server_id: string;
 }
 
@@ -78,6 +79,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   affiliate_discord_webhook_url: '',
   eclipse_plus_discord_webhook_url: '',
   marketplace_discord_webhook_url: '',
+  promotions_discord_webhook_url: '',
   discord_widget_server_id: '',
 };
 
@@ -130,6 +132,13 @@ export default function DiscordSettings() {
 
   const [isTestingMarketplaceWebhook, setIsTestingMarketplaceWebhook] = useState(false);
   const [marketplaceWebhookTestResult, setMarketplaceWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+
+  const [isTestingPromotionsWebhook, setIsTestingPromotionsWebhook] = useState(false);
+  const [promotionsWebhookTestResult, setPromotionsWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -202,7 +211,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -221,6 +230,8 @@ export default function DiscordSettings() {
           settingsMap.eclipse_plus_discord_webhook_url = String(val);
         } else if (item.key === 'marketplace_discord_webhook_url') {
           settingsMap.marketplace_discord_webhook_url = String(val);
+        } else if (item.key === 'promotions_discord_webhook_url') {
+          settingsMap.promotions_discord_webhook_url = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -1018,6 +1029,63 @@ export default function DiscordSettings() {
     }
   };
 
+  const handleTestPromotionsWebhook = async () => {
+    if (!formData.promotions_discord_webhook_url) {
+      toast.error('Please enter a Promotions Webhook URL first');
+      return;
+    }
+
+    setIsTestingPromotionsWebhook(true);
+    setPromotionsWebhookTestResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-promotion-discord-webhook', {
+        body: {
+          custom: {
+            title: 'Test Promotion',
+            description: 'This is a test promotion announcement. Your webhook is configured correctly!',
+            code: 'TESTCODE25',
+            discount_value: '25% OFF',
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+        },
+      });
+
+      if (error) {
+        setPromotionsWebhookTestResult({
+          success: false,
+          message: 'Function invocation failed',
+          details: error.message,
+        });
+        toast.error('Promotions webhook test failed');
+      } else if (data?.success) {
+        setPromotionsWebhookTestResult({
+          success: true,
+          message: 'Test notification sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Promotions webhook test sent successfully!');
+      } else {
+        setPromotionsWebhookTestResult({
+          success: false,
+          message: data?.error || 'Unknown error',
+          details: data?.details,
+        });
+        toast.error('Promotions webhook test failed');
+      }
+    } catch (err: any) {
+      console.error('Promotions webhook test error:', err);
+      setPromotionsWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to test promotions webhook');
+    } finally {
+      setIsTestingPromotionsWebhook(false);
+    }
+  };
+
   const TestResultBadge = ({ result }: { result: { success: boolean; message: string; details?: string } | null }) => {
     if (!result) return null;
     
@@ -1141,6 +1209,12 @@ export default function DiscordSettings() {
                       Marketplace
                     </div>
                   </SelectItem>
+                  <SelectItem value="promotions">
+                    <div className="flex items-center gap-2">
+                      <Palette className="h-4 w-4" />
+                      Promotions
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1190,6 +1264,10 @@ export default function DiscordSettings() {
               <TabsTrigger value="marketplace" className="gap-2">
                 <Megaphone className="h-4 w-4 hidden sm:block" />
                 Marketplace
+              </TabsTrigger>
+              <TabsTrigger value="promotions" className="gap-2">
+                <Palette className="h-4 w-4 hidden sm:block" />
+                Promotions
               </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
@@ -2134,6 +2212,84 @@ export default function DiscordSettings() {
                       <p className="text-sm text-muted-foreground">
                         This announcement showcases the marketplace with a purple-themed design 
                         to attract both buyers and sellers to your community marketplace.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Promotions Webhook Tab */}
+          <TabsContent value="promotions">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-rose-400" />
+                  <CardTitle>Promotions Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Receive Discord notifications for discount codes and special offers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="promotionsWebhook">Webhook URL</Label>
+                  <Input
+                    id="promotionsWebhook"
+                    value={formData.promotions_discord_webhook_url}
+                    onChange={(e) => handleChange('promotions_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for promotion announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Send className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Test Webhook</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Send a sample promotion notification to verify your webhook is configured correctly.
+                  </p>
+                  <Button
+                    onClick={handleTestPromotionsWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingPromotionsWebhook || !formData.promotions_discord_webhook_url}
+                  >
+                    {isTestingPromotionsWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Test Promotion
+                  </Button>
+                  <TestResultBadge result={promotionsWebhookTestResult} />
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent automatically:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Discount code announcements with code and value</li>
+                    <li>Special offer notifications</li>
+                    <li>Expiration dates and usage limits</li>
+                    <li>Role pings for promotion alerts</li>
+                    <li>Links to browse products</li>
+                  </ul>
+                </div>
+
+                <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Palette className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-rose-400">Promotion Announcements</p>
+                      <p className="text-sm text-muted-foreground">
+                        Discount codes and special offers created in the Promotions admin page 
+                        can be announced to this webhook channel automatically.
                       </p>
                     </div>
                   </div>
