@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
-  Sparkles, Download
+  Sparkles, Download, PanelLeftClose, PanelLeft
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -878,94 +878,92 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   };
 
   return (
-    <div className="relative shrink-0">
-      <aside 
-        className={cn(
-          "bg-card flex flex-col transition-all duration-300 h-screen sticky top-0",
-          !isMobileDrawer && "border-r border-border",
-          isCollapsed ? "w-14" : "w-64",
-          className
-        )}
-        data-gesture-exempt="true"
-      >
-        {/* Header */}
-        <div className="p-4 border-b border-border pt-[max(1rem,env(safe-area-inset-top))]">
-          <Link to="/" className="flex items-center gap-2" onClick={handleNavClick}>
-            <EclipseLogo size="sm" />
-            {!isCollapsed && (
-              <span className="font-display text-lg font-bold gradient-text">
-                {SITE_NAME}
-              </span>
-            )}
-          </Link>
-        </div>
+    <aside 
+      className={cn(
+        "bg-card flex flex-col transition-all duration-300 h-screen sticky top-0 shrink-0",
+        !isMobileDrawer && "border-r border-border",
+        isCollapsed ? "w-14" : "w-64",
+        className
+      )}
+      data-gesture-exempt="true"
+    >
+      {/* Header */}
+      <div className="p-4 border-b border-border pt-[max(1rem,env(safe-area-inset-top))]">
+        <Link to="/" className="flex items-center gap-2" onClick={handleNavClick}>
+          <EclipseLogo size="sm" />
+          {!isCollapsed && (
+            <span className="font-display text-lg font-bold gradient-text">
+              {SITE_NAME}
+            </span>
+          )}
+        </Link>
+      </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-          {navGroups.map((group) => (
-            <div key={group.id}>
-              {renderGroup(group)}
-              {/* Insert categories section after Shop group */}
-              {group.id === 'shop' && renderCategoriesSection()}
-            </div>
-          ))}
-        </nav>
+      {/* Navigation */}
+      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+        {navGroups.map((group) => (
+          <div key={group.id}>
+            {renderGroup(group)}
+            {/* Insert categories section after Shop group */}
+            {group.id === 'shop' && renderCategoriesSection()}
+          </div>
+        ))}
+      </nav>
 
-        {/* Legal Footer - compact links */}
+      {/* Footer with Legal Links and Collapse Toggle */}
+      <div className={cn(
+        "border-t border-border",
+        isCollapsed ? "p-2" : "px-3 py-2"
+      )}>
+        {/* Legal Footer - compact links (only when expanded) */}
         {!isCollapsed && (
-          <div className="px-2 pt-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center pb-2">
+          <div className="text-xs text-muted-foreground flex gap-3 justify-center mb-2">
             <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
             <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
           </div>
         )}
+        
+        {/* Collapse Toggle Button */}
+        {!isMobileDrawer && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  hapticTap();
+                  onToggle();
+                }}
+                className={cn(
+                  "w-full text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8",
+                  isCollapsed ? "justify-center px-0" : "justify-between"
+                )}
+              >
+                {isCollapsed ? (
+                  <PanelLeft className="h-4 w-4" />
+                ) : (
+                  <>
+                    <span className="text-xs font-medium">Collapse</span>
+                    <PanelLeftClose className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {isCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
 
-        {/* Sign Out Dialog */}
-        <SignOutConfirmDialog
-          open={showSignOutDialog}
-          onOpenChange={setShowSignOutDialog}
-          onConfirm={handleSignOut}
-          isLoading={isSigningOut}
-        />
-      </aside>
-
-      {/* Sidebar Rail Handle - positioned outside sidebar */}
-      {!isMobileDrawer && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => {
-                hapticTap();
-                onToggle();
-              }}
-              className={cn(
-                "absolute top-0 right-0 translate-x-1/2 h-full w-4 z-10 group cursor-ew-resize",
-                "flex items-center justify-center",
-                "focus:outline-none focus-visible:outline-none"
-              )}
-              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {/* Thin rail line */}
-              <div className={cn(
-                "h-full w-0.5 rounded-full bg-border/50 transition-all duration-200",
-                "group-hover:w-1 group-hover:bg-primary/40"
-              )} />
-              {/* Center grip indicator */}
-              <div className={cn(
-                "absolute top-1/2 -translate-y-1/2 flex flex-col gap-0.5 opacity-0 transition-opacity duration-200",
-                "group-hover:opacity-100"
-              )}>
-                <div className="w-1 h-1 rounded-full bg-primary" />
-                <div className="w-1 h-1 rounded-full bg-primary" />
-                <div className="w-1 h-1 rounded-full bg-primary" />
-              </div>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={12}>
-            {isCollapsed ? 'Expand (⌘B)' : 'Collapse (⌘B)'}
-          </TooltipContent>
-        </Tooltip>
-      )}
-    </div>
+      {/* Sign Out Dialog */}
+      <SignOutConfirmDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={handleSignOut}
+        isLoading={isSigningOut}
+      />
+    </aside>
   );
 }
