@@ -12,10 +12,32 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[PURCHASE-AD-PINGS] ${step}${detailsStr}`);
 };
 
-// Prices for ping packs (in pence)
-const HERE_PING_PRICE_PENCE = 79; // £0.79 per ping
-const EVERYONE_PING_PRICE_PENCE = 149; // £1.49 per ping
+// Base prices for ping packs (in pence)
+const HERE_PING_BASE_PRICE_PENCE = 79; // £0.79 per ping
+const EVERYONE_PING_BASE_PRICE_PENCE = 149; // £1.49 per ping
 
+// Bulk discount tiers (quantity threshold, discount percentage)
+const BULK_DISCOUNTS = [
+  { minQty: 50, discount: 0.30 },  // 30% off for 50+
+  { minQty: 25, discount: 0.20 },  // 20% off for 25+
+  { minQty: 10, discount: 0.10 },  // 10% off for 10+
+  { minQty: 5, discount: 0.05 },   // 5% off for 5+
+];
+
+// Calculate discounted price based on quantity
+const getDiscountedPrice = (basePrice: number, quantity: number): number => {
+  const tier = BULK_DISCOUNTS.find(t => quantity >= t.minQty);
+  if (tier) {
+    return Math.round(basePrice * (1 - tier.discount));
+  }
+  return basePrice;
+};
+
+// Get discount percentage for quantity
+const getDiscountPercent = (quantity: number): number => {
+  const tier = BULK_DISCOUNTS.find(t => quantity >= t.minQty);
+  return tier ? tier.discount * 100 : 0;
+};
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -85,32 +107,44 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // Build line items
+    // Build line items with bulk discounts
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
     if (herePingsCount > 0) {
+      const hereDiscountedPrice = getDiscountedPrice(HERE_PING_BASE_PRICE_PENCE, herePingsCount);
+      const hereDiscountPercent = getDiscountPercent(herePingsCount);
+      const hereDescription = hereDiscountPercent > 0 
+        ? `${herePingsCount} @here ping${herePingsCount > 1 ? 's' : ''} (${hereDiscountPercent}% bulk discount!)`
+        : `${herePingsCount} @here ping${herePingsCount > 1 ? 's' : ''} for your ads`;
+      
       lineItems.push({
         price_data: {
           currency: 'gbp',
           product_data: {
             name: '@here Ping Credits',
-            description: `${herePingsCount} @here ping${herePingsCount > 1 ? 's' : ''} for your ads`,
+            description: hereDescription,
           },
-          unit_amount: HERE_PING_PRICE_PENCE,
+          unit_amount: hereDiscountedPrice,
         },
         quantity: herePingsCount,
       });
     }
 
     if (everyonePingsCount > 0) {
+      const everyoneDiscountedPrice = getDiscountedPrice(EVERYONE_PING_BASE_PRICE_PENCE, everyonePingsCount);
+      const everyoneDiscountPercent = getDiscountPercent(everyonePingsCount);
+      const everyoneDescription = everyoneDiscountPercent > 0 
+        ? `${everyonePingsCount} @everyone ping${everyonePingsCount > 1 ? 's' : ''} (${everyoneDiscountPercent}% bulk discount!)`
+        : `${everyonePingsCount} @everyone ping${everyonePingsCount > 1 ? 's' : ''} for your ads`;
+      
       lineItems.push({
         price_data: {
           currency: 'gbp',
           product_data: {
             name: '@everyone Ping Credits',
-            description: `${everyonePingsCount} @everyone ping${everyonePingsCount > 1 ? 's' : ''} for your ads`,
+            description: everyoneDescription,
           },
-          unit_amount: EVERYONE_PING_PRICE_PENCE,
+          unit_amount: everyoneDiscountedPrice,
         },
         quantity: everyonePingsCount,
       });
