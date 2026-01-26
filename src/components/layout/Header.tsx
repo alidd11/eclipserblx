@@ -119,7 +119,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Branding - fixed position, doesn't move with sidebar */}
-          <div className="hidden md:flex items-center gap-3 absolute left-4 top-1/2 -translate-y-1/2">
+          <div className="hidden md:flex items-center gap-3 fixed left-4 z-50" style={{ top: 'calc(env(safe-area-inset-top) + 0.875rem)' }}>
             <Link to="/" className="flex items-center gap-3">
               <EclipseLogo size="sm" />
               <span className="brand-text text-base gradient-text">
@@ -128,8 +128,8 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
           </div>
 
-          {/* Center: Search Bar + Currency (desktop) */}
-          <div className="hidden md:flex items-center gap-4 flex-1 justify-center">
+          {/* Center: Search Bar + Currency (desktop) - with left margin for fixed branding */}
+          <div className="hidden md:flex items-center gap-4 flex-1 ml-36">
             <HeaderSearchBar className="flex-1 max-w-xl" />
             <CurrencySelector />
           </div>
