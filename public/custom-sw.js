@@ -239,8 +239,9 @@ self.addEventListener('install', (event) => {
     })
   );
   
-  // Skip waiting to activate immediately
-  self.skipWaiting();
+  // Don't skip waiting automatically - let the app control when to activate
+  // This prevents automatic page refreshes during development
+  // self.skipWaiting() is only called when explicitly requested via message
 });
 
 // Log when service worker is activated

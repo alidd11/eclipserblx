@@ -76,13 +76,14 @@ export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = 
       }
     });
 
-    // Listen for controller change (SW activated)
+    // Listen for controller change (SW activated) - no auto-reload
     const handleControllerChange = () => {
-      if (didReloadRef.current) return;
-      didReloadRef.current = true;
-      console.log('[App] SW controller changed, reloading...');
-      // Auto-reload when SW takes control
-      window.location.reload();
+      console.log('[App] SW controller changed - update available');
+      // Don't auto-reload - let user decide when to refresh
+      if (showNotifications && !didReloadRef.current) {
+        didReloadRef.current = true;
+        showInfoNotification('Update Ready', 'Refresh the page to apply the latest update');
+      }
     };
 
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
