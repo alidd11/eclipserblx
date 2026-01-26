@@ -13,7 +13,6 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { CurrencySelector } from './CurrencySelector';
-
 const navLinks = [
   { href: '/featured', label: 'Featured', icon: Sparkles },
   { href: '/products', label: 'Products', icon: Package },
@@ -118,8 +117,15 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
           </div>
 
-          {/* Center: Search Bar + Currency (desktop) */}
+          {/* Desktop: Branding + Search Bar + Currency */}
           <div className="hidden md:flex items-center gap-4 flex-1">
+            {/* Branding - Always visible and fixed position in header */}
+            <Link to="/" className="flex items-center gap-3 shrink-0">
+              <EclipseLogo size="sm" />
+              <span className="brand-text text-base gradient-text whitespace-nowrap">
+                {SITE_NAME}
+              </span>
+            </Link>
             <HeaderSearchBar className="flex-1 max-w-xl" />
             <CurrencySelector />
           </div>
