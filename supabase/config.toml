@@ -234,3 +234,6 @@ verify_jwt = false
 
 [functions.purchase-ad-pings]
 verify_jwt = false
+
+[functions.track-ad-click]
+verify_jwt = false

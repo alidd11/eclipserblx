@@ -81,6 +81,47 @@ export type Database = {
           },
         ]
       }
+      advertisement_clicks: {
+        Row: {
+          advertisement_id: string
+          clicked_at: string
+          country: string | null
+          device_type: string | null
+          id: string
+          referrer: string | null
+          user_agent: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          advertisement_id: string
+          clicked_at?: string
+          country?: string | null
+          device_type?: string | null
+          id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          advertisement_id?: string
+          clicked_at?: string
+          country?: string | null
+          device_type?: string | null
+          id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advertisement_clicks_advertisement_id_fkey"
+            columns: ["advertisement_id"]
+            isOneToOne: false
+            referencedRelation: "discord_advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       advertisement_subscriptions: {
         Row: {
           ads_reset_at: string | null
@@ -863,6 +904,7 @@ export type Database = {
           discord_username: string | null
           id: string
           image_url: string | null
+          last_clicked_at: string | null
           link_url: string | null
           payment_id: string | null
           ping_price_paid: number | null
@@ -871,6 +913,8 @@ export type Database = {
           price_paid: number | null
           status: string
           title: string
+          total_clicks: number | null
+          unique_clicks: number | null
           updated_at: string
           user_id: string
         }
@@ -881,6 +925,7 @@ export type Database = {
           discord_username?: string | null
           id?: string
           image_url?: string | null
+          last_clicked_at?: string | null
           link_url?: string | null
           payment_id?: string | null
           ping_price_paid?: number | null
@@ -889,6 +934,8 @@ export type Database = {
           price_paid?: number | null
           status?: string
           title: string
+          total_clicks?: number | null
+          unique_clicks?: number | null
           updated_at?: string
           user_id: string
         }
@@ -899,6 +946,7 @@ export type Database = {
           discord_username?: string | null
           id?: string
           image_url?: string | null
+          last_clicked_at?: string | null
           link_url?: string | null
           payment_id?: string | null
           ping_price_paid?: number | null
@@ -907,6 +955,8 @@ export type Database = {
           price_paid?: number | null
           status?: string
           title?: string
+          total_clicks?: number | null
+          unique_clicks?: number | null
           updated_at?: string
           user_id?: string
         }

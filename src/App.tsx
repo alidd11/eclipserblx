@@ -56,6 +56,7 @@ const Affiliate = lazy(() => import("./pages/Affiliate"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Advertise = lazy(() => import("./pages/Advertise"));
 const MyAdvertisementsPage = lazy(() => import("./pages/Account/MyAdvertisementsPage"));
+const AdAnalyticsPage = lazy(() => import("./pages/Account/AdAnalyticsPage"));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -216,6 +217,7 @@ const App = () => (
                   <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/advertise" element={<Advertise />} />
                   <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
+                  <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
                   <Route path="/support/chat" element={<LiveChat />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/store-messages" element={<StoreMessages />} />
