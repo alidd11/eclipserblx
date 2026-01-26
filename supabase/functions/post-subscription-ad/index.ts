@@ -143,9 +143,19 @@ serve(async (req) => {
           : String(partnershipPingSetting.value))
       : null;
 
-    // Validate ping type if provided
+    // Validate ping type if provided and check balance
     const validPingTypes = ['here', 'everyone', null];
-    const selectedPingType = pingType && validPingTypes.includes(pingType) ? pingType : null;
+    let selectedPingType = pingType && validPingTypes.includes(pingType) ? pingType : null;
+    
+    // Check if user has ping balance for selected ping
+    if (selectedPingType === 'here' && (subscription.here_pings_balance || 0) < 1) {
+      selectedPingType = null; // No balance, don't use ping
+      logStep("No @here ping balance available");
+    }
+    if (selectedPingType === 'everyone' && (subscription.everyone_pings_balance || 0) < 1) {
+      selectedPingType = null; // No balance, don't use ping
+      logStep("No @everyone ping balance available");
+    }
 
     // Create advertisement record
     const { data: advertisement, error: adError } = await supabaseAdmin
@@ -160,7 +170,7 @@ serve(async (req) => {
         status: "paid",
         price_paid: 0,
         ping_type: selectedPingType,
-        ping_price_paid: 0, // Ping pricing handled separately
+        ping_price_paid: 0,
       })
       .select()
       .single();
@@ -232,12 +242,21 @@ serve(async (req) => {
       })
       .eq("id", advertisement.id);
 
+    // Update advertisement status and increment usage, deduct ping if used
+    const updateData: Record<string, unknown> = {
+      ads_used_this_month: adsUsed + 1,
+      updated_at: new Date().toISOString(),
+    };
+    
+    if (selectedPingType === 'here') {
+      updateData.here_pings_balance = Math.max(0, (subscription.here_pings_balance || 0) - 1);
+    } else if (selectedPingType === 'everyone') {
+      updateData.everyone_pings_balance = Math.max(0, (subscription.everyone_pings_balance || 0) - 1);
+    }
+
     await supabaseAdmin
       .from("advertisement_subscriptions")
-      .update({ 
-        ads_used_this_month: adsUsed + 1,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", subscription.id);
 
     logStep("Advertisement posted successfully", { adId: advertisement.id });

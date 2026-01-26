@@ -32,6 +32,8 @@ export interface AdSubscriptionStatus {
   ads_used: number;
   current_period_end: string | null;
   billing_period: AdBillingPeriod | null;
+  here_pings_balance: number;
+  everyone_pings_balance: number;
 }
 
 export function useAdTiers() {
@@ -79,6 +81,8 @@ export function useAdSubscription() {
         ads_used: data.ads_used || 0,
         current_period_end: data.current_period_end || null,
         billing_period: data.billing_period || null,
+        here_pings_balance: data.here_pings_balance || 0,
+        everyone_pings_balance: data.everyone_pings_balance || 0,
       };
     },
     enabled: !!session?.user,
@@ -89,16 +93,63 @@ export function useAdSubscription() {
 
 export function useAdSubscriptionCheckout() {
   const { session } = useAuth();
-  const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ tier, billingPeriod }: { tier: AdTier; billingPeriod: AdBillingPeriod }) => {
+    mutationFn: async ({ 
+      tier, 
+      billingPeriod, 
+      herePings = 0, 
+      everyonePings = 0 
+    }: { 
+      tier: AdTier; 
+      billingPeriod: AdBillingPeriod;
+      herePings?: number;
+      everyonePings?: number;
+    }) => {
       if (!session?.access_token) {
         throw new Error('Please sign in to subscribe');
       }
       
       const { data, error } = await supabase.functions.invoke('create-ad-subscription-checkout', {
-        body: { tier, billingPeriod },
+        body: { tier, billingPeriod, herePings, everyonePings },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to start checkout');
+    },
+  });
+}
+
+export function usePurchasePings() {
+  const { session } = useAuth();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      herePings = 0, 
+      everyonePings = 0 
+    }: { 
+      herePings?: number;
+      everyonePings?: number;
+    }) => {
+      if (!session?.access_token) {
+        throw new Error('Please sign in to purchase pings');
+      }
+      
+      const { data, error } = await supabase.functions.invoke('purchase-ad-pings', {
+        body: { herePings, everyonePings },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },

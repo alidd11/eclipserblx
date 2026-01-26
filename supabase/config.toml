@@ -231,3 +231,6 @@ verify_jwt = false
 
 [functions.post-subscription-ad]
 verify_jwt = false
+
+[functions.purchase-ad-pings]
+verify_jwt = false
