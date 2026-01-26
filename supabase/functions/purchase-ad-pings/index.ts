@@ -84,6 +84,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Test mode bypass for specific test user
+    const isTestUser = user.email === "alicanimir1@gmail.com";
+
     const { data: subscription } = await supabaseAdmin
       .from("advertisement_subscriptions")
       .select("*")
@@ -91,9 +94,11 @@ serve(async (req) => {
       .eq("status", "active")
       .maybeSingle();
 
-    if (!subscription) {
+    if (!subscription && !isTestUser) {
       throw new Error("You need an active advertisement subscription to purchase pings");
     }
+
+    logStep("Subscription check", { hasSubscription: !!subscription, isTestUser });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
