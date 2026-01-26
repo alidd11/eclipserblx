@@ -283,9 +283,27 @@ Deno.serve(async (req) => {
           .replace(/:\s*\n•/g, ":\n•")  // Fix colon spacing before bullets
           .trim()
       : "A new product is now available on Eclipse!";
-    const description = rawDescription.length > 900 
-      ? rawDescription.substring(0, 897) + "..." 
-      : rawDescription;
+    // Check if product is eligible for Eclipse+ discount (not resellable, not Eclipse Savers category)
+    const isEclipseSavers = payload.category_slug === "eclipse_savers" || 
+                            payload.category_name?.toLowerCase() === "eclipse savers";
+    const isEligibleForEclipsePlus = !payload.is_resellable && !isEclipseSavers;
+
+    // Strip Eclipse+ references from description for ineligible products
+    let cleanedDescription = rawDescription;
+    if (!isEligibleForEclipsePlus) {
+      cleanedDescription = rawDescription
+        .replace(/eclipse\+/gi, "")
+        .replace(/eclipse plus/gi, "")
+        .replace(/30%\s*off/gi, "")
+        .replace(/member\s*price/gi, "")
+        .replace(/member\s*discount/gi, "")
+        .replace(/\n{3,}/g, "\n\n") // Clean up extra newlines after removal
+        .trim();
+    }
+
+    const description = cleanedDescription.length > 900 
+      ? cleanedDescription.substring(0, 897) + "..." 
+      : cleanedDescription;
 
     const gbpPrice = `£${payload.product_price.toFixed(2)}`;
     const eclipsePlusPrice = `£${(payload.product_price * 0.7).toFixed(2)}`;
@@ -298,11 +316,6 @@ Deno.serve(async (req) => {
       : "";
     const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
 
-    // Check if product is eligible for Eclipse+ discount (not resellable, not Eclipse Savers category)
-    const isEclipseSavers = payload.category_slug === "eclipse_savers" || 
-                            payload.category_name?.toLowerCase() === "eclipse savers";
-    const isEligibleForEclipsePlus = !payload.is_resellable && !isEclipseSavers;
-    
     // Only show Eclipse+ line if product is eligible for the discount
     const eclipsePlusLine = isEligibleForEclipsePlus 
       ? `\n🌙 **${eclipsePlusPrice}** — Eclipse+ (30% off)`
