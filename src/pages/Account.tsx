@@ -911,9 +911,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
-            {/* Badges */}
-            <Card className="bg-card border-border">
+          <TabsContent value="profile">
+            {/* Badges - Full Width */}
+            <Card className="bg-card border-border mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="h-5 w-5" />
@@ -925,14 +925,17 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </CardContent>
             </Card>
 
-            {/* Marketplace Beta - Only visible to users with feature flag access */}
-            {hasMarketplaceAccess && <BecomeSellerCard />}
+            {/* Grid for other cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Marketplace Beta - Only visible to users with feature flag access */}
+              {hasMarketplaceAccess && <BecomeSellerCard />}
 
-            {/* Referral Card */}
-            <ReferralCard />
+              {/* Referral Card */}
+              <ReferralCard />
 
-            {/* Affiliate Earnings Card */}
-            <AffiliateCard />
+              {/* Affiliate Earnings Card */}
+              <AffiliateCard />
+            </div>
           </TabsContent>
 
           {/* Shopping Tab */}
@@ -1061,28 +1064,31 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </TabsContent>
 
           {/* Preferences Tab */}
-          <TabsContent value="preferences" className="space-y-6">
-            {/* Theme Settings */}
-            <ThemeSettingsCard />
+          <TabsContent value="preferences">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Theme Settings */}
+              <ThemeSettingsCard />
 
-            {/* Email Subscriptions */}
-            <EmailSubscriptionCard />
+              {/* Email Subscriptions */}
+              <EmailSubscriptionCard />
 
-            {/* Notification Settings */}
-            <NotificationSettingsCard />
+              {/* Notification Settings */}
+              <NotificationSettingsCard />
 
-            {/* Sound Customization */}
-            <SoundCustomizationCard />
+              {/* Sound Customization */}
+              <SoundCustomizationCard />
+            </div>
           </TabsContent>
 
           {/* Security Tab */}
-          <TabsContent value="security" className="space-y-6">
-            {/* My Messages */}
-            <MyMessagesCard />
+          <TabsContent value="security">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* My Messages */}
+              <MyMessagesCard />
 
-            {/* Saved Payment Methods */}
-            <SavedCardsCard />
-
+              {/* Saved Payment Methods */}
+              <SavedCardsCard />
+            </div>
           </TabsContent>
         </Tabs>
 
