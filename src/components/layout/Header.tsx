@@ -87,7 +87,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   };
 
   return (
-<header className="sticky top-0 z-50 w-full border-b border-border glass-effect pt-[env(safe-area-inset-top)]">
+<header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
       <div className="px-4">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
           {/* Left side - Mobile menu + Logo + Desktop sidebar toggle */}
