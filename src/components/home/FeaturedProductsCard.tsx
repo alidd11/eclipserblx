@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -15,6 +16,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
+  const { formatPrice } = useCurrency();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products-card'],
@@ -219,11 +221,11 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
                             {hasMemberDiscount ? (
                               <>
                                 <span className="text-xs text-muted-foreground line-through">
-                                  £{Number(currentProduct.price).toFixed(2)}
+                                  {formatPrice(Number(currentProduct.price))}
                                 </span>
                                 <div className="flex items-center gap-1.5">
                                   <span className="font-bold text-sm text-amber-500">
-                                    £{memberPrice.toFixed(2)}
+                                    {formatPrice(memberPrice)}
                                   </span>
                                   <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
                                     <Crown className="h-2 w-2" />
@@ -233,7 +235,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
                               </>
                             ) : (
                               <span className="font-bold text-sm">
-                                £{Number(currentProduct.price).toFixed(2)}
+                                {formatPrice(Number(currentProduct.price))}
                               </span>
                             )}
                           </div>

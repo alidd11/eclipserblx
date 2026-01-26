@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, TrendingUp, Clock, ArrowRight, Play, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useCurrency } from '@/hooks/useCurrency';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Featured() {
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
+  const { formatPrice } = useCurrency();
 
   // Featured products - hand-picked by the team
   const { data: featuredProducts, isLoading: loadingFeatured } = useQuery({
@@ -328,6 +330,7 @@ export default function Featured() {
 // Hero Product Card Component
 function HeroProductCard({ product }: { product: any }) {
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
+  const { formatPrice } = useCurrency();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images);
   const isVideo = isVideoUrl(displayMedia);
   const memberPrice = getMemberPrice(product.price, product.category_id);
@@ -404,11 +407,11 @@ function HeroProductCard({ product }: { product: any }) {
               <div className="text-right">
                 {isEligibleForDiscount(product.category_id) && (
                   <p className="text-sm text-white/50 line-through">
-                    £{Number(product.price).toFixed(2)}
+                    {formatPrice(Number(product.price))}
                   </p>
                 )}
                 <p className="text-2xl md:text-3xl font-bold text-white">
-                  £{memberPrice.toFixed(2)}
+                  {formatPrice(memberPrice)}
                 </p>
                 {isEligibleForDiscount(product.category_id) && (
                   <p className="text-xs text-amber-400 font-medium">

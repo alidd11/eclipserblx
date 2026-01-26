@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
+import { useCurrency } from '@/hooks/useCurrency';
 
 import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
 import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
@@ -152,6 +153,7 @@ export default function Marketplace() {
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const { formatPrice } = useCurrency();
 
   // Debounce search query
   useEffect(() => {
@@ -368,7 +370,7 @@ export default function Marketplace() {
                             {product.stores?.name}
                           </p>
                           <p className="text-sm font-semibold text-primary mt-1">
-                            £{product.price.toFixed(2)}
+                            {formatPrice(Number(product.price))}
                           </p>
                         </CardContent>
                       </Card>

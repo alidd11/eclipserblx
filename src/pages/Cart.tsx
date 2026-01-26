@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function Cart() {
   const { items, removeItem, clearCart, total } = useCart();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
+  const { formatPrice } = useCurrency();
 
   // Calculate Eclipse+ discount
   const calculateMemberTotal = () => {
@@ -96,16 +98,16 @@ export default function Cart() {
                       <div className="text-right">
                         {hasDiscount ? (
                           <>
-                            <span className="font-bold text-lg text-primary">£{memberPrice.toFixed(2)}</span>
+                            <span className="font-bold text-lg text-primary">{formatPrice(memberPrice)}</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs text-muted-foreground line-through">£{item.price.toFixed(2)}</span>
+                              <span className="text-xs text-muted-foreground line-through">{formatPrice(item.price)}</span>
                               <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-amber-500/20 text-amber-400 border-0">
                                 -{discountPercent}%
                               </Badge>
                             </div>
                           </>
                         ) : (
-                          <span className="font-bold text-lg">£{item.price.toFixed(2)}</span>
+                          <span className="font-bold text-lg">{formatPrice(item.price)}</span>
                         )}
                       </div>
                       <Button
@@ -132,7 +134,7 @@ export default function Cart() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal ({items.length} items)</span>
-                  <span>£{total.toFixed(2)}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
                 
                 {isSubscribed && eclipseDiscount > 0 && (
@@ -141,24 +143,24 @@ export default function Cart() {
                       <Sparkles className="h-3 w-3 text-amber-400" />
                       Eclipse+ Discount
                     </span>
-                    <span className="text-primary">-£{eclipseDiscount.toFixed(2)}</span>
+                    <span className="text-primary">{formatPrice(-eclipseDiscount)}</span>
                   </div>
                 )}
                 
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Discount Code</span>
-                  <span>£0.00</span>
+                  <span>{formatPrice(0)}</span>
                 </div>
                 
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>£{memberTotal.toFixed(2)}</span>
+                    <span>{formatPrice(memberTotal)}</span>
                   </div>
                   {isSubscribed && eclipseDiscount > 0 && (
                     <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
                       <Sparkles className="h-3 w-3" />
-                      You're saving £{eclipseDiscount.toFixed(2)} with Eclipse+!
+                      You're saving {formatPrice(eclipseDiscount)} with Eclipse+!
                     </p>
                   )}
                 </div>
