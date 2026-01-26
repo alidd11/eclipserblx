@@ -96,7 +96,7 @@ function applyPlaceholders(
   extras: {
     gbpPrice: string;
     eclipsePlusPrice: string;
-    robuxPrice: string | null;
+    robuxPrice: string;
     robuxLine: string;
     description: string;
     productUrl: string;
@@ -109,7 +109,7 @@ function applyPlaceholders(
     .replace(/{category_name}/g, payload.category_name || "Products")
     .replace(/{gbp_price}/g, extras.gbpPrice)
     .replace(/{eclipse_plus_price}/g, extras.eclipsePlusPrice)
-    .replace(/{robux_price}/g, extras.robuxPrice || "")
+    .replace(/{robux_price}/g, extras.robuxPrice)
     .replace(/{robux_line}/g, extras.robuxLine);
 }
 
@@ -271,11 +271,12 @@ Deno.serve(async (req) => {
 
     const gbpPrice = `£${payload.product_price.toFixed(2)}`;
     const eclipsePlusPrice = `£${(payload.product_price * 0.7).toFixed(2)}`;
-    const robuxPrice = payload.robux_enabled && payload.robux_price 
-      ? `R$${payload.robux_price.toLocaleString()}` 
-      : "";
-    const robuxLine = payload.robux_enabled && payload.robux_price 
-      ? `<:Robux:1145238657427578911>  **R$${payload.robux_price.toLocaleString()}** - [Roblox Hub](https://www.roblox.com/games/14585849356/KILLr-Projects-Hub)\n` 
+    
+    // Only provide robux values if robux is enabled AND has a price
+    const hasRobux = payload.robux_enabled && payload.robux_price;
+    const robuxPrice = hasRobux ? `R$${payload.robux_price!.toLocaleString()}` : "";
+    const robuxLine = hasRobux 
+      ? `<:Robux:1145238657427578911>  **R$${payload.robux_price!.toLocaleString()}** - [Roblox Hub](https://www.roblox.com/games/14585849356/KILLr-Projects-Hub)\n` 
       : "";
     const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
 
@@ -307,13 +308,13 @@ Deno.serve(async (req) => {
       let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
 
       // For purchase_locations, filter out the Robux line if robux is not enabled
-      if (field.id === "purchase_locations" && (!payload.robux_enabled || !payload.robux_price)) {
-        // Remove lines containing Robux emoji or R$ that have empty/no price
+      if (field.id === "purchase_locations" && !hasRobux) {
+        // Remove lines containing Robux emoji, Roblox Hub, or empty robux placeholders
         fieldValue = fieldValue
           .split('\n')
           .filter(line => {
-            // Keep lines that don't mention Robux or have actual robux price
-            const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub');
+            // Keep lines that don't mention Robux
+            const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub') || line.includes('R$');
             return !isRobuxLine;
           })
           .join('\n');
