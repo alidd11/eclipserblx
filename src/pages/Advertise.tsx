@@ -79,8 +79,27 @@ export default function Advertise() {
 
   const hasDiscordLinked = !!profile?.discord_id;
 
+  // Admin testing bypass - grant full access without payment
+  const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+  const isAdminTester = user?.email === PRIMARY_ADMIN_EMAIL;
+
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
-  const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
+  const { data: realSubscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
+  
+  // For admin tester, simulate a premium subscription if they don't have one
+  const subscription = isAdminTester && !realSubscription?.subscribed 
+    ? {
+        subscribed: true,
+        tier: 'premium' as const,
+        tier_name: 'Premium (Test Mode)',
+        ads_per_month: 999,
+        ads_remaining: 999,
+        billing_period: 'monthly' as const,
+        here_pings_balance: 99,
+        everyone_pings_balance: 99,
+      }
+    : realSubscription;
+
   const checkoutMutation = useAdSubscriptionCheckout();
   const purchasePingsMutation = usePurchasePings();
 
