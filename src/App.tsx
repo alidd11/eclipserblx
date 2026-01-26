@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { ChatPanelProvider } from "@/hooks/useChatPanel";
 import { CookieConsentProvider } from "@/hooks/useCookieConsent";
+import { CurrencyProvider } from "@/hooks/useCurrency";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ChatSidePanel } from "@/components/chat/ChatSidePanel";
 import { CookieConsentBanner } from "@/components/cookies/CookieConsentBanner";
@@ -167,12 +168,13 @@ const App = () => (
   <ConnectionErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <CookieConsentProvider>
-        <AuthProvider>
-          <CartProvider>
-            <ChatPanelProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
+        <CurrencyProvider>
+          <AuthProvider>
+            <CartProvider>
+              <ChatPanelProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
                 <BrowserRouter>
                   <IpBanCheck>
                     <PWAWrapper>
@@ -305,9 +307,10 @@ const App = () => (
                   </IpBanCheck>
                 </BrowserRouter>
               </TooltipProvider>
-            </ChatPanelProvider>
-          </CartProvider>
-        </AuthProvider>
+              </ChatPanelProvider>
+            </CartProvider>
+          </AuthProvider>
+        </CurrencyProvider>
       </CookieConsentProvider>
     </QueryClientProvider>
   </ConnectionErrorBoundary>

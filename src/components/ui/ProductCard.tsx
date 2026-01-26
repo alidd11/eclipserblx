@@ -5,6 +5,7 @@ import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store } from 'lucide
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
@@ -32,6 +33,7 @@ interface ProductCardProps {
 export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -205,12 +207,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               <>
                 {/* Normal price */}
                 <span className="text-[10px] text-muted-foreground leading-none line-through">
-                  £{price.toFixed(2)}
+                  {formatPrice(price)}
                 </span>
                 {/* Member price + discount badge */}
                 <div className="flex items-center gap-1">
                   <span className="text-sm font-bold whitespace-nowrap leading-none text-amber-400">
-                    £{memberPrice.toFixed(2)}
+                    {formatPrice(memberPrice)}
                   </span>
                   <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
                     <Sparkles className="h-2 w-2 flex-shrink-0" />
@@ -221,7 +223,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             ) : (
               /* Single price for Eclipse Savers or non-discountable products */
               <span className="text-sm font-bold whitespace-nowrap leading-none text-foreground">
-                £{price.toFixed(2)}
+                {formatPrice(price)}
               </span>
             )}
           </div>

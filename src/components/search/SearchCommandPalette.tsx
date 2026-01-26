@@ -17,6 +17,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { hapticTap } from '@/lib/haptics';
 import { useSmartSearch } from '@/hooks/useSmartSearch';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Product {
   id: string;
@@ -57,6 +58,7 @@ const legalItems = [
 
 export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPaletteProps) {
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,12 +131,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     navigate(href);
   }, [navigate, onOpenChange]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(price);
-  };
+  // formatPrice is now provided by useCurrency hook
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
