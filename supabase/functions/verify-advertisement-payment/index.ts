@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,16 +13,40 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[VERIFY-ADVERTISEMENT-PAYMENT] ${step}${detailsStr}`);
 };
 
+// Validate UUID format
+const isValidUuid = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rateLimitResult = checkRateLimit({
+      ...RATE_LIMITS.API,
+      identifier: clientIp,
+      action: 'verify_advertisement',
+    });
+
+    if (!rateLimitResult.allowed) {
+      logStep("Rate limited", { ip: clientIp });
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
     const { advertisementId, sessionId } = await req.json();
 
-    if (!advertisementId) {
+    if (!advertisementId || typeof advertisementId !== 'string') {
       throw new Error("Advertisement ID is required");
+    }
+
+    // Validate UUID format to prevent injection
+    if (!isValidUuid(advertisementId)) {
+      throw new Error("Invalid advertisement ID format");
     }
 
     logStep("Verification request", { advertisementId, sessionId });

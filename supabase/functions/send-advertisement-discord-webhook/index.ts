@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,16 +12,48 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[SEND-ADVERTISEMENT-DISCORD-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Validate UUID format
+const isValidUuid = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
+// Sanitize text to prevent Discord embed issues
+const sanitizeForDiscord = (text: string): string => {
+  return text
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .replace(/@(everyone|here)/gi, '@\u200B$1')
+    .substring(0, 2000); // Discord embed limit
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limiting - use EXPENSIVE since this sends to external service
+    const clientIp = getClientIp(req);
+    const rateLimitResult = checkRateLimit({
+      ...RATE_LIMITS.EXPENSIVE,
+      identifier: clientIp,
+      action: 'send_advertisement_webhook',
+    });
+
+    if (!rateLimitResult.allowed) {
+      logStep("Rate limited", { ip: clientIp });
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
     const { advertisementId } = await req.json();
 
-    if (!advertisementId) {
+    if (!advertisementId || typeof advertisementId !== 'string') {
       throw new Error("Advertisement ID is required");
+    }
+
+    // Validate UUID format
+    if (!isValidUuid(advertisementId)) {
+      throw new Error("Invalid advertisement ID format");
     }
 
     logStep("Request received", { advertisementId });
@@ -78,15 +111,21 @@ serve(async (req) => {
 
     logStep("Webhook URL retrieved");
 
-    // Build Discord embed
+    // Build Discord embed with sanitized content
+    const sanitizedTitle = sanitizeForDiscord(advertisement.title);
+    const sanitizedDescription = sanitizeForDiscord(advertisement.description);
+    const sanitizedUsername = advertisement.discord_username 
+      ? sanitizeForDiscord(advertisement.discord_username) 
+      : null;
+
     const embed: Record<string, unknown> = {
-      title: `📢 ${advertisement.title}`,
-      description: advertisement.description,
+      title: `📢 ${sanitizedTitle}`,
+      description: sanitizedDescription,
       color: 0x9b59b6, // Purple color
       timestamp: new Date().toISOString(),
       footer: {
-        text: advertisement.discord_username 
-          ? `Sponsored • Posted by @${advertisement.discord_username}`
+        text: sanitizedUsername 
+          ? `Sponsored • Posted by @${sanitizedUsername}`
           : "Sponsored • Eclipse Marketplace",
       },
     };

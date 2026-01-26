@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,35 +13,86 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CREATE-ADVERTISEMENT-CHECKOUT] ${step}${detailsStr}`);
 };
 
+// Sanitize text input to prevent Discord embed injection
+const sanitizeText = (text: string): string => {
+  return text
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/@(everyone|here)/gi, '@\u200B$1') // Prevent Discord @everyone/@here pings
+    .trim();
+};
+
+// Validate URL format
+const isValidUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rateLimitResult = checkRateLimit({
+      ...RATE_LIMITS.WRITE,
+      identifier: clientIp,
+      action: 'advertisement_checkout',
+    });
+
+    if (!rateLimitResult.allowed) {
+      logStep("Rate limited", { ip: clientIp });
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
     const { title, description, imageUrl, linkUrl, discordUsername } = await req.json();
 
     // Validate inputs
-    if (!title || title.trim().length === 0) {
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
       throw new Error("Title is required");
     }
     if (title.length > 100) {
       throw new Error("Title must be 100 characters or less");
     }
-    if (!description || description.trim().length === 0) {
+    if (!description || typeof description !== 'string' || description.trim().length === 0) {
       throw new Error("Description is required");
     }
     if (description.length > 500) {
       throw new Error("Description must be 500 characters or less");
     }
-    if (imageUrl && imageUrl.length > 500) {
-      throw new Error("Image URL is too long");
+    
+    // Validate optional URLs
+    if (imageUrl) {
+      if (typeof imageUrl !== 'string' || imageUrl.length > 500) {
+        throw new Error("Image URL is too long");
+      }
+      if (!isValidUrl(imageUrl)) {
+        throw new Error("Invalid image URL format");
+      }
     }
-    if (linkUrl && linkUrl.length > 500) {
-      throw new Error("Link URL is too long");
+    if (linkUrl) {
+      if (typeof linkUrl !== 'string' || linkUrl.length > 500) {
+        throw new Error("Link URL is too long");
+      }
+      if (!isValidUrl(linkUrl)) {
+        throw new Error("Invalid link URL format");
+      }
+    }
+    if (discordUsername && (typeof discordUsername !== 'string' || discordUsername.length > 50)) {
+      throw new Error("Discord username is too long");
     }
 
-    logStep("Request received", { title, descriptionLength: description.length });
+    // Sanitize text inputs
+    const sanitizedTitle = sanitizeText(title);
+    const sanitizedDescription = sanitizeText(description);
+    const sanitizedDiscordUsername = discordUsername ? sanitizeText(discordUsername) : null;
+
+    logStep("Request received", { title: sanitizedTitle, descriptionLength: sanitizedDescription.length });
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
@@ -109,11 +161,11 @@ serve(async (req) => {
       .from("discord_advertisements")
       .insert({
         user_id: user.id,
-        title: title.trim(),
-        description: description.trim(),
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         image_url: imageUrl?.trim() || null,
         link_url: linkUrl?.trim() || null,
-        discord_username: discordUsername?.trim() || null,
+        discord_username: sanitizedDiscordUsername,
         status: "pending",
         price_paid: advertisementPrice,
       })
