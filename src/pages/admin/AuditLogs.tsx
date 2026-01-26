@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -399,30 +400,72 @@ export default function AdminAuditLogs() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+              {/* Mobile dropdown */}
+              <div className="sm:hidden mb-4">
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger className="w-full bg-background">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border z-50">
+                    <SelectItem value="roles">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Roles ({roleLogs.length})
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="vpn">
+                      <div className="flex items-center gap-2">
+                        <Wifi className="h-4 w-4" />
+                        VPN Blocks ({vpnLogs.length})
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ipban">
+                      <div className="flex items-center gap-2">
+                        <Ban className="h-4 w-4" />
+                        IP Bans ({ipBanLogs.length})
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="accounts">
+                      <div className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Deletions ({accountLogs.length})
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="income">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Income ({incomeLogs.length})
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Desktop tabs */}
+              <TabsList className="hidden sm:flex w-full flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="roles" className="flex-1 min-w-[100px] gap-1.5 data-[state=active]:bg-background">
                   <Shield className="h-4 w-4" />
-                  <span className="hidden sm:inline">Roles</span>
+                  Roles
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{roleLogs.length}</Badge>
                 </TabsTrigger>
                 <TabsTrigger value="vpn" className="flex-1 min-w-[100px] gap-1.5 data-[state=active]:bg-background">
                   <Wifi className="h-4 w-4" />
-                  <span className="hidden sm:inline">VPN Blocks</span>
+                  VPN Blocks
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{vpnLogs.length}</Badge>
                 </TabsTrigger>
                 <TabsTrigger value="ipban" className="flex-1 min-w-[100px] gap-1.5 data-[state=active]:bg-background">
                   <Ban className="h-4 w-4" />
-                  <span className="hidden sm:inline">IP Bans</span>
+                  IP Bans
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{ipBanLogs.length}</Badge>
                 </TabsTrigger>
                 <TabsTrigger value="accounts" className="flex-1 min-w-[100px] gap-1.5 data-[state=active]:bg-background">
                   <Trash2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Deletions</span>
+                  Deletions
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{accountLogs.length}</Badge>
                 </TabsTrigger>
                 <TabsTrigger value="income" className="flex-1 min-w-[100px] gap-1.5 data-[state=active]:bg-background">
                   <Eye className="h-4 w-4" />
-                  <span className="hidden sm:inline">Income</span>
+                  Income
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{incomeLogs.length}</Badge>
                 </TabsTrigger>
               </TabsList>

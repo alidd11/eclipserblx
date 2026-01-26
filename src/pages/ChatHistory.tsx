@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, MessageSquare, Clock, Download, FileText, Ticket, Send, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -81,6 +82,7 @@ export default function ChatHistory() {
   const [isLoading, setIsLoading] = useState(true);
   const [replyMessage, setReplyMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState('chats');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -584,8 +586,32 @@ export default function ChatHistory() {
           </div>
         </div>
 
-        <Tabs defaultValue="chats" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          {/* Mobile dropdown */}
+          <div className="sm:hidden mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="Select view" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="chats">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Live Chats ({conversations.length})
+                  </div>
+                </SelectItem>
+                <SelectItem value="tickets">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="h-4 w-4" />
+                    Support Tickets ({tickets.length})
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="chats" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Live Chats ({conversations.length})

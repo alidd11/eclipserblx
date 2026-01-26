@@ -41,6 +41,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 export default function SellerAnalytics() {
   const { store } = useSellerStatus();
   const [timeRange, setTimeRange] = useState('7d');
+  const [chartTab, setChartTab] = useState('traffic');
 
   const getDateRange = () => {
     const end = endOfDay(new Date());
@@ -255,8 +256,38 @@ export default function SellerAnalytics() {
             </div>
 
             {/* Charts */}
-            <Tabs defaultValue="traffic" className="w-full">
-              <TabsList>
+            <Tabs value={chartTab} onValueChange={setChartTab} className="w-full">
+              {/* Mobile dropdown */}
+              <div className="sm:hidden mb-4">
+                <Select value={chartTab} onValueChange={setChartTab}>
+                  <SelectTrigger className="w-full bg-background">
+                    <SelectValue placeholder="Select view" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border z-50">
+                    <SelectItem value="traffic">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Traffic
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="conversions">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Conversions
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="sources">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        Sources
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Desktop tabs */}
+              <TabsList className="hidden sm:inline-flex">
                 <TabsTrigger value="traffic">Traffic</TabsTrigger>
                 <TabsTrigger value="conversions">Conversions</TabsTrigger>
                 <TabsTrigger value="sources">Sources</TabsTrigger>

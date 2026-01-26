@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, ShieldCheck, Package, Store, UserCheck, Bot, Key, MessageSquare } from "lucide-react";
 
 // Sample data for previews
@@ -359,11 +360,31 @@ export default function EmailTemplates() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex flex-wrap h-auto gap-1">
+          {/* Mobile dropdown */}
+          <div className="sm:hidden mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="Select template" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                {templates.map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    <div className="flex items-center gap-2">
+                      <template.icon className="h-4 w-4" />
+                      {template.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:flex flex-wrap h-auto gap-1">
             {templates.map((template) => (
               <TabsTrigger key={template.id} value={template.id} className="flex items-center gap-1.5">
                 <template.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{template.label}</span>
+                {template.label}
               </TabsTrigger>
             ))}
           </TabsList>

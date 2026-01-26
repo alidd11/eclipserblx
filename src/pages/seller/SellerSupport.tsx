@@ -61,6 +61,7 @@ export default function SellerSupport() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [activeTab, setActiveTab] = useState('open');
   
   // Form state
   const [category, setCategory] = useState('');
@@ -395,8 +396,32 @@ export default function SellerSupport() {
         </div>
 
         {/* Tickets List */}
-        <Tabs defaultValue="open">
-          <TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {/* Mobile dropdown */}
+          <div className="sm:hidden mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="Select view" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="open">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Open ({openTickets.length})
+                  </div>
+                </SelectItem>
+                <SelectItem value="closed">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Closed ({closedTickets.length})
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="open">Open ({openTickets.length})</TabsTrigger>
             <TabsTrigger value="closed">Closed ({closedTickets.length})</TabsTrigger>
           </TabsList>
