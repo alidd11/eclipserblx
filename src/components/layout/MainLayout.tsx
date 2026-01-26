@@ -93,7 +93,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 
   return (
     <>
-      <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden">
+      <div
+        className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative after:content-[''] after:pointer-events-none after:absolute after:left-0 after:right-0 after:h-px after:bg-border after:z-40 after:top-[calc(env(safe-area-inset-top)+3.5rem)] sm:after:top-[calc(env(safe-area-inset-top)+4rem)]"
+      >
         {/* Desktop Sidebar */}
         <CustomerSidebar 
           collapsed={sidebarCollapsed}
