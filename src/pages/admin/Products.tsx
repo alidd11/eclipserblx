@@ -353,6 +353,7 @@ export default function AdminProducts() {
               category_slug: categorySlug,
               robux_price: payload.robux_price,
               robux_enabled: payload.robux_enabled,
+              is_resellable: payload.is_resellable,
             },
           }).then(result => {
             if (result.error) {
@@ -412,6 +413,7 @@ export default function AdminProducts() {
               category_slug: categorySlug,
               robux_price: payload.robux_price,
               robux_enabled: payload.robux_enabled,
+              is_resellable: payload.is_resellable,
             },
           }).then(result => {
             if (result.error) {
