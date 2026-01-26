@@ -253,15 +253,16 @@ Deno.serve(async (req) => {
     // Convert paragraph/line break tags to newlines, then strip remaining HTML
     const rawDescription = payload.product_description
       ? payload.product_description
+          .replace(/<p>\s*<\/p>/gi, "\n\n")  // Empty paragraphs = section breaks
           .replace(/<\/li>/gi, "\n")  // List items = single newline
           .replace(/<li[^>]*>/gi, "• ")  // Add bullet for list items
-          .replace(/<\/p>/gi, "\n\n")  // End of paragraph = double newline for section gaps
+          .replace(/<\/p>/gi, "\n")  // Regular paragraphs = single newline
           .replace(/<br\s*\/?>/gi, "\n")  // Line breaks = single newline
           .replace(/<p[^>]*>/gi, "")  // Remove opening p tags
           .replace(/<[^>]*>/g, "")  // Strip remaining HTML tags
           .replace(/&nbsp;/g, " ")  // Replace HTML spaces
           .replace(/&amp;/g, "&")  // Replace HTML ampersands
-          .replace(/\n{3,}/g, "\n\n")  // Collapse 3+ newlines to double (preserve paragraph gaps)
+          .replace(/\n{3,}/g, "\n\n")  // Collapse 3+ newlines to double
           .trim()
       : "A new product is now available on Eclipse!";
     const description = rawDescription.length > 1000 
