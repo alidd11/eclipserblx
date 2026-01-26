@@ -1,6 +1,7 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, Search } from 'lucide-react';
+import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -29,6 +30,23 @@ const legalLinks = [
 ];
 
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
+
+// Mobile search button that opens the command palette
+function MobileSearchButton() {
+  const { setOpen } = useSearchCommand();
+  
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
+      onClick={() => setOpen(true)}
+      aria-label="Search"
+    >
+      <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+    </Button>
+  );
+}
 
 interface HeaderProps {
   showDesktopNav?: boolean;
@@ -133,6 +151,8 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 sm:gap-2">
+            {/* Mobile Search Button - opens command palette */}
+            <MobileSearchButton />
             {/* Discord - hidden on very small screens */}
             <a
               href={discordUrl}
