@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, PanelLeft } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -11,8 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
-import { useSearchCommand } from '@/hooks/useSearchCommand';
-import { hapticTap } from '@/lib/haptics';
+import { HeaderSearchBar } from './HeaderSearchBar';
+import { CurrencyIndicator } from './CurrencyIndicator';
 
 const navLinks = [
   { href: '/featured', label: 'Featured', icon: Sparkles },
@@ -22,7 +22,6 @@ const navLinks = [
   { href: '/forum', label: 'Forum', icon: MessageSquare },
   { href: '/jobs', label: 'Jobs', icon: Briefcase },
 ];
-
 const legalLinks = [
   { href: '/faq', label: 'FAQ', icon: HelpCircle },
   { href: '/privacy', label: 'Privacy Policy', icon: Shield },
@@ -42,7 +41,6 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
-  const searchCommand = useSearchCommand();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -120,20 +118,11 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
           </div>
 
-          {/* Desktop Navigation - only show when not using sidebar */}
-          {showDesktopNav && (
-            <nav className="hidden md:flex items-center gap-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          )}
+          {/* Center: Search Bar + Currency (desktop) */}
+          <div className="hidden md:flex items-center gap-3 flex-1 max-w-xl mx-4">
+            <HeaderSearchBar className="flex-1" />
+            <CurrencyIndicator />
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 sm:gap-2">
@@ -155,19 +144,6 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                 </svg>
               </Button>
             </a>
-
-            {/* Search - triggers command palette */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                hapticTap();
-                searchCommand?.toggle();
-              }}
-            >
-              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
 
             <NotificationBell />
 
@@ -210,7 +186,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             touchAction: 'pan-y'
           }}
         >
-          <nav className="flex flex-col gap-1 p-2">
+        <nav className="flex flex-col gap-1 p-2">
+            {/* Mobile Search Bar + Currency */}
+            <div className="flex items-center gap-2 mb-2">
+              <HeaderSearchBar className="flex-1" />
+              <CurrencyIndicator />
+            </div>
+            
             {/* Main Navigation */}
             {navLinks.map((link) => (
               <NavLink
