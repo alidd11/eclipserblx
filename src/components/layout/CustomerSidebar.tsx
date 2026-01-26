@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
-  Sparkles, Download
+  Sparkles, Download, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -912,13 +912,46 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
       {/* Legal Footer - compact links */}
       {!isCollapsed && (
-        <div className="p-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center">
+        <div className="px-2 pt-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center">
           <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
           <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
           <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
         </div>
       )}
 
+      {/* Collapse Toggle Button */}
+      {!isMobileDrawer && (
+        <div className={cn("p-2", isCollapsed ? "border-t border-border" : "")}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "w-full text-muted-foreground hover:text-foreground hover:bg-muted",
+                  isCollapsed ? "justify-center px-2" : "justify-start"
+                )}
+                onClick={() => {
+                  hapticTap();
+                  onToggle();
+                }}
+              >
+                {isCollapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <>
+                    <ChevronLeft className="h-4 w-4 mr-3" />
+                    <span className="text-xs">Collapse</span>
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {isCollapsed ? 'Expand sidebar' : 'Collapse sidebar (⌘B)'}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
 
       {/* Sign Out Dialog */}
       <SignOutConfirmDialog
