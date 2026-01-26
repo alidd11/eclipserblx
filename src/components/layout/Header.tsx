@@ -151,8 +151,6 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 sm:gap-2">
-            {/* Mobile Search Button - opens command palette */}
-            <MobileSearchButton />
             {/* Discord - hidden on very small screens */}
             <a
               href={discordUrl}
@@ -171,6 +169,9 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                 </svg>
               </Button>
             </a>
+
+            {/* Mobile Search Button - opens command palette */}
+            <MobileSearchButton />
 
             <NotificationBell />
 
