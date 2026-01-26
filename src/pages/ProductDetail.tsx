@@ -475,30 +475,38 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="space-y-2">
-                  {/* Always show both prices */}
-                  {/* Regular price */}
-                  <p className="text-lg text-muted-foreground">
-                    £{product.price.toFixed(2)}
-                  </p>
-                  {/* Member price prominently displayed */}
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
-                      <Sparkles className="h-6 w-6" />
-                      £{memberPrice.toFixed(2)}
+                  {/* Regular price - shown prominently when not eligible for discount */}
+                  {!isEligible ? (
+                    <span className="text-4xl font-bold">
+                      £{product.price.toFixed(2)}
                     </span>
-                    <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
-                      {discountPercent}% off with Eclipse+
-                    </Badge>
-                  </div>
-                  {/* Call to action for non-subscribers */}
-                  {!isSubscribed && (
-                    <Link 
-                      to="/eclipse-plus" 
-                      className="inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Join Eclipse+ to unlock this price
-                    </Link>
+                  ) : (
+                    <>
+                      {/* Regular price strikethrough */}
+                      <p className="text-lg text-muted-foreground line-through">
+                        £{product.price.toFixed(2)}
+                      </p>
+                      {/* Member price prominently displayed */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
+                          <Sparkles className="h-6 w-6" />
+                          £{memberPrice.toFixed(2)}
+                        </span>
+                        <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
+                          {discountPercent}% off with Eclipse+
+                        </Badge>
+                      </div>
+                      {/* Call to action for non-subscribers */}
+                      {!isSubscribed && (
+                        <Link 
+                          to="/eclipse-plus" 
+                          className="inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                          Join Eclipse+ to unlock this price
+                        </Link>
+                      )}
+                    </>
                   )}
                 </div>
 
