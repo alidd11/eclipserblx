@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Megaphone, Plus, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Megaphone, Plus, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link, Navigate } from 'react-router-dom';
 
@@ -29,6 +29,8 @@ interface Advertisement {
   posted_at: string | null;
   discord_message_id: string | null;
   created_at: string;
+  total_clicks: number | null;
+  unique_clicks: number | null;
 }
 
 export default function MyAdvertisementsPage() {
@@ -99,12 +101,20 @@ export default function MyAdvertisementsPage() {
               </p>
             </div>
           </div>
-          <Button asChild>
-            <Link to="/advertise">
-              <Plus className="h-4 w-4 mr-2" />
-              New Ad
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/account/ad-analytics">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/advertise">
+                <Plus className="h-4 w-4 mr-2" />
+                New Ad
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -154,6 +164,11 @@ export default function MyAdvertisementsPage() {
                     {ad.posted_at && (
                       <div className="text-muted-foreground">
                         <span className="font-medium">Posted:</span> {format(new Date(ad.posted_at), 'PPP')}
+                      </div>
+                    )}
+                    {ad.status === 'posted' && (
+                      <div className="text-muted-foreground">
+                        <span className="font-medium">Clicks:</span> {ad.total_clicks || 0} ({ad.unique_clicks || 0} unique)
                       </div>
                     )}
                     {ad.link_url && (
