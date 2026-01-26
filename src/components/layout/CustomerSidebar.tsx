@@ -235,15 +235,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Marketplace', icon: Store, href: '/marketplace' },
       ],
     },
-    {
-      id: 'shop',
-      title: 'Shop',
-      icon: Package,
-      items: [
-        { title: 'All Products', icon: Grid3X3, href: '/products' },
-      ],
-      // Categories section rendered after this group
-    },
+    // Note: "Browse" section with All Products + Categories is rendered via renderCategoriesSection()
     {
       id: 'community',
       title: 'Community',
@@ -618,9 +610,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
   };
 
-  // Render dynamic categories section
-  const renderCategoriesSection = () => {
+  // Render Browse section (All Products + Categories)
+  const renderBrowseSection = () => {
+    const isAllProductsActive = location.pathname === '/products' && !location.search.includes('category=');
     const isCategoriesActive = location.pathname === '/products' && location.search.includes('category=');
+    const isBrowseActive = isAllProductsActive || isCategoriesActive;
     
     // Loading state
     if (categoriesLoading) {
@@ -640,12 +634,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // No categories
-    if (parentCategories.length === 0) {
-      return null;
-    }
-
-    // Collapsed mode: show tooltip with all categories
+    // Collapsed mode: show tooltip with all options
     if (isCollapsed) {
       return (
         <div className="mb-1">
@@ -656,32 +645,33 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
-                  isCategoriesActive
+                  isBrowseActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <FolderOpen className={cn(
+                <Package className={cn(
                   "h-4 w-4 transition-all",
-                  isCategoriesActive ? "stroke-[2.5]" : "stroke-[1.5]"
+                  isBrowseActive ? "stroke-[2.5]" : "stroke-[1.5]"
                 )} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="p-0 max-h-80 overflow-y-auto">
               <div className="py-2">
                 <div className="px-3 pb-1 text-xs font-semibold text-muted-foreground">
-                  Categories
+                  Browse
                 </div>
                 <NavLink
-                  to="/categories"
+                  to="/products"
+                  end
                   onClick={handleNavClick}
                   className={({ isActive }) => cn(
                     "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                    isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    isActive && !location.search.includes('category=') ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                   )}
                 >
                   <Grid3X3 className="h-3.5 w-3.5" />
-                  All Categories
+                  All Products
                 </NavLink>
                 {parentCategories.map(category => {
                   const subs = subcategoriesMap[category.id] || [];
@@ -721,11 +711,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // Expanded mode: collapsible categories with subcategories
+    // Expanded mode: collapsible Browse section with All Products + Categories
     return (
       <Collapsible
-        open={openGroups['categories'] ?? true}
-        onOpenChange={() => toggleGroup('categories')}
+        open={openGroups['browse'] ?? true}
+        onOpenChange={() => toggleGroup('browse')}
         className="mb-1"
       >
         <CollapsibleTrigger asChild>
@@ -734,41 +724,41 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium select-none",
               "transition-all duration-100 active:scale-[0.98] active:opacity-90",
               "focus:outline-none focus-visible:outline-none",
-              isCategoriesActive
+              isBrowseActive
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
-            <FolderOpen className={cn(
+            <Package className={cn(
               "h-4 w-4 shrink-0 transition-all",
-              isCategoriesActive ? "stroke-[2.5]" : "stroke-[1.5]"
+              isBrowseActive ? "stroke-[2.5]" : "stroke-[1.5]"
             )} />
-            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">Categories</span>
+            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">Browse</span>
             <ChevronDown 
               className={cn(
                 "h-4 w-4 shrink-0 transition-transform duration-200",
-                (openGroups['categories'] ?? true) ? "rotate-0" : "-rotate-90"
+                (openGroups['browse'] ?? true) ? "rotate-0" : "-rotate-90"
               )} 
             />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-0.5 pt-0.5">
-          {/* All Categories link */}
+          {/* All Products link - primary entry point */}
           <NavLink
-            to="/categories"
+            to="/products"
             end
             onClick={handleNavClick}
-            className={({ isActive }) => cn(
+            className={() => cn(
               "rounded-lg text-sm font-medium select-none",
               "transition-all duration-100 active:scale-[0.97] active:opacity-90",
               "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
-              isActive
+              isAllProductsActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <Grid3X3 className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 truncate leading-none flex-1">All Categories</span>
+            <span className="min-w-0 truncate leading-none flex-1">All Products</span>
           </NavLink>
           
           {/* Dynamic categories with subcategories */}
@@ -877,6 +867,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
   };
 
+  // Keep old function name for backwards compatibility in render
+  const renderCategoriesSection = renderBrowseSection;
+
   return (
     <aside 
       className={cn(
@@ -938,8 +931,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         {navGroups.map((group) => (
           <div key={group.id}>
             {renderGroup(group)}
-            {/* Insert categories section after Shop group */}
-            {group.id === 'shop' && renderCategoriesSection()}
+            {/* Insert Browse section (All Products + Categories) after Discover group */}
+            {group.id === 'discover' && renderBrowseSection()}
           </div>
         ))}
       </nav>
