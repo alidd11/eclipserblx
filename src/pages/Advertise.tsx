@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useSearchParams, Link } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,6 +60,24 @@ export default function Advertise() {
   const subscriptionCancelled = searchParams.get('subscription_cancelled') === 'true';
   const pingsPurchased = searchParams.get('pings_purchased') === 'true';
   const pingsCancelled = searchParams.get('pings_cancelled') === 'true';
+
+  // Check if user has Discord linked
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile-discord-status', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('discord_id, discord_username')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const hasDiscordLinked = !!profile?.discord_id;
 
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
   const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
@@ -150,6 +169,10 @@ export default function Advertise() {
       toast.error('Please sign in to subscribe');
       return;
     }
+    if (!hasDiscordLinked) {
+      toast.error('Please link your Discord account first to purchase advertising services');
+      return;
+    }
     checkoutMutation.mutate({ 
       tier, 
       billingPeriod,
@@ -163,6 +186,10 @@ export default function Advertise() {
       toast.error('Please sign in to purchase pings');
       return;
     }
+    if (!hasDiscordLinked) {
+      toast.error('Please link your Discord account first to purchase pings');
+      return;
+    }
     if (herePingsToBuy === 0 && everyonePingsToBuy === 0) {
       toast.error('Please select at least one ping to purchase');
       return;
@@ -173,7 +200,7 @@ export default function Advertise() {
     });
   };
 
-  const isLoading = tiersLoading || subLoading || authLoading;
+  const isLoading = tiersLoading || subLoading || authLoading || profileLoading;
 
   // If user has active subscription, show the ad posting form
   if (subscription?.subscribed) {
@@ -740,18 +767,30 @@ export default function Advertise() {
                       className="w-full"
                       variant={tier.tier === 'pro' ? 'default' : 'outline'}
                       onClick={() => handleSubscribe(tier.tier)}
-                      disabled={checkoutMutation.isPending || !user}
+                      disabled={checkoutMutation.isPending || !user || (user && !hasDiscordLinked)}
                     >
                       {checkoutMutation.isPending ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       ) : null}
-                      {user ? 'Subscribe' : 'Sign in to Subscribe'}
+                      {!user ? 'Sign in to Subscribe' : !hasDiscordLinked ? 'Link Discord to Subscribe' : 'Subscribe'}
                     </Button>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
+        )}
+
+        {user && !hasDiscordLinked && !profileLoading && (
+          <Alert className="border-yellow-500/50 bg-yellow-500/10">
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="text-yellow-500">
+              You need to link your Discord account before purchasing advertising services.{' '}
+              <Link to="/account" className="underline hover:no-underline font-medium">
+                Link Discord in Account Settings
+              </Link>
+            </AlertDescription>
+          </Alert>
         )}
 
         {!user && !authLoading && (
