@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
           .replace(/<\/li>/gi, "\n")  // List item end = newline
           // Handle paragraphs
           .replace(/<p>\s*<\/p>/gi, "\n")  // Empty paragraphs = single newline
-          .replace(/<\/p>/gi, "\n")  // Regular paragraphs = single newline
+          .replace(/<\/p>/gi, "\n\n")  // Regular paragraphs = double newline (section breaks)
           .replace(/<p[^>]*>/gi, "")  // Remove opening p tags
           // Handle other elements
           .replace(/<br\s*\/?>/gi, "\n")  // Line breaks = single newline
@@ -348,6 +348,26 @@ Deno.serve(async (req) => {
 
       let fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
       let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
+
+      // For ineligible products, strip any hardcoded Eclipse+ references from field values
+      if (!isEligibleForEclipsePlus && field.id === "purchase_locations") {
+        fieldValue = fieldValue
+          .split('\n')
+          .filter(line => {
+            // Remove any lines mentioning Eclipse+, member pricing, or discounts
+            const isEclipsePlusLine = 
+              line.includes('Eclipse+') || 
+              line.includes('eclipse+') ||
+              line.includes('30% off') || 
+              line.includes('0% off') ||
+              line.includes('% off') ||
+              line.includes('Member') ||
+              line.includes('member') ||
+              line.toLowerCase().includes('discount');
+            return !isEclipsePlusLine;
+          })
+          .join('\n');
+      }
 
       // For purchase_locations, filter out Robux line if not enabled
       if (field.id === "purchase_locations" && !hasRobux) {
