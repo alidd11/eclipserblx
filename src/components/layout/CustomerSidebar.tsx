@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
-  Sparkles, Download, PanelLeftClose, PanelLeft
+  Sparkles, Download, PanelLeftClose, PanelLeft, Megaphone
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -238,6 +238,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Featured', icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: 'Marketplace', icon: Store, href: '/marketplace' },
+        { title: 'Advertise', icon: Megaphone, href: '/advertise' },
       ],
     },
     // Note: "Browse" section with All Products + Categories is rendered via renderCategoriesSection()
