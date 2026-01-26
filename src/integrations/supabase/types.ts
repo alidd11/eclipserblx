@@ -188,6 +188,7 @@ export type Database = {
           here_ping_price_gbp: number | null
           id: string
           is_active: boolean | null
+          max_images: number
           monthly_price_gbp: number
           name: string
           stripe_annual_price_id: string | null
@@ -206,6 +207,7 @@ export type Database = {
           here_ping_price_gbp?: number | null
           id?: string
           is_active?: boolean | null
+          max_images?: number
           monthly_price_gbp: number
           name: string
           stripe_annual_price_id?: string | null
@@ -224,6 +226,7 @@ export type Database = {
           here_ping_price_gbp?: number | null
           id?: string
           is_active?: boolean | null
+          max_images?: number
           monthly_price_gbp?: number
           name?: string
           stripe_annual_price_id?: string | null

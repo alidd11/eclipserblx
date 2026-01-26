@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, usePurchasePings, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) => {
@@ -492,7 +492,7 @@ export default function Advertise() {
 
                       <div className="space-y-2">
                         <Label htmlFor="imageUrl" className="flex items-center gap-2">
-                          <Image className="h-4 w-4" />
+                          <ImageIcon className="h-4 w-4" />
                           Image URL (optional)
                         </Label>
                         <Input
@@ -774,6 +774,10 @@ export default function Advertise() {
                     </div>
 
                     <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <ImageIcon className="h-4 w-4 text-primary shrink-0" />
+                        <span className="font-medium">Up to {tier.max_images} images per ad</span>
+                      </div>
                       {tier.features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
                           <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />

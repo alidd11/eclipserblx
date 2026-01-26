@@ -21,6 +21,7 @@ export interface AdTierData {
   features: string[];
   display_order: number;
   is_active: boolean;
+  max_images: number;
 }
 
 export interface AdSubscriptionStatus {
