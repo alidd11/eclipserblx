@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -45,6 +45,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { GrantEclipsePlusDialog } from '@/components/admin/GrantEclipsePlusDialog';
+import { CustomerProfileDialog } from '@/components/admin/CustomerProfileDialog';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -71,6 +72,7 @@ export default function AdminUsers() {
   const [selfBanConfirmOpen, setSelfBanConfirmOpen] = useState(false);
   const [grantEclipsePlusUser, setGrantEclipsePlusUser] = useState<any>(null);
   const [selfBanCooldown, setSelfBanCooldown] = useState(0);
+  const [viewProfileUser, setViewProfileUser] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { ip: currentAdminIp } = useCurrentIp();
@@ -489,7 +491,18 @@ export default function AdminUsers() {
                       </TableCell>
                       <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                          {isPrimaryAdmin && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setViewProfileUser(profile)}
+                              className="text-muted-foreground hover:text-primary"
+                              title="View Profile"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}>
                             <Shield className="h-4 w-4 mr-2" />
                             Roles
@@ -547,7 +560,11 @@ export default function AdminUsers() {
             filteredProfiles?.map((profile) => {
               const roles = getUserRoles(profile.user_id);
               return (
-                <div key={profile.id} className="rounded-lg border border-border bg-card p-4 space-y-3">
+                <div 
+                  key={profile.id} 
+                  className={`rounded-lg border border-border bg-card p-4 space-y-3 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`}
+                  onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -565,7 +582,18 @@ export default function AdminUsers() {
                         Joined {new Date(profile.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      {isPrimaryAdmin && (
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          className="h-10 w-10"
+                          onClick={() => setViewProfileUser(profile)}
+                          title="View Profile"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button 
                         variant="outline" 
                         size="icon"
@@ -841,6 +869,13 @@ export default function AdminUsers() {
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
         }}
+      />
+
+      {/* Customer Profile Dialog - Primary Admin Only */}
+      <CustomerProfileDialog
+        open={!!viewProfileUser}
+        onOpenChange={() => setViewProfileUser(null)}
+        profile={viewProfileUser}
       />
     </AdminLayout>
   );
