@@ -1,91 +1,176 @@
 
-# Remove Sidebar Border and Extend Eclipse Branding
+
+# Paid Discord Advertisement System
 
 ## Overview
 
-You want to remove the vertical line (right border) from the sidebar and have the Eclipse logo/text visually extend across the sidebar header area, creating a seamless look similar to ClearlyDev.
+This plan implements a system where customers can purchase paid advertisements that automatically post embeds to a dedicated Discord channel. The system will allow customers to create, pay for, and have their advertisements automatically posted to Discord.
 
-## Technical Changes
+---
 
-### 1. Remove Vertical Border from Sidebar
+## What This Feature Does
 
-**File: `src/components/layout/CustomerSidebar.tsx`**
+1. Customers visit an "Advertise" page on your website
+2. They fill out a form with their advertisement details (title, description, image, link)
+3. They pay via Stripe checkout (one-time payment)
+4. Upon successful payment, the advertisement is automatically posted to a dedicated Discord channel as an embedded message
+5. Admins can configure the advertisement webhook URL and pricing in settings
 
-Remove the `border-r border-border` class from the sidebar container:
+---
 
-```tsx
-// Line 882 - Current:
-!isMobileDrawer && "border-r border-border",
+## Technical Implementation
 
-// Updated:
-// Remove this line entirely (or replace with empty string)
+### 1. Database Schema
+
+Create a new `discord_advertisements` table to store advertisement records:
+
+```text
+Table: discord_advertisements
+├── id (uuid, primary key)
+├── user_id (uuid, references auth.users)
+├── title (text, not null) - Ad headline
+├── description (text, not null) - Ad body text
+├── image_url (text, nullable) - Optional promotional image
+├── link_url (text, nullable) - Call-to-action URL
+├── discord_username (text, nullable) - Advertiser's Discord
+├── status (text) - pending, paid, posted, failed
+├── payment_id (text) - Stripe payment/session ID
+├── price_paid (numeric) - Amount charged
+├── posted_at (timestamp) - When sent to Discord
+├── discord_message_id (text) - Message ID after posting
+├── created_at (timestamp)
+└── updated_at (timestamp)
 ```
 
-### 2. Restore Eclipse Branding to Sidebar Header
+RLS Policies:
+- Users can INSERT their own advertisements
+- Users can SELECT their own advertisements
+- Staff can SELECT/UPDATE all advertisements
 
-**File: `src/components/layout/CustomerSidebar.tsx`**
+### 2. Admin Configuration
 
-Replace the empty spacer div with the logo and site name that fills the header area:
+Add new settings to the Discord Settings page (`/admin/discord-settings`):
 
-```tsx
-// Lines 888-889 - Current:
-{/* Header spacer - matches header height for alignment */}
-<div className="h-14 sm:h-16 shrink-0" />
+| Setting Key | Description |
+|-------------|-------------|
+| `advertisements_discord_webhook_url` | Webhook URL for the ads channel |
+| `advertisement_price` | Price in GBP (e.g., 5.00) |
+| `advertisements_enabled` | Toggle to enable/disable the feature |
 
-// Updated:
-{/* Header with branding */}
-<div className="h-14 sm:h-16 flex items-center px-4 shrink-0">
-  <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
-    <EclipseLogo size="sm" />
-    {!isCollapsed && (
-      <span className="brand-text text-base gradient-text">
-        {SITE_NAME}
-      </span>
-    )}
-  </Link>
-</div>
+This will be added as a new tab in the existing Discord Settings page.
+
+### 3. New Edge Function: `create-advertisement-checkout`
+
+Creates a Stripe checkout session for advertisement purchases:
+
+```text
+Flow:
+1. Receive ad details from frontend (title, description, image, link)
+2. Validate inputs (title required, reasonable length limits)
+3. Create pending record in discord_advertisements table
+4. Create Stripe checkout session with ad_id in metadata
+5. Return checkout URL to redirect user
 ```
 
-### 3. Remove Duplicate Branding from Header
+### 4. New Edge Function: `send-advertisement-discord-webhook`
 
-**File: `src/components/layout/Header.tsx`**
+Posts the advertisement to Discord after payment:
 
-Remove the logo and site name from the desktop center section (since it's now in the sidebar):
-
-```tsx
-// Lines 121-133 - Current:
-<div className="hidden md:flex items-center gap-4 flex-1">
-  {/* Website name - separates sidebar from search */}
-  <Link to="/" className="flex items-center gap-2.5 shrink-0">
-    <EclipseLogo size="sm" />
-    <span className="brand-text text-base gradient-text">
-      {SITE_NAME}
-    </span>
-  </Link>
-  
-  <HeaderSearchBar className="flex-1 max-w-xl" />
-  <CurrencySelector />
-</div>
-
-// Updated:
-<div className="hidden md:flex items-center gap-4 flex-1">
-  <HeaderSearchBar className="flex-1 max-w-xl" />
-  <CurrencySelector />
-</div>
+```text
+Flow:
+1. Receive advertisement_id
+2. Fetch advertisement details from database
+3. Build Discord embed with:
+   - Title and description
+   - Optional image
+   - CTA button/link
+   - Footer with advertiser info
+4. POST to configured webhook URL
+5. Update advertisement status and message_id
 ```
 
-## Visual Result
+### 5. Payment Verification Integration
 
-| Element | Before | After |
-|---------|--------|-------|
-| Sidebar right edge | Visible vertical line | No border, seamless |
-| Sidebar header | Empty spacer | Eclipse logo + "Eclipse" text |
-| Main header | Logo + Search bar | Search bar only |
-| Collapsed sidebar | Empty header | Logo only (text hidden) |
+Modify the existing `verify-payment` or create a webhook handler to:
+- Detect advertisement purchases from metadata
+- Call `send-advertisement-discord-webhook` upon successful payment
+- Update advertisement status to 'posted'
 
-## Behavior Summary
+### 6. Frontend Components
 
-- **Desktop expanded**: Eclipse logo and "Eclipse" text appear at the top-left of the sidebar, with the search bar starting immediately to the right
-- **Desktop collapsed**: Only the Eclipse logo shows (text is hidden when `isCollapsed` is true)
-- **Mobile**: The mobile header already shows the logo (unchanged), and the mobile drawer will show the full branding
-- **No vertical line**: The sidebar flows seamlessly into the main content area
+**New Page: `/advertise`**
+- Form to create an advertisement:
+  - Title (required, max 100 chars)
+  - Description (required, max 500 chars)
+  - Image URL (optional)
+  - Link URL (optional)
+  - Discord username (optional, for contact)
+- Price display
+- "Pay & Post" button that initiates checkout
+
+**Customer View: `/account/advertisements`**
+- List of user's advertisements with status
+- View posted ads with Discord message links
+
+**Admin View: Existing Discord Settings**
+- New "Advertisements" tab with:
+  - Webhook URL configuration
+  - Price setting
+  - Enable/disable toggle
+  - Test webhook button
+  - Recent advertisements list
+
+---
+
+## File Changes Summary
+
+| File | Action |
+|------|--------|
+| `supabase/migrations/xxx.sql` | Create discord_advertisements table |
+| `supabase/functions/create-advertisement-checkout/index.ts` | New edge function |
+| `supabase/functions/send-advertisement-discord-webhook/index.ts` | New edge function |
+| `supabase/functions/verify-payment/index.ts` | Add advertisement handling |
+| `src/pages/Advertise.tsx` | New customer-facing page |
+| `src/pages/Account/MyAdvertisements.tsx` | New account section |
+| `src/pages/admin/DiscordSettings.tsx` | Add Advertisements tab |
+| `src/App.tsx` | Add new routes |
+
+---
+
+## Discord Embed Format
+
+```text
+┌─────────────────────────────────────┐
+│ 📢 [Advertisement Title]           │
+├─────────────────────────────────────┤
+│                                     │
+│ [Description text goes here...]    │
+│                                     │
+│ [Optional Image]                    │
+│                                     │
+│ 🔗 Learn More → [link]              │
+│                                     │
+├─────────────────────────────────────┤
+│ Sponsored • Posted by @username    │
+│ Eclipse Marketplace                 │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Security Considerations
+
+1. **Content Moderation**: Advertisements are posted immediately after payment. Consider adding an optional admin approval queue for sensitive deployments.
+2. **Rate Limiting**: Apply rate limits on the checkout endpoint to prevent abuse.
+3. **Input Validation**: Sanitize all text inputs to prevent Discord embed injection.
+4. **RLS Policies**: Users can only view/create their own advertisements.
+
+---
+
+## Future Enhancements (Not in Scope)
+
+- Admin moderation queue before posting
+- Different pricing tiers (featured, premium placement)
+- Scheduling advertisements for specific times
+- Analytics on ad performance (clicks, impressions)
+
