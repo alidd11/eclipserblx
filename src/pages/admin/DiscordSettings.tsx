@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Store, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +87,17 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   discord_widget_server_id: '',
 };
 
+// Eclipse Store ID (main store)
+const ECLIPSE_STORE_ID = 'STR-A9759F';
+
+interface EclipseStoreSettings {
+  discord_webhook_url: string;
+  review_discord_webhook_url: string;
+  discord_bot_token: string;
+  discord_guild_id: string;
+  discord_role_id: string;
+}
+
 export default function DiscordSettings() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -151,6 +162,28 @@ export default function DiscordSettings() {
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<string | null>(null);
   const [isResendingAllProducts, setIsResendingAllProducts] = useState(false);
   const [resendProgress, setResendProgress] = useState<{ current: number; total: number; success: number; failed: number } | null>(null);
+
+  // Eclipse Store settings state
+  const [eclipseStoreSettings, setEclipseStoreSettings] = useState<EclipseStoreSettings>({
+    discord_webhook_url: '',
+    review_discord_webhook_url: '',
+    discord_bot_token: '',
+    discord_guild_id: '',
+    discord_role_id: '',
+  });
+  const [isTestingEclipseOrderWebhook, setIsTestingEclipseOrderWebhook] = useState(false);
+  const [eclipseOrderWebhookTestResult, setEclipseOrderWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+  const [isTestingEclipseReviewWebhook, setIsTestingEclipseReviewWebhook] = useState(false);
+  const [eclipseReviewWebhookTestResult, setEclipseReviewWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+
   // Fetch boost rewards settings
   const { data: boostSettings } = useQuery({
     queryKey: ['boost-rewards-settings'],
@@ -201,6 +234,34 @@ export default function DiscordSettings() {
       })) as BoostTrial[];
     },
   });
+
+  // Fetch Eclipse Store Discord settings
+  const { data: eclipseStoreData } = useQuery({
+    queryKey: ['eclipse-store-discord-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id')
+        .eq('store_id', ECLIPSE_STORE_ID)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Initialize Eclipse Store form when data loads
+  useEffect(() => {
+    if (eclipseStoreData) {
+      setEclipseStoreSettings({
+        discord_webhook_url: eclipseStoreData.discord_webhook_url || '',
+        review_discord_webhook_url: eclipseStoreData.review_discord_webhook_url || '',
+        discord_bot_token: eclipseStoreData.discord_bot_token || '',
+        discord_guild_id: eclipseStoreData.discord_guild_id || '',
+        discord_role_id: eclipseStoreData.discord_role_id || '',
+      });
+    }
+  }, [eclipseStoreData]);
 
   useEffect(() => {
     if (boostSettings) {
@@ -351,6 +412,158 @@ export default function DiscordSettings() {
       toast.error('Failed to save Discord settings');
     },
   });
+
+  // Save Eclipse Store settings mutation
+  const saveEclipseStoreMutation = useMutation({
+    mutationFn: async (data: EclipseStoreSettings) => {
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          discord_webhook_url: data.discord_webhook_url || null,
+          review_discord_webhook_url: data.review_discord_webhook_url || null,
+          discord_bot_token: data.discord_bot_token || null,
+          discord_guild_id: data.discord_guild_id || null,
+          discord_role_id: data.discord_role_id || null,
+        })
+        .eq('store_id', ECLIPSE_STORE_ID);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eclipse-store-discord-settings'] });
+      toast.success('Eclipse Store Discord settings saved');
+    },
+    onError: (error) => {
+      console.error('Failed to save Eclipse Store settings:', error);
+      toast.error('Failed to save Eclipse Store Discord settings');
+    },
+  });
+
+  const handleSaveEclipseStoreSettings = () => {
+    saveEclipseStoreMutation.mutate(eclipseStoreSettings);
+  };
+
+  const handleEclipseStoreChange = (key: keyof EclipseStoreSettings, value: string) => {
+    setEclipseStoreSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleTestEclipseOrderWebhook = async () => {
+    if (!eclipseStoreSettings.discord_webhook_url) {
+      toast.error('Please enter an Order Notification Webhook URL first');
+      return;
+    }
+
+    setIsTestingEclipseOrderWebhook(true);
+    setEclipseOrderWebhookTestResult(null);
+
+    try {
+      let description = '**Product Name**\nTest Eclipse Store Product';
+      description += '\n**Roblox**\nTestUser123\n(123456789)';
+      description += '\n**Discord**\nTestUser#1234\n(987654321)';
+
+      const response = await fetch(eclipseStoreSettings.discord_webhook_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: 'New Purchase',
+            description,
+            color: 0x9b59b6,
+            thumbnail: {
+              url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter',
+            },
+            footer: { text: 'Eclipse Store • Test Notification' },
+            timestamp: new Date().toISOString(),
+          }],
+        }),
+      });
+
+      if (response.ok) {
+        setEclipseOrderWebhookTestResult({
+          success: true,
+          message: 'Test notification sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Eclipse Store order webhook test sent!');
+      } else {
+        setEclipseOrderWebhookTestResult({
+          success: false,
+          message: 'Webhook request failed',
+          details: `Status: ${response.status}`,
+        });
+        toast.error('Order webhook test failed');
+      }
+    } catch (err: any) {
+      console.error('Eclipse order webhook test error:', err);
+      setEclipseOrderWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to test order webhook');
+    } finally {
+      setIsTestingEclipseOrderWebhook(false);
+    }
+  };
+
+  const handleTestEclipseReviewWebhook = async () => {
+    if (!eclipseStoreSettings.review_discord_webhook_url) {
+      toast.error('Please enter a Review Notification Webhook URL first');
+      return;
+    }
+
+    setIsTestingEclipseReviewWebhook(true);
+    setEclipseReviewWebhookTestResult(null);
+
+    try {
+      const starsDisplay = '★★★★★ (5/5)';
+      const response = await fetch(eclipseStoreSettings.review_discord_webhook_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: '⭐ New Review',
+            color: 0xf59e0b,
+            fields: [
+              { name: 'Rating', value: starsDisplay, inline: true },
+              { name: 'Product', value: 'Test Product', inline: true },
+              { name: 'Reviewer', value: 'TestUser', inline: true },
+              { name: 'Title', value: 'Great Product!', inline: false },
+              { name: 'Review', value: '"This is a test review notification. The webhook is working correctly!"', inline: false },
+            ],
+            footer: { text: 'Eclipse Store • Test Notification' },
+            timestamp: new Date().toISOString(),
+          }],
+        }),
+      });
+
+      if (response.ok) {
+        setEclipseReviewWebhookTestResult({
+          success: true,
+          message: 'Test notification sent!',
+          details: 'Check your Discord channel',
+        });
+        toast.success('Eclipse Store review webhook test sent!');
+      } else {
+        setEclipseReviewWebhookTestResult({
+          success: false,
+          message: 'Webhook request failed',
+          details: `Status: ${response.status}`,
+        });
+        toast.error('Review webhook test failed');
+      }
+    } catch (err: any) {
+      console.error('Eclipse review webhook test error:', err);
+      setEclipseReviewWebhookTestResult({
+        success: false,
+        message: 'Request failed',
+        details: err.message,
+      });
+      toast.error('Failed to test review webhook');
+    } finally {
+      setIsTestingEclipseReviewWebhook(false);
+    }
+  };
 
   // Save boost settings mutation
   const saveBoostSettingsMutation = useMutation({
@@ -1229,6 +1442,12 @@ export default function DiscordSettings() {
                       Ads
                     </div>
                   </SelectItem>
+                  <SelectItem value="eclipse-store">
+                    <div className="flex items-center gap-2">
+                      <Store className="h-4 w-4" />
+                      Eclipse Store
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1286,6 +1505,10 @@ export default function DiscordSettings() {
               <TabsTrigger value="advertisements" className="gap-2">
                 <BadgeDollarSign className="h-4 w-4 hidden sm:block" />
                 Ads
+              </TabsTrigger>
+              <TabsTrigger value="eclipse-store" className="gap-2">
+                <Store className="h-4 w-4 hidden sm:block" />
+                Eclipse Store
               </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
@@ -2395,6 +2618,181 @@ export default function DiscordSettings() {
                     and set up the webhook there to keep user advertisements organized and separate from 
                     official announcements.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Eclipse Store Discord Settings Tab */}
+          <TabsContent value="eclipse-store">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Store className="h-5 w-5 text-primary" />
+                  <CardTitle>Eclipse Store Discord Settings</CardTitle>
+                </div>
+                <CardDescription>
+                  Configure Discord notifications and role integration for the main Eclipse Store
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Order Notifications */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Webhook className="h-4 w-4 text-purple-400" />
+                    <span className="font-medium">Order Notifications</span>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="eclipseOrderWebhook">Order Webhook URL</Label>
+                    <Input
+                      id="eclipseOrderWebhook"
+                      value={eclipseStoreSettings.discord_webhook_url}
+                      onChange={(e) => handleEclipseStoreChange('discord_webhook_url', e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Receive notifications when customers purchase from the Eclipse Store
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleTestEclipseOrderWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingEclipseOrderWebhook || !eclipseStoreSettings.discord_webhook_url}
+                  >
+                    {isTestingEclipseOrderWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Test Order Webhook
+                  </Button>
+                  <TestResultBadge result={eclipseOrderWebhookTestResult} />
+                </div>
+
+                <div className="border-t border-border" />
+
+                {/* Review Notifications */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-amber-400" />
+                    <span className="font-medium">Review Notifications</span>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="eclipseReviewWebhook">Review Webhook URL</Label>
+                    <Input
+                      id="eclipseReviewWebhook"
+                      value={eclipseStoreSettings.review_discord_webhook_url}
+                      onChange={(e) => handleEclipseStoreChange('review_discord_webhook_url', e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Receive notifications when customers review Eclipse Store products
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleTestEclipseReviewWebhook}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingEclipseReviewWebhook || !eclipseStoreSettings.review_discord_webhook_url}
+                  >
+                    {isTestingEclipseReviewWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Test Review Webhook
+                  </Button>
+                  <TestResultBadge result={eclipseReviewWebhookTestResult} />
+                </div>
+
+                <div className="border-t border-border" />
+
+                {/* Discord Role Integration */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-blue-400" />
+                    <span className="font-medium">Discord Role Integration</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically assign a Discord role to customers when they purchase from the Eclipse Store
+                  </p>
+                  
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="eclipseBotToken">Bot Token</Label>
+                      <Input
+                        id="eclipseBotToken"
+                        type="password"
+                        value={eclipseStoreSettings.discord_bot_token}
+                        onChange={(e) => handleEclipseStoreChange('discord_bot_token', e.target.value)}
+                        placeholder="Your bot token..."
+                        className="bg-background"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="eclipseGuildId">Server (Guild) ID</Label>
+                      <Input
+                        id="eclipseGuildId"
+                        value={eclipseStoreSettings.discord_guild_id}
+                        onChange={(e) => handleEclipseStoreChange('discord_guild_id', e.target.value)}
+                        placeholder="e.g., 1234567890123456789"
+                        className="bg-background"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="eclipseRoleId">Customer Role ID</Label>
+                    <Input
+                      id="eclipseRoleId"
+                      value={eclipseStoreSettings.discord_role_id}
+                      onChange={(e) => handleEclipseStoreChange('discord_role_id', e.target.value)}
+                      placeholder="e.g., 1234567890123456789"
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The role to assign to customers upon purchase (requires linked Discord account)
+                    </p>
+                  </div>
+
+                  {eclipseStoreSettings.discord_bot_token && eclipseStoreSettings.discord_guild_id && eclipseStoreSettings.discord_role_id ? (
+                    <div className="flex items-center gap-2 text-sm text-green-400">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Role integration configured</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Complete all fields to enable role assignment</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-border pt-4">
+                  <Button
+                    onClick={handleSaveEclipseStoreSettings}
+                    disabled={saveEclipseStoreMutation.isPending}
+                  >
+                    {saveEclipseStoreMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Save Eclipse Store Settings
+                  </Button>
+                </div>
+
+                {/* Help Section */}
+                <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Store className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-primary">Main Store Integration</p>
+                      <p className="text-sm text-muted-foreground">
+                        These settings apply specifically to the Eclipse Store. Community sellers configure 
+                        their own Discord settings through their seller dashboard.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
