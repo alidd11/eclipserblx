@@ -881,7 +881,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       data-gesture-exempt="true"
     >
       {/* Header */}
-      <div className="h-14 sm:h-16 flex items-center px-4 border-b border-border mt-[env(safe-area-inset-top)]">
+      <div className="h-14 sm:h-16 flex items-center px-4 border-b border-border pt-[env(safe-area-inset-top)]">
         <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
           <EclipseLogo size="sm" />
           {!isCollapsed && (
