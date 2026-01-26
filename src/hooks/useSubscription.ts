@@ -197,7 +197,11 @@ export function useSubscription() {
   }, [user, session, state.isSubscribed, state.canClaimFree, checkSubscription, queryClient]);
 
   // Calculate member price for a product
-  const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null): number => {
+  const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null, isResellable?: boolean): number => {
+    // Resellable products do NOT get any discount
+    if (isResellable) {
+      return originalPrice;
+    }
     // Eclipse Savers products do NOT get any discount
     if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) {
       return originalPrice;
@@ -211,20 +215,26 @@ export function useSubscription() {
   }, []);
 
   // Check if a product is eligible for the discount
-  const isEligibleForDiscount = useCallback((categoryId?: string | null): boolean => {
+  const isEligibleForDiscount = useCallback((categoryId?: string | null, isResellable?: boolean): boolean => {
+    // Resellable products are NOT eligible for discounts
+    if (isResellable) return false;
     // Eclipse Savers products are NOT eligible for discounts
     return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);
 
   // Get the discount percentage for a product category
-  const getDiscountPercent = useCallback((categoryId?: string | null): number => {
+  const getDiscountPercent = useCallback((categoryId?: string | null, isResellable?: boolean): number => {
+    // Resellable products get 0% discount
+    if (isResellable) return 0;
     // Eclipse Savers get 0% discount
     if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) return 0;
     return categoryId === BOT_CATEGORY_ID ? ECLIPSE_PLUS_BOT_DISCOUNT : ECLIPSE_PLUS_DISCOUNT;
   }, []);
 
   // Check if a product is eligible for free claim
-  const isEligibleForFreeClaim = useCallback((categoryId?: string | null): boolean => {
+  const isEligibleForFreeClaim = useCallback((categoryId?: string | null, isResellable?: boolean): boolean => {
+    // Resellable products are NOT eligible for free claims
+    if (isResellable) return false;
     // Neither Bots nor Eclipse Savers are eligible for free claims
     return categoryId !== BOT_CATEGORY_ID && categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);

@@ -468,6 +468,7 @@ export default function StorePage() {
                   image={product.images?.[0] || '/placeholder.svg'}
                   slug={product.slug}
                   category={(product.categories as any)?.name}
+                  isResellable={product.is_resellable}
                 />
               ))}
             </div>

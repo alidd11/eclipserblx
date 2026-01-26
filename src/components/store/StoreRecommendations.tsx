@@ -19,6 +19,7 @@ interface RecommendedProduct {
   price: number;
   images: string[] | null;
   categories: { name: string } | null;
+  is_resellable?: boolean;
 }
 
 export const StoreRecommendations = ({
@@ -35,7 +36,7 @@ export const StoreRecommendations = ({
       if (categoryIds.length > 0) {
         const { data: similarProducts } = await supabase
           .from('products')
-          .select('id, name, slug, price, images, categories(name)')
+          .select('id, name, slug, price, images, is_resellable, categories(name)')
           .in('category_id', categoryIds)
           .neq('store_id', storeId)
           .eq('is_active', true)
@@ -53,7 +54,7 @@ export const StoreRecommendations = ({
 
         const { data: popularProducts } = await supabase
           .from('products')
-          .select('id, name, slug, price, images, categories(name)')
+          .select('id, name, slug, price, images, is_resellable, categories(name)')
           .neq('store_id', storeId)
           .eq('is_active', true)
           .eq('moderation_status', 'approved')
@@ -67,7 +68,7 @@ export const StoreRecommendations = ({
       // Fallback: Just get popular products from other stores
       const { data: popularProducts } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, categories(name)')
+        .select('id, name, slug, price, images, is_resellable, categories(name)')
         .neq('store_id', storeId)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
@@ -116,6 +117,7 @@ export const StoreRecommendations = ({
             image={product.images?.[0] || '/placeholder.svg'}
             slug={product.slug}
             category={product.categories?.name}
+            isResellable={product.is_resellable}
           />
         ))}
       </div>

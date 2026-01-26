@@ -62,6 +62,7 @@ interface ProductForm {
   category_id: string;
   is_active: boolean;
   is_featured: boolean;
+  is_resellable: boolean;
   images: string;
   asset_file_url: string;
   release_at: string;
@@ -82,6 +83,7 @@ const emptyForm: ProductForm = {
   category_id: '',
   is_active: true,
   is_featured: false,
+  is_resellable: false, // Default to off - excludes from Eclipse+ discounts when true
   images: '',
   asset_file_url: '',
   release_at: '',
@@ -306,6 +308,7 @@ export default function AdminProducts() {
         category_id: data.category_id || null,
         is_active: data.is_active,
         is_featured: data.is_featured,
+        is_resellable: data.is_resellable,
         images: data.images ? data.images.split(',').map(s => s.trim()) : [],
         asset_file_url: data.asset_file_url || null,
         release_at: data.schedule_enabled && data.release_at ? new Date(data.release_at).toISOString() : null,
@@ -561,6 +564,7 @@ export default function AdminProducts() {
       category_id: product.category_id || '',
       is_active: product.is_active,
       is_featured: product.is_featured,
+      is_resellable: product.is_resellable || false,
       images: product.images?.join(', ') || '',
       asset_file_url: product.asset_file_url || '',
       release_at: formatDateTimeForInput(product.release_at),
@@ -1100,6 +1104,14 @@ export default function AdminProducts() {
                   onCheckedChange={(v) => setForm({ ...form, is_featured: v })}
                 />
                 <Label htmlFor="featured">Featured</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="resellable"
+                  checked={form.is_resellable}
+                  onCheckedChange={(v) => setForm({ ...form, is_resellable: v })}
+                />
+                <Label htmlFor="resellable" title="Excludes from Eclipse+ discounts and free claims">Resell</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch

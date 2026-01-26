@@ -372,6 +372,7 @@ function ProductsGrid({
             categoryId={product.category_id}
             isFeatured={product.is_featured}
             createdAt={product.created_at}
+            isResellable={product.is_resellable}
           />
         ))}
       </div>

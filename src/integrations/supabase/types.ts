@@ -1844,6 +1844,7 @@ export type Database = {
           images: string[] | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_resellable: boolean
           is_seller_product: boolean | null
           moderation_notes: string | null
           moderation_status: string | null
@@ -1870,6 +1871,7 @@ export type Database = {
           images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_resellable?: boolean
           is_seller_product?: boolean | null
           moderation_notes?: string | null
           moderation_status?: string | null
@@ -1896,6 +1898,7 @@ export type Database = {
           images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_resellable?: boolean
           is_seller_product?: boolean | null
           moderation_notes?: string | null
           moderation_status?: string | null

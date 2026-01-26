@@ -264,11 +264,11 @@ export default function ProductDetail() {
   // Sort media to show videos first
   const images = product.images?.length ? sortMediaVideosFirst(product.images) : [null];
 
-  const isEligible = isEligibleForDiscount(product.category_id);
-  const memberPrice = getMemberPrice(product.price, product.category_id);
-  const discountPercent = getDiscountPercent(product.category_id);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
+  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
+  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
-  const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id);
+  const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id, product.is_resellable);
 
   const handleAddToCart = () => {
     if (!inCart) {
@@ -515,6 +515,7 @@ export default function ProductDetail() {
                     productId={product.id} 
                     productName={product.name} 
                     categoryId={product.category_id}
+                    isResellable={product.is_resellable}
                   />
                 )}
 
