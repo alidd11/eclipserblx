@@ -119,6 +119,8 @@ serve(async (req) => {
         ads_used: localSub.ads_used_this_month || 0,
         current_period_end: localSub.current_period_end,
         billing_period: localSub.billing_period,
+        here_pings_balance: localSub.here_pings_balance || 0,
+        everyone_pings_balance: localSub.everyone_pings_balance || 0,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -231,6 +233,8 @@ serve(async (req) => {
       ads_used: adsUsed,
       current_period_end: periodEnd,
       billing_period: adSubscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly',
+      here_pings_balance: localSub?.here_pings_balance || 0,
+      everyone_pings_balance: localSub?.everyone_pings_balance || 0,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

@@ -68,15 +68,20 @@ serve(async (req) => {
     // Handle the event
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      logStep("Processing checkout.session.completed", { sessionId: session.id });
+      logStep("Processing checkout.session.completed", { sessionId: session.id, metadata: session.metadata });
       
-      await processPayment(supabaseAdmin, stripe, {
-        paymentId: session.id,
-        paymentType: "checkout_session",
-        customerEmail: session.customer_details?.email || session.customer_email || "",
-        metadata: session.metadata,
-        amountTotal: session.amount_total,
-      });
+      // Check if this is an ad ping purchase
+      if (session.metadata?.type === "ad_ping_purchase") {
+        await processAdPingPurchase(supabaseAdmin, session);
+      } else {
+        await processPayment(supabaseAdmin, stripe, {
+          paymentId: session.id,
+          paymentType: "checkout_session",
+          customerEmail: session.customer_details?.email || session.customer_email || "",
+          metadata: session.metadata,
+          amountTotal: session.amount_total,
+        });
+      }
     } else if (event.type === "payment_intent.succeeded") {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       
@@ -655,4 +660,57 @@ async function processRefund(
   }
 
   logStep("Refund processing complete", { orderId, isFullRefund, refundAmount });
+}
+
+// Process ad ping credit purchases
+async function processAdPingPurchase(
+  supabase: SupabaseClient,
+  session: Stripe.Checkout.Session
+) {
+  const metadata = session.metadata;
+  if (!metadata) {
+    logStep("No metadata in ad ping purchase session");
+    return;
+  }
+
+  const userId = metadata.user_id;
+  const herePings = parseInt(metadata.here_pings || "0", 10);
+  const everyonePings = parseInt(metadata.everyone_pings || "0", 10);
+
+  logStep("Processing ad ping purchase", { userId, herePings, everyonePings });
+
+  if (!userId) {
+    logStep("ERROR: No user_id in ad ping purchase metadata");
+    return;
+  }
+
+  const { data: subscription, error: subError } = await supabase
+    .from("advertisement_subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (subError || !subscription) {
+    logStep("ERROR: No active subscription found for ping purchase", { userId });
+    return;
+  }
+
+  const newHereBalance = (subscription.here_pings_balance || 0) + herePings;
+  const newEveryoneBalance = (subscription.everyone_pings_balance || 0) + everyonePings;
+
+  const { error: updateError } = await supabase
+    .from("advertisement_subscriptions")
+    .update({
+      here_pings_balance: newHereBalance,
+      everyone_pings_balance: newEveryoneBalance,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", subscription.id);
+
+  if (updateError) {
+    logStep("ERROR updating ping balance", { error: updateError.message });
+  } else {
+    logStep("Ping credits added", { herePings, everyonePings, newHereBalance, newEveryoneBalance });
+  }
 }

@@ -11,8 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users } from 'lucide-react';
+import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, usePurchasePings, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
+import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) => {
@@ -46,12 +46,24 @@ export default function Advertise() {
   const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
+  // Ping purchase quantities for checkout
+  const [herePingsToAdd, setHerePingsToAdd] = useState(0);
+  const [everyonePingsToAdd, setEveryonePingsToAdd] = useState(0);
+  
+  // Separate ping purchase modal state
+  const [showPingPurchase, setShowPingPurchase] = useState(false);
+  const [herePingsToBuy, setHerePingsToBuy] = useState(5);
+  const [everyonePingsToBuy, setEveryonePingsToBuy] = useState(5);
+  
   const subscriptionSuccess = searchParams.get('subscription_success') === 'true';
   const subscriptionCancelled = searchParams.get('subscription_cancelled') === 'true';
+  const pingsPurchased = searchParams.get('pings_purchased') === 'true';
+  const pingsCancelled = searchParams.get('pings_cancelled') === 'true';
 
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
   const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
   const checkoutMutation = useAdSubscriptionCheckout();
+  const purchasePingsMutation = usePurchasePings();
 
   useEffect(() => {
     if (subscriptionSuccess) {
@@ -61,7 +73,16 @@ export default function Advertise() {
     if (subscriptionCancelled) {
       toast.error('Subscription checkout was cancelled');
     }
-  }, [subscriptionSuccess, subscriptionCancelled]);
+    if (pingsPurchased) {
+      const herePurchased = searchParams.get('here') || '0';
+      const everyonePurchased = searchParams.get('everyone') || '0';
+      toast.success(`Ping credits added! ${herePurchased} @here, ${everyonePurchased} @everyone`);
+      refetchSubscription();
+    }
+    if (pingsCancelled) {
+      toast.error('Ping purchase was cancelled');
+    }
+  }, [subscriptionSuccess, subscriptionCancelled, pingsPurchased, pingsCancelled]);
 
   // Post ad mutation (for subscribers)
   const postAdMutation = useMutation({
@@ -129,13 +150,36 @@ export default function Advertise() {
       toast.error('Please sign in to subscribe');
       return;
     }
-    checkoutMutation.mutate({ tier, billingPeriod });
+    checkoutMutation.mutate({ 
+      tier, 
+      billingPeriod,
+      herePings: herePingsToAdd,
+      everyonePings: everyonePingsToAdd,
+    });
+  };
+
+  const handlePurchasePings = () => {
+    if (!user) {
+      toast.error('Please sign in to purchase pings');
+      return;
+    }
+    if (herePingsToBuy === 0 && everyonePingsToBuy === 0) {
+      toast.error('Please select at least one ping to purchase');
+      return;
+    }
+    purchasePingsMutation.mutate({ 
+      herePings: herePingsToBuy,
+      everyonePings: everyonePingsToBuy,
+    });
   };
 
   const isLoading = tiersLoading || subLoading || authLoading;
 
   // If user has active subscription, show the ad posting form
   if (subscription?.subscribed) {
+    const herePingsAvailable = subscription.here_pings_balance || 0;
+    const everyonePingsAvailable = subscription.everyone_pings_balance || 0;
+    
     return (
       <MainLayout>
         <div className="container max-w-4xl py-8 space-y-8">
@@ -156,6 +200,100 @@ export default function Advertise() {
                   {subscription.billing_period === 'annual' ? 'Annual' : 'Monthly'}
                 </Badge>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Ping Balance Card */}
+          <Card className="border-border bg-card">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Ping Credits
+                </CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowPingPurchase(!showPingPurchase)}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Buy More
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-center">
+                  <p className="text-2xl font-bold text-green-500">{herePingsAvailable}</p>
+                  <p className="text-sm text-muted-foreground">@here pings</p>
+                </div>
+                <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center">
+                  <p className="text-2xl font-bold text-yellow-500">{everyonePingsAvailable}</p>
+                  <p className="text-sm text-muted-foreground">@everyone pings</p>
+                </div>
+              </div>
+
+              {showPingPurchase && (
+                <div className="pt-4 border-t border-border space-y-4">
+                  <p className="text-sm text-muted-foreground">Purchase ping credits to use on your ads</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm">@here pings (£0.79 each)</Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setHerePingsToBuy(Math.max(0, herePingsToBuy - 1))}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-12 text-center font-medium">{herePingsToBuy}</span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setHerePingsToBuy(Math.min(50, herePingsToBuy + 1))}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">@everyone pings (£1.49 each)</Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setEveryonePingsToBuy(Math.max(0, everyonePingsToBuy - 1))}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-12 text-center font-medium">{everyonePingsToBuy}</span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setEveryonePingsToBuy(Math.min(50, everyonePingsToBuy + 1))}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="text-sm font-medium">
+                      Total: {formatCurrency(herePingsToBuy * 0.79 + everyonePingsToBuy * 1.49)}
+                    </p>
+                    <Button 
+                      onClick={handlePurchasePings}
+                      disabled={purchasePingsMutation.isPending || (herePingsToBuy === 0 && everyonePingsToBuy === 0)}
+                    >
+                      {purchasePingsMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : null}
+                      Purchase Pings
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -264,11 +402,11 @@ export default function Advertise() {
                         />
                       </div>
 
-                      {/* Ping Options */}
+                      {/* Ping Options - Use purchased credits */}
                       <div className="space-y-3">
                         <Label className="flex items-center gap-2">
                           <Bell className="h-4 w-4" />
-                          Ping Option (one-time add-on)
+                          Use Ping Credit
                         </Label>
                         <div className="grid grid-cols-3 gap-2">
                           <button
@@ -282,43 +420,55 @@ export default function Advertise() {
                             )}
                           >
                             <span className="font-medium">None</span>
-                            <p className="text-xs mt-1">Free</p>
+                            <p className="text-xs mt-1">Default</p>
                           </button>
                           <button
                             type="button"
-                            onClick={() => setSelectedPing('here')}
+                            onClick={() => herePingsAvailable > 0 && setSelectedPing('here')}
+                            disabled={herePingsAvailable === 0}
                             className={cn(
                               "p-3 rounded-lg border text-sm transition-all",
                               selectedPing === 'here'
                                 ? "border-green-500 bg-green-500/10 text-foreground"
-                                : "border-border bg-card text-muted-foreground hover:border-green-500/50"
+                                : herePingsAvailable === 0
+                                  ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50"
+                                  : "border-border bg-card text-muted-foreground hover:border-green-500/50"
                             )}
                           >
                             <span className="font-medium flex items-center justify-center gap-1">
                               <Users className="h-3 w-3" />
                               @here
                             </span>
-                            <p className="text-xs mt-1 text-green-500">+£0.99</p>
+                            <p className="text-xs mt-1 text-green-500">
+                              {herePingsAvailable} available
+                            </p>
                           </button>
                           <button
                             type="button"
-                            onClick={() => setSelectedPing('everyone')}
+                            onClick={() => everyonePingsAvailable > 0 && setSelectedPing('everyone')}
+                            disabled={everyonePingsAvailable === 0}
                             className={cn(
                               "p-3 rounded-lg border text-sm transition-all",
                               selectedPing === 'everyone'
                                 ? "border-yellow-500 bg-yellow-500/10 text-foreground"
-                                : "border-border bg-card text-muted-foreground hover:border-yellow-500/50"
+                                : everyonePingsAvailable === 0
+                                  ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50"
+                                  : "border-border bg-card text-muted-foreground hover:border-yellow-500/50"
                             )}
                           >
                             <span className="font-medium flex items-center justify-center gap-1">
                               <Megaphone className="h-3 w-3" />
                               @everyone
                             </span>
-                            <p className="text-xs mt-1 text-yellow-500">+£1.99</p>
+                            <p className="text-xs mt-1 text-yellow-500">
+                              {everyonePingsAvailable} available
+                            </p>
                           </button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Purchase a ping to notify members when your ad is posted
+                          {herePingsAvailable === 0 && everyonePingsAvailable === 0 
+                            ? "No ping credits available. Purchase more above!" 
+                            : "Select a ping to use one of your purchased credits"}
                         </p>
                       </div>
 
@@ -336,7 +486,7 @@ export default function Advertise() {
                         Post Advertisement ({subscription.ads_remaining} remaining)
                         {selectedPing !== 'none' && (
                           <span className="ml-1 text-xs opacity-75">
-                            + {selectedPing === 'here' ? '£0.99' : '£1.99'} ping
+                            with @{selectedPing} ping
                           </span>
                         )}
                       </Button>
