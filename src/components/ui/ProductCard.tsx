@@ -1,4 +1,5 @@
 import { memo, useCallback, useRef, forwardRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ interface ProductCardProps {
 export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
+  const navigate = useNavigate();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -161,13 +163,25 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               )}
               <span className="truncate">
                 {storeSlug ? (
-                  <Link 
-                    to={`/store/${storeSlug}`} 
-                    className="hover:text-primary transition-colors"
-                    onClick={(e) => e.stopPropagation()}
+                  <span 
+                    role="link"
+                    tabIndex={0}
+                    className="hover:text-primary transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/store/${storeSlug}`);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/store/${storeSlug}`);
+                      }
+                    }}
                   >
                     {storeName}
-                  </Link>
+                  </span>
                 ) : (
                   storeName
                 )}
