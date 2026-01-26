@@ -94,9 +94,6 @@ function MainLayoutContent({ children }: MainLayoutProps) {
   return (
     <>
       <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
-        {/* Shared header divider line - single line across full width */}
-        <div className="hidden md:block pointer-events-none absolute left-0 right-0 h-px bg-border z-40" style={{ top: 'calc(env(safe-area-inset-top) + 3.5rem)' }} />
-        <div className="hidden sm:block md:hidden pointer-events-none absolute left-0 right-0 h-px bg-border z-40" style={{ top: 'calc(env(safe-area-inset-top) + 4rem)' }} />
         {/* Desktop Sidebar */}
         <CustomerSidebar 
           collapsed={sidebarCollapsed}
