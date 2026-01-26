@@ -944,17 +944,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         ))}
       </nav>
 
-      {/* Footer with Legal Links */}
-      {!isCollapsed && (
-        <div className="px-3 py-2 border-t border-border">
-          <div className="text-xs text-muted-foreground flex gap-3 justify-center">
-            <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
-          </div>
-        </div>
-      )}
-
       {/* Sign Out Dialog */}
       <SignOutConfirmDialog
         open={showSignOutDialog}
