@@ -237,3 +237,6 @@ verify_jwt = false
 
 [functions.track-ad-click]
 verify_jwt = false
+
+[functions.process-scheduled-ads]
+verify_jwt = false
