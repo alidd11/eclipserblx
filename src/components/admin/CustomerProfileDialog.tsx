@@ -144,11 +144,26 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
     enabled: !!profile?.user_id && open,
   });
 
-  // Fetch last known IP from audit logs
+  // Fetch last known IP from user_ip_logs (primary) or audit_logs (fallback)
   const { data: lastIp } = useQuery({
     queryKey: ['customer-last-ip', profile?.user_id],
     queryFn: async () => {
       if (!profile?.user_id) return null;
+      
+      // First try user_ip_logs table (more reliable IP tracking)
+      const { data: ipLog, error: ipError } = await supabase
+        .from('user_ip_logs')
+        .select('ip_address, created_at')
+        .eq('user_id', profile.user_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (!ipError && ipLog?.ip_address) {
+        return ipLog;
+      }
+      
+      // Fallback to audit_logs
       const { data, error } = await supabase
         .from('audit_logs')
         .select('ip_address, created_at')
