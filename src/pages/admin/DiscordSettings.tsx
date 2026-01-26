@@ -943,9 +943,9 @@ export default function DiscordSettings() {
           failed: failedCount,
         });
 
-        // Small delay to avoid rate limiting
+        // Delay to avoid Discord API rate limiting (502 errors)
         if (i < products.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1500));
         }
       }
 
