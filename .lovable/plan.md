@@ -1,176 +1,67 @@
 
 
-# Paid Discord Advertisement System
+# Plan: Add Eclipse Store Discord Channels to Admin Dashboard
 
 ## Overview
+The main Eclipse Store currently has no Discord notification channels configured, unlike community sellers who can set up order webhooks, review webhooks, and Discord role integration. This plan adds a dedicated section to the admin Discord Settings page where administrators can configure these channels specifically for the Eclipse Store.
 
-This plan implements a system where customers can purchase paid advertisements that automatically post embeds to a dedicated Discord channel. The system will allow customers to create, pay for, and have their advertisements automatically posted to Discord.
+## Current State
+- The Eclipse Store (ID: `STR-A9759F`) exists in the database but has all Discord fields set to null
+- Community sellers configure their Discord settings via `/seller/settings/notifications`
+- Admin Discord Settings (`/admin/discord-settings`) manages global webhooks but not the Eclipse Store's per-store webhooks
 
----
+## What Will Be Added
 
-## What This Feature Does
+### New "Eclipse Store" Tab in Discord Settings
+A new tab in the admin Discord Settings page with:
 
-1. Customers visit an "Advertise" page on your website
-2. They fill out a form with their advertisement details (title, description, image, link)
-3. They pay via Stripe checkout (one-time payment)
-4. Upon successful payment, the advertisement is automatically posted to a dedicated Discord channel as an embedded message
-5. Admins can configure the advertisement webhook URL and pricing in settings
+1. **Order Notifications Channel**
+   - Webhook URL field for Eclipse Store orders
+   - Test button to verify the webhook works
+   - Status indicator when configured
 
----
+2. **Review Notifications Channel**  
+   - Webhook URL field for Eclipse Store reviews
+   - Test button with sample review notification
+   - Status indicator when configured
 
-## Technical Implementation
+3. **Discord Role Integration**
+   - Bot Token field (for assigning roles on purchase)
+   - Server (Guild) ID field
+   - Customer Role ID field
+   - Configuration status indicator
 
-### 1. Database Schema
+### Technical Implementation
 
-Create a new `discord_advertisements` table to store advertisement records:
+**Database Updates:**
+- No schema changes needed - the `stores` table already has all required columns
+- Updates will be made directly to the Eclipse Store row
 
-```text
-Table: discord_advertisements
-├── id (uuid, primary key)
-├── user_id (uuid, references auth.users)
-├── title (text, not null) - Ad headline
-├── description (text, not null) - Ad body text
-├── image_url (text, nullable) - Optional promotional image
-├── link_url (text, nullable) - Call-to-action URL
-├── discord_username (text, nullable) - Advertiser's Discord
-├── status (text) - pending, paid, posted, failed
-├── payment_id (text) - Stripe payment/session ID
-├── price_paid (numeric) - Amount charged
-├── posted_at (timestamp) - When sent to Discord
-├── discord_message_id (text) - Message ID after posting
-├── created_at (timestamp)
-└── updated_at (timestamp)
-```
+**File Changes:**
+1. `src/pages/admin/DiscordSettings.tsx`
+   - Add new "Eclipse Store" tab to the existing TabsList
+   - Create form section for Eclipse Store-specific Discord settings
+   - Add save mutation to update the `stores` table for the Eclipse Store
+   - Add test webhook functions matching the seller notification page
 
-RLS Policies:
-- Users can INSERT their own advertisements
-- Users can SELECT their own advertisements
-- Staff can SELECT/UPDATE all advertisements
+**UI/UX:**
+- Tab will use the Store icon
+- Form layout will match the seller notification settings page for consistency
+- Will include the same "How to Create a Discord Webhook" help section
+- Test buttons for both order and review webhooks
 
-### 2. Admin Configuration
+## Implementation Steps
 
-Add new settings to the Discord Settings page (`/admin/discord-settings`):
+1. Add the Eclipse Store ID constant to the Discord Settings page
+2. Create a new query to fetch the Eclipse Store's current Discord settings
+3. Add local state for the Eclipse Store form fields
+4. Create a save mutation for updating the Eclipse Store's Discord settings
+5. Add test webhook functions for orders and reviews
+6. Add the new "Eclipse Store" tab with the complete notification form
 
-| Setting Key | Description |
-|-------------|-------------|
-| `advertisements_discord_webhook_url` | Webhook URL for the ads channel |
-| `advertisement_price` | Price in GBP (e.g., 5.00) |
-| `advertisements_enabled` | Toggle to enable/disable the feature |
-
-This will be added as a new tab in the existing Discord Settings page.
-
-### 3. New Edge Function: `create-advertisement-checkout`
-
-Creates a Stripe checkout session for advertisement purchases:
-
-```text
-Flow:
-1. Receive ad details from frontend (title, description, image, link)
-2. Validate inputs (title required, reasonable length limits)
-3. Create pending record in discord_advertisements table
-4. Create Stripe checkout session with ad_id in metadata
-5. Return checkout URL to redirect user
-```
-
-### 4. New Edge Function: `send-advertisement-discord-webhook`
-
-Posts the advertisement to Discord after payment:
-
-```text
-Flow:
-1. Receive advertisement_id
-2. Fetch advertisement details from database
-3. Build Discord embed with:
-   - Title and description
-   - Optional image
-   - CTA button/link
-   - Footer with advertiser info
-4. POST to configured webhook URL
-5. Update advertisement status and message_id
-```
-
-### 5. Payment Verification Integration
-
-Modify the existing `verify-payment` or create a webhook handler to:
-- Detect advertisement purchases from metadata
-- Call `send-advertisement-discord-webhook` upon successful payment
-- Update advertisement status to 'posted'
-
-### 6. Frontend Components
-
-**New Page: `/advertise`**
-- Form to create an advertisement:
-  - Title (required, max 100 chars)
-  - Description (required, max 500 chars)
-  - Image URL (optional)
-  - Link URL (optional)
-  - Discord username (optional, for contact)
-- Price display
-- "Pay & Post" button that initiates checkout
-
-**Customer View: `/account/advertisements`**
-- List of user's advertisements with status
-- View posted ads with Discord message links
-
-**Admin View: Existing Discord Settings**
-- New "Advertisements" tab with:
-  - Webhook URL configuration
-  - Price setting
-  - Enable/disable toggle
-  - Test webhook button
-  - Recent advertisements list
-
----
-
-## File Changes Summary
-
-| File | Action |
-|------|--------|
-| `supabase/migrations/xxx.sql` | Create discord_advertisements table |
-| `supabase/functions/create-advertisement-checkout/index.ts` | New edge function |
-| `supabase/functions/send-advertisement-discord-webhook/index.ts` | New edge function |
-| `supabase/functions/verify-payment/index.ts` | Add advertisement handling |
-| `src/pages/Advertise.tsx` | New customer-facing page |
-| `src/pages/Account/MyAdvertisements.tsx` | New account section |
-| `src/pages/admin/DiscordSettings.tsx` | Add Advertisements tab |
-| `src/App.tsx` | Add new routes |
-
----
-
-## Discord Embed Format
-
-```text
-┌─────────────────────────────────────┐
-│ 📢 [Advertisement Title]           │
-├─────────────────────────────────────┤
-│                                     │
-│ [Description text goes here...]    │
-│                                     │
-│ [Optional Image]                    │
-│                                     │
-│ 🔗 Learn More → [link]              │
-│                                     │
-├─────────────────────────────────────┤
-│ Sponsored • Posted by @username    │
-│ Eclipse Marketplace                 │
-└─────────────────────────────────────┘
-```
-
----
-
-## Security Considerations
-
-1. **Content Moderation**: Advertisements are posted immediately after payment. Consider adding an optional admin approval queue for sensitive deployments.
-2. **Rate Limiting**: Apply rate limits on the checkout endpoint to prevent abuse.
-3. **Input Validation**: Sanitize all text inputs to prevent Discord embed injection.
-4. **RLS Policies**: Users can only view/create their own advertisements.
-
----
-
-## Future Enhancements (Not in Scope)
-
-- Admin moderation queue before posting
-- Different pricing tiers (featured, premium placement)
-- Scheduling advertisements for specific times
-- Analytics on ad performance (clicks, impressions)
+## Benefits
+- Centralizes all Discord configuration in one admin page
+- Eclipse Store orders/reviews will be routed to dedicated channels
+- Enables Discord role assignment for main store customers
+- Matches the feature parity that community sellers already have
 
