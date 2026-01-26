@@ -81,6 +81,105 @@ export type Database = {
           },
         ]
       }
+      advertisement_subscriptions: {
+        Row: {
+          ads_reset_at: string | null
+          ads_used_this_month: number | null
+          billing_period: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ads_reset_at?: string | null
+          ads_used_this_month?: number | null
+          billing_period?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ads_reset_at?: string | null
+          ads_used_this_month?: number | null
+          billing_period?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      advertisement_tiers: {
+        Row: {
+          ads_per_month: number
+          annual_price_gbp: number
+          created_at: string
+          description: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          monthly_price_gbp: number
+          name: string
+          stripe_annual_price_id: string | null
+          stripe_monthly_price_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          ads_per_month?: number
+          annual_price_gbp: number
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          monthly_price_gbp: number
+          name: string
+          stripe_annual_price_id?: string | null
+          stripe_monthly_price_id?: string | null
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          ads_per_month?: number
+          annual_price_gbp?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          monthly_price_gbp?: number
+          name?: string
+          stripe_annual_price_id?: string | null
+          stripe_monthly_price_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliate_applications: {
         Row: {
           affiliate_id: string | null

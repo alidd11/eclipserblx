@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle } from 'lucide-react';
+import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
+import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-GB', {
@@ -20,8 +22,20 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+const tierIcons: Record<string, React.ReactNode> = {
+  basic: <Zap className="h-5 w-5" />,
+  pro: <Star className="h-5 w-5" />,
+  premium: <Crown className="h-5 w-5" />,
+};
+
+const tierColors: Record<string, string> = {
+  basic: 'border-blue-500/50 bg-blue-500/5',
+  pro: 'border-purple-500/50 bg-purple-500/5',
+  premium: 'border-yellow-500/50 bg-yellow-500/5',
+};
+
 export default function Advertise() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, session } = useAuth();
   const [searchParams] = useSearchParams();
   
   const [title, setTitle] = useState('');
@@ -29,80 +43,33 @@ export default function Advertise() {
   const [imageUrl, setImageUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [discordUsername, setDiscordUsername] = useState('');
+  const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
-  const success = searchParams.get('success') === 'true';
-  const adId = searchParams.get('ad_id');
-  const cancelled = searchParams.get('cancelled') === 'true';
+  const subscriptionSuccess = searchParams.get('subscription_success') === 'true';
+  const subscriptionCancelled = searchParams.get('subscription_cancelled') === 'true';
 
-  // Fetch settings
-  const { data: settings } = useQuery({
-    queryKey: ['advertisement-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('key, value')
-        .in('key', ['advertisement_price', 'advertisements_enabled']);
-
-      if (error) throw error;
-
-      let price = 5.00;
-      let enabled = true;
-
-      data?.forEach((item) => {
-        if (item.key === 'advertisement_price') {
-          const val = typeof item.value === 'string' 
-            ? parseFloat(item.value.replace(/"/g, ''))
-            : parseFloat(String(item.value));
-          if (!isNaN(val) && val > 0) price = val;
-        } else if (item.key === 'advertisements_enabled') {
-          enabled = item.value === true || item.value === 'true' || item.value === '"true"';
-        }
-      });
-
-      return { price, enabled };
-    },
-  });
-
-  // Verify payment on success redirect
-  const verifyMutation = useMutation({
-    mutationFn: async (advertisementId: string) => {
-      const { data, error } = await supabase.functions.invoke('verify-advertisement-payment', {
-        body: { advertisementId },
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      if (data.success) {
-        toast.success('Your advertisement has been posted to Discord!');
-      }
-    },
-    onError: (error) => {
-      console.error('Verification error:', error);
-    },
-  });
+  const { data: tiers, isLoading: tiersLoading } = useAdTiers();
+  const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
+  const checkoutMutation = useAdSubscriptionCheckout();
 
   useEffect(() => {
-    if (success && adId) {
-      verifyMutation.mutate(adId);
+    if (subscriptionSuccess) {
+      toast.success('Subscription activated! You can now post ads.');
+      refetchSubscription();
     }
-  }, [success, adId]);
-
-  useEffect(() => {
-    if (cancelled) {
-      toast.error('Payment was cancelled');
+    if (subscriptionCancelled) {
+      toast.error('Subscription checkout was cancelled');
     }
-  }, [cancelled]);
+  }, [subscriptionSuccess, subscriptionCancelled]);
 
-  // Submit advertisement
-  const submitMutation = useMutation({
+  // Post ad mutation (for subscribers)
+  const postAdMutation = useMutation({
     mutationFn: async () => {
-      const session = await supabase.auth.getSession();
-      if (!session.data.session) {
-        throw new Error('Please sign in to create an advertisement');
+      if (!session?.access_token) {
+        throw new Error('Please sign in to post an advertisement');
       }
 
-      const { data, error } = await supabase.functions.invoke('create-advertisement-checkout', {
+      const { data, error } = await supabase.functions.invoke('post-subscription-ad', {
         body: { 
           title, 
           description, 
@@ -110,27 +77,34 @@ export default function Advertise() {
           linkUrl: linkUrl || null,
           discordUsername: discordUsername || null,
         },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: (data) => {
-      if (data.url) {
-        window.location.href = data.url;
-      }
+    onSuccess: () => {
+      toast.success('Advertisement posted to Discord!');
+      setTitle('');
+      setDescription('');
+      setImageUrl('');
+      setLinkUrl('');
+      setDiscordUsername('');
+      refetchSubscription();
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create advertisement');
+      toast.error(error.message || 'Failed to post advertisement');
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handlePostAd = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
-      toast.error('Please sign in to create an advertisement');
+      toast.error('Please sign in to post an advertisement');
       return;
     }
 
@@ -144,41 +118,211 @@ export default function Advertise() {
       return;
     }
 
-    submitMutation.mutate();
+    postAdMutation.mutate();
   };
 
-  const isDisabled = !settings?.enabled;
-  const price = settings?.price ?? 5.00;
+  const handleSubscribe = (tier: AdTier) => {
+    if (!user) {
+      toast.error('Please sign in to subscribe');
+      return;
+    }
+    checkoutMutation.mutate({ tier, billingPeriod });
+  };
 
-  if (success) {
+  const isLoading = tiersLoading || subLoading || authLoading;
+
+  // If user has active subscription, show the ad posting form
+  if (subscription?.subscribed) {
     return (
       <MainLayout>
-        <div className="container max-w-2xl py-12">
-          <Card className="bg-card border-border">
-            <CardContent className="pt-8 text-center space-y-4">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="h-8 w-8 text-green-500" />
-              </div>
-              <h1 className="text-2xl font-bold">Advertisement Posted!</h1>
-              <p className="text-muted-foreground">
-                Your advertisement has been successfully posted to our Discord channel.
-                Thank you for advertising with Eclipse!
-              </p>
-              <div className="pt-4">
-                <Button asChild>
-                  <a href="/advertise">Create Another Ad</a>
-                </Button>
+        <div className="container max-w-4xl py-8 space-y-8">
+          {/* Subscription Status Banner */}
+          <Card className={cn("border-2", tierColors[subscription.tier || 'basic'])}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  {tierIcons[subscription.tier || 'basic']}
+                  <div>
+                    <p className="font-semibold">{subscription.tier_name} Subscriber</p>
+                    <p className="text-sm text-muted-foreground">
+                      {subscription.ads_remaining} of {subscription.ads_per_month} ads remaining this month
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="secondary">
+                  {subscription.billing_period === 'annual' ? 'Annual' : 'Monthly'}
+                </Badge>
               </div>
             </CardContent>
           </Card>
+
+          {/* Hero Section */}
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+              <Megaphone className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold">Post an Advertisement</h1>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Your ad will be posted to our Discord community instantly.
+            </p>
+          </div>
+
+          {subscription.ads_remaining === 0 ? (
+            <Card className="bg-yellow-500/10 border-yellow-500/30">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
+                  <p className="text-yellow-500">
+                    You've used all your ads for this month. Upgrade your plan or wait until next month.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Form */}
+              <div className="md:col-span-2">
+                <Card className="bg-card border-border">
+                  <CardHeader>
+                    <CardTitle>Create Your Advertisement</CardTitle>
+                    <CardDescription>
+                      Fill out the form below to post your Discord advertisement
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handlePostAd} className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">
+                          Title <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="title"
+                          placeholder="Your catchy headline"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          maxLength={100}
+                        />
+                        <p className="text-xs text-muted-foreground">{title.length}/100 characters</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="description">
+                          Description <span className="text-destructive">*</span>
+                        </Label>
+                        <Textarea
+                          id="description"
+                          placeholder="Describe what you're advertising..."
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          maxLength={500}
+                          rows={4}
+                        />
+                        <p className="text-xs text-muted-foreground">{description.length}/500 characters</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="imageUrl" className="flex items-center gap-2">
+                          <Image className="h-4 w-4" />
+                          Image URL (optional)
+                        </Label>
+                        <Input
+                          id="imageUrl"
+                          type="url"
+                          placeholder="https://example.com/image.png"
+                          value={imageUrl}
+                          onChange={(e) => setImageUrl(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkUrl" className="flex items-center gap-2">
+                          <Link2 className="h-4 w-4" />
+                          Link URL (optional)
+                        </Label>
+                        <Input
+                          id="linkUrl"
+                          type="url"
+                          placeholder="https://discord.gg/your-server"
+                          value={linkUrl}
+                          onChange={(e) => setLinkUrl(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="discordUsername" className="flex items-center gap-2">
+                          <AtSign className="h-4 w-4" />
+                          Discord Username (optional)
+                        </Label>
+                        <Input
+                          id="discordUsername"
+                          placeholder="YourName#1234"
+                          value={discordUsername}
+                          onChange={(e) => setDiscordUsername(e.target.value)}
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        size="lg"
+                        disabled={postAdMutation.isPending}
+                      >
+                        {postAdMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-4 w-4 mr-2" />
+                        )}
+                        Post Advertisement ({subscription.ads_remaining} remaining)
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Preview */}
+              <div className="space-y-4">
+                <Card className="bg-card border-border">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Preview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-[#2f3136] rounded-lg p-3 text-white text-sm space-y-2">
+                      <div className={cn(
+                        "border-l-4 pl-3",
+                        subscription.tier === 'premium' ? 'border-yellow-500' : 
+                        subscription.tier === 'pro' ? 'border-purple-500' : 'border-blue-500'
+                      )}>
+                        <p className="font-semibold">
+                          📢 {title || 'Your Title Here'}
+                        </p>
+                        <p className="text-gray-300 text-xs mt-1">
+                          {description || 'Your description will appear here...'}
+                        </p>
+                        {linkUrl && (
+                          <p className="text-blue-400 text-xs mt-2 flex items-center gap-1">
+                            <ExternalLink className="h-3 w-3" />
+                            Learn More
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-gray-500 text-xs">
+                        Sponsored • {discordUsername ? `@${discordUsername}` : 'Eclipse Ads'} • {subscription.tier_name}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
       </MainLayout>
     );
   }
 
+  // Show subscription tiers for non-subscribers
   return (
     <MainLayout>
-      <div className="container max-w-4xl py-8 space-y-8">
+      <div className="container max-w-5xl py-8 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
@@ -187,210 +331,118 @@ export default function Advertise() {
           <h1 className="text-3xl font-bold">Advertise on Discord</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
             Promote your server, project, or services to our active Discord community. 
-            Your advertisement will be posted as an embedded message in our dedicated ads channel.
+            Choose a plan that fits your advertising needs.
           </p>
         </div>
 
-        {isDisabled ? (
-          <Card className="bg-yellow-500/10 border-yellow-500/30">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
-                <p className="text-yellow-500">
-                  Advertisements are currently disabled. Please check back later.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Billing Toggle */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center rounded-lg bg-muted p-1">
+            <button
+              onClick={() => setBillingPeriod('monthly')}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                billingPeriod === 'monthly' 
+                  ? "bg-background text-foreground shadow-sm" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingPeriod('annual')}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2",
+                billingPeriod === 'annual' 
+                  ? "bg-background text-foreground shadow-sm" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Annual
+              <Badge variant="secondary" className="text-xs">Save up to 17%</Badge>
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Form */}
-            <div className="md:col-span-2">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle>Create Your Advertisement</CardTitle>
-                  <CardDescription>
-                    Fill out the form below to create your Discord advertisement
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">
-                        Title <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="title"
-                        placeholder="Your catchy headline"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        maxLength={100}
-                        disabled={authLoading || !user}
-                      />
-                      <p className="text-xs text-muted-foreground">{title.length}/100 characters</p>
+            {tiers?.map((tier) => {
+              const price = billingPeriod === 'annual' ? tier.annual_price_gbp : tier.monthly_price_gbp;
+              const savingsPercent = calculateAdAnnualSavingsPercent(tier.monthly_price_gbp, tier.annual_price_gbp);
+              
+              return (
+                <Card 
+                  key={tier.id} 
+                  className={cn(
+                    "relative overflow-hidden transition-all hover:shadow-lg",
+                    tier.tier === 'pro' && "border-primary ring-1 ring-primary",
+                    tierColors[tier.tier]
+                  )}
+                >
+                  {tier.tier === 'pro' && (
+                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-bl-lg">
+                      Popular
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">
-                        Description <span className="text-destructive">*</span>
-                      </Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Describe what you're advertising..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        maxLength={500}
-                        rows={4}
-                        disabled={authLoading || !user}
-                      />
-                      <p className="text-xs text-muted-foreground">{description.length}/500 characters</p>
+                  )}
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      {tierIcons[tier.tier]}
+                      <CardTitle>{tier.name}</CardTitle>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="imageUrl" className="flex items-center gap-2">
-                        <Image className="h-4 w-4" />
-                        Image URL (optional)
-                      </Label>
-                      <Input
-                        id="imageUrl"
-                        type="url"
-                        placeholder="https://example.com/image.png"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        disabled={authLoading || !user}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Add an image to make your ad more eye-catching
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkUrl" className="flex items-center gap-2">
-                        <Link2 className="h-4 w-4" />
-                        Link URL (optional)
-                      </Label>
-                      <Input
-                        id="linkUrl"
-                        type="url"
-                        placeholder="https://discord.gg/your-server"
-                        value={linkUrl}
-                        onChange={(e) => setLinkUrl(e.target.value)}
-                        disabled={authLoading || !user}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Where should people go when they click your ad?
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="discordUsername" className="flex items-center gap-2">
-                        <AtSign className="h-4 w-4" />
-                        Discord Username (optional)
-                      </Label>
-                      <Input
-                        id="discordUsername"
-                        placeholder="YourName#1234"
-                        value={discordUsername}
-                        onChange={(e) => setDiscordUsername(e.target.value)}
-                        disabled={authLoading || !user}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Your Discord username will appear in the ad footer
-                      </p>
-                    </div>
-
-                    {!user && !authLoading && (
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          Please <a href="/auth" className="text-primary hover:underline">sign in</a> to create an advertisement.
-                        </p>
+                    <CardDescription>{tier.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold">{formatCurrency(price)}</span>
+                        <span className="text-muted-foreground">
+                          /{billingPeriod === 'annual' ? 'year' : 'month'}
+                        </span>
                       </div>
-                    )}
+                      {billingPeriod === 'annual' && savingsPercent > 0 && (
+                        <p className="text-sm text-green-500 mt-1">
+                          Save {savingsPercent}% vs monthly
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      {tier.features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
 
                     <Button
-                      type="submit"
                       className="w-full"
-                      size="lg"
-                      disabled={submitMutation.isPending || authLoading || !user}
+                      variant={tier.tier === 'pro' ? 'default' : 'outline'}
+                      onClick={() => handleSubscribe(tier.tier)}
+                      disabled={checkoutMutation.isPending || !user}
                     >
-                      {submitMutation.isPending ? (
+                      {checkoutMutation.isPending ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Sparkles className="h-4 w-4 mr-2" />
-                      )}
-                      Pay {formatCurrency(price)} & Post Ad
+                      ) : null}
+                      {user ? 'Subscribe' : 'Sign in to Subscribe'}
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
 
-            {/* Sidebar */}
-            <div className="space-y-4">
-              {/* Price Card */}
-              <Card className="bg-primary/5 border-primary/20">
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-muted-foreground">Price</p>
-                    <p className="text-3xl font-bold text-primary">{formatCurrency(price)}</p>
-                    <p className="text-xs text-muted-foreground">One-time payment</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Preview Card */}
-              <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Preview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-[#2f3136] rounded-lg p-3 text-white text-sm space-y-2">
-                    <div className="border-l-4 border-purple-500 pl-3">
-                      <p className="font-semibold">
-                        📢 {title || 'Your Title Here'}
-                      </p>
-                      <p className="text-gray-300 text-xs mt-1">
-                        {description || 'Your description will appear here...'}
-                      </p>
-                      {linkUrl && (
-                        <p className="text-blue-400 text-xs mt-2 flex items-center gap-1">
-                          <ExternalLink className="h-3 w-3" />
-                          Learn More
-                        </p>
-                      )}
-                    </div>
-                    <p className="text-gray-500 text-xs">
-                      Sponsored • {discordUsername ? `@${discordUsername}` : 'Eclipse Marketplace'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Features */}
-              <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">What You Get</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Discord embed in ads channel</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Optional image & link</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Instant posting after payment</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Professional formatting</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+        {!user && !authLoading && (
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              <a href="/auth" className="text-primary hover:underline">Sign in</a> to subscribe to an advertising plan.
+            </p>
           </div>
         )}
       </div>

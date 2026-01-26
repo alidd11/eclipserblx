@@ -222,3 +222,12 @@ verify_jwt = false
 
 [functions.verify-advertisement-payment]
 verify_jwt = false
+
+[functions.create-ad-subscription-checkout]
+verify_jwt = false
+
+[functions.check-ad-subscription]
+verify_jwt = false
+
+[functions.post-subscription-ad]
+verify_jwt = false
