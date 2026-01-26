@@ -899,33 +899,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map((group) => (
-          <div key={group.id}>
-            {renderGroup(group)}
-            {/* Insert categories section after Shop group */}
-            {group.id === 'shop' && renderCategoriesSection()}
-          </div>
-        ))}
-      </nav>
-
-      {/* Footer with Legal Links and Collapse Toggle */}
-      <div className={cn(
-        "border-t border-border",
-        isCollapsed ? "p-2" : "px-3 py-2"
-      )}>
-        {/* Legal Footer - compact links (only when expanded) */}
-        {!isCollapsed && (
-          <div className="text-xs text-muted-foreground flex gap-3 justify-center mb-2">
-            <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
-          </div>
-        )}
-        
-        {/* Collapse Toggle Button */}
-        {!isMobileDrawer && (
+      {/* Collapse Toggle Button - Above Navigation */}
+      {!isMobileDrawer && (
+        <div className="px-2 pt-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -954,8 +930,30 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               {isCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             </TooltipContent>
           </Tooltip>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+        {navGroups.map((group) => (
+          <div key={group.id}>
+            {renderGroup(group)}
+            {/* Insert categories section after Shop group */}
+            {group.id === 'shop' && renderCategoriesSection()}
+          </div>
+        ))}
+      </nav>
+
+      {/* Footer with Legal Links */}
+      {!isCollapsed && (
+        <div className="px-3 py-2 border-t border-border">
+          <div className="text-xs text-muted-foreground flex gap-3 justify-center">
+            <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
+            <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
+          </div>
+        </div>
+      )}
 
       {/* Sign Out Dialog */}
       <SignOutConfirmDialog
