@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
-  Sparkles, Download, ChevronLeft, ChevronRight
+  Sparkles, Download
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -880,7 +880,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-card flex flex-col transition-all duration-300 shrink-0 h-screen sticky top-0",
+        "bg-card flex flex-col transition-all duration-300 shrink-0 h-screen sticky top-0 relative",
         !isMobileDrawer && "border-r border-border",
         isCollapsed ? "w-14" : "w-64",
         className
@@ -919,38 +919,43 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       )}
 
-      {/* Collapse Toggle Button */}
+      {/* Sidebar Rail Handle - Edge resize indicator */}
       {!isMobileDrawer && (
-        <div className={cn("p-2", isCollapsed ? "border-t border-border" : "")}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "w-full text-muted-foreground hover:text-foreground hover:bg-muted",
-                  isCollapsed ? "justify-center px-2" : "justify-start"
-                )}
-                onClick={() => {
-                  hapticTap();
-                  onToggle();
-                }}
-              >
-                {isCollapsed ? (
-                  <ChevronRight className="h-4 w-4" />
-                ) : (
-                  <>
-                    <ChevronLeft className="h-4 w-4 mr-3" />
-                    <span className="text-xs">Collapse</span>
-                  </>
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {isCollapsed ? 'Expand sidebar' : 'Collapse sidebar (⌘B)'}
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => {
+                hapticTap();
+                onToggle();
+              }}
+              className={cn(
+                "absolute top-0 -right-3 h-full w-6 group cursor-ew-resize",
+                "flex items-center justify-center",
+                "focus:outline-none focus-visible:outline-none"
+              )}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {/* Thin rail line */}
+              <div className={cn(
+                "h-full w-0.5 bg-border transition-all duration-200",
+                "group-hover:w-1 group-hover:bg-primary/50",
+                "group-active:w-1.5 group-active:bg-primary"
+              )} />
+              {/* Center grip indicator */}
+              <div className={cn(
+                "absolute top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 transition-opacity duration-200",
+                "group-hover:opacity-100"
+              )}>
+                <div className="w-1 h-1 rounded-full bg-primary/60" />
+                <div className="w-1 h-1 rounded-full bg-primary/60" />
+                <div className="w-1 h-1 rounded-full bg-primary/60" />
+              </div>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            {isCollapsed ? 'Expand (⌘B)' : 'Collapse (⌘B)'}
+          </TooltipContent>
+        </Tooltip>
       )}
 
       {/* Sign Out Dialog */}
