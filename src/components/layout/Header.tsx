@@ -92,7 +92,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
     <header className="sticky top-0 z-50 w-full border-b border-border glass-effect pt-[env(safe-area-inset-top)]">
       <div className="container mx-auto px-4">
         <div className="flex h-14 sm:h-16 items-center justify-between">
-          {/* Left side - Mobile menu + Logo */}
+          {/* Left side - Mobile menu + Logo + Desktop sidebar toggle */}
           <div className="flex items-center gap-2">
             {/* Mobile menu button - uses onMenuClick if provided, otherwise internal state */}
             <Button
@@ -110,8 +110,23 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
 
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
+            {/* Desktop sidebar toggle - only show when onSidebarToggle provided */}
+            {onSidebarToggle && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  hapticTap();
+                  onSidebarToggle();
+                }}
+              >
+                <PanelLeft className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Logo - only show on mobile (sidebar shows it on desktop) */}
+            <Link to="/" className="flex items-center gap-2 md:hidden">
               <EclipseLogo size="sm" />
               <span className="font-display text-lg font-bold gradient-text hidden sm:block">
                 {SITE_NAME}
