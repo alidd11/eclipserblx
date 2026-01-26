@@ -744,6 +744,57 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_advertisements: {
+        Row: {
+          created_at: string
+          description: string
+          discord_message_id: string | null
+          discord_username: string | null
+          id: string
+          image_url: string | null
+          link_url: string | null
+          payment_id: string | null
+          posted_at: string | null
+          price_paid: number | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          discord_message_id?: string | null
+          discord_username?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          payment_id?: string | null
+          posted_at?: string | null
+          price_paid?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discord_message_id?: string | null
+          discord_username?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          payment_id?: string | null
+          posted_at?: string | null
+          price_paid?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       discord_boost_trials: {
         Row: {
           boost_count: number
