@@ -3,6 +3,7 @@ import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Review {
   id: string;
@@ -20,6 +21,7 @@ export const ReviewCard = memo(function ReviewCard() {
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const isMobile = useIsMobile();
 
   const { data: reviews } = useQuery({
     queryKey: ['hero-reviews'],
@@ -126,8 +128,8 @@ export const ReviewCard = memo(function ReviewCard() {
 
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-5 h-full">
-        <div className="text-center text-muted-foreground py-8">
+      <div className="rounded-2xl border border-border bg-card p-4 md:p-5 h-full">
+        <div className="text-center text-muted-foreground py-4 md:py-8">
           No reviews yet
         </div>
       </div>
@@ -136,6 +138,74 @@ export const ReviewCard = memo(function ReviewCard() {
 
   const currentReview = reviews[currentIndex];
 
+  // Mobile: Compact single-line layout
+  if (isMobile) {
+    return (
+      <div 
+        className="rounded-2xl border border-border bg-card p-4 touch-pan-x"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Reviews</span>
+          </div>
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star 
+                key={i} 
+                className={`h-3 w-3 ${i < currentReview.rating ? 'text-amber-500 fill-amber-500' : 'text-muted'}`} 
+              />
+            ))}
+          </div>
+        </div>
+        
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentReview.id}
+            initial={{ opacity: 0, x: direction >= 0 ? 20 : -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction >= 0 ? -20 : 20 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground flex-shrink-0">
+              {currentReview.display_name.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-foreground truncate">"{currentReview.content}"</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{currentReview.display_name}</p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Minimal navigation dots */}
+        <div className="flex items-center justify-center gap-1 mt-3">
+          {reviews.slice(0, 5).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setDirection(i > currentIndex % 5 ? 1 : -1);
+                setCurrentIndex(i);
+              }}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                i === currentIndex % 5
+                  ? 'bg-primary w-3'
+                  : 'bg-muted w-1.5'
+              }`}
+              aria-label={`Go to review ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: Full carousel with animations
   return (
     <div 
       className="rounded-2xl border border-border bg-card p-5 h-full touch-pan-x relative"

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCountUp } from '@/hooks/useCountUp';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const BASE_STATS = {
   downloads: 108,
@@ -33,8 +34,16 @@ const AnimatedValue = memo(function AnimatedValue({ value, suffix = '+' }: { val
   );
 });
 
+const formatNumber = (num: number) => {
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(num >= 10000 ? 0 : 1)}K`;
+  }
+  return num.toString();
+};
+
 export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, ref) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const isMobile = useIsMobile();
 
   const { data: stats } = useQuery({
     queryKey: ['homepage-stats'],
@@ -62,18 +71,47 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
   ];
 
   useEffect(() => {
+    if (isMobile) return; // Skip carousel on mobile
+    
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % statItems.length);
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [statItems.length]);
+  }, [statItems.length, isMobile]);
 
+  // Mobile: Compact horizontal layout showing all stats
+  if (isMobile) {
+    return (
+      <div ref={ref} className="rounded-2xl border border-border bg-card p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+            <TrendingUp className="h-3 w-3 text-primary" />
+          </div>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Our Community</span>
+        </div>
+        <div className="flex items-center justify-between gap-2 px-1">
+          {statItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.label} className="flex-1 text-center">
+                <Icon className="h-4 w-4 mx-auto text-primary mb-1" />
+                <p className="text-lg font-bold leading-none">{formatNumber(item.value)}+</p>
+                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">{item.label}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: Animated carousel
   const currentStat = statItems[currentIndex];
   const CurrentIcon = currentStat.icon;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 h-full">
+    <div ref={ref} className="rounded-2xl border border-border bg-card p-5 h-full">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
           <TrendingUp className="h-4 w-4 text-primary" />
