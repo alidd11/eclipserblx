@@ -878,48 +878,58 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   };
 
   return (
-    <aside 
-      className={cn(
-        "bg-card flex flex-col transition-all duration-300 shrink-0 h-screen sticky top-0 relative",
-        !isMobileDrawer && "border-r border-border",
-        isCollapsed ? "w-14" : "w-64",
-        className
-      )}
-      data-gesture-exempt="true"
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-border pt-[max(1rem,env(safe-area-inset-top))]">
-        <Link to="/" className="flex items-center gap-2" onClick={handleNavClick}>
-          <EclipseLogo size="sm" />
-          {!isCollapsed && (
-            <span className="font-display text-lg font-bold gradient-text">
-              {SITE_NAME}
-            </span>
-          )}
-        </Link>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map((group) => (
-          <div key={group.id}>
-            {renderGroup(group)}
-            {/* Insert categories section after Shop group */}
-            {group.id === 'shop' && renderCategoriesSection()}
-          </div>
-        ))}
-      </nav>
-
-      {/* Legal Footer - compact links */}
-      {!isCollapsed && (
-        <div className="px-2 pt-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center">
-          <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
-          <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
-          <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
+    <div className="relative shrink-0">
+      <aside 
+        className={cn(
+          "bg-card flex flex-col transition-all duration-300 h-screen sticky top-0",
+          !isMobileDrawer && "border-r border-border",
+          isCollapsed ? "w-14" : "w-64",
+          className
+        )}
+        data-gesture-exempt="true"
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-border pt-[max(1rem,env(safe-area-inset-top))]">
+          <Link to="/" className="flex items-center gap-2" onClick={handleNavClick}>
+            <EclipseLogo size="sm" />
+            {!isCollapsed && (
+              <span className="font-display text-lg font-bold gradient-text">
+                {SITE_NAME}
+              </span>
+            )}
+          </Link>
         </div>
-      )}
 
-      {/* Sidebar Rail Handle - Edge resize indicator */}
+        {/* Navigation */}
+        <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+          {navGroups.map((group) => (
+            <div key={group.id}>
+              {renderGroup(group)}
+              {/* Insert categories section after Shop group */}
+              {group.id === 'shop' && renderCategoriesSection()}
+            </div>
+          ))}
+        </nav>
+
+        {/* Legal Footer - compact links */}
+        {!isCollapsed && (
+          <div className="px-2 pt-2 border-t border-border text-xs text-muted-foreground flex gap-3 justify-center pb-2">
+            <Link to="/terms" className="hover:underline hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:underline hover:text-foreground transition-colors">Privacy</Link>
+            <Link to="/refunds" className="hover:underline hover:text-foreground transition-colors">Refunds</Link>
+          </div>
+        )}
+
+        {/* Sign Out Dialog */}
+        <SignOutConfirmDialog
+          open={showSignOutDialog}
+          onOpenChange={setShowSignOutDialog}
+          onConfirm={handleSignOut}
+          isLoading={isSigningOut}
+        />
+      </aside>
+
+      {/* Sidebar Rail Handle - positioned outside sidebar */}
       {!isMobileDrawer && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -929,7 +939,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 onToggle();
               }}
               className={cn(
-                "absolute top-0 -right-3 h-full w-6 group cursor-ew-resize",
+                "absolute top-0 right-0 translate-x-1/2 h-full w-4 z-10 group cursor-ew-resize",
                 "flex items-center justify-center",
                 "focus:outline-none focus-visible:outline-none"
               )}
@@ -937,34 +947,25 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             >
               {/* Thin rail line */}
               <div className={cn(
-                "h-full w-0.5 bg-border transition-all duration-200",
-                "group-hover:w-1 group-hover:bg-primary/50",
-                "group-active:w-1.5 group-active:bg-primary"
+                "h-full w-0.5 rounded-full bg-border/50 transition-all duration-200",
+                "group-hover:w-1 group-hover:bg-primary/40"
               )} />
               {/* Center grip indicator */}
               <div className={cn(
-                "absolute top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 transition-opacity duration-200",
+                "absolute top-1/2 -translate-y-1/2 flex flex-col gap-0.5 opacity-0 transition-opacity duration-200",
                 "group-hover:opacity-100"
               )}>
-                <div className="w-1 h-1 rounded-full bg-primary/60" />
-                <div className="w-1 h-1 rounded-full bg-primary/60" />
-                <div className="w-1 h-1 rounded-full bg-primary/60" />
+                <div className="w-1 h-1 rounded-full bg-primary" />
+                <div className="w-1 h-1 rounded-full bg-primary" />
+                <div className="w-1 h-1 rounded-full bg-primary" />
               </div>
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={8}>
+          <TooltipContent side="right" sideOffset={12}>
             {isCollapsed ? 'Expand (⌘B)' : 'Collapse (⌘B)'}
           </TooltipContent>
         </Tooltip>
       )}
-
-      {/* Sign Out Dialog */}
-      <SignOutConfirmDialog
-        open={showSignOutDialog}
-        onOpenChange={setShowSignOutDialog}
-        onConfirm={handleSignOut}
-        isLoading={isSigningOut}
-      />
-    </aside>
+    </div>
   );
 }
