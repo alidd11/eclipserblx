@@ -47,7 +47,8 @@ const navGroups: NavGroup[] = [
     title: 'Daily Operations',
     icon: ShoppingCart,
     items: [
-      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'], dividerAfter: true },
+      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
+      { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', roles: ['admin'], dividerAfter: true },
       { title: 'Promotions', icon: Tags, href: '/admin/promotions', roles: ['admin'], dividerAfter: true },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
