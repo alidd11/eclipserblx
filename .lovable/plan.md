@@ -1,114 +1,61 @@
 
+# Align Header Bottom Border with Sidebar
 
-# Reorganize Sidebar: Merge "Shop" and "Categories" Sections
+## Problem
+The header's bottom border and the sidebar's header section border are at different heights, creating a visual disconnect. Looking at the current layout:
 
-## Current Problem
+- **Sidebar header**: Has `border-b border-border` with `p-4` padding and safe area padding, making its total height variable
+- **Main header**: Has `border-b border-border` with `h-14 sm:h-16` height
 
-The sidebar currently has:
-- A **"Shop"** section containing only "All Products"
-- A separate **"Categories"** section with individual categories
+These don't align horizontally because the sidebar header section is taller due to padding differences.
 
-This creates redundancy since both relate to product browsing, and having a section with just one item feels incomplete.
+## Solution
+Synchronize the heights of both headers so their bottom borders align perfectly on desktop. This creates a clean, continuous visual line across the top of the application.
 
-## Proposed Solution
-
-Merge these into a single **"Browse"** (or "Products") section with this structure:
-
-```text
-▾ BROWSE
-   All Products        ← Top-level entry point
-   ▾ Categories
-      Vehicle Liveries
-      Scripts & Systems
-      3D Models
-      ...
-```
-
-## Changes Overview
-
-### 1. Remove the "Shop" Group
-- Delete the separate "Shop" section from the `navGroups` array
-- "All Products" will move into the categories section
-
-### 2. Rename "Categories" to "Browse" 
-- The section header becomes "Browse" (cleaner, action-oriented)
-- "All Products" becomes the first item in this section
-- Individual categories follow below
-
-### 3. Visual Hierarchy
-- "All Products" will appear with a `Package` icon as the primary entry
-- "All Categories" link will be removed (redundant with individual categories)
-- The section flows naturally: Browse All → or pick a category
-
-## Visual Preview
-
-**Before:**
-```text
-▾ SHOP
-   All Products
-▾ CATEGORIES  
-   All Categories
-   Vehicle Liveries
-   Scripts & Systems
-   ...
-```
-
-**After:**
-```text
-▾ BROWSE
-   All Products
-   Vehicle Liveries
-   Scripts & Systems
-   3D Models
-   ...
-```
-
----
-
-## Technical Details
+## Technical Changes
 
 ### File: `src/components/layout/CustomerSidebar.tsx`
 
-**Change 1: Remove "Shop" from navGroups (lines 238-246)**
-- Delete the entire "shop" group object
-
-**Change 2: Update renderCategoriesSection function (lines 725-877)**
-- Rename section header from "Categories" to "Browse"
-- Change icon from `FolderOpen` to `Package` 
-- Replace "All Categories" link with "All Products" link pointing to `/products`
-- Remove the dedicated `/categories` link (users can access it from the categories page if needed)
-
-**Change 3: Update group state key**
-- Change `openGroups['categories']` to `openGroups['browse']` for state persistence
-
-### Key Code Changes
+**Change the sidebar header to match the main header height:**
+- Replace the current padding-based height with a fixed height matching the main header (`h-14 sm:h-16`)
+- Adjust internal layout to use flexbox centering instead of padding
+- Keep the safe-area-inset-top for PWA compatibility by adding it to the overall height
 
 ```tsx
-// Section header change
-<span className="flex-1 text-left truncate text-xs uppercase tracking-wider">
-  Browse
-</span>
+// Before (line 884)
+<div className="p-4 border-b border-border pt-[max(1rem,env(safe-area-inset-top))]">
 
-// First item becomes All Products
-<NavLink
-  to="/products"
-  onClick={handleNavClick}
-  className={...}
->
-  <Package className="h-4 w-4 shrink-0" />
-  <span>All Products</span>
-</NavLink>
-
-// Then individual categories follow...
+// After
+<div className="h-14 sm:h-16 flex items-center px-4 border-b border-border mt-[env(safe-area-inset-top)]">
 ```
 
----
+This ensures:
+1. Both headers have identical heights (14/16 units)
+2. The bottom borders align horizontally across the viewport
+3. Safe area insets are preserved for PWA mode
+4. Logo and branding remain properly centered
+
+## Visual Result
+
+```text
+BEFORE (misaligned):
+┌─────────────┬──────────────────────────────────┐
+│  ECLIPSE    │   [Actions...]      Sign In      │
+│             ├──────────────────────────────────┤ ← Header border higher
+├─────────────┤                                  │ ← Sidebar border lower
+│  Collapse   │                                  │
+│  Home       │         Main Content             │
+
+AFTER (aligned):
+┌─────────────┬──────────────────────────────────┐
+│  ECLIPSE    │   [Actions...]      Sign In      │
+├─────────────┼──────────────────────────────────┤ ← Borders aligned
+│  Collapse   │                                  │
+│  Home       │         Main Content             │
+```
 
 ## Benefits
-
-1. **Cleaner hierarchy** - One unified browsing section instead of two
-2. **Logical flow** - "All Products" at the top serves as the broadest filter
-3. **Reduced redundancy** - Eliminates single-item "Shop" section
-4. **Better UX** - Users intuitively understand "Browse" contains all shopping options
-5. **Consistent patterns** - Matches e-commerce best practices
-
+1. **Clean visual flow** - Continuous horizontal line across the top
+2. **Professional appearance** - Matching heights between sidebar and header
+3. **No functional changes** - Only visual alignment adjustment
+4. **PWA compatibility** - Safe area handling preserved
