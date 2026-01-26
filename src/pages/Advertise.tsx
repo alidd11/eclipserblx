@@ -697,16 +697,33 @@ export default function Advertise() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold">{formatCurrency(price)}</span>
-                        <span className="text-muted-foreground">
-                          /{billingPeriod === 'annual' ? 'year' : 'month'}
-                        </span>
-                      </div>
-                      {billingPeriod === 'annual' && savingsPercent > 0 && (
-                        <p className="text-sm text-green-500 mt-1">
-                          Save {savingsPercent}% vs monthly
-                        </p>
+                      {billingPeriod === 'annual' ? (
+                        <>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-bold">
+                              {formatCurrency(tier.annual_price_gbp / 12)}
+                            </span>
+                            <span className="text-muted-foreground">/month</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-sm text-muted-foreground line-through">
+                              {formatCurrency(tier.monthly_price_gbp)}/mo
+                            </span>
+                            {savingsPercent > 0 && (
+                              <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-0">
+                                Save {savingsPercent}%
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {formatCurrency(tier.annual_price_gbp)} billed annually
+                          </p>
+                        </>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-bold">{formatCurrency(price)}</span>
+                          <span className="text-muted-foreground">/month</span>
+                        </div>
                       )}
                     </div>
 
