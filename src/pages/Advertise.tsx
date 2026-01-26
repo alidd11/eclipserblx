@@ -13,7 +13,10 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, usePurchasePings, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart, History, Calendar, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) => {
@@ -47,6 +50,10 @@ export default function Advertise() {
   const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
+  // Scheduling state (Pro+ only)
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [scheduledTime, setScheduledTime] = useState('12:00');
+  
   // Ping purchase quantities for checkout
   const [herePingsToAdd, setHerePingsToAdd] = useState(0);
   const [everyonePingsToAdd, setEveryonePingsToAdd] = useState(0);
@@ -79,6 +86,36 @@ export default function Advertise() {
 
   const hasDiscordLinked = !!profile?.discord_id;
 
+  // Fetch last posted advertisement
+  const { data: lastAd, isLoading: lastAdLoading } = useQuery({
+    queryKey: ['last-advertisement', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('discord_advertisements')
+        .select('title, description, image_url, link_url, discord_username')
+        .eq('user_id', user.id)
+        .eq('status', 'posted')
+        .order('posted_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const loadLastAd = () => {
+    if (lastAd) {
+      setTitle(lastAd.title || '');
+      setDescription(lastAd.description || '');
+      setImageUrl(lastAd.image_url || '');
+      setLinkUrl(lastAd.link_url || '');
+      setDiscordUsername(lastAd.discord_username || '');
+      toast.success('Loaded last advertisement');
+    }
+  };
+
   // Admin testing bypass - grant full access without payment
   const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
   const isAdminTester = user?.email === PRIMARY_ADMIN_EMAIL;
@@ -99,6 +136,9 @@ export default function Advertise() {
         everyone_pings_balance: 99,
       }
     : realSubscription;
+
+  // Check if scheduling is available (Pro+ tiers)
+  const canSchedule = subscription?.tier === 'pro' || subscription?.tier === 'premium';
 
   const checkoutMutation = useAdSubscriptionCheckout();
   const purchasePingsMutation = usePurchasePings();
@@ -129,6 +169,15 @@ export default function Advertise() {
         throw new Error('Please sign in to post an advertisement');
       }
 
+      // Build scheduled_for timestamp if date is selected
+      let scheduledFor: string | null = null;
+      if (scheduledDate && canSchedule) {
+        const [hours, minutes] = scheduledTime.split(':').map(Number);
+        const scheduled = new Date(scheduledDate);
+        scheduled.setHours(hours, minutes, 0, 0);
+        scheduledFor = scheduled.toISOString();
+      }
+
       const { data, error } = await supabase.functions.invoke('post-subscription-ad', {
         body: { 
           title, 
@@ -137,6 +186,7 @@ export default function Advertise() {
           linkUrl: linkUrl || null,
           discordUsername: discordUsername || null,
           pingType: selectedPing === 'none' ? null : selectedPing,
+          scheduledFor,
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -147,15 +197,21 @@ export default function Advertise() {
       if (data.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setTitle('');
       setDescription('');
       setImageUrl('');
       setLinkUrl('');
       setDiscordUsername('');
       setSelectedPing('none');
+      setScheduledDate(undefined);
+      setScheduledTime('12:00');
       refetchSubscription();
-      refetchSubscription();
+      if (data?.scheduled) {
+        toast.success('Advertisement scheduled successfully!');
+      } else {
+        toast.success('Advertisement posted successfully!');
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to post advertisement');
@@ -491,10 +547,27 @@ export default function Advertise() {
               <div className="md:col-span-2">
                 <Card className="bg-card border-border">
                   <CardHeader>
-                    <CardTitle>Create Your Advertisement</CardTitle>
-                    <CardDescription>
-                      Fill out the form below to post your Discord advertisement
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>Create Your Advertisement</CardTitle>
+                        <CardDescription>
+                          Fill out the form below to post your Discord advertisement
+                        </CardDescription>
+                      </div>
+                      {lastAd && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={loadLastAd}
+                          disabled={lastAdLoading}
+                          className="shrink-0"
+                        >
+                          <History className="h-4 w-4 mr-2" />
+                          Load Last Ad
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handlePostAd} className="space-y-6">
@@ -638,6 +711,84 @@ export default function Advertise() {
                         </p>
                       </div>
 
+                      {/* Scheduling (Pro+ only) */}
+                      {canSchedule && (
+                        <div className="space-y-3 p-4 rounded-lg border border-purple-500/30 bg-purple-500/5">
+                          <Label className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-purple-500" />
+                            Schedule Ad (Pro+ Feature)
+                          </Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">Date</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !scheduledDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {scheduledDate ? format(scheduledDate, "PPP") : "Post immediately"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={scheduledDate}
+                                    onSelect={setScheduledDate}
+                                    disabled={(date) => date < new Date()}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                  {scheduledDate && (
+                                    <div className="p-3 border-t">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setScheduledDate(undefined)}
+                                        className="w-full"
+                                      >
+                                        Clear (Post Immediately)
+                                      </Button>
+                                    </div>
+                                  )}
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">Time</Label>
+                              <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type="time"
+                                  value={scheduledTime}
+                                  onChange={(e) => setScheduledTime(e.target.value)}
+                                  disabled={!scheduledDate}
+                                  className="pl-10"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          {scheduledDate && (
+                            <p className="text-xs text-purple-500">
+                              Your ad will be posted on {format(scheduledDate, "PPP")} at {scheduledTime}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {!canSchedule && subscription?.tier === 'basic' && (
+                        <div className="p-3 rounded-lg border border-border bg-muted/30">
+                          <p className="text-xs text-muted-foreground flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>Upgrade to <strong>Pro</strong> or <strong>Premium</strong> to schedule ads in advance</span>
+                          </p>
+                        </div>
+                      )}
+
                       <Button
                         type="submit"
                         className="w-full"
@@ -646,10 +797,15 @@ export default function Advertise() {
                       >
                         {postAdMutation.isPending ? (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : scheduledDate ? (
+                          <Calendar className="h-4 w-4 mr-2" />
                         ) : (
                           <Sparkles className="h-4 w-4 mr-2" />
                         )}
-                        Post Advertisement ({subscription.ads_remaining} remaining)
+                        {scheduledDate 
+                          ? `Schedule Advertisement (${subscription.ads_remaining} remaining)`
+                          : `Post Advertisement (${subscription.ads_remaining} remaining)`
+                        }
                         {selectedPing !== 'none' && (
                           <span className="ml-1 text-xs opacity-75">
                             with @{selectedPing} ping
