@@ -1,4 +1,5 @@
 import { ReactNode, forwardRef, useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { CustomerSidebar } from './CustomerSidebar';
@@ -8,6 +9,8 @@ import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { hapticTap } from '@/lib/haptics';
 import { useScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { SITE_NAME } from '@/lib/constants';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -94,6 +97,18 @@ function MainLayoutContent({ children }: MainLayoutProps) {
   return (
     <>
       <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
+        {/* Fixed branding overlay - sits on top of sidebar header area */}
+        <div 
+          className="hidden md:flex items-center gap-3 fixed left-4 z-[60] pointer-events-auto"
+          style={{ top: 'calc(env(safe-area-inset-top) + 0.875rem)' }}
+        >
+          <Link to="/" className="flex items-center gap-3">
+            <EclipseLogo size="sm" />
+            <span className="brand-text text-base gradient-text">
+              {SITE_NAME}
+            </span>
+          </Link>
+        </div>
         {/* Desktop Sidebar */}
         <CustomerSidebar 
           collapsed={sidebarCollapsed}
