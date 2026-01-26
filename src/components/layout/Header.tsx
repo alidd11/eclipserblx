@@ -112,9 +112,9 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
 
             {/* Logo - only show on mobile (sidebar shows it on desktop) */}
-            <Link to="/" className="flex items-center gap-2.5 md:hidden">
+            <Link to="/" className="flex items-center gap-3 md:hidden">
               <EclipseLogo size="sm" />
-              <span className="brand-text text-lg gradient-text hidden sm:block">
+              <span className="brand-text text-base gradient-text hidden sm:block">
                 {SITE_NAME}
               </span>
             </Link>
