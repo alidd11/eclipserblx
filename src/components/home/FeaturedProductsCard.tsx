@@ -14,14 +14,14 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const { getMemberPrice, getDiscountPercent } = useSubscription();
+  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products-card'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name), stores (is_active)`)
+        .select(`*, categories (name), stores (is_active), is_resellable`)
         .eq('is_featured', true)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
@@ -208,20 +208,38 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
                       </h3>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-muted-foreground line-through">
-                          £{Number(currentProduct.price).toFixed(2)}
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-sm text-amber-500">
-                            £{getMemberPrice(currentProduct.price, currentProduct.category_id).toFixed(2)}
-                          </span>
-                          <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                            <Crown className="h-2 w-2" />
-                            {getDiscountPercent(currentProduct.category_id)}%
-                          </span>
-                        </div>
-                      </div>
+                      {(() => {
+                        const isEligible = isEligibleForDiscount(currentProduct.category_id, currentProduct.is_resellable);
+                        const memberPrice = getMemberPrice(currentProduct.price, currentProduct.category_id, currentProduct.is_resellable);
+                        const discountPercent = getDiscountPercent(currentProduct.category_id, currentProduct.is_resellable);
+                        const hasMemberDiscount = isEligible && memberPrice < currentProduct.price;
+                        
+                        return (
+                          <div className="flex flex-col gap-0.5">
+                            {hasMemberDiscount ? (
+                              <>
+                                <span className="text-xs text-muted-foreground line-through">
+                                  £{Number(currentProduct.price).toFixed(2)}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-sm text-amber-500">
+                                    £{memberPrice.toFixed(2)}
+                                  </span>
+                                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
+                                    <Crown className="h-2 w-2" />
+                                    {discountPercent}%
+                                  </span>
+                                </div>
+                              </>
+                            ) : (
+                              <span className="font-bold text-sm">
+                                £{Number(currentProduct.price).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      
                       <span className="text-xs text-muted-foreground flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         View <ArrowRight className="h-3 w-3" />
                       </span>
