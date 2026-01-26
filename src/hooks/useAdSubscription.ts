@@ -14,6 +14,8 @@ export interface AdTierData {
   ads_per_month: number;
   monthly_price_gbp: number;
   annual_price_gbp: number;
+  here_ping_price_gbp: number;
+  everyone_ping_price_gbp: number;
   stripe_monthly_price_id: string | null;
   stripe_annual_price_id: string | null;
   features: string[];

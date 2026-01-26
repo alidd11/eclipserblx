@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star } from 'lucide-react';
+import { Megaphone, Loader2, CheckCircle, ExternalLink, Image, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) => {
@@ -43,6 +43,7 @@ export default function Advertise() {
   const [imageUrl, setImageUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [discordUsername, setDiscordUsername] = useState('');
+  const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
   const subscriptionSuccess = searchParams.get('subscription_success') === 'true';
@@ -76,6 +77,7 @@ export default function Advertise() {
           imageUrl: imageUrl || null,
           linkUrl: linkUrl || null,
           discordUsername: discordUsername || null,
+          pingType: selectedPing === 'none' ? null : selectedPing,
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -87,12 +89,13 @@ export default function Advertise() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Advertisement posted to Discord!');
       setTitle('');
       setDescription('');
       setImageUrl('');
       setLinkUrl('');
       setDiscordUsername('');
+      setSelectedPing('none');
+      refetchSubscription();
       refetchSubscription();
     },
     onError: (error: Error) => {
@@ -261,6 +264,64 @@ export default function Advertise() {
                         />
                       </div>
 
+                      {/* Ping Options */}
+                      <div className="space-y-3">
+                        <Label className="flex items-center gap-2">
+                          <Bell className="h-4 w-4" />
+                          Ping Option (one-time add-on)
+                        </Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPing('none')}
+                            className={cn(
+                              "p-3 rounded-lg border text-sm transition-all",
+                              selectedPing === 'none'
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                            )}
+                          >
+                            <span className="font-medium">None</span>
+                            <p className="text-xs mt-1">Free</p>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPing('here')}
+                            className={cn(
+                              "p-3 rounded-lg border text-sm transition-all",
+                              selectedPing === 'here'
+                                ? "border-green-500 bg-green-500/10 text-foreground"
+                                : "border-border bg-card text-muted-foreground hover:border-green-500/50"
+                            )}
+                          >
+                            <span className="font-medium flex items-center justify-center gap-1">
+                              <Users className="h-3 w-3" />
+                              @here
+                            </span>
+                            <p className="text-xs mt-1 text-green-500">+£0.99</p>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPing('everyone')}
+                            className={cn(
+                              "p-3 rounded-lg border text-sm transition-all",
+                              selectedPing === 'everyone'
+                                ? "border-yellow-500 bg-yellow-500/10 text-foreground"
+                                : "border-border bg-card text-muted-foreground hover:border-yellow-500/50"
+                            )}
+                          >
+                            <span className="font-medium flex items-center justify-center gap-1">
+                              <Megaphone className="h-3 w-3" />
+                              @everyone
+                            </span>
+                            <p className="text-xs mt-1 text-yellow-500">+£1.99</p>
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Purchase a ping to notify members when your ad is posted
+                        </p>
+                      </div>
+
                       <Button
                         type="submit"
                         className="w-full"
@@ -273,6 +334,11 @@ export default function Advertise() {
                           <Sparkles className="h-4 w-4 mr-2" />
                         )}
                         Post Advertisement ({subscription.ads_remaining} remaining)
+                        {selectedPing !== 'none' && (
+                          <span className="ml-1 text-xs opacity-75">
+                            + {selectedPing === 'here' ? '£0.99' : '£1.99'} ping
+                          </span>
+                        )}
                       </Button>
                     </form>
                   </CardContent>

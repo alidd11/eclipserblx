@@ -42,7 +42,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, imageUrl, linkUrl, discordUsername } = await req.json();
+    const { title, description, imageUrl, linkUrl, discordUsername, pingType } = await req.json();
 
     // Validate inputs
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -120,12 +120,14 @@ serve(async (req) => {
 
     logStep("Subscription valid", { tier: subscription.tier, adsUsed, adsPerMonth });
 
-    // Get webhook URL
-    const { data: webhookSetting } = await supabaseAdmin
+    // Get webhook URL and partnership ping role ID
+    const { data: adSettings } = await supabaseAdmin
       .from("settings")
-      .select("value")
-      .eq("key", "advertisements_discord_webhook_url")
-      .maybeSingle();
+      .select("key, value")
+      .in("key", ["advertisements_discord_webhook_url", "advertisements_partnership_ping_role_id"]);
+
+    const webhookSetting = adSettings?.find(s => s.key === "advertisements_discord_webhook_url");
+    const partnershipPingSetting = adSettings?.find(s => s.key === "advertisements_partnership_ping_role_id");
 
     if (!webhookSetting?.value) {
       throw new Error("Advertisement webhook not configured");
@@ -134,6 +136,16 @@ serve(async (req) => {
     const webhookUrl = typeof webhookSetting.value === 'string' 
       ? webhookSetting.value.replace(/"/g, '') 
       : String(webhookSetting.value);
+
+    const partnershipPingRoleId = partnershipPingSetting?.value 
+      ? (typeof partnershipPingSetting.value === 'string' 
+          ? partnershipPingSetting.value.replace(/"/g, '') 
+          : String(partnershipPingSetting.value))
+      : null;
+
+    // Validate ping type if provided
+    const validPingTypes = ['here', 'everyone', null];
+    const selectedPingType = pingType && validPingTypes.includes(pingType) ? pingType : null;
 
     // Create advertisement record
     const { data: advertisement, error: adError } = await supabaseAdmin
@@ -146,7 +158,9 @@ serve(async (req) => {
         link_url: linkUrl?.trim() || null,
         discord_username: sanitizedDiscordUsername,
         status: "paid",
-        price_paid: 0, // Subscription-based, no direct payment
+        price_paid: 0,
+        ping_type: selectedPingType,
+        ping_price_paid: 0, // Ping pricing handled separately
       })
       .select()
       .single();
@@ -180,11 +194,25 @@ serve(async (req) => {
       }];
     }
 
+    // Build content with ping if selected
+    let messageContent = "";
+    if (selectedPingType === 'everyone') {
+      messageContent = "@everyone";
+    } else if (selectedPingType === 'here') {
+      messageContent = "@here";
+    } else if (partnershipPingRoleId) {
+      // Default partnership ping for non-ping ads
+      messageContent = `<@&${partnershipPingRoleId}>`;
+    }
+
+    logStep("Posting to Discord", { pingType: selectedPingType, hasPartnershipPing: !!partnershipPingRoleId });
+
     // Post to Discord
     const discordResponse = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        content: messageContent || undefined,
         embeds: [embed],
       }),
     });

@@ -136,7 +136,9 @@ export type Database = {
           created_at: string
           description: string | null
           display_order: number | null
+          everyone_ping_price_gbp: number | null
           features: Json | null
+          here_ping_price_gbp: number | null
           id: string
           is_active: boolean | null
           monthly_price_gbp: number
@@ -152,7 +154,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_order?: number | null
+          everyone_ping_price_gbp?: number | null
           features?: Json | null
+          here_ping_price_gbp?: number | null
           id?: string
           is_active?: boolean | null
           monthly_price_gbp: number
@@ -168,7 +172,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_order?: number | null
+          everyone_ping_price_gbp?: number | null
           features?: Json | null
+          here_ping_price_gbp?: number | null
           id?: string
           is_active?: boolean | null
           monthly_price_gbp?: number
@@ -853,6 +859,8 @@ export type Database = {
           image_url: string | null
           link_url: string | null
           payment_id: string | null
+          ping_price_paid: number | null
+          ping_type: string | null
           posted_at: string | null
           price_paid: number | null
           status: string
@@ -869,6 +877,8 @@ export type Database = {
           image_url?: string | null
           link_url?: string | null
           payment_id?: string | null
+          ping_price_paid?: number | null
+          ping_type?: string | null
           posted_at?: string | null
           price_paid?: number | null
           status?: string
@@ -885,6 +895,8 @@ export type Database = {
           image_url?: string | null
           link_url?: string | null
           payment_id?: string | null
+          ping_price_paid?: number | null
+          ping_type?: string | null
           posted_at?: string | null
           price_paid?: number | null
           status?: string

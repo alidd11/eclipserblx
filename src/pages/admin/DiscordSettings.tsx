@@ -40,6 +40,7 @@ interface DiscordSettings {
   marketplace_discord_webhook_url: string;
   promotions_discord_webhook_url: string;
   advertisements_discord_webhook_url: string;
+  advertisements_partnership_ping_role_id: string;
   discord_widget_server_id: string;
 }
 
@@ -82,6 +83,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   marketplace_discord_webhook_url: '',
   promotions_discord_webhook_url: '',
   advertisements_discord_webhook_url: '',
+  advertisements_partnership_ping_role_id: '',
   discord_widget_server_id: '',
 };
 
@@ -213,7 +215,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id']);
 
       if (error) throw error;
 
@@ -236,6 +238,8 @@ export default function DiscordSettings() {
           settingsMap.promotions_discord_webhook_url = String(val);
         } else if (item.key === 'advertisements_discord_webhook_url') {
           settingsMap.advertisements_discord_webhook_url = String(val);
+        } else if (item.key === 'advertisements_partnership_ping_role_id') {
+          settingsMap.advertisements_partnership_ping_role_id = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
         }
@@ -2331,6 +2335,29 @@ export default function DiscordSettings() {
                   <p className="text-xs text-muted-foreground">
                     Create a dedicated webhook channel for user-submitted advertisements
                   </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="partnershipPingRoleId">Partnership Ping Role ID</Label>
+                  <Input
+                    id="partnershipPingRoleId"
+                    value={formData.advertisements_partnership_ping_role_id}
+                    onChange={(e) => handleChange('advertisements_partnership_ping_role_id', e.target.value)}
+                    placeholder="e.g., 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Discord role ID to ping for ads without purchased pings (defaults to this role for standard ads)
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">Ping Options:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li><strong>No ping purchased:</strong> Uses the Partnership Ping Role above (if set)</li>
+                    <li><strong>@here (£0.99):</strong> Pings all online members in the channel</li>
+                    <li><strong>@everyone (£1.99):</strong> Pings all server members</li>
+                  </ul>
                 </div>
 
                 <div className="bg-muted/50 p-4 rounded-lg space-y-2">
