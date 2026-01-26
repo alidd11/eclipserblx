@@ -48,6 +48,7 @@ const navGroups: NavGroup[] = [
     icon: ShoppingCart,
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'], dividerAfter: true },
+      { title: 'Promotions', icon: Tags, href: '/admin/promotions', roles: ['admin'], dividerAfter: true },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin'] },
@@ -81,7 +82,6 @@ const navGroups: NavGroup[] = [
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'order_manager'] },
       { title: 'Refunds', icon: RotateCcw, href: '/admin/refunds', roles: ['admin'] },
       { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin'] },
-      { title: 'Discounts', icon: Tags, href: '/admin/discounts', roles: ['admin'] },
     ],
   },
   {

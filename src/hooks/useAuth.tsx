@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Log staff login/logout activity (deferred to avoid deadlock)
         if (session?.user && event === 'SIGNED_IN') {
           setTimeout(async () => {
+            // Check for staff roles
             const { data: roles } = await supabase
               .from('user_roles')
               .select('role')
@@ -45,6 +46,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 activity_type: 'login',
                 details: { roles: roles.map(r => r.role) },
               });
+            }
+
+            // Attempt to claim any active signup promotions (silent - don't block login)
+            try {
+              const { data: promoResult } = await supabase.functions.invoke('claim-signup-promotion');
+              if (promoResult?.claimed) {
+                console.log(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} days Eclipse+)`);
+              }
+            } catch (e) {
+              // Silent fail - promotions are optional
+              console.log('No signup promotions available');
             }
           }, 0);
         }
