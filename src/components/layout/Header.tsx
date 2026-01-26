@@ -167,7 +167,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               </Link>
             ) : (
               <Link to="/auth">
-                <Button size="sm" className="gradient-button border-0 h-8 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm">
+                <Button className="gradient-button border-0 h-8 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm rounded-md">
                   Sign In
                 </Button>
               </Link>
