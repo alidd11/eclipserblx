@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { 
   Shield, 
@@ -193,7 +194,31 @@ export default function RolePermissions() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
-          <TabsList>
+          {/* Mobile dropdown */}
+          <div className="sm:hidden mb-4">
+            <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="assign">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Assign Permissions
+                  </div>
+                </SelectItem>
+                <SelectItem value="manage">
+                  <div className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Manage Roles & Permissions
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="assign">Assign Permissions</TabsTrigger>
             <TabsTrigger value="manage">Manage Roles & Permissions</TabsTrigger>
           </TabsList>

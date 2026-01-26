@@ -13,6 +13,7 @@ import {
   CheckCircle2, XCircle, ExternalLink, Save, Percent,
   Shield, Link2, Copy, Check, Settings
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,6 +26,7 @@ export default function RobloxSettings() {
   const { settings, isLoading, updateSettings } = useRobloxSettings();
   const [isSaving, setIsSaving] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('general');
   
   // Local form state
   const [gameUrl, setGameUrl] = useState('');
@@ -203,23 +205,59 @@ export default function RobloxSettings() {
           </Button>
         </div>
 
-        <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Mobile dropdown */}
+          <div className="sm:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="general">
+                  <div className="flex items-center gap-2">
+                    <Link2 className="h-4 w-4" />
+                    General
+                  </div>
+                </SelectItem>
+                <SelectItem value="discounts">
+                  <div className="flex items-center gap-2">
+                    <Percent className="h-4 w-4" />
+                    Discounts
+                  </div>
+                </SelectItem>
+                <SelectItem value="verification">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Verification
+                  </div>
+                </SelectItem>
+                <SelectItem value="transactions">
+                  <div className="flex items-center gap-2">
+                    <Webhook className="h-4 w-4" />
+                    Transactions
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:inline-grid w-full grid-cols-4 lg:w-auto">
             <TabsTrigger value="general" className="gap-2">
               <Link2 className="h-4 w-4" />
-              <span className="hidden sm:inline">General</span>
+              General
             </TabsTrigger>
             <TabsTrigger value="discounts" className="gap-2">
               <Percent className="h-4 w-4" />
-              <span className="hidden sm:inline">Discounts</span>
+              Discounts
             </TabsTrigger>
             <TabsTrigger value="verification" className="gap-2">
               <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Verification</span>
+              Verification
             </TabsTrigger>
             <TabsTrigger value="transactions" className="gap-2">
               <Webhook className="h-4 w-4" />
-              <span className="hidden sm:inline">Transactions</span>
+              Transactions
             </TabsTrigger>
           </TabsList>
 
