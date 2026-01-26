@@ -7,7 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, Eye, Clock, Package } from "lucide-react";
+import { Check, X, Eye, Package, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +38,8 @@ export default function SellerProducts() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [moderationNotes, setModerationNotes] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("pending");
+  const [productToDelete, setProductToDelete] = useState<any>(null);
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["seller-products-moderation", filterStatus],
@@ -79,6 +91,44 @@ export default function SellerProducts() {
       toast.error("Failed to update product status");
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seller-products-moderation"] });
+      toast.success("Product deleted successfully");
+      setProductToDelete(null);
+      setDeleteStep(1);
+    },
+    onError: () => {
+      toast.error("Failed to delete product");
+    },
+  });
+
+  const handleDeleteClick = (product: any) => {
+    setProductToDelete(product);
+    setDeleteStep(1);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteStep === 1) {
+      setDeleteStep(2);
+    } else {
+      deleteMutation.mutate(productToDelete.id);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setProductToDelete(null);
+    setDeleteStep(1);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -202,6 +252,14 @@ export default function SellerProducts() {
                         </Button>
                       </>
                     )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDeleteClick(product)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -297,6 +355,45 @@ export default function SellerProducts() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog - Two Step */}
+        <AlertDialog open={!!productToDelete} onOpenChange={handleDeleteCancel}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {deleteStep === 1 ? "Delete Product?" : "Are you absolutely sure?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteStep === 1 ? (
+                  <>
+                    You are about to delete <strong>"{productToDelete?.name}"</strong>. 
+                    This action cannot be undone and will permanently remove the product from the marketplace.
+                  </>
+                ) : (
+                  <>
+                    This is your <strong>final confirmation</strong>. The product <strong>"{productToDelete?.name}"</strong> will be permanently deleted along with all associated data.
+                    <br /><br />
+                    <span className="text-destructive font-medium">This action is irreversible.</span>
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending 
+                  ? "Deleting..." 
+                  : deleteStep === 1 
+                    ? "Continue" 
+                    : "Delete Permanently"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
