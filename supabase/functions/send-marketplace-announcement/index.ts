@@ -39,6 +39,9 @@ Deno.serve(async (req) => {
     }
 
     console.log("Sending Marketplace announcement...");
+    
+    const storagePublicBase = `${supabaseUrl}/storage/v1/object/public`;
+    const brandingBannerUrl = `${storagePublicBase}/store-branding/eclipse-discord-banner.png`;
 
     const embed = {
       title: "🏪 Eclipse Marketplace",
@@ -96,8 +99,9 @@ Deno.serve(async (req) => {
           inline: false,
         },
       ],
-      thumbnail: {
-        url: "https://cdn.discordapp.com/emojis/1084184853853491200.webp",
+      image: { url: brandingBannerUrl },
+      footer: {
+        text: "Eclipse Marketplace • Community Sellers",
       },
     };
 
