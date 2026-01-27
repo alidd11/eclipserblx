@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/hooks/useCart';
 import { useBadges } from '@/hooks/useBadges';
 import { useCurrency } from '@/hooks/useCurrency';
+import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 
 export default function OrderSuccess() {
   const { checkBadges } = useBadges();
@@ -23,6 +24,7 @@ export default function OrderSuccess() {
   
   const [verifiedOrderId, setVerifiedOrderId] = useState<string | null>(orderId);
   const [isVerifying, setIsVerifying] = useState(!!(sessionId || paymentIntentId) && !orderId);
+  const [showConfetti, setShowConfetti] = useState(false);
   
   // Use refs to prevent multiple verification calls
   const hasVerified = useRef(false);
@@ -64,6 +66,8 @@ export default function OrderSuccess() {
           stableClearCart();
           // Check for new badges after successful purchase
           checkBadges();
+          // Trigger confetti celebration
+          setShowConfetti(true);
         } else if (!data?.success) {
           console.error('Payment not completed:', data?.message);
         }
@@ -102,6 +106,7 @@ export default function OrderSuccess() {
 
   return (
     <MainLayout>
+      <ConfettiCelebration isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
       <div className="container py-16 max-w-2xl text-center space-y-8">
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">

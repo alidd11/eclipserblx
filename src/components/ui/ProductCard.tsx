@@ -84,7 +84,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onMouseLeave={handleMouseLeave}
     >
       <div className={cn(
-        "gaming-card-hover overflow-hidden h-full flex flex-col",
+        "overflow-hidden h-full flex flex-col rounded-lg border border-border bg-card transition-all duration-300",
+        "hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30",
+        "group-hover:ring-1 group-hover:ring-primary/20",
         isFeatured && "ring-1 ring-primary/50"
       )}>
         {/* Image/Video */}
