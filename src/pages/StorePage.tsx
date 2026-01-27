@@ -476,31 +476,6 @@ export default function StorePage() {
             <h2 className="text-xl font-bold">Products</h2>
           </div>
 
-          {/* Store Tabs (shown inline on desktop when sidebar is visible) */}
-          {storeTabs && storeTabs.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6 md:hidden">
-              <Button
-                variant={!activeTab ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleTabClick(null)}
-                style={!activeTab ? { backgroundColor: accentColor } : undefined}
-              >
-                <LayoutGrid className="h-4 w-4 mr-1.5" />
-                All
-              </Button>
-              {storeTabs.map((tab) => (
-                <Button
-                  key={tab.id}
-                  variant={activeTab === tab.slug ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleTabClick(tab.slug)}
-                  style={activeTab === tab.slug ? { backgroundColor: accentColor } : undefined}
-                >
-                  {tab.name}
-                </Button>
-              ))}
-            </div>
-          )}
           
           {productsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

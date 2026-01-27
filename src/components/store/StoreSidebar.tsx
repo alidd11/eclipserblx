@@ -10,7 +10,6 @@ import {
   Shield,
   RefreshCw,
   Home,
-  FolderOpen,
   User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -80,7 +79,7 @@ export function StoreSidebar({
 
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-1">
-          {/* Home & About */}
+          {/* Navigation */}
           <div className="mb-2">
             <Button
               variant="ghost"
@@ -114,15 +113,7 @@ export function StoreSidebar({
                 <span>My Account</span>
               </Link>
             </Button>
-          </div>
 
-          <Separator className="my-3" />
-
-          {/* Quick Navigation */}
-          <div className="mb-2">
-            <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
-              Quick Links
-            </p>
             <Button
               variant="ghost"
               className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
@@ -130,30 +121,6 @@ export function StoreSidebar({
             >
               <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
               <span>Recommended</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={() => scrollToSection('store-products')}
-            >
-              <Package className="h-4 w-4" style={{ color: accentColor }} />
-              <span>All Products</span>
-              <span className="ml-auto text-xs text-sidebar-foreground/50">
-                {productCount}
-              </span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={() => scrollToSection('store-categories')}
-            >
-              <FolderOpen className="h-4 w-4" style={{ color: accentColor }} />
-              <span>Categories</span>
-              <span className="ml-auto text-xs text-sidebar-foreground/50">
-                {tabs.length}
-              </span>
             </Button>
 
             {averageRating && (
@@ -171,60 +138,53 @@ export function StoreSidebar({
             )}
           </div>
 
-          {/* Categories / Tabs */}
-          {tabs.length > 0 && (
-            <>
-              <Separator className="my-3" />
-              <div>
-                <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
-                  Categories
-                </p>
-                
-                <Button
-                  variant={!activeTab ? 'secondary' : 'ghost'}
-                  className={cn(
-                    "w-full justify-start gap-2 h-9",
-                    !activeTab 
-                      ? "text-sidebar-foreground" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
-                  )}
-                  style={!activeTab ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
-                  onClick={() => handleTabClick(null)}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                  <span>All</span>
-                  <ChevronRight className={cn(
-                    "h-4 w-4 ml-auto transition-transform",
-                    !activeTab && "rotate-90"
-                  )} />
-                </Button>
+          {/* Categories */}
+          <Separator className="my-3" />
+          <div>
+            <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
+              Categories
+            </p>
+            
+            <Button
+              variant={!activeTab ? 'secondary' : 'ghost'}
+              className={cn(
+                "w-full justify-start gap-2 h-9",
+                !activeTab 
+                  ? "text-sidebar-foreground" 
+                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+              )}
+              style={!activeTab ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
+              onClick={() => handleTabClick(null)}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              <span>All Products</span>
+              <span className="ml-auto text-xs text-sidebar-foreground/50">
+                {productCount}
+              </span>
+            </Button>
 
-                {tabs.map((tab) => (
-                  <Button
-                    key={tab.id}
-                    variant={activeTab === tab.slug ? 'secondary' : 'ghost'}
-                    className={cn(
-                      "w-full justify-start gap-2 h-9",
-                      activeTab === tab.slug 
-                        ? "text-sidebar-foreground" 
-                        : "text-sidebar-foreground hover:bg-sidebar-accent"
-                    )}
-                    style={activeTab === tab.slug ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
-                    onClick={() => handleTabClick(tab.slug)}
-                  >
-                    <Package className="h-4 w-4" />
-                    <span className="truncate">{tab.name}</span>
-                    <ChevronRight className={cn(
-                      "h-4 w-4 ml-auto transition-transform flex-shrink-0",
-                      activeTab === tab.slug && "rotate-90"
-                    )} />
-                  </Button>
-                ))}
-              </div>
-            </>
-          )}
-
-
+            {tabs.map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.slug ? 'secondary' : 'ghost'}
+                className={cn(
+                  "w-full justify-start gap-2 h-9",
+                  activeTab === tab.slug 
+                    ? "text-sidebar-foreground" 
+                    : "text-sidebar-foreground hover:bg-sidebar-accent"
+                )}
+                style={activeTab === tab.slug ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
+                onClick={() => handleTabClick(tab.slug)}
+              >
+                <Package className="h-4 w-4" />
+                <span className="truncate">{tab.name}</span>
+                <ChevronRight className={cn(
+                  "h-4 w-4 ml-auto transition-transform flex-shrink-0",
+                  activeTab === tab.slug && "rotate-90"
+                )} />
+              </Button>
+            ))}
+          </div>
 
           {/* Legal Section */}
           <Separator className="my-3" />
