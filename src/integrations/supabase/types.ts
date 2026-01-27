@@ -1194,6 +1194,62 @@ export type Database = {
           },
         ]
       }
+      discord_role_configs: {
+        Row: {
+          auto_assign_on_purchase: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_global: boolean
+          min_order_amount: number | null
+          min_order_count: number | null
+          requires_subscription: boolean
+          role_id: string
+          role_name: string
+          store_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          auto_assign_on_purchase?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean
+          min_order_amount?: number | null
+          min_order_count?: number | null
+          requires_subscription?: boolean
+          role_id: string
+          role_name: string
+          store_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auto_assign_on_purchase?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean
+          min_order_amount?: number | null
+          min_order_count?: number | null
+          requires_subscription?: boolean
+          role_id?: string
+          role_name?: string
+          store_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_role_configs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_codes: {
         Row: {
           category_ids: string[] | null
