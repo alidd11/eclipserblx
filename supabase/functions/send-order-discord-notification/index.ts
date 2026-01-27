@@ -144,8 +144,12 @@ serve(async (req) => {
       embed.thumbnail = { url: thumbnailUrl };
     }
 
-    // Send to Discord
-    const discordResponse = await fetch(webhookUrl, {
+    // Send to Discord with ?wait=true to get message ID back
+    const webhookUrlWithWait = webhookUrl.includes('?') 
+      ? `${webhookUrl}&wait=true` 
+      : `${webhookUrl}?wait=true`;
+
+    const discordResponse = await fetch(webhookUrlWithWait, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -160,6 +164,41 @@ serve(async (req) => {
         JSON.stringify({ error: "Discord webhook failed", details: errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Try to add heart reaction to the message
+    try {
+      const messageData = await discordResponse.json();
+      const messageId = messageData.id;
+      const channelId = messageData.channel_id;
+      
+      if (messageId && channelId) {
+        const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+        if (botToken) {
+          // Add heart reaction (❤️ = %E2%9D%A4%EF%B8%8F URL encoded)
+          const reactionUrl = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/%E2%9D%A4%EF%B8%8F/@me`;
+          const reactionResponse = await fetch(reactionUrl, {
+            method: "PUT",
+            headers: {
+              "Authorization": `Bot ${botToken}`,
+              "Content-Type": "application/json",
+            },
+          });
+          
+          if (reactionResponse.ok || reactionResponse.status === 204) {
+            logStep("Heart reaction added successfully", { messageId });
+          } else {
+            logStep("Failed to add heart reaction (non-fatal)", { 
+              status: reactionResponse.status,
+              messageId 
+            });
+          }
+        } else {
+          logStep("No DISCORD_BOT_TOKEN configured, skipping reaction");
+        }
+      }
+    } catch (reactionError) {
+      logStep("Failed to add reaction (non-fatal)", { error: String(reactionError) });
     }
 
     logStep("Order notification sent successfully", { orderId });
