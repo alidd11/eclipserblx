@@ -1,5 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { HeroSection } from '@/components/home/HeroSection';
+import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { ForumShowcase } from '@/components/home/ForumShowcase';
 import { TrustSignals } from '@/components/home/TrustSignals';
 import { RecommendedProducts } from '@/components/recommendations/RecommendedProducts';
@@ -15,6 +16,7 @@ export default function Index() {
       <OrganizationSchema />
       <WebsiteSearchSchema />
       <HeroSection />
+      <ActiveOffersCard />
       <RecommendedProducts />
       <ForumShowcase />
       <TrustSignals />
