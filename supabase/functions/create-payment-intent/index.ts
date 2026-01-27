@@ -8,12 +8,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Eclipse+ discount constants - must match frontend
+const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
+const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
+const ECLIPSE_PLUS_DISCOUNT = 30;
+const ECLIPSE_PLUS_BOT_DISCOUNT = 35;
+
 interface CartItem {
   id: string;
   name: string;
   price: number;
   image?: string;
   category_slug?: string;
+  category_id?: string;
 }
 
 interface PaymentIntentRequest {
@@ -26,6 +33,25 @@ const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-PAYMENT-INTENT] ${step}${detailsStr}`);
 };
+
+// Server-side Eclipse+ discount eligibility check
+function isEligibleForDiscount(categoryId: string | null | undefined, isResellable: boolean | null | undefined): boolean {
+  if (isResellable) return false;
+  return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
+}
+
+// Server-side member price calculation
+function calculateMemberPrice(originalPrice: number, categoryId: string | null | undefined, isResellable: boolean | null | undefined): number {
+  if (!isEligibleForDiscount(categoryId, isResellable)) {
+    return originalPrice;
+  }
+  
+  if (categoryId === BOT_CATEGORY_ID) {
+    return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
+  }
+  
+  return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -57,7 +83,7 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     const { items, email, discountCodeId }: PaymentIntentRequest = await req.json();
@@ -66,32 +92,6 @@ serve(async (req) => {
     if (!items || items.length === 0) {
       throw new Error("No items provided");
     }
-
-    // Calculate subtotal in pence (smallest currency unit)
-    const subtotal = items.reduce((sum, item) => sum + Math.round(item.price * 100), 0);
-    let discountAmount = 0;
-
-    // Apply discount if provided
-    if (discountCodeId) {
-      const { data: discount } = await supabaseClient
-        .from('discount_codes')
-        .select('*')
-        .eq('id', discountCodeId)
-        .eq('is_active', true)
-        .single();
-
-      if (discount) {
-        if (discount.discount_type === 'percentage') {
-          discountAmount = Math.round((subtotal * discount.discount_value) / 100);
-        } else {
-          discountAmount = Math.min(Math.round(discount.discount_value * 100), subtotal);
-        }
-        logStep("Discount applied", { discountAmount, type: discount.discount_type });
-      }
-    }
-
-    const amount = Math.max(0, subtotal - discountAmount);
-    logStep("Calculated amount", { subtotal, discountAmount, amount, currency: "gbp" });
 
     // Try to get authenticated user
     let userEmail = email;
@@ -108,6 +108,111 @@ serve(async (req) => {
       }
     }
 
+    // SERVER-SIDE: Verify Eclipse+ subscription status
+    let isEclipseMember = false;
+    if (userId) {
+      const { data: subscription } = await supabaseClient
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', userId)
+        .in('status', ['active', 'trialing'])
+        .single();
+      
+      if (subscription && new Date(subscription.current_period_end) > new Date()) {
+        isEclipseMember = true;
+        logStep("User has active Eclipse+ subscription");
+      }
+    }
+
+    // SERVER-SIDE: Fetch actual product data and calculate correct prices
+    const productIds = items.map(item => item.id);
+    const { data: products, error: productsError } = await supabaseClient
+      .from('products')
+      .select('id, name, price, category_id, is_resellable, slug')
+      .in('id', productIds);
+
+    if (productsError) {
+      logStep("Error fetching products", productsError);
+      throw new Error("Failed to verify product prices");
+    }
+
+    const productMap = new Map(products?.map(p => [p.id, p]) || []);
+
+    // Validate and calculate server-side prices
+    const validatedItems: Array<{
+      id: string;
+      name: string;
+      originalPrice: number;
+      finalPrice: number;
+      category_id?: string;
+      category_slug?: string;
+    }> = [];
+
+    let serverSubtotal = 0;
+    let serverEclipseDiscount = 0;
+
+    for (const item of items) {
+      const product = productMap.get(item.id);
+      if (!product) {
+        logStep("Product not found", { productId: item.id });
+        throw new Error(`Product not found: ${item.id}`);
+      }
+
+      const originalPrice = product.price;
+      let finalPrice = originalPrice;
+
+      // Apply Eclipse+ discount server-side if user is a member
+      if (isEclipseMember) {
+        finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable);
+        if (finalPrice < originalPrice) {
+          serverEclipseDiscount += (originalPrice - finalPrice);
+        }
+      }
+
+      validatedItems.push({
+        id: product.id,
+        name: product.name,
+        originalPrice,
+        finalPrice,
+        category_id: product.category_id,
+        category_slug: item.category_slug, // Keep original category_slug for bot detection
+      });
+
+      serverSubtotal += finalPrice;
+    }
+
+    logStep("Server-side price validation complete", { 
+      serverSubtotal, 
+      serverEclipseDiscount,
+      isEclipseMember 
+    });
+
+    // Apply discount code (only if NOT an Eclipse+ member - no stacking)
+    let discountAmount = 0;
+    if (discountCodeId && !isEclipseMember) {
+      const { data: discount } = await supabaseClient
+        .from('discount_codes')
+        .select('*')
+        .eq('id', discountCodeId)
+        .eq('is_active', true)
+        .single();
+
+      if (discount) {
+        if (discount.discount_type === 'percentage') {
+          discountAmount = (serverSubtotal * discount.discount_value) / 100;
+        } else {
+          discountAmount = Math.min(discount.discount_value, serverSubtotal);
+        }
+        logStep("Discount applied", { discountAmount, type: discount.discount_type });
+      }
+    } else if (discountCodeId && isEclipseMember) {
+      logStep("Discount code ignored - Eclipse+ member (no stacking)");
+    }
+
+    // Calculate final amount in pence
+    const amount = Math.max(0, Math.round((serverSubtotal - discountAmount) * 100));
+    logStep("Calculated amount", { serverSubtotal, discountAmount, amount, currency: "gbp" });
+
     // Check if customer exists in Stripe
     let customerId: string | undefined;
     if (userEmail) {
@@ -118,7 +223,7 @@ serve(async (req) => {
       }
     }
 
-    // Create PaymentIntent
+    // Create PaymentIntent with SERVER-VALIDATED prices
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "gbp",
@@ -127,16 +232,25 @@ serve(async (req) => {
       metadata: {
         user_id: userId || "",
         customer_email: userEmail || "",
-        items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price, category_slug: i.category_slug }))),
-        discount_code_id: discountCodeId || "",
-        discount_amount: (discountAmount / 100).toString(),
+        items: JSON.stringify(validatedItems.map(i => ({ 
+          id: i.id, 
+          name: i.name, 
+          price: i.finalPrice, 
+          originalPrice: i.originalPrice,
+          category_id: i.category_id,
+          category_slug: i.category_slug 
+        }))),
+        discount_code_id: (!isEclipseMember && discountCodeId) ? discountCodeId : "",
+        discount_amount: discountAmount.toString(),
+        eclipse_discount: serverEclipseDiscount.toString(),
+        is_eclipse_member: isEclipseMember ? "true" : "false",
       },
       automatic_payment_methods: {
         enabled: true,
       },
     });
 
-    logStep("PaymentIntent created", { paymentIntentId: paymentIntent.id });
+    logStep("PaymentIntent created", { paymentIntentId: paymentIntent.id, finalAmount: amount });
 
     return new Response(
       JSON.stringify({
