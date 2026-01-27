@@ -46,9 +46,11 @@ interface PurchasedStore {
   store_id: string;
   store_name: string;
   logo_url: string | null;
-  order_id: string;
-  order_date: string;
-  product_names: string[];
+  orders: Array<{
+    order_id: string;
+    order_date: string;
+    product_names: string[];
+  }>;
 }
 
 export default function StoreMessages() {
@@ -62,7 +64,9 @@ export default function StoreMessages() {
   const [newMessage, setNewMessage] = useState('');
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [newSubject, setNewSubject] = useState('');
+  const [issueDescription, setIssueDescription] = useState('');
   const [selectedStore, setSelectedStore] = useState<PurchasedStore | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [directStore, setDirectStore] = useState<{ id: string; name: string; logo_url: string | null } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -178,25 +182,38 @@ export default function StoreMessages() {
       
       if (error) throw error;
       
-      // Group by store
+      // Group by store, keeping all orders
       const storeMap = new Map<string, PurchasedStore>();
       
       (data || []).forEach((order) => {
         order.order_items?.forEach((item: any) => {
           const store = item.product?.store;
-          if (store && !storeMap.has(store.id)) {
+          if (!store) return;
+          
+          if (!storeMap.has(store.id)) {
             storeMap.set(store.id, {
               store_id: store.id,
               store_name: store.name,
               logo_url: store.logo_url,
-              order_id: order.id,
-              order_date: order.created_at,
-              product_names: [item.product_name],
+              orders: [{
+                order_id: order.id,
+                order_date: order.created_at,
+                product_names: [item.product_name],
+              }],
             });
-          } else if (store) {
+          } else {
             const existing = storeMap.get(store.id)!;
-            if (!existing.product_names.includes(item.product_name)) {
-              existing.product_names.push(item.product_name);
+            const existingOrder = existing.orders.find(o => o.order_id === order.id);
+            if (existingOrder) {
+              if (!existingOrder.product_names.includes(item.product_name)) {
+                existingOrder.product_names.push(item.product_name);
+              }
+            } else {
+              existing.orders.push({
+                order_id: order.id,
+                order_date: order.created_at,
+                product_names: [item.product_name],
+              });
             }
           }
         });
@@ -257,7 +274,7 @@ export default function StoreMessages() {
 
   // Create conversation mutation
   const createConversationMutation = useMutation({
-    mutationFn: async ({ storeId, orderId, subject }: { storeId: string; orderId: string | null; subject: string }) => {
+    mutationFn: async ({ storeId, orderId, subject, initialMessage }: { storeId: string; orderId: string | null; subject: string; initialMessage: string }) => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -272,13 +289,33 @@ export default function StoreMessages() {
         .single();
       
       if (error) throw error;
+      
+      // Send initial message with the issue description
+      if (initialMessage.trim()) {
+        await supabase.from('store_messages').insert({
+          conversation_id: data.id,
+          store_id: storeId,
+          customer_id: user.id,
+          sender_type: 'customer',
+          message: initialMessage.trim(),
+        });
+        
+        // Update last_message_at
+        await supabase
+          .from('store_conversations')
+          .update({ last_message_at: new Date().toISOString() })
+          .eq('id', data.id);
+      }
+      
       return data;
     },
     onSuccess: (data) => {
       setSelectedConversation(data.id);
       setShowNewConversation(false);
       setNewSubject('');
+      setIssueDescription('');
       setSelectedStore(null);
+      setSelectedOrderId(null);
       setDirectStore(null);
       // Clear the store query param
       searchParams.delete('store');
@@ -334,12 +371,16 @@ export default function StoreMessages() {
   };
 
   const handleStartConversation = () => {
+    // Build subject from issue description if no subject provided
+    const finalSubject = newSubject.trim() || (issueDescription.trim() ? issueDescription.trim().slice(0, 100) : '');
+    
     // Handle direct store messaging (from store page)
     if (directStore) {
       createConversationMutation.mutate({
         storeId: directStore.id,
-        orderId: null,
-        subject: newSubject.trim(),
+        orderId: selectedOrderId,
+        subject: finalSubject,
+        initialMessage: issueDescription.trim(),
       });
       return;
     }
@@ -347,9 +388,17 @@ export default function StoreMessages() {
     if (!selectedStore) return;
     createConversationMutation.mutate({
       storeId: selectedStore.store_id,
-      orderId: selectedStore.order_id,
-      subject: newSubject.trim(),
+      orderId: selectedOrderId,
+      subject: finalSubject,
+      initialMessage: issueDescription.trim(),
     });
+  };
+  
+  // Get all product names for a store (for display)
+  const getStoreProductNames = (store: PurchasedStore) => {
+    const allProducts = store.orders.flatMap(o => o.product_names);
+    const uniqueProducts = [...new Set(allProducts)];
+    return uniqueProducts;
   };
 
   if (!user) return null;
@@ -399,18 +448,53 @@ export default function StoreMessages() {
                     <p className="text-xs text-muted-foreground">Direct message</p>
                   </div>
                 </div>
+                
+                {/* Order Selection - Show if user has orders from this store */}
+                {purchasedStores.find(s => s.store_id === directStore.id) && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Select an order (optional)</label>
+                    <select
+                      value={selectedOrderId || ''}
+                      onChange={(e) => setSelectedOrderId(e.target.value || null)}
+                      className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="">General inquiry (no specific order)</option>
+                      {purchasedStores.find(s => s.store_id === directStore.id)?.orders.map((order) => (
+                        <option key={order.order_id} value={order.order_id}>
+                          {format(new Date(order.order_date), 'MMM d, yyyy')} - {order.product_names.slice(0, 2).join(', ')}
+                          {order.product_names.length > 2 ? ` +${order.product_names.length - 2}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                {/* Issue Description */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Describe your issue</label>
+                  <textarea
+                    placeholder="Please describe what you need help with..."
+                    value={issueDescription}
+                    onChange={(e) => setIssueDescription(e.target.value)}
+                    rows={4}
+                    className="flex min-h-[100px] w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                  />
+                </div>
+                
+                {/* Subject */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Subject (optional)</label>
                   <Input
-                    placeholder="What's this about?"
+                    placeholder="Brief summary of your issue"
                     value={newSubject}
                     onChange={(e) => setNewSubject(e.target.value)}
                   />
                 </div>
+                
                 <Button 
                   className="w-full" 
                   onClick={handleStartConversation}
-                  disabled={createConversationMutation.isPending}
+                  disabled={createConversationMutation.isPending || !issueDescription.trim()}
                 >
                   {createConversationMutation.isPending ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -431,50 +515,88 @@ export default function StoreMessages() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Select a store</label>
                   <div className="grid gap-2">
-                    {purchasedStores.map((store) => (
-                      <button
-                        key={store.store_id}
-                        onClick={() => setSelectedStore(store)}
-                        className={cn(
-                          'flex items-center gap-3 p-3 rounded-lg border text-left transition-colors',
-                          selectedStore?.store_id === store.store_id
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border hover:bg-muted/50'
-                        )}
-                      >
-                        {store.logo_url ? (
-                          <img src={store.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
-                        ) : (
-                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                            <Store className="h-5 w-5 text-muted-foreground" />
+                    {purchasedStores.map((store) => {
+                      const productNames = getStoreProductNames(store);
+                      return (
+                        <button
+                          key={store.store_id}
+                          onClick={() => {
+                            setSelectedStore(store);
+                            setSelectedOrderId(null);
+                          }}
+                          className={cn(
+                            'flex items-center gap-3 p-3 rounded-lg border text-left transition-colors',
+                            selectedStore?.store_id === store.store_id
+                              ? 'border-primary bg-primary/10'
+                              : 'border-border hover:bg-muted/50'
+                          )}
+                        >
+                          {store.logo_url ? (
+                            <img src={store.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                          ) : (
+                            <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                              <Store className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{store.store_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {store.orders.length} order{store.orders.length !== 1 ? 's' : ''} • {productNames.slice(0, 2).join(', ')}
+                              {productNames.length > 2 && ` +${productNames.length - 2} more`}
+                            </p>
                           </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{store.store_name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            Purchased: {store.product_names.slice(0, 2).join(', ')}
-                            {store.product_names.length > 2 && ` +${store.product_names.length - 2} more`}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 
                 {selectedStore && (
                   <>
+                    {/* Order Selection Dropdown */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select an order (optional)</label>
+                      <select
+                        value={selectedOrderId || ''}
+                        onChange={(e) => setSelectedOrderId(e.target.value || null)}
+                        className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        <option value="">General inquiry (no specific order)</option>
+                        {selectedStore.orders.map((order) => (
+                          <option key={order.order_id} value={order.order_id}>
+                            {format(new Date(order.order_date), 'MMM d, yyyy')} - {order.product_names.slice(0, 2).join(', ')}
+                            {order.product_names.length > 2 ? ` +${order.product_names.length - 2}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Issue Description */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Describe your issue</label>
+                      <textarea
+                        placeholder="Please describe what you need help with..."
+                        value={issueDescription}
+                        onChange={(e) => setIssueDescription(e.target.value)}
+                        rows={4}
+                        className="flex min-h-[100px] w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                      />
+                    </div>
+                    
+                    {/* Subject (optional) */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Subject (optional)</label>
                       <Input
-                        placeholder="What's this about?"
+                        placeholder="Brief summary of your issue"
                         value={newSubject}
                         onChange={(e) => setNewSubject(e.target.value)}
                       />
                     </div>
+                    
                     <Button 
                       className="w-full" 
                       onClick={handleStartConversation}
-                      disabled={createConversationMutation.isPending}
+                      disabled={createConversationMutation.isPending || !issueDescription.trim()}
                     >
                       {createConversationMutation.isPending ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
