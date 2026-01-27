@@ -40,8 +40,8 @@ Deno.serve(async (req) => {
 
     console.log("Sending Eclipse+ announcement...");
     
-    // Eclipse branding banner - always included at the bottom of announcements
-    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
+    // Combined Eclipse branding + Eclipse+ banner
+    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-combined-banner.png";
 
     const embed = {
       title: "✨ Eclipse+ Membership",
