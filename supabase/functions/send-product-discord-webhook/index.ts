@@ -284,8 +284,13 @@ Deno.serve(async (req) => {
           .trim()
       : "A new product is now available on Eclipse!";
     // Check if product is eligible for Eclipse+ discount (not resellable, not Eclipse Savers category)
-    const isEclipseSavers = payload.category_slug === "eclipse_savers" || 
-                            payload.category_name?.toLowerCase() === "eclipse savers";
+    // Note: category slugs may be stored with underscores or hyphens.
+    const categorySlugNormalized = (payload.category_slug || "").toLowerCase();
+    const categoryNameNormalized = (payload.category_name || "").toLowerCase();
+    const isEclipseSavers =
+      categorySlugNormalized === "eclipse_savers" ||
+      categorySlugNormalized === "eclipse-savers" ||
+      categoryNameNormalized === "eclipse savers";
     const isEligibleForEclipsePlus = !payload.is_resellable && !isEclipseSavers;
 
     // Strip Eclipse+ references from description for ineligible products
@@ -350,20 +355,24 @@ Deno.serve(async (req) => {
       let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
 
       // For ineligible products, strip any hardcoded Eclipse+ references from field values
-      if (!isEligibleForEclipsePlus && field.id === "purchase_locations") {
+       if (!isEligibleForEclipsePlus && field.id === "purchase_locations") {
         fieldValue = fieldValue
           .split('\n')
           .filter(line => {
-            // Remove any lines mentioning Eclipse+, member pricing, or discounts
-            const isEclipsePlusLine = 
-              line.includes('Eclipse+') || 
-              line.includes('eclipse+') ||
-              line.includes('30% off') || 
-              line.includes('0% off') ||
-              line.includes('% off') ||
-              line.includes('Member') ||
-              line.includes('member') ||
-              line.toLowerCase().includes('discount');
+             // Remove any lines mentioning Eclipse+, member pricing, or discounts.
+             // Must be case-insensitive and also catch custom emoji names like <:Eclipseplus:...>
+             const normalized = (line || "").toLowerCase();
+             const isEclipsePlusLine =
+               normalized.includes('eclipse+') ||
+               normalized.includes('eclipse plus') ||
+               normalized.includes('eclipseplus') ||
+               normalized.includes('eclipse-plus') ||
+               normalized.includes('/eclipse-plus') ||
+               normalized.includes('member') ||
+               normalized.includes('discount') ||
+               normalized.includes('% off') ||
+               normalized.includes('30% off') ||
+               normalized.includes('30%');
             return !isEclipsePlusLine;
           })
           .join('\n');
