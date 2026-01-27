@@ -165,7 +165,7 @@ export default function StorePage() {
   });
 
   // Fetch tab product IDs if a tab is selected
-  const { data: tabProductIds } = useQuery({
+  const { data: tabProductIds, isLoading: tabProductsLoading } = useQuery({
     queryKey: ['tab-product-ids', store?.id, activeTab, isEclipseStore, storeTabs?.map(t => t.id).join(',')],
     queryFn: async () => {
       if (!store?.id || !activeTab || !storeTabs) return null;
@@ -538,7 +538,24 @@ export default function StorePage() {
         {/* Products Section */}
         <div id="store-products" className="mb-8 scroll-mt-20">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">All Products</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold">
+                {activeTab 
+                  ? storeTabs?.find(t => t.slug === activeTab)?.name || 'Products'
+                  : 'All Products'}
+              </h2>
+              {activeTab && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleTabClick(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  All
+                </Button>
+              )}
+            </div>
             {totalProductPages > 1 && (
               <div className="flex items-center gap-2">
                 <Button
@@ -566,7 +583,7 @@ export default function StorePage() {
             )}
           </div>
 
-          {productsLoading ? (
+          {productsLoading || (activeTab && tabProductsLoading) ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {[1, 2, 3, 4].map(i => (
                 <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
