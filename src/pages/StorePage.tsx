@@ -300,125 +300,124 @@ export default function StorePage() {
         )}
       </div>
 
-      <div className="container -mt-16 relative z-10">
-        {/* Store Header */}
-        <Card className={`mb-8 ${themeStyles.header}`}>
-          <CardContent className="pt-6">
-            <div className="flex flex-col gap-6 items-center text-center">
-              {/* Store Logo */}
-              {store.logo_url ? (
-                <img 
-                  src={store.logo_url} 
-                  alt={store.name}
-                  className="h-24 w-24 object-contain flex-shrink-0"
-                />
-              ) : (
-                <div 
-                  className="h-24 w-24 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${accentColor}20` }}
-                >
-                  <StoreIcon 
-                    className="h-10 w-10" 
-                    style={{ color: accentColor }}
-                  />
+      {/* Store Header - Transparent overlay on banner */}
+      <div className="container px-4 -mt-16 relative z-10">
+        <div className="flex flex-col gap-6 items-center text-center py-6">
+          {/* Store Logo */}
+          {store.logo_url ? (
+            <img 
+              src={store.logo_url} 
+              alt={store.name}
+              className="h-24 w-24 object-contain flex-shrink-0 drop-shadow-lg"
+            />
+          ) : (
+            <div 
+              className="h-24 w-24 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm"
+              style={{ backgroundColor: `${accentColor}40` }}
+            >
+              <StoreIcon 
+                className="h-10 w-10" 
+                style={{ color: accentColor }}
+              />
+            </div>
+          )}
+
+          {/* Store Info */}
+          <div className="flex-1 w-full max-w-4xl mx-auto">
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2 drop-shadow-md text-foreground">
+              {store.name}
+            </h1>
+            
+            <div className="flex flex-col items-center gap-2 mb-2">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                {store.is_verified && (
+                  <Badge 
+                    className="gap-1 shadow-md"
+                    style={{ backgroundColor: accentColor, color: 'white' }}
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                    Verified
+                  </Badge>
+                )}
+                {(store as any).is_trusted && (
+                  <Badge 
+                    className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-md"
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                    Trusted Seller
+                  </Badge>
+                )}
+              </div>
+              <FollowButton 
+                storeId={store.id} 
+                accentColor={accentColor}
+                size="sm"
+              />
+            </div>
+            
+            {store.description && (
+              <p className="mb-2 text-center max-w-2xl mx-auto text-muted-foreground">
+                {store.description}
+              </p>
+            )}
+
+            {bio && (
+              <div id="store-about" className="text-sm italic mb-4 max-w-2xl mx-auto text-center text-muted-foreground">
+                {bio.length > 100 && !bioExpanded ? (
+                  <>
+                    "{bio.slice(0, 100)}..."
+                    <button
+                      onClick={() => setBioExpanded(true)}
+                      className="ml-1 text-xs font-medium not-italic hover:underline"
+                      style={{ color: accentColor }}
+                    >
+                      See more
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    "{bio}"
+                    {bio.length > 100 && (
+                      <button
+                        onClick={() => setBioExpanded(false)}
+                        className="ml-1 text-xs font-medium not-italic hover:underline"
+                        style={{ color: accentColor }}
+                      >
+                        See less
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Stats - stretched across */}
+            <div className="flex flex-wrap justify-center gap-6 md:gap-12 text-sm pt-2">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{store.product_count || 0} Products</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{store.total_sales || 0} Sales</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{store.follower_count || 0} Followers</span>
+              </div>
+              {store.average_rating && (
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                  <span className="font-medium">{store.average_rating.toFixed(1)} Rating</span>
                 </div>
               )}
-
-              {/* Store Info */}
-              <div className="flex-1">
-                <h1 className={`text-2xl md:text-3xl font-bold text-center mb-2 ${isDarkTheme ? 'text-white' : ''}`}>
-                  {store.name}
-                </h1>
-                
-                <div className="flex flex-col items-center gap-2 mb-2">
-                  <div className="flex items-center justify-center gap-2 flex-wrap">
-                    {store.is_verified && (
-                      <Badge 
-                        className="gap-1"
-                        style={{ backgroundColor: accentColor, color: 'white' }}
-                      >
-                        <CheckCircle className="h-3 w-3" />
-                        Verified
-                      </Badge>
-                    )}
-                    {(store as any).is_trusted && (
-                      <Badge 
-                        className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0"
-                      >
-                        <CheckCircle className="h-3 w-3" />
-                        Trusted Seller
-                      </Badge>
-                    )}
-                  </div>
-                  <FollowButton 
-                    storeId={store.id} 
-                    accentColor={accentColor}
-                    size="sm"
-                  />
-                </div>
-                
-                {store.description && (
-                  <p className={`mb-2 text-center max-w-2xl mx-auto ${isDarkTheme ? 'text-zinc-300' : 'text-muted-foreground'}`}>
-                    {store.description}
-                  </p>
-                )}
-
-                {bio && (
-                  <div id="store-about" className={`text-sm italic mb-4 max-w-2xl mx-auto text-center ${isDarkTheme ? 'text-zinc-400' : 'text-muted-foreground'}`}>
-                    {bio.length > 100 && !bioExpanded ? (
-                      <>
-                        "{bio.slice(0, 100)}..."
-                        <button
-                          onClick={() => setBioExpanded(true)}
-                          className="ml-1 text-xs font-medium not-italic hover:underline"
-                          style={{ color: accentColor }}
-                        >
-                          See more
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        "{bio}"
-                        {bio.length > 100 && (
-                          <button
-                            onClick={() => setBioExpanded(false)}
-                            className="ml-1 text-xs font-medium not-italic hover:underline"
-                            style={{ color: accentColor }}
-                          >
-                            See less
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className={`flex flex-wrap justify-center gap-6 text-sm ${isDarkTheme ? 'text-zinc-300' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
-                    <span>{store.product_count || 0} Products</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
-                    <span>{store.total_sales || 0} Sales</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" style={{ color: isDarkTheme ? accentColor : undefined }} />
-                    <span>{store.follower_count || 0} Followers</span>
-                  </div>
-                  {store.average_rating && (
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                      <span>{store.average_rating.toFixed(1)} Rating</span>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
 
+      {/* Products Container */}
+      <div className="container px-4 mt-8">
         {/* Products Section */}
         <div id="store-products" className="mb-8 scroll-mt-20">
           <div className="flex items-center justify-between mb-6">
