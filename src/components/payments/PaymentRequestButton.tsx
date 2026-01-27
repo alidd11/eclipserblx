@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCart } from '@/hooks/useCart';
 
 interface CartItem {
   id: string;
@@ -21,6 +22,7 @@ interface PaymentRequestButtonProps {
   total: number;
   email: string;
   accessToken?: string;
+  discountCodeId?: string;
   onProcessing: (processing: boolean) => void;
   onWalletAvailable?: (available: boolean) => void;
 }
@@ -59,11 +61,13 @@ export function PaymentRequestButton({
   total, 
   email, 
   accessToken,
+  discountCodeId,
   onProcessing,
   onWalletAvailable 
 }: PaymentRequestButtonProps) {
   const stripe = useStripe();
   const navigate = useNavigate();
+  const { clearCart } = useCart();
   const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(null);
   const [canMakePayment, setCanMakePayment] = useState<boolean | null>(null);
   const [walletType, setWalletType] = useState<'applePay' | 'googlePay' | null>(null);
@@ -84,7 +88,7 @@ export function PaymentRequestButton({
 
     pr.canMakePayment()
       .then((result) => {
-        console.info('[PaymentRequest] canMakePayment result', result);
+        // Wallet availability check completed
         if (result) {
           setCanMakePayment(true);
           setPaymentRequest(pr);
@@ -115,7 +119,7 @@ export function PaymentRequestButton({
       try {
         // Create PaymentIntent on the server
         const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-          body: { items, email },
+          body: { items, email, discountCodeId },
           headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
         });
 
@@ -144,6 +148,8 @@ export function PaymentRequestButton({
         }
 
         event.complete('success');
+        // Clear the cart after successful payment
+        clearCart();
         showSuccessNotification('Payment Successful!', 'Your order is being processed');
         navigate(`/order-success?payment_intent=${data.paymentIntentId}`);
       } catch (err: any) {
@@ -159,7 +165,7 @@ export function PaymentRequestButton({
     return () => {
       paymentRequest.off('paymentmethod', handlePaymentMethod);
     };
-  }, [paymentRequest, items, email, accessToken, stripe, navigate, onProcessing]);
+  }, [paymentRequest, items, email, accessToken, discountCodeId, stripe, navigate, onProcessing, clearCart]);
 
   // Still checking availability
   if (canMakePayment === null) {

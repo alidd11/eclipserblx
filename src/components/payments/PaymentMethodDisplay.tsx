@@ -155,6 +155,7 @@ export function PaymentMethodDisplay({
           total={total}
           email={email}
           accessToken={accessToken}
+          discountCodeId={discountCodeId}
           onProcessing={onProcessing}
           onWalletAvailable={setWalletAvailable}
         />
