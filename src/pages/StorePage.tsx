@@ -529,6 +529,7 @@ export default function StorePage() {
           followerCount={store.follower_count || 0}
           memberSince={store.created_at}
           accentColor={accentColor}
+          storeSlug={store.slug || storeSlug || ''}
         />
       </div>
 
