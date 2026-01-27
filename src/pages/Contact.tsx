@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -18,17 +18,26 @@ import {
 import { contactFormSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 import { supabase } from '@/integrations/supabase/client';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 export default function Contact() {
   const { user } = useAuth();
   const { discordUrl } = useDiscordUrl();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  
+  const [formData, setFormData, clearFormData] = useFormPersistence('contact-form', {
     name: '',
-    email: user?.email || '',
+    email: '',
     subject: '',
     message: '',
   });
+
+  // Set email from user on mount
+  useEffect(() => {
+    if (user?.email && !formData.email) {
+      setFormData({ email: user.email });
+    }
+  }, [user?.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +94,10 @@ export default function Contact() {
 
       showSuccessNotification('Message Sent!', 'We\'ll get back to you within 24-48 hours.');
 
-      setFormData({ name: '', email: user?.email || '', subject: '', message: '' });
+      clearFormData();
+      if (user?.email) {
+        setFormData({ email: user.email });
+      }
     } catch (error: any) {
       console.error('Error submitting contact form:', error);
       // Handle rate limit error from RLS

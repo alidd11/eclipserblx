@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Dialog, 
@@ -19,6 +19,7 @@ import { ImagePlus, X, Loader2, Upload } from 'lucide-react';
 import { forumThreadSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 import { cn } from '@/lib/utils';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface CreateThreadDialogProps {
   open: boolean;
@@ -37,11 +38,14 @@ export function CreateThreadDialog({
 }: CreateThreadDialogProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData, clearFormData] = useFormPersistence(`forum-thread-${categorySlug}`, {
+    title: '',
+    content: '',
+  });
+  const [images, setImages] = useState<string[]>([]);
 
   // Show image upload for showcase and requests categories
   const showImageUpload = categorySlug === 'showcase' || categorySlug === 'requests';
@@ -137,8 +141,8 @@ export function CreateThreadDialog({
       
       // Validate input with schema
       const validation = validateWithSchema(forumThreadSchema, {
-        title: title.trim(),
-        content: content.trim(),
+        title: formData.title.trim(),
+        content: formData.content.trim(),
       });
 
       if (isValidationError(validation)) {
@@ -148,7 +152,7 @@ export function CreateThreadDialog({
       const validatedData = validation.data;
 
       // Generate slug from title
-      const slug = title
+      const slug = formData.title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -161,7 +165,7 @@ export function CreateThreadDialog({
         .insert({
           category_id: categoryId,
           user_id: user.id,
-          title: title.trim(),
+          title: formData.title.trim(),
           slug,
         })
         .select()
@@ -170,7 +174,7 @@ export function CreateThreadDialog({
       if (threadError) throw threadError;
 
       // Build content with images
-      let finalContent = content.trim();
+      let finalContent = formData.content.trim();
       if (images.length > 0) {
         finalContent += '\n\n---\n\n';
         images.forEach(url => {
@@ -195,8 +199,7 @@ export function CreateThreadDialog({
       queryClient.invalidateQueries({ queryKey: ['forum-threads'] });
       queryClient.invalidateQueries({ queryKey: ['forum-thread-counts'] });
       showSuccessNotification('Thread Created', 'Your discussion has been posted');
-      setTitle('');
-      setContent('');
+      clearFormData();
       setImages([]);
       onOpenChange(false);
       onSuccess?.(threadSlug);
@@ -223,8 +226,8 @@ export function CreateThreadDialog({
             <Label htmlFor="title">Thread Title</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={formData.title}
+              onChange={(e) => setFormData({ title: e.target.value })}
               placeholder="Enter a descriptive title..."
               required
             />
@@ -234,14 +237,14 @@ export function CreateThreadDialog({
             <Label htmlFor="content">Content</Label>
             <Textarea
               id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={formData.content}
+              onChange={(e) => setFormData({ content: e.target.value })}
               placeholder={showImageUpload ? "Describe your creation or request..." : "What would you like to discuss?"}
               className="min-h-[150px] resize-none"
               maxLength={10000}
               required
             />
-            <p className="text-xs text-muted-foreground">{content.length}/10000 characters</p>
+            <p className="text-xs text-muted-foreground">{formData.content.length}/10000 characters</p>
           </div>
 
           {showImageUpload && (
@@ -340,7 +343,7 @@ export function CreateThreadDialog({
             <Button
               type="submit"
               className="gradient-button"
-              disabled={!title.trim() || !content.trim() || createMutation.isPending || uploading}
+              disabled={!formData.title.trim() || !formData.content.trim() || createMutation.isPending || uploading}
             >
               {createMutation.isPending ? 'Creating...' : 'Create Thread'}
             </Button>
