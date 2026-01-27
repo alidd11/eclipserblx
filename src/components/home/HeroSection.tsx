@@ -8,6 +8,7 @@ import { DiscordWidget } from './DiscordWidget';
 import { SectionWrapper } from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { MarketplaceHeroButton } from '@/components/marketplace/MarketplaceHeroButton';
+import { ActiveOffersCard } from './ActiveOffersCard';
 
 export function HeroSection() {
   return (
@@ -59,12 +60,22 @@ export function HeroSection() {
             </div>
           </div>
 
+          {/* Active Offers Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="mt-6"
+          >
+            <ActiveOffersCard />
+          </motion.div>
+
           {/* Featured Products Card */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.4 }}
-            className="mt-6"
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className="mt-4"
           >
             <FeaturedProductsCard />
           </motion.div>
