@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Grant the Eclipse+ subscription
+      // Grant the Eclipse+ subscription (always use 'pro' tier for standard benefits)
       const startDate = new Date();
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + (promo.eclipse_plus_days || 30));
@@ -134,6 +134,7 @@ Deno.serve(async (req) => {
           .from("subscriptions")
           .update({
             status: "active",
+            tier: "pro", // Always grant pro tier (30% discount, 1 free product)
             current_period_start: startDate.toISOString(),
             current_period_end: endDate.toISOString(),
             grant_reason: `Signup promotion: ${promo.name}`,
@@ -153,6 +154,7 @@ Deno.serve(async (req) => {
           .insert({
             user_id: user.id,
             status: "active",
+            tier: "pro", // Always grant pro tier (30% discount, 1 free product)
             current_period_start: startDate.toISOString(),
             current_period_end: endDate.toISOString(),
             grant_reason: `Signup promotion: ${promo.name}`,

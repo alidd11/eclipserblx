@@ -1,47 +1,40 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Crown, Check, Gift, Percent, Sparkles, Loader2, AlertCircle, Calendar, Clock, XCircle, Star } from 'lucide-react';
+import { Crown, Check, Gift, Percent, Loader2, AlertCircle, Calendar, Clock, XCircle } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
-import { useSubscription } from '@/hooks/useSubscription';
-import { useSubscriptionTiers, TierData, BillingPeriod, SubscriptionTier } from '@/hooks/useSubscriptionTiers';
-import { TierCard } from '@/components/subscription/TierCard';
-import { BillingToggle } from '@/components/subscription/BillingToggle';
+import { useSubscription, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import { differenceInDays, differenceInHours, format } from 'date-fns';
 
 const faqs = [
   {
     question: 'What products can I get for free?',
-    answer: 'You can claim products each month (number depends on your tier), except for bot products. There\'s no price limit - choose any eligible product regardless of its value.',
-  },
-  {
-    question: 'Can I upgrade or downgrade my plan?',
-    answer: 'Yes! You can change your plan at any time. When upgrading, you\'ll get immediate access to higher benefits. When downgrading, changes take effect at the end of your billing cycle.',
-  },
-  {
-    question: 'When does my free product refresh?',
-    answer: 'Your free product claims reset on the 1st of each month at midnight UTC. Any unclaimed free products do not roll over.',
+    answer: 'You can claim 1 product each month, except for bot products. There\'s no price limit - choose any eligible product regardless of its value.',
   },
   {
     question: 'Can I cancel anytime?',
     answer: 'Yes! You can cancel your subscription at any time. You\'ll continue to have access until the end of your current billing period.',
   },
   {
-    question: 'What happens if I switch to annual billing?',
-    answer: 'You\'ll save significantly compared to monthly billing (roughly 2 months free). Your benefits continue uninterrupted.',
+    question: 'When does my free product refresh?',
+    answer: 'Your free product claim resets on the 1st of each month at midnight UTC. Unclaimed free products do not roll over.',
+  },
+  {
+    question: 'Does the discount apply to everything?',
+    answer: 'The 30% discount applies to all products except those in the Eclipse Savers category and resellable products. Bot products get an additional 5% (35% total).',
   },
 ];
 
-const tierIcons: Record<SubscriptionTier, typeof Crown> = {
-  basic: Star,
-  pro: Crown,
-  premium: Sparkles,
-};
+const benefits = [
+  { icon: Percent, title: '30% Off Everything', description: 'Save on all purchases (35% on bots)' },
+  { icon: Gift, title: '1 Free Product Monthly', description: 'Claim any eligible product for free' },
+  { icon: Crown, title: 'Priority Support', description: 'Get help faster from our team' },
+];
 
 export default function EclipsePlus() {
   const { user } = useAuth();
@@ -50,10 +43,6 @@ export default function EclipsePlus() {
   const { 
     isSubscribed, 
     subscriptionEnd, 
-    tier: currentTier,
-    billingPeriod: currentBillingPeriod,
-    discountPercent,
-    freeProductsPerMonth,
     freeProductsClaimed,
     canClaimFree, 
     isLoading, 
@@ -61,9 +50,6 @@ export default function EclipsePlus() {
     openCustomerPortal 
   } = useSubscription();
   
-  const { data: tiers, isLoading: tiersLoading } = useSubscriptionTiers();
-  
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,8 +65,8 @@ export default function EclipsePlus() {
     const daysLeft = differenceInDays(endDate, now);
     const hoursLeft = differenceInHours(endDate, now);
     
-    // Calculate progress based on billing period
-    const totalDays = currentBillingPeriod === 'annual' ? 365 : 30;
+    // Calculate progress based on 30-day billing period
+    const totalDays = 30;
     const daysUsed = totalDays - daysLeft;
     const progressPercent = Math.max(0, Math.min(100, (daysUsed / totalDays) * 100));
     
@@ -91,9 +77,9 @@ export default function EclipsePlus() {
       progressPercent,
       formattedDate: format(endDate, 'MMMM d, yyyy'),
     };
-  }, [subscriptionEnd, currentBillingPeriod]);
+  }, [subscriptionEnd]);
 
-  const handleSelectTier = async (tier: TierData) => {
+  const handleSubscribe = async () => {
     if (!user) {
       navigate('/auth?redirect=/eclipse-plus');
       return;
@@ -103,7 +89,7 @@ export default function EclipsePlus() {
     setError(null);
     
     try {
-      await subscribe(tier.tier, billingPeriod);
+      await subscribe();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start subscription');
       setIsSubscribing(false);
@@ -123,11 +109,9 @@ export default function EclipsePlus() {
     }
   };
 
-  const CurrentTierIcon = currentTier ? tierIcons[currentTier] : Crown;
-
   return (
     <MainLayout>
-      <div className="container py-8 max-w-6xl space-y-12">
+      <div className="container py-8 max-w-4xl space-y-12">
         {/* Hero Section */}
         <div className="text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
@@ -136,12 +120,11 @@ export default function EclipsePlus() {
           </div>
           
           <h1 className="text-4xl sm:text-5xl font-display font-bold">
-            Choose Your <span className="gradient-text">Perfect Plan</span>
+            Unlock <span className="gradient-text">Premium Benefits</span>
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Unlock exclusive discounts, free products, and premium benefits. 
-            Save more with annual billing.
+            Join Eclipse+ and enjoy exclusive discounts, free products every month, and priority support.
           </p>
         </div>
 
@@ -168,14 +151,14 @@ export default function EclipsePlus() {
             
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <CurrentTierIcon className="h-8 w-8 text-primary-foreground" />
+                <Crown className="h-8 w-8 text-primary-foreground" />
               </div>
               <div className="flex items-center justify-center gap-2">
-                <CardTitle className="text-2xl capitalize">Eclipse {currentTier || 'Plus'}</CardTitle>
-                <Badge className="bg-primary text-primary-foreground capitalize">{currentBillingPeriod}</Badge>
+                <CardTitle className="text-2xl">Eclipse+</CardTitle>
+                <Badge className="bg-primary text-primary-foreground">Active</Badge>
               </div>
               <p className="text-muted-foreground mt-2">
-                {discountPercent}% off all purchases • {freeProductsPerMonth} free product{freeProductsPerMonth !== 1 ? 's' : ''}/month
+                {ECLIPSE_PLUS_DISCOUNT}% off all purchases • 1 free product/month
               </p>
             </CardHeader>
             
@@ -208,31 +191,29 @@ export default function EclipsePlus() {
               </div>
 
               {/* Free Product Status */}
-              {freeProductsPerMonth > 0 && (
-                <div className="p-4 rounded-lg border bg-card">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center",
-                      canClaimFree ? "bg-primary/10" : "bg-muted"
-                    )}>
-                      <Gift className={cn("h-5 w-5", canClaimFree ? "text-primary" : "text-muted-foreground")} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">Monthly Free Products</div>
-                      <div className="text-sm text-muted-foreground">
-                        {freeProductsClaimed} of {freeProductsPerMonth} claimed
-                      </div>
-                    </div>
-                    {canClaimFree ? (
-                      <Button asChild size="sm" className="gradient-button border-0">
-                        <Link to="/products">Claim Now</Link>
-                      </Button>
-                    ) : (
-                      <Badge variant="secondary">All Claimed</Badge>
-                    )}
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    canClaimFree ? "bg-primary/10" : "bg-muted"
+                  )}>
+                    <Gift className={cn("h-5 w-5", canClaimFree ? "text-primary" : "text-muted-foreground")} />
                   </div>
+                  <div className="flex-1">
+                    <div className="font-medium">Monthly Free Product</div>
+                    <div className="text-sm text-muted-foreground">
+                      {freeProductsClaimed} of 1 claimed
+                    </div>
+                  </div>
+                  {canClaimFree ? (
+                    <Button asChild size="sm" className="gradient-button border-0">
+                      <Link to="/products">Claim Now</Link>
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary">Claimed</Badge>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Action Buttons */}
               <div className="space-y-2">
@@ -268,36 +249,85 @@ export default function EclipsePlus() {
           </Card>
         )}
 
-        {/* Pricing Cards for Non-Subscribers */}
+        {/* Pricing Card for Non-Subscribers */}
         {!isSubscribed && (
-          <div className="space-y-8">
-            {/* Billing Toggle */}
-            <BillingToggle 
-              billingPeriod={billingPeriod} 
-              onChange={setBillingPeriod}
-              annualSavingsPercent={17}
-            />
+          <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-primary">
+            <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center text-sm py-2 font-medium">
+              Most Popular Choice
+            </div>
             
-            {/* Tier Cards */}
-            {tiersLoading || isLoading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <CardHeader className="text-center pt-12 pb-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                <Crown className="h-8 w-8 text-primary-foreground" />
               </div>
-            ) : (
-              <div className="grid md:grid-cols-3 gap-6">
-                {tiers?.map((tier) => (
-                  <TierCard
-                    key={tier.id}
-                    tier={tier}
-                    billingPeriod={billingPeriod}
-                    isCurrentTier={currentTier === tier.tier}
-                    isLoading={isSubscribing}
-                    onSelect={handleSelectTier}
-                  />
+              
+              <CardTitle className="text-2xl">Eclipse+</CardTitle>
+              
+              <div className="mt-4 space-y-1">
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-4xl font-bold">£4.99</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {/* Benefits Grid */}
+              <div className="grid gap-4">
+                {benefits.map((benefit) => (
+                  <div key={benefit.title} className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-medium">{benefit.title}</div>
+                      <div className="text-sm text-muted-foreground">{benefit.description}</div>
+                    </div>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
+              
+              {/* Feature List */}
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>Early access to new products</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>Exclusive member-only deals</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>Cancel anytime, no commitment</span>
+                </li>
+              </ul>
+              
+              {isLoading ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <Button 
+                  className="w-full gradient-button border-0 h-12 text-lg"
+                  onClick={handleSubscribe}
+                  disabled={isSubscribing}
+                >
+                  {isSubscribing ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="h-5 w-5 mr-2" />
+                      Subscribe Now
+                    </>
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* FAQ */}
