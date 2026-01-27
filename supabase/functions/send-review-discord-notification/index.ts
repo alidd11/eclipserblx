@@ -129,6 +129,38 @@ serve(async (req) => {
       timestamp: new Date().toISOString(),
     });
 
+    // Helper function to add heart reaction to a message
+    const addHeartReaction = async (webhookUrl: string, messageId: string, channelId: string) => {
+      const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+      if (!botToken) {
+        console.log("No DISCORD_BOT_TOKEN configured, skipping reaction");
+        return;
+      }
+      
+      try {
+        // Add heart reaction (❤️ = %E2%9D%A4%EF%B8%8F URL encoded)
+        const reactionUrl = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/%E2%9D%A4%EF%B8%8F/@me`;
+        const reactionResponse = await fetch(reactionUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bot ${botToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (reactionResponse.ok || reactionResponse.status === 204) {
+          console.log("Heart reaction added successfully", { messageId });
+        } else {
+          console.log("Failed to add heart reaction (non-fatal)", { 
+            status: reactionResponse.status,
+            messageId 
+          });
+        }
+      } catch (error) {
+        console.log("Failed to add reaction (non-fatal)", { error: String(error) });
+      }
+    };
+
     const results = {
       mainWebhook: { sent: false, skipped: false, error: null as string | null },
       sellerWebhook: { sent: false, skipped: false, error: null as string | null },
@@ -137,7 +169,12 @@ serve(async (req) => {
     // Send to main Eclipse webhook
     if (mainWebhookUrl) {
       try {
-        const discordResponse = await fetch(mainWebhookUrl, {
+        // Add ?wait=true to get message ID back
+        const webhookUrlWithWait = mainWebhookUrl.includes('?') 
+          ? `${mainWebhookUrl}&wait=true` 
+          : `${mainWebhookUrl}?wait=true`;
+
+        const discordResponse = await fetch(webhookUrlWithWait, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -148,6 +185,16 @@ serve(async (req) => {
         if (discordResponse.ok) {
           console.log("Main review notification sent successfully");
           results.mainWebhook.sent = true;
+          
+          // Add heart reaction
+          try {
+            const messageData = await discordResponse.json();
+            if (messageData.id && messageData.channel_id) {
+              await addHeartReaction(mainWebhookUrl, messageData.id, messageData.channel_id);
+            }
+          } catch (parseError) {
+            console.log("Could not parse response for reaction (non-fatal)");
+          }
         } else {
           const errorText = await discordResponse.text();
           console.error("Main Discord webhook failed:", discordResponse.status, errorText);
@@ -165,7 +212,12 @@ serve(async (req) => {
     // Send to seller webhook if configured
     if (sellerWebhookUrl) {
       try {
-        const sellerResponse = await fetch(sellerWebhookUrl, {
+        // Add ?wait=true to get message ID back
+        const sellerWebhookWithWait = sellerWebhookUrl.includes('?') 
+          ? `${sellerWebhookUrl}&wait=true` 
+          : `${sellerWebhookUrl}?wait=true`;
+
+        const sellerResponse = await fetch(sellerWebhookWithWait, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -176,6 +228,16 @@ serve(async (req) => {
         if (sellerResponse.ok) {
           console.log("Seller review notification sent successfully");
           results.sellerWebhook.sent = true;
+          
+          // Add heart reaction
+          try {
+            const messageData = await sellerResponse.json();
+            if (messageData.id && messageData.channel_id) {
+              await addHeartReaction(sellerWebhookUrl, messageData.id, messageData.channel_id);
+            }
+          } catch (parseError) {
+            console.log("Could not parse seller response for reaction (non-fatal)");
+          }
         } else {
           const errorText = await sellerResponse.text();
           console.error("Seller Discord webhook failed:", sellerResponse.status, errorText);
