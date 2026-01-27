@@ -8,6 +8,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Eclipse+ discount constants - must match frontend
+const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
+const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
+const ECLIPSE_PLUS_DISCOUNT = 30;
+const ECLIPSE_PLUS_BOT_DISCOUNT = 35;
+
 interface CartItem {
   id: string;
   name: string;
@@ -32,6 +38,25 @@ const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
+
+// Server-side Eclipse+ discount eligibility check
+function isEligibleForDiscount(categoryId: string | null | undefined, isResellable: boolean | null | undefined): boolean {
+  if (isResellable) return false;
+  return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
+}
+
+// Server-side member price calculation
+function calculateMemberPrice(originalPrice: number, categoryId: string | null | undefined, isResellable: boolean | null | undefined): number {
+  if (!isEligibleForDiscount(categoryId, isResellable)) {
+    return originalPrice;
+  }
+  
+  if (categoryId === BOT_CATEGORY_ID) {
+    return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
+  }
+  
+  return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -60,37 +85,14 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { items, email, discountCodeId, successUrl, cancelUrl, eclipseDiscount, isEclipseMember }: CheckoutRequest = await req.json();
-    logStep("Request received", { itemCount: items?.length, discountCodeId, isEclipseMember, eclipseDiscount });
+    const { items, email, discountCodeId, successUrl, cancelUrl }: CheckoutRequest = await req.json();
+    logStep("Request received", { itemCount: items?.length, discountCodeId });
 
     if (!items || items.length === 0) {
       throw new Error("No items provided");
-    }
-
-    // Calculate subtotal
-    const subtotal = items.reduce((sum, item) => sum + item.price, 0);
-    let discountAmount = 0;
-
-    // Apply discount if provided
-    if (discountCodeId) {
-      const { data: discount } = await supabaseClient
-        .from('discount_codes')
-        .select('*')
-        .eq('id', discountCodeId)
-        .eq('is_active', true)
-        .single();
-
-      if (discount) {
-        if (discount.discount_type === 'percentage') {
-          discountAmount = (subtotal * discount.discount_value) / 100;
-        } else {
-          discountAmount = Math.min(discount.discount_value, subtotal);
-        }
-        logStep("Discount applied", { discountAmount, type: discount.discount_type });
-      }
     }
 
     // Try to get authenticated user
@@ -108,6 +110,110 @@ serve(async (req) => {
       }
     }
 
+    // SERVER-SIDE: Verify Eclipse+ subscription status
+    let isEclipseMember = false;
+    if (userId) {
+      const { data: subscription } = await supabaseClient
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', userId)
+        .in('status', ['active', 'trialing'])
+        .single();
+      
+      if (subscription && new Date(subscription.current_period_end) > new Date()) {
+        isEclipseMember = true;
+        logStep("User has active Eclipse+ subscription");
+      }
+    }
+
+    // SERVER-SIDE: Fetch actual product data and calculate correct prices
+    const productIds = items.map(item => item.id);
+    const { data: products, error: productsError } = await supabaseClient
+      .from('products')
+      .select('id, name, price, category_id, is_resellable, images')
+      .in('id', productIds);
+
+    if (productsError) {
+      logStep("Error fetching products", productsError);
+      throw new Error("Failed to verify product prices");
+    }
+
+    const productMap = new Map(products?.map(p => [p.id, p]) || []);
+
+    // Validate and calculate server-side prices
+    const validatedItems: Array<{
+      id: string;
+      name: string;
+      originalPrice: number;
+      finalPrice: number;
+      image?: string;
+      category_id?: string;
+      is_resellable?: boolean;
+    }> = [];
+
+    let serverSubtotal = 0;
+    let serverEclipseDiscount = 0;
+
+    for (const item of items) {
+      const product = productMap.get(item.id);
+      if (!product) {
+        logStep("Product not found", { productId: item.id });
+        throw new Error(`Product not found: ${item.id}`);
+      }
+
+      const originalPrice = product.price;
+      let finalPrice = originalPrice;
+
+      // Apply Eclipse+ discount server-side if user is a member
+      if (isEclipseMember) {
+        finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable);
+        if (finalPrice < originalPrice) {
+          serverEclipseDiscount += (originalPrice - finalPrice);
+        }
+      }
+
+      validatedItems.push({
+        id: product.id,
+        name: product.name,
+        originalPrice,
+        finalPrice,
+        image: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : undefined,
+        category_id: product.category_id,
+        is_resellable: product.is_resellable,
+      });
+
+      serverSubtotal += finalPrice;
+    }
+
+    logStep("Server-side price validation complete", { 
+      serverSubtotal, 
+      serverEclipseDiscount,
+      isEclipseMember 
+    });
+
+    // Apply discount code (on top of member pricing)
+    let discountAmount = 0;
+    if (discountCodeId && !isEclipseMember) {
+      // Discount codes only apply if NOT an Eclipse+ member (no stacking)
+      const { data: discount } = await supabaseClient
+        .from('discount_codes')
+        .select('*')
+        .eq('id', discountCodeId)
+        .eq('is_active', true)
+        .single();
+
+      if (discount) {
+        if (discount.discount_type === 'percentage') {
+          discountAmount = (serverSubtotal * discount.discount_value) / 100;
+        } else {
+          discountAmount = Math.min(discount.discount_value, serverSubtotal);
+        }
+        logStep("Discount code applied", { discountAmount, type: discount.discount_type });
+      }
+    } else if (discountCodeId && isEclipseMember) {
+      logStep("Discount code ignored - Eclipse+ member (no stacking)");
+    }
+
     // Check if customer exists in Stripe
     let customerId: string | undefined;
     if (userEmail) {
@@ -118,8 +224,8 @@ serve(async (req) => {
       }
     }
 
-    // Create line items for Stripe Checkout
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => ({
+    // Create line items for Stripe Checkout using SERVER-VALIDATED prices
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = validatedItems.map((item) => ({
       price_data: {
         currency: "gbp",
         product_data: {
@@ -129,7 +235,7 @@ serve(async (req) => {
             product_id: item.id,
           },
         },
-        unit_amount: Math.round(item.price * 100),
+        unit_amount: Math.round(item.finalPrice * 100),
       },
       quantity: 1,
     }));
@@ -152,18 +258,23 @@ serve(async (req) => {
       metadata: {
         user_id: userId || "",
         customer_email: userEmail || "",
-        items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, price: i.price, originalPrice: i.originalPrice, category_slug: i.category_slug, category_id: i.category_id }))),
-        discount_code_id: discountCodeId || "",
+        items: JSON.stringify(validatedItems.map(i => ({ 
+          id: i.id, 
+          name: i.name, 
+          price: i.finalPrice, 
+          originalPrice: i.originalPrice, 
+          category_id: i.category_id 
+        }))),
+        discount_code_id: (!isEclipseMember && discountCodeId) ? discountCodeId : "",
         discount_amount: discountAmount.toString(),
-        eclipse_discount: (eclipseDiscount || 0).toString(),
+        eclipse_discount: serverEclipseDiscount.toString(),
         is_eclipse_member: isEclipseMember ? "true" : "false",
       },
       billing_address_collection: "auto",
     };
 
-    // Apply discount using Stripe coupons if there's a discount
+    // Apply discount code using Stripe coupons (only if not Eclipse+ member)
     if (discountAmount > 0) {
-      // Create a one-time coupon for this specific discount amount
       const coupon = await stripe.coupons.create({
         amount_off: Math.round(discountAmount * 100),
         currency: 'gbp',
@@ -176,7 +287,7 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, finalTotal: serverSubtotal - discountAmount });
 
     return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
