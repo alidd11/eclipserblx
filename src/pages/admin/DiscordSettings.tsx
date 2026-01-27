@@ -43,6 +43,7 @@ interface DiscordSettings {
   advertisements_discord_webhook_url: string;
   advertisements_partnership_ping_role_id: string;
   discord_widget_server_id: string;
+  community_discord_webhook_url: string;
 }
 
 interface Category {
@@ -86,6 +87,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   advertisements_discord_webhook_url: '',
   advertisements_partnership_ping_role_id: '',
   discord_widget_server_id: '',
+  community_discord_webhook_url: '',
 };
 
 // Eclipse Store ID (main store)
@@ -155,6 +157,13 @@ export default function DiscordSettings() {
 
   const [isTestingPromotionsWebhook, setIsTestingPromotionsWebhook] = useState(false);
   const [promotionsWebhookTestResult, setPromotionsWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
+
+  const [isTestingCommunityWebhook, setIsTestingCommunityWebhook] = useState(false);
+  const [communityWebhookTestResult, setCommunityWebhookTestResult] = useState<{
     success: boolean;
     message: string;
     details?: string;
@@ -277,7 +286,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id', 'community_discord_webhook_url']);
 
       if (error) throw error;
 
@@ -304,6 +313,8 @@ export default function DiscordSettings() {
           settingsMap.advertisements_partnership_ping_role_id = String(val);
         } else if (item.key === 'discord_widget_server_id') {
           settingsMap.discord_widget_server_id = String(val);
+        } else if (item.key === 'community_discord_webhook_url') {
+          settingsMap.community_discord_webhook_url = String(val);
         }
       });
 
@@ -1449,6 +1460,12 @@ export default function DiscordSettings() {
                       Eclipse Store
                     </div>
                   </SelectItem>
+                  <SelectItem value="community">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Community
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1510,6 +1527,10 @@ export default function DiscordSettings() {
               <TabsTrigger value="eclipse-store" className="gap-2">
                 <Store className="h-4 w-4 hidden sm:block" />
                 Eclipse Store
+              </TabsTrigger>
+              <TabsTrigger value="community" className="gap-2">
+                <MessageSquare className="h-4 w-4 hidden sm:block" />
+                Community
               </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
@@ -2804,6 +2825,132 @@ export default function DiscordSettings() {
                       <p className="text-sm text-muted-foreground">
                         These settings apply specifically to the Eclipse Store. Community sellers configure 
                         their own Discord settings through their seller dashboard.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Community Announcements Webhook Tab */}
+          <TabsContent value="community">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-blue-400" />
+                  <CardTitle>Community Announcements Webhook</CardTitle>
+                </div>
+                <CardDescription>
+                  Send community announcements to Discord from the dashboard
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="communityWebhook">Webhook URL</Label>
+                  <Input
+                    id="communityWebhook"
+                    value={formData.community_discord_webhook_url}
+                    onChange={(e) => handleChange('community_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for community announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Send className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Test Webhook</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Send a test announcement to verify your webhook is configured correctly.
+                  </p>
+                  <Button
+                    onClick={async () => {
+                      if (!formData.community_discord_webhook_url) {
+                        toast.error('Please enter a Community Webhook URL first');
+                        return;
+                      }
+                      setIsTestingCommunityWebhook(true);
+                      setCommunityWebhookTestResult(null);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('send-community-announcement', {
+                          body: {
+                            type: 'custom',
+                            title: 'Test Announcement',
+                            message: 'This is a test community announcement. The webhook is working correctly!',
+                          },
+                        });
+                        if (error) {
+                          setCommunityWebhookTestResult({
+                            success: false,
+                            message: 'Function invocation failed',
+                            details: error.message,
+                          });
+                          toast.error('Community webhook test failed');
+                        } else if (data?.success) {
+                          setCommunityWebhookTestResult({
+                            success: true,
+                            message: 'Test announcement sent!',
+                            details: 'Check your Discord channel',
+                          });
+                          toast.success('Community webhook test sent successfully!');
+                        } else {
+                          setCommunityWebhookTestResult({
+                            success: false,
+                            message: data?.error || 'Unknown error',
+                            details: data?.details,
+                          });
+                          toast.error('Community webhook test failed');
+                        }
+                      } catch (err: any) {
+                        setCommunityWebhookTestResult({
+                          success: false,
+                          message: 'Request failed',
+                          details: err.message,
+                        });
+                        toast.error('Failed to test community webhook');
+                      } finally {
+                        setIsTestingCommunityWebhook(false);
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    disabled={isTestingCommunityWebhook || !formData.community_discord_webhook_url}
+                  >
+                    {isTestingCommunityWebhook ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Test Announcement
+                  </Button>
+                  <TestResultBadge result={communityWebhookTestResult} />
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What this webhook is for:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Platform updates and feature announcements</li>
+                    <li>Maintenance notices</li>
+                    <li>Community events</li>
+                    <li>Custom announcements</li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <MessageSquare className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-blue-400">Community Announcements Page</p>
+                      <p className="text-sm text-muted-foreground">
+                        Once configured, you can send announcements from the{' '}
+                        <a href="/admin/community-announcements" className="text-blue-400 hover:underline">
+                          Community Announcements page
+                        </a>.
                       </p>
                     </div>
                   </div>
