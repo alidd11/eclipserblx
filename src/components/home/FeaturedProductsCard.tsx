@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, useMemo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, Play } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -243,13 +243,13 @@ interface ProductGridItemProps {
   isEligibleForDiscount: (categoryId: string | null, isResellable: boolean) => boolean;
 }
 
-const ProductGridItem = memo(function ProductGridItem({
+const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>(function ProductGridItem({
   product,
   formatPrice,
   getMemberPrice,
   getDiscountPercent,
   isEligibleForDiscount,
-}: ProductGridItemProps) {
+}, ref) {
   const displayMedia = getFirstMediaPrioritizeVideo(product.images);
   const isVideo = isVideoUrl(displayMedia);
   const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
@@ -259,6 +259,7 @@ const ProductGridItem = memo(function ProductGridItem({
 
   return (
     <Link 
+      ref={ref}
       to={`/products/${product.slug}`} 
       className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-primary/50 transition-all duration-200"
     >
@@ -335,4 +336,6 @@ const ProductGridItem = memo(function ProductGridItem({
       </div>
     </Link>
   );
-});
+}));
+
+ProductGridItem.displayName = 'ProductGridItem';
