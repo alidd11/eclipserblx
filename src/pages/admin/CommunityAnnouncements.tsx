@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Send, MessageCircle, Megaphone, Link as LinkIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Send, MessageCircle, Megaphone, Link as LinkIcon, AlertCircle, CheckCircle2, AtSign } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { Switch } from '@/components/ui/switch';
 
 const ANNOUNCEMENT_TYPES = [
   { value: 'custom', label: 'Custom Announcement', icon: MessageCircle },
@@ -24,27 +25,35 @@ export default function CommunityAnnouncements() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
+  const [roleId, setRoleId] = useState('');
+  const [pingRole, setPingRole] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  // Fetch webhook URL to check if configured
-  const { data: webhookUrl } = useQuery({
-    queryKey: ['community-announcements-webhook'],
+  // Fetch webhook URL and role ID
+  const { data: settings } = useQuery({
+    queryKey: ['community-announcements-settings'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('settings')
-        .select('value')
-        .eq('key', 'community_discord_webhook_url')
-        .maybeSingle();
+        .select('key, value')
+        .in('key', ['community_discord_webhook_url', 'community_discord_role_id']);
       
       if (error) throw error;
-      if (!data?.value) return null;
       
-      const val = typeof data.value === 'string' 
-        ? data.value.replace(/^"|"$/g, '') 
-        : String(data.value);
-      return val || null;
+      const settingsMap: Record<string, string> = {};
+      data?.forEach((s) => {
+        const val = typeof s.value === 'string' 
+          ? s.value.replace(/^"|"$/g, '') 
+          : String(s.value);
+        settingsMap[s.key] = val || '';
+      });
+      
+      return settingsMap;
     },
   });
+
+  const webhookUrl = settings?.community_discord_webhook_url || null;
+  const savedRoleId = settings?.community_discord_role_id || '';
 
   const handleSend = async () => {
     if (!title.trim()) {
@@ -59,6 +68,10 @@ export default function CommunityAnnouncements() {
       toast.error('Message must be 1000 characters or less');
       return;
     }
+    if (pingRole && !roleId.trim() && !savedRoleId) {
+      toast.error('Please enter a role ID to ping');
+      return;
+    }
 
     setIsSending(true);
 
@@ -69,6 +82,7 @@ export default function CommunityAnnouncements() {
           title: title.trim(),
           message: message.trim(),
           linkUrl: linkUrl.trim() || undefined,
+          roleId: pingRole ? (roleId.trim() || savedRoleId) : undefined,
         },
       });
 
@@ -79,6 +93,7 @@ export default function CommunityAnnouncements() {
         setTitle('');
         setMessage('');
         setLinkUrl('');
+        setPingRole(false);
       } else {
         toast.error(data?.error || 'Failed to send announcement');
       }
@@ -93,7 +108,7 @@ export default function CommunityAnnouncements() {
   const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === announcementType);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-[env(safe-area-inset-top)]">
       <div>
         <h1 className="text-2xl font-bold">Community Announcements</h1>
         <p className="text-muted-foreground">Send announcements to your Discord community</p>
@@ -186,6 +201,42 @@ export default function CommunityAnnouncements() {
                 className="pl-10"
               />
             </div>
+          </div>
+
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="pingRole">Ping Role</Label>
+                <p className="text-xs text-muted-foreground">Mention a Discord role with this announcement</p>
+              </div>
+              <Switch
+                id="pingRole"
+                checked={pingRole}
+                onCheckedChange={setPingRole}
+              />
+            </div>
+
+            {pingRole && (
+              <div className="space-y-2">
+                <Label htmlFor="roleId">Role ID {savedRoleId && <span className="text-muted-foreground">(leave empty to use saved)</span>}</Label>
+                <div className="relative">
+                  <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="roleId"
+                    placeholder={savedRoleId || "Enter Discord role ID..."}
+                    value={roleId}
+                    onChange={(e) => setRoleId(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Configure a default role ID in{' '}
+                  <Link to="/admin/discord-settings?tab=community" className="underline hover:no-underline">
+                    Discord Settings → Community tab
+                  </Link>
+                </p>
+              </div>
+            )}
           </div>
 
           <Button 
