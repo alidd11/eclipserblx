@@ -40,10 +40,12 @@ Deno.serve(async (req) => {
 
     console.log("Sending Eclipse+ announcement...");
     
-    // Combined Eclipse branding + Eclipse+ banner
-    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-combined-banner.png";
+    // Eclipse branding banner
+    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
+    // Eclipse+ logo banner (same shape/size)
+    const eclipsePlusBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-logo.png";
 
-    const embed = {
+    const mainEmbed = {
       title: "✨ Eclipse+ Membership",
       description: "Unlock exclusive benefits and save on every purchase with our premium membership. Join the Eclipse+ family today!\n\n━━━━━━━━━━━━━━━━━━━━━━",
       color: 0xFFD700, // Gold for premium feel
@@ -88,10 +90,16 @@ Deno.serve(async (req) => {
       },
     };
 
+    // Second embed with just the Eclipse+ banner image
+    const bannerEmbed = {
+      color: 0xFFD700,
+      image: { url: eclipsePlusBannerUrl },
+    };
+
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed] }),
+      body: JSON.stringify({ embeds: [mainEmbed, bannerEmbed] }),
     });
 
     if (!response.ok) {
