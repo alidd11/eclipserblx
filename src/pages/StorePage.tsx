@@ -154,13 +154,16 @@ export default function StorePage() {
 
   // Fetch tab product IDs if a tab is selected
   const { data: tabProductIds } = useQuery({
-    queryKey: ['tab-product-ids', store?.id, activeTab, isEclipseStore],
+    queryKey: ['tab-product-ids', store?.id, activeTab, isEclipseStore, storeTabs?.map(t => t.id).join(',')],
     queryFn: async () => {
-      if (!store?.id || !activeTab) return null;
+      if (!store?.id || !activeTab || !storeTabs) return null;
       
       // Find the tab/category by slug
-      const tab = storeTabs?.find(t => t.slug === activeTab);
-      if (!tab) return null;
+      const tab = storeTabs.find(t => t.slug === activeTab);
+      if (!tab) {
+        console.log('Tab not found for slug:', activeTab, 'Available tabs:', storeTabs.map(t => t.slug));
+        return null;
+      }
 
       // For Eclipse Store, filter by category_id directly
       if (isEclipseStore) {
@@ -185,7 +188,7 @@ export default function StorePage() {
       if (error) throw error;
       return data.map(p => p.product_id);
     },
-    enabled: !!store?.id && !!activeTab && !!storeTabs,
+    enabled: !!store?.id && !!activeTab && !!storeTabs && storeTabs.length > 0,
   });
 
   // Fetch store products
