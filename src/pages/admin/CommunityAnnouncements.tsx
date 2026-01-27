@@ -115,7 +115,7 @@ export default function CommunityAnnouncements() {
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-amber-600 dark:text-amber-400">
                 <Link to="/admin/discord-settings" className="underline hover:no-underline">
-                  Configure your Discord webhook in Settings → Discord
+                  Configure your Discord webhook in Discord Settings → Community tab
                 </Link>{' '}
                 to enable announcements.
               </AlertDescription>
