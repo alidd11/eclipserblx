@@ -11,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Switch } from '@/components/ui/switch';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const ANNOUNCEMENT_TYPES = [
@@ -26,7 +25,6 @@ const INITIAL_FORM_STATE = {
   title: '',
   message: '',
   linkUrl: '',
-  pingRole: false,
 };
 
 export default function CommunityAnnouncements() {
@@ -72,10 +70,6 @@ export default function CommunityAnnouncements() {
       toast.error('Message must be 1000 characters or less');
       return;
     }
-    if (formData.pingRole && !savedRoleId) {
-      toast.error('Please configure a role ID in Discord Settings first');
-      return;
-    }
 
     setIsSending(true);
 
@@ -86,7 +80,7 @@ export default function CommunityAnnouncements() {
           title: formData.title.trim(),
           message: formData.message.trim(),
           linkUrl: formData.linkUrl.trim() || undefined,
-          roleId: formData.pingRole ? savedRoleId : undefined,
+          roleId: savedRoleId || undefined,
         },
       });
 
@@ -109,7 +103,7 @@ export default function CommunityAnnouncements() {
   const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === formData.announcementType);
 
   return (
-    <div className="space-y-6 pt-[env(safe-area-inset-top)] px-4 sm:px-6 pb-6">
+    <div className="min-h-[100dvh] overflow-y-auto px-4 sm:px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Community Announcements</h1>
         <p className="text-muted-foreground">Send announcements to your Discord community</p>
@@ -204,25 +198,7 @@ export default function CommunityAnnouncements() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t pt-4">
-            <div className="space-y-0.5">
-              <Label htmlFor="pingRole">Ping Role</Label>
-              <p className="text-xs text-muted-foreground">
-                {savedRoleId 
-                  ? 'Mention the configured Discord role with this announcement'
-                  : <>Configure a role ID in <Link to="/admin/discord-settings?tab=community" className="underline hover:no-underline">Discord Settings</Link> first</>
-                }
-              </p>
-            </div>
-            <Switch
-              id="pingRole"
-              checked={formData.pingRole}
-              onCheckedChange={(checked) => setFormData({ pingRole: checked })}
-              disabled={!savedRoleId}
-            />
-          </div>
-
-          <Button 
+          <Button
             onClick={handleSend} 
             disabled={isSending || !webhookUrl}
             className="w-full"
