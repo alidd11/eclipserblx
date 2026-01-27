@@ -140,6 +140,7 @@ const SellerMessages = lazy(() => import("./pages/seller/SellerMessages"));
 // Public pages
 const StorePage = lazy(() => import("./pages/StorePage"));
 const StoreAbout = lazy(() => import("./pages/StoreAbout"));
+const StoreReviewsPage = lazy(() => import("./pages/StoreReviewsPage"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const StoreMessages = lazy(() => import("./pages/StoreMessages"));
 
@@ -244,6 +245,7 @@ const App = () => (
                   <Route path="/seller/messages" element={<SellerMessages />} />
                   {/* Public store page */}
                   <Route path="/store/:storeSlug" element={<StorePage />} />
+                  <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
                   <Route path="/store/:slug/about" element={<StoreAbout />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />

@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Package, ShoppingCart, Star, Users, Calendar } from 'lucide-react';
 
 interface StoreStatsBarProps {
@@ -8,6 +9,8 @@ interface StoreStatsBarProps {
   followerCount: number;
   memberSince?: string;
   accentColor: string;
+  storeSlug: string;
+  reviewCount?: number;
 }
 
 function AnimatedCounter({ 
@@ -88,6 +91,8 @@ export function StoreStatsBar({
   followerCount,
   memberSince,
   accentColor,
+  storeSlug,
+  reviewCount,
 }: StoreStatsBarProps) {
   const memberYear = memberSince ? new Date(memberSince).getFullYear() : null;
   const currentYear = new Date().getFullYear();
@@ -113,6 +118,8 @@ export function StoreStatsBar({
       suffix: '',
       decimals: 1,
       isStar: true,
+      isClickable: true,
+      href: `/store/${storeSlug}/reviews`,
     }] : []),
     {
       icon: Users,
@@ -136,38 +143,49 @@ export function StoreStatsBar({
       >
         {/* Single line horizontal layout */}
         <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 overflow-x-auto">
-          {stats.map((stat, index) => (
-            <div 
-              key={stat.label}
-              className="flex items-center gap-2 whitespace-nowrap"
-            >
-              <stat.icon 
-                className="h-4 w-4 flex-shrink-0"
-                style={{ color: accentColor }}
-                fill={stat.isStar ? accentColor : 'none'}
-              />
-              <span 
-                className="font-bold text-sm sm:text-base"
-                style={{ color: accentColor }}
+          {stats.map((stat, index) => {
+            const StatContent = (
+              <div 
+                className={`flex items-center gap-2 whitespace-nowrap ${stat.isClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
               >
-                <AnimatedCounter 
-                  end={stat.value} 
-                  suffix={stat.suffix}
-                  decimals={stat.decimals || 0}
+                <stat.icon 
+                  className="h-4 w-4 flex-shrink-0"
+                  style={{ color: accentColor }}
+                  fill={stat.isStar ? accentColor : 'none'}
                 />
-              </span>
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                {stat.label}
-              </span>
-              {/* Separator dot */}
-              {index < stats.length - 1 && (
                 <span 
-                  className="hidden sm:block w-1 h-1 rounded-full ml-2"
-                  style={{ backgroundColor: `${accentColor}50` }}
-                />
-              )}
-            </div>
-          ))}
+                  className="font-bold text-sm sm:text-base"
+                  style={{ color: accentColor }}
+                >
+                  <AnimatedCounter 
+                    end={stat.value} 
+                    suffix={stat.suffix}
+                    decimals={stat.decimals || 0}
+                  />
+                </span>
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {stat.label}
+                </span>
+                {/* Separator dot */}
+                {index < stats.length - 1 && (
+                  <span 
+                    className="hidden sm:block w-1 h-1 rounded-full ml-2"
+                    style={{ backgroundColor: `${accentColor}50` }}
+                  />
+                )}
+              </div>
+            );
+
+            return stat.isClickable && stat.href ? (
+              <Link key={stat.label} to={stat.href}>
+                {StatContent}
+              </Link>
+            ) : (
+              <div key={stat.label}>
+                {StatContent}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
