@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useRef } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, Play } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -9,14 +9,35 @@ import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const ITEMS_PER_PAGE_DESKTOP = 3;
+const ITEMS_PER_PAGE_MOBILE = 2;
+const ROTATION_INTERVAL = 6000; // 6 seconds
+
+interface FeaturedProduct {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  images: string[] | null;
+  is_featured: boolean;
+  is_resellable: boolean;
+  category_id: string | null;
+  categories: { name: string } | null;
+  stores: { is_active: boolean } | null;
+}
 
 export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
+  const isMobile = useIsMobile();
+
+  const itemsPerPage = isMobile ? ITEMS_PER_PAGE_MOBILE : ITEMS_PER_PAGE_DESKTOP;
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products-card'],
@@ -27,32 +48,43 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
         .eq('is_featured', true)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-        .limit(6);
+        .limit(12);
       
       if (error) throw error;
-      // Filter out products with inactive stores (but keep products without stores)
-      return data?.filter(p => !p.stores || p.stores.is_active !== false) ?? [];
+      return (data?.filter(p => !p.stores || p.stores.is_active !== false) ?? []) as FeaturedProduct[];
     },
     staleTime: 1000 * 60 * 5,
   });
 
+  const totalPages = useMemo(() => {
+    if (!products || products.length === 0) return 0;
+    return Math.ceil(products.length / itemsPerPage);
+  }, [products, itemsPerPage]);
+
+  const currentProducts = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    const startIndex = pageIndex * itemsPerPage;
+    return products.slice(startIndex, startIndex + itemsPerPage);
+  }, [products, pageIndex, itemsPerPage]);
+
   const goToNext = useCallback(() => {
-    if (products && products.length > 0) {
-      setCurrentIndex((prev) => (prev + 1) % products.length);
+    if (totalPages > 1) {
+      setPageIndex((prev) => (prev + 1) % totalPages);
     }
-  }, [products]);
+  }, [totalPages]);
 
   const goToPrev = useCallback(() => {
-    if (products && products.length > 0) {
-      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
+    if (totalPages > 1) {
+      setPageIndex((prev) => (prev - 1 + totalPages) % totalPages);
     }
-  }, [products]);
+  }, [totalPages]);
 
+  // Auto-rotate every 6 seconds
   useEffect(() => {
-    if (!isAutoPlaying || !products || products.length <= 1) return;
-    const interval = setInterval(goToNext, 4000);
+    if (!isAutoPlaying || totalPages <= 1) return;
+    const interval = setInterval(goToNext, ROTATION_INTERVAL);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, products, goToNext]);
+  }, [isAutoPlaying, totalPages, goToNext]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -75,12 +107,17 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
     setIsAutoPlaying(true);
   };
 
-  const currentProduct = products?.[currentIndex];
-
   if (isLoading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5">
-        <Skeleton className="h-32 w-full rounded-xl" />
+        <div className={cn(
+          "grid gap-3",
+          isMobile ? "grid-cols-2" : "grid-cols-3"
+        )}>
+          {Array.from({ length: isMobile ? 2 : 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -123,7 +160,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
           </div>
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Featured</span>
         </div>
-        {products.length > 1 && (
+        {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <button
               onClick={goToPrev}
@@ -141,133 +178,48 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
         )}
       </div>
 
-      {/* Product display */}
-      <div className="h-24 relative overflow-hidden">
+      {/* Products Grid */}
+      <div className="relative overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
-          {currentProduct && (
-            <motion.div
-              key={currentProduct.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0"
-            >
-              <div className="h-full">
-                <Link to={`/products/${currentProduct.slug}`} className="flex gap-3 h-full group">
-                  <div className="relative w-24 h-full flex-shrink-0 rounded-xl overflow-hidden border border-border">
-                    {(() => {
-                      const displayMedia = getFirstMediaPrioritizeVideo(currentProduct.images);
-                      const isVideo = isVideoUrl(displayMedia);
-                      
-                      if (displayMedia) {
-                        if (isVideo) {
-                          return (
-                            <>
-                              <video 
-                                src={displayMedia} 
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
-                                  <Play className="h-3 w-3 text-white ml-0.5" fill="white" />
-                                </div>
-                              </div>
-                            </>
-                          );
-                        }
-                        return (
-                          <img 
-                            src={displayMedia} 
-                            alt={currentProduct.name}
-                            className="w-full h-full object-cover"
-                          />
-                        );
-                      }
-                      return (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <ShoppingBag className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                      );
-                    })()}
-                    {currentProduct.is_featured && (
-                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-black">
-                        HOT
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 flex flex-col justify-between py-0.5">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5">
-                        {currentProduct.categories?.name || 'Product'}
-                      </p>
-                      <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                        {currentProduct.name}
-                      </h3>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      {(() => {
-                        const isEligible = isEligibleForDiscount(currentProduct.category_id, currentProduct.is_resellable);
-                        const memberPrice = getMemberPrice(currentProduct.price, currentProduct.category_id, currentProduct.is_resellable);
-                        const discountPercent = getDiscountPercent(currentProduct.category_id, currentProduct.is_resellable);
-                        const hasMemberDiscount = isEligible && memberPrice < currentProduct.price;
-                        
-                        return (
-                          <div className="flex flex-col gap-0.5">
-                            {hasMemberDiscount ? (
-                              <>
-                                <span className="text-xs text-muted-foreground line-through">
-                                  {formatPrice(Number(currentProduct.price))}
-                                </span>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-sm text-amber-500">
-                                    {formatPrice(memberPrice)}
-                                  </span>
-                                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                                    <Crown className="h-2 w-2" />
-                                    {discountPercent}%
-                                  </span>
-                                </div>
-                              </>
-                            ) : (
-                              <span className="font-bold text-sm">
-                                {formatPrice(Number(currentProduct.price))}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                      
-                      <span className="text-xs text-muted-foreground flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        View <ArrowRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            </motion.div>
-          )}
+          <motion.div
+            key={pageIndex}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.35 }}
+            className={cn(
+              "grid gap-3",
+              isMobile ? "grid-cols-2" : "grid-cols-3"
+            )}
+          >
+            {currentProducts.map((product) => (
+              <ProductGridItem
+                key={product.id}
+                product={product}
+                formatPrice={formatPrice}
+                getMemberPrice={getMemberPrice}
+                getDiscountPercent={getDiscountPercent}
+                isEligibleForDiscount={isEligibleForDiscount}
+              />
+            ))}
+          </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Progress dots */}
-      <div className="flex items-center justify-between mt-3">
+      <div className="flex items-center justify-between mt-4">
         <div className="flex items-center gap-1.5">
-          {products.map((_, i) => (
+          {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrentIndex(i)}
+              onClick={() => setPageIndex(i)}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
-                i === currentIndex
+                i === pageIndex
                   ? "w-4 bg-primary"
                   : "w-1.5 bg-muted hover:bg-muted-foreground/50"
               )}
-              aria-label={`View product ${i + 1}`}
+              aria-label={`View page ${i + 1}`}
             />
           ))}
         </div>
@@ -280,5 +232,107 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
         </Link>
       </div>
     </div>
+  );
+});
+
+interface ProductGridItemProps {
+  product: FeaturedProduct;
+  formatPrice: (price: number) => string;
+  getMemberPrice: (price: number, categoryId: string | null, isResellable: boolean) => number;
+  getDiscountPercent: (categoryId: string | null, isResellable: boolean) => number;
+  isEligibleForDiscount: (categoryId: string | null, isResellable: boolean) => boolean;
+}
+
+const ProductGridItem = memo(function ProductGridItem({
+  product,
+  formatPrice,
+  getMemberPrice,
+  getDiscountPercent,
+  isEligibleForDiscount,
+}: ProductGridItemProps) {
+  const displayMedia = getFirstMediaPrioritizeVideo(product.images);
+  const isVideo = isVideoUrl(displayMedia);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
+  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
+  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
+  const hasMemberDiscount = isEligible && memberPrice < product.price;
+
+  return (
+    <Link 
+      to={`/products/${product.slug}`} 
+      className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-primary/50 transition-all duration-200"
+    >
+      {/* Media */}
+      <div className="relative aspect-[4/3] overflow-hidden">
+        {displayMedia ? (
+          isVideo ? (
+            <>
+              <video 
+                src={displayMedia} 
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                  <Play className="h-4 w-4 text-white ml-0.5" fill="white" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <img 
+              src={displayMedia} 
+              alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          )
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+          </div>
+        )}
+        
+        {/* HOT Badge */}
+        {product.is_featured && (
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-black">
+            HOT
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-3">
+        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5 truncate">
+          {product.categories?.name || 'Product'}
+        </p>
+        <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors mb-2">
+          {product.name}
+        </h3>
+        
+        {/* Price */}
+        <div className="flex items-center gap-2">
+          {hasMemberDiscount ? (
+            <>
+              <span className="font-bold text-sm text-amber-500">
+                {formatPrice(memberPrice)}
+              </span>
+              <span className="text-[10px] text-muted-foreground line-through">
+                {formatPrice(Number(product.price))}
+              </span>
+              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
+                <Crown className="h-2 w-2" />
+                {discountPercent}%
+              </span>
+            </>
+          ) : (
+            <span className="font-bold text-sm">
+              {formatPrice(Number(product.price))}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
   );
 });
