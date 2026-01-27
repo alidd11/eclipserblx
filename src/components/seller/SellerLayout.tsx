@@ -12,8 +12,11 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { safeStorage } from '@/lib/safeStorage';
+import { hapticTap } from '@/lib/haptics';
 
 const SIDEBAR_COLLAPSED_KEY = 'seller-sidebar-collapsed';
+const EDGE_THRESHOLD = 30; // Match MainLayout edge threshold
+const MIN_SWIPE_DISTANCE = 50;
 
 interface SellerLayoutProps {
   children: ReactNode;
@@ -33,97 +36,68 @@ export function SellerLayout({ children }: SellerLayoutProps) {
     return saved === 'true';
   });
 
-  // Swipe gesture tracking
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const isEdgeSwipe = useRef(false);
+  // Touch tracking for edge swipe - matching MainLayout pattern
+  const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);
 
-  const EDGE_SWIPE_ZONE_PX = 100;
-  const OPEN_SWIPE_MIN_X = 12;
-  const HORIZONTAL_LOCK_RATIO = 1.1;
+  // Toggle sidebar with haptic feedback
+  const toggleSidebar = useCallback(() => {
+    hapticTap();
+    setSidebarCollapsed(prev => !prev);
+  }, []);
 
-  // Handle swipe from left edge to open sidebar
-  const handleTouchStart = useCallback(
-    (e: TouchEvent) => {
-      if (mobileOpen) {
-        isEdgeSwipe.current = false;
-        touchStartX.current = null;
-        touchStartY.current = null;
-        return;
-      }
-
-      const target = e.target as Element | null;
-      if (target?.closest?.('[data-gesture-exempt="true"]')) {
-        isEdgeSwipe.current = false;
-        touchStartX.current = null;
-        touchStartY.current = null;
-        return;
-      }
-
-      const touch = e.touches[0];
-      touchStartX.current = touch.clientX;
-      touchStartY.current = touch.clientY;
-      isEdgeSwipe.current = touch.clientX < EDGE_SWIPE_ZONE_PX;
-    },
-    [mobileOpen]
-  );
-
-  const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (mobileOpen) return;
-      if (!isEdgeSwipe.current || touchStartX.current === null) return;
-
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - touchStartX.current;
-
-      if (deltaX > 0) {
+  // Keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
-        e.stopPropagation();
+        toggleSidebar();
       }
-    },
-    [mobileOpen]
-  );
+    };
 
-  const handleTouchEnd = useCallback(
-    (e: TouchEvent) => {
-      if (touchStartX.current === null || touchStartY.current === null) return;
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebar]);
 
-      const touch = e.changedTouches[0];
-      const deltaX = touch.clientX - touchStartX.current;
-      const deltaY = Math.abs(touch.clientY - touchStartY.current);
+  // Handle edge swipe to open drawer - matching MainLayout pattern
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (mobileOpen) return;
+    
+    const target = e.target as Element | null;
+    if (target?.closest?.('[data-gesture-exempt="true"]')) return;
+    
+    const touch = e.touches[0];
+    const isEdge = touch.clientX <= EDGE_THRESHOLD;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY, isEdge };
+  }, [mobileOpen]);
 
-      const isMostlyHorizontal = Math.abs(deltaX) > deltaY * HORIZONTAL_LOCK_RATIO;
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (!touchStartRef.current?.isEdge) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    
+    // Only trigger if horizontal swipe is dominant
+    if (deltaX > MIN_SWIPE_DISTANCE && deltaY < deltaX) {
+      hapticTap();
+      setMobileOpen(true);
+    }
+    
+    touchStartRef.current = null;
+  }, []);
 
-      if (
-        touchStartX.current < EDGE_SWIPE_ZONE_PX &&
-        deltaX > OPEN_SWIPE_MIN_X &&
-        isMostlyHorizontal &&
-        !mobileOpen
-      ) {
-        setMobileOpen(true);
-      }
-
-      touchStartX.current = null;
-      touchStartY.current = null;
-      isEdgeSwipe.current = false;
-    },
-    [mobileOpen]
-  );
-
-  // Add edge swipe listener for mobile
+  // Add touch listeners for edge swipe (mobile only)
   useEffect(() => {
     if (!isMobile) return;
-    
-    document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true });
-    
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
-      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
-      document.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [isMobile, handleTouchStart, handleTouchEnd]);
 
   useEffect(() => {
     safeStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
@@ -156,66 +130,67 @@ export function SellerLayout({ children }: SellerLayoutProps) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className={cn(
-        "flex min-h-screen w-full bg-background",
-        "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
-      )}>
+      <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
         {/* Desktop Sidebar */}
-        {!isMobile && (
-          <SellerSidebar
-            collapsed={sidebarCollapsed}
-            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-          />
-        )}
+        <SellerSidebar
+          collapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
+          className="hidden md:flex"
+        />
 
-        {/* Mobile Sidebar (Sheet) */}
-        {isMobile && (
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetContent
-              side="left"
-              className="p-0 w-72 max-w-[85vw] border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-background))]"
-              data-gesture-exempt="true"
-            >
-              <SellerSidebar
-                collapsed={false}
-                onToggle={() => {}}
-                onNavigate={() => setMobileOpen(false)}
-                isMobileDrawer
-              />
-            </SheetContent>
-          </Sheet>
-        )}
+        {/* Mobile Sidebar Drawer */}
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent
+            side="left"
+            className="p-0 w-72 border-r-0"
+            data-gesture-exempt="true"
+          >
+            <SellerSidebar
+              collapsed={false}
+              onToggle={() => setMobileOpen(false)}
+              onNavigate={() => setMobileOpen(false)}
+              isMobileDrawer
+            />
+          </SheetContent>
+        </Sheet>
 
-        {/* Main Content */}
-        <main className={cn(
-          "flex-1 flex flex-col min-w-0",
-          "overflow-y-auto"
-        )}>
-          {/* Mobile Header */}
-          {isMobile && (
-            <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b px-4 py-3 flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <div className="flex-1 min-w-0">
-                <h1 className="font-display font-bold text-lg truncate text-primary">
-                  {store?.name || 'My Store'}
-                </h1>
-                <p className="text-xs text-muted-foreground">Seller Dashboard</p>
+        {/* Main Content - Fixed header with scrollable content */}
+        <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
+          {/* Sticky Header */}
+          <header className="sticky top-0 z-40 w-full glass-effect pt-[env(safe-area-inset-top)]">
+            <div className="px-4">
+              <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
+                {/* Left side - Menu + Store Name */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 md:hidden"
+                    onClick={() => {
+                      hapticTap();
+                      setMobileOpen(true);
+                    }}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                  <div className="min-w-0">
+                    <h1 className="font-display font-bold text-lg truncate text-primary">
+                      {store?.name || 'My Store'}
+                    </h1>
+                    <p className="text-xs text-muted-foreground hidden sm:block">Seller Dashboard</p>
+                  </div>
+                </div>
               </div>
-            </header>
-          )}
+            </div>
+          </header>
 
-          {/* Page Content */}
-          <div className="flex-1 p-4 md:p-6 lg:p-8">
-            {children}
-          </div>
-        </main>
+          {/* Scrollable Content */}
+          <main className="flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="p-4 md:p-6 lg:p-8 pb-[env(safe-area-inset-bottom)]">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </TooltipProvider>
   );

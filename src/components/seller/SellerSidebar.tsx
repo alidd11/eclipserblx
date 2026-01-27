@@ -96,9 +96,10 @@ interface SellerSidebarProps {
   onToggle: () => void;
   onNavigate?: () => void;
   isMobileDrawer?: boolean;
+  className?: string;
 }
 
-export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false }: SellerSidebarProps) {
+export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: SellerSidebarProps) {
   const { signOut } = useAuth();
   const { store } = useSellerStatus();
   const navigate = useNavigate();
@@ -332,7 +333,8 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       isMobileDrawer 
         ? "h-full w-full border-0 max-h-[100dvh]" 
         : "h-screen sticky top-0 border-r border-[hsl(var(--sidebar-border))]",
-      !isMobileDrawer && (isCollapsed ? "w-14" : "w-64")
+      !isMobileDrawer && (isCollapsed ? "w-14" : "w-64"),
+      className
     )}>
       {/* Header */}
       <div className="p-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-[hsl(var(--sidebar-border))]">
