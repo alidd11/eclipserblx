@@ -56,13 +56,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
       { title: 'Balance & Payouts', icon: DollarSign, href: '/seller/balance' },
-    ],
-  },
-  {
-    id: 'documents',
-    title: 'Documents',
-    icon: FileText,
-    items: [
       { title: 'All Documents', icon: FileText, href: '/seller/documents' },
     ],
   },
@@ -226,14 +219,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       (item.href === '/seller' && location.pathname === '/seller')
     );
 
-    // For single-item groups, just render the item directly
-    if (group.items.length === 1) {
-      return (
-        <div key={group.id} className="mb-1">
-          {renderNavItem(group.items[0])}
-        </div>
-      );
-    }
+    // All groups now render as collapsible sections regardless of item count
 
     // Collapsed mode: show group icon with tooltip listing items
     if (isCollapsed) {
@@ -360,11 +346,16 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
 
       {/* Navigation */}
       <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map(renderGroup)}
-
+        <div className="space-y-1">
+          {navGroups.map(renderGroup)}
+        </div>
+      </nav>
+      
+      {/* Footer Links */}
+      <div className="border-t border-[hsl(var(--sidebar-border))] p-2 space-y-1">
         {/* View Store Link */}
         {storeUrl && (
-          <div className="mt-4 pt-4 border-t border-[hsl(var(--sidebar-border))]">
+          <>
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -382,21 +373,38 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <Link
                 to={storeUrl}
                 onClick={handleNavClick}
-                className="flex items-center gap-3 px-3 py-2 ml-4 rounded-lg text-sm font-medium text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] transition-all"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] transition-all"
               >
                 <ExternalLink className="h-4 w-4" />
                 <span>View Store</span>
               </Link>
             )}
-          </div>
+          </>
         )}
 
-        {/* Sign Out - inline with nav items on mobile for visibility */}
-        {isMobileDrawer && (
+        {/* Sign Out */}
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-center text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))]"
+                onClick={() => {
+                  hapticTap();
+                  setShowSignOutDialog(true);
+                }}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Sign Out</TooltipContent>
+          </Tooltip>
+        ) : (
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))] rounded-lg px-3 py-2.5 mt-2 active:scale-[0.97] active:opacity-90 transition-all duration-100"
+            className="w-full justify-start text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))] rounded-lg px-3 py-2.5"
             onClick={() => {
               hapticTap();
               setShowSignOutDialog(true);
@@ -406,12 +414,11 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             <span className="ml-3">Sign Out</span>
           </Button>
         )}
-      </nav>
+      </div>
 
-      {/* Footer - Desktop only (mobile Sign Out is inline with nav) */}
+      {/* Desktop-only Collapse Toggle */}
       {!isMobileDrawer && (
-        <div className="p-2 border-t border-[hsl(var(--sidebar-border))] space-y-1">
-          {/* Collapse Toggle */}
+        <div className="p-2 border-t border-[hsl(var(--sidebar-border))]">
           <Button
             variant="ghost"
             size="sm"
@@ -433,39 +440,6 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               </>
             )}
           </Button>
-
-          {/* Sign Out */}
-          {isCollapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))]"
-                  onClick={() => {
-                    hapticTap();
-                    setShowSignOutDialog(true);
-                  }}
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Sign Out</TooltipContent>
-            </Tooltip>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))]"
-              onClick={() => {
-                hapticTap();
-                setShowSignOutDialog(true);
-              }}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          )}
         </div>
       )}
 
