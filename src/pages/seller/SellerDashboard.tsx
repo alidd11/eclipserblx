@@ -22,7 +22,8 @@ import {
   ExternalLink,
   LayoutGrid,
   Scale,
-  AlertTriangle
+  AlertTriangle,
+  Star
 } from 'lucide-react';
 
 const CURRENT_TOS_VERSION = "1.0";
@@ -272,6 +273,17 @@ export default function SellerDashboard() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
+              {store?.slug && (
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <Link to={`/store/${store.slug}/reviews`}>
+                    <span className="flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      View Reviews
+                    </span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
               <Button variant="outline" className="w-full justify-between" asChild>
                 <Link to="/seller/orders">
                   <span className="flex items-center gap-2">
