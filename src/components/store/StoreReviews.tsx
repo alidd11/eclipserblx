@@ -204,28 +204,6 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
     );
   }
 
-  if (!reviews || reviews.length === 0) {
-    return (
-      <Card id="store-reviews" className="scroll-mt-20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" style={{ color: accentColor }} />
-            Customer Reviews
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="py-8 text-center">
-            <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
-            <p className="text-muted-foreground">
-              Be the first to review a product from {storeName}!
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card id="store-reviews" className="scroll-mt-20">
       <CardHeader>
@@ -447,13 +425,25 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
           </div>
         ) : (
           <div className="py-8 text-center">
-            <SlidersHorizontal className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground mb-3">
-              No reviews match your filters.
-            </p>
-            <Button variant="outline" size="sm" onClick={clearAllFilters}>
-              Clear Filters
-            </Button>
+            {totalReviews === 0 ? (
+              <>
+                <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
+                <p className="text-muted-foreground">
+                  Be the first to review a product from {storeName}!
+                </p>
+              </>
+            ) : (
+              <>
+                <SlidersHorizontal className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+                <p className="text-muted-foreground mb-3">
+                  No reviews match your filters.
+                </p>
+                <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                  Clear Filters
+                </Button>
+              </>
+            )}
           </div>
         )}
       </CardContent>
