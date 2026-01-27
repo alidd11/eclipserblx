@@ -11,6 +11,7 @@ interface AnnouncementRequest {
   title: string;
   message: string;
   linkUrl?: string;
+  roleId?: string;
 }
 
 function getEmbedConfig(type: string) {
@@ -36,11 +37,11 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch community webhook URL from settings
+    // Fetch community webhook URL and role ID from settings
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["community_discord_webhook_url", "discord_webhook_url"])
+      .in("key", ["community_discord_webhook_url", "community_discord_role_id", "discord_webhook_url"])
       .order("key");
 
     const settingsMap: Record<string, string> = {};
@@ -51,6 +52,7 @@ serve(async (req) => {
 
     // Use dedicated community webhook, fallback to main webhook
     const webhookUrl = settingsMap["community_discord_webhook_url"] || settingsMap["discord_webhook_url"];
+    const savedRoleId = settingsMap["community_discord_role_id"] || "";
     
     if (!webhookUrl) {
       console.error("Community Discord webhook URL not configured");
@@ -61,7 +63,7 @@ serve(async (req) => {
     }
 
     const body: AnnouncementRequest = await req.json();
-    const { type, title, message, linkUrl } = body;
+    const { type, title, message, linkUrl, roleId } = body;
 
     if (!title || !message) {
       return new Response(
@@ -93,12 +95,17 @@ serve(async (req) => {
       timestamp: new Date().toISOString(),
     };
 
-    console.log("Sending community announcement to Discord...", { type, title });
+    // Determine if we should ping a role
+    const pingRoleId = roleId || savedRoleId;
+    const content = pingRoleId ? `<@&${pingRoleId}>` : undefined;
+
+    console.log("Sending community announcement to Discord...", { type, title, pingRoleId: !!pingRoleId });
 
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        content,
         embeds: [embed],
       }),
     });

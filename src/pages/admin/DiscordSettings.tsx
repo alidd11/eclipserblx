@@ -44,6 +44,7 @@ interface DiscordSettings {
   advertisements_partnership_ping_role_id: string;
   discord_widget_server_id: string;
   community_discord_webhook_url: string;
+  community_discord_role_id: string;
 }
 
 interface Category {
@@ -88,6 +89,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   advertisements_partnership_ping_role_id: '',
   discord_widget_server_id: '',
   community_discord_webhook_url: '',
+  community_discord_role_id: '',
 };
 
 // Eclipse Store ID (main store)
@@ -2857,6 +2859,20 @@ export default function DiscordSettings() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Create a dedicated webhook for community announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="communityRoleId">Role ID to Ping (optional)</Label>
+                  <Input
+                    id="communityRoleId"
+                    value={formData.community_discord_role_id}
+                    onChange={(e) => handleChange('community_discord_role_id', e.target.value)}
+                    placeholder="e.g. 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter a Discord role ID to ping when sending announcements. You can override this per announcement.
                   </p>
                 </div>
 
