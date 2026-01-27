@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 type TeamRole = 'manager' | 'editor' | 'viewer';
 
@@ -88,12 +89,19 @@ const ROLE_COLORS: Record<TeamRole, string> = {
   viewer: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
 };
 
+const INITIAL_INVITE_DATA = {
+  email: '',
+  role: 'viewer' as TeamRole,
+};
+
 export default function SellerSettingsTeam() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
   
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<TeamRole>('viewer');
+  const [inviteData, setInviteData, clearInviteData] = useFormPersistence(
+    'seller-team-invite',
+    INITIAL_INVITE_DATA
+  );
   const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
   const [inviteToCancel, setInviteToCancel] = useState<TeamInvite | null>(null);
 
@@ -177,8 +185,7 @@ export default function SellerSettingsTeam() {
     },
     onSuccess: () => {
       toast.success('Invitation sent successfully');
-      setInviteEmail('');
-      setInviteRole('viewer');
+      clearInviteData();
       queryClient.invalidateQueries({ queryKey: ['store-team-invites'] });
     },
     onError: (error) => {
@@ -247,11 +254,11 @@ export default function SellerSettingsTeam() {
 
   const handleSendInvite = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteEmail.trim()) {
+    if (!inviteData.email.trim()) {
       toast.error('Please enter an email address');
       return;
     }
-    sendInvite.mutate({ email: inviteEmail, role: inviteRole });
+    sendInvite.mutate({ email: inviteData.email, role: inviteData.role });
   };
 
   const isLoading = membersLoading || invitesLoading;
@@ -286,13 +293,13 @@ export default function SellerSettingsTeam() {
                     id="email"
                     type="email"
                     placeholder="teammate@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
+                    value={inviteData.email}
+                    onChange={(e) => setInviteData({ ...inviteData, email: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Role</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as TeamRole)}>
+                  <Select value={inviteData.role} onValueChange={(v) => setInviteData({ ...inviteData, role: v as TeamRole })}>
                     <SelectTrigger className="w-[140px]">
                       <SelectValue />
                     </SelectTrigger>

@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface ProductFormData {
   name: string;
@@ -50,6 +51,20 @@ interface ProductFormData {
   release_at: string;
 }
 
+const INITIAL_FORM_DATA: ProductFormData = {
+  name: '',
+  slug: '',
+  price: '',
+  seller_price: '',
+  description: '',
+  category_id: '',
+  is_active: true,
+  images: [],
+  asset_file_url: '',
+  schedule_enabled: false,
+  release_at: '',
+};
+
 export default function SellerProductEditor() {
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -63,19 +78,11 @@ export default function SellerProductEditor() {
 
   const isEditing = !!productId;
 
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: '',
-    slug: '',
-    price: '',
-    seller_price: '',
-    description: '',
-    category_id: '',
-    is_active: true,
-    images: [],
-    asset_file_url: '',
-    schedule_enabled: false,
-    release_at: '',
-  });
+  // Only persist new product forms (not when editing existing)
+  const [formData, setFormData, clearFormData] = useFormPersistence<ProductFormData>(
+    isEditing ? `seller-product-edit-${productId}` : 'seller-product-new',
+    INITIAL_FORM_DATA
+  );
 
   const [uploading, setUploading] = useState(false);
   const [uploadingAsset, setUploadingAsset] = useState(false);
@@ -303,6 +310,7 @@ export default function SellerProductEditor() {
     },
     onSuccess: () => {
       toast.success(isEditing ? 'Product updated successfully' : 'Product created successfully');
+      clearFormData();
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
       navigate('/seller/products');
     },

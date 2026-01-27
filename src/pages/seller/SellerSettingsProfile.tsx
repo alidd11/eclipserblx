@@ -22,24 +22,30 @@ import {
   Info
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
+
+const INITIAL_FORM_DATA = {
+  name: '',
+  description: '',
+  logo_url: '',
+  banner_url: '',
+  bio: '',
+  about_content: '',
+  twitter_url: '',
+  youtube_url: '',
+  tiktok_url: '',
+  website_url: '',
+};
 
 export default function SellerSettingsProfile() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    logo_url: '',
-    banner_url: '',
-    bio: '',
-    about_content: '',
-    twitter_url: '',
-    youtube_url: '',
-    tiktok_url: '',
-    website_url: '',
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence(
+    'seller-settings-profile',
+    INITIAL_FORM_DATA
+  );
 
   useEffect(() => {
     if (store) {

@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { jobApplicationSchema, emailCheckSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface JobChannel {
   id: string;
@@ -36,15 +37,18 @@ interface ApplicationFormData {
 }
 
 function ApplicationForm({ position, onSuccess }: { position: string; onSuccess: () => void }) {
-  const [formData, setFormData] = useState<ApplicationFormData>({
-    position,
-    applicant_name: '',
-    applicant_email: '',
-    discord_username: '',
-    portfolio_url: '',
-    experience: '',
-    message: '',
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence<ApplicationFormData>(
+    `job-application-${position.replace(/\s+/g, '-').toLowerCase()}`,
+    {
+      position,
+      applicant_name: '',
+      applicant_email: '',
+      discord_username: '',
+      portfolio_url: '',
+      experience: '',
+      message: '',
+    }
+  );
 
   const submitMutation = useMutation({
     mutationFn: async (data: ApplicationFormData) => {
@@ -98,6 +102,7 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
     },
     onSuccess: () => {
       showSuccessNotification('Application Submitted!', 'Check your email for confirmation');
+      clearFormData();
       onSuccess();
     },
     onError: (error: Error) => {

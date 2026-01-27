@@ -24,24 +24,30 @@ import {
   Info
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
+
+const INITIAL_FORM_DATA = {
+  roblox_url: '',
+  roblox_group_id: '',
+  roblox_group_discount_enabled: false,
+  roblox_group_discount_percent: 10,
+  roblox_group_min_rank: 1,
+  roblox_premium_discount_enabled: false,
+  roblox_premium_discount_percent: 5,
+  roblox_gamepass_id: '',
+  roblox_gamepass_discount_enabled: false,
+  roblox_gamepass_discount_percent: 15,
+};
 
 export default function SellerSettingsRoblox() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
 
-  const [formData, setFormData] = useState({
-    roblox_url: '',
-    roblox_group_id: '',
-    roblox_group_discount_enabled: false,
-    roblox_group_discount_percent: 10,
-    roblox_group_min_rank: 1,
-    roblox_premium_discount_enabled: false,
-    roblox_premium_discount_percent: 5,
-    roblox_gamepass_id: '',
-    roblox_gamepass_discount_enabled: false,
-    roblox_gamepass_discount_percent: 15,
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence(
+    'seller-settings-roblox',
+    INITIAL_FORM_DATA
+  );
 
   useEffect(() => {
     if (store) {

@@ -25,6 +25,7 @@ import {
   Code
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const STORE_THEMES = [
   { id: 'default', name: 'Default', description: 'Clean and modern' },
@@ -63,27 +64,32 @@ const LAYOUT_OPTIONS = [
   { id: 'list', name: 'List', description: 'Detailed list view' },
 ];
 
+const INITIAL_FORM_DATA = {
+  theme: 'default',
+  accent_color: '#8b5cf6',
+  font_heading: 'inter',
+  font_body: 'inter',
+  layout_style: 'grid',
+  hero_title: '',
+  hero_subtitle: '',
+  hero_cta_text: 'Browse Products',
+  hero_cta_link: '',
+  announcement_text: '',
+  announcement_active: false,
+  show_reviews: true,
+  show_social_proof: true,
+  custom_css: '',
+};
+
 export default function SellerSettingsAppearance() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
 
-  const [formData, setFormData] = useState({
-    theme: 'default',
-    accent_color: '#8b5cf6',
-    font_heading: 'inter',
-    font_body: 'inter',
-    layout_style: 'grid',
-    hero_title: '',
-    hero_subtitle: '',
-    hero_cta_text: 'Browse Products',
-    hero_cta_link: '',
-    announcement_text: '',
-    announcement_active: false,
-    show_reviews: true,
-    show_social_proof: true,
-    custom_css: '',
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence(
+    'seller-settings-appearance',
+    INITIAL_FORM_DATA
+  );
 
   useEffect(() => {
     if (store) {

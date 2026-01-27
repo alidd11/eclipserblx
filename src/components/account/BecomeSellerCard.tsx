@@ -18,6 +18,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useSellerVerification, VerificationResults } from '@/hooks/useSellerVerification';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const PRODUCT_CATEGORIES = [
   'Scripts & Code',
@@ -29,6 +30,15 @@ const PRODUCT_CATEGORIES = [
   'Other',
 ];
 
+const INITIAL_SELLER_FORM = {
+  storeName: '',
+  storeDescription: '',
+  productCategory: '',
+  discordServerInvite: '',
+  ageConfirmed: false,
+  termsAccepted: false,
+};
+
 export function BecomeSellerCard() {
   const { user } = useAuth();
   const { store, application, hasPendingApplication, applicationRejected, isSeller, loading } = useSellerStatus();
@@ -36,7 +46,7 @@ export function BecomeSellerCard() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Form state
+  // Form state - using individual useState for prop drilling compatibility
   const [storeName, setStoreName] = useState('');
   const [storeDescription, setStoreDescription] = useState('');
   const [productCategory, setProductCategory] = useState('');
