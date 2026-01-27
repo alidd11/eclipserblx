@@ -96,6 +96,7 @@ const navGroups: NavGroup[] = [
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
       { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', roles: ['admin', 'moderator'] },
       { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', roles: ['admin'], dividerAfter: true },
+      { title: 'Seller Documents', icon: FolderOpen, href: '/admin/seller-documents', roles: ['admin'] },
       { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', roles: ['admin'] },
       { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
     ],
