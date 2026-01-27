@@ -108,12 +108,7 @@ export function BulkProductActions({
     <>
       <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
         <Checkbox
-          checked={allSelected}
-          ref={(el) => {
-            if (el) {
-              (el as any).indeterminate = someSelected;
-            }
-          }}
+          checked={someSelected ? "indeterminate" : allSelected}
           onCheckedChange={toggleAll}
           aria-label="Select all products"
         />
