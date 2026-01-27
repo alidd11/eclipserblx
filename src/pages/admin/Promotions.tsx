@@ -204,6 +204,9 @@ export default function AdminPromotions() {
         created_by: user?.id,
       };
 
+      const isNewPromo = !data.id;
+      let promoId = data.id;
+
       if (data.id) {
         const { error } = await supabase
           .from('promotions')
@@ -211,10 +214,38 @@ export default function AdminPromotions() {
           .eq('id', data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data: insertedData, error } = await supabase
           .from('promotions')
-          .insert(payload);
+          .insert(payload)
+          .select('id')
+          .single();
         if (error) throw error;
+        promoId = insertedData?.id;
+      }
+
+      // Send Discord webhook for new active promotions
+      if (isNewPromo && data.is_active && promoId) {
+        try {
+          // Build a custom announcement for signup promotions
+          const rewardText = data.eclipse_plus_days 
+            ? `${data.eclipse_plus_days} days of Eclipse+ membership FREE!` 
+            : 'Special reward!';
+          
+          await supabase.functions.invoke('send-promotion-discord-webhook', {
+            body: {
+              type: 'special_offer',
+              custom: {
+                title: data.name || 'New Special Offer!',
+                description: data.description || `Sign up now and get ${rewardText}`,
+                discount_value: rewardText,
+                expires_at: data.ends_at,
+              },
+            },
+          });
+        } catch (e) {
+          console.error('Failed to send promotion webhook:', e);
+          // Don't fail the mutation if webhook fails
+        }
       }
     },
     onSuccess: () => {
