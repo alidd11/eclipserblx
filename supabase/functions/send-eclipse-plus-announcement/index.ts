@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         },
       ],
       thumbnail: {
-        url: "https://cdn.discordapp.com/emojis/1084184853853491200.webp", // Sparkles emoji
+        url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-logo.png",
       },
       image: { url: brandingBannerUrl },
       footer: {
