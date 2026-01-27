@@ -449,25 +449,33 @@ export default function StoreMessages() {
                   </div>
                 </div>
                 
-                {/* Order Selection - Show if user has orders from this store */}
-                {purchasedStores.find(s => s.store_id === directStore.id) && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Select an order (optional)</label>
-                    <select
-                      value={selectedOrderId || ''}
-                      onChange={(e) => setSelectedOrderId(e.target.value || null)}
-                      className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="">General inquiry (no specific order)</option>
-                      {purchasedStores.find(s => s.store_id === directStore.id)?.orders.map((order) => (
-                        <option key={order.order_id} value={order.order_id}>
-                          {format(new Date(order.order_date), 'MMM d, yyyy')} - {order.product_names.slice(0, 2).join(', ')}
-                          {order.product_names.length > 2 ? ` +${order.product_names.length - 2}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                {/* Order Selection - Always visible */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select an order (optional)</label>
+                  <select
+                    value={selectedOrderId || ''}
+                    onChange={(e) => setSelectedOrderId(e.target.value || null)}
+                    className="flex h-12 w-full rounded-xl border border-input bg-card px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="">General inquiry (no specific order)</option>
+                    {purchasedStores.find(s => s.store_id === directStore.id)?.orders.map((order) => (
+                      <option key={order.order_id} value={order.order_id}>
+                        {format(new Date(order.order_date), 'MMM d, yyyy')} - {order.product_names.slice(0, 2).join(', ')}
+                        {order.product_names.length > 2 ? ` +${order.product_names.length - 2}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Subject */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Subject (optional)</label>
+                  <Input
+                    placeholder="Brief summary of your issue"
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                  />
+                </div>
                 
                 {/* Issue Description */}
                 <div className="space-y-2">
@@ -478,16 +486,6 @@ export default function StoreMessages() {
                     onChange={(e) => setIssueDescription(e.target.value)}
                     rows={4}
                     className="flex min-h-[100px] w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
-                  />
-                </div>
-                
-                {/* Subject */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Subject (optional)</label>
-                  <Input
-                    placeholder="Brief summary of your issue"
-                    value={newSubject}
-                    onChange={(e) => setNewSubject(e.target.value)}
                   />
                 </div>
                 
@@ -553,13 +551,13 @@ export default function StoreMessages() {
                 
                 {selectedStore && (
                   <>
-                    {/* Order Selection Dropdown */}
+                    {/* Order Selection Dropdown - Always visible */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Select an order (optional)</label>
                       <select
                         value={selectedOrderId || ''}
                         onChange={(e) => setSelectedOrderId(e.target.value || null)}
-                        className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="flex h-12 w-full rounded-xl border border-input bg-card px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         <option value="">General inquiry (no specific order)</option>
                         {selectedStore.orders.map((order) => (
@@ -571,6 +569,16 @@ export default function StoreMessages() {
                       </select>
                     </div>
                     
+                    {/* Subject (optional) */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Subject (optional)</label>
+                      <Input
+                        placeholder="Brief summary of your issue"
+                        value={newSubject}
+                        onChange={(e) => setNewSubject(e.target.value)}
+                      />
+                    </div>
+                    
                     {/* Issue Description */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Describe your issue</label>
@@ -580,16 +588,6 @@ export default function StoreMessages() {
                         onChange={(e) => setIssueDescription(e.target.value)}
                         rows={4}
                         className="flex min-h-[100px] w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
-                      />
-                    </div>
-                    
-                    {/* Subject (optional) */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Subject (optional)</label>
-                      <Input
-                        placeholder="Brief summary of your issue"
-                        value={newSubject}
-                        onChange={(e) => setNewSubject(e.target.value)}
                       />
                     </div>
                     
