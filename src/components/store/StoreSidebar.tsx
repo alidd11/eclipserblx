@@ -234,7 +234,7 @@ export function StoreSidebar({
           className="w-full"
           asChild
         >
-          <Link to="/products">
+          <Link to="/marketplace">
             <LayoutGrid className="h-4 w-4 mr-2" />
             Browse All Stores
           </Link>
