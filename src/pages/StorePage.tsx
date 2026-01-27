@@ -524,23 +524,23 @@ export default function StorePage() {
       {/* When category is active, show products immediately at top */}
       {activeTab ? (
         <div className="container px-4 mt-4">
+          {/* Back to Store Navigation */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => handleTabClick(null)}
+            className="text-muted-foreground hover:text-foreground mb-3 -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            Back to Store
+          </Button>
+
           {/* Category Products Section - At Top */}
           <div id="store-products" className="mb-8 scroll-mt-20">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-bold">
-                  {storeTabs?.find(t => t.slug === activeTab)?.name || 'Products'}
-                </h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handleTabClick(null)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Back to Store
-                </Button>
-              </div>
+              <h2 className="text-xl font-bold">
+                {storeTabs?.find(t => t.slug === activeTab)?.name || 'Products'}
+              </h2>
               {totalProductPages > 1 && (
                 <div className="flex items-center gap-2">
                   <Button
