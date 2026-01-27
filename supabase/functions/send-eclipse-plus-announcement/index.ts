@@ -45,11 +45,6 @@ Deno.serve(async (req) => {
     // Eclipse branding banner
     const brandingBannerUrl = `${storagePublicBase}/store-branding/eclipse-discord-banner.png`;
 
-    // Eclipse+ banner: use a NEW filename + ?v= cache bust to defeat Discord CDN caching
-    const eclipsePlusBannerObject = "eclipse-plus-banner-wide-v3.png";
-    const eclipsePlusCacheBust = "2026-01-27-v3";
-    const eclipsePlusBannerUrl = `${storagePublicBase}/store-branding/${eclipsePlusBannerObject}?v=${encodeURIComponent(eclipsePlusCacheBust)}`;
-
     const mainEmbed = {
       title: "✨ Eclipse+ Membership",
       description: "Unlock exclusive benefits and save on every purchase with our premium membership. Join the Eclipse+ family today!\n\n━━━━━━━━━━━━━━━━━━━━━━",
@@ -92,16 +87,10 @@ Deno.serve(async (req) => {
       },
     };
 
-    // Second embed with just the Eclipse+ banner image (same width)
-    const bannerEmbed = {
-      color: 0xFFD700,
-      image: { url: eclipsePlusBannerUrl },
-    };
-
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [mainEmbed, bannerEmbed] }),
+      body: JSON.stringify({ embeds: [mainEmbed] }),
     });
 
     if (!response.ok) {
