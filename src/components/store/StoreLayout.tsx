@@ -277,7 +277,7 @@ export function StoreLayout({
                 </Button>
               )}
 
-               <Link to={`/store/${store.id}`} className="flex items-center gap-3">
+               <Link to={`/store/${store.slug || store.id}`} className="flex items-center gap-3">
                 {store.logo_url ? (
                   <img 
                     src={store.logo_url} 
