@@ -40,10 +40,15 @@ Deno.serve(async (req) => {
 
     console.log("Sending Eclipse+ announcement...");
     
+    const storagePublicBase = `${supabaseUrl}/storage/v1/object/public`;
+
     // Eclipse branding banner
-    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
-    // Eclipse+ wide banner (same aspect ratio as branding)
-    const eclipsePlusBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-banner-wide.png";
+    const brandingBannerUrl = `${storagePublicBase}/store-branding/eclipse-discord-banner.png`;
+
+    // Eclipse+ banner: use a NEW filename + ?v= cache bust to defeat Discord CDN caching
+    const eclipsePlusBannerObject = "eclipse-plus-banner-wide-v3.png";
+    const eclipsePlusCacheBust = "2026-01-27-v3";
+    const eclipsePlusBannerUrl = `${storagePublicBase}/store-branding/${eclipsePlusBannerObject}?v=${encodeURIComponent(eclipsePlusCacheBust)}`;
 
     const mainEmbed = {
       title: "✨ Eclipse+ Membership",
