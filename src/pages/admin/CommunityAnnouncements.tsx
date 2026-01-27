@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Send, MessageCircle, Megaphone, Link as LinkIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,11 +104,12 @@ export default function CommunityAnnouncements() {
   const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === formData.announcementType);
 
   return (
-    <div className="min-h-[100dvh] overflow-y-auto px-4 sm:px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Community Announcements</h1>
-        <p className="text-muted-foreground">Send announcements to your Discord community</p>
-      </div>
+    <AdminLayout>
+      <div className="px-4 sm:px-6 pt-4 pb-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Community Announcements</h1>
+          <p className="text-muted-foreground">Send announcements to your Discord community</p>
+        </div>
 
       <Card>
         <CardHeader>
@@ -208,6 +210,7 @@ export default function CommunityAnnouncements() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
