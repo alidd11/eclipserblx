@@ -18,6 +18,7 @@ import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
+import { PUBLIC_STORE_COLUMNS } from '@/lib/storeColumns';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Store as StoreIcon, 
@@ -101,7 +102,7 @@ export default function StorePage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
-        .select('*')
+        .select(PUBLIC_STORE_COLUMNS)
         .eq('slug', storeSlug)
         .eq('is_active', true)
         .eq('status', 'approved')

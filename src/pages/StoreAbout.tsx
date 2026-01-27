@@ -6,6 +6,7 @@ import { ChevronLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { PUBLIC_STORE_COLUMNS } from '@/lib/storeColumns';
 
 export default function StoreAbout() {
   const { slug } = useParams<{ slug: string }>();
@@ -15,7 +16,7 @@ export default function StoreAbout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
-        .select('*')
+        .select(PUBLIC_STORE_COLUMNS)
         .eq('slug', slug)
         .eq('is_active', true)
         .single();
