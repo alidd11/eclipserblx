@@ -42,8 +42,8 @@ Deno.serve(async (req) => {
     
     // Eclipse branding banner
     const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
-    // Eclipse+ logo banner (same shape/size)
-    const eclipsePlusBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-logo.png";
+    // Eclipse+ wide banner (same aspect ratio as branding)
+    const eclipsePlusBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-banner-wide.png";
 
     const mainEmbed = {
       title: "✨ Eclipse+ Membership",
@@ -81,16 +81,13 @@ Deno.serve(async (req) => {
           inline: false,
         },
       ],
-      thumbnail: {
-        url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-plus-logo.png",
-      },
       image: { url: brandingBannerUrl },
       footer: {
         text: "Eclipse+ Membership • Premium Benefits",
       },
     };
 
-    // Second embed with just the Eclipse+ banner image
+    // Second embed with just the Eclipse+ banner image (same width)
     const bannerEmbed = {
       color: 0xFFD700,
       image: { url: eclipsePlusBannerUrl },
