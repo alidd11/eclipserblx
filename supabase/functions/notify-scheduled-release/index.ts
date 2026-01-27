@@ -15,6 +15,11 @@ interface ScheduledProduct {
   store_id: string;
   release_at: string;
   images: string[] | null;
+  category_id: string | null;
+  description: string | null;
+  robux_enabled: boolean | null;
+  robux_price: number | null;
+  is_resellable: boolean | null;
   stores: {
     id: string;
     name: string;
@@ -24,71 +29,6 @@ interface ScheduledProduct {
   categories: {
     name: string;
   } | null;
-}
-
-async function sendDiscordWebhook(
-  webhookUrl: string,
-  product: ScheduledProduct,
-  supabaseUrl: string
-): Promise<boolean> {
-  try {
-    const storeName = product.stores?.name || 'Store';
-    const categoryName = product.categories?.name || 'Products';
-    const formattedPrice = `£${product.price.toFixed(2)}`;
-    const productUrl = `https://eclipserblx.com/products/${product.slug}`;
-    
-    // Get the first image if available
-    const thumbnailUrl = product.images?.[0] || null;
-
-    const embed = {
-      title: '🎉 Scheduled Product Now Live!',
-      description: `**${product.name}** is now available for purchase!`,
-      color: 0x9333EA, // Purple color
-      fields: [
-        {
-          name: '💰 Price',
-          value: formattedPrice,
-          inline: true,
-        },
-        {
-          name: '📂 Category',
-          value: categoryName,
-          inline: true,
-        },
-        {
-          name: '🔗 View Product',
-          value: `[Click here](${productUrl})`,
-          inline: false,
-        },
-      ],
-      thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-      footer: {
-        text: `${storeName} • Scheduled Release`,
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: storeName,
-        embeds: [embed],
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[notify-scheduled-release] Discord webhook failed: ${response.status} - ${errorText}`);
-      return false;
-    }
-
-    console.log(`[notify-scheduled-release] Discord webhook sent successfully for ${product.name}`);
-    return true;
-  } catch (error) {
-    console.error('[notify-scheduled-release] Discord webhook error:', error);
-    return false;
-  }
 }
 
 serve(async (req) => {
@@ -123,7 +63,7 @@ serve(async (req) => {
       .eq('key', 'new_product_notifications_enabled')
       .maybeSingle();
 
-    const isEnabled = settingData?.value !== false && settingData?.value !== 'false';
+    const isEnabled = settingData?.value === true || settingData?.value === 'true';
 
     if (!isEnabled) {
       console.log('[notify-scheduled-release] New product notifications are globally disabled');
@@ -134,13 +74,11 @@ serve(async (req) => {
     }
 
     const now = new Date().toISOString();
-    // Check for products released in the last 5 minutes to avoid missing any
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     // Find products that:
-    // 1. Have a release_at that just passed (within last 5 mins)
-    // 2. Are active
-    // 3. Haven't been notified yet (we'll track this with a new field or check notifications table)
+    // 1. Have a release_at that has passed (≤ now)
+    // 2. Haven't been notified yet (release_notified_at IS NULL)
+    // Note: We do NOT require is_active = true since we'll activate them
     const { data: releasedProducts, error: productError } = await supabase
       .from('products')
       .select(`
@@ -151,6 +89,11 @@ serve(async (req) => {
         store_id,
         release_at,
         images,
+        category_id,
+        description,
+        robux_enabled,
+        robux_price,
+        is_resellable,
         stores (
           id,
           name,
@@ -161,10 +104,9 @@ serve(async (req) => {
           name
         )
       `)
-      .eq('is_active', true)
       .not('release_at', 'is', null)
-      .gte('release_at', fiveMinutesAgo)
-      .lte('release_at', now) as { data: ScheduledProduct[] | null; error: any };
+      .lte('release_at', now)
+      .is('release_notified_at', null) as { data: ScheduledProduct[] | null; error: any };
 
     if (productError) {
       console.error('[notify-scheduled-release] Error fetching products:', productError);
@@ -182,23 +124,66 @@ serve(async (req) => {
     console.log(`[notify-scheduled-release] Found ${releasedProducts.length} products just released`);
 
     let totalNotified = 0;
+    let discordWebhooksSent = 0;
 
     for (const product of releasedProducts) {
-      // Check if we already sent notifications for this product release
-      const { data: existingNotif } = await supabase
-        .from('notifications')
-        .select('id')
-        .eq('type', 'scheduled_release')
-        .eq('link', `/products/${product.slug}`)
-        .limit(1)
-        .maybeSingle();
+      console.log(`[notify-scheduled-release] Processing product: ${product.name} (${product.id})`);
 
-      if (existingNotif) {
-        console.log(`[notify-scheduled-release] Already notified for product: ${product.name}`);
+      // Step 1: Activate the product and mark as notified
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({
+          is_active: true,
+          release_notified_at: now,
+        })
+        .eq('id', product.id);
+
+      if (updateError) {
+        console.error(`[notify-scheduled-release] Error updating product ${product.id}:`, updateError);
         continue;
       }
 
-      // Get followers of this store who want new product notifications
+      console.log(`[notify-scheduled-release] Activated product: ${product.name}`);
+
+      // Step 2: Call send-product-discord-webhook for category-specific Discord post
+      try {
+        const webhookResponse = await fetch(`${supabaseUrl}/functions/v1/send-product-discord-webhook`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            productId: product.id,
+            productName: product.name,
+            productSlug: product.slug,
+            productPrice: product.price,
+            productDescription: product.description,
+            productImages: product.images,
+            categoryId: product.category_id,
+            categoryName: product.categories?.name,
+            storeId: product.store_id,
+            storeName: product.stores?.name,
+            robuxEnabled: product.robux_enabled,
+            robuxPrice: product.robux_price,
+            isResellable: product.is_resellable,
+            isScheduledRelease: true,
+          }),
+        });
+
+        const webhookResult = await webhookResponse.json();
+        
+        if (webhookResponse.ok && webhookResult.success) {
+          console.log(`[notify-scheduled-release] Discord webhook sent for ${product.name}:`, webhookResult);
+          discordWebhooksSent++;
+        } else {
+          console.error(`[notify-scheduled-release] Discord webhook failed for ${product.name}:`, webhookResult);
+        }
+      } catch (webhookError) {
+        console.error(`[notify-scheduled-release] Discord webhook error for ${product.name}:`, webhookError);
+      }
+
+      // Step 3: Get followers of this store who want new product notifications
       const { data: followers, error: followError } = await supabase
         .from('store_follows')
         .select('user_id')
@@ -229,7 +214,7 @@ serve(async (req) => {
         ? `${product.name} is now available in ${categoryName} for ${formattedPrice}`
         : `${product.name} is now available for ${formattedPrice}`;
 
-      // Create in-app notifications for followers
+      // Step 4: Create in-app notifications for followers
       const notifications = followerUserIds.map(userId => ({
         user_id: userId,
         title,
@@ -248,7 +233,7 @@ serve(async (req) => {
         console.log(`[notify-scheduled-release] Created ${notifications.length} in-app notifications for ${product.name}`);
       }
 
-      // Get followers who have push subscriptions
+      // Step 5: Get followers who have push subscriptions
       const { data: pushSubscribers } = await supabase
         .from('push_subscriptions')
         .select('user_id')
@@ -258,35 +243,30 @@ serve(async (req) => {
 
       if (pushUserIds.length > 0) {
         // Send push notifications
-        const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            user_ids: pushUserIds,
-            payload: {
-              title,
-              body,
-              tag: `scheduled-release-${product.id}`,
-              url: `/products/${product.slug}`,
-              requireInteraction: false,
+        try {
+          const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
             },
-          }),
-        });
+            body: JSON.stringify({
+              user_ids: pushUserIds,
+              payload: {
+                title,
+                body,
+                tag: `scheduled-release-${product.id}`,
+                url: `/products/${product.slug}`,
+                requireInteraction: false,
+              },
+            }),
+          });
 
-        const pushResult = await pushResponse.json();
-        console.log(`[notify-scheduled-release] Push result for ${product.name}:`, pushResult);
-      }
-
-      // Send Discord webhook notification to seller's channel if configured
-      const sellerWebhookUrl = product.stores?.discord_webhook_url;
-      if (sellerWebhookUrl) {
-        console.log(`[notify-scheduled-release] Sending Discord webhook for ${product.name}`);
-        await sendDiscordWebhook(sellerWebhookUrl, product, supabaseUrl);
-      } else {
-        console.log(`[notify-scheduled-release] No Discord webhook configured for store: ${product.stores?.name}`);
+          const pushResult = await pushResponse.json();
+          console.log(`[notify-scheduled-release] Push result for ${product.name}:`, pushResult);
+        } catch (pushError) {
+          console.error(`[notify-scheduled-release] Push notification error for ${product.name}:`, pushError);
+        }
       }
 
       totalNotified += followerUserIds.length;
@@ -297,6 +277,7 @@ serve(async (req) => {
         success: true,
         processed: releasedProducts.length,
         notified: totalNotified,
+        discordWebhooksSent,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
