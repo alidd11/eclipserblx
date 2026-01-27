@@ -175,7 +175,7 @@ export default function SellerSettingsNotifications() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Notifications</h1>
+          <h1 className="text-3xl font-bold">Discord Settings</h1>
           <p className="text-muted-foreground">
             Configure Discord notifications and role integration for your store
           </p>

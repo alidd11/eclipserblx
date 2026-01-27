@@ -69,7 +69,7 @@ const navGroups: NavGroup[] = [
       { title: 'Appearance', icon: Palette, href: '/seller/settings/appearance' },
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
-      { title: 'Notifications', icon: Bell, href: '/seller/settings/notifications' },
+      { title: 'Discord Settings', icon: Bell, href: '/seller/settings/notifications' },
     ],
   },
   {
