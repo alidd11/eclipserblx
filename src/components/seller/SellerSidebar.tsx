@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Package, ShoppingCart, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
-  LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
+  LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users, Gamepad2,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
@@ -70,6 +70,7 @@ const navGroups: NavGroup[] = [
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Discord Settings', icon: Bell, href: '/seller/settings/notifications' },
+      { title: 'Roblox Settings', icon: Gamepad2, href: '/seller/settings/roblox' },
     ],
   },
   {
