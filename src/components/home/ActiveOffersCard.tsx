@@ -2,12 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Tag, Clock, Gift } from 'lucide-react';
+import { Sparkles, Tag, Clock, Gift, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { SectionWrapper } from './SectionWrapper';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Promotion {
   id: string;
@@ -29,6 +30,8 @@ interface DiscountCode {
 }
 
 export function ActiveOffersCard() {
+  const { user } = useAuth();
+
   // Fetch active promotions
   const { data: promotions = [] } = useQuery({
     queryKey: ['active-promotions'],
@@ -44,6 +47,22 @@ export function ActiveOffersCard() {
       if (error) throw error;
       return data as Promotion[];
     },
+  });
+
+  // Fetch user's claimed promotions
+  const { data: claimedPromotionIds = [] } = useQuery({
+    queryKey: ['user-promotion-claims', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('promotion_claims')
+        .select('promotion_id')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      return data.map(claim => claim.promotion_id);
+    },
+    enabled: !!user,
   });
 
   // Fetch active discount codes
@@ -67,7 +86,10 @@ export function ActiveOffersCard() {
 
   if (!hasOffers) return null;
 
-  const getPromotionIcon = (type: string) => {
+  const getPromotionIcon = (type: string, isClaimed: boolean) => {
+    if (isClaimed) {
+      return <Check className="h-4 w-4 text-green-500" />;
+    }
     switch (type) {
       case 'signup_eclipse_plus':
         return <Sparkles className="h-4 w-4 text-amber-500" />;
@@ -104,40 +126,54 @@ export function ActiveOffersCard() {
 
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {/* Promotions */}
-              {promotions.map((promo) => (
-                <div
-                  key={promo.id}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-card/50 border border-border hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
-                    {getPromotionIcon(promo.promotion_type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm truncate">{promo.name}</span>
-                      {promo.new_users_only && (
-                        <Badge variant="outline" className="text-[10px] py-0">New Users</Badge>
+              {promotions.map((promo) => {
+                const isClaimed = claimedPromotionIds.includes(promo.id);
+                
+                return (
+                  <div
+                    key={promo.id}
+                    className={`flex items-start gap-3 p-3 rounded-lg bg-card/50 border transition-colors ${
+                      isClaimed 
+                        ? 'border-green-500/30 bg-green-500/5' 
+                        : 'border-border hover:border-primary/30'
+                    }`}
+                  >
+                    <div className={`flex-shrink-0 p-2 rounded-full ${
+                      isClaimed ? 'bg-green-500/10' : 'bg-primary/10'
+                    }`}>
+                      {getPromotionIcon(promo.promotion_type, isClaimed)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm truncate">{promo.name}</span>
+                        {isClaimed ? (
+                          <Badge variant="outline" className="text-[10px] py-0 border-green-500/50 text-green-600 dark:text-green-400">
+                            Claimed
+                          </Badge>
+                        ) : promo.new_users_only ? (
+                          <Badge variant="outline" className="text-[10px] py-0">New Users</Badge>
+                        ) : null}
+                      </div>
+                      {promo.eclipse_plus_days && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {isClaimed ? 'Enjoying' : ''} {promo.eclipse_plus_days} days of Eclipse+ membership
+                        </p>
+                      )}
+                      {promo.description && !isClaimed && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {promo.description}
+                        </p>
+                      )}
+                      {promo.ends_at && !isClaimed && (
+                        <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          Ends {format(new Date(promo.ends_at), 'MMM d')}
+                        </div>
                       )}
                     </div>
-                    {promo.eclipse_plus_days && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {promo.eclipse_plus_days} days of Eclipse+ membership
-                      </p>
-                    )}
-                    {promo.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {promo.description}
-                      </p>
-                    )}
-                    {promo.ends_at && (
-                      <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        Ends {format(new Date(promo.ends_at), 'MMM d')}
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Discount Codes */}
               {discountCodes.map((code) => (
