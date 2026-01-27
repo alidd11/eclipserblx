@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Session } from '@supabase/supabase-js';
-import { SubscriptionTier, BillingPeriod } from './useSubscriptionTiers';
 
 // Bot category ID - products in this category get a higher discount
 export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
@@ -11,7 +9,7 @@ export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
 // Eclipse Savers category ID - products in this category do NOT get Eclipse+ discounts
 export const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
 
-// Default discount percentages (used as fallback, actual values come from tier config)
+// Fixed Eclipse+ discount percentages
 export const ECLIPSE_PLUS_DISCOUNT = 30;
 export const ECLIPSE_PLUS_BOT_DISCOUNT = 35;
 
@@ -19,10 +17,6 @@ interface SubscriptionState {
   isSubscribed: boolean;
   subscriptionEnd: string | null;
   subscriptionId: string | null;
-  tier: SubscriptionTier | null;
-  billingPeriod: BillingPeriod | null;
-  discountPercent: number;
-  freeProductsPerMonth: number;
   freeProductsClaimed: number;
   canClaimFree: boolean;
   claimedThisMonth: boolean;
@@ -38,10 +32,6 @@ export function useSubscription() {
     isSubscribed: false,
     subscriptionEnd: null,
     subscriptionId: null,
-    tier: null,
-    billingPeriod: null,
-    discountPercent: 0,
-    freeProductsPerMonth: 0,
     freeProductsClaimed: 0,
     canClaimFree: false,
     claimedThisMonth: false,
@@ -56,10 +46,6 @@ export function useSubscription() {
         isSubscribed: false,
         subscriptionEnd: null,
         subscriptionId: null,
-        tier: null,
-        billingPeriod: null,
-        discountPercent: 0,
-        freeProductsPerMonth: 0,
         freeProductsClaimed: 0,
         canClaimFree: false,
         claimedThisMonth: false,
@@ -91,10 +77,6 @@ export function useSubscription() {
         isSubscribed: data.subscribed || false,
         subscriptionEnd: data.subscriptionEnd || null,
         subscriptionId: data.subscriptionId || null,
-        tier: data.tier || null,
-        billingPeriod: data.billingPeriod || null,
-        discountPercent: data.discountPercent || 0,
-        freeProductsPerMonth: data.freeProductsPerMonth || 0,
         freeProductsClaimed: data.freeProductsClaimed || 0,
         canClaimFree: data.canClaimFree || false,
         claimedThisMonth: data.claimedThisMonth || false,
@@ -125,14 +107,14 @@ export function useSubscription() {
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
-  const subscribe = useCallback(async (tier: SubscriptionTier = 'pro', billingPeriod: BillingPeriod = 'monthly') => {
+  const subscribe = useCallback(async () => {
     if (!user) {
       throw new Error('You must be logged in to subscribe');
     }
 
     try {
       const { data, error } = await supabase.functions.invoke('create-subscription-checkout', {
-        body: { tier, billingPeriod },
+        body: { tier: 'pro', billingPeriod: 'monthly' },
         headers: session?.access_token ? {
           Authorization: `Bearer ${session.access_token}`,
         } : undefined,
@@ -218,7 +200,7 @@ export function useSubscription() {
     }
   }, [user, session, state.isSubscribed, state.canClaimFree, checkSubscription, queryClient]);
 
-  // Calculate member price for a product based on current tier
+  // Calculate member price for a product (fixed 30% discount)
   const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null, isResellable?: boolean): number => {
     // Resellable products do NOT get any discount
     if (isResellable) {
@@ -229,17 +211,14 @@ export function useSubscription() {
       return originalPrice;
     }
     
-    // Use tier-based discount if available, otherwise use defaults
-    const baseDiscount = state.discountPercent || ECLIPSE_PLUS_DISCOUNT;
-    
-    // Bot products get 5% extra on top of tier discount
+    // Bot products get 35% discount
     if (categoryId === BOT_CATEGORY_ID) {
-      const botDiscount = Math.min(baseDiscount + 5, 60); // Cap at 60%
-      return originalPrice * (1 - botDiscount / 100);
+      return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
     }
     
-    return originalPrice * (1 - baseDiscount / 100);
-  }, [state.discountPercent]);
+    // All other products get 30% discount
+    return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
+  }, []);
 
   // Check if a product is eligible for the discount
   const isEligibleForDiscount = useCallback((categoryId?: string | null, isResellable?: boolean): boolean => {
@@ -249,22 +228,17 @@ export function useSubscription() {
     return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);
 
-  // Get the discount percentage for a product category based on current tier
+  // Get the discount percentage for a product category (fixed values)
   const getDiscountPercent = useCallback((categoryId?: string | null, isResellable?: boolean): number => {
     // Resellable products get 0% discount
     if (isResellable) return 0;
     // Eclipse Savers get 0% discount
     if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) return 0;
-    
-    const baseDiscount = state.discountPercent || ECLIPSE_PLUS_DISCOUNT;
-    
-    // Bot products get 5% extra
-    if (categoryId === BOT_CATEGORY_ID) {
-      return Math.min(baseDiscount + 5, 60);
-    }
-    
-    return baseDiscount;
-  }, [state.discountPercent]);
+    // Bot products get 35%
+    if (categoryId === BOT_CATEGORY_ID) return ECLIPSE_PLUS_BOT_DISCOUNT;
+    // All other products get 30%
+    return ECLIPSE_PLUS_DISCOUNT;
+  }, []);
 
   // Check if a product is eligible for free claim
   const isEligibleForFreeClaim = useCallback((categoryId?: string | null, isResellable?: boolean): boolean => {
@@ -276,6 +250,11 @@ export function useSubscription() {
 
   return {
     ...state,
+    // Add backwards-compatible properties
+    tier: state.isSubscribed ? 'pro' : null,
+    billingPeriod: state.isSubscribed ? 'monthly' : null,
+    discountPercent: state.isSubscribed ? ECLIPSE_PLUS_DISCOUNT : 0,
+    freeProductsPerMonth: state.isSubscribed ? 1 : 0,
     checkSubscription,
     subscribe,
     openCustomerPortal,

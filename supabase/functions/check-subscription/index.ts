@@ -62,19 +62,12 @@ serve(async (req) => {
         logStep("Found admin-granted subscription", { 
           userId: user.id, 
           endDate: localSub.current_period_end,
-          tier: localSub.tier,
           grantedBy: localSub.granted_by,
         });
 
-        // Fetch tier details
-        const tier = localSub.tier || 'pro';
-        const { data: tierData } = await supabaseClient
-          .from('subscription_tiers')
-          .select('*')
-          .eq('tier', tier)
-          .maybeSingle();
-
-        const freeProductsAllowed = tierData?.free_products_per_month || 1;
+        // Fixed Eclipse+ benefits: 30% discount, 1 free product
+        const discountPercent = 30;
+        const freeProductsAllowed = 1;
 
         // Count claims this month
         const currentMonth = new Date().toISOString().slice(0, 7);
@@ -91,9 +84,7 @@ serve(async (req) => {
           subscribed: true,
           subscriptionEnd: localSub.current_period_end,
           subscriptionId: null,
-          tier: tier,
-          billingPeriod: localSub.billing_period || 'monthly',
-          discountPercent: tierData?.discount_percentage || 30,
+          discountPercent: discountPercent,
           freeProductsPerMonth: freeProductsAllowed,
           freeProductsClaimed: freeProductsClaimed,
           canClaimFree: canClaimFree,
@@ -154,30 +145,17 @@ serve(async (req) => {
       });
     }
 
-    // Get tier and billing period from subscription metadata
-    const tier = activeSub.metadata?.tier || 'pro';
-    const billingPeriod = activeSub.metadata?.billing_period || 
-      (activeSub.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly');
-
     const subscriptionEnd = new Date(activeSub.current_period_end * 1000).toISOString();
     const subscriptionStart = new Date(activeSub.current_period_start * 1000).toISOString();
     
     logStep("Active subscription found", { 
       subscriptionId: activeSub.id, 
-      tier,
-      billingPeriod,
       endDate: subscriptionEnd 
     });
 
-    // Fetch tier details
-    const { data: tierData } = await supabaseClient
-      .from('subscription_tiers')
-      .select('*')
-      .eq('tier', tier)
-      .maybeSingle();
-
-    const discountPercent = tierData?.discount_percentage || 30;
-    const freeProductsAllowed = tierData?.free_products_per_month || 1;
+    // Fixed Eclipse+ benefits: 30% discount, 1 free product
+    const discountPercent = 30;
+    const freeProductsAllowed = 1;
 
     // Update local subscription record
     await supabaseClient
@@ -187,8 +165,7 @@ serve(async (req) => {
         stripe_subscription_id: activeSub.id,
         stripe_customer_id: customerId,
         status: 'active',
-        tier: tier,
-        billing_period: billingPeriod,
+        tier: 'pro',
         current_period_start: subscriptionStart,
         current_period_end: subscriptionEnd,
         updated_at: new Date().toISOString(),
@@ -211,7 +188,6 @@ serve(async (req) => {
 
     logStep("Subscription check complete", { 
       subscribed: true, 
-      tier,
       discountPercent,
       freeProductsPerMonth: freeProductsAllowed,
       freeProductsClaimed,
@@ -222,8 +198,6 @@ serve(async (req) => {
       subscribed: true,
       subscriptionEnd,
       subscriptionId: activeSub.id,
-      tier,
-      billingPeriod,
       discountPercent,
       freeProductsPerMonth: freeProductsAllowed,
       freeProductsClaimed,
