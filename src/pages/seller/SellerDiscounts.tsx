@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,6 +27,7 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface DiscountCode {
   id: string;
@@ -42,6 +43,16 @@ interface DiscountCode {
   created_at: string;
 }
 
+const INITIAL_DISCOUNT_FORM = {
+  code: '',
+  discount_type: 'percentage' as 'percentage' | 'fixed',
+  discount_value: 10,
+  min_order_amount: 0,
+  max_uses: '',
+  expires_at: '',
+  is_active: true,
+};
+
 export default function SellerDiscounts() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
@@ -49,15 +60,14 @@ export default function SellerDiscounts() {
   const [editingCode, setEditingCode] = useState<DiscountCode | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState({
-    code: '',
-    discount_type: 'percentage' as 'percentage' | 'fixed',
-    discount_value: 10,
-    min_order_amount: 0,
-    max_uses: '',
-    expires_at: '',
-    is_active: true,
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence('seller-discount-form', INITIAL_DISCOUNT_FORM);
+
+  // Clear form when dialog closes
+  useEffect(() => {
+    if (!showCreateDialog && !editingCode) {
+      clearFormData();
+    }
+  }, [showCreateDialog, editingCode]);
 
   // Fetch discount codes
   const { data: discountCodes, isLoading } = useQuery({

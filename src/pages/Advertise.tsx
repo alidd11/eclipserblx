@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-GB', {
@@ -42,12 +43,15 @@ export default function Advertise() {
   const { user, loading: authLoading, session } = useAuth();
   const [searchParams] = useSearchParams();
   
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [linkUrl, setLinkUrl] = useState('');
-  const [discordUsername, setDiscordUsername] = useState('');
-const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
+  const [adFormData, setAdFormData, clearAdFormData] = useFormPersistence('advertise-form', {
+    title: '',
+    description: '',
+    imageUrl: '',
+    linkUrl: '',
+    discordUsername: '',
+  });
+  
+  const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
@@ -108,11 +112,13 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
 
   const loadLastAd = () => {
     if (lastAd) {
-      setTitle(lastAd.title || '');
-      setDescription(lastAd.description || '');
-      setImageUrl(lastAd.image_url || '');
-      setLinkUrl(lastAd.link_url || '');
-      setDiscordUsername(lastAd.discord_username || '');
+      setAdFormData({
+        title: lastAd.title || '',
+        description: lastAd.description || '',
+        imageUrl: lastAd.image_url || '',
+        linkUrl: lastAd.link_url || '',
+        discordUsername: lastAd.discord_username || '',
+      });
       toast.success('Loaded last advertisement');
     }
   };
@@ -181,11 +187,11 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
 
       const { data, error } = await supabase.functions.invoke('post-subscription-ad', {
         body: { 
-          title, 
-          description, 
-          imageUrl: imageUrl || null,
-          linkUrl: linkUrl || null,
-          discordUsername: discordUsername || null,
+          title: adFormData.title, 
+          description: adFormData.description, 
+          imageUrl: adFormData.imageUrl || null,
+          linkUrl: adFormData.linkUrl || null,
+          discordUsername: adFormData.discordUsername || null,
           pingType: selectedPing === 'none' ? null : selectedPing,
           scheduledFor,
         },
@@ -199,11 +205,7 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
       return data;
     },
     onSuccess: (data) => {
-      setTitle('');
-      setDescription('');
-      setImageUrl('');
-      setLinkUrl('');
-      setDiscordUsername('');
+      clearAdFormData();
       setSelectedPing('none');
       setScheduledDate(undefined);
       setScheduledTime('12:00');
@@ -227,12 +229,12 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
       return;
     }
 
-    if (!title.trim()) {
+    if (!adFormData.title.trim()) {
       toast.error('Please enter a title');
       return;
     }
 
-    if (!description.trim()) {
+    if (!adFormData.description.trim()) {
       toast.error('Please enter a description');
       return;
     }
@@ -629,11 +631,11 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                         <Input
                           id="title"
                           placeholder="Your catchy headline"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
+                          value={adFormData.title}
+                          onChange={(e) => setAdFormData({ title: e.target.value })}
                           maxLength={100}
                         />
-                        <p className="text-xs text-muted-foreground">{title.length}/100 characters</p>
+                        <p className="text-xs text-muted-foreground">{adFormData.title.length}/100 characters</p>
                       </div>
 
                       <div className="space-y-2">
@@ -643,12 +645,12 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                         <Textarea
                           id="description"
                           placeholder="Describe what you're advertising..."
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
+                          value={adFormData.description}
+                          onChange={(e) => setAdFormData({ description: e.target.value })}
                           maxLength={500}
                           rows={4}
                         />
-                        <p className="text-xs text-muted-foreground">{description.length}/500 characters</p>
+                        <p className="text-xs text-muted-foreground">{adFormData.description.length}/500 characters</p>
                       </div>
 
                       <div className="space-y-2">
@@ -660,8 +662,8 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                           id="imageUrl"
                           type="url"
                           placeholder="https://example.com/image.png"
-                          value={imageUrl}
-                          onChange={(e) => setImageUrl(e.target.value)}
+                          value={adFormData.imageUrl}
+                          onChange={(e) => setAdFormData({ imageUrl: e.target.value })}
                         />
                       </div>
 
@@ -674,8 +676,8 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                           id="linkUrl"
                           type="url"
                           placeholder="https://discord.gg/your-server"
-                          value={linkUrl}
-                          onChange={(e) => setLinkUrl(e.target.value)}
+                          value={adFormData.linkUrl}
+                          onChange={(e) => setAdFormData({ linkUrl: e.target.value })}
                         />
                       </div>
 
@@ -687,8 +689,8 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                         <Input
                           id="discordUsername"
                           placeholder="YourName#1234"
-                          value={discordUsername}
-                          onChange={(e) => setDiscordUsername(e.target.value)}
+                          value={adFormData.discordUsername}
+                          onChange={(e) => setAdFormData({ discordUsername: e.target.value })}
                         />
                       </div>
 
@@ -882,12 +884,12 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                         subscription.tier === 'pro' ? 'border-purple-500' : 'border-blue-500'
                       )}>
                         <p className="font-semibold">
-                          📢 {title || 'Your Title Here'}
+                          📢 {adFormData.title || 'Your Title Here'}
                         </p>
                         <p className="text-gray-300 text-xs mt-1">
-                          {description || 'Your description will appear here...'}
+                          {adFormData.description || 'Your description will appear here...'}
                         </p>
-                        {linkUrl && (
+                        {adFormData.linkUrl && (
                           <p className="text-blue-400 text-xs mt-2 flex items-center gap-1">
                             <ExternalLink className="h-3 w-3" />
                             Learn More
@@ -895,7 +897,7 @@ const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('
                         )}
                       </div>
                       <p className="text-gray-500 text-xs">
-                        Sponsored • {discordUsername ? `@${discordUsername}` : 'Eclipse Ads'} • {subscription.tier_name}
+                        Sponsored • {adFormData.discordUsername ? `@${adFormData.discordUsername}` : 'Eclipse Ads'} • {subscription.tier_name}
                       </p>
                     </div>
                   </CardContent>
