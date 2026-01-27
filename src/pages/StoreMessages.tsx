@@ -63,13 +63,41 @@ export default function StoreMessages() {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [newSubject, setNewSubject] = useState('');
   const [selectedStore, setSelectedStore] = useState<PurchasedStore | null>(null);
+  const [directStore, setDirectStore] = useState<{ id: string; name: string; logo_url: string | null } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Check for direct store parameter from URL
+  const directStoreId = searchParams.get('store');
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  // Fetch direct store info if store param is provided
+  const { data: directStoreData } = useQuery({
+    queryKey: ['direct-store', directStoreId],
+    queryFn: async () => {
+      if (!directStoreId) return null;
+      const { data, error } = await supabase
+        .from('stores')
+        .select('id, name, logo_url')
+        .eq('id', directStoreId)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!directStoreId && !!user,
+  });
+
+  // Auto-show new conversation when direct store is loaded
+  useEffect(() => {
+    if (directStoreData && !directStore) {
+      setDirectStore(directStoreData);
+      setShowNewConversation(true);
+    }
+  }, [directStoreData, directStore]);
 
   // Fetch conversations
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
@@ -229,7 +257,7 @@ export default function StoreMessages() {
 
   // Create conversation mutation
   const createConversationMutation = useMutation({
-    mutationFn: async ({ storeId, orderId, subject }: { storeId: string; orderId: string; subject: string }) => {
+    mutationFn: async ({ storeId, orderId, subject }: { storeId: string; orderId: string | null; subject: string }) => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -251,6 +279,10 @@ export default function StoreMessages() {
       setShowNewConversation(false);
       setNewSubject('');
       setSelectedStore(null);
+      setDirectStore(null);
+      // Clear the store query param
+      searchParams.delete('store');
+      setSearchParams(searchParams);
       queryClient.invalidateQueries({ queryKey: ['store-conversations'] });
       toast.success('Conversation started');
     },
@@ -302,6 +334,16 @@ export default function StoreMessages() {
   };
 
   const handleStartConversation = () => {
+    // Handle direct store messaging (from store page)
+    if (directStore) {
+      createConversationMutation.mutate({
+        storeId: directStore.id,
+        orderId: null,
+        subject: newSubject.trim(),
+      });
+      return;
+    }
+    // Handle purchased store messaging
     if (!selectedStore) return;
     createConversationMutation.mutate({
       storeId: selectedStore.store_id,
@@ -341,7 +383,44 @@ export default function StoreMessages() {
               </Button>
             </div>
             
-            {purchasedStores.length === 0 ? (
+            {/* Direct store contact (from store page) */}
+            {directStore ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-primary bg-primary/10">
+                  {directStore.logo_url ? (
+                    <img src={directStore.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Store className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{directStore.name}</p>
+                    <p className="text-xs text-muted-foreground">Direct message</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Subject (optional)</label>
+                  <Input
+                    placeholder="What's this about?"
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={handleStartConversation}
+                  disabled={createConversationMutation.isPending}
+                >
+                  {createConversationMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                  )}
+                  Start Conversation
+                </Button>
+              </div>
+            ) : purchasedStores.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Store className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>You haven't purchased from any stores yet.</p>
