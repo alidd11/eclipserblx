@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
+import * as React from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, forwardRef } from 'react';
 import { useAIRecommendations } from '@/hooks/useAIRecommendations';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,12 +20,12 @@ interface RecommendedProductsProps {
   className?: string;
 }
 
-export const RecommendedProducts = memo(function RecommendedProducts({
+export const RecommendedProducts = forwardRef<HTMLElement, RecommendedProductsProps>(function RecommendedProducts({
   productId,
   limit = 12,
   title = 'Trending Now',
   className = '',
-}: RecommendedProductsProps) {
+}, ref) {
   const [pageIndex, setPageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
@@ -93,7 +94,7 @@ export const RecommendedProducts = memo(function RecommendedProducts({
 
   if (isLoading) {
     return (
-      <SectionWrapper className={className}>
+      <SectionWrapper ref={ref} className={className}>
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -124,7 +125,7 @@ export const RecommendedProducts = memo(function RecommendedProducts({
   }
 
   return (
-    <SectionWrapper className={className}>
+    <SectionWrapper ref={ref} className={className}>
       <div 
         className="rounded-2xl border border-border bg-card p-6 md:p-8"
         onMouseEnter={() => setIsAutoPlaying(false)}
@@ -222,3 +223,5 @@ export const RecommendedProducts = memo(function RecommendedProducts({
     </SectionWrapper>
   );
 });
+
+RecommendedProducts.displayName = 'RecommendedProducts';
