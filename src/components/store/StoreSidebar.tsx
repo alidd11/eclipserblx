@@ -5,7 +5,6 @@ import {
   Info, 
   Package,
   Sparkles,
-  ChevronRight,
   FileText,
   Shield,
   RefreshCw,
@@ -178,10 +177,6 @@ export function StoreSidebar({
               >
                 <Package className="h-4 w-4" />
                 <span className="truncate">{tab.name}</span>
-                <ChevronRight className={cn(
-                  "h-4 w-4 ml-auto transition-transform flex-shrink-0",
-                  activeTab === tab.slug && "rotate-90"
-                )} />
               </Button>
             ))}
           </div>
