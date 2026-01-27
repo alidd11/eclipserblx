@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,9 @@ import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { StoreBestSellers } from '@/components/store/StoreBestSellers';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
+import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Store as StoreIcon, 
   CheckCircle, 
@@ -24,7 +27,9 @@ import {
   ShoppingCart,
   ArrowLeft,
   Users,
-  MessageCircle
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 // Theme configurations
@@ -75,13 +80,18 @@ const getThemeStyles = (theme: string, accentColor: string) => {
   }
 };
 
+const PRODUCTS_PER_PAGE_MOBILE = 4;
+const PRODUCTS_PER_PAGE_DESKTOP = 8;
+
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const activeTab = searchParams.get('tab');
   const [bioExpanded, setBioExpanded] = useState(false);
+  const [currentProductPage, setCurrentProductPage] = useState(0);
 
   const CURRENT_TOS_VERSION = "1.0";
 
@@ -224,7 +234,34 @@ export default function StorePage() {
     } else {
       setSearchParams({});
     }
+    setCurrentProductPage(0);
   };
+
+  // Pagination logic for products
+  const productsPerPage = isMobile ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
+  const totalProductPages = filteredProducts ? Math.ceil(filteredProducts.length / productsPerPage) : 0;
+  const paginatedProducts = filteredProducts?.slice(
+    currentProductPage * productsPerPage,
+    (currentProductPage + 1) * productsPerPage
+  );
+
+  const goToNextPage = useCallback(() => {
+    if (totalProductPages > 1) {
+      setCurrentProductPage((prev) => (prev + 1) % totalProductPages);
+    }
+  }, [totalProductPages]);
+
+  const goToPrevPage = useCallback(() => {
+    if (totalProductPages > 1) {
+      setCurrentProductPage((prev) => (prev - 1 + totalProductPages) % totalProductPages);
+    }
+  }, [totalProductPages]);
+
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: goToNextPage,
+    onSwipeRight: goToPrevPage,
+    minSwipeDistance: 50,
+  });
 
   if (storeLoading) {
     return (
@@ -499,40 +536,95 @@ export default function StorePage() {
       <div className="container px-4 mt-4">
         {/* Products Section */}
         <div id="store-products" className="mb-8 scroll-mt-20">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">All Products</h2>
+            {totalProductPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={goToPrevPage}
+                  style={{ borderColor: accentColor, color: accentColor }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {currentProductPage + 1} / {totalProductPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={goToNextPage}
+                  style={{ borderColor: accentColor, color: accentColor }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
-          
           {productsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
-              {[1, 2, 3, 4, 5, 6].map(i => (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[1, 2, 3, 4].map(i => (
                 <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
               ))}
             </div>
-          ) : filteredProducts && filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
-              {filteredProducts.map((product: any) => {
-                // Check if product is new (within last 7 days)
-                const isNewProduct = product.created_at 
-                  ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
-                  : false;
-                
-                return (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    image={product.images?.[0] || '/placeholder.svg'}
-                    slug={product.slug}
-                    category={(product.categories as any)?.name}
-                    isResellable={product.is_resellable}
-                    showNewBadge={isNewProduct}
-                    createdAt={product.created_at}
-                  />
-                );
-              })}
+          ) : paginatedProducts && paginatedProducts.length > 0 ? (
+            <div
+              {...swipeHandlers}
+              className="relative overflow-hidden"
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentProductPage}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+                >
+                  {paginatedProducts.map((product: any) => {
+                    const isNewProduct = product.created_at 
+                      ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
+                      : false;
+                    
+                    return (
+                      <ProductCard
+                        key={product.id}
+                        id={product.id}
+                        name={product.name}
+                        price={product.price}
+                        image={product.images?.[0] || '/placeholder.svg'}
+                        slug={product.slug}
+                        category={(product.categories as any)?.name}
+                        isResellable={product.is_resellable}
+                        showNewBadge={isNewProduct}
+                        createdAt={product.created_at}
+                      />
+                    );
+                  })}
+                </motion.div>
+              </AnimatePresence>
+              
+              {/* Page indicators */}
+              {totalProductPages > 1 && (
+                <div className="flex justify-center gap-1.5 mt-4">
+                  {Array.from({ length: totalProductPages }).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentProductPage(index)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === currentProductPage ? 'w-6' : 'w-2'
+                      }`}
+                      style={{
+                        backgroundColor: index === currentProductPage ? accentColor : `${accentColor}40`,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : activeTab ? (
             <Card className={themeStyles.card}>
