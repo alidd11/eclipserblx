@@ -230,8 +230,23 @@ export default function SellerDashboard() {
               <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
             </CardHeader>
             <CardContent className="px-3 pb-3">
-              <div className="text-lg sm:text-2xl font-bold">
-                {store?.total_sales || 0}
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-lg sm:text-2xl font-bold">
+                  {store?.total_sales || 0}
+                </div>
+                {store?.slug && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-7 px-2 text-xs"
+                  >
+                    <Link to={`/store/${store.slug}/reviews`}>
+                      <Star className="h-3.5 w-3.5 mr-1" />
+                      Reviews
+                    </Link>
+                  </Button>
+                )}
               </div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
                 Products sold
