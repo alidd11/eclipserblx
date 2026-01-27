@@ -1025,6 +1025,7 @@ export default function DiscordSettings() {
           category_slug: categorySlug,
           robux_price: 1000,
           robux_enabled: true,
+          is_resellable: false,
         },
       });
       
