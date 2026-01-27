@@ -126,6 +126,15 @@ export function StoreSidebar({
             <Button
               variant="ghost"
               className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              onClick={() => scrollToSection('store-recommendations')}
+            >
+              <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+              <span>Recommended</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
               onClick={() => scrollToSection('store-products')}
             >
               <Package className="h-4 w-4" style={{ color: accentColor }} />
@@ -135,17 +144,17 @@ export function StoreSidebar({
               </span>
             </Button>
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-          onClick={() => scrollToSection('store-categories')}
-        >
-          <FolderOpen className="h-4 w-4" style={{ color: accentColor }} />
-          <span>Categories</span>
-          <span className="ml-auto text-xs text-sidebar-foreground/50">
-            {tabs.length}
-          </span>
-        </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              onClick={() => scrollToSection('store-categories')}
+            >
+              <FolderOpen className="h-4 w-4" style={{ color: accentColor }} />
+              <span>Categories</span>
+              <span className="ml-auto text-xs text-sidebar-foreground/50">
+                {tabs.length}
+              </span>
+            </Button>
 
             {averageRating && (
               <Button
@@ -160,15 +169,6 @@ export function StoreSidebar({
                 </span>
               </Button>
             )}
-
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={() => scrollToSection('store-recommendations')}
-            >
-              <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
-              <span>Recommended</span>
-            </Button>
           </div>
 
           {/* Categories / Tabs */}

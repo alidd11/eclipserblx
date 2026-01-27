@@ -119,11 +119,27 @@ export default function StorePage() {
   const { trackProductView } = useSellerAnalytics(store?.id);
 
 
-  // Fetch store tabs
+  // Eclipse Store ID - uses main categories instead of store_tabs
+  const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
+  const isEclipseStore = store?.id === ECLIPSE_STORE_ID;
+
+  // Fetch store tabs (or main categories for Eclipse Store)
   const { data: storeTabs } = useQuery({
-    queryKey: ['store-tabs-public', store?.id],
+    queryKey: ['store-tabs-public', store?.id, isEclipseStore],
     queryFn: async () => {
       if (!store?.id) return [];
+      
+      // For Eclipse Store, use main categories
+      if (isEclipseStore) {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('id, name, slug, icon')
+          .order('display_order');
+        if (error) throw error;
+        return data || [];
+      }
+      
+      // For other stores, use store_tabs
       const { data, error } = await supabase
         .from('store_tabs')
         .select('id, name, slug, icon')
@@ -138,14 +154,29 @@ export default function StorePage() {
 
   // Fetch tab product IDs if a tab is selected
   const { data: tabProductIds } = useQuery({
-    queryKey: ['tab-product-ids', store?.id, activeTab],
+    queryKey: ['tab-product-ids', store?.id, activeTab, isEclipseStore],
     queryFn: async () => {
       if (!store?.id || !activeTab) return null;
       
-      // Find the tab by slug
+      // Find the tab/category by slug
       const tab = storeTabs?.find(t => t.slug === activeTab);
       if (!tab) return null;
 
+      // For Eclipse Store, filter by category_id directly
+      if (isEclipseStore) {
+        const { data, error } = await supabase
+          .from('products')
+          .select('id')
+          .eq('store_id', store.id)
+          .eq('category_id', tab.id)
+          .eq('is_active', true)
+          .eq('moderation_status', 'approved');
+        
+        if (error) throw error;
+        return data.map(p => p.id);
+      }
+
+      // For other stores, use store_tab_products join table
       const { data, error } = await supabase
         .from('store_tab_products')
         .select('product_id')
