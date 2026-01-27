@@ -44,6 +44,9 @@ Deno.serve(async (req) => {
     const cookieDays = settingsMap["affiliate_cookie_days"] || "30";
 
     console.log("Sending affiliate announcement with settings:", { commissionRate, minimumPayout, cookieDays });
+    
+    // Eclipse branding banner - always included at the bottom of announcements
+    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
 
     const embed = {
       title: "💼 Affiliate Programme",
@@ -77,10 +80,11 @@ Deno.serve(async (req) => {
         },
         {
           name: "🔗 Join Now",
-          value: "[**Click here to get started →**](https://roleplay-hub-shop.lovable.app/affiliate)\n\nIf you have any questions, feel free to reach out to our support team.",
+          value: "[**Click here to get started →**](https://eclipserblx.com/affiliate)\n\nIf you have any questions, feel free to reach out to our support team.",
           inline: false,
         },
       ],
+      image: { url: brandingBannerUrl },
     };
 
     const response = await fetch(webhookUrl, {

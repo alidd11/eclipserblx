@@ -58,6 +58,9 @@ serve(async (req) => {
     const ROLE_PING = "<@&1465322212319039639>";
 
     let embed: Record<string, unknown>;
+    
+    // Eclipse branding banner - always included at the bottom of announcements
+    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
 
     if (body.custom) {
       // Custom promotion data provided
@@ -68,6 +71,7 @@ serve(async (req) => {
         description: description,
         color: 0xFF6B6B, // Red/coral for promotions
         fields: [] as Array<{ name: string; value: string; inline: boolean }>,
+        image: { url: brandingBannerUrl },
         footer: {
           text: "Eclipse Marketplace • Limited Time Offer",
         },
@@ -140,6 +144,7 @@ serve(async (req) => {
             inline: true,
           },
         ] as Array<{ name: string; value: string; inline: boolean }>,
+        image: { url: brandingBannerUrl },
         footer: {
           text: "Eclipse Marketplace • Discount Code",
         },
@@ -189,6 +194,7 @@ serve(async (req) => {
         description: offer.description || "Don't miss out on this exclusive offer!",
         color: 0xFFD700, // Gold for special offers
         fields: [] as Array<{ name: string; value: string; inline: boolean }>,
+        image: { url: brandingBannerUrl },
         footer: {
           text: "Eclipse Marketplace • Special Offer",
         },
