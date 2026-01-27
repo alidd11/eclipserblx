@@ -405,59 +405,39 @@ export default function StorePage() {
               {store.name}
             </h1>
             
-            <div className="flex flex-col items-center gap-3 mb-2">
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                {store.is_verified && (
-                  <Badge 
-                    className="gap-1 shadow-md"
-                    style={{ backgroundColor: accentColor, color: 'white' }}
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                    Verified
-                  </Badge>
-                )}
-                {(store as any).is_trusted && (
-                  <Badge 
-                    className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-md"
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                    Trusted Seller
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <FollowButton 
-                  storeId={store.id} 
-                  accentColor={accentColor}
-                  size="sm"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="gap-1.5 shadow-md"
-                >
-                  <Link to={`/store/${store.slug || storeSlug || ''}/reviews`}>
-                    <Star className="h-4 w-4" />
-                    Reviews
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (!user) {
-                      navigate('/auth?redirect=' + encodeURIComponent(`/store/${storeSlug}`));
-                      return;
-                    }
-                    navigate(`/store-messages?store=${store.id}`);
-                  }}
-                  className="gap-1.5 shadow-md"
-                  style={{ backgroundColor: accentColor, color: 'white' }}
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Message
-                </Button>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <FollowButton 
+                storeId={store.id} 
+                accentColor={accentColor}
+                size="sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="gap-1.5 shadow-md"
+              >
+                <Link to={`/store/${store.slug || storeSlug || ''}/reviews`}>
+                  <Star className="h-4 w-4" />
+                  Reviews
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!user) {
+                    navigate('/auth?redirect=' + encodeURIComponent(`/store/${storeSlug}`));
+                    return;
+                  }
+                  navigate(`/store-messages?store=${store.id}`);
+                }}
+                className="gap-1.5 shadow-md"
+                style={{ backgroundColor: accentColor, color: 'white' }}
+              >
+                <MessageCircle className="h-4 w-4" />
+                Message
+              </Button>
             </div>
             
             {store.description && (
@@ -492,6 +472,29 @@ export default function StorePage() {
                       </button>
                     )}
                   </>
+                )}
+              </div>
+            )}
+
+            {/* Verified/Trusted Badges - Above Stats */}
+            {(store.is_verified || (store as any).is_trusted) && (
+              <div className="flex items-center justify-center gap-2 flex-wrap mb-3">
+                {store.is_verified && (
+                  <Badge 
+                    className="gap-1 shadow-md"
+                    style={{ backgroundColor: accentColor, color: 'white' }}
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                    Verified
+                  </Badge>
+                )}
+                {(store as any).is_trusted && (
+                  <Badge 
+                    className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-md"
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                    Trusted Seller
+                  </Badge>
                 )}
               </div>
             )}
