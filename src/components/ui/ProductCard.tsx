@@ -28,9 +28,11 @@ interface ProductCardProps {
   isVerified?: boolean;
   isTrusted?: boolean;
   isResellable?: boolean;
+  showBestSellerBadge?: boolean;
+  showNewBadge?: boolean;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -42,8 +44,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const displayMedia = getFirstMediaPrioritizeVideo(images) || image;
   const isVideo = isVideoUrl(displayMedia);
   
-  // Check if product is new (within last 3 days)
-  const isNew = createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
+  // Check if product is new (within last 7 days for stores, 3 days elsewhere)
+  const isNew = showNewBadge !== undefined 
+    ? showNewBadge 
+    : createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
   // Always show member price for eligible products (not resellable)
   const isEligible = isEligibleForDiscount(categoryId, isResellable);
@@ -122,12 +126,17 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           
           {/* Badges */}
           <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
-            {isFeatured && (
+            {showBestSellerBadge && (
+              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded shadow-sm">
+                Best Seller
+              </div>
+            )}
+            {isFeatured && !showBestSellerBadge && (
               <div className="px-1.5 py-0.5 text-[10px] font-medium bg-primary text-primary-foreground rounded">
                 Featured
               </div>
             )}
-            {isNew && !isFeatured && (
+            {isNew && !isFeatured && !showBestSellerBadge && (
               <div className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500 text-white rounded">
                 New
               </div>
