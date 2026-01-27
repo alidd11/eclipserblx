@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
+import { cn } from '@/lib/utils';
 import { 
   ArrowLeft, 
   Star, 
@@ -50,7 +50,7 @@ export default function StoreReviewsPage() {
 
   // Fetch all reviews for the store's products
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
-    queryKey: ['store-reviews', store?.id, sortBy, filterRating],
+    queryKey: ['store-reviews', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
 
@@ -65,7 +65,7 @@ export default function StoreReviewsPage() {
       const productIds = products.map(p => p.id);
 
       // Then get all reviews for these products
-      let query = supabase
+      const { data: reviewsData, error } = await supabase
         .from('reviews')
         .select(`
           id,
@@ -77,23 +77,9 @@ export default function StoreReviewsPage() {
           product_id
         `)
         .in('product_id', productIds)
-        .eq('is_approved', true);
-
-      // Apply rating filter
-      if (filterRating !== 'all') {
-        query = query.eq('rating', parseInt(filterRating));
-      }
-
-      // Apply sorting
-      if (sortBy === 'recent') {
-        query = query.order('created_at', { ascending: false });
-      } else if (sortBy === 'highest') {
-        query = query.order('rating', { ascending: false });
-      } else if (sortBy === 'lowest') {
-        query = query.order('rating', { ascending: true });
-      }
-
-      const { data: reviewsData, error } = await query;
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       if (!reviewsData || reviewsData.length === 0) return [];
@@ -123,13 +109,47 @@ export default function StoreReviewsPage() {
     enabled: !!store?.id,
   });
 
+  const totalReviews = reviews?.length || 0;
+
+  const hasActiveFilters = filterRating !== 'all' || sortBy !== 'recent';
+  const clearFilters = () => {
+    setFilterRating('all');
+    setSortBy('recent');
+  };
+
+  const filteredReviews = useMemo(() => {
+    if (!reviews) return [];
+
+    let result = [...reviews];
+
+    if (filterRating !== 'all') {
+      const parsed = Number.parseInt(filterRating, 10);
+      if (!Number.isNaN(parsed)) {
+        result = result.filter((r) => r.rating === parsed);
+      }
+    }
+
+    switch (sortBy) {
+      case 'highest':
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'lowest':
+        result.sort((a, b) => a.rating - b.rating);
+        break;
+      case 'recent':
+      default:
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+    }
+
+    return result;
+  }, [reviews, filterRating, sortBy]);
+
   // Calculate rating distribution
   const ratingDistribution = reviews?.reduce((acc, review) => {
     acc[review.rating] = (acc[review.rating] || 0) + 1;
     return acc;
   }, {} as Record<number, number>) || {};
-
-  const totalReviews = reviews?.length || 0;
 
   const accentColor = store?.accent_color || '#8b5cf6';
 
@@ -238,8 +258,18 @@ export default function StoreReviewsPage() {
                 {[5, 4, 3, 2, 1].map((rating) => {
                   const count = ratingDistribution[rating] || 0;
                   const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+                  const isActive = filterRating === String(rating);
                   return (
-                    <div key={rating} className="flex items-center gap-2 text-sm">
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setFilterRating(isActive ? 'all' : String(rating))}
+                      className={cn(
+                        "flex items-center gap-2 text-sm w-full rounded-md px-1 py-1 transition-colors",
+                        isActive ? "bg-primary/10" : "hover:bg-muted/50",
+                      )}
+                      aria-pressed={isActive}
+                    >
                       <span className="w-3">{rating}</span>
                       <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
                       <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
@@ -254,7 +284,7 @@ export default function StoreReviewsPage() {
                       <span className="w-8 text-muted-foreground text-xs">
                         {count}
                       </span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -290,7 +320,19 @@ export default function StoreReviewsPage() {
               <SelectItem value="1">1 Star</SelectItem>
             </SelectContent>
           </Select>
+
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
+              Clear
+            </Button>
+          )}
         </div>
+
+        {totalReviews > 0 && hasActiveFilters && (
+          <p className="text-sm text-muted-foreground mb-4">
+            Showing {filteredReviews.length} of {totalReviews} reviews
+          </p>
+        )}
 
         {/* Reviews List */}
         {reviewsLoading ? (
@@ -299,9 +341,9 @@ export default function StoreReviewsPage() {
               <Skeleton key={i} className="h-32" />
             ))}
           </div>
-        ) : reviews && reviews.length > 0 ? (
+        ) : filteredReviews.length > 0 ? (
           <div className="space-y-4">
-            {reviews.map((review) => (
+            {filteredReviews.map((review) => (
               <Card key={review.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -364,10 +406,24 @@ export default function StoreReviewsPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="font-medium mb-1">No Reviews Yet</h3>
-              <p className="text-sm text-muted-foreground">
-                This store hasn't received any reviews yet.
-              </p>
+              {totalReviews === 0 ? (
+                <>
+                  <h3 className="font-medium mb-1">No Reviews Yet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    This store hasn't received any reviews yet.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="font-medium mb-1">No Results</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    No reviews match your filters.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         )}
