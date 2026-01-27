@@ -432,6 +432,17 @@ export default function StorePage() {
                   size="sm"
                 />
                 <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="gap-1.5 shadow-md"
+                >
+                  <Link to={`/store/${store.slug || storeSlug || ''}/reviews`}>
+                    <Star className="h-4 w-4" />
+                    Reviews
+                  </Link>
+                </Button>
+                <Button
                   size="sm"
                   onClick={() => {
                     if (!user) {
