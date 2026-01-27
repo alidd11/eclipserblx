@@ -4,9 +4,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, MessageSquare, BadgeCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Star, MessageSquare, BadgeCheck, SlidersHorizontal, ArrowUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface StoreReviewsProps {
   storeId: string;
@@ -34,8 +51,14 @@ interface Review {
   } | null;
 }
 
+type SortOption = 'recent' | 'oldest' | 'highest' | 'lowest';
+type RatingFilter = 'all' | '5' | '4' | '3' | '2' | '1';
+
 export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', averageRating }: StoreReviewsProps) {
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
+
   // Fetch reviews for all products in this store
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['store-reviews', storeId],
@@ -100,12 +123,41 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
     enabled: !!storeId,
   });
 
-  // Filter reviews based on verified purchase toggle
+  // Filter and sort reviews
   const filteredReviews = useMemo(() => {
     if (!reviews) return [];
-    if (!showVerifiedOnly) return reviews;
-    return reviews.filter(r => r.is_verified_purchase);
-  }, [reviews, showVerifiedOnly]);
+    
+    let result = [...reviews];
+    
+    // Filter by verified purchase
+    if (showVerifiedOnly) {
+      result = result.filter(r => r.is_verified_purchase);
+    }
+    
+    // Filter by rating
+    if (ratingFilter !== 'all') {
+      result = result.filter(r => r.rating === parseInt(ratingFilter));
+    }
+    
+    // Sort
+    switch (sortBy) {
+      case 'oldest':
+        result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case 'highest':
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'lowest':
+        result.sort((a, b) => a.rating - b.rating);
+        break;
+      case 'recent':
+      default:
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+    }
+    
+    return result;
+  }, [reviews, showVerifiedOnly, sortBy, ratingFilter]);
 
   const verifiedCount = useMemo(() => {
     return reviews?.filter(r => r.is_verified_purchase).length || 0;
@@ -118,6 +170,24 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
   }, {} as Record<number, number>) || {};
 
   const totalReviews = reviews?.length || 0;
+  
+  // Check if any filters are active
+  const hasActiveFilters = showVerifiedOnly || ratingFilter !== 'all' || sortBy !== 'recent';
+  
+  const clearAllFilters = () => {
+    setShowVerifiedOnly(false);
+    setRatingFilter('all');
+    setSortBy('recent');
+  };
+
+  const getSortLabel = (sort: SortOption) => {
+    switch (sort) {
+      case 'recent': return 'Most Recent';
+      case 'oldest': return 'Oldest First';
+      case 'highest': return 'Highest Rated';
+      case 'lowest': return 'Lowest Rated';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -195,8 +265,16 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
             {[5, 4, 3, 2, 1].map((rating) => {
               const count = ratingDistribution[rating] || 0;
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+              const isActive = ratingFilter === rating.toString();
               return (
-                <div key={rating} className="flex items-center gap-2 text-sm">
+                <button
+                  key={rating}
+                  onClick={() => setRatingFilter(isActive ? 'all' : rating.toString() as RatingFilter)}
+                  className={cn(
+                    "flex items-center gap-2 text-sm w-full rounded-md px-1 py-0.5 transition-colors",
+                    isActive ? "bg-primary/10" : "hover:bg-muted/50"
+                  )}
+                >
                   <span className="w-3 text-muted-foreground">{rating}</span>
                   <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
@@ -206,28 +284,107 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
                     />
                   </div>
                   <span className="w-8 text-right text-muted-foreground">{count}</span>
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
 
-        {/* Verified Filter Toggle */}
-        {verifiedCount > 0 && (
-          <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
-            <span className="text-sm text-muted-foreground">
-              {verifiedCount} verified {verifiedCount === 1 ? 'review' : 'reviews'}
-            </span>
+        {/* Filters Bar */}
+        <div className="flex flex-wrap items-center gap-2 pb-4 mb-4 border-b border-border">
+          {/* Sort Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 h-8">
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{getSortLabel(sortBy)}</span>
+                <span className="sm:hidden">Sort</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[180px] bg-popover z-50">
+              <DropdownMenuLabel>Sort Reviews</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <DropdownMenuRadioItem value="recent">Most Recent</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="oldest">Oldest First</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="highest">Highest Rated</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="lowest">Lowest Rated</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Rating Filter */}
+          <Select value={ratingFilter} onValueChange={(v) => setRatingFilter(v as RatingFilter)}>
+            <SelectTrigger className="w-[120px] h-8 text-sm">
+              <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+              <SelectValue placeholder="Rating" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              <SelectItem value="all">All Ratings</SelectItem>
+              <SelectItem value="5">
+                <span className="flex items-center gap-1">
+                  5 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                </span>
+              </SelectItem>
+              <SelectItem value="4">
+                <span className="flex items-center gap-1">
+                  4 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                </span>
+              </SelectItem>
+              <SelectItem value="3">
+                <span className="flex items-center gap-1">
+                  3 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                </span>
+              </SelectItem>
+              <SelectItem value="2">
+                <span className="flex items-center gap-1">
+                  2 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                </span>
+              </SelectItem>
+              <SelectItem value="1">
+                <span className="flex items-center gap-1">
+                  1 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Verified Only Toggle */}
+          {verifiedCount > 0 && (
             <Button
               variant={showVerifiedOnly ? "default" : "outline"}
               size="sm"
               onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
-              className="gap-1.5"
+              className="gap-1.5 h-8"
             >
-              <BadgeCheck className="h-4 w-4" />
-              Verified Only
+              <BadgeCheck className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Verified Only</span>
+              <span className="sm:hidden">Verified</span>
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
+                {verifiedCount}
+              </Badge>
             </Button>
-          </div>
+          )}
+
+          {/* Clear Filters */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="gap-1 h-8 text-muted-foreground hover:text-foreground ml-auto"
+            >
+              <X className="h-3.5 w-3.5" />
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {/* Results Count */}
+        {(hasActiveFilters || filteredReviews.length !== totalReviews) && (
+          <p className="text-sm text-muted-foreground mb-4">
+            Showing {filteredReviews.length} of {totalReviews} reviews
+          </p>
         )}
 
         {/* Reviews List */}
@@ -288,11 +445,17 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
               </div>
             ))}
           </div>
-        ) : showVerifiedOnly ? (
-          <p className="text-center text-muted-foreground py-4">
-            No verified purchase reviews yet.
-          </p>
-        ) : null}
+        ) : (
+          <div className="py-8 text-center">
+            <SlidersHorizontal className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground mb-3">
+              No reviews match your filters.
+            </p>
+            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+              Clear Filters
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
