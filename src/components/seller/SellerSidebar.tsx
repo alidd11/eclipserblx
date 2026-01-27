@@ -61,6 +61,15 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: 'support',
+    title: 'Support',
+    icon: HelpCircle,
+    items: [
+      { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
+      { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
+    ],
+  },
+  {
     id: 'settings',
     title: 'Settings',
     icon: Settings,
@@ -71,15 +80,6 @@ const navGroups: NavGroup[] = [
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Discord Settings', icon: Bell, href: '/seller/settings/notifications' },
       { title: 'Roblox Settings', icon: Gamepad2, href: '/seller/settings/roblox' },
-    ],
-  },
-  {
-    id: 'support',
-    title: 'Support',
-    icon: HelpCircle,
-    items: [
-      { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
-      { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
     ],
   },
 ];
