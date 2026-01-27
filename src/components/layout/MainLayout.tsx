@@ -8,6 +8,8 @@ import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { hapticTap } from '@/lib/haptics';
 import { useScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
+import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
+import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -93,6 +95,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 
   return (
     <>
+      <ScrollProgressIndicator />
       <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
         {/* Desktop Sidebar */}
         <CustomerSidebar
@@ -126,6 +129,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
           </main>
         </div>
       </div>
+
+      {/* Floating Action Buttons */}
+      <FloatingActionButtons />
 
       {/* Search Command Palette */}
       <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
