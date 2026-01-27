@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
+import { NotificationCenter } from '@/components/seller/NotificationCenter';
 import { toast } from 'sonner';
 import { 
   Store, 
@@ -270,8 +272,8 @@ export default function SellerDashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions + Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Quick Actions + Activity + Health */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Actions */}
           <Card>
             <CardHeader>
@@ -338,49 +340,11 @@ export default function SellerDashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
-              <CardDescription>Your latest transactions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {ordersLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <Skeleton key={i} className="h-12" />
-                  ))}
-                </div>
-              ) : recentOrders && recentOrders.length > 0 ? (
-                <div className="space-y-3">
-                  {recentOrders.map((order: any) => (
-                    <div key={order.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{order.description || 'Product Sale'}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(order.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-green-600">
-                          +{formatCurrency(order.net_amount || order.amount)}
-                        </p>
-                        <Badge variant="outline" className="text-xs">
-                          {order.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <ShoppingCart className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>No sales yet</p>
-                  <p className="text-sm">Add products to start selling!</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Activity Feed */}
+          <NotificationCenter />
+
+          {/* Store Health */}
+          <StoreHealthScore />
         </div>
 
         {/* Pending Items Alert */}

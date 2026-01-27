@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
-  Tag, BarChart3, FileText, HelpCircle, MessageCircle
+  Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,7 @@ const navGroups: NavGroup[] = [
       { title: 'Products', icon: Package, href: '/seller/products' },
       { title: 'Store Tabs', icon: LayoutGrid, href: '/seller/tabs' },
       { title: 'Discounts', icon: Tag, href: '/seller/discounts' },
+      { title: 'Reviews', icon: Star, href: '/seller/reviews' },
     ],
   },
   {
