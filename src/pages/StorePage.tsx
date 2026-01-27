@@ -11,6 +11,9 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { StoreReviews } from '@/components/store/StoreReviews';
+import { StoreStatsBar } from '@/components/store/StoreStatsBar';
+import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
+import { StoreBestSellers } from '@/components/store/StoreBestSellers';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { useAuth } from '@/hooks/useAuth';
 import { 
@@ -20,7 +23,6 @@ import {
   Package,
   ShoppingCart,
   ArrowLeft,
-  LayoutGrid,
   Users,
   MessageCircle
 } from 'lucide-react';
@@ -471,12 +473,34 @@ export default function StorePage() {
         </div>
       </div>
 
+      {/* Stats Bar with Animated Counters */}
+      <div className="container px-4">
+        <StoreStatsBar
+          productCount={store.product_count || 0}
+          totalSales={store.total_sales || 0}
+          averageRating={store.average_rating}
+          followerCount={store.follower_count || 0}
+          memberSince={store.created_at}
+          accentColor={accentColor}
+        />
+      </div>
+
+      {/* Best Sellers Section */}
+      <div className="container px-4">
+        <StoreBestSellers
+          storeId={store.id}
+          storeName={store.name}
+          accentColor={accentColor}
+          limit={4}
+        />
+      </div>
+
       {/* Products Container */}
-      <div className="container px-4 mt-8">
+      <div className="container px-4 mt-4">
         {/* Products Section */}
         <div id="store-products" className="mb-8 scroll-mt-20">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Products</h2>
+            <h2 className="text-xl font-bold">All Products</h2>
           </div>
 
           
@@ -488,18 +512,27 @@ export default function StorePage() {
             </div>
           ) : filteredProducts && filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product: any) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  image={product.images?.[0] || '/placeholder.svg'}
-                  slug={product.slug}
-                  category={(product.categories as any)?.name}
-                  isResellable={product.is_resellable}
-                />
-              ))}
+              {filteredProducts.map((product: any) => {
+                // Check if product is new (within last 7 days)
+                const isNewProduct = product.created_at 
+                  ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
+                  : false;
+                
+                return (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    image={product.images?.[0] || '/placeholder.svg'}
+                    slug={product.slug}
+                    category={(product.categories as any)?.name}
+                    isResellable={product.is_resellable}
+                    showNewBadge={isNewProduct}
+                    createdAt={product.created_at}
+                  />
+                );
+              })}
             </div>
           ) : activeTab ? (
             <Card className={themeStyles.card}>
@@ -526,6 +559,13 @@ export default function StorePage() {
             </Card>
           )}
         </div>
+
+        {/* Trust Signals */}
+        <StoreTrustSignals 
+          accentColor={accentColor}
+          isVerified={store.is_verified}
+          isTrusted={(store as any).is_trusted}
+        />
 
         {/* Reviews Section */}
         {store && (
