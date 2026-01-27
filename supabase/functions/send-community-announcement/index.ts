@@ -74,6 +74,9 @@ serve(async (req) => {
 
     const config = getEmbedConfig(type);
     
+    // Eclipse branding banner - always included at the bottom of announcements
+    const brandingBannerUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png";
+    
     const fields: Array<{ name: string; value: string; inline: boolean }> = [];
     
     if (linkUrl) {
@@ -89,6 +92,7 @@ serve(async (req) => {
       description: message,
       color: config.color,
       fields: fields.length > 0 ? fields : undefined,
+      image: { url: brandingBannerUrl }, // Always include branding banner
       footer: {
         text: `Eclipse Marketplace • ${config.label}`,
       },
