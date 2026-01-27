@@ -58,9 +58,18 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!inCart) {
-      addItem({ id, name, price, image: displayMedia || undefined, slug, category_slug: categorySlug, category_id: categoryId });
+      addItem({
+        id,
+        name,
+        price,
+        image: displayMedia || undefined,
+        slug,
+        category_slug: categorySlug,
+        category_id: categoryId,
+        is_resellable: isResellable,
+      });
     }
-  }, [inCart, addItem, id, name, price, displayMedia, slug, categorySlug, categoryId]);
+  }, [inCart, addItem, id, name, price, displayMedia, slug, categorySlug, categoryId, isResellable]);
 
   const handleMouseEnter = useCallback(() => {
     if (videoRef.current && isVideo) {
