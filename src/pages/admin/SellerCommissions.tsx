@@ -4,12 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
-import { Percent, Calendar, Store, Shield, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { Percent, Store, Shield, Eye, EyeOff, ChevronRight, Sparkles } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface StoreWithCommission {
   id: string;
@@ -21,11 +21,11 @@ interface StoreWithCommission {
   custom_rate_expires_at: string | null;
   is_active: boolean;
   is_trusted: boolean;
+  is_verified: boolean;
   created_at: string;
   profiles?: {
     display_name: string | null;
     username: string | null;
-    email: string;
   };
 }
 
@@ -44,8 +44,8 @@ export default function SellerCommissions() {
         .from('stores')
         .select(`
           id, name, slug, owner_id, commission_rate, custom_commission_rate, 
-          custom_rate_expires_at, is_active, is_trusted, created_at,
-          profiles:owner_id (display_name, username, email)
+          custom_rate_expires_at, is_active, is_trusted, is_verified, created_at,
+          profiles:owner_id (display_name, username)
         `)
         .order('name');
       
@@ -59,6 +59,30 @@ export default function SellerCommissions() {
       if (error) throw error;
       return data as StoreWithCommission[];
     },
+  });
+
+  // Fetch Eclipse+ subscriptions for store owners
+  const { data: ownerSubscriptions } = useQuery({
+    queryKey: ['store-owner-subscriptions', stores?.map(s => s.owner_id)],
+    queryFn: async () => {
+      if (!stores || stores.length === 0) return {};
+      
+      const ownerIds = stores.map(s => s.owner_id);
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('user_id, status')
+        .in('user_id', ownerIds)
+        .eq('status', 'active');
+      
+      if (error) throw error;
+      
+      // Create a map of user_id -> hasEclipsePlus
+      return data.reduce((acc, sub) => {
+        acc[sub.user_id] = true;
+        return acc;
+      }, {} as Record<string, boolean>);
+    },
+    enabled: !!stores && stores.length > 0,
   });
 
   // Fetch default commission rates
@@ -78,21 +102,6 @@ export default function SellerCommissions() {
   const defaultRate = settings?.marketplace_default_commission_rate ?? 15;
   const eclipseRate = settings?.marketplace_eclipse_commission_rate ?? 10;
 
-  const getEffectiveRate = (store: StoreWithCommission) => {
-    if (store.custom_rate_expires_at && new Date(store.custom_rate_expires_at) <= new Date()) {
-      return store.commission_rate ?? defaultRate;
-    }
-    return store.custom_commission_rate ?? store.commission_rate ?? defaultRate;
-  };
-
-  const isCustomRateActive = (store: StoreWithCommission) => {
-    if (!store.custom_commission_rate) return false;
-    if (store.custom_rate_expires_at && new Date(store.custom_rate_expires_at) <= new Date()) {
-      return false;
-    }
-    return true;
-  };
-
   // Filter stores by search query
   const filteredStores = stores?.filter(store => {
     if (!searchQuery) return true;
@@ -100,8 +109,7 @@ export default function SellerCommissions() {
     return (
       store.name.toLowerCase().includes(query) ||
       store.slug.toLowerCase().includes(query) ||
-      store.profiles?.display_name?.toLowerCase().includes(query) ||
-      store.profiles?.email?.toLowerCase().includes(query)
+      store.profiles?.display_name?.toLowerCase().includes(query)
     );
   });
 
@@ -114,7 +122,7 @@ export default function SellerCommissions() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Seller Stores</h1>
           <p className="text-muted-foreground">
-            View and manage all seller stores. Click a store to view details.
+            View and manage all seller stores. Tap a store to view details.
           </p>
         </div>
 
@@ -143,7 +151,7 @@ export default function SellerCommissions() {
           </CardContent>
         </Card>
 
-        {/* Stores Table */}
+        {/* Stores Card */}
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -153,7 +161,7 @@ export default function SellerCommissions() {
                   All Stores ({filteredStores?.length ?? 0})
                 </CardTitle>
                 <CardDescription>
-                  Click on a store to view detailed information and manage settings
+                  Tap a store to view detailed information and manage settings
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -190,79 +198,77 @@ export default function SellerCommissions() {
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading stores...</div>
             ) : filteredStores && filteredStores.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Store</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Commission Rate</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="w-8"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStores.map((store) => (
-                    <TableRow 
-                      key={store.id} 
-                      className={`cursor-pointer hover:bg-muted/50 ${!store.is_active ? 'opacity-60' : ''}`}
+              <div className="space-y-3">
+                {filteredStores.map((store) => {
+                  const hasEclipsePlus = ownerSubscriptions?.[store.owner_id] ?? false;
+                  
+                  return (
+                    <div
+                      key={store.id}
                       onClick={() => navigate(`/admin/seller-commissions/${store.id}`)}
+                      className={cn(
+                        "flex items-center justify-between p-4 rounded-lg border bg-card cursor-pointer",
+                        "transition-all duration-150 active:scale-[0.99]",
+                        "hover:bg-muted/50 hover:border-primary/30",
+                        !store.is_active && "opacity-60"
+                      )}
                     >
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{store.name}</span>
-                              {store.is_trusted && (
-                                <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs">
-                                  <Shield className="h-3 w-3" />
-                                  Trusted
-                                </Badge>
-                              )}
-                            </div>
-                            <span className="text-xs text-muted-foreground">/{store.slug}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm">{store.profiles?.display_name || 'Unknown'}</p>
-                          {store.profiles?.username && (
-                            <p className="text-xs text-muted-foreground">@{store.profiles.username}</p>
+                      <div className="flex-1 min-w-0">
+                        {/* Store name and badges */}
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="font-semibold truncate">{store.name}</span>
+                          {store.is_trusted && (
+                            <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs shrink-0">
+                              <Shield className="h-3 w-3" />
+                              Trusted
+                            </Badge>
+                          )}
+                          {store.is_verified && (
+                            <Badge variant="outline" className="text-xs shrink-0">
+                              Verified
+                            </Badge>
+                          )}
+                          {hasEclipsePlus && (
+                            <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs shrink-0">
+                              <Sparkles className="h-3 w-3" />
+                              Eclipse+
+                            </Badge>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={store.is_active ? 'default' : 'secondary'}>
+                        
+                        {/* Owner name */}
+                        <p className="text-sm text-muted-foreground">
+                          {store.profiles?.display_name || 'Unknown Owner'}
+                          {store.profiles?.username && (
+                            <span className="ml-1 opacity-70">@{store.profiles.username}</span>
+                          )}
+                        </p>
+                        
+                        {/* Status and date on mobile */}
+                        <div className="flex items-center gap-2 mt-2 sm:hidden">
+                          <Badge variant={store.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {store.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {format(parseISO(store.created_at), 'MMM d, yyyy')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Right side - Status badge (desktop) + chevron */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge 
+                          variant={store.is_active ? 'default' : 'secondary'} 
+                          className="hidden sm:inline-flex"
+                        >
                           {store.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={isCustomRateActive(store) ? 'default' : 'secondary'}>
-                            {getEffectiveRate(store)}%
-                          </Badge>
-                          {isCustomRateActive(store) && (
-                            <span className="text-xs text-muted-foreground">(custom)</span>
-                          )}
-                          {store.custom_rate_expires_at && new Date(store.custom_rate_expires_at) <= new Date() && (
-                            <Badge variant="destructive" className="text-xs">Expired</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {format(parseISO(store.created_at), 'MMM d, yyyy')}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 {searchQuery ? 'No stores match your search' : 'No stores found'}
