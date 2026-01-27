@@ -3029,6 +3029,135 @@ export type Database = {
           },
         ]
       }
+      seller_document_acknowledgements: {
+        Row: {
+          acknowledged_at: string
+          acknowledged_by: string | null
+          document_id: string
+          id: string
+          store_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          acknowledged_by?: string | null
+          document_id: string
+          id?: string
+          store_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          acknowledged_by?: string | null
+          document_id?: string
+          id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_document_acknowledgements_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "seller_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_document_acknowledgements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_document_notifications: {
+        Row: {
+          document_id: string
+          id: string
+          read_at: string | null
+          sent_at: string
+          store_id: string
+        }
+        Insert: {
+          document_id: string
+          id?: string
+          read_at?: string | null
+          sent_at?: string
+          store_id: string
+        }
+        Update: {
+          document_id?: string
+          id?: string
+          read_at?: string | null
+          sent_at?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_document_notifications_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "seller_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_document_notifications_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_documents: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          external_url: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_active: boolean
+          requires_acknowledgement: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          external_url?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean
+          requires_acknowledgement?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          external_url?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean
+          requires_acknowledgement?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       seller_payouts: {
         Row: {
           amount: number
