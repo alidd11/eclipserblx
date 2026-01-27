@@ -510,41 +510,16 @@ export default function StorePage() {
         </div>
       </div>
 
-      {/* Best Sellers Section */}
-      <div className="container px-4 mt-4">
-        <StoreBestSellers
-          storeId={store.id}
-          storeName={store.name}
-          accentColor={accentColor}
-          limit={4}
-        />
-      </div>
-
-      {/* Stats Bar - Single line below Best Sellers */}
-      <div className="container px-4">
-        <StoreStatsBar
-          productCount={store.product_count || 0}
-          totalSales={store.total_sales || 0}
-          averageRating={store.average_rating}
-          followerCount={store.follower_count || 0}
-          memberSince={store.created_at}
-          accentColor={accentColor}
-          storeSlug={store.slug || storeSlug || ''}
-        />
-      </div>
-
-      {/* Products Container */}
-      <div className="container px-4 mt-4">
-        {/* Products Section */}
-        <div id="store-products" className="mb-8 scroll-mt-20">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold">
-                {activeTab 
-                  ? storeTabs?.find(t => t.slug === activeTab)?.name || 'Products'
-                  : 'All Products'}
-              </h2>
-              {activeTab && (
+      {/* When category is active, show products immediately at top */}
+      {activeTab ? (
+        <div className="container px-4 mt-4">
+          {/* Category Products Section - At Top */}
+          <div id="store-products" className="mb-8 scroll-mt-20">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold">
+                  {storeTabs?.find(t => t.slug === activeTab)?.name || 'Products'}
+                </h2>
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -552,156 +527,289 @@ export default function StorePage() {
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />
-                  All
-                </Button>
-              )}
-            </div>
-            {totalProductPages > 1 && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={goToPrevPage}
-                  style={{ borderColor: accentColor, color: accentColor }}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {currentProductPage + 1} / {totalProductPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={goToNextPage}
-                  style={{ borderColor: accentColor, color: accentColor }}
-                >
-                  <ChevronRight className="h-4 w-4" />
+                  Back to Store
                 </Button>
               </div>
-            )}
-          </div>
-
-          {productsLoading || (activeTab && tabProductsLoading) ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {[1, 2, 3, 4].map(i => (
-                <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
-              ))}
-            </div>
-          ) : paginatedProducts && paginatedProducts.length > 0 ? (
-            <div
-              {...swipeHandlers}
-              className="relative overflow-hidden"
-            >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentProductPage}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.3 }}
-                  className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-                >
-                  {paginatedProducts.map((product: any) => {
-                    const isNewProduct = product.created_at 
-                      ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
-                      : false;
-                    
-                    return (
-                      <ProductCard
-                        key={product.id}
-                        id={product.id}
-                        name={product.name}
-                        price={product.price}
-                        image={product.images?.[0] || '/placeholder.svg'}
-                        slug={product.slug}
-                        category={(product.categories as any)?.name}
-                        isResellable={product.is_resellable}
-                        showNewBadge={isNewProduct}
-                        createdAt={product.created_at}
-                      />
-                    );
-                  })}
-                </motion.div>
-              </AnimatePresence>
-              
-              {/* Page indicators */}
               {totalProductPages > 1 && (
-                <div className="flex justify-center gap-1.5 mt-4">
-                  {Array.from({ length: totalProductPages }).map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentProductPage(index)}
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        index === currentProductPage ? 'w-6' : 'w-2'
-                      }`}
-                      style={{
-                        backgroundColor: index === currentProductPage ? accentColor : `${accentColor}40`,
-                      }}
-                    />
-                  ))}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={goToPrevPage}
+                    style={{ borderColor: accentColor, color: accentColor }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {currentProductPage + 1} / {totalProductPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={goToNextPage}
+                    style={{ borderColor: accentColor, color: accentColor }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
             </div>
-          ) : activeTab ? (
-            <Card className={themeStyles.card}>
-              <CardContent className="py-12 text-center">
-                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Products in This Category</h3>
-                <p className="text-muted-foreground mb-4">
-                  There are no products in this category yet.
-                </p>
-                <Button variant="outline" onClick={() => handleTabClick(null)}>
-                  View All Products
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className={themeStyles.card}>
-              <CardContent className="py-12 text-center">
-                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
-                <p className="text-muted-foreground">
-                  This store hasn't listed any products yet. Check back soon!
-                </p>
-              </CardContent>
-            </Card>
+
+            {productsLoading || tabProductsLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
+                ))}
+              </div>
+            ) : paginatedProducts && paginatedProducts.length > 0 ? (
+              <div
+                {...swipeHandlers}
+                className="relative overflow-hidden"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentProductPage}
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+                  >
+                    {paginatedProducts.map((product: any) => {
+                      const isNewProduct = product.created_at 
+                        ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
+                        : false;
+                      
+                      return (
+                        <ProductCard
+                          key={product.id}
+                          id={product.id}
+                          name={product.name}
+                          price={product.price}
+                          image={product.images?.[0] || '/placeholder.svg'}
+                          slug={product.slug}
+                          category={(product.categories as any)?.name}
+                          isResellable={product.is_resellable}
+                          showNewBadge={isNewProduct}
+                          createdAt={product.created_at}
+                        />
+                      );
+                    })}
+                  </motion.div>
+                </AnimatePresence>
+                
+                {/* Page indicators */}
+                {totalProductPages > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-4">
+                    {Array.from({ length: totalProductPages }).map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentProductPage(index)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          index === currentProductPage ? 'w-6' : 'w-2'
+                        }`}
+                        style={{
+                          backgroundColor: index === currentProductPage ? accentColor : `${accentColor}40`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Card className={themeStyles.card}>
+                <CardContent className="py-12 text-center">
+                  <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No Products in This Category</h3>
+                  <p className="text-muted-foreground mb-4">
+                    There are no products in this category yet.
+                  </p>
+                  <Button variant="outline" onClick={() => handleTabClick(null)}>
+                    View All Products
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Reviews Section - Right after products when category is active */}
+          {store && (
+            <div className="mb-8">
+              <StoreReviews
+                storeId={store.id}
+                storeName={store.name}
+                accentColor={accentColor}
+                averageRating={store.average_rating}
+              />
+            </div>
           )}
         </div>
-
-        {/* Trust Signals */}
-        <StoreTrustSignals 
-          accentColor={accentColor}
-          isVerified={store.is_verified}
-          isTrusted={(store as any).is_trusted}
-        />
-
-        {/* Reviews Section */}
-        {store && (
-          <div className="mb-8">
-            <StoreReviews
+      ) : (
+        <>
+          {/* Default Store Layout - Best Sellers, Stats, Products */}
+          <div className="container px-4 mt-4">
+            <StoreBestSellers
               storeId={store.id}
               storeName={store.name}
-              accentColor={accentColor}
-              averageRating={store.average_rating}
-            />
-          </div>
-        )}
-
-        {/* Recommendations Section */}
-        {store && products && products.length > 0 && (
-          <div id="store-recommendations" className="scroll-mt-20">
-            <StoreRecommendations
-              storeId={store.id}
-              storeName={store.name}
-              categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
               accentColor={accentColor}
               limit={4}
             />
           </div>
-        )}
-      </div>
+
+          <div className="container px-4">
+            <StoreStatsBar
+              productCount={store.product_count || 0}
+              totalSales={store.total_sales || 0}
+              averageRating={store.average_rating}
+              followerCount={store.follower_count || 0}
+              memberSince={store.created_at}
+              accentColor={accentColor}
+              storeSlug={store.slug || storeSlug || ''}
+            />
+          </div>
+
+          <div className="container px-4 mt-4">
+            {/* Products Section */}
+            <div id="store-products" className="mb-8 scroll-mt-20">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">All Products</h2>
+                {totalProductPages > 1 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={goToPrevPage}
+                      style={{ borderColor: accentColor, color: accentColor }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {currentProductPage + 1} / {totalProductPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={goToNextPage}
+                      style={{ borderColor: accentColor, color: accentColor }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {productsLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {[1, 2, 3, 4].map(i => (
+                    <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
+                  ))}
+                </div>
+              ) : paginatedProducts && paginatedProducts.length > 0 ? (
+                <div
+                  {...swipeHandlers}
+                  className="relative overflow-hidden"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentProductPage}
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                      transition={{ duration: 0.3 }}
+                      className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+                    >
+                      {paginatedProducts.map((product: any) => {
+                        const isNewProduct = product.created_at 
+                          ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
+                          : false;
+                        
+                        return (
+                          <ProductCard
+                            key={product.id}
+                            id={product.id}
+                            name={product.name}
+                            price={product.price}
+                            image={product.images?.[0] || '/placeholder.svg'}
+                            slug={product.slug}
+                            category={(product.categories as any)?.name}
+                            isResellable={product.is_resellable}
+                            showNewBadge={isNewProduct}
+                            createdAt={product.created_at}
+                          />
+                        );
+                      })}
+                    </motion.div>
+                  </AnimatePresence>
+                  
+                  {/* Page indicators */}
+                  {totalProductPages > 1 && (
+                    <div className="flex justify-center gap-1.5 mt-4">
+                      {Array.from({ length: totalProductPages }).map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentProductPage(index)}
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            index === currentProductPage ? 'w-6' : 'w-2'
+                          }`}
+                          style={{
+                            backgroundColor: index === currentProductPage ? accentColor : `${accentColor}40`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Card className={themeStyles.card}>
+                  <CardContent className="py-12 text-center">
+                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
+                    <p className="text-muted-foreground">
+                      This store hasn't listed any products yet. Check back soon!
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Trust Signals */}
+            <StoreTrustSignals 
+              accentColor={accentColor}
+              isVerified={store.is_verified}
+              isTrusted={(store as any).is_trusted}
+            />
+
+            {/* Reviews Section */}
+            {store && (
+              <div className="mb-8">
+                <StoreReviews
+                  storeId={store.id}
+                  storeName={store.name}
+                  accentColor={accentColor}
+                  averageRating={store.average_rating}
+                />
+              </div>
+            )}
+
+            {/* Recommendations Section */}
+            {store && products && products.length > 0 && (
+              <div id="store-recommendations" className="scroll-mt-20">
+                <StoreRecommendations
+                  storeId={store.id}
+                  storeName={store.name}
+                  categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
+                  accentColor={accentColor}
+                  limit={4}
+                />
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </StoreLayout>
   );
 }
