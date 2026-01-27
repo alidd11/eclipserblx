@@ -24,20 +24,26 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
+
+const INITIAL_FORM_DATA = {
+  discord_url: '',
+  discord_webhook_url: '',
+  review_discord_webhook_url: '',
+  discord_bot_token: '',
+  discord_guild_id: '',
+  discord_role_id: '',
+};
 
 export default function SellerSettingsNotifications() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
 
-  const [formData, setFormData] = useState({
-    discord_url: '',
-    discord_webhook_url: '',
-    review_discord_webhook_url: '',
-    discord_bot_token: '',
-    discord_guild_id: '',
-    discord_role_id: '',
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence(
+    'seller-settings-notifications',
+    INITIAL_FORM_DATA
+  );
   const [isTestingOrderWebhook, setIsTestingOrderWebhook] = useState(false);
   const [isTestingReviewWebhook, setIsTestingReviewWebhook] = useState(false);
 
