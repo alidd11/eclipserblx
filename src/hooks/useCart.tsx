@@ -1,5 +1,6 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CartItem {
   id: string;
@@ -9,6 +10,7 @@ interface CartItem {
   slug: string;
   category_slug?: string;
   category_id?: string; // Added for Eclipse+ discount eligibility
+  is_resellable?: boolean;
 }
 
 interface CartContextType {
@@ -40,6 +42,55 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     safeStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
+
+  // One-time hydration for older carts that predate `is_resellable` / `category_id`.
+  // Ensures Eclipse+ eligibility is computed correctly even for already-saved carts.
+  const hasHydratedRef = useRef(false);
+  useEffect(() => {
+    if (hasHydratedRef.current) return;
+    if (items.length === 0) {
+      hasHydratedRef.current = true;
+      return;
+    }
+
+    const needsHydration = items.some((i) => i.is_resellable === undefined || i.category_id === undefined);
+    if (!needsHydration) {
+      hasHydratedRef.current = true;
+      return;
+    }
+
+    hasHydratedRef.current = true;
+    const ids = Array.from(new Set(items.map((i) => i.id)));
+    let cancelled = false;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, is_resellable, category_id')
+        .in('id', ids);
+
+      if (cancelled || error || !data) return;
+      const productMap = new Map(data.map((p) => [p.id, p]));
+
+      setItems((prev) =>
+        prev.map((item) => {
+          const product = productMap.get(item.id);
+          if (!product) return item;
+          return {
+            ...item,
+            category_id: item.category_id ?? (product as any).category_id ?? item.category_id,
+            is_resellable:
+              item.is_resellable ??
+              Boolean((product as any).is_resellable),
+          };
+        })
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [items]);
 
   const addItem = (item: CartItem) => {

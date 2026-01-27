@@ -35,14 +35,14 @@ export default function Checkout() {
   // Calculate Eclipse+ member pricing
   const calculateMemberPricing = () => {
     const itemsWithMemberPricing = items.map(item => {
-      const eligible = isEligibleForDiscount(item.category_id);
-      const memberPrice = eligible ? getMemberPrice(item.price, item.category_id) : item.price;
+      const eligible = isEligibleForDiscount(item.category_id, item.is_resellable);
+      const memberPrice = eligible ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
       return {
         ...item,
         originalPrice: item.price,
         memberPrice: isSubscribed && eligible ? memberPrice : item.price,
         hasEclipseDiscount: isSubscribed && eligible,
-        discountPercent: getDiscountPercent(item.category_id),
+        discountPercent: getDiscountPercent(item.category_id, item.is_resellable),
         // Calculate potential savings for non-members
         potentialMemberPrice: eligible ? memberPrice : item.price,
       };

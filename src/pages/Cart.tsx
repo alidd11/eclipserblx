@@ -17,7 +17,7 @@ export default function Cart() {
   const calculateMemberTotal = () => {
     if (!isSubscribed) return total;
     return items.reduce((sum, item) => {
-      const memberPrice = getMemberPrice(item.price, item.category_id);
+      const memberPrice = getMemberPrice(item.price, item.category_id, item.is_resellable);
       return sum + memberPrice;
     }, 0);
   };
@@ -71,9 +71,9 @@ export default function Cart() {
             </CardHeader>
             <CardContent className="space-y-4">
               {items.map((item) => {
-                const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id);
-                const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id) : item.price;
-                const discountPercent = getDiscountPercent(item.category_id);
+                const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id, item.is_resellable);
+                const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
+                const discountPercent = getDiscountPercent(item.category_id, item.is_resellable);
                 
                 return (
                   <div key={item.id} className="p-4 rounded-lg bg-muted/50 flex gap-4">

@@ -282,6 +282,7 @@ export default function ProductDetail() {
         slug: product.slug,
         category_slug: product.categories?.slug,
         category_id: product.category_id,
+        is_resellable: product.is_resellable,
       });
     }
   };
