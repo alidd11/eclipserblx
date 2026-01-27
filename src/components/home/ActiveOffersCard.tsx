@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Tag, Clock, Gift, Check } from 'lucide-react';
+import { Sparkles, Tag, Clock, Gift, Check, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -144,12 +144,19 @@ export function ActiveOffersCard() {
                       {getPromotionIcon(promo.promotion_type, isClaimed)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-sm truncate">{promo.name}</span>
                         {isClaimed ? (
                           <Badge variant="outline" className="text-[10px] py-0 border-green-500/50 text-green-600 dark:text-green-400">
                             Claimed
                           </Badge>
+                        ) : !user && promo.new_users_only ? (
+                          <Link to="/auth">
+                            <Badge variant="outline" className="text-[10px] py-0 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer">
+                              <LogIn className="h-2.5 w-2.5 mr-1" />
+                              Sign Up to Claim
+                            </Badge>
+                          </Link>
                         ) : promo.new_users_only ? (
                           <Badge variant="outline" className="text-[10px] py-0">New Users</Badge>
                         ) : null}
