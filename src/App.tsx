@@ -134,6 +134,7 @@ const SellerSettingsAppearance = lazy(() => import("./pages/seller/SellerSetting
 const SellerSettingsTeam = lazy(() => import("./pages/seller/SellerSettingsTeam"));
 const SellerSettingsPayments = lazy(() => import("./pages/seller/SellerSettingsPayments"));
 const SellerSettingsNotifications = lazy(() => import("./pages/seller/SellerSettingsNotifications"));
+const SellerSettingsRoblox = lazy(() => import("./pages/seller/SellerSettingsRoblox"));
 const SellerSupport = lazy(() => import("./pages/seller/SellerSupport"));
 const SellerMessages = lazy(() => import("./pages/seller/SellerMessages"));
 const SellerReviews = lazy(() => import("./pages/seller/SellerReviews"));
@@ -242,6 +243,7 @@ const App = () => (
                   <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
                   <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
                   <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
+                  <Route path="/seller/settings/roblox" element={<SellerSettingsRoblox />} />
                   <Route path="/seller/support" element={<SellerSupport />} />
                   <Route path="/seller/messages" element={<SellerMessages />} />
                   <Route path="/seller/reviews" element={<SellerReviews />} />

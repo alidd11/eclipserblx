@@ -4006,6 +4006,15 @@ export type Database = {
           review_discord_webhook_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          roblox_gamepass_discount_enabled: boolean | null
+          roblox_gamepass_discount_percent: number | null
+          roblox_gamepass_id: string | null
+          roblox_group_discount_enabled: boolean | null
+          roblox_group_discount_percent: number | null
+          roblox_group_id: string | null
+          roblox_group_min_rank: number | null
+          roblox_premium_discount_enabled: boolean | null
+          roblox_premium_discount_percent: number | null
           roblox_url: string | null
           show_reviews: boolean | null
           show_social_proof: boolean | null
@@ -4074,6 +4083,15 @@ export type Database = {
           review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          roblox_gamepass_discount_enabled?: boolean | null
+          roblox_gamepass_discount_percent?: number | null
+          roblox_gamepass_id?: string | null
+          roblox_group_discount_enabled?: boolean | null
+          roblox_group_discount_percent?: number | null
+          roblox_group_id?: string | null
+          roblox_group_min_rank?: number | null
+          roblox_premium_discount_enabled?: boolean | null
+          roblox_premium_discount_percent?: number | null
           roblox_url?: string | null
           show_reviews?: boolean | null
           show_social_proof?: boolean | null
@@ -4142,6 +4160,15 @@ export type Database = {
           review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          roblox_gamepass_discount_enabled?: boolean | null
+          roblox_gamepass_discount_percent?: number | null
+          roblox_gamepass_id?: string | null
+          roblox_group_discount_enabled?: boolean | null
+          roblox_group_discount_percent?: number | null
+          roblox_group_id?: string | null
+          roblox_group_min_rank?: number | null
+          roblox_premium_discount_enabled?: boolean | null
+          roblox_premium_discount_percent?: number | null
           roblox_url?: string | null
           show_reviews?: boolean | null
           show_social_proof?: boolean | null

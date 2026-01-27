@@ -19,8 +19,7 @@ import {
   Save,
   Link as LinkIcon,
   Globe,
-  Info,
-  Gamepad2
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,7 +39,6 @@ export default function SellerSettingsProfile() {
     youtube_url: '',
     tiktok_url: '',
     website_url: '',
-    roblox_url: '',
   });
 
   useEffect(() => {
@@ -56,7 +54,6 @@ export default function SellerSettingsProfile() {
         youtube_url: store.youtube_url || '',
         tiktok_url: store.tiktok_url || '',
         website_url: store.website_url || '',
-        roblox_url: (store as any).roblox_url || '',
       });
     }
   }, [store]);
@@ -78,7 +75,6 @@ export default function SellerSettingsProfile() {
           youtube_url: data.youtube_url || null,
           tiktok_url: data.tiktok_url || null,
           website_url: data.website_url || null,
-          roblox_url: data.roblox_url || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', store.id);
@@ -309,22 +305,6 @@ export default function SellerSettingsProfile() {
                   onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                   placeholder="https://yourwebsite.com"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="roblox_url" className="flex items-center gap-2">
-                  <Gamepad2 className="h-4 w-4" />
-                  Roblox Game/Group
-                </Label>
-                <Input
-                  id="roblox_url"
-                  value={formData.roblox_url}
-                  onChange={(e) => setFormData({ ...formData, roblox_url: e.target.value })}
-                  placeholder="https://www.roblox.com/games/... or https://www.roblox.com/groups/..."
-                />
-                <p className="text-xs text-muted-foreground">
-                  Link to your Roblox game or group page
-                </p>
               </div>
 
               <Button onClick={handleSubmit} disabled={updateStore.isPending}>
