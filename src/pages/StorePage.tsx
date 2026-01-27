@@ -473,7 +473,17 @@ export default function StorePage() {
         </div>
       </div>
 
-      {/* Stats Bar with Animated Counters */}
+      {/* Best Sellers Section */}
+      <div className="container px-4 mt-4">
+        <StoreBestSellers
+          storeId={store.id}
+          storeName={store.name}
+          accentColor={accentColor}
+          limit={4}
+        />
+      </div>
+
+      {/* Stats Bar - Single line below Best Sellers */}
       <div className="container px-4">
         <StoreStatsBar
           productCount={store.product_count || 0}
@@ -482,16 +492,6 @@ export default function StorePage() {
           followerCount={store.follower_count || 0}
           memberSince={store.created_at}
           accentColor={accentColor}
-        />
-      </div>
-
-      {/* Best Sellers Section */}
-      <div className="container px-4">
-        <StoreBestSellers
-          storeId={store.id}
-          storeName={store.name}
-          accentColor={accentColor}
-          limit={4}
         />
       </div>
 

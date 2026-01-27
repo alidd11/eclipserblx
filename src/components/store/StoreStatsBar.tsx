@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 import { Package, ShoppingCart, Star, Users, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface StoreStatsBarProps {
   productCount: number;
@@ -13,7 +12,7 @@ interface StoreStatsBarProps {
 
 function AnimatedCounter({ 
   end, 
-  duration = 2000,
+  duration = 1500,
   suffix = '',
   decimals = 0 
 }: { 
@@ -124,38 +123,31 @@ export function StoreStatsBar({
     ...(yearsActive !== null && yearsActive >= 1 ? [{
       icon: Calendar,
       value: yearsActive,
-      label: yearsActive === 1 ? 'Year Active' : 'Years Active',
+      label: yearsActive === 1 ? 'Year' : 'Years',
       suffix: '',
     }] : []),
   ];
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-3">
       <div 
-        className="rounded-xl border bg-card/50 backdrop-blur-sm p-4 md:p-6"
+        className="rounded-xl border bg-card/50 backdrop-blur-sm px-4 py-3"
         style={{ borderColor: `${accentColor}30` }}
       >
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        {/* Single line horizontal layout */}
+        <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 overflow-x-auto">
           {stats.map((stat, index) => (
             <div 
               key={stat.label}
-              className={cn(
-                "flex flex-col items-center text-center gap-1",
-                index >= 4 && "hidden lg:flex"
-              )}
+              className="flex items-center gap-2 whitespace-nowrap"
             >
-              <div 
-                className="p-2 rounded-lg mb-1"
-                style={{ backgroundColor: `${accentColor}15` }}
-              >
-                <stat.icon 
-                  className="h-5 w-5"
-                  style={{ color: accentColor }}
-                  fill={stat.isStar ? accentColor : 'none'}
-                />
-              </div>
+              <stat.icon 
+                className="h-4 w-4 flex-shrink-0"
+                style={{ color: accentColor }}
+                fill={stat.isStar ? accentColor : 'none'}
+              />
               <span 
-                className="text-2xl md:text-3xl font-bold"
+                className="font-bold text-sm sm:text-base"
                 style={{ color: accentColor }}
               >
                 <AnimatedCounter 
@@ -164,9 +156,16 @@ export function StoreStatsBar({
                   decimals={stat.decimals || 0}
                 />
               </span>
-              <span className="text-xs md:text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 {stat.label}
               </span>
+              {/* Separator dot */}
+              {index < stats.length - 1 && (
+                <span 
+                  className="hidden sm:block w-1 h-1 rounded-full ml-2"
+                  style={{ backgroundColor: `${accentColor}50` }}
+                />
+              )}
             </div>
           ))}
         </div>
