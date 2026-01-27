@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { safeStorage } from '@/lib/safeStorage';
 
 const LAST_ROUTE_KEY = 'pwa-last-route';
@@ -42,6 +42,7 @@ export function usePWALastRoute() {
 // Component to handle route restoration on PWA launch
 export function PWARouteRestorer() {
   const location = useLocation();
+  const navigate = useNavigate();
   const hasAttemptedRestore = useRef(false);
 
   useEffect(() => {
@@ -60,13 +61,10 @@ export function PWARouteRestorer() {
     const lastRoute = safeStorage.getItem(LAST_ROUTE_KEY);
     
     if (lastRoute && lastRoute !== '/' && !EXCLUDED_ROUTES.some(route => lastRoute.startsWith(route))) {
-      // Small delay to ensure app is ready
-      setTimeout(() => {
-        window.history.replaceState(null, '', lastRoute);
-        window.location.reload();
-      }, 100);
+      // Use React Router navigation instead of reload
+      navigate(lastRoute, { replace: true });
     }
-  }, []);
+  }, [location.pathname, navigate]);
 
   return null;
 }
