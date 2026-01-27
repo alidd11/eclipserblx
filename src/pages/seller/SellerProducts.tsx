@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -33,6 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { BulkProductActions } from '@/components/seller/BulkProductActions';
 import { 
   Plus, 
   Search, 
@@ -53,6 +55,7 @@ export default function SellerProducts() {
   const { store } = useSellerStatus();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
   // Fetch seller's products
   const { data: products, isLoading: productsLoading } = useQuery({
@@ -160,6 +163,16 @@ export default function SellerProducts() {
           </CardContent>
         </Card>
 
+        {/* Bulk Actions */}
+        {filteredProducts.length > 0 && store?.id && (
+          <BulkProductActions
+            products={filteredProducts}
+            storeId={store.id}
+            selectedIds={selectedProductIds}
+            onSelectionChange={setSelectedProductIds}
+          />
+        )}
+
         {/* Products Table */}
         <Card>
           <CardHeader>
@@ -180,6 +193,7 @@ export default function SellerProducts() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]"></TableHead>
                       <TableHead>Product</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
@@ -191,6 +205,19 @@ export default function SellerProducts() {
                   <TableBody>
                     {filteredProducts.map((product: any) => (
                       <TableRow key={product.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedProductIds.includes(product.id)}
+                            onCheckedChange={() => {
+                              if (selectedProductIds.includes(product.id)) {
+                                setSelectedProductIds(selectedProductIds.filter(id => id !== product.id));
+                              } else {
+                                setSelectedProductIds([...selectedProductIds, product.id]);
+                              }
+                            }}
+                            aria-label="Select product"
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {product.images?.[0] ? (
