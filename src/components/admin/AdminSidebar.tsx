@@ -68,6 +68,7 @@ const navGroups: NavGroup[] = [
       { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
       { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'] },
       { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', roles: ['admin', 'support_agent'], dividerAfter: true },
+      { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', roles: ['admin'] },
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
       { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
       { title: 'Modmail Bot Setup', icon: Bot, href: '/admin/modmail-bot-setup', roles: ['admin'] },
