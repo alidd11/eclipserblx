@@ -630,13 +630,15 @@ export default function ProductDetail() {
                       setShowReviewForm(false);
                       queryClient.invalidateQueries({ queryKey: ['product-reviews', product.id] });
                       queryClient.invalidateQueries({ queryKey: ['user-existing-review', product.id, user.id] });
-                      // Mark review reminder as submitted
+                      // Mark review reminder as submitted (fire-and-forget, errors are non-critical)
                       supabase
                         .from('review_reminders')
                         .update({ review_submitted: true })
                         .eq('user_id', user.id)
                         .eq('product_id', product.id)
-                        .then(() => {});
+                        .then(({ error }) => {
+                          if (error) console.warn('Failed to mark review reminder:', error.message);
+                        });
                     }}
                   />
                 </div>

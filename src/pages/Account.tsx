@@ -111,9 +111,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             subscribed_to_discounts: true,
             subscribed_to_newsletters: true,
           });
-        } catch (error) {
+        } catch {
           // Ignore if already exists
-          console.log('Email subscription creation:', error);
         }
       }
     };

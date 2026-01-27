@@ -173,7 +173,6 @@ export default function StorePage() {
       // Find the tab/category by slug
       const tab = storeTabs.find(t => t.slug === activeTab);
       if (!tab) {
-        console.log('Tab not found for slug:', activeTab, 'Available tabs:', storeTabs.map(t => t.slug));
         return null;
       }
 

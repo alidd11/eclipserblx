@@ -31,8 +31,8 @@ export function useNotificationSound() {
       if (hapticEnabled) {
         triggerHapticFeedback();
       }
-    } catch (error) {
-      console.log('Could not play notification sound:', error);
+    } catch {
+      // Audio playback may fail silently in some browsers
     }
   }, []);
 
