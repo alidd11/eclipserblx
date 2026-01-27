@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Send, MessageCircle, Megaphone, Link as LinkIcon, AlertCircle, CheckCircle2, AtSign } from 'lucide-react';
+import { Send, MessageCircle, Megaphone, Link as LinkIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,6 @@ const INITIAL_FORM_STATE = {
   title: '',
   message: '',
   linkUrl: '',
-  roleId: '',
   pingRole: false,
 };
 
@@ -73,8 +72,8 @@ export default function CommunityAnnouncements() {
       toast.error('Message must be 1000 characters or less');
       return;
     }
-    if (formData.pingRole && !formData.roleId.trim() && !savedRoleId) {
-      toast.error('Please enter a role ID to ping');
+    if (formData.pingRole && !savedRoleId) {
+      toast.error('Please configure a role ID in Discord Settings first');
       return;
     }
 
@@ -87,7 +86,7 @@ export default function CommunityAnnouncements() {
           title: formData.title.trim(),
           message: formData.message.trim(),
           linkUrl: formData.linkUrl.trim() || undefined,
-          roleId: formData.pingRole ? (formData.roleId.trim() || savedRoleId) : undefined,
+          roleId: formData.pingRole ? savedRoleId : undefined,
         },
       });
 
@@ -205,40 +204,22 @@ export default function CommunityAnnouncements() {
             </div>
           </div>
 
-          <div className="space-y-4 border-t pt-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="pingRole">Ping Role</Label>
-                <p className="text-xs text-muted-foreground">Mention a Discord role with this announcement</p>
-              </div>
-              <Switch
-                id="pingRole"
-                checked={formData.pingRole}
-                onCheckedChange={(checked) => setFormData({ pingRole: checked })}
-              />
+          <div className="flex items-center justify-between border-t pt-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="pingRole">Ping Role</Label>
+              <p className="text-xs text-muted-foreground">
+                {savedRoleId 
+                  ? 'Mention the configured Discord role with this announcement'
+                  : <>Configure a role ID in <Link to="/admin/discord-settings?tab=community" className="underline hover:no-underline">Discord Settings</Link> first</>
+                }
+              </p>
             </div>
-
-            {formData.pingRole && (
-              <div className="space-y-2">
-                <Label htmlFor="roleId">Role ID {savedRoleId && <span className="text-muted-foreground">(leave empty to use saved)</span>}</Label>
-                <div className="relative">
-                  <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="roleId"
-                    placeholder={savedRoleId || "Enter Discord role ID..."}
-                    value={formData.roleId}
-                    onChange={(e) => setFormData({ roleId: e.target.value })}
-                    className="pl-10"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Configure a default role ID in{' '}
-                  <Link to="/admin/discord-settings?tab=community" className="underline hover:no-underline">
-                    Discord Settings → Community tab
-                  </Link>
-                </p>
-              </div>
-            )}
+            <Switch
+              id="pingRole"
+              checked={formData.pingRole}
+              onCheckedChange={(checked) => setFormData({ pingRole: checked })}
+              disabled={!savedRoleId}
+            />
           </div>
 
           <Button 
