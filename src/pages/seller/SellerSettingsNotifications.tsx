@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
 import { 
   Bell,
   Send,
@@ -430,6 +431,23 @@ export default function SellerSettingsNotifications() {
             </CardContent>
           </Card>
 
+          {/* Additional Role Configurations */}
+          {store?.id && formData.discord_bot_token && formData.discord_guild_id && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-[#5865F2]" />
+                  Additional Discord Roles
+                </CardTitle>
+                <CardDescription>
+                  Create additional roles to assign based on order count, spend amount, or subscription status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DiscordRoleManager storeId={store.id} />
+              </CardContent>
+            </Card>
+          )}
           {/* How to Create Webhook */}
           <Card className="border-muted">
             <CardHeader>

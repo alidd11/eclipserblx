@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Store, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Store, ShieldCheck, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProductWebhookTemplateEditor } from '@/components/admin/ProductWebhookTemplateEditor';
+import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
 
 interface DiscordSettings {
   discord_invite_url: string;
@@ -2771,6 +2772,19 @@ export default function DiscordSettings() {
                   )}
                 </div>
 
+                {/* Additional Role Configurations for Global */}
+                {eclipseStoreSettings.discord_bot_token && eclipseStoreSettings.discord_guild_id && (
+                  <div className="space-y-4 border-t border-border pt-4">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-[#5865F2]" />
+                      <span className="font-medium">Additional Global Roles</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Create additional roles to assign to Eclipse Store customers based on spend, order count, or subscription
+                    </p>
+                    <DiscordRoleManager isGlobal={true} />
+                  </div>
+                )}
                 <div className="border-t border-border pt-4">
                   <Button
                     onClick={handleSaveEclipseStoreSettings}
