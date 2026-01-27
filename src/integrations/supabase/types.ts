@@ -2131,6 +2131,7 @@ export type Database = {
           name: string
           price: number
           release_at: string | null
+          release_notified_at: string | null
           robux_enabled: boolean | null
           robux_price: number | null
           robux_product_id: string | null
@@ -2158,6 +2159,7 @@ export type Database = {
           name: string
           price: number
           release_at?: string | null
+          release_notified_at?: string | null
           robux_enabled?: boolean | null
           robux_price?: number | null
           robux_product_id?: string | null
@@ -2185,6 +2187,7 @@ export type Database = {
           name?: string
           price?: number
           release_at?: string | null
+          release_notified_at?: string | null
           robux_enabled?: boolean | null
           robux_price?: number | null
           robux_product_id?: string | null
