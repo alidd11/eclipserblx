@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StoreLayout } from '@/components/store/StoreLayout';
@@ -12,6 +12,7 @@ import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { StoreReviews } from '@/components/store/StoreReviews';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Store as StoreIcon, 
   CheckCircle, 
@@ -20,7 +21,8 @@ import {
   ShoppingCart,
   ArrowLeft,
   LayoutGrid,
-  Users
+  Users,
+  MessageCircle
 } from 'lucide-react';
 
 // Theme configurations
@@ -74,6 +76,8 @@ const getThemeStyles = (theme: string, accentColor: string) => {
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const activeTab = searchParams.get('tab');
   const [bioExpanded, setBioExpanded] = useState(false);
 
@@ -328,7 +332,7 @@ export default function StorePage() {
               {store.name}
             </h1>
             
-            <div className="flex flex-col items-center gap-2 mb-2">
+            <div className="flex flex-col items-center gap-3 mb-2">
               <div className="flex items-center justify-center gap-2 flex-wrap">
                 {store.is_verified && (
                   <Badge 
@@ -348,11 +352,28 @@ export default function StorePage() {
                   </Badge>
                 )}
               </div>
-              <FollowButton 
-                storeId={store.id} 
-                accentColor={accentColor}
-                size="sm"
-              />
+              <div className="flex items-center gap-2">
+                <FollowButton 
+                  storeId={store.id} 
+                  accentColor={accentColor}
+                  size="sm"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/auth?redirect=' + encodeURIComponent(`/store/${storeSlug}`));
+                      return;
+                    }
+                    navigate(`/store-messages?store=${store.id}`);
+                  }}
+                  className="gap-1.5 shadow-md"
+                  style={{ backgroundColor: accentColor, color: 'white' }}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Message
+                </Button>
+              </div>
             </div>
             
             {store.description && (
