@@ -108,7 +108,7 @@ export default function CommunityAnnouncements() {
   const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === announcementType);
 
   return (
-    <div className="space-y-6 pt-[env(safe-area-inset-top)]">
+    <div className="space-y-6 pt-[env(safe-area-inset-top)] px-4 sm:px-6 pb-6">
       <div>
         <h1 className="text-2xl font-bold">Community Announcements</h1>
         <p className="text-muted-foreground">Send announcements to your Discord community</p>
