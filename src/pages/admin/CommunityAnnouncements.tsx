@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const ANNOUNCEMENT_TYPES = [
   { value: 'custom', label: 'Custom Announcement', icon: MessageCircle },
@@ -20,13 +21,17 @@ const ANNOUNCEMENT_TYPES = [
   { value: 'event', label: 'Community Event', icon: CheckCircle2 },
 ];
 
+const INITIAL_FORM_STATE = {
+  announcementType: 'custom',
+  title: '',
+  message: '',
+  linkUrl: '',
+  roleId: '',
+  pingRole: false,
+};
+
 export default function CommunityAnnouncements() {
-  const [announcementType, setAnnouncementType] = useState('custom');
-  const [title, setTitle] = useState('');
-  const [message, setMessage] = useState('');
-  const [linkUrl, setLinkUrl] = useState('');
-  const [roleId, setRoleId] = useState('');
-  const [pingRole, setPingRole] = useState(false);
+  const [formData, setFormData, clearFormData] = useFormPersistence('community-announcement', INITIAL_FORM_STATE);
   const [isSending, setIsSending] = useState(false);
 
   // Fetch webhook URL and role ID
@@ -56,19 +61,19 @@ export default function CommunityAnnouncements() {
   const savedRoleId = settings?.community_discord_role_id || '';
 
   const handleSend = async () => {
-    if (!title.trim()) {
+    if (!formData.title.trim()) {
       toast.error('Please enter a title');
       return;
     }
-    if (!message.trim()) {
+    if (!formData.message.trim()) {
       toast.error('Please enter a message');
       return;
     }
-    if (message.length > 1000) {
+    if (formData.message.length > 1000) {
       toast.error('Message must be 1000 characters or less');
       return;
     }
-    if (pingRole && !roleId.trim() && !savedRoleId) {
+    if (formData.pingRole && !formData.roleId.trim() && !savedRoleId) {
       toast.error('Please enter a role ID to ping');
       return;
     }
@@ -78,11 +83,11 @@ export default function CommunityAnnouncements() {
     try {
       const { data, error } = await supabase.functions.invoke('send-community-announcement', {
         body: {
-          type: announcementType,
-          title: title.trim(),
-          message: message.trim(),
-          linkUrl: linkUrl.trim() || undefined,
-          roleId: pingRole ? (roleId.trim() || savedRoleId) : undefined,
+          type: formData.announcementType,
+          title: formData.title.trim(),
+          message: formData.message.trim(),
+          linkUrl: formData.linkUrl.trim() || undefined,
+          roleId: formData.pingRole ? (formData.roleId.trim() || savedRoleId) : undefined,
         },
       });
 
@@ -90,10 +95,7 @@ export default function CommunityAnnouncements() {
         toast.error(`Failed to send: ${error.message}`);
       } else if (data?.success) {
         toast.success('Announcement sent to Discord!');
-        setTitle('');
-        setMessage('');
-        setLinkUrl('');
-        setPingRole(false);
+        clearFormData();
       } else {
         toast.error(data?.error || 'Failed to send announcement');
       }
@@ -105,7 +107,7 @@ export default function CommunityAnnouncements() {
     }
   };
 
-  const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === announcementType);
+  const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === formData.announcementType);
 
   return (
     <div className="space-y-6 pt-[env(safe-area-inset-top)] px-4 sm:px-6 pb-6">
@@ -139,7 +141,7 @@ export default function CommunityAnnouncements() {
 
           <div className="space-y-2">
             <Label>Announcement Type</Label>
-            <Select value={announcementType} onValueChange={setAnnouncementType}>
+            <Select value={formData.announcementType} onValueChange={(v) => setFormData({ announcementType: v })}>
               <SelectTrigger>
                 <SelectValue>
                   {selectedType && (
@@ -168,8 +170,8 @@ export default function CommunityAnnouncements() {
             <Input
               id="title"
               placeholder="Announcement title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={formData.title}
+              onChange={(e) => setFormData({ title: e.target.value })}
               maxLength={100}
             />
           </div>
@@ -179,13 +181,13 @@ export default function CommunityAnnouncements() {
             <Textarea
               id="message"
               placeholder="Write your announcement message..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              value={formData.message}
+              onChange={(e) => setFormData({ message: e.target.value })}
               maxLength={1000}
               className="min-h-[150px]"
             />
             <p className="text-xs text-muted-foreground text-right">
-              {message.length}/1000
+              {formData.message.length}/1000
             </p>
           </div>
 
@@ -196,8 +198,8 @@ export default function CommunityAnnouncements() {
               <Input
                 id="linkUrl"
                 placeholder="https://..."
-                value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
+                value={formData.linkUrl}
+                onChange={(e) => setFormData({ linkUrl: e.target.value })}
                 className="pl-10"
               />
             </div>
@@ -211,12 +213,12 @@ export default function CommunityAnnouncements() {
               </div>
               <Switch
                 id="pingRole"
-                checked={pingRole}
-                onCheckedChange={setPingRole}
+                checked={formData.pingRole}
+                onCheckedChange={(checked) => setFormData({ pingRole: checked })}
               />
             </div>
 
-            {pingRole && (
+            {formData.pingRole && (
               <div className="space-y-2">
                 <Label htmlFor="roleId">Role ID {savedRoleId && <span className="text-muted-foreground">(leave empty to use saved)</span>}</Label>
                 <div className="relative">
@@ -224,8 +226,8 @@ export default function CommunityAnnouncements() {
                   <Input
                     id="roleId"
                     placeholder={savedRoleId || "Enter Discord role ID..."}
-                    value={roleId}
-                    onChange={(e) => setRoleId(e.target.value)}
+                    value={formData.roleId}
+                    onChange={(e) => setFormData({ roleId: e.target.value })}
                     className="pl-10"
                   />
                 </div>
