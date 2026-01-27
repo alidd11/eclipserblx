@@ -30,6 +30,7 @@ export default function SellerSettingsNotifications() {
   const { store, isSeller } = useSellerStatus();
 
   const [formData, setFormData] = useState({
+    discord_url: '',
     discord_webhook_url: '',
     review_discord_webhook_url: '',
     discord_bot_token: '',
@@ -42,6 +43,7 @@ export default function SellerSettingsNotifications() {
   useEffect(() => {
     if (store) {
       setFormData({
+        discord_url: store.discord_url || '',
         discord_webhook_url: store.discord_webhook_url || '',
         review_discord_webhook_url: store.review_discord_webhook_url || '',
         discord_bot_token: store.discord_bot_token || '',
@@ -58,6 +60,7 @@ export default function SellerSettingsNotifications() {
       const { error } = await supabase
         .from('stores')
         .update({
+          discord_url: data.discord_url || null,
           discord_webhook_url: data.discord_webhook_url || null,
           review_discord_webhook_url: data.review_discord_webhook_url || null,
           discord_bot_token: data.discord_bot_token || null,
@@ -182,6 +185,47 @@ export default function SellerSettingsNotifications() {
         </div>
 
         <div className="space-y-6">
+          {/* Discord Server Link */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-[#5865F2]" />
+                Discord Server
+              </CardTitle>
+              <CardDescription>
+                Link your Discord server so customers can join your community
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="discord_url" className="flex items-center gap-2">
+                  Discord Invite Link
+                </Label>
+                <Input
+                  id="discord_url"
+                  value={formData.discord_url}
+                  onChange={(e) => setFormData({ ...formData, discord_url: e.target.value })}
+                  placeholder="https://discord.gg/your-server"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This link will be displayed on your store page for customers to join.
+                </p>
+              </div>
+
+              {formData.discord_url && (
+                <div className="flex items-center gap-3 p-3 bg-[#5865F2]/10 border border-[#5865F2]/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-[#5865F2]" />
+                  <div>
+                    <p className="text-sm font-medium">Discord Server Linked</p>
+                    <p className="text-xs text-muted-foreground">
+                      Customers can join your server from your store page
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Order Notifications */}
           <Card>
             <CardHeader>

@@ -19,7 +19,6 @@ import {
   Save,
   Link as LinkIcon,
   Globe,
-  MessageCircle,
   Info,
   Gamepad2
 } from 'lucide-react';
@@ -37,7 +36,6 @@ export default function SellerSettingsProfile() {
     banner_url: '',
     bio: '',
     about_content: '',
-    discord_url: '',
     twitter_url: '',
     youtube_url: '',
     tiktok_url: '',
@@ -54,7 +52,6 @@ export default function SellerSettingsProfile() {
         banner_url: store.banner_url || '',
         bio: store.bio || '',
         about_content: (store as any).about_content || '',
-        discord_url: store.discord_url || '',
         twitter_url: store.twitter_url || '',
         youtube_url: store.youtube_url || '',
         tiktok_url: store.tiktok_url || '',
@@ -77,7 +74,6 @@ export default function SellerSettingsProfile() {
           banner_url: data.banner_url || null,
           bio: data.bio || null,
           about_content: data.about_content || null,
-          discord_url: data.discord_url || null,
           twitter_url: data.twitter_url || null,
           youtube_url: data.youtube_url || null,
           tiktok_url: data.tiktok_url || null,
@@ -256,19 +252,6 @@ export default function SellerSettingsProfile() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="discord_url" className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Discord Server
-                  </Label>
-                  <Input
-                    id="discord_url"
-                    value={formData.discord_url}
-                    onChange={(e) => setFormData({ ...formData, discord_url: e.target.value })}
-                    placeholder="https://discord.gg/your-server"
-                  />
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="twitter_url" className="flex items-center gap-2">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
