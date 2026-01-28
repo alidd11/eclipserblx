@@ -195,9 +195,34 @@ export default function SellerDashboard() {
           </Card>
         )}
 
+        {/* Quick Actions Grid - 3x3 on mobile, above stats */}
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6">
+          {[
+            { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
+            { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
+            { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
+            { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
+            { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
+            { title: 'Store Tabs', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
+          ].map((link) => (
+            <Link key={link.href} to={link.href}>
+              <Card className="h-full hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer group">
+                <CardContent className="p-3 sm:p-4 flex flex-col items-center text-center gap-1.5 sm:gap-2">
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-xs sm:text-sm">{link.title}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground hidden lg:block">{link.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
         {/* Stats Cards */}
-        {/* Stats - Horizontally scrollable */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
               <CardTitle className="text-xs font-medium">Total Revenue</CardTitle>
@@ -274,39 +299,14 @@ export default function SellerDashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions Grid - Admin Dashboard Style */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
-            { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
-            { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
-            { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
-            { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
-            { title: 'Store Tabs', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
-          ].map((link) => (
-            <Link key={link.href} to={link.href}>
-              <Card className="h-full hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer group">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <link.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{link.title}</p>
-                    <p className="text-xs text-muted-foreground hidden sm:block">{link.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        {/* Store Health - Below finance stats */}
+        <div className="mb-6">
+          <StoreHealthScore />
         </div>
 
-        {/* Activity + Health Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Activity Feed */}
+        {/* Activity Feed */}
+        <div className="mb-6">
           <NotificationCenter />
-
-          {/* Store Health */}
-          <StoreHealthScore />
         </div>
 
         {/* Reports Card */}
