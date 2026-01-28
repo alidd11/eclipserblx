@@ -141,14 +141,14 @@ export default function RegionSelect() {
             <Skeleton className="h-8 w-48 mx-auto" />
             <Skeleton className="h-5 w-32 mx-auto" />
           </div>
-          <div className="flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={`name-${i}`} className="flex-1 h-12 rounded-xl" />
+              <Skeleton key={`name-${i}`} className="h-12 rounded-xl" />
             ))}
           </div>
-          <div className="flex-1 flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+          <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={`flag-${i}`} className="flex-1 min-h-[250px] rounded-2xl" />
+              <Skeleton key={`flag-${i}`} className="min-h-[250px] rounded-2xl" />
             ))}
           </div>
         </div>
@@ -202,16 +202,16 @@ export default function RegionSelect() {
           </p>
         </div>
 
-        {/* Country Names - Each in own card, inline row */}
-        <div className="flex gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
+        {/* Country Names - Each in own card, aligned to flags */}
+        <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
           {data.regions.map((region) => (
             <div
               key={`name-${region.code}`}
-              className={`flex-1 bg-card border border-border rounded-xl py-3 px-4 text-center shadow-sm ${
+              className={`min-w-0 bg-card border border-border rounded-xl py-3 px-4 text-center shadow-sm ${
                 !region.slug ? 'opacity-50' : ''
               }`}
             >
-              <span className="text-sm sm:text-base font-semibold text-foreground whitespace-nowrap">
+              <span className="block text-xs sm:text-sm font-semibold text-foreground truncate">
                 {region.name}
               </span>
             </div>
@@ -219,12 +219,12 @@ export default function RegionSelect() {
         </div>
 
         {/* Flag Images - Inline row */}
-        <div className="flex-1 flex gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+        <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group flex-1 relative rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
+              className={`group relative min-w-0 rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
