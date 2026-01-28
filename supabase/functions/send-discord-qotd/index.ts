@@ -26,19 +26,22 @@ serve(async (req) => {
       throw new Error('Staff Discord ID is required - please link your Discord account first');
     }
 
-    // Get the community webhook URL and role IDs
+    // Get the QOTD webhook URL (or fall back to community webhook) and role IDs
     const { data: settings } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['community_discord_webhook_url', 'qotd_discord_role_id', 'discord_ping_role_id']);
+      .in('key', ['qotd_discord_webhook_url', 'community_discord_webhook_url', 'qotd_discord_role_id', 'discord_ping_role_id']);
 
     const settingsMap: Record<string, string> = {};
     settings?.forEach((s: { key: string; value: string }) => {
       settingsMap[s.key] = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
     });
 
-    if (!settingsMap.community_discord_webhook_url) {
-      throw new Error('Community Discord webhook not configured');
+    // Use QOTD-specific webhook, fall back to community webhook
+    const webhookUrl = settingsMap.qotd_discord_webhook_url || settingsMap.community_discord_webhook_url;
+    
+    if (!webhookUrl) {
+      throw new Error('QOTD Discord webhook not configured - please set it in Admin → Discord Settings → QOTD tab');
     }
 
     // Use QOTD-specific role, fall back to default role
@@ -80,9 +83,9 @@ serve(async (req) => {
     }
 
     // Use ?wait=true to get the message ID back for thread creation
-    const webhookWithWait = settingsMap.community_discord_webhook_url.includes('?') 
-      ? `${settingsMap.community_discord_webhook_url}&wait=true`
-      : `${settingsMap.community_discord_webhook_url}?wait=true`;
+    const webhookWithWait = webhookUrl.includes('?') 
+      ? `${webhookUrl}&wait=true`
+      : `${webhookUrl}?wait=true`;
 
     // Send to Discord
     const webhookResponse = await fetch(webhookWithWait, {

@@ -46,6 +46,7 @@ interface DiscordSettings {
   community_discord_webhook_url: string;
   community_discord_role_id: string;
   discord_ping_role_id: string;
+  qotd_discord_webhook_url: string;
   qotd_discord_role_id: string;
   polls_discord_role_id: string;
 }
@@ -94,6 +95,7 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   community_discord_webhook_url: '',
   community_discord_role_id: '',
   discord_ping_role_id: '',
+  qotd_discord_webhook_url: '',
   qotd_discord_role_id: '',
   polls_discord_role_id: '',
 };
@@ -305,7 +307,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id', 'community_discord_webhook_url', 'community_discord_role_id', 'discord_ping_role_id', 'qotd_discord_role_id', 'polls_discord_role_id']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id', 'community_discord_webhook_url', 'community_discord_role_id', 'discord_ping_role_id', 'qotd_discord_webhook_url', 'qotd_discord_role_id', 'polls_discord_role_id']);
 
       if (error) throw error;
 
@@ -338,6 +340,8 @@ export default function DiscordSettings() {
           settingsMap.community_discord_role_id = String(val);
         } else if (item.key === 'discord_ping_role_id') {
           settingsMap.discord_ping_role_id = String(val);
+        } else if (item.key === 'qotd_discord_webhook_url') {
+          settingsMap.qotd_discord_webhook_url = String(val);
         } else if (item.key === 'qotd_discord_role_id') {
           settingsMap.qotd_discord_role_id = String(val);
         } else if (item.key === 'polls_discord_role_id') {
@@ -3069,22 +3073,40 @@ export default function DiscordSettings() {
                   </p>
                 </div>
 
-                {/* QOTD Role */}
-                <div className="space-y-2">
-                  <Label htmlFor="qotdRoleId" className="flex items-center gap-2">
+                {/* QOTD Settings */}
+                <div className="space-y-4 p-4 border border-yellow-500/30 rounded-lg bg-yellow-500/5">
+                  <div className="flex items-center gap-2 mb-2">
                     <MessageSquare className="h-4 w-4 text-yellow-400" />
-                    <span>Question of the Day (QOTD)</span>
-                  </Label>
-                  <Input
-                    id="qotdRoleId"
-                    value={formData.qotd_discord_role_id}
-                    onChange={(e) => handleChange('qotd_discord_role_id', e.target.value)}
-                    placeholder="e.g. 1234567890123456789"
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Role to ping when posting Question of the Day. Falls back to Default Role if empty.
-                  </p>
+                    <span className="font-medium">Question of the Day (QOTD)</span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="qotdWebhook">QOTD Webhook URL</Label>
+                    <Input
+                      id="qotdWebhook"
+                      value={formData.qotd_discord_webhook_url}
+                      onChange={(e) => handleChange('qotd_discord_webhook_url', e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Dedicated webhook for QOTD messages. Falls back to Community webhook if empty.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="qotdRoleId">QOTD Role ID</Label>
+                    <Input
+                      id="qotdRoleId"
+                      value={formData.qotd_discord_role_id}
+                      onChange={(e) => handleChange('qotd_discord_role_id', e.target.value)}
+                      placeholder="e.g. 1234567890123456789"
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Role to ping when posting Question of the Day. Falls back to Default Role if empty.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Polls Role */}
