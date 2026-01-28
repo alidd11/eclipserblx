@@ -681,33 +681,37 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 </NavLink>
                 {parentCategories.map(category => {
                   const subs = subcategoriesMap[category.id] || [];
+                  const hasSubcategories = subs.length > 0;
+                  
+                  // Categories that use region selection flow
+                  const REGIONAL_CATEGORY_SLUGS = [
+                    'civilian-vehicles',
+                    'marked-police-vehicles',
+                    'unmarked-police-vehicles',
+                    'fire-vehicles',
+                    'ambulance-vehicles',
+                    'military-vehicles',
+                    'aircraft',
+                    'uniforms',
+                  ];
+                  const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && hasSubcategories;
+                  const categoryPath = useRegionSelect 
+                    ? `/browse/${category.slug}/region`
+                    : `/products?category=${category.slug}`;
+
                   return (
-                    <div key={category.id}>
-                      <NavLink
-                        to={`/products?category=${category.slug}`}
-                        onClick={handleNavClick}
-                        className={({ isActive }) => cn(
-                          "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                          isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                        )}
-                      >
-                        <FolderOpen className="h-3.5 w-3.5" />
-                        {category.name}
-                      </NavLink>
-                      {subs.map(sub => (
-                        <NavLink
-                          key={sub.id}
-                          to={`/products?category=${sub.slug}`}
-                          onClick={handleNavClick}
-                          className={({ isActive }) => cn(
-                            "flex items-center gap-2 px-6 py-1.5 text-sm transition-colors",
-                            isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"
-                          )}
-                        >
-                          {sub.name}
-                        </NavLink>
-                      ))}
-                    </div>
+                    <NavLink
+                      key={category.id}
+                      to={categoryPath}
+                      onClick={handleNavClick}
+                      className={({ isActive }) => cn(
+                        "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
+                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      )}
+                    >
+                      <FolderOpen className="h-3.5 w-3.5" />
+                      {category.name}
+                    </NavLink>
                   );
                 })}
               </div>
@@ -767,105 +771,58 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             <span className="min-w-0 truncate leading-none flex-1">All Products</span>
           </NavLink>
           
-          {/* Dynamic categories with subcategories */}
+          {/* Dynamic categories - click leads to region selection for regional categories */}
           {parentCategories.map(category => {
             const subs = subcategoriesMap[category.id] || [];
             const hasSubcategories = subs.length > 0;
-            const isCategoryOpen = openCategories[category.id] ?? false;
-            const categoryPath = `/products?category=${category.slug}`;
-            const isCategoryActive = location.pathname === '/products' && 
-              new URLSearchParams(location.search).get('category') === category.slug;
+            
+            // Categories that use region selection flow (same as Categories.tsx)
+            const REGIONAL_CATEGORY_SLUGS = [
+              'civilian-vehicles',
+              'marked-police-vehicles',
+              'unmarked-police-vehicles',
+              'fire-vehicles',
+              'ambulance-vehicles',
+              'military-vehicles',
+              'aircraft',
+              'uniforms',
+            ];
+            const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && hasSubcategories;
+            
+            // Determine the link path
+            const categoryPath = useRegionSelect 
+              ? `/browse/${category.slug}/region`
+              : `/products?category=${category.slug}`;
+            
+            const isCategoryActive = useRegionSelect
+              ? location.pathname === `/browse/${category.slug}/region`
+              : location.pathname === '/products' && 
+                new URLSearchParams(location.search).get('category') === category.slug;
+            
+            // Check if any sub-category is active (for highlighting parent)
             const isSubActive = subs.some(sub => 
               location.pathname === '/products' && 
               new URLSearchParams(location.search).get('category') === sub.slug
             );
 
-            if (!hasSubcategories) {
-              // Category without subcategories - simple link
-              return (
-                <NavLink
-                  key={category.id}
-                  to={categoryPath}
-                  onClick={handleNavClick}
-                  className={() => cn(
-                    "rounded-lg text-sm font-medium select-none",
-                    "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-                    "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
-                    isCategoryActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  <FolderOpen className="h-4 w-4 shrink-0" />
-                  <span className="min-w-0 truncate leading-none flex-1">{category.name}</span>
-                </NavLink>
-              );
-            }
-
-            // Category with subcategories - collapsible
+            // All categories now render as simple links (no dropdowns)
             return (
-              <Collapsible
+              <NavLink
                 key={category.id}
-                open={isCategoryOpen}
-                onOpenChange={() => toggleCategory(category.id)}
+                to={categoryPath}
+                onClick={handleNavClick}
+                className={() => cn(
+                  "rounded-lg text-sm font-medium select-none",
+                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                  "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
+                  isCategoryActive || isSubActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
               >
-                <div className="flex items-center ml-4">
-                  <NavLink
-                    to={categoryPath}
-                    onClick={handleNavClick}
-                    className={() => cn(
-                      "flex-1 rounded-lg text-sm font-medium select-none",
-                      "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-                      "flex flex-row flex-nowrap items-center gap-3 px-3 py-2",
-                      isCategoryActive || isSubActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <FolderOpen className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 truncate leading-none flex-1">{category.name}</span>
-                  </NavLink>
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                    >
-                      <ChevronDown 
-                        className={cn(
-                          "h-3.5 w-3.5 transition-transform duration-200",
-                          isCategoryOpen ? "rotate-0" : "-rotate-90"
-                        )} 
-                      />
-                    </Button>
-                  </CollapsibleTrigger>
-                </div>
-                <CollapsibleContent className="space-y-0.5 pt-0.5">
-                  {subs.map(sub => {
-                    const subPath = `/products?category=${sub.slug}`;
-                    const isSubCategoryActive = location.pathname === '/products' && 
-                      new URLSearchParams(location.search).get('category') === sub.slug;
-
-                    return (
-                      <NavLink
-                        key={sub.id}
-                        to={subPath}
-                        onClick={handleNavClick}
-                        className={() => cn(
-                          "rounded-lg text-sm font-medium select-none",
-                          "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-                          "flex flex-row flex-nowrap items-center gap-3 px-3 py-1.5 ml-10",
-                          isSubCategoryActive
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
-                      >
-                        <span className="min-w-0 truncate leading-none flex-1">{sub.name}</span>
-                      </NavLink>
-                    );
-                  })}
-                </CollapsibleContent>
-              </Collapsible>
+                <FolderOpen className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 truncate leading-none flex-1">{category.name}</span>
+              </NavLink>
             );
           })}
         </CollapsibleContent>
