@@ -1,6 +1,6 @@
 import { Lock, Shield, Package, MessageCircle, BarChart3, FileText, Users, Crown, Zap, Eye, Settings, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CustomRole {
   id: string;
@@ -41,74 +41,52 @@ export function RoleSelector({
   getPermissionCount,
   totalPermissions 
 }: RoleSelectorProps) {
+  const selectedRoleInfo = roles.find(r => r.name === selectedRole);
+  const SelectedIcon = selectedRoleInfo ? ICON_MAP[selectedRoleInfo.icon] || Shield : Shield;
+
   return (
-    <ScrollArea className="w-full whitespace-nowrap">
-      <div className="flex gap-3 pb-4">
+    <Select value={selectedRole} onValueChange={onSelectRole}>
+      <SelectTrigger className="w-full bg-card">
+        <SelectValue>
+          {selectedRoleInfo && (
+            <div className="flex items-center gap-3">
+              <div className={cn("p-1.5 rounded-md", selectedRoleInfo.color, "text-white")}>
+                <SelectedIcon className="h-4 w-4" />
+              </div>
+              <span className="font-medium">{selectedRoleInfo.display_name}</span>
+              {selectedRoleInfo.name === 'admin' && (
+                <Lock className="h-3 w-3 text-muted-foreground" />
+              )}
+              <span className="text-xs text-muted-foreground ml-auto">
+                {getPermissionCount(selectedRoleInfo.name)} / {totalPermissions}
+              </span>
+            </div>
+          )}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent className="bg-card border-border z-[100]">
         {roles.map(role => {
           const IconComponent = ICON_MAP[role.icon] || Shield;
-          const isSelected = selectedRole === role.name;
           const permCount = getPermissionCount(role.name);
           
           return (
-            <button
-              key={role.id}
-              onClick={() => onSelectRole(role.name)}
-              className={cn(
-                "flex-shrink-0 min-w-[140px] p-4 rounded-xl border-2 transition-all duration-200",
-                "hover:shadow-md active:scale-[0.98] touch-manipulation",
-                isSelected
-                  ? "border-primary bg-primary/10 shadow-md"
-                  : "border-border bg-card hover:border-primary/50"
-              )}
-            >
-              <div className="flex flex-col items-center gap-2">
-                {/* Icon with role color */}
-                <div className={cn(
-                  "p-3 rounded-xl transition-all",
-                  role.color,
-                  "text-white shadow-sm"
-                )}>
-                  <IconComponent className="h-5 w-5" />
+            <SelectItem key={role.id} value={role.name}>
+              <div className="flex items-center gap-3 w-full">
+                <div className={cn("p-1.5 rounded-md", role.color, "text-white")}>
+                  <IconComponent className="h-4 w-4" />
                 </div>
-                
-                {/* Role name with lock icon for admin */}
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-sm">{role.display_name}</span>
-                  {role.name === 'admin' && (
-                    <Lock className="h-3 w-3 text-muted-foreground" />
-                  )}
-                </div>
-                
-                {/* Permission count badge */}
-                <div className={cn(
-                  "text-xs px-2 py-0.5 rounded-full",
-                  isSelected 
-                    ? "bg-primary/20 text-primary font-medium" 
-                    : "bg-muted text-muted-foreground"
-                )}>
+                <span className="font-medium">{role.display_name}</span>
+                {role.name === 'admin' && (
+                  <Lock className="h-3 w-3 text-muted-foreground" />
+                )}
+                <span className="text-xs text-muted-foreground ml-2">
                   {permCount} / {totalPermissions}
-                </div>
-                
-                {/* Hierarchy level indicator */}
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "w-1.5 h-1.5 rounded-full transition-colors",
-                        i < Math.ceil(role.hierarchy_level / 20)
-                          ? role.color
-                          : "bg-muted"
-                      )}
-                    />
-                  ))}
-                </div>
+                </span>
               </div>
-            </button>
+            </SelectItem>
           );
         })}
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+      </SelectContent>
+    </Select>
   );
 }
