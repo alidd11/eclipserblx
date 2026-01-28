@@ -47,32 +47,31 @@ serve(async (req) => {
     // Use QOTD-specific role, fall back to default role
     const roleId = settingsMap.qotd_discord_role_id || settingsMap.discord_ping_role_id;
 
-    // Category emoji mapping
-    const categoryEmojis: Record<string, string> = {
-      gaming: '🎮',
-      roleplay: '🎭',
-      community: '👥',
-      funHypothetical: '🤔',
-      creative: '🎨',
-      custom: '💬'
-    };
+    // Get current Unix timestamp for Discord's dynamic time formatting
+    const unixTimestamp = Math.floor(Date.now() / 1000);
 
-    const emoji = categoryEmojis[category] || '❓';
+    // Storage URL for Eclipse branding banner
+    const brandingBannerUrl = `${supabaseUrl}/storage/v1/object/public/store-branding/eclipse-discord-banner.png`;
 
-    // Build the sent by text with clickable Discord mention
-    const sentByText = `\n\n*Sent by <@${staffDiscordId}>*`;
-
-    // Create Discord embed with Eclipse branding
+    // Create Discord embed following the reference template
     const embed = {
-      title: `${emoji} Question of the Day`,
-      description: `**${question}**\n\n\u200B\nShare your thoughts in the replies below! 💬${sentByText}`,
+      title: '❓ Question Of The Day',
+      description: [
+        `It is <t:${unixTimestamp}:F> and time for a new daily question of the day for you all to answer.`,
+        '',
+        `**The question of today is : ${question}**`,
+        '',
+        'Please Answer In the thread below! 💬',
+        '',
+        'Thank You,',
+        `<@${staffDiscordId}>`
+      ].join('\n'),
       color: 0x5865F2, // Discord blurple
+      image: {
+        url: brandingBannerUrl
+      },
       footer: {
         text: 'Eclipse Marketplace • QOTD'
-      },
-      timestamp: new Date().toISOString(),
-      image: {
-        url: 'https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/product-images/eclipse-discord-banner.png'
       }
     };
 
