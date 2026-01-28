@@ -40,16 +40,38 @@ serve(async (req) => {
     if (!user?.id) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
-    // Get seller's Connect account ID from their store record
+    // Get seller's store ID first
     const { data: store, error: storeError } = await supabaseClient
       .from('stores')
-      .select('id, stripe_account_id, payouts_enabled')
+      .select('id')
       .eq('owner_id', user.id)
       .maybeSingle();
 
     if (storeError) throw new Error(`Store lookup error: ${storeError.message}`);
+    if (!store) {
+      logStep("No store found");
+      return new Response(JSON.stringify({
+        hasAccount: false,
+        isOnboarded: false,
+        canReceivePayments: false,
+        chargesEnabled: false,
+        accountId: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
-    if (!store?.stripe_account_id) {
+    // Get payment details from secure table
+    const { data: paymentDetails, error: paymentError } = await supabaseClient
+      .from('store_payment_details')
+      .select('stripe_account_id, payouts_enabled')
+      .eq('store_id', store.id)
+      .maybeSingle();
+
+    if (paymentError) throw new Error(`Payment details lookup error: ${paymentError.message}`);
+
+    if (!paymentDetails?.stripe_account_id) {
       logStep("No Connect account found");
       return new Response(JSON.stringify({
         hasAccount: false,
@@ -66,7 +88,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Get account details
-    const account = await stripe.accounts.retrieve(store.stripe_account_id);
+    const account = await stripe.accounts.retrieve(paymentDetails.stripe_account_id);
     logStep("Retrieved account", { 
       accountId: account.id, 
       chargesEnabled: account.charges_enabled,
@@ -77,9 +99,9 @@ serve(async (req) => {
     // Best-effort sync so the seller dashboard can show status without always calling Stripe
     try {
       await supabaseClient
-        .from('stores')
+        .from('store_payment_details')
         .update({ payouts_enabled: account.payouts_enabled })
-        .eq('id', store.id);
+        .eq('store_id', store.id);
     } catch (syncErr) {
       logStep('Warning: failed to sync payouts_enabled', { message: String(syncErr) });
     }

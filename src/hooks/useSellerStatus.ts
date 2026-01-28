@@ -2,19 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-// Safe store columns that can be selected (excludes legacy credential columns)
+// Safe store columns that can be selected (excludes credentials and payment details)
 const SAFE_STORE_COLUMNS = `
   id, owner_id, store_id, name, slug, description, logo_url, banner_url,
-  stripe_account_id, payouts_enabled, commission_rate, is_verified, is_active,
-  status, reviewed_by, reviewed_at, rejection_reason, total_sales, total_revenue,
-  product_count, average_rating, created_at, updated_at, theme, accent_color, bio,
+  commission_rate, is_verified, is_active, status, reviewed_by, reviewed_at, 
+  rejection_reason, total_sales, total_revenue, product_count, average_rating, 
+  created_at, updated_at, theme, accent_color, bio,
   discord_url, twitter_url, youtube_url, tiktok_url, website_url, roblox_url,
   custom_commission_rate, custom_rate_expires_at, custom_rate_set_by, custom_rate_set_at,
   hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
-  paypal_email, payout_method, bank_name, bank_account_holder, bank_account_number,
-  bank_routing_number, bank_swift_bic, bank_country, follower_count, about_content, is_trusted
+  follower_count, about_content, is_trusted, payout_method
 `;
 
 export interface Store {
@@ -26,8 +25,6 @@ export interface Store {
   description: string;
   logo_url?: string;
   banner_url?: string;
-  stripe_account_id?: string;
-  payouts_enabled?: boolean;
   commission_rate: number;
   is_verified?: boolean;
   is_active?: boolean;
@@ -70,22 +67,16 @@ export interface Store {
   layout_style?: string;
   show_reviews?: boolean;
   show_social_proof?: boolean;
-  // Payout settings
-  paypal_email?: string;
+  // Payout method (non-sensitive field)
   payout_method?: string;
-  // Bank transfer fields
-  bank_name?: string;
-  bank_account_holder?: string;
-  bank_account_number?: string;
-  bank_routing_number?: string;
-  bank_swift_bic?: string;
-  bank_country?: string;
   // Followers
   follower_count?: number;
   about_content?: string;
   is_trusted?: boolean;
   // Credentials (fetched separately from store_credentials table)
   credentials?: StoreCredentials;
+  // Payment details (fetched separately from store_payment_details table)
+  paymentDetails?: StorePaymentDetails;
 }
 
 export interface StoreCredentials {
@@ -94,6 +85,19 @@ export interface StoreCredentials {
   discord_bot_token?: string;
   discord_guild_id?: string;
   discord_role_id?: string;
+}
+
+export interface StorePaymentDetails {
+  stripe_account_id?: string;
+  paypal_email?: string;
+  payout_method?: string;
+  payouts_enabled?: boolean;
+  bank_name?: string;
+  bank_account_holder?: string;
+  bank_account_number?: string;
+  bank_routing_number?: string;
+  bank_swift_bic?: string;
+  bank_country?: string;
 }
 
 export interface StoreApplication {
@@ -142,9 +146,17 @@ export function useSellerStatus() {
         .eq('store_id', storeData.id)
         .maybeSingle();
 
+      // Fetch payment details from separate secure table
+      const { data: paymentData } = await supabase
+        .from('store_payment_details')
+        .select('stripe_account_id, paypal_email, payout_method, payouts_enabled, bank_name, bank_account_holder, bank_account_number, bank_routing_number, bank_swift_bic, bank_country')
+        .eq('store_id', storeData.id)
+        .maybeSingle();
+
       return {
         ...storeData,
         credentials: credentialsData || undefined,
+        paymentDetails: paymentData || undefined,
       } as Store;
     },
     enabled: !!user?.id,

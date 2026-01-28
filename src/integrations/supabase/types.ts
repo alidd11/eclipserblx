@@ -4125,6 +4125,72 @@ export type Database = {
           },
         ]
       }
+      store_payment_details: {
+        Row: {
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
+          created_at: string | null
+          id: string
+          payout_method: string | null
+          payouts_enabled: boolean | null
+          paypal_email: string | null
+          store_id: string
+          stripe_account_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
+          created_at?: string | null
+          id?: string
+          payout_method?: string | null
+          payouts_enabled?: boolean | null
+          paypal_email?: string | null
+          store_id: string
+          stripe_account_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
+          created_at?: string | null
+          id?: string
+          payout_method?: string | null
+          payouts_enabled?: boolean | null
+          paypal_email?: string | null
+          store_id?: string
+          stripe_account_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_payment_details_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_payment_details_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_tab_products: {
         Row: {
           created_at: string
@@ -4318,12 +4384,6 @@ export type Database = {
           announcement_active: boolean | null
           announcement_text: string | null
           average_rating: number | null
-          bank_account_holder: string | null
-          bank_account_number: string | null
-          bank_country: string | null
-          bank_name: string | null
-          bank_routing_number: string | null
-          bank_swift_bic: string | null
           banner_url: string | null
           bio: string | null
           commission_rate: number | null
@@ -4334,11 +4394,7 @@ export type Database = {
           custom_rate_set_at: string | null
           custom_rate_set_by: string | null
           description: string | null
-          discord_bot_token: string | null
-          discord_guild_id: string | null
-          discord_role_id: string | null
           discord_url: string | null
-          discord_webhook_url: string | null
           featured_product_ids: string[] | null
           follower_count: number | null
           font_body: string | null
@@ -4357,11 +4413,8 @@ export type Database = {
           name: string
           owner_id: string
           payout_method: string
-          payouts_enabled: boolean | null
-          paypal_email: string | null
           product_count: number | null
           rejection_reason: string | null
-          review_discord_webhook_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           roblox_gamepass_discount_enabled: boolean | null
@@ -4379,7 +4432,6 @@ export type Database = {
           slug: string
           status: string | null
           store_id: string
-          stripe_account_id: string | null
           theme: string | null
           tiktok_url: string | null
           total_revenue: number | null
@@ -4395,12 +4447,6 @@ export type Database = {
           announcement_active?: boolean | null
           announcement_text?: string | null
           average_rating?: number | null
-          bank_account_holder?: string | null
-          bank_account_number?: string | null
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: string | null
-          bank_swift_bic?: string | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
@@ -4411,11 +4457,7 @@ export type Database = {
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
           description?: string | null
-          discord_bot_token?: string | null
-          discord_guild_id?: string | null
-          discord_role_id?: string | null
           discord_url?: string | null
-          discord_webhook_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -4434,11 +4476,8 @@ export type Database = {
           name: string
           owner_id: string
           payout_method?: string
-          payouts_enabled?: boolean | null
-          paypal_email?: string | null
           product_count?: number | null
           rejection_reason?: string | null
-          review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           roblox_gamepass_discount_enabled?: boolean | null
@@ -4456,7 +4495,6 @@ export type Database = {
           slug: string
           status?: string | null
           store_id: string
-          stripe_account_id?: string | null
           theme?: string | null
           tiktok_url?: string | null
           total_revenue?: number | null
@@ -4472,12 +4510,6 @@ export type Database = {
           announcement_active?: boolean | null
           announcement_text?: string | null
           average_rating?: number | null
-          bank_account_holder?: string | null
-          bank_account_number?: string | null
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: string | null
-          bank_swift_bic?: string | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
@@ -4488,11 +4520,7 @@ export type Database = {
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
           description?: string | null
-          discord_bot_token?: string | null
-          discord_guild_id?: string | null
-          discord_role_id?: string | null
           discord_url?: string | null
-          discord_webhook_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -4511,11 +4539,8 @@ export type Database = {
           name?: string
           owner_id?: string
           payout_method?: string
-          payouts_enabled?: boolean | null
-          paypal_email?: string | null
           product_count?: number | null
           rejection_reason?: string | null
-          review_discord_webhook_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           roblox_gamepass_discount_enabled?: boolean | null
@@ -4533,7 +4558,6 @@ export type Database = {
           slug?: string
           status?: string | null
           store_id?: string
-          stripe_account_id?: string | null
           theme?: string | null
           tiktok_url?: string | null
           total_revenue?: number | null
@@ -4897,7 +4921,9 @@ export type Database = {
           average_rating: number | null
           banner_url: string | null
           bio: string | null
+          commission_rate: number | null
           created_at: string | null
+          custom_commission_rate: number | null
           custom_css: string | null
           description: string | null
           discord_url: string | null
@@ -4918,6 +4944,7 @@ export type Database = {
           logo_url: string | null
           name: string | null
           owner_id: string | null
+          payout_method: string | null
           product_count: number | null
           roblox_gamepass_discount_enabled: boolean | null
           roblox_gamepass_discount_percent: number | null
@@ -4951,7 +4978,9 @@ export type Database = {
           average_rating?: number | null
           banner_url?: string | null
           bio?: string | null
+          commission_rate?: number | null
           created_at?: string | null
+          custom_commission_rate?: number | null
           custom_css?: string | null
           description?: string | null
           discord_url?: string | null
@@ -4972,6 +5001,7 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           owner_id?: string | null
+          payout_method?: string | null
           product_count?: number | null
           roblox_gamepass_discount_enabled?: boolean | null
           roblox_gamepass_discount_percent?: number | null
@@ -5005,7 +5035,9 @@ export type Database = {
           average_rating?: number | null
           banner_url?: string | null
           bio?: string | null
+          commission_rate?: number | null
           created_at?: string | null
+          custom_commission_rate?: number | null
           custom_css?: string | null
           description?: string | null
           discord_url?: string | null
@@ -5026,6 +5058,7 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           owner_id?: string | null
+          payout_method?: string | null
           product_count?: number | null
           roblox_gamepass_discount_enabled?: boolean | null
           roblox_gamepass_discount_percent?: number | null
