@@ -141,11 +141,7 @@ export default function RegionSelect() {
             <Skeleton className="h-8 w-48 mx-auto" />
             <Skeleton className="h-5 w-32 mx-auto" />
           </div>
-          <div className="flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={`name-${i}`} className="flex-1 h-12 rounded-xl" />
-            ))}
-          </div>
+          <Skeleton className="h-12 rounded-xl max-w-3xl mx-auto w-full mb-4" />
           <div className="flex-1 flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
             {[1, 2, 3].map((i) => (
               <Skeleton key={`flag-${i}`} className="flex-1 min-h-[250px] rounded-2xl" />
@@ -202,20 +198,20 @@ export default function RegionSelect() {
           </p>
         </div>
 
-        {/* Country Names - Inline in a single card */}
-        <div className="flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
-          {data.regions.map((region) => (
-            <div
-              key={`name-${region.code}`}
-              className={`flex-1 bg-card border border-border rounded-xl p-3 sm:p-4 text-center shadow-sm ${
-                !region.slug ? 'opacity-50' : ''
-              }`}
-            >
-              <span className="text-sm sm:text-base font-semibold text-foreground">
+        {/* Country Names - All inline in one card */}
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm max-w-3xl mx-auto w-full mb-4">
+          <div className="flex justify-center gap-6 sm:gap-12">
+            {data.regions.map((region) => (
+              <span
+                key={`name-${region.code}`}
+                className={`text-sm sm:text-base font-semibold text-foreground ${
+                  !region.slug ? 'opacity-50' : ''
+                }`}
+              >
                 {region.name}
               </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Flag Images - Inline row */}
