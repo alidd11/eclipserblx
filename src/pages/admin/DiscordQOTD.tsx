@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,13 +12,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { MessageCircleQuestion, Send, Sparkles, Clock, CheckCircle2, Loader2, RefreshCw, History } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { MessageCircleQuestion, Send, Sparkles, Clock, CheckCircle2, Loader2, RefreshCw, History, Undo2, Eye } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+
+interface Profile {
+  display_name: string | null;
+  username: string | null;
+}
 
 // Pre-defined question categories with example questions
 const QUESTION_CATEGORIES = {
   gaming: {
     label: 'Gaming',
+    emoji: '🎮',
     questions: [
       "What's your all-time favorite video game and why?",
       "If you could only play one game for the rest of your life, what would it be?",
@@ -35,6 +40,7 @@ const QUESTION_CATEGORIES = {
   },
   roleplay: {
     label: 'Roleplay & RP',
+    emoji: '🎭',
     questions: [
       "What's your favorite roleplay scenario or theme?",
       "How did you get into roleplaying?",
@@ -50,6 +56,7 @@ const QUESTION_CATEGORIES = {
   },
   community: {
     label: 'Community',
+    emoji: '👥',
     questions: [
       "What brought you to our community?",
       "What's your favorite thing about this server?",
@@ -65,6 +72,7 @@ const QUESTION_CATEGORIES = {
   },
   funHypothetical: {
     label: 'Fun & Hypothetical',
+    emoji: '🤔',
     questions: [
       "If you won the lottery tomorrow, what's the first thing you'd buy?",
       "Would you rather have the ability to fly or be invisible?",
@@ -80,6 +88,7 @@ const QUESTION_CATEGORIES = {
   },
   creative: {
     label: 'Creative',
+    emoji: '🎨',
     questions: [
       "What's your favorite creative hobby?",
       "If you could create anything, what would you make?",
@@ -97,11 +106,33 @@ const QUESTION_CATEGORIES = {
 
 export default function DiscordQOTD() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('create');
   const [useAutoGenerate, setUseAutoGenerate] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('gaming');
   const [customQuestion, setCustomQuestion] = useState('');
   const [isPosting, setIsPosting] = useState(false);
+  
+  // Preview state
+  const [previewQuestion, setPreviewQuestion] = useState<string | null>(null);
+  const [previousQuestion, setPreviousQuestion] = useState<string | null>(null);
+
+  // Fetch current user's profile
+  const { data: profile } = useQuery({
+    queryKey: ['user-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('display_name, username')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data as Profile;
+    },
+    enabled: !!user?.id
+  });
 
   // Fetch QOTD history
   const { data: qotdHistory, isLoading: isLoadingHistory } = useQuery({
@@ -138,9 +169,33 @@ export default function DiscordQOTD() {
 
   const webhookSettings = discordSettings?.community_discord_webhook_url;
 
+  const generateRandomQuestion = useCallback(() => {
+    const category = QUESTION_CATEGORIES[selectedCategory as keyof typeof QUESTION_CATEGORIES];
+    if (category) {
+      const randomIndex = Math.floor(Math.random() * category.questions.length);
+      return category.questions[randomIndex];
+    }
+    return '';
+  }, [selectedCategory]);
+
+  const handleGeneratePreview = () => {
+    if (previewQuestion) {
+      setPreviousQuestion(previewQuestion);
+    }
+    const newQuestion = generateRandomQuestion();
+    setPreviewQuestion(newQuestion);
+  };
+
+  const handleGoBack = () => {
+    if (previousQuestion) {
+      const current = previewQuestion;
+      setPreviewQuestion(previousQuestion);
+      setPreviousQuestion(current);
+    }
+  };
+
   const postQOTDMutation = useMutation({
     mutationFn: async (question: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       // Save to database
@@ -159,12 +214,17 @@ export default function DiscordQOTD() {
 
       if (insertError) throw insertError;
 
+      // Get staff display name
+      const staffDisplayName = profile?.display_name || profile?.username || 'Staff';
+
       // Send to Discord - role ID handled by edge function from settings
       const { data, error } = await supabase.functions.invoke('send-discord-qotd', {
         body: { 
           question,
           qotdId: qotd.id,
-          category: useAutoGenerate ? selectedCategory : 'custom'
+          category: useAutoGenerate ? selectedCategory : 'custom',
+          staffUserId: user.id,
+          staffDisplayName
         }
       });
 
@@ -175,20 +235,13 @@ export default function DiscordQOTD() {
       toast.success('Question of the Day posted to Discord!');
       queryClient.invalidateQueries({ queryKey: ['discord-qotd-history'] });
       setCustomQuestion('');
+      setPreviewQuestion(null);
+      setPreviousQuestion(null);
     },
     onError: (error: Error) => {
       toast.error(`Failed to post QOTD: ${error.message}`);
     }
   });
-
-  const generateRandomQuestion = () => {
-    const category = QUESTION_CATEGORIES[selectedCategory as keyof typeof QUESTION_CATEGORIES];
-    if (category) {
-      const randomIndex = Math.floor(Math.random() * category.questions.length);
-      return category.questions[randomIndex];
-    }
-    return '';
-  };
 
   const handlePostQOTD = async () => {
     if (!webhookSettings) {
@@ -198,10 +251,17 @@ export default function DiscordQOTD() {
 
     setIsPosting(true);
     try {
-      const question = useAutoGenerate ? generateRandomQuestion() : customQuestion.trim();
+      let question: string;
+      
+      if (useAutoGenerate) {
+        // Use the preview question if available, otherwise generate new
+        question = previewQuestion || generateRandomQuestion();
+      } else {
+        question = customQuestion.trim();
+      }
       
       if (!question) {
-        toast.error('Please enter a question or select a category');
+        toast.error('Please enter a question or generate a preview first');
         return;
       }
 
@@ -222,8 +282,8 @@ export default function DiscordQOTD() {
     }
   };
 
-  // Mobile tab dropdown
-  const [mobileTab, setMobileTab] = useState('create');
+  const currentCategory = QUESTION_CATEGORIES[selectedCategory as keyof typeof QUESTION_CATEGORIES];
+  const staffName = profile?.display_name || profile?.username || 'Staff';
 
   return (
     <AdminLayout>
@@ -286,7 +346,11 @@ export default function DiscordQOTD() {
                   </div>
                   <Switch
                     checked={useAutoGenerate}
-                    onCheckedChange={setUseAutoGenerate}
+                    onCheckedChange={(checked) => {
+                      setUseAutoGenerate(checked);
+                      setPreviewQuestion(null);
+                      setPreviousQuestion(null);
+                    }}
                   />
                 </div>
 
@@ -294,42 +358,120 @@ export default function DiscordQOTD() {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label>Question Category</Label>
-                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <Select 
+                        value={selectedCategory} 
+                        onValueChange={(val) => {
+                          setSelectedCategory(val);
+                          setPreviewQuestion(null);
+                          setPreviousQuestion(null);
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent className="z-[100] bg-card">
                           {Object.entries(QUESTION_CATEGORIES).map(([key, cat]) => (
                             <SelectItem key={key} value={key}>
-                              {cat.label}
+                              {cat.emoji} {cat.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
+                    {/* Preview section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          Question Preview
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          {previousQuestion && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleGoBack}
+                              className="gap-1.5"
+                            >
+                              <Undo2 className="h-3.5 w-3.5" />
+                              Go Back
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGeneratePreview}
+                            className="gap-1.5"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                            {previewQuestion ? 'Regenerate' : 'Generate'}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {previewQuestion ? (
+                        <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">{currentCategory?.emoji}</span>
+                            <div className="flex-1 space-y-2">
+                              <p className="font-semibold text-lg">{previewQuestion}</p>
+                              <p className="text-sm text-muted-foreground italic">
+                                Sent by {staffName}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Click "Generate" to preview a random question from this category
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="p-4 rounded-lg border bg-muted/20">
                       <p className="text-sm text-muted-foreground mb-2">Example questions from this category:</p>
                       <ul className="space-y-1">
-                        {QUESTION_CATEGORIES[selectedCategory as keyof typeof QUESTION_CATEGORIES]?.questions.slice(0, 3).map((q, i) => (
+                        {currentCategory?.questions.slice(0, 3).map((q, i) => (
                           <li key={i} className="text-sm">• {q}</li>
                         ))}
                       </ul>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="custom-question">Your Question</Label>
-                    <Textarea
-                      id="custom-question"
-                      placeholder="What question would you like to ask the community?"
-                      value={customQuestion}
-                      onChange={(e) => setCustomQuestion(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Tip: Open-ended questions tend to get more engagement!
-                    </p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="custom-question">Your Question</Label>
+                      <Textarea
+                        id="custom-question"
+                        placeholder="What question would you like to ask the community?"
+                        value={customQuestion}
+                        onChange={(e) => setCustomQuestion(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Tip: Open-ended questions tend to get more engagement!
+                      </p>
+                    </div>
+
+                    {/* Custom question preview */}
+                    {customQuestion.trim() && (
+                      <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">💬</span>
+                          <div className="flex-1 space-y-2">
+                            <p className="font-semibold text-lg">{customQuestion}</p>
+                            <p className="text-sm text-muted-foreground italic">
+                              Sent by {staffName}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -344,7 +486,7 @@ export default function DiscordQOTD() {
 
                 <Button 
                   onClick={handlePostQOTD}
-                  disabled={isPosting || !webhookSettings || (!useAutoGenerate && !customQuestion.trim())}
+                  disabled={isPosting || !webhookSettings || (!useAutoGenerate && !customQuestion.trim()) || (useAutoGenerate && !previewQuestion)}
                   className="w-full gap-2"
                   size="lg"
                 >
@@ -360,6 +502,12 @@ export default function DiscordQOTD() {
                     </>
                   )}
                 </Button>
+
+                {useAutoGenerate && !previewQuestion && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    Generate a preview first before posting
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
