@@ -217,15 +217,12 @@ export default function RegionSelect() {
                 </span>
               </div>
 
-              {/* Dark Gradient Overlay - Bottom only for text legibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
               {/* Content - Positioned at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
-                <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center bg-background/70 backdrop-blur-sm">
+                <span className="text-sm sm:text-base font-semibold text-foreground leading-snug">
                   {region.name}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-white/80 mt-0.5 font-medium">
+                <span className="block text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">
                   {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
                 </span>
               </div>
