@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { 
   Shield, 
@@ -15,17 +15,17 @@ import {
   Package, 
   MessageCircle, 
   BarChart3, 
-  FileText,
-  Eye,
-  Pencil,
-  Lock,
   Settings,
-  Star,
-  Crown,
-  Zap
+  Store,
+  Gift,
+  LayoutDashboard,
+  ChevronDown,
+  ChevronUp,
+  Lock
 } from 'lucide-react';
 import { RoleManagementCard } from '@/components/admin/RoleManagementCard';
-
+import { RoleSelector } from '@/components/admin/RoleSelector';
+import { PermissionCategory } from '@/components/admin/PermissionCategory';
 
 type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
@@ -52,40 +52,68 @@ interface CustomRole {
   is_system: boolean;
 }
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  'shield': Shield,
-  'users': Users,
-  'package': Package,
-  'message-circle': MessageCircle,
-  'bar-chart-3': BarChart3,
-  'file-text': FileText,
-  'star': Star,
-  'crown': Crown,
-  'zap': Zap,
-  'eye': Eye,
-  'settings': Settings,
-};
-
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  pages: <Eye className="h-4 w-4" />,
-  actions: <Pencil className="h-4 w-4" />,
-  settings: <Settings className="h-4 w-4" />,
-  admin: <Shield className="h-4 w-4" />,
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  pages: 'Page Access',
-  actions: 'Actions',
-  settings: 'Settings',
-  admin: 'Admin',
+// Define permission categories with icons and labels
+const PERMISSION_CATEGORIES = {
+  dashboard: {
+    label: 'Dashboard & Analytics',
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    order: 1,
+  },
+  store: {
+    label: 'Store Management',
+    icon: <Package className="h-5 w-5" />,
+    order: 2,
+  },
+  users: {
+    label: 'User Management',
+    icon: <Users className="h-5 w-5" />,
+    order: 3,
+  },
+  marketplace: {
+    label: 'Marketplace & Sellers',
+    icon: <Store className="h-5 w-5" />,
+    order: 4,
+  },
+  communications: {
+    label: 'Communications',
+    icon: <MessageCircle className="h-5 w-5" />,
+    order: 5,
+  },
+  team: {
+    label: 'Team & Recruitment',
+    icon: <Shield className="h-5 w-5" />,
+    order: 6,
+  },
+  affiliates: {
+    label: 'Affiliates & Referrals',
+    icon: <Gift className="h-5 w-5" />,
+    order: 7,
+  },
+  system: {
+    label: 'System & Settings',
+    icon: <Settings className="h-5 w-5" />,
+    order: 8,
+  },
+  // Fallback for uncategorized
+  actions: {
+    label: 'Other Actions',
+    icon: <BarChart3 className="h-5 w-5" />,
+    order: 9,
+  },
+  pages: {
+    label: 'Other Pages',
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    order: 10,
+  },
 };
 
 export default function RolePermissions() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<string>('admin');
   const [activeTab, setActiveTab] = useState<'assign' | 'manage'>('assign');
+  const [allExpanded, setAllExpanded] = useState(false);
 
-  // Fetch custom roles from the new table
+  // Fetch custom roles
   const { data: customRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['custom-roles'],
     queryFn: async () => {
@@ -153,9 +181,36 @@ export default function RolePermissions() {
     },
   });
 
-  const hasPermission = (role: string, permissionId: string) => {
-    return rolePermissions?.some(rp => rp.role === role && rp.permission_id === permissionId) ?? false;
-  };
+  // Create a set of enabled permissions for the selected role
+  const enabledPermissions = useMemo(() => {
+    const set = new Set<string>();
+    rolePermissions?.forEach(rp => {
+      if (rp.role === selectedRole) {
+        set.add(rp.permission_id);
+      }
+    });
+    return set;
+  }, [rolePermissions, selectedRole]);
+
+  // Group permissions by category
+  const permissionsByCategory = useMemo(() => {
+    const grouped: Record<string, Permission[]> = {};
+    permissions?.forEach(perm => {
+      const category = perm.category || 'actions';
+      if (!grouped[category]) grouped[category] = [];
+      grouped[category].push(perm);
+    });
+    return grouped;
+  }, [permissions]);
+
+  // Sort categories by defined order
+  const sortedCategories = useMemo(() => {
+    return Object.keys(permissionsByCategory).sort((a, b) => {
+      const orderA = PERMISSION_CATEGORIES[a as keyof typeof PERMISSION_CATEGORIES]?.order ?? 99;
+      const orderB = PERMISSION_CATEGORIES[b as keyof typeof PERMISSION_CATEGORIES]?.order ?? 99;
+      return orderA - orderB;
+    });
+  }, [permissionsByCategory]);
 
   const handleToggle = (permissionId: string, enabled: boolean) => {
     if (selectedRole === 'admin') {
@@ -165,22 +220,13 @@ export default function RolePermissions() {
     togglePermissionMutation.mutate({ role: selectedRole, permissionId, enabled });
   };
 
-  // Group permissions by category
-  const permissionsByCategory = permissions?.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
-    return acc;
-  }, {} as Record<string, Permission[]>) ?? {};
-
-  const isLoading = permissionsLoading || rolePermissionsLoading || rolesLoading;
-
-  const selectedRoleInfo = customRoles?.find(r => r.name === selectedRole);
-  const SelectedRoleIcon = selectedRoleInfo ? ICON_MAP[selectedRoleInfo.icon] || Shield : Shield;
-
-  // Count permissions per role
   const getPermissionCount = (role: string) => {
     return rolePermissions?.filter(rp => rp.role === role).length ?? 0;
   };
+
+  const isLoading = permissionsLoading || rolePermissionsLoading || rolesLoading;
+  const selectedRoleInfo = customRoles?.find(r => r.name === selectedRole);
+  const isAdmin = selectedRole === 'admin';
 
   return (
     <AdminLayout requiredRoles={['admin']}>
@@ -197,10 +243,10 @@ export default function RolePermissions() {
           {/* Mobile dropdown */}
           <div className="sm:hidden mb-4">
             <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
-              <SelectTrigger className="w-full bg-background">
+              <SelectTrigger className="w-full bg-card">
                 <SelectValue placeholder="Select section" />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border z-50">
+              <SelectContent className="bg-card border-border z-[100]">
                 <SelectItem value="assign">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
@@ -210,7 +256,7 @@ export default function RolePermissions() {
                 <SelectItem value="manage">
                   <div className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
-                    Manage Roles & Permissions
+                    Manage Roles
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -220,7 +266,7 @@ export default function RolePermissions() {
           {/* Desktop tabs */}
           <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="assign">Assign Permissions</TabsTrigger>
-            <TabsTrigger value="manage">Manage Roles & Permissions</TabsTrigger>
+            <TabsTrigger value="manage">Manage Roles</TabsTrigger>
           </TabsList>
 
           <TabsContent value="manage" className="space-y-6 mt-6">
@@ -230,7 +276,7 @@ export default function RolePermissions() {
           <TabsContent value="assign" className="space-y-6 mt-6">
             {/* Role Selection */}
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
                   Select Role
@@ -240,176 +286,104 @@ export default function RolePermissions() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {customRoles?.map(role => {
-                    const IconComponent = ICON_MAP[role.icon] || Shield;
-                    return (
-                      <button
-                        key={role.id}
-                        onClick={() => setSelectedRole(role.name)}
-                        className={`p-4 rounded-lg border-2 transition-all text-left ${
-                          selectedRole === role.name
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className={`p-1.5 rounded ${role.color} text-white`}>
-                            <IconComponent className="h-4 w-4" />
-                          </div>
-                          {role.name === 'admin' && <Lock className="h-3 w-3 text-muted-foreground" />}
-                        </div>
-                        <p className="font-medium text-sm">{role.display_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {getPermissionCount(role.name)} permissions
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Permissions Grid */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <SelectedRoleIcon className="h-5 w-5" />
-                      {selectedRoleInfo?.display_name} Permissions
-                    </CardTitle>
-                    <CardDescription>
-                      {selectedRole === 'admin' 
-                        ? 'Admin role has all permissions and cannot be modified'
-                        : 'Toggle permissions on or off for this role'}
-                    </CardDescription>
-                  </div>
-                  <Badge className={`${selectedRoleInfo?.color} text-white`}>
-                    {getPermissionCount(selectedRole)} / {permissions?.length ?? 0}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3].map(i => (
-                      <Skeleton key={i} className="h-32" />
+                {rolesLoading ? (
+                  <div className="flex gap-3 overflow-hidden">
+                    {[1, 2, 3, 4].map(i => (
+                      <Skeleton key={i} className="h-32 w-36 flex-shrink-0" />
                     ))}
                   </div>
-                ) : (
-                  <Tabs defaultValue="pages" className="w-full">
-                    <TabsList className="mb-4">
-                      {Object.keys(permissionsByCategory).map(category => (
-                        <TabsTrigger key={category} value={category} className="flex items-center gap-2">
-                          {CATEGORY_ICONS[category]}
-                          {CATEGORY_LABELS[category] || category}
-                          <Badge variant="secondary" className="ml-1 text-xs">
-                            {permissionsByCategory[category]?.filter(p => hasPermission(selectedRole, p.id)).length}
-                          </Badge>
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-
-                    {Object.entries(permissionsByCategory).map(([category, perms]) => (
-                      <TabsContent key={category} value={category} className="mt-0">
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                          {perms.map(permission => {
-                            const isEnabled = hasPermission(selectedRole, permission.id);
-                            const isAdmin = selectedRole === 'admin';
-                            
-                            return (
-                              <div
-                                key={permission.id}
-                                className={`p-4 rounded-lg border transition-all ${
-                                  isEnabled 
-                                    ? 'border-primary/50 bg-primary/5' 
-                                    : 'border-border bg-card'
-                                } ${isAdmin ? 'opacity-75' : ''}`}
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-sm truncate">
-                                      {permission.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {permission.description}
-                                    </p>
-                                  </div>
-                                  <Switch
-                                    checked={isEnabled}
-                                    onCheckedChange={(checked) => handleToggle(permission.id, checked)}
-                                    disabled={isAdmin || togglePermissionMutation.isPending}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </TabsContent>
-                    ))}
-                  </Tabs>
-                )}
+                ) : customRoles ? (
+                  <RoleSelector
+                    roles={customRoles}
+                    selectedRole={selectedRole}
+                    onSelectRole={setSelectedRole}
+                    getPermissionCount={getPermissionCount}
+                    totalPermissions={permissions?.length ?? 0}
+                  />
+                ) : null}
               </CardContent>
             </Card>
 
-            {/* Role Overview */}
+            {/* Selected Role Header */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  All Roles Overview
-                </CardTitle>
-                <CardDescription>
-                  Quick comparison of permissions across all roles
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs md:text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-2 font-medium">Permission</th>
-                        {customRoles?.map(role => {
-                          const IconComponent = ICON_MAP[role.icon] || Shield;
-                          return (
-                            <th key={role.id} className="text-center py-2 px-1">
-                              <div className={`inline-flex items-center justify-center gap-0.5 px-1 py-0.5 rounded text-white text-[10px] md:text-xs ${role.color}`}>
-                                <IconComponent className="h-3 w-3" />
-                                <span className="hidden lg:inline">{role.display_name}</span>
-                              </div>
-                            </th>
-                          );
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {permissions?.map(permission => (
-                        <tr key={permission.id} className="border-b border-border/50 hover:bg-muted/50">
-                          <td className="py-1.5 px-2">
-                            <div className="flex items-center gap-1">
-                              <span className="hidden md:inline">{CATEGORY_ICONS[permission.category]}</span>
-                              <span className="truncate max-w-[120px] md:max-w-[200px] text-xs">
-                                {permission.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </span>
-                            </div>
-                          </td>
-                          {customRoles?.map(role => (
-                            <td key={role.id} className="text-center py-1.5 px-1">
-                              {hasPermission(role.name, permission.id) ? (
-                                <span className="text-green-500 text-xs">✓</span>
-                              ) : (
-                                <span className="text-muted-foreground/30 text-xs">—</span>
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-3 rounded-xl ${selectedRoleInfo?.color ?? 'bg-primary'} text-white`}>
+                      <Shield className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        {selectedRoleInfo?.display_name} Permissions
+                        {isAdmin && <Lock className="h-4 w-4 text-muted-foreground" />}
+                      </CardTitle>
+                      <CardDescription>
+                        {isAdmin 
+                          ? 'Admin has all permissions and cannot be modified'
+                          : 'Toggle permissions on or off for this role'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="text-sm px-3 py-1">
+                      {enabledPermissions.size} / {permissions?.length ?? 0} enabled
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAllExpanded(!allExpanded)}
+                      className="hidden sm:flex items-center gap-1"
+                    >
+                      {allExpanded ? (
+                        <>
+                          <ChevronUp className="h-4 w-4" />
+                          Collapse All
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" />
+                          Expand All
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </CardContent>
+              </CardHeader>
             </Card>
+
+            {/* Permission Categories */}
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map(i => (
+                  <Skeleton key={i} className="h-20" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sortedCategories.map(categoryKey => {
+                  const categoryConfig = PERMISSION_CATEGORIES[categoryKey as keyof typeof PERMISSION_CATEGORIES];
+                  const categoryPermissions = permissionsByCategory[categoryKey] || [];
+                  
+                  if (categoryPermissions.length === 0) return null;
+                  
+                  return (
+                    <PermissionCategory
+                      key={categoryKey}
+                      categoryKey={categoryKey}
+                      label={categoryConfig?.label ?? categoryKey}
+                      icon={categoryConfig?.icon ?? <BarChart3 className="h-5 w-5" />}
+                      permissions={categoryPermissions}
+                      enabledPermissions={enabledPermissions}
+                      onToggle={handleToggle}
+                      isAdmin={isAdmin}
+                      isLoading={togglePermissionMutation.isPending}
+                      defaultOpen={allExpanded}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
