@@ -18,6 +18,20 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Category images
+import civilianVehiclesImg from '@/assets/categories/civilian-vehicles.jpg';
+import markedPoliceImg from '@/assets/categories/marked-police.jpg';
+import unmarkedPoliceImg from '@/assets/categories/unmarked-police.jpg';
+import fireVehiclesImg from '@/assets/categories/fire-vehicles.jpg';
+import ambulanceVehiclesImg from '@/assets/categories/ambulance-vehicles.jpg';
+import aircraftImg from '@/assets/categories/aircraft.jpg';
+import uniformsImg from '@/assets/categories/uniforms.jpg';
+import militaryVehiclesImg from '@/assets/categories/military-vehicles.jpg';
+import mapsImg from '@/assets/categories/maps.jpg';
+import bundleDealsImg from '@/assets/categories/bundle-deals.jpg';
+import botsImg from '@/assets/categories/bots.jpg';
+import buildingsImg from '@/assets/categories/buildings.jpg';
+
 // Category icon mapping
 const categoryIcons: Record<string, React.ElementType> = {
   'civilian-vehicles': Car,
@@ -34,20 +48,20 @@ const categoryIcons: Record<string, React.ElementType> = {
   'buildings': Building2,
 };
 
-// Category background images (using Unsplash for professional imagery)
+// Category background images
 const categoryImages: Record<string, string> = {
-  'civilian-vehicles': 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80',
-  'marked-police-vehicles': 'https://images.unsplash.com/photo-1584776296944-ab6fb57b0bba?w=400&q=80',
-  'unmarked-police-vehicles': 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=400&q=80',
-  'fire-vehicles': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80',
-  'ambulance-vehicles': 'https://images.unsplash.com/photo-1587745416684-47953f16f02f?w=400&q=80',
-  'aircraft': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80',
-  'uniforms': 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=400&q=80',
-  'military-vehicles': 'https://images.unsplash.com/photo-1547082299-de196ea013d6?w=400&q=80',
-  'maps': 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80',
-  'bundle-deals': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80',
-  'bots': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80',
-  'buildings': 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80',
+  'civilian-vehicles': civilianVehiclesImg,
+  'marked-police-vehicles': markedPoliceImg,
+  'unmarked-police-vehicles': unmarkedPoliceImg,
+  'fire-vehicles': fireVehiclesImg,
+  'ambulance-vehicles': ambulanceVehiclesImg,
+  'aircraft': aircraftImg,
+  'uniforms': uniformsImg,
+  'military-vehicles': militaryVehiclesImg,
+  'maps': mapsImg,
+  'bundle-deals': bundleDealsImg,
+  'bots': botsImg,
+  'buildings': buildingsImg,
 };
 
 export default function Categories() {
