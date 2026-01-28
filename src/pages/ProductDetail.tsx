@@ -328,10 +328,6 @@ export default function ProductDetail() {
           <span className="text-foreground truncate max-w-[150px] sm:max-w-none">{product.name}</span>
         </nav>
 
-        <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" />
-          Back to Products
-        </Link>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-full">
           {/* Images */}
