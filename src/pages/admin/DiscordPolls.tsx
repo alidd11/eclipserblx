@@ -147,37 +147,35 @@ export default function DiscordPolls() {
         </div>
 
         <Tabs defaultValue="create" className="w-full" onValueChange={() => {}}>
-          {/* Mobile dropdown */}
-          <div className="sm:hidden mb-4">
-            <Select defaultValue="create" onValueChange={(value) => {
-              const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-              trigger?.click();
-            }}>
-              <SelectTrigger className="w-full bg-card">
-                <SelectValue placeholder="Select section" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border z-[100]">
-                <SelectItem value="create">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Create Poll
-                  </div>
-                </SelectItem>
-                <SelectItem value="history">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Poll History
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Dropdown for all devices */}
+          <Select defaultValue="create" onValueChange={(value) => {
+            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
+            trigger?.click();
+          }}>
+            <SelectTrigger className="w-full max-w-md bg-card">
+              <SelectValue placeholder="Select section" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-[100]">
+              <SelectItem value="create">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Create Poll
+                </div>
+              </SelectItem>
+              <SelectItem value="history">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Poll History
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-          {/* Desktop tabs */}
-          <TabsList className="hidden sm:grid w-full grid-cols-2">
-            <TabsTrigger value="create" data-value="create">Create Poll</TabsTrigger>
-            <TabsTrigger value="history" data-value="history">Poll History</TabsTrigger>
-          </TabsList>
+          {/* Hidden triggers for tab switching */}
+          <div className="hidden">
+            <button data-value="create" onClick={() => {}} />
+            <button data-value="history" onClick={() => {}} />
+          </div>
 
           <TabsContent value="create" className="space-y-4">
             <Card>

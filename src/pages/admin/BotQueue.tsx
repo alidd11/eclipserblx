@@ -434,61 +434,54 @@ export default function BotQueue() {
 
         {/* Tabs */}
         <Tabs defaultValue="action" className="space-y-4" onValueChange={() => {}}>
-          {/* Mobile dropdown */}
-          <div className="sm:hidden mb-4">
-            <Select defaultValue="action" onValueChange={(value) => {
-              const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-              trigger?.click();
-            }}>
-              <SelectTrigger className="w-full bg-card">
-                <SelectValue placeholder="Select section" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border z-[100]">
-                <SelectItem value="action">
-                  <div className="flex items-center gap-2">
-                    Action Required
-                    {actionRequired.length > 0 && (
-                      <Badge variant="secondary" className="h-5 px-1.5">
-                        {actionRequired.length}
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="progress">
-                  <div className="flex items-center gap-2">
-                    In Progress
-                    {installingRequests.length > 0 && (
-                      <Badge variant="secondary" className="h-5 px-1.5">
-                        {installingRequests.length}
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Dropdown for all devices */}
+          <Select defaultValue="action" onValueChange={(value) => {
+            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
+            trigger?.click();
+          }}>
+            <SelectTrigger className="w-full max-w-md bg-card">
+              <SelectValue placeholder="Select section" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-[100]">
+              <SelectItem value="action">
+                <div className="flex items-center gap-2">
+                  Action Required
+                  {actionRequired.length > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5">
+                      {actionRequired.length}
+                    </Badge>
+                  )}
+                </div>
+              </SelectItem>
+              <SelectItem value="progress">
+                <div className="flex items-center gap-2">
+                  In Progress
+                  {installingRequests.length > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5">
+                      {installingRequests.length}
+                    </Badge>
+                  )}
+                </div>
+              </SelectItem>
+              <SelectItem value="completed">
+                <div className="flex items-center gap-2">
+                  Completed
+                  {completedRequests.length > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5">
+                      {completedRequests.length}
+                    </Badge>
+                  )}
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-          {/* Desktop tabs */}
-          <TabsList className="hidden sm:grid w-full grid-cols-3">
-            <TabsTrigger value="action" data-value="action" className="gap-1.5">
-              Action Required
-              {actionRequired.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                  {actionRequired.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="progress" data-value="progress" className="gap-1.5">
-              In Progress
-              {installingRequests.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                  {installingRequests.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="completed" data-value="completed">Completed</TabsTrigger>
-          </TabsList>
+          {/* Hidden triggers for tab switching */}
+          <div className="hidden">
+            <button data-value="action" onClick={() => {}} />
+            <button data-value="progress" onClick={() => {}} />
+            <button data-value="completed" onClick={() => {}} />
+          </div>
 
           <TabsContent value="action" className="space-y-4">
             {isLoading ? (
