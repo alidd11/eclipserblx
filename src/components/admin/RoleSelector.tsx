@@ -42,20 +42,20 @@ export function RoleSelector({
 
   return (
     <Select value={selectedRole} onValueChange={onSelectRole}>
-      <SelectTrigger className="w-full h-auto py-3 bg-muted/30 border-border hover:bg-muted/50 transition-colors">
+      <SelectTrigger className="w-full h-10 bg-muted/30 border-border hover:bg-muted/50 transition-colors">
         <SelectValue>
           {selectedRoleInfo && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className={cn(
-                "p-2 rounded-lg flex-shrink-0",
+                "p-1.5 rounded-md flex-shrink-0",
                 selectedRoleInfo.color,
                 "text-white"
               )}>
-                <SelectedIcon className="h-5 w-5" />
+                <SelectedIcon className="h-3.5 w-3.5" />
               </div>
-              <span className="font-medium">{selectedRoleInfo.display_name}</span>
+              <span className="font-medium text-sm">{selectedRoleInfo.display_name}</span>
               {selectedRoleInfo.name === 'admin' && (
-                <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
               )}
             </div>
           )}
@@ -69,17 +69,17 @@ export function RoleSelector({
             <SelectItem 
               key={role.id} 
               value={role.name}
-              className="py-3"
+              className="py-2"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className={cn(
-                  "p-2 rounded-lg flex-shrink-0",
+                  "p-1.5 rounded-md flex-shrink-0",
                   role.color,
                   "text-white"
                 )}>
-                  <IconComponent className="h-4 w-4" />
+                  <IconComponent className="h-3.5 w-3.5" />
                 </div>
-                <span className="font-medium">{role.display_name}</span>
+                <span className="font-medium text-sm">{role.display_name}</span>
                 {role.name === 'admin' && (
                   <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                 )}
