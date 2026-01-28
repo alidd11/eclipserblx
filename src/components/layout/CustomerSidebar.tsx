@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, forwardRef } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
@@ -9,23 +9,15 @@ import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
-import { SITE_NAME } from '@/lib/constants';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
-import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
-import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useQuery } from '@tanstack/react-query';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface NavItem {
   title: string;
@@ -61,17 +53,8 @@ const DiscordIcon = forwardRef<SVGSVGElement, { className?: string }>(
 DiscordIcon.displayName = 'DiscordIcon';
 
 const STORAGE_KEY = 'customer-sidebar-groups';
-const COLLAPSED_KEY = 'customer-sidebar-collapsed';
-const CATEGORY_STORAGE_KEY = 'customer-sidebar-categories';
 
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  parent_id: string | null;
-}
 
 interface CustomerSidebarProps {
   collapsed: boolean;
@@ -83,94 +66,15 @@ interface CustomerSidebarProps {
 
 export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: CustomerSidebarProps) {
   const { user, signOut } = useAuth();
-  const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
   const { settings: affiliateSettings } = useAffiliateSettings();
   const { isSeller } = useSellerStatus();
-  const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
-  const searchCommand = useSearchCommand();
   const navigate = useNavigate();
   const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [userProfile, setUserProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
-  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() => {
-    const stored = safeStorage.getItem(CATEGORY_STORAGE_KEY);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return {};
-      }
-    }
-    return {};
-  });
-
-  // Fetch categories from database
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
-    queryKey: ['sidebar-categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug, parent_id')
-        .order('display_order', { ascending: true });
-      
-      if (error) throw error;
-      return data as Category[];
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Organize categories into parent/child structure
-  const { parentCategories, subcategoriesMap } = useMemo(() => {
-    const parents = categories.filter(c => !c.parent_id);
-    const subMap: Record<string, Category[]> = {};
-    
-    categories.forEach(c => {
-      if (c.parent_id) {
-        if (!subMap[c.parent_id]) {
-          subMap[c.parent_id] = [];
-        }
-        subMap[c.parent_id].push(c);
-      }
-    });
-    
-    return { parentCategories: parents, subcategoriesMap: subMap };
-  }, [categories]);
-
-  // Persist open categories
-  useEffect(() => {
-    safeStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(openCategories));
-  }, [openCategories]);
-
-  const toggleCategory = (categoryId: string) => {
-    hapticTap();
-    setOpenCategories(prev => ({ ...prev, [categoryId]: !prev[categoryId] }));
-  };
-
-  // Fetch user profile
-  useEffect(() => {
-    if (!user) {
-      setUserProfile(null);
-      return;
-    }
-
-    const fetchProfile = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('display_name, avatar_url')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (data) {
-        setUserProfile(data);
-      }
-    };
-
-    fetchProfile();
-  }, [user]);
 
   // Fetch unread notification count
   useEffect(() => {
@@ -616,31 +520,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
   };
 
-  // Render Browse section (All Products + Categories)
+  // Render Browse section - simplified for PWA/mobile
   const renderBrowseSection = () => {
     const isAllProductsActive = location.pathname === '/products' && !location.search.includes('category=');
-    const isCategoriesActive = location.pathname === '/products' && location.search.includes('category=');
-    const isBrowseActive = isAllProductsActive || isCategoriesActive;
-    
-    // Loading state
-    if (categoriesLoading) {
-      if (isCollapsed) {
-        return (
-          <div className="mb-1">
-            <Skeleton className="h-10 w-full rounded-lg" />
-          </div>
-        );
-      }
-      return (
-        <div className="mb-1 space-y-1">
-          <Skeleton className="h-9 w-full rounded-lg" />
-          <Skeleton className="h-8 w-full ml-4 rounded-lg" />
-          <Skeleton className="h-8 w-full ml-4 rounded-lg" />
-        </div>
-      );
-    }
+    const isCategoriesPageActive = location.pathname === '/categories' || location.pathname.startsWith('/browse/');
+    const isCategoryProductsActive = location.pathname === '/products' && location.search.includes('category=');
+    const isBrowseActive = isAllProductsActive || isCategoriesPageActive || isCategoryProductsActive;
 
-    // Collapsed mode: show tooltip with all options
+    // Collapsed mode: show tooltip with simple options
     if (isCollapsed) {
       return (
         <div className="mb-1">
@@ -662,7 +549,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 )} />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="p-0 max-h-80 overflow-y-auto">
+            <TooltipContent side="right" className="p-0">
               <div className="py-2">
                 <div className="px-3 pb-1 text-xs font-semibold text-muted-foreground">
                   Browse
@@ -679,41 +566,17 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   <Grid3X3 className="h-3.5 w-3.5" />
                   All Products
                 </NavLink>
-                {parentCategories.map(category => {
-                  const subs = subcategoriesMap[category.id] || [];
-                  const hasSubcategories = subs.length > 0;
-                  
-                  // Categories that use region selection flow
-                  const REGIONAL_CATEGORY_SLUGS = [
-                    'civilian-vehicles',
-                    'marked-police-vehicles',
-                    'unmarked-police-vehicles',
-                    'fire-vehicles',
-                    'ambulance-vehicles',
-                    'military-vehicles',
-                    'aircraft',
-                    'uniforms',
-                  ];
-                  const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && hasSubcategories;
-                  const categoryPath = useRegionSelect 
-                    ? `/browse/${category.slug}/region`
-                    : `/products?category=${category.slug}`;
-
-                  return (
-                    <NavLink
-                      key={category.id}
-                      to={categoryPath}
-                      onClick={handleNavClick}
-                      className={({ isActive }) => cn(
-                        "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                      )}
-                    >
-                      <FolderOpen className="h-3.5 w-3.5" />
-                      {category.name}
-                    </NavLink>
-                  );
-                })}
+                <NavLink
+                  to="/categories"
+                  onClick={handleNavClick}
+                  className={({ isActive }) => cn(
+                    "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
+                    isActive || location.pathname.startsWith('/browse/') ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                  )}
+                >
+                  <FolderOpen className="h-3.5 w-3.5" />
+                  Categories
+                </NavLink>
               </div>
             </TooltipContent>
           </Tooltip>
@@ -721,7 +584,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // Expanded mode: collapsible Browse section with All Products + Categories
+    // Expanded mode: simple Browse section with All Products + Categories link
     return (
       <Collapsible
         open={openGroups['browse'] ?? true}
@@ -753,7 +616,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-0.5 pt-0.5">
-          {/* All Products link - primary entry point */}
+          {/* All Products link */}
           <NavLink
             to="/products"
             end
@@ -761,70 +624,32 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             className={() => cn(
               "rounded-lg text-sm font-medium select-none",
               "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-              "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
+              "flex flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-4",
               isAllProductsActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <Grid3X3 className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 truncate leading-none flex-1">All Products</span>
+            <span className="leading-none">All Products</span>
           </NavLink>
           
-          {/* Dynamic categories - click leads to region selection for regional categories */}
-          {parentCategories.map(category => {
-            const subs = subcategoriesMap[category.id] || [];
-            const hasSubcategories = subs.length > 0;
-            
-            // Categories that use region selection flow (same as Categories.tsx)
-            const REGIONAL_CATEGORY_SLUGS = [
-              'civilian-vehicles',
-              'marked-police-vehicles',
-              'unmarked-police-vehicles',
-              'fire-vehicles',
-              'ambulance-vehicles',
-              'military-vehicles',
-              'aircraft',
-              'uniforms',
-            ];
-            const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && hasSubcategories;
-            
-            // Determine the link path
-            const categoryPath = useRegionSelect 
-              ? `/browse/${category.slug}/region`
-              : `/products?category=${category.slug}`;
-            
-            const isCategoryActive = useRegionSelect
-              ? location.pathname === `/browse/${category.slug}/region`
-              : location.pathname === '/products' && 
-                new URLSearchParams(location.search).get('category') === category.slug;
-            
-            // Check if any sub-category is active (for highlighting parent)
-            const isSubActive = subs.some(sub => 
-              location.pathname === '/products' && 
-              new URLSearchParams(location.search).get('category') === sub.slug
-            );
-
-            // All categories now render as simple links (no dropdowns)
-            return (
-              <NavLink
-                key={category.id}
-                to={categoryPath}
-                onClick={handleNavClick}
-                className={() => cn(
-                  "rounded-lg text-sm font-medium select-none",
-                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-                  "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
-                  isCategoryActive || isSubActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <FolderOpen className="h-4 w-4 shrink-0" />
-                <span className="min-w-0 truncate leading-none flex-1">{category.name}</span>
-              </NavLink>
-            );
-          })}
+          {/* Categories link - navigates to category grid page */}
+          <NavLink
+            to="/categories"
+            onClick={handleNavClick}
+            className={() => cn(
+              "rounded-lg text-sm font-medium select-none",
+              "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+              "flex flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-4",
+              isCategoriesPageActive || isCategoryProductsActive
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            <FolderOpen className="h-4 w-4 shrink-0" />
+            <span className="leading-none">Categories</span>
+          </NavLink>
         </CollapsibleContent>
       </Collapsible>
     );
