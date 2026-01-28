@@ -225,7 +225,6 @@ export default function RolePermissions() {
   };
 
   const isLoading = permissionsLoading || rolePermissionsLoading || rolesLoading;
-  const selectedRoleInfo = customRoles?.find(r => r.name === selectedRole);
   const isAdmin = selectedRole === 'admin';
 
   return (
@@ -240,34 +239,26 @@ export default function RolePermissions() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
-          {/* Mobile dropdown */}
-          <div className="sm:hidden mb-4">
-            <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
-              <SelectTrigger className="w-full bg-card">
-                <SelectValue placeholder="Select section" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border z-[100]">
-                <SelectItem value="assign">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Assign Permissions
-                  </div>
-                </SelectItem>
-                <SelectItem value="manage">
-                  <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Manage Roles
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Desktop tabs */}
-          <TabsList className="hidden sm:inline-flex">
-            <TabsTrigger value="assign">Assign Permissions</TabsTrigger>
-            <TabsTrigger value="manage">Manage Roles</TabsTrigger>
-          </TabsList>
+          {/* Dropdown for all devices */}
+          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
+            <SelectTrigger className="w-full bg-card border-2 border-primary/20 hover:border-primary/40 transition-colors">
+              <SelectValue placeholder="Select section" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-[100]">
+              <SelectItem value="assign">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Assign Permissions
+                </div>
+              </SelectItem>
+              <SelectItem value="manage">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Manage Roles
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
           <TabsContent value="manage" className="space-y-6 mt-6">
             <RoleManagementCard />
@@ -276,8 +267,8 @@ export default function RolePermissions() {
           <TabsContent value="assign" className="space-y-6 mt-6">
             {/* Role Selection */}
             <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-xl">
                   <Shield className="h-5 w-5" />
                   Select Role
                 </CardTitle>
@@ -285,13 +276,9 @@ export default function RolePermissions() {
                   Choose a role to view and modify its permissions
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 {rolesLoading ? (
-                  <div className="flex gap-3 overflow-hidden">
-                    {[1, 2, 3, 4].map(i => (
-                      <Skeleton key={i} className="h-32 w-36 flex-shrink-0" />
-                    ))}
-                  </div>
+                  <Skeleton className="h-12 w-full" />
                 ) : customRoles ? (
                   <RoleSelector
                     roles={customRoles}
@@ -304,53 +291,41 @@ export default function RolePermissions() {
               </CardContent>
             </Card>
 
-            {/* Selected Role Header */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-xl ${selectedRoleInfo?.color ?? 'bg-primary'} text-white`}>
-                      <Shield className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        {selectedRoleInfo?.display_name} Permissions
-                        {isAdmin && <Lock className="h-4 w-4 text-muted-foreground" />}
-                      </CardTitle>
-                      <CardDescription>
-                        {isAdmin 
-                          ? 'Admin has all permissions and cannot be modified'
-                          : 'Toggle permissions on or off for this role'}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="text-sm px-3 py-1">
-                      {enabledPermissions.size} / {permissions?.length ?? 0} enabled
-                    </Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setAllExpanded(!allExpanded)}
-                      className="hidden sm:flex items-center gap-1"
-                    >
-                      {allExpanded ? (
-                        <>
-                          <ChevronUp className="h-4 w-4" />
-                          Collapse All
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4" />
-                          Expand All
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
+            {/* Permissions Header with Expand/Collapse */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Badge 
+                  variant="secondary" 
+                  className="text-sm px-3 py-1.5 font-medium"
+                >
+                  {enabledPermissions.size} / {permissions?.length ?? 0} enabled
+                </Badge>
+                {isAdmin && (
+                  <Badge variant="outline" className="text-xs">
+                    <Lock className="h-3 w-3 mr-1" />
+                    Read-only
+                  </Badge>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAllExpanded(!allExpanded)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {allExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1" />
+                    Collapse All
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Expand All
+                  </>
+                )}
+              </Button>
+            </div>
 
             {/* Permission Categories */}
             {isLoading ? (
