@@ -203,21 +203,19 @@ export default function RegionSelect() {
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative flex flex-col rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg transition-all h-full ${
+              className={`group relative rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg transition-all ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Flag Image - Fixed height, anchored top */}
-              <div className="relative w-full h-48 sm:h-56 flex-shrink-0">
-                <img
-                  src={region.image}
-                  alt={`${region.name} flag`}
-                  className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
+              {/* Flag Image - Covers full card, anchored to top */}
+              <img
+                src={region.image}
+                alt={`${region.name} flag`}
+                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+              />
 
-              {/* Card extends below with gradient background */}
-              <div className="flex-1 bg-gradient-to-t from-black/70 via-black/50 to-black/30" />
+              {/* Gradient overlay for text legibility */}
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
 
               {/* Content - Positioned at bottom */}
               <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
