@@ -202,31 +202,30 @@ export default function RegionSelect() {
 
         {/* Region Cards - Matching Category Tile Style */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
-          {data.regions.map((region) => (
+        {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative flex flex-col items-center justify-center aspect-[4/3] rounded-xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all ${
+              className={`group relative flex flex-col items-center justify-center aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Background Image */}
-              <img
-                src={region.image}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-              />
+              {/* Flag Background - Covers entire card */}
+              <div className="absolute inset-0 flex items-center justify-center bg-muted transition-transform duration-300 group-hover:scale-110">
+                <span className="text-[8rem] sm:text-[10rem] leading-none select-none">
+                  {region.flag}
+                </span>
+              </div>
 
-              {/* Dark Overlay */}
-              <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors" />
+              {/* Dark Gradient Overlay - Bottom only for text legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-              {/* Content */}
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center">
-                <span className="text-2xl sm:text-3xl mb-1">{region.flag}</span>
+              {/* Content - Positioned at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
                 <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
                   {region.name}
                 </span>
-                <span className="text-[10px] sm:text-xs text-white/80 mt-1 font-medium">
+                <span className="block text-[10px] sm:text-xs text-white/80 mt-0.5 font-medium">
                   {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
                 </span>
               </div>
