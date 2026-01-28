@@ -218,11 +218,11 @@ export default function RegionSelect() {
               </div>
 
               {/* Content - Positioned at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center bg-background/70 backdrop-blur-sm">
-                <span className="text-sm sm:text-base font-semibold text-foreground leading-snug">
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
+                <span className="text-sm sm:text-base font-semibold text-foreground leading-snug drop-shadow-md">
                   {region.name}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">
+                <span className="block text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium drop-shadow-md">
                   {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
                 </span>
               </div>
