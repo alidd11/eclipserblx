@@ -3967,6 +3967,57 @@ export type Database = {
           },
         ]
       }
+      store_credentials: {
+        Row: {
+          created_at: string
+          discord_bot_token: string | null
+          discord_guild_id: string | null
+          discord_role_id: string | null
+          discord_webhook_url: string | null
+          id: string
+          review_discord_webhook_url: string | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_bot_token?: string | null
+          discord_guild_id?: string | null
+          discord_role_id?: string | null
+          discord_webhook_url?: string | null
+          id?: string
+          review_discord_webhook_url?: string | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_bot_token?: string | null
+          discord_guild_id?: string | null
+          discord_role_id?: string | null
+          discord_webhook_url?: string | null
+          id?: string
+          review_discord_webhook_url?: string | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_credentials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_credentials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_follows: {
         Row: {
           created_at: string

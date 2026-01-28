@@ -247,18 +247,29 @@ export default function DiscordSettings() {
     },
   });
 
-  // Fetch Eclipse Store Discord settings
+  // Fetch Eclipse Store Discord settings from store_credentials table
   const { data: eclipseStoreData } = useQuery({
     queryKey: ['eclipse-store-discord-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the store ID
+      const { data: store, error: storeError } = await supabase
         .from('stores')
-        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id')
+        .select('id')
         .eq('store_id', ECLIPSE_STORE_ID)
         .maybeSingle();
 
+      if (storeError) throw storeError;
+      if (!store) return null;
+
+      // Then fetch credentials from the secure table
+      const { data, error } = await supabase
+        .from('store_credentials')
+        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id')
+        .eq('store_id', store.id)
+        .maybeSingle();
+
       if (error) throw error;
-      return data;
+      return { ...data, internal_store_id: store.id };
     },
   });
 
@@ -427,19 +438,26 @@ export default function DiscordSettings() {
     },
   });
 
-  // Save Eclipse Store settings mutation
+  // Save Eclipse Store settings mutation - now writes to store_credentials table
   const saveEclipseStoreMutation = useMutation({
     mutationFn: async (data: EclipseStoreSettings) => {
+      // Get the internal store ID
+      const storeId = eclipseStoreData?.internal_store_id;
+      if (!storeId) {
+        throw new Error('Eclipse Store not found');
+      }
+
       const { error } = await supabase
-        .from('stores')
-        .update({
+        .from('store_credentials')
+        .upsert({
+          store_id: storeId,
           discord_webhook_url: data.discord_webhook_url || null,
           review_discord_webhook_url: data.review_discord_webhook_url || null,
           discord_bot_token: data.discord_bot_token || null,
           discord_guild_id: data.discord_guild_id || null,
           discord_role_id: data.discord_role_id || null,
-        })
-        .eq('store_id', ECLIPSE_STORE_ID);
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'store_id' });
 
       if (error) throw error;
     },

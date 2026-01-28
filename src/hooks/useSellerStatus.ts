@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+// Safe store columns that can be selected (excludes legacy credential columns)
+const SAFE_STORE_COLUMNS = `
+  id, owner_id, store_id, name, slug, description, logo_url, banner_url,
+  stripe_account_id, payouts_enabled, commission_rate, is_verified, is_active,
+  status, reviewed_by, reviewed_at, rejection_reason, total_sales, total_revenue,
+  product_count, average_rating, created_at, updated_at, theme, accent_color, bio,
+  discord_url, twitter_url, youtube_url, tiktok_url, website_url, roblox_url,
+  custom_commission_rate, custom_rate_expires_at, custom_rate_set_by, custom_rate_set_at,
+  hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
+  font_heading, font_body, announcement_text, announcement_active,
+  featured_product_ids, layout_style, show_reviews, show_social_proof,
+  paypal_email, payout_method, bank_name, bank_account_holder, bank_account_number,
+  bank_routing_number, bank_swift_bic, bank_country, follower_count, about_content, is_trusted
+`;
+
 export interface Store {
   id: string;
   owner_id: string;
@@ -41,12 +56,6 @@ export interface Store {
   custom_rate_expires_at?: string;
   custom_rate_set_by?: string;
   custom_rate_set_at?: string;
-  // Discord integration
-  discord_webhook_url?: string;
-  review_discord_webhook_url?: string;
-  discord_bot_token?: string;
-  discord_guild_id?: string;
-  discord_role_id?: string;
   // Storefront customization
   hero_title?: string;
   hero_subtitle?: string;
@@ -75,6 +84,16 @@ export interface Store {
   follower_count?: number;
   about_content?: string;
   is_trusted?: boolean;
+  // Credentials (fetched separately from store_credentials table)
+  credentials?: StoreCredentials;
+}
+
+export interface StoreCredentials {
+  discord_webhook_url?: string;
+  review_discord_webhook_url?: string;
+  discord_bot_token?: string;
+  discord_guild_id?: string;
+  discord_role_id?: string;
 }
 
 export interface StoreApplication {
@@ -106,14 +125,27 @@ export function useSellerStatus() {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const { data, error } = await supabase
+      // Fetch store data (without sensitive credential columns)
+      const { data: storeData, error: storeError } = await supabase
         .from('stores')
-        .select('*')
+        .select(SAFE_STORE_COLUMNS)
         .eq('owner_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
-      return data as Store | null;
+      if (storeError) throw storeError;
+      if (!storeData) return null;
+
+      // Fetch credentials from separate secure table
+      const { data: credentialsData } = await supabase
+        .from('store_credentials')
+        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id')
+        .eq('store_id', storeData.id)
+        .maybeSingle();
+
+      return {
+        ...storeData,
+        credentials: credentialsData || undefined,
+      } as Store;
     },
     enabled: !!user?.id,
   });
