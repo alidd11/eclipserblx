@@ -192,13 +192,10 @@ export default function Categories() {
                   
                   {/* Content */}
                   <div className="relative z-10 flex flex-col items-center justify-center p-3">
-                    <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-sm mb-2">
-                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                    </div>
-                    <span className="text-xs sm:text-sm font-medium text-white text-center leading-tight line-clamp-2 drop-shadow-md">
+                    <span className="text-sm sm:text-base font-bold text-white text-center leading-tight line-clamp-2 drop-shadow-md">
                       {category.name}
                     </span>
-                    <span className="text-[10px] sm:text-xs text-white/70 mt-0.5">
+                    <span className="text-[10px] sm:text-xs text-white/70 mt-1">
                       {productCount}
                     </span>
                   </div>
