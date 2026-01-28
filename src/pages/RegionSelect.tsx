@@ -141,9 +141,12 @@ export default function RegionSelect() {
             <Skeleton className="h-8 w-48 mx-auto" />
             <Skeleton className="h-5 w-32 mx-auto" />
           </div>
-          <div className="flex-1 grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto w-full">
+        <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-full min-h-[300px] rounded-xl" />
+              <div key={i} className="flex flex-col h-full min-h-[300px] rounded-2xl overflow-hidden border border-border">
+                <Skeleton className="h-16 flex-shrink-0" />
+                <Skeleton className="flex-1" />
+              </div>
             ))}
           </div>
         </div>
@@ -203,28 +206,27 @@ export default function RegionSelect() {
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative rounded-2xl overflow-hidden border-2 border-border/30 hover:border-primary/50 shadow-lg hover:shadow-xl transition-all duration-300 ${
+              className={`group flex flex-col h-full rounded-2xl overflow-hidden border border-border bg-card shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Flag Image - Full visibility, crisp display */}
-              <img
-                src={region.image}
-                alt={`${region.name} flag`}
-                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-              />
-
-              {/* Minimal gradient - just for text area */}
-              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-              {/* Content - Clean, professional text */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-5 text-center">
-                <span className="text-base sm:text-lg font-bold text-white tracking-wide drop-shadow-md">
+              {/* Label Section - Above the flag */}
+              <div className="bg-card border-b border-border p-3 sm:p-4 text-center flex-shrink-0">
+                <span className="block text-sm sm:text-base font-semibold text-foreground">
                   {region.name}
                 </span>
-                <span className="block text-xs sm:text-sm text-white/90 mt-1 font-medium">
+                <span className="block text-xs text-muted-foreground mt-0.5">
                   {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
                 </span>
+              </div>
+
+              {/* Flag Image - Full visibility, no overlay */}
+              <div className="flex-1 relative overflow-hidden">
+                <img
+                  src={region.image}
+                  alt={`${region.name} flag`}
+                  className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
             </Link>
           ))}
