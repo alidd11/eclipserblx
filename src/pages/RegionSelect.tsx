@@ -14,23 +14,22 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 
-// Region images
-import ukRegionImg from '@/assets/regions/uk-region.jpg';
-import usRegionImg from '@/assets/regions/us-region.jpg';
-import euRegionImg from '@/assets/regions/eu-region.jpg';
+// Region flag images
+import ukFlagImg from '@/assets/regions/uk-flag.jpg';
+import usFlagImg from '@/assets/regions/us-flag.jpg';
+import euFlagImg from '@/assets/regions/eu-flag.jpg';
 
 interface Region {
   code: 'uk' | 'us' | 'eu';
   name: string;
-  flag: string;
   slug: string;
   productCount: number;
 }
 
 const REGION_CONFIG = [
-  { code: 'uk' as const, name: 'United Kingdom', flag: '🇬🇧', prefix: 'uk-', image: ukRegionImg },
-  { code: 'us' as const, name: 'United States', flag: '🇺🇸', prefix: 'us-', image: usRegionImg },
-  { code: 'eu' as const, name: 'European Union', flag: '🇪🇺', prefix: 'eu-', image: euRegionImg },
+  { code: 'uk' as const, name: 'United Kingdom', prefix: 'uk-', image: ukFlagImg },
+  { code: 'us' as const, name: 'United States', prefix: 'us-', image: usFlagImg },
+  { code: 'eu' as const, name: 'European Union', prefix: 'eu-', image: euFlagImg },
 ];
 
 export default function RegionSelect() {
@@ -72,7 +71,6 @@ export default function RegionSelect() {
             return {
               code: region.code,
               name: region.name,
-              flag: region.flag,
               slug: '',
               productCount: 0,
               image: region.image,
@@ -95,7 +93,6 @@ export default function RegionSelect() {
           return {
             code: region.code,
             name: region.name,
-            flag: region.flag,
             slug: subCategory.slug,
             productCount: count || 0,
             image: region.image,
