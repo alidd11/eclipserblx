@@ -1,148 +1,161 @@
 
 
-# Native Back Button Implementation Plan
+# Roblox-Style Role Permission System
 
 ## Overview
-Create a reusable, native-app-style back button component that customers can use to navigate to the previous page. The button will use the browser's history API with haptic feedback for a premium, mobile-native feel.
 
-## Design Approach
-The back button will:
-- Use a clean, minimal design with a left-facing arrow icon
-- Include haptic feedback when tapped (like other buttons in the app)
-- Support optional text label (e.g., "Back" or custom text)
-- Work across all devices with touch-optimized sizing
-- Only appear when there's navigation history available
+This plan redesigns the Role Permissions page to match Roblox's intuitive permission management interface, making it easier for admins to navigate and customize role permissions.
 
-## Component: `BackButton`
+## Current State Analysis
 
-### Location
-`src/components/ui/BackButton.tsx`
+The existing system has:
+- **55 permissions** across 2 categories (actions, pages)
+- A working toggle system for enabling/disabling permissions per role
+- Role hierarchy with custom roles support
 
-### Features
-1. **Browser History Navigation** - Uses `window.history.back()` or React Router's `navigate(-1)`
-2. **Haptic Feedback** - Triggers light haptic tap on press
-3. **Smart Visibility** - Optionally hide when there's no history to go back to
-4. **Customizable Label** - Show/hide text label, or use custom text
-5. **Flexible Styling** - Multiple variants (ghost, outline, subtle)
-6. **Touch-Optimized** - 44px minimum touch target for mobile accessibility
+## Proposed Changes
 
-### Props
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `showLabel` | `boolean` | `false` | Show "Back" text next to icon |
-| `label` | `string` | `"Back"` | Custom label text |
-| `variant` | `"ghost" \| "outline" \| "subtle"` | `"ghost"` | Button style variant |
-| `fallbackPath` | `string` | `undefined` | Where to navigate if no history exists |
-| `className` | `string` | `undefined` | Additional CSS classes |
+### 1. Reorganize Permission Categories
 
-### Example Usage
-```tsx
-import { BackButton } from '@/components/ui/BackButton';
+Replace the current 2-category system with more intuitive Roblox-style categories:
 
-// Simple back button (icon only)
-<BackButton />
+| New Category | Icon | Includes |
+|-------------|------|----------|
+| **Dashboard** | LayoutDashboard | view_dashboard, view_analytics, view_income, view_audit_logs |
+| **Store** | Package | view_products, manage_products, view_orders, manage_orders, view_reviews, manage_reviews, view_discounts, manage_discounts |
+| **Users** | Users | view_users, manage_users, delete_users, view_ip_bans, manage_ip_bans, view_subscribers, manage_subscriptions |
+| **Marketplace** | Store | view_seller_stores, manage_seller_stores, view_store_applications, review_store_applications, view_seller_payouts, process_payouts, view_seller_tickets, manage_seller_tickets |
+| **Communications** | MessageCircle | view_live_chat, respond_to_chat, view_contact_messages, respond_to_contacts, view_forum_reports, manage_forum_reports |
+| **Team** | Shield | view_staff_directory, view_staff_activity, manage_staff, view_applications, review_applications, view_job_channels, manage_job_channels |
+| **Affiliates** | Gift | view_affiliates, manage_affiliates, view_affiliate_applications, review_affiliate_applications, view_referrals, manage_referrals |
+| **System** | Settings | view_settings, manage_settings, view_permissions, manage_permissions, view_incidents, manage_incidents, view_bot_codes, manage_bot_codes, manage_user_roles |
 
-// With label
-<BackButton showLabel />
+### 2. New UI Design
 
-// Custom label
-<BackButton label="Go Back" showLabel />
-
-// With fallback path
-<BackButton fallbackPath="/products" />
-
-// Outline style
-<BackButton variant="outline" showLabel />
-```
-
-## Visual Design
+Create a cleaner, Roblox-inspired interface with:
 
 ```text
-┌─────────────────────────────────────┐
-│  ← Back                             │
-│  (Ghost variant with label)         │
-└─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│  ←                                  │
-│  (Icon-only, most compact)          │
-└─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│  [← Back]                           │
-│  (Outline variant, more visible)    │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  Role Permissions                                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │  Admin  │ │ Product │ │  Order  │ │ Support │ │ Analyst │   │
+│  │   🔒    │ │ Manager │ │ Manager │ │  Agent  │ │         │   │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘   │
+│       ▲                                                         │
+│       │ Selected                                                │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📊 Dashboard                                           ▼   ││
+│  ├─────────────────────────────────────────────────────────────┤│
+│  │ ☑️ View Dashboard        Access the admin dashboard         ││
+│  │ ☑️ View Analytics        Access analytics page              ││
+│  │ ☐ View Income            Access income/revenue page         ││
+│  │ ☑️ View Audit Logs       Access audit logs                  ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📦 Store                                               ▼   ││
+│  ├─────────────────────────────────────────────────────────────┤│
+│  │ ☑️ View Products         Access products list               ││
+│  │ ☑️ Manage Products       Create, edit, delete products      ││
+│  │ ...                                                         ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Technical Implementation
+### 3. Key UI Features
 
-### Code Structure
-```tsx
-// BackButton.tsx
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { hapticTap } from '@/lib/haptics';
-import { cn } from '@/lib/utils';
+**Role Selection Bar**
+- Horizontal scrollable role cards with icons and colors
+- Shows permission count per role
+- Lock icon for admin (non-editable)
+- Quick hierarchy level indicator
 
-interface BackButtonProps {
-  showLabel?: boolean;
-  label?: string;
-  variant?: 'ghost' | 'outline' | 'subtle';
-  fallbackPath?: string;
-  className?: string;
-}
+**Category Accordion**
+- Collapsible sections for each permission category
+- Category icon and name as header
+- Permission count badge (enabled/total)
+- Expand/collapse all button
 
-export function BackButton({
-  showLabel = false,
-  label = 'Back',
-  variant = 'ghost',
-  fallbackPath,
-  className,
-}: BackButtonProps) {
-  const navigate = useNavigate();
+**Permission Toggles**
+- Clean checkbox or switch for each permission
+- Permission name (human-readable)
+- Description on hover or below
+- Visual feedback when enabled (highlighted row)
 
-  const handleBack = () => {
-    hapticTap();
-    
-    // Check if there's history to go back to
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else if (fallbackPath) {
-      navigate(fallbackPath);
-    } else {
-      navigate('/');
-    }
-  };
+**Quick Actions**
+- "Select All" / "Deselect All" per category
+- Copy permissions from another role
+- Preset templates (e.g., "Support Template", "Manager Template")
 
-  return (
-    <Button
-      variant={variant === 'subtle' ? 'ghost' : variant}
-      size={showLabel ? 'sm' : 'icon'}
-      onClick={handleBack}
-      className={cn(
-        'text-muted-foreground hover:text-foreground',
-        variant === 'subtle' && 'hover:bg-transparent',
-        className
-      )}
-    >
-      <ArrowLeft className="h-4 w-4" />
-      {showLabel && <span className="ml-1">{label}</span>}
-    </Button>
-  );
-}
+### 4. Database Migration
+
+Update the `permissions` table to use the new category structure:
+
+```sql
+-- Update permission categories for better organization
+UPDATE public.permissions SET category = 'dashboard' WHERE name IN ('view_dashboard', 'view_analytics', 'view_income', 'view_audit_logs');
+UPDATE public.permissions SET category = 'store' WHERE name IN ('view_products', 'manage_products', 'view_orders', 'manage_orders', 'view_reviews', 'manage_reviews', 'view_discounts', 'manage_discounts');
+-- ... (continue for all categories)
 ```
 
-## Files to Create/Modify
+### 5. Implementation Files
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/ui/BackButton.tsx` | Create | New reusable back button component |
+| File | Changes |
+|------|---------|
+| `src/pages/admin/RolePermissions.tsx` | Complete redesign with new UI |
+| `src/components/admin/PermissionCategory.tsx` | New component for collapsible category sections |
+| `src/components/admin/RoleSelector.tsx` | New component for role selection bar |
+| `supabase/migrations/...` | Update permission categories in database |
 
-## Integration Examples (Optional Future Use)
-Once created, the component can be easily added to pages like:
-- Product detail page headers
-- Region select page
-- Categories page
-- Any page that benefits from quick navigation back
+---
+
+## Technical Details
+
+### New Permission Categories Mapping
+
+```typescript
+const PERMISSION_CATEGORIES = {
+  dashboard: {
+    label: 'Dashboard & Analytics',
+    icon: LayoutDashboard,
+    permissions: ['view_dashboard', 'view_analytics', 'view_income', 'view_audit_logs']
+  },
+  store: {
+    label: 'Store Management',
+    icon: Package,
+    permissions: ['view_products', 'manage_products', 'view_orders', 'manage_orders', ...]
+  },
+  // ... more categories
+};
+```
+
+### Accessibility Considerations
+
+- All toggles keyboard navigable
+- Clear focus indicators
+- ARIA labels for screen readers
+- High contrast for enabled/disabled states
+
+### Mobile Optimization
+
+- Role selector becomes horizontal scroll on mobile
+- Categories stack vertically
+- Touch-friendly toggle targets (44px minimum)
+- Mobile dropdown for role selection on small screens
+
+---
+
+## Summary
+
+This redesign transforms the permission management into a more intuitive, Roblox-inspired interface that:
+
+1. **Organizes permissions logically** into 8 intuitive categories
+2. **Simplifies navigation** with collapsible sections
+3. **Improves visual feedback** with clear enabled/disabled states
+4. **Maintains hierarchy enforcement** from the existing system
+5. **Works great on mobile** with responsive design
 
