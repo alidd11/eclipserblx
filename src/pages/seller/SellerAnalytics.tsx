@@ -3,6 +3,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
+import { ExportReportsCard } from '@/components/seller/ExportReportsCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -476,6 +477,9 @@ export default function SellerAnalytics() {
                 </Card>
               </TabsContent>
             </Tabs>
+
+            {/* Export Reports */}
+            <ExportReportsCard />
           </div>
         ) : (
           <Card>

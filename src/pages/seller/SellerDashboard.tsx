@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
 import { NotificationCenter } from '@/components/seller/NotificationCenter';
-import { ExportReportsCard } from '@/components/seller/ExportReportsCard';
 import { toast } from 'sonner';
 import { 
   Store, 
@@ -305,14 +304,7 @@ export default function SellerDashboard() {
         </div>
 
         {/* Activity Feed */}
-        <div className="mb-6">
-          <NotificationCenter />
-        </div>
-
-        {/* Reports Card */}
-        <div className="grid grid-cols-1 gap-6">
-          <ExportReportsCard />
-        </div>
+        <NotificationCenter />
 
         {/* Pending Items Alert */}
         {productStats && productStats.pending > 0 && (
