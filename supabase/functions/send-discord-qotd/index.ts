@@ -16,31 +16,29 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { question, qotdId, category } = await req.json();
+    const { question, qotdId, category, roleId: providedRoleId } = await req.json();
 
     if (!question) {
       throw new Error('Question is required');
     }
 
-    // Get the community webhook URL
-    const { data: webhookSetting } = await supabase
+    // Get the community webhook URL and fallback role ID
+    const { data: settings } = await supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'community_discord_webhook_url')
-      .maybeSingle();
+      .select('key, value')
+      .in('key', ['community_discord_webhook_url', 'discord_ping_role_id']);
 
-    if (!webhookSetting?.value) {
+    const settingsMap: Record<string, string> = {};
+    settings?.forEach((s: { key: string; value: string }) => {
+      settingsMap[s.key] = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
+    });
+
+    if (!settingsMap.community_discord_webhook_url) {
       throw new Error('Community Discord webhook not configured');
     }
 
-    // Get the saved role ID for pings
-    const { data: roleSetting } = await supabase
-      .from('settings')
-      .select('value')
-      .eq('key', 'discord_ping_role_id')
-      .maybeSingle();
-
-    const roleId = roleSetting?.value;
+    // Use provided roleId or fall back to saved setting
+    const roleId = providedRoleId || settingsMap.discord_ping_role_id;
 
     // Category emoji mapping
     const categoryEmojis: Record<string, string> = {
@@ -75,7 +73,7 @@ serve(async (req) => {
     }
 
     // Send to Discord
-    const webhookResponse = await fetch(webhookSetting.value, {
+    const webhookResponse = await fetch(settingsMap.community_discord_webhook_url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -92,13 +90,11 @@ serve(async (req) => {
     // Try to get message ID for reactions
     let discordMessageId = null;
     
-    // If webhook URL ends with ?wait=true, we get the message back
-    const webhookWithWait = webhookSetting.value.includes('?') 
-      ? `${webhookSetting.value}&wait=true`
-      : `${webhookSetting.value}?wait=true`;
-
-    // Send a follow-up message to add reaction prompt (optional)
-    // We can also send another message for this
+    // Note: If we need the message ID, we should use ?wait=true on the webhook URL
+    // const webhookWithWait = settingsMap.community_discord_webhook_url.includes('?') 
+    //   ? `${settingsMap.community_discord_webhook_url}&wait=true`
+    //   : `${settingsMap.community_discord_webhook_url}?wait=true`;
+    
     
     // Update the QOTD record with discord message ID if we have it
     if (qotdId) {

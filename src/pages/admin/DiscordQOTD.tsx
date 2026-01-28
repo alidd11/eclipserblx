@@ -101,6 +101,7 @@ export default function DiscordQOTD() {
   const [useAutoGenerate, setUseAutoGenerate] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('gaming');
   const [customQuestion, setCustomQuestion] = useState('');
+  const [roleId, setRoleId] = useState('');
   const [isPosting, setIsPosting] = useState(false);
 
   // Fetch QOTD history
@@ -118,20 +119,26 @@ export default function DiscordQOTD() {
     }
   });
 
-  // Fetch community webhook
-  const { data: webhookSettings } = useQuery({
-    queryKey: ['community-discord-webhook'],
+  // Fetch community webhook and saved role ID
+  const { data: discordSettings } = useQuery({
+    queryKey: ['community-discord-settings'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('settings')
-        .select('value')
-        .eq('key', 'community_discord_webhook_url')
-        .maybeSingle();
+        .select('key, value')
+        .in('key', ['community_discord_webhook_url', 'discord_ping_role_id']);
       
       if (error) throw error;
-      return data?.value as string | null;
+      const settings: Record<string, string> = {};
+      data?.forEach(s => {
+        settings[s.key] = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : String(s.value);
+      });
+      return settings;
     }
   });
+
+  const webhookSettings = discordSettings?.community_discord_webhook_url;
+  const savedRoleId = discordSettings?.discord_ping_role_id;
 
   const postQOTDMutation = useMutation({
     mutationFn: async (question: string) => {
@@ -154,12 +161,14 @@ export default function DiscordQOTD() {
 
       if (insertError) throw insertError;
 
-      // Send to Discord
+      // Send to Discord - use provided roleId or fall back to saved setting
+      const pingRoleId = roleId.trim() || savedRoleId;
       const { data, error } = await supabase.functions.invoke('send-discord-qotd', {
         body: { 
           question,
           qotdId: qotd.id,
-          category: useAutoGenerate ? selectedCategory : 'custom'
+          category: useAutoGenerate ? selectedCategory : 'custom',
+          roleId: pingRoleId
         }
       });
 
@@ -327,6 +336,20 @@ export default function DiscordQOTD() {
                     </p>
                   </div>
                 )}
+
+                {/* Role ID Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="role-id">Discord Role ID to Ping (Optional)</Label>
+                  <Input
+                    id="role-id"
+                    placeholder={savedRoleId ? `Default: ${savedRoleId}` : "Enter Discord role ID to ping"}
+                    value={roleId}
+                    onChange={(e) => setRoleId(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to use the default role from Discord Settings, or enter a specific role ID to ping.
+                  </p>
+                </div>
 
                 {!webhookSettings && (
                   <div className="p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-yellow-400">
