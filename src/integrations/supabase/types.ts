@@ -1248,6 +1248,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "discord_role_configs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       discount_codes: {
@@ -2211,6 +2218,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -2875,6 +2889,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "seller_agreements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       seller_analytics: {
@@ -2926,6 +2947,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "seller_analytics_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       seller_balances: {
@@ -2962,6 +2990,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_balances_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
           {
@@ -3030,6 +3065,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "seller_discount_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       seller_document_acknowledgements: {
@@ -3069,6 +3111,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "seller_document_acknowledgements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       seller_document_notifications: {
@@ -3106,6 +3155,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_document_notifications_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3213,6 +3269,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       seller_support_tickets: {
@@ -3291,6 +3354,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_support_tickets_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3418,6 +3488,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3881,6 +3958,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "store_conversations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       store_follows: {
@@ -3914,6 +3998,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_follows_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3972,6 +4063,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_messages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4054,6 +4152,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "store_tabs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       store_team_invites: {
@@ -4093,6 +4198,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_team_invites_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4137,6 +4249,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_team_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4718,7 +4837,179 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      stores_public: {
+        Row: {
+          about_content: string | null
+          accent_color: string | null
+          announcement_active: boolean | null
+          announcement_text: string | null
+          average_rating: number | null
+          banner_url: string | null
+          bio: string | null
+          created_at: string | null
+          custom_css: string | null
+          description: string | null
+          discord_url: string | null
+          featured_product_ids: string[] | null
+          follower_count: number | null
+          font_body: string | null
+          font_heading: string | null
+          hero_cta_link: string | null
+          hero_cta_text: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string | null
+          is_active: boolean | null
+          is_testing: boolean | null
+          is_trusted: boolean | null
+          is_verified: boolean | null
+          layout_style: string | null
+          logo_url: string | null
+          name: string | null
+          owner_id: string | null
+          product_count: number | null
+          roblox_gamepass_discount_enabled: boolean | null
+          roblox_gamepass_discount_percent: number | null
+          roblox_gamepass_id: string | null
+          roblox_group_discount_enabled: boolean | null
+          roblox_group_discount_percent: number | null
+          roblox_group_id: string | null
+          roblox_group_min_rank: number | null
+          roblox_premium_discount_enabled: boolean | null
+          roblox_premium_discount_percent: number | null
+          roblox_url: string | null
+          show_reviews: boolean | null
+          show_social_proof: boolean | null
+          slug: string | null
+          status: string | null
+          store_id: string | null
+          theme: string | null
+          tiktok_url: string | null
+          total_revenue: number | null
+          total_sales: number | null
+          twitter_url: string | null
+          updated_at: string | null
+          website_url: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          about_content?: string | null
+          accent_color?: string | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
+          average_rating?: number | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          description?: string | null
+          discord_url?: string | null
+          featured_product_ids?: string[] | null
+          follower_count?: number | null
+          font_body?: string | null
+          font_heading?: string | null
+          hero_cta_link?: string | null
+          hero_cta_text?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_testing?: boolean | null
+          is_trusted?: boolean | null
+          is_verified?: boolean | null
+          layout_style?: string | null
+          logo_url?: string | null
+          name?: string | null
+          owner_id?: string | null
+          product_count?: number | null
+          roblox_gamepass_discount_enabled?: boolean | null
+          roblox_gamepass_discount_percent?: number | null
+          roblox_gamepass_id?: string | null
+          roblox_group_discount_enabled?: boolean | null
+          roblox_group_discount_percent?: number | null
+          roblox_group_id?: string | null
+          roblox_group_min_rank?: number | null
+          roblox_premium_discount_enabled?: boolean | null
+          roblox_premium_discount_percent?: number | null
+          roblox_url?: string | null
+          show_reviews?: boolean | null
+          show_social_proof?: boolean | null
+          slug?: string | null
+          status?: string | null
+          store_id?: string | null
+          theme?: string | null
+          tiktok_url?: string | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          about_content?: string | null
+          accent_color?: string | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
+          average_rating?: number | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          description?: string | null
+          discord_url?: string | null
+          featured_product_ids?: string[] | null
+          follower_count?: number | null
+          font_body?: string | null
+          font_heading?: string | null
+          hero_cta_link?: string | null
+          hero_cta_text?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_testing?: boolean | null
+          is_trusted?: boolean | null
+          is_verified?: boolean | null
+          layout_style?: string | null
+          logo_url?: string | null
+          name?: string | null
+          owner_id?: string | null
+          product_count?: number | null
+          roblox_gamepass_discount_enabled?: boolean | null
+          roblox_gamepass_discount_percent?: number | null
+          roblox_gamepass_id?: string | null
+          roblox_group_discount_enabled?: boolean | null
+          roblox_group_discount_percent?: number | null
+          roblox_group_id?: string | null
+          roblox_group_min_rank?: number | null
+          roblox_premium_discount_enabled?: boolean | null
+          roblox_premium_discount_percent?: number | null
+          roblox_url?: string | null
+          show_reviews?: boolean | null
+          show_social_proof?: boolean | null
+          slug?: string | null
+          status?: string | null
+          store_id?: string | null
+          theme?: string | null
+          tiktok_url?: string | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Functions: {
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
