@@ -157,20 +157,20 @@ export default function Categories() {
     <MainLayout>
       <div className="container py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8 sm:mb-10 text-center">
+        <div className="mb-6 sm:mb-8 text-center">
           {/* Accent Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <LayoutGrid className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Browse Categories</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-2">
+            <LayoutGrid className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">Browse Categories</span>
           </div>
           
           {/* Title */}
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">
             Categories
           </h1>
           
           {/* Subtitle */}
-          <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Browse our collection by category
           </p>
         </div>
