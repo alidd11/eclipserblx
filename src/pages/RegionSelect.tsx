@@ -1,6 +1,6 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,6 +14,11 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 
+// Region images
+import ukRegionImg from '@/assets/regions/uk-region.jpg';
+import usRegionImg from '@/assets/regions/us-region.jpg';
+import euRegionImg from '@/assets/regions/eu-region.jpg';
+
 interface Region {
   code: 'uk' | 'us' | 'eu';
   name: string;
@@ -23,9 +28,9 @@ interface Region {
 }
 
 const REGION_CONFIG = [
-  { code: 'uk' as const, name: 'United Kingdom', flag: '🇬🇧', prefix: 'uk-' },
-  { code: 'us' as const, name: 'United States', flag: '🇺🇸', prefix: 'us-' },
-  { code: 'eu' as const, name: 'European Union', flag: '🇪🇺', prefix: 'eu-' },
+  { code: 'uk' as const, name: 'United Kingdom', flag: '🇬🇧', prefix: 'uk-', image: ukRegionImg },
+  { code: 'us' as const, name: 'United States', flag: '🇺🇸', prefix: 'us-', image: usRegionImg },
+  { code: 'eu' as const, name: 'European Union', flag: '🇪🇺', prefix: 'eu-', image: euRegionImg },
 ];
 
 export default function RegionSelect() {
@@ -57,7 +62,7 @@ export default function RegionSelect() {
 
       // Get product counts for each regional sub-category
       const now = new Date().toISOString();
-      const regions: Region[] = await Promise.all(
+      const regions: (Region & { image: string })[] = await Promise.all(
         REGION_CONFIG.map(async (region) => {
           const subCategory = subCategories?.find((sc) =>
             sc.slug.startsWith(region.prefix)
@@ -70,6 +75,7 @@ export default function RegionSelect() {
               flag: region.flag,
               slug: '',
               productCount: 0,
+              image: region.image,
             };
           }
 
@@ -92,6 +98,7 @@ export default function RegionSelect() {
             flag: region.flag,
             slug: subCategory.slug,
             productCount: count || 0,
+            image: region.image,
           };
         })
       );
@@ -125,27 +132,21 @@ export default function RegionSelect() {
     enabled: !!categorySlug,
   });
 
-  const gradientMap: Record<string, string> = {
-    uk: 'from-blue-500/20 via-red-500/10 to-white/10',
-    us: 'from-red-500/20 via-white/10 to-blue-500/20',
-    eu: 'from-blue-600/20 to-yellow-500/10',
-  };
-
   const categoriesLink = isMarketplace ? '/categories?source=marketplace' : '/categories';
   const sourceParam = isMarketplace ? '&source=marketplace' : '';
 
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="container py-8 space-y-8">
-          <Skeleton className="h-6 w-48" />
-          <div className="text-center space-y-4">
-            <Skeleton className="h-10 w-64 mx-auto" />
-            <Skeleton className="h-6 w-48 mx-auto" />
+        <div className="container py-6 sm:py-8 space-y-6">
+          <Skeleton className="h-5 w-48" />
+          <div className="text-center space-y-2">
+            <Skeleton className="h-8 w-48 mx-auto" />
+            <Skeleton className="h-5 w-32 mx-auto" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-56 rounded-xl" />
+              <Skeleton key={i} className="aspect-[4/3] rounded-xl" />
             ))}
           </div>
         </div>
@@ -163,10 +164,7 @@ export default function RegionSelect() {
               The category you're looking for doesn't exist.
             </p>
             <Button asChild>
-              <Link to={categoriesLink}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Categories
-              </Link>
+              <Link to={categoriesLink}>Back to Categories</Link>
             </Button>
           </div>
         </div>
@@ -176,7 +174,7 @@ export default function RegionSelect() {
 
   return (
     <MainLayout>
-      <div className="container py-8 space-y-8">
+      <div className="container py-6 sm:py-8 space-y-6">
         {/* Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList>
@@ -193,39 +191,44 @@ export default function RegionSelect() {
         </Breadcrumb>
 
         {/* Header */}
-        <div className="text-center space-y-3">
-          <h1 className="text-3xl md:text-4xl font-display font-bold">
+        <div className="text-center space-y-1">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
             Select Your Region
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {data.parentCategory.name}
           </p>
         </div>
 
-        {/* Region Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        {/* Region Cards - Matching Category Tile Style */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative overflow-hidden rounded-xl border border-border bg-card p-8 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 ${
+              className={`group relative flex flex-col items-center justify-center aspect-[4/3] rounded-xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${gradientMap[region.code]} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+              {/* Background Image */}
+              <img
+                src={region.image}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
 
-              <div className="relative z-10 space-y-4">
-                <span className="text-7xl block animate-fade-in">{region.flag}</span>
-                <div>
-                  <h3 className="font-display font-semibold text-xl group-hover:text-primary transition-colors">
-                    {region.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
-                  </p>
-                </div>
+              {/* Dark Overlay */}
+              <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors" />
+
+              {/* Content */}
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center">
+                <span className="text-2xl sm:text-3xl mb-1">{region.flag}</span>
+                <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
+                  {region.name}
+                </span>
+                <span className="text-[10px] sm:text-xs text-white/80 mt-1 font-medium">
+                  {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
+                </span>
               </div>
             </Link>
           ))}
@@ -233,7 +236,7 @@ export default function RegionSelect() {
 
         {/* View All Button */}
         <div className="text-center">
-          <Button variant="outline" size="lg" asChild>
+          <Button variant="outline" size="sm" asChild>
             <Link to={`/products?category=${categorySlug}${sourceParam}`}>
               <Globe className="mr-2 h-4 w-4" />
               View All Regions ({data.totalCount} items)
