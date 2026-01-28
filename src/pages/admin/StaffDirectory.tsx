@@ -222,43 +222,35 @@ export default function StaffDirectory() {
         </div>
 
         <Tabs defaultValue="directory" className="space-y-4" onValueChange={() => {}}>
-          {/* Mobile dropdown */}
-          <div className="sm:hidden">
-            <Select defaultValue="directory" onValueChange={(value) => {
-              const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-              trigger?.click();
-            }}>
-              <SelectTrigger className="w-full bg-card">
-                <SelectValue placeholder="Select section" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border z-[100]">
-                <SelectItem value="directory">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Directory
-                  </div>
-                </SelectItem>
-                <SelectItem value="logs">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    ID Logs
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Dropdown for all devices */}
+          <Select defaultValue="directory" onValueChange={(value) => {
+            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
+            trigger?.click();
+          }}>
+            <SelectTrigger className="w-full max-w-md bg-card">
+              <SelectValue placeholder="Select section" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-[100]">
+              <SelectItem value="directory">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Directory
+                </div>
+              </SelectItem>
+              <SelectItem value="logs">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  ID Logs
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-          {/* Desktop tabs */}
-          <TabsList className="hidden sm:grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="directory" data-value="directory" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Directory
-            </TabsTrigger>
-            <TabsTrigger value="logs" data-value="logs" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              ID Logs
-            </TabsTrigger>
-          </TabsList>
+          {/* Hidden triggers for tab switching */}
+          <div className="hidden">
+            <button data-value="directory" onClick={() => {}} />
+            <button data-value="logs" onClick={() => {}} />
+          </div>
 
           <TabsContent value="directory" className="space-y-4">
             {/* Search */}

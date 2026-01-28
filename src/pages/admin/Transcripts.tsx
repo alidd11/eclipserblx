@@ -342,47 +342,28 @@ export default function Transcripts() {
           setActiveTab(val);
           setExpandedTranscript(null);
         }}>
-          {/* Mobile dropdown */}
-          <div className="sm:hidden mb-4">
-            <Select value={activeTab} onValueChange={(val) => {
-              setActiveTab(val);
-              setExpandedTranscript(null);
-            }}>
-              <SelectTrigger className="w-full bg-card">
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border z-[100]">
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id}>
-                    <div className="flex items-center gap-2">
-                      <dept.icon className="h-4 w-4" />
-                      {dept.label}
-                      <Badge variant="secondary" className="ml-1">
-                        {dept.loading ? <Loader2 className="h-3 w-3 animate-spin" /> : dept.count}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Desktop tabs */}
-          <TabsList className="hidden sm:flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
-            {departments.map((dept) => (
-              <TabsTrigger
-                key={dept.id}
-                value={dept.id}
-                className="flex items-center gap-2 data-[state=active]:bg-background"
-              >
-                <dept.icon className="h-4 w-4" />
-                <span>{dept.label}</span>
-                <Badge variant="secondary" className="ml-1">
-                  {dept.loading ? <Loader2 className="h-3 w-3 animate-spin" /> : dept.count}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          {/* Dropdown for all devices */}
+          <Select value={activeTab} onValueChange={(val) => {
+            setActiveTab(val);
+            setExpandedTranscript(null);
+          }}>
+            <SelectTrigger className="w-full max-w-md bg-card">
+              <SelectValue placeholder="Select department" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-[100]">
+              {departments.map((dept) => (
+                <SelectItem key={dept.id} value={dept.id}>
+                  <div className="flex items-center gap-2">
+                    <dept.icon className="h-4 w-4" />
+                    {dept.label}
+                    <Badge variant="secondary" className="ml-1">
+                      {dept.loading ? <Loader2 className="h-3 w-3 animate-spin" /> : dept.count}
+                    </Badge>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {departments.map((dept) => (
             <TabsContent key={dept.id} value={dept.id} className="mt-4">
