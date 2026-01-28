@@ -1,10 +1,39 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, Package, ArrowRight } from 'lucide-react';
+import { 
+  Car, 
+  Shield, 
+  ShieldOff, 
+  Flame, 
+  Ambulance, 
+  Plane, 
+  Shirt, 
+  Swords,
+  Map,
+  Package,
+  Bot,
+  Building2,
+  ChevronRight
+} from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FeaturedProducts } from '@/components/home/FeaturedProducts';
+
+// Category icon mapping
+const categoryIcons: Record<string, React.ElementType> = {
+  'civilian-vehicles': Car,
+  'marked-police-vehicles': Shield,
+  'unmarked-police-vehicles': ShieldOff,
+  'fire-vehicles': Flame,
+  'ambulance-vehicles': Ambulance,
+  'aircraft': Plane,
+  'uniforms': Shirt,
+  'military-vehicles': Swords,
+  'maps': Map,
+  'bundle-deals': Package,
+  'bots': Bot,
+  'buildings': Building2,
+};
 
 export default function Categories() {
   const [searchParams] = useSearchParams();
@@ -81,54 +110,30 @@ export default function Categories() {
     },
   });
 
-  const gradientMap: Record<number, string> = {
-    0: 'from-purple-500/20 to-purple-600/20',
-    1: 'from-blue-500/20 to-blue-600/20',
-    2: 'from-emerald-500/20 to-emerald-600/20',
-    3: 'from-amber-500/20 to-amber-600/20',
-    4: 'from-rose-500/20 to-rose-600/20',
-    5: 'from-cyan-500/20 to-cyan-600/20',
-  };
-
-  const iconColorMap: Record<number, string> = {
-    0: 'text-purple-400',
-    1: 'text-blue-400',
-    2: 'text-emerald-400',
-    3: 'text-amber-400',
-    4: 'text-rose-400',
-    5: 'text-cyan-400',
-  };
-
   return (
     <MainLayout>
-      <div className="container py-8 space-y-12">
+      <div className="container py-6 sm:py-8">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-display font-bold">
-            Browse Categories
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            Categories
           </h1>
-          <p className="text-muted-foreground">
-            Explore our collection of premium roleplay assets by category
+          <p className="text-sm text-muted-foreground mt-1">
+            Browse our collection by category
           </p>
         </div>
 
-        {/* Categories Grid */}
+        {/* Categories List */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="gaming-card p-6">
-                <Skeleton className="h-12 w-12 rounded-lg mb-4" />
-                <Skeleton className="h-6 w-32 mb-2" />
-                <Skeleton className="h-4 w-full mb-4" />
-                <Skeleton className="h-4 w-20" />
-              </div>
+          <div className="space-y-2">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories?.map((category, index) => {
-              const gradient = gradientMap[index % 6];
-              const iconColor = iconColorMap[index % 6];
+          <div className="space-y-1.5">
+            {categories?.map((category) => {
+              const Icon = categoryIcons[category.slug] || Package;
               const productCount = category.product_count || 0;
 
               // Determine if this category should use region selection
@@ -141,41 +146,27 @@ export default function Categories() {
                 <Link
                   key={category.id}
                   to={linkTo}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
+                  className="group flex items-center justify-between px-4 py-3.5 rounded-lg bg-card border border-border hover:bg-muted/50 hover:border-muted-foreground/20 transition-colors"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                  
-                  <div className="relative z-10">
-                    <div className={`mb-4 inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 ${iconColor}`}>
-                      <Package className="h-6 w-6" />
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
+                      <Icon className="h-5 w-5 text-foreground/70" />
                     </div>
-                    
-                    <h3 className="font-display font-semibold text-xl mb-2 group-hover:text-primary transition-colors">
-                      {category.name}
-                    </h3>
-                    
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                      {category.description || 'Browse our collection'}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        {productCount} {productCount === 1 ? 'product' : 'products'}
-                      </span>
-                      <div className="flex items-center text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span>Browse</span>
-                        <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
+                    <div>
+                      <h3 className="font-medium text-sm sm:text-base">
+                        {category.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {productCount} {productCount === 1 ? 'item' : 'items'}
+                      </p>
                     </div>
                   </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </Link>
               );
             })}
           </div>
         )}
-
-        {/* Featured Products Section */}
-        <FeaturedProducts />
       </div>
     </MainLayout>
   );
