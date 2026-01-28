@@ -155,16 +155,29 @@ export default function SellerProductEditor() {
     }));
   };
 
+  const MAX_IMAGES = 4;
+
   // Upload image
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const remainingSlots = MAX_IMAGES - formData.images.length;
+    if (remainingSlots <= 0) {
+      toast.error(`Maximum ${MAX_IMAGES} images allowed per product`);
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+    if (filesToUpload.length < files.length) {
+      toast.warning(`Only uploading ${filesToUpload.length} image(s) - ${MAX_IMAGES} maximum reached`);
+    }
+
     setUploading(true);
     try {
       const newImages: string[] = [];
 
-      for (const file of Array.from(files)) {
+      for (const file of filesToUpload) {
         // Security scan (virus + NSFW)
         toast.info('Scanning image...', { id: 'img-scan' });
         const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
@@ -197,7 +210,9 @@ export default function SellerProductEditor() {
         images: [...prev.images, ...newImages],
       }));
 
-      toast.success('Images uploaded successfully');
+      if (newImages.length > 0) {
+        toast.success(`${newImages.length} image(s) uploaded successfully`);
+      }
     } catch (error: any) {
       toast.error('Failed to upload images: ' + error.message);
     } finally {
@@ -527,13 +542,18 @@ export default function SellerProductEditor() {
           {/* Images */}
           <Card>
             <CardHeader>
-              <CardTitle>Product Images</CardTitle>
-              <CardDescription>Upload images to showcase your product</CardDescription>
+              <CardTitle className="flex items-center justify-between">
+                <span>Product Images</span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  {formData.images.length}/{MAX_IMAGES}
+                </span>
+              </CardTitle>
+              <CardDescription>Upload up to {MAX_IMAGES} images to showcase your product</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {formData.images.length > 0 && (
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {formData.images.map((img, index) => (
                       <div key={index} className="relative group">
                         <img
@@ -558,19 +578,28 @@ export default function SellerProductEditor() {
                   </div>
                 )}
 
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-                >
-                  {uploading ? (
-                    <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-muted-foreground" />
-                  ) : (
-                    <ImagePlus className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    {uploading ? 'Uploading...' : 'Click to upload images'}
-                  </p>
-                </div>
+                {formData.images.length < MAX_IMAGES ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-muted-foreground" />
+                    ) : (
+                      <ImagePlus className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {uploading ? 'Uploading...' : `Click to upload images (${MAX_IMAGES - formData.images.length} remaining)`}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center bg-muted/20">
+                    <ImagePlus className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">
+                      Maximum {MAX_IMAGES} images reached
+                    </p>
+                  </div>
+                )}
 
                 <input
                   ref={fileInputRef}
