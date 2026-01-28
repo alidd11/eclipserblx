@@ -203,7 +203,7 @@ export default function RegionSelect() {
         </div>
 
         {/* Country Names - Each in own card, inline row */}
-        <div className="flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
+        <div className="flex gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
           {data.regions.map((region) => (
             <div
               key={`name-${region.code}`}
@@ -211,15 +211,15 @@ export default function RegionSelect() {
                 !region.slug ? 'opacity-50' : ''
               }`}
             >
-            <span className="text-sm sm:text-base font-semibold text-foreground whitespace-nowrap">
-              {region.name}
-            </span>
+              <span className="text-sm sm:text-base font-semibold text-foreground whitespace-nowrap">
+                {region.name}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Flag Images - Inline row */}
-        <div className="flex-1 flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+        <div className="flex-1 flex gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
           {data.regions.map((region) => (
             <Link
               key={region.code}
