@@ -214,8 +214,8 @@ export default function RegionSelect() {
                 className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
               />
 
-              {/* Gradient overlay for text legibility */}
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+              {/* Gradient overlay - subtle, only at bottom for text */}
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
 
               {/* Content - Positioned at bottom */}
               <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
