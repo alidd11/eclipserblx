@@ -207,8 +207,8 @@ export default function RegionSelect() {
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Flag Image - Full height background */}
-              <div className="relative w-full aspect-[3/4]">
+              {/* Flag Image - Landscape orientation */}
+              <div className="relative w-full aspect-[4/3]">
                 <img
                   src={region.image}
                   alt={`${region.name} flag`}
