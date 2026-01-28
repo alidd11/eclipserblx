@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
 import {
   Dialog,
   DialogContent,
@@ -87,17 +86,17 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
   const maxAllowedHierarchy = currentUserHierarchy;
   
   const [formData, setFormData] = useState({
-    name: editRole?.name || '',
-    display_name: editRole?.display_name || '',
-    color: editRole?.color || 'bg-gray-500',
-    icon: editRole?.icon || 'shield',
-    hierarchy_level: editRole?.hierarchy_level || Math.min(10, maxAllowedHierarchy),
-    description: editRole?.description || '',
+    name: '',
+    display_name: '',
+    color: 'bg-gray-500',
+    icon: 'shield',
+    hierarchy_level: 10,
+    description: '',
   });
 
-  // Reset form when dialog opens/closes or editRole changes
-  useState(() => {
-    if (editRole) {
+  // Properly sync form data when editRole changes or dialog opens
+  useEffect(() => {
+    if (open && editRole) {
       setFormData({
         name: editRole.name,
         display_name: editRole.display_name,
@@ -106,17 +105,17 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
         hierarchy_level: editRole.hierarchy_level,
         description: editRole.description || '',
       });
-    } else {
+    } else if (open && !editRole) {
       setFormData({
         name: '',
         display_name: '',
         color: 'bg-gray-500',
         icon: 'shield',
-        hierarchy_level: 10,
+        hierarchy_level: Math.min(10, maxAllowedHierarchy),
         description: '',
       });
     }
-  });
+  }, [open, editRole, maxAllowedHierarchy]);
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
