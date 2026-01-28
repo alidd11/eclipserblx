@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -341,7 +342,33 @@ export default function Transcripts() {
           setActiveTab(val);
           setExpandedTranscript(null);
         }}>
-          <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
+          {/* Mobile dropdown */}
+          <div className="sm:hidden mb-4">
+            <Select value={activeTab} onValueChange={(val) => {
+              setActiveTab(val);
+              setExpandedTranscript(null);
+            }}>
+              <SelectTrigger className="w-full bg-card">
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-[100]">
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id}>
+                    <div className="flex items-center gap-2">
+                      <dept.icon className="h-4 w-4" />
+                      {dept.label}
+                      <Badge variant="secondary" className="ml-1">
+                        {dept.loading ? <Loader2 className="h-3 w-3 animate-spin" /> : dept.count}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
             {departments.map((dept) => (
               <TabsTrigger
                 key={dept.id}
@@ -349,7 +376,7 @@ export default function Transcripts() {
                 className="flex items-center gap-2 data-[state=active]:bg-background"
               >
                 <dept.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{dept.label}</span>
+                <span>{dept.label}</span>
                 <Badge variant="secondary" className="ml-1">
                   {dept.loading ? <Loader2 className="h-3 w-3 animate-spin" /> : dept.count}
                 </Badge>

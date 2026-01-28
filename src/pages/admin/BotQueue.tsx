@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -432,9 +433,45 @@ export default function BotQueue() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="action" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="action" className="gap-1.5">
+        <Tabs defaultValue="action" className="space-y-4" onValueChange={() => {}}>
+          {/* Mobile dropdown */}
+          <div className="sm:hidden mb-4">
+            <Select defaultValue="action" onValueChange={(value) => {
+              const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
+              trigger?.click();
+            }}>
+              <SelectTrigger className="w-full bg-card">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-[100]">
+                <SelectItem value="action">
+                  <div className="flex items-center gap-2">
+                    Action Required
+                    {actionRequired.length > 0 && (
+                      <Badge variant="secondary" className="h-5 px-1.5">
+                        {actionRequired.length}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+                <SelectItem value="progress">
+                  <div className="flex items-center gap-2">
+                    In Progress
+                    {installingRequests.length > 0 && (
+                      <Badge variant="secondary" className="h-5 px-1.5">
+                        {installingRequests.length}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:grid w-full grid-cols-3">
+            <TabsTrigger value="action" data-value="action" className="gap-1.5">
               Action Required
               {actionRequired.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 px-1.5">
@@ -442,7 +479,7 @@ export default function BotQueue() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="progress" className="gap-1.5">
+            <TabsTrigger value="progress" data-value="progress" className="gap-1.5">
               In Progress
               {installingRequests.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 px-1.5">
@@ -450,7 +487,7 @@ export default function BotQueue() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="completed" data-value="completed">Completed</TabsTrigger>
           </TabsList>
 
           <TabsContent value="action" className="space-y-4">
