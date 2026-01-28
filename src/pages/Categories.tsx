@@ -139,6 +139,19 @@ export default function Categories() {
     },
   });
 
+  // Build category data for rendering
+  const categoryData = categories?.map((category) => {
+    const Icon = categoryIcons[category.slug] || Package;
+    const productCount = category.product_count || 0;
+    const bgImage = categoryImages[category.slug];
+    const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && category.has_sub_categories;
+    const linkTo = useRegionSelect
+      ? `/browse/${category.slug}/region${isMarketplace ? '?source=marketplace' : ''}`
+      : `/products?category=${category.slug}${isMarketplace ? '&source=marketplace' : ''}`;
+    
+    return { ...category, Icon, productCount, bgImage, linkTo };
+  }) || [];
+
   return (
     <MainLayout>
       <div className="container py-6 sm:py-8">
@@ -152,57 +165,62 @@ export default function Categories() {
           </p>
         </div>
 
-        {/* Categories Tile Grid */}
+        {/* Categories - Names above, Images below */}
         {isLoading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
-            {[...Array(12)].map((_, i) => (
-              <Skeleton key={i} className="aspect-square rounded-xl" />
-            ))}
-          </div>
+          <>
+            {/* Skeleton for names */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 mb-3 sm:mb-4">
+              {[...Array(12)].map((_, i) => (
+                <Skeleton key={`name-${i}`} className="h-10 sm:h-12 rounded-xl" />
+              ))}
+            </div>
+            {/* Skeleton for images */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+              {[...Array(12)].map((_, i) => (
+                <Skeleton key={`img-${i}`} className="aspect-square rounded-xl" />
+              ))}
+            </div>
+          </>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
-            {categories?.map((category) => {
-              const Icon = categoryIcons[category.slug] || Package;
-              const productCount = category.product_count || 0;
-              const bgImage = categoryImages[category.slug];
+          <>
+            {/* Category Names - Each in own card */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 mb-3 sm:mb-4">
+              {categoryData.map((category) => (
+                <div
+                  key={`name-${category.id}`}
+                  className={`min-w-0 bg-card border border-border rounded-xl py-2 sm:py-3 px-2 sm:px-3 text-center shadow-sm ${
+                    category.productCount === 0 ? 'opacity-50' : ''
+                  }`}
+                >
+                  <span className="block text-[10px] sm:text-xs font-semibold text-foreground truncate">
+                    {category.name}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-              // Determine if this category should use region selection
-              const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && category.has_sub_categories;
-              const linkTo = useRegionSelect
-                ? `/browse/${category.slug}/region${isMarketplace ? '?source=marketplace' : ''}`
-                : `/products?category=${category.slug}${isMarketplace ? '&source=marketplace' : ''}`;
-
-              return (
+            {/* Category Images */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+              {categoryData.map((category) => (
                 <Link
                   key={category.id}
-                  to={linkTo}
-                  className="group relative flex flex-col items-center justify-center aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all"
+                  to={category.linkTo}
+                  className={`group relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 ${
+                    category.productCount === 0 ? 'opacity-50 pointer-events-none' : ''
+                  }`}
                 >
-                  {/* Background Image */}
-                  {bgImage && (
+                  {/* Background Image - Full visibility */}
+                  {category.bgImage && (
                     <img 
-                      src={bgImage} 
-                      alt="" 
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      src={category.bgImage} 
+                      alt={category.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   )}
-                  
-                  {/* Dark Overlay */}
-                  <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors" />
-                  
-                  {/* Content */}
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center">
-                    <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
-                      {category.name}
-                    </span>
-                    <span className="text-[10px] sm:text-xs text-white/80 mt-1 font-medium">
-                      {productCount} {productCount === 1 ? 'item' : 'items'}
-                    </span>
-                  </div>
                 </Link>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </MainLayout>
