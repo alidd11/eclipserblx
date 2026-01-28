@@ -1245,6 +1245,48 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_qotd: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          discord_message_id: string | null
+          id: string
+          is_auto_generated: boolean | null
+          posted_at: string | null
+          question: string
+          scheduled_for: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          discord_message_id?: string | null
+          id?: string
+          is_auto_generated?: boolean | null
+          posted_at?: string | null
+          question: string
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          discord_message_id?: string | null
+          id?: string
+          is_auto_generated?: boolean | null
+          posted_at?: string | null
+          question?: string
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discord_role_configs: {
         Row: {
           auto_assign_on_purchase: boolean
