@@ -230,9 +230,9 @@ export default function SellerStoreTabs() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Store Tabs</h1>
+            <h1 className="text-3xl font-bold">Store Categories</h1>
             <p className="text-muted-foreground">
-              Create custom product category tabs for your store page
+              Create custom categories to organize products on your store page
             </p>
           </div>
           <Button 
@@ -240,26 +240,26 @@ export default function SellerStoreTabs() {
             disabled={!canCreateMore}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Tab
+            Add Category
           </Button>
         </div>
 
         {/* Limit indicator */}
         <div className="mb-4">
           <Badge variant={canCreateMore ? 'secondary' : 'destructive'}>
-            {tabs?.length || 0} / {MAX_TABS} tabs used
+            {tabs?.length || 0} / {MAX_TABS} categories used
           </Badge>
         </div>
 
-        {/* Tabs List */}
+        {/* Categories List */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <LayoutGrid className="h-5 w-5" />
-              Your Tabs
+              Your Categories
             </CardTitle>
             <CardDescription>
-              Drag to reorder, assign products, or edit your tabs
+              Drag to reorder, assign products, or edit your categories
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -318,13 +318,13 @@ export default function SellerStoreTabs() {
             ) : (
               <div className="text-center py-12">
                 <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Tabs Yet</h3>
+                <h3 className="text-lg font-medium mb-2">No Categories Yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Create tabs to organize your products into categories
+                  Create categories to organize your products
                 </p>
                 <Button onClick={() => setIsCreateOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Tab
+                  Create Your First Category
                 </Button>
               </div>
             )}
@@ -341,15 +341,15 @@ export default function SellerStoreTabs() {
         }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingTab ? 'Edit Tab' : 'Create New Tab'}</DialogTitle>
+              <DialogTitle>{editingTab ? 'Edit Category' : 'Create New Category'}</DialogTitle>
               <DialogDescription>
-                {editingTab ? 'Update your tab settings' : 'Add a new product category tab to your store'}
+                {editingTab ? 'Update your category settings' : 'Add a new product category to your store'}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="tab-name">Tab Name</Label>
+                <Label htmlFor="tab-name">Category Name</Label>
                 <Input
                   id="tab-name"
                   value={formData.name}
@@ -380,7 +380,7 @@ export default function SellerStoreTabs() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Visible</Label>
-                  <p className="text-xs text-muted-foreground">Show this tab on your store page</p>
+                  <p className="text-xs text-muted-foreground">Show this category on your store page</p>
                 </div>
                 <Switch
                   checked={formData.is_active}
@@ -402,7 +402,7 @@ export default function SellerStoreTabs() {
                 disabled={!formData.name || !formData.slug || createTab.isPending || updateTab.isPending}
               >
                 <Save className="h-4 w-4 mr-2" />
-                {editingTab ? 'Save Changes' : 'Create Tab'}
+                {editingTab ? 'Save Changes' : 'Create Category'}
               </Button>
             </DialogFooter>
           </DialogContent>
