@@ -160,52 +160,51 @@ export function RoleManagementCard() {
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {roles?.map(role => {
                 const IconComponent = ICON_MAP[role.icon] || Shield;
                 return (
                   <div
                     key={role.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                    className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded ${role.color} text-white`}>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`p-1.5 rounded-md ${role.color} text-white shrink-0`}>
                         <IconComponent className="h-4 w-4" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{role.display_name}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{role.display_name}</span>
                           {role.is_system && (
-                            <Badge variant="outline" className="text-xs">
-                              <Lock className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 shrink-0">
+                              <Lock className="h-2.5 w-2.5 mr-1" />
                               System
                             </Badge>
                           )}
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge className="text-[10px] px-1.5 py-0 h-5 bg-cyan-500 hover:bg-cyan-600 shrink-0">
                             Level {role.hierarchy_level}
                           </Badge>
                         </div>
                         {role.description && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
                             {role.description}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 shrink-0">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEdit(role)}
-                                disabled={!canManageRole(role)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEdit(role)}
+                              disabled={!canManageRole(role)}
+                            >
+                              <Pencil className="h-4 w-4 text-muted-foreground" />
+                            </Button>
                           </TooltipTrigger>
                           {!canManageRole(role) && (
                             <TooltipContent>
@@ -218,16 +217,15 @@ export function RoleManagementCard() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDelete(role)}
-                                  disabled={deleteMutation.isPending || !canDeleteRole(role)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleDelete(role)}
+                                disabled={deleteMutation.isPending || !canDeleteRole(role)}
+                              >
+                                <Trash2 className="h-4 w-4 text-muted-foreground" />
+                              </Button>
                             </TooltipTrigger>
                             {!canDeleteRole(role) && (
                               <TooltipContent>
