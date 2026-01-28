@@ -57,6 +57,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
 export default function StaffDirectory() {
   const { hasRole, loading: authLoading } = useAdminAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('directory');
 
   // Check if user is admin
   const isAdmin = hasRole('admin');
@@ -221,12 +222,9 @@ export default function StaffDirectory() {
           </Badge>
         </div>
 
-        <Tabs defaultValue="directory" className="space-y-4" onValueChange={() => {}}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {/* Dropdown for all devices */}
-          <Select defaultValue="directory" onValueChange={(value) => {
-            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-            trigger?.click();
-          }}>
+          <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full max-w-md bg-card">
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
@@ -245,12 +243,6 @@ export default function StaffDirectory() {
               </SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Hidden triggers for tab switching */}
-          <div className="hidden">
-            <button data-value="directory" onClick={() => {}} />
-            <button data-value="logs" onClick={() => {}} />
-          </div>
 
           <TabsContent value="directory" className="space-y-4">
             {/* Search */}

@@ -67,6 +67,7 @@ export default function BotQueue() {
   const [enteredCode, setEnteredCode] = useState('');
   const [codeVerified, setCodeVerified] = useState(false);
   const [showCode, setShowCode] = useState(false);
+  const [activeTab, setActiveTab] = useState('action');
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -433,12 +434,9 @@ export default function BotQueue() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="action" className="space-y-4" onValueChange={() => {}}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {/* Dropdown for all devices */}
-          <Select defaultValue="action" onValueChange={(value) => {
-            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-            trigger?.click();
-          }}>
+          <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full max-w-md bg-card">
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
@@ -475,13 +473,6 @@ export default function BotQueue() {
               </SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Hidden triggers for tab switching */}
-          <div className="hidden">
-            <button data-value="action" onClick={() => {}} />
-            <button data-value="progress" onClick={() => {}} />
-            <button data-value="completed" onClick={() => {}} />
-          </div>
 
           <TabsContent value="action" className="space-y-4">
             {isLoading ? (

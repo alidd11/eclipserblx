@@ -85,6 +85,7 @@ export default function SellerSettingsAppearance() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
+  const [activeTab, setActiveTab] = useState('theme');
 
   const [formData, setFormData, clearFormData] = useFormPersistence(
     'seller-settings-appearance',
@@ -162,12 +163,9 @@ export default function SellerSettingsAppearance() {
           </p>
         </div>
 
-        <Tabs defaultValue="theme" className="space-y-6" onValueChange={() => {}}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Dropdown for all devices */}
-          <Select defaultValue="theme" onValueChange={(value) => {
-            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-            trigger?.click();
-          }}>
+          <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full max-w-md bg-card">
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
@@ -204,15 +202,6 @@ export default function SellerSettingsAppearance() {
               </SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Hidden triggers for tab switching */}
-          <div className="hidden">
-            <button data-value="theme" onClick={() => {}} />
-            <button data-value="hero" onClick={() => {}} />
-            <button data-value="typography" onClick={() => {}} />
-            <button data-value="features" onClick={() => {}} />
-            <button data-value="advanced" onClick={() => {}} />
-          </div>
 
           {/* Theme Tab */}
           <TabsContent value="theme" className="space-y-6">

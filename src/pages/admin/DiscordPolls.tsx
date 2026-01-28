@@ -39,6 +39,7 @@ const INITIAL_FORM_STATE = {
 export default function DiscordPolls() {
   const [formData, setFormData, clearFormData] = useFormPersistence('discord-poll', INITIAL_FORM_STATE);
   const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState('create');
   const queryClient = useQueryClient();
 
   // Fetch webhook URL
@@ -146,12 +147,9 @@ export default function DiscordPolls() {
           <p className="text-muted-foreground">Create and send polls to your Discord community</p>
         </div>
 
-        <Tabs defaultValue="create" className="w-full" onValueChange={() => {}}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Dropdown for all devices */}
-          <Select defaultValue="create" onValueChange={(value) => {
-            const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
-            trigger?.click();
-          }}>
+          <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full max-w-md bg-card">
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
@@ -170,12 +168,6 @@ export default function DiscordPolls() {
               </SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Hidden triggers for tab switching */}
-          <div className="hidden">
-            <button data-value="create" onClick={() => {}} />
-            <button data-value="history" onClick={() => {}} />
-          </div>
 
           <TabsContent value="create" className="space-y-4">
             <Card>
