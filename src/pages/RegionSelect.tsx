@@ -197,31 +197,34 @@ export default function RegionSelect() {
           </p>
         </div>
 
-        {/* Region Cards - Flag at top, text below */}
+        {/* Region Cards - Full flag imagery, taller portrait */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group flex flex-col rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all bg-card ${
+              className={`group relative flex flex-col rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg transition-all ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Flag Image - Top section */}
-              <div className="relative w-full aspect-[4/3] overflow-hidden">
+              {/* Flag Image - Taller portrait */}
+              <div className="relative w-full aspect-[2/3]">
                 <img
                   src={region.image}
                   alt={`${region.name} flag`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                
+                {/* Subtle gradient at bottom for text legibility */}
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
 
-              {/* Content - Below the flag */}
-              <div className="p-3 sm:p-4 text-center">
-                <span className="text-sm sm:text-base font-semibold text-foreground leading-snug">
+              {/* Content - Positioned at bottom over gradient */}
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
+                <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg">
                   {region.name}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                <span className="block text-[10px] sm:text-xs text-white/80 mt-0.5 font-medium">
                   {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
                 </span>
               </div>
