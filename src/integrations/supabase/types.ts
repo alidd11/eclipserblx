@@ -1194,6 +1194,57 @@ export type Database = {
           },
         ]
       }
+      discord_polls: {
+        Row: {
+          allow_multiple_answers: boolean | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          discord_message_id: string | null
+          duration_hours: number | null
+          ends_at: string | null
+          id: string
+          options: Json
+          poll_type: string
+          posted_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          allow_multiple_answers?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discord_message_id?: string | null
+          duration_hours?: number | null
+          ends_at?: string | null
+          id?: string
+          options?: Json
+          poll_type?: string
+          posted_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          allow_multiple_answers?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discord_message_id?: string | null
+          duration_hours?: number | null
+          ends_at?: string | null
+          id?: string
+          options?: Json
+          poll_type?: string
+          posted_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discord_role_configs: {
         Row: {
           auto_assign_on_purchase: boolean

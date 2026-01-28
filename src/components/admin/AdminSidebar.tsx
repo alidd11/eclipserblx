@@ -49,7 +49,8 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin'] },
       { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', roles: ['admin'], dividerAfter: true },
-      { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', roles: ['admin'] },
+      { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', roles: ['admin', 'support_agent'] },
+      { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', roles: ['admin', 'support_agent'] },
       { title: 'Promotions', icon: Tags, href: '/admin/promotions', roles: ['admin'], dividerAfter: true },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin'] },
