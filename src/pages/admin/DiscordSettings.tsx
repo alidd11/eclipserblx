@@ -45,6 +45,9 @@ interface DiscordSettings {
   discord_widget_server_id: string;
   community_discord_webhook_url: string;
   community_discord_role_id: string;
+  discord_ping_role_id: string;
+  qotd_discord_role_id: string;
+  polls_discord_role_id: string;
 }
 
 interface Category {
@@ -90,6 +93,9 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   discord_widget_server_id: '',
   community_discord_webhook_url: '',
   community_discord_role_id: '',
+  discord_ping_role_id: '',
+  qotd_discord_role_id: '',
+  polls_discord_role_id: '',
 };
 
 // Eclipse Store ID (main store)
@@ -299,7 +305,7 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id', 'community_discord_webhook_url']);
+        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id', 'community_discord_webhook_url', 'community_discord_role_id', 'discord_ping_role_id', 'qotd_discord_role_id', 'polls_discord_role_id']);
 
       if (error) throw error;
 
@@ -328,6 +334,14 @@ export default function DiscordSettings() {
           settingsMap.discord_widget_server_id = String(val);
         } else if (item.key === 'community_discord_webhook_url') {
           settingsMap.community_discord_webhook_url = String(val);
+        } else if (item.key === 'community_discord_role_id') {
+          settingsMap.community_discord_role_id = String(val);
+        } else if (item.key === 'discord_ping_role_id') {
+          settingsMap.discord_ping_role_id = String(val);
+        } else if (item.key === 'qotd_discord_role_id') {
+          settingsMap.qotd_discord_role_id = String(val);
+        } else if (item.key === 'polls_discord_role_id') {
+          settingsMap.polls_discord_role_id = String(val);
         }
       });
 
@@ -1487,6 +1501,12 @@ export default function DiscordSettings() {
                       Community
                     </div>
                   </SelectItem>
+                  <SelectItem value="role-pings">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-4 w-4" />
+                      Role Pings
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1552,6 +1572,10 @@ export default function DiscordSettings() {
               <TabsTrigger value="community" className="gap-2">
                 <MessageSquare className="h-4 w-4 hidden sm:block" />
                 Community
+              </TabsTrigger>
+              <TabsTrigger value="role-pings" className="gap-2">
+                <UserCheck className="h-4 w-4 hidden sm:block" />
+                Role Pings
               </TabsTrigger>
               
               {/* Announce Dropdown integrated into tabs */}
@@ -2986,6 +3010,126 @@ export default function DiscordSettings() {
                         <a href="/admin/community-announcements" className="text-blue-400 hover:underline">
                           Community Announcements page
                         </a>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Role Pings Tab */}
+          <TabsContent value="role-pings">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <UserCheck className="h-5 w-5 text-purple-400" />
+                  <CardTitle>Discord Role Pings</CardTitle>
+                </div>
+                <CardDescription>
+                  Configure which Discord roles get pinged for different announcements and features
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Default Role Ping */}
+                <div className="space-y-2">
+                  <Label htmlFor="defaultRoleId" className="flex items-center gap-2">
+                    <span>Default Role ID</span>
+                    <Badge variant="secondary" className="text-xs">Fallback</Badge>
+                  </Label>
+                  <Input
+                    id="defaultRoleId"
+                    value={formData.discord_ping_role_id}
+                    onChange={(e) => handleChange('discord_ping_role_id', e.target.value)}
+                    placeholder="e.g. 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This role is used as a fallback when no specific role is configured for a feature
+                  </p>
+                </div>
+
+                <div className="border-t border-border" />
+
+                {/* Community Announcements Role */}
+                <div className="space-y-2">
+                  <Label htmlFor="communityRoleIdPing" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-blue-400" />
+                    <span>Community Announcements</span>
+                  </Label>
+                  <Input
+                    id="communityRoleIdPing"
+                    value={formData.community_discord_role_id}
+                    onChange={(e) => handleChange('community_discord_role_id', e.target.value)}
+                    placeholder="e.g. 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Role to ping for community announcements (updates, maintenance, events)
+                  </p>
+                </div>
+
+                {/* QOTD Role */}
+                <div className="space-y-2">
+                  <Label htmlFor="qotdRoleId" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-yellow-400" />
+                    <span>Question of the Day (QOTD)</span>
+                  </Label>
+                  <Input
+                    id="qotdRoleId"
+                    value={formData.qotd_discord_role_id}
+                    onChange={(e) => handleChange('qotd_discord_role_id', e.target.value)}
+                    placeholder="e.g. 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Role to ping when posting Question of the Day. Falls back to Default Role if empty.
+                  </p>
+                </div>
+
+                {/* Polls Role */}
+                <div className="space-y-2">
+                  <Label htmlFor="pollsRoleId" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-green-400" />
+                    <span>Discord Polls & Surveys</span>
+                  </Label>
+                  <Input
+                    id="pollsRoleId"
+                    value={formData.polls_discord_role_id}
+                    onChange={(e) => handleChange('polls_discord_role_id', e.target.value)}
+                    placeholder="e.g. 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Role to ping when posting polls and surveys. Falls back to Community Role if empty.
+                  </p>
+                </div>
+
+                {/* Advertisements Partnership Role */}
+                <div className="space-y-2">
+                  <Label htmlFor="adsPartnershipRoleId" className="flex items-center gap-2">
+                    <BadgeDollarSign className="h-4 w-4 text-amber-400" />
+                    <span>Advertisement Partnerships</span>
+                  </Label>
+                  <Input
+                    id="adsPartnershipRoleId"
+                    value={formData.advertisements_partnership_ping_role_id}
+                    onChange={(e) => handleChange('advertisements_partnership_ping_role_id', e.target.value)}
+                    placeholder="e.g. 1234567890123456789"
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Role to ping for advertisement partnership announcements
+                  </p>
+                </div>
+
+                <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <UserCheck className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-purple-400">How to get a Role ID</p>
+                      <p className="text-sm text-muted-foreground">
+                        Enable Developer Mode in Discord (User Settings → Advanced), then right-click any role and select "Copy Role ID".
                       </p>
                     </div>
                   </div>

@@ -16,17 +16,17 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { question, qotdId, category, roleId: providedRoleId } = await req.json();
+    const { question, qotdId, category } = await req.json();
 
     if (!question) {
       throw new Error('Question is required');
     }
 
-    // Get the community webhook URL and fallback role ID
+    // Get the community webhook URL and role IDs
     const { data: settings } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['community_discord_webhook_url', 'discord_ping_role_id']);
+      .in('key', ['community_discord_webhook_url', 'qotd_discord_role_id', 'discord_ping_role_id']);
 
     const settingsMap: Record<string, string> = {};
     settings?.forEach((s: { key: string; value: string }) => {
@@ -37,8 +37,8 @@ serve(async (req) => {
       throw new Error('Community Discord webhook not configured');
     }
 
-    // Use provided roleId or fall back to saved setting
-    const roleId = providedRoleId || settingsMap.discord_ping_role_id;
+    // Use QOTD-specific role, fall back to default role
+    const roleId = settingsMap.qotd_discord_role_id || settingsMap.discord_ping_role_id;
 
     // Category emoji mapping
     const categoryEmojis: Record<string, string> = {

@@ -35,11 +35,11 @@ serve(async (req) => {
       userId = claimsData?.user?.id || null;
     }
 
-    // Fetch community webhook URL
+    // Fetch community webhook URL and role IDs
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["community_discord_webhook_url", "community_discord_role_id"])
+      .in("key", ["community_discord_webhook_url", "polls_discord_role_id", "community_discord_role_id"])
       .order("key");
 
     const settingsMap: Record<string, string> = {};
@@ -49,7 +49,8 @@ serve(async (req) => {
     });
 
     const webhookUrl = settingsMap["community_discord_webhook_url"];
-    const roleId = settingsMap["community_discord_role_id"] || "";
+    // Use polls-specific role, fall back to community role
+    const roleId = settingsMap["polls_discord_role_id"] || settingsMap["community_discord_role_id"] || "";
     
     if (!webhookUrl) {
       console.error("Community Discord webhook URL not configured");
