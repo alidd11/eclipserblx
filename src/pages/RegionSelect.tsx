@@ -135,15 +135,15 @@ export default function RegionSelect() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="container py-6 sm:py-8 space-y-6">
-          <Skeleton className="h-5 w-48" />
-          <div className="text-center space-y-2">
+        <div className="container flex flex-col min-h-[calc(100dvh-8rem)] py-6 sm:py-8">
+          <Skeleton className="h-5 w-48 mb-6" />
+          <div className="text-center space-y-2 mb-6">
             <Skeleton className="h-8 w-48 mx-auto" />
             <Skeleton className="h-5 w-32 mx-auto" />
           </div>
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
+          <div className="flex-1 grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto w-full">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="aspect-[4/3] rounded-xl" />
+              <Skeleton key={i} className="h-full min-h-[300px] rounded-xl" />
             ))}
           </div>
         </div>
@@ -171,9 +171,9 @@ export default function RegionSelect() {
 
   return (
     <MainLayout>
-      <div className="container py-6 sm:py-8 space-y-6">
+      <div className="container flex flex-col min-h-[calc(100dvh-8rem)] py-6 sm:py-8">
         {/* Breadcrumb */}
-        <Breadcrumb>
+        <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
@@ -188,7 +188,7 @@ export default function RegionSelect() {
         </Breadcrumb>
 
         {/* Header */}
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-1 mb-6">
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
             Select Your Region
           </h1>
@@ -197,29 +197,29 @@ export default function RegionSelect() {
           </p>
         </div>
 
-        {/* Region Cards - Full flag imagery, taller portrait */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
+        {/* Region Cards - Full height stretch */}
+        <div className="flex-1 grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto w-full">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative flex flex-col rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg transition-all ${
+              className={`group relative flex flex-col rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg transition-all h-full ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Flag Image - Taller portrait */}
-              <div className="relative w-full aspect-[2/3]">
+              {/* Flag Image - Fixed height, anchored top */}
+              <div className="relative w-full h-48 sm:h-56 flex-shrink-0">
                 <img
                   src={region.image}
                   alt={`${region.name} flag`}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                 />
-                
-                {/* Subtle gradient at bottom for text legibility */}
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
 
-              {/* Content - Positioned at bottom over gradient */}
+              {/* Card extends below with gradient background */}
+              <div className="flex-1 bg-gradient-to-t from-black/70 via-black/50 to-black/30" />
+
+              {/* Content - Positioned at bottom */}
               <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
                 <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg">
                   {region.name}
@@ -233,7 +233,7 @@ export default function RegionSelect() {
         </div>
 
         {/* View All Button */}
-        <div className="text-center">
+        <div className="text-center mt-6">
           <Button variant="outline" size="sm" asChild>
             <Link to={`/products?category=${categorySlug}${sourceParam}`}>
               <Globe className="mr-2 h-4 w-4" />
