@@ -12,7 +12,8 @@ import {
   Map,
   Package,
   Bot,
-  Building2
+  Building2,
+  LayoutGrid
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
@@ -156,11 +157,20 @@ export default function Categories() {
     <MainLayout>
       <div className="container py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8 text-center">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+        <div className="mb-8 sm:mb-10 text-center">
+          {/* Accent Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
+            <LayoutGrid className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Browse Categories</span>
+          </div>
+          
+          {/* Title */}
+          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
             Categories
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          
+          {/* Subtitle */}
+          <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-md mx-auto">
             Browse our collection by category
           </p>
         </div>
