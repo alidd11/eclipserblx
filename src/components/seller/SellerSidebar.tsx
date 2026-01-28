@@ -66,7 +66,7 @@ const navGroups: NavGroup[] = [
     icon: Gamepad2,
     items: [
       { title: 'Roblox', icon: Gamepad2, href: '/seller/roblox' },
-      { title: 'Discord', icon: Bell, href: '/seller/settings/notifications' },
+      { title: 'Discord', icon: MessageCircle, href: '/seller/discord' },
     ],
   },
   {

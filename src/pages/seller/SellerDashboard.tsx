@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
 import { NotificationCenter } from '@/components/seller/NotificationCenter';
-import { ScheduledAnnouncementCard } from '@/components/seller/ScheduledAnnouncementCard';
 import { ExportReportsCard } from '@/components/seller/ExportReportsCard';
 import { toast } from 'sonner';
 import { 
@@ -18,7 +17,6 @@ import {
   DollarSign, 
   ShoppingCart, 
   TrendingUp,
-  ArrowRight,
   Plus,
   Clock,
   CheckCircle,
@@ -27,7 +25,9 @@ import {
   LayoutGrid,
   Scale,
   AlertTriangle,
-  Star
+  Star,
+  BarChart3,
+  Tag
 } from 'lucide-react';
 
 const CURRENT_TOS_VERSION = "1.0";
@@ -274,74 +274,34 @@ export default function SellerDashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions + Activity + Health */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks for managing your store</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-between" asChild>
-                <Link to="/seller/products">
-                  <span className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
-                    Manage Products
-                  </span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              {store?.slug && (
-                <Button variant="outline" className="w-full justify-between" asChild>
-                  <Link to={`/store/${store.slug}/reviews`}>
-                    <span className="flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      View Reviews
-                    </span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              )}
-              <Button variant="outline" className="w-full justify-between" asChild>
-                <Link to="/seller/orders">
-                  <span className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    View Orders
-                  </span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-between" asChild>
-                <Link to="/seller/balance">
-                  <span className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    Balance & Payouts
-                  </span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-between" asChild>
-                <Link to="/seller/tabs">
-                  <span className="flex items-center gap-2">
-                    <LayoutGrid className="h-4 w-4" />
-                    Store Tabs
-                  </span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-between" asChild>
-                <Link to="/seller/settings">
-                  <span className="flex items-center gap-2">
-                    <Store className="h-4 w-4" />
-                    Store Settings
-                  </span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Quick Actions Grid - Admin Dashboard Style */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
+            { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
+            { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
+            { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
+            { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
+            { title: 'Store Tabs', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
+          ].map((link) => (
+            <Link key={link.href} to={link.href}>
+              <Card className="h-full hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer group">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <link.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{link.title}</p>
+                    <p className="text-xs text-muted-foreground hidden sm:block">{link.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
 
+        {/* Activity + Health Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Activity Feed */}
           <NotificationCenter />
 
@@ -349,9 +309,8 @@ export default function SellerDashboard() {
           <StoreHealthScore />
         </div>
 
-        {/* Announcements & Reports */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <ScheduledAnnouncementCard />
+        {/* Reports Card */}
+        <div className="grid grid-cols-1 gap-6">
           <ExportReportsCard />
         </div>
 
