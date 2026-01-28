@@ -1,95 +1,148 @@
 
 
-# Categories Page Header Improvement Plan
+# Native Back Button Implementation Plan
 
-## Current State
-The Categories page header is extremely minimal with just plain text:
-- "Categories" title (text-2xl/3xl)
-- "Browse our collection by category" subtitle (text-sm muted)
-- No visual elements, icons, or branding
+## Overview
+Create a reusable, native-app-style back button component that customers can use to navigate to the previous page. The button will use the browser's history API with haptic feedback for a premium, mobile-native feel.
 
-## Proposed Improvements
+## Design Approach
+The back button will:
+- Use a clean, minimal design with a left-facing arrow icon
+- Include haptic feedback when tapped (like other buttons in the app)
+- Support optional text label (e.g., "Back" or custom text)
+- Work across all devices with touch-optimized sizing
+- Only appear when there's navigation history available
 
-### 1. Add a Visual Badge/Pill
-Similar to the Marketplace and Featured pages, add an accent pill above the title:
-```text
-+-------------------------------+
-|  [Grid Icon] Browse Categories  |  <- Rounded pill with icon
-+-------------------------------+
-```
-- Background: `bg-primary/10` with `border border-primary/20`
-- Text: `text-primary text-sm font-medium`
-- Icon: `Grid3X3` or `LayoutGrid` from Lucide
+## Component: `BackButton`
 
-### 2. Enhanced Typography
-- Make the title larger and bolder with display font: `font-display text-3xl md:text-4xl font-bold`
-- Keep the subtitle but slightly increase size on desktop: `text-sm sm:text-base`
+### Location
+`src/components/ui/BackButton.tsx`
 
-### 3. Better Vertical Spacing
-- Increase margin below header section: `mb-8 sm:mb-10`
-- Add more padding between badge and title
+### Features
+1. **Browser History Navigation** - Uses `window.history.back()` or React Router's `navigate(-1)`
+2. **Haptic Feedback** - Triggers light haptic tap on press
+3. **Smart Visibility** - Optionally hide when there's no history to go back to
+4. **Customizable Label** - Show/hide text label, or use custom text
+5. **Flexible Styling** - Multiple variants (ghost, outline, subtle)
+6. **Touch-Optimized** - 44px minimum touch target for mobile accessibility
 
-### 4. Optional: Subtle Background Gradient
-Add a very subtle gradient behind the header area (matching Featured page style):
-- `bg-gradient-to-b from-primary/5 via-transparent to-transparent`
+### Props
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `showLabel` | `boolean` | `false` | Show "Back" text next to icon |
+| `label` | `string` | `"Back"` | Custom label text |
+| `variant` | `"ghost" \| "outline" \| "subtle"` | `"ghost"` | Button style variant |
+| `fallbackPath` | `string` | `undefined` | Where to navigate if no history exists |
+| `className` | `string` | `undefined` | Additional CSS classes |
 
-## Visual Comparison
-
-**Before:**
-```text
-           Categories
-  Browse our collection by category
-```
-
-**After:**
-```text
-    [Grid] Browse Categories     <- accent pill
-    
-         Categories              <- larger, bolder
-  Browse our collection by category
-```
-
-## Technical Changes
-
-### File: `src/pages/Categories.tsx`
-
-Update the header section (approximately lines 155-165):
-
+### Example Usage
 ```tsx
-{/* Header */}
-<div className="mb-8 sm:mb-10 text-center">
-  {/* Accent Badge */}
-  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-    <LayoutGrid className="h-4 w-4 text-primary" />
-    <span className="text-sm font-medium text-primary">Browse Categories</span>
-  </div>
-  
-  {/* Title */}
-  <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
-    Categories
-  </h1>
-  
-  {/* Subtitle */}
-  <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-md mx-auto">
-    Browse our collection by category
-  </p>
-</div>
+import { BackButton } from '@/components/ui/BackButton';
+
+// Simple back button (icon only)
+<BackButton />
+
+// With label
+<BackButton showLabel />
+
+// Custom label
+<BackButton label="Go Back" showLabel />
+
+// With fallback path
+<BackButton fallbackPath="/products" />
+
+// Outline style
+<BackButton variant="outline" showLabel />
 ```
 
-### Import Addition
-Add `LayoutGrid` to the Lucide imports at the top of the file.
+## Visual Design
 
-## Responsive Behavior
+```text
+┌─────────────────────────────────────┐
+│  ← Back                             │
+│  (Ghost variant with label)         │
+└─────────────────────────────────────┘
 
-| Device | Title Size | Badge | Spacing |
-|--------|-----------|-------|---------|
-| Mobile | text-3xl | Compact pill | mb-8 |
-| Tablet+ | text-4xl | Same pill | mb-10 |
+┌─────────────────────────────────────┐
+│  ←                                  │
+│  (Icon-only, most compact)          │
+└─────────────────────────────────────┘
 
-## Consistency with Other Pages
+┌─────────────────────────────────────┐
+│  [← Back]                           │
+│  (Outline variant, more visible)    │
+└─────────────────────────────────────┘
+```
 
-This design matches the pattern used in:
-- **Marketplace**: Badge pill + title + subtitle
-- **Featured**: Badge pill + display font title + description
-- **RegionSelect**: Will remain simpler since it's a sub-navigation step
+## Technical Implementation
+
+### Code Structure
+```tsx
+// BackButton.tsx
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { hapticTap } from '@/lib/haptics';
+import { cn } from '@/lib/utils';
+
+interface BackButtonProps {
+  showLabel?: boolean;
+  label?: string;
+  variant?: 'ghost' | 'outline' | 'subtle';
+  fallbackPath?: string;
+  className?: string;
+}
+
+export function BackButton({
+  showLabel = false,
+  label = 'Back',
+  variant = 'ghost',
+  fallbackPath,
+  className,
+}: BackButtonProps) {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    hapticTap();
+    
+    // Check if there's history to go back to
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else if (fallbackPath) {
+      navigate(fallbackPath);
+    } else {
+      navigate('/');
+    }
+  };
+
+  return (
+    <Button
+      variant={variant === 'subtle' ? 'ghost' : variant}
+      size={showLabel ? 'sm' : 'icon'}
+      onClick={handleBack}
+      className={cn(
+        'text-muted-foreground hover:text-foreground',
+        variant === 'subtle' && 'hover:bg-transparent',
+        className
+      )}
+    >
+      <ArrowLeft className="h-4 w-4" />
+      {showLabel && <span className="ml-1">{label}</span>}
+    </Button>
+  );
+}
+```
+
+## Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/ui/BackButton.tsx` | Create | New reusable back button component |
+
+## Integration Examples (Optional Future Use)
+Once created, the component can be easily added to pages like:
+- Product detail page headers
+- Region select page
+- Categories page
+- Any page that benefits from quick navigation back
 
