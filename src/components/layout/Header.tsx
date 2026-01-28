@@ -122,9 +122,9 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Mobile: Inline Search + Currency */}
-          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
+          <div className="flex md:hidden items-center gap-2.5 flex-1 min-w-0">
             <HeaderSearchBar className="flex-1 min-w-0" compact />
-            <CurrencySelector compact className="shrink-0 h-8 px-2" />
+            <CurrencySelector compact className="shrink-0" />
           </div>
 
           {/* Desktop: Branding + Search Bar + Currency */}
