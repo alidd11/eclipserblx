@@ -114,7 +114,7 @@ export default function Categories() {
     <MainLayout>
       <div className="container py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-6 sm:mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             Categories
           </h1>
@@ -123,15 +123,15 @@ export default function Categories() {
           </p>
         </div>
 
-        {/* Categories List */}
+        {/* Categories Tile Grid */}
         {isLoading ? (
-          <div className="space-y-2">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+            {[...Array(12)].map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-xl" />
             ))}
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
             {categories?.map((category) => {
               const Icon = categoryIcons[category.slug] || Package;
               const productCount = category.product_count || 0;
@@ -146,22 +146,17 @@ export default function Categories() {
                 <Link
                   key={category.id}
                   to={linkTo}
-                  className="group flex items-center justify-between px-4 py-3.5 rounded-lg bg-card border border-border hover:bg-muted/50 hover:border-muted-foreground/20 transition-colors"
+                  className="group flex flex-col items-center justify-center aspect-square rounded-xl bg-card border border-border hover:bg-muted/50 hover:border-primary/30 hover:shadow-md transition-all p-3"
                 >
-                  <div className="flex items-center gap-3.5">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-                      <Icon className="h-5 w-5 text-foreground/70" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm sm:text-base">
-                        {category.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {productCount} {productCount === 1 ? 'item' : 'items'}
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors mb-2">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-foreground/70 group-hover:text-primary transition-colors" />
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <span className="text-xs sm:text-sm font-medium text-center leading-tight line-clamp-2">
+                    {category.name}
+                  </span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                    {productCount}
+                  </span>
                 </Link>
               );
             })}
