@@ -284,8 +284,6 @@ export default function RolePermissions() {
                     roles={customRoles}
                     selectedRole={selectedRole}
                     onSelectRole={setSelectedRole}
-                    getPermissionCount={getPermissionCount}
-                    totalPermissions={permissions?.length ?? 0}
                   />
                 ) : null}
               </CardContent>
