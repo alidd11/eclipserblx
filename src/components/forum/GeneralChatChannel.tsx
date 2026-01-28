@@ -393,7 +393,14 @@ export function GeneralChatChannel() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-card/50 rounded-xl border border-border/50 overflow-hidden">
+    <div 
+      className="flex flex-col bg-card/50 rounded-xl border border-border/50 overflow-hidden"
+      style={{
+        height: isPWA 
+          ? 'min(600px, calc(var(--chat-vvh, 100dvh) - 16rem))' 
+          : '600px'
+      }}
+    >
       {/* Messages area */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         <div className="space-y-3">
@@ -560,7 +567,17 @@ export function GeneralChatChannel() {
       )}
 
       {/* Input area */}
-      <div className="p-4 border-t border-border/50">
+      <div 
+        className="border-t border-border/50"
+        style={{
+          paddingTop: '1rem',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          paddingBottom: isPWA 
+            ? 'max(1rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))' 
+            : '1rem'
+        }}
+      >
         {user ? (
           <form onSubmit={handleSend} className="flex gap-2">
             <Input

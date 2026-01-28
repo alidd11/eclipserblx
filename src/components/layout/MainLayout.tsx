@@ -10,6 +10,7 @@ import { hapticTap } from '@/lib/haptics';
 import { useScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
+import { useLocation } from 'react-router-dom';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -20,6 +21,7 @@ const EDGE_THRESHOLD = 30; // pixels from left edge to trigger swipe
 const MIN_SWIPE_DISTANCE = 50;
 
 function MainLayoutContent({ children }: MainLayoutProps) {
+  const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const stored = safeStorage.getItem(COLLAPSED_KEY);
     return stored === 'true';
@@ -92,6 +94,90 @@ function MainLayoutContent({ children }: MainLayoutProps) {
       document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [handleTouchStart, handleTouchEnd]);
+
+  // Detect if we're on a chat-like page that needs iOS keyboard handling
+  const isChatPage = location.pathname.includes('/forum/general');
+
+  // iOS PWA keyboard handling for chat pages (similar to AdminLayout)
+  useEffect(() => {
+    const html = document.documentElement;
+
+    if (!isChatPage) {
+      html.style.removeProperty('--chat-safe-bottom');
+      html.style.removeProperty('--chat-vvh');
+      delete html.dataset.chatKeyboard;
+      return;
+    }
+
+    // Initialize CSS variables for safe-area handling
+    html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
+    html.style.setProperty('--chat-vvh', '100dvh');
+    html.dataset.chatKeyboard = 'closed';
+
+    let disposed = false;
+    let baseVvHeight = window.visualViewport?.height ?? window.innerHeight;
+    let timers: number[] = [];
+
+    const updateViewport = () => {
+      if (disposed) return;
+
+      const vv = window.visualViewport;
+      const vvHeight = vv?.height ?? window.innerHeight;
+
+      const activeEl = document.activeElement;
+      const isInputFocused =
+        !!activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          (activeEl as HTMLElement).isContentEditable);
+
+      if (!isInputFocused) {
+        baseVvHeight = Math.max(baseVvHeight, vvHeight);
+      }
+
+      const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
+      const keyboardOpen = isInputFocused && keyboardHeight > 80;
+
+      html.style.setProperty('--chat-vvh', `${vvHeight}px`);
+      html.style.setProperty(
+        '--chat-safe-bottom',
+        keyboardOpen ? '8px' : 'calc(env(safe-area-inset-bottom) + 4px)'
+      );
+      html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
+    };
+
+    const updateStaggered = () => {
+      timers.forEach(t => clearTimeout(t));
+      updateViewport();
+      timers = [
+        window.setTimeout(updateViewport, 50),
+        window.setTimeout(updateViewport, 150),
+        window.setTimeout(updateViewport, 300),
+        window.setTimeout(updateViewport, 500),
+      ];
+    };
+
+    updateStaggered();
+
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', updateViewport);
+    vv?.addEventListener('scroll', updateViewport);
+    document.addEventListener('focusin', updateStaggered);
+    document.addEventListener('focusout', updateStaggered);
+
+    return () => {
+      disposed = true;
+      timers.forEach(t => clearTimeout(t));
+      vv?.removeEventListener('resize', updateViewport);
+      vv?.removeEventListener('scroll', updateViewport);
+      document.removeEventListener('focusin', updateStaggered);
+      document.removeEventListener('focusout', updateStaggered);
+
+      html.style.removeProperty('--chat-safe-bottom');
+      html.style.removeProperty('--chat-vvh');
+      delete html.dataset.chatKeyboard;
+    };
+  }, [isChatPage]);
 
   return (
     <>
