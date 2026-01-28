@@ -24,7 +24,6 @@ interface ScheduledProduct {
     id: string;
     name: string;
     slug: string;
-    discord_webhook_url: string | null;
   } | null;
   categories: {
     name: string;
@@ -97,8 +96,7 @@ serve(async (req) => {
         stores (
           id,
           name,
-          slug,
-          discord_webhook_url
+          slug
         ),
         categories (
           name
