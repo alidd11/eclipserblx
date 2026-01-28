@@ -213,6 +213,13 @@ serve(async (req) => {
     const amount = Math.max(0, Math.round((serverSubtotal - discountAmount) * 100));
     logStep("Calculated amount", { serverSubtotal, discountAmount, amount, currency: "gbp" });
 
+    // Minimum order requirement: £1.00 (100 pence)
+    const MINIMUM_ORDER_PENCE = 100;
+    if (amount < MINIMUM_ORDER_PENCE) {
+      logStep("Order below minimum", { amount, minimum: MINIMUM_ORDER_PENCE });
+      throw new Error("Minimum order amount is £1.00");
+    }
+
     // Check if customer exists in Stripe
     let customerId: string | undefined;
     if (userEmail) {
