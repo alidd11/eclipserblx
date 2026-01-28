@@ -42,12 +42,17 @@ export function RoleSelector({
 
   return (
     <Select value={selectedRole} onValueChange={onSelectRole}>
-      <SelectTrigger className="w-full h-10 bg-muted/30 border-border hover:bg-muted/50 transition-colors">
+      {/*
+        SelectTrigger has a fixed h-10 AND default py-2 in the shared component,
+        which can leave too little inner height and clip our icon container.
+        Override py to prevent clipping.
+      */}
+      <SelectTrigger className="w-full h-10 py-1 bg-muted/30 border-border hover:bg-muted/50 transition-colors">
         <SelectValue>
           {selectedRoleInfo && (
             <div className="flex items-center gap-2">
               <div className={cn(
-                "p-1.5 rounded-md flex-shrink-0",
+                "p-1 rounded-md flex-shrink-0",
                 selectedRoleInfo.color,
                 "text-white"
               )}>
@@ -73,7 +78,7 @@ export function RoleSelector({
             >
               <div className="flex items-center gap-2">
                 <div className={cn(
-                  "p-1.5 rounded-md flex-shrink-0",
+                  "p-1 rounded-md flex-shrink-0",
                   role.color,
                   "text-white"
                 )}>
