@@ -176,9 +176,9 @@ export default function RegionSelect() {
 
   return (
     <MainLayout>
-      <div className="container flex flex-col min-h-[calc(100dvh-8rem)] py-6 sm:py-8">
+      <div className="container flex flex-col min-h-[calc(100dvh-8rem)] py-4 sm:py-6 lg:py-8">
         {/* Breadcrumb */}
-        <Breadcrumb className="mb-6">
+        <Breadcrumb className="mb-4 sm:mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
@@ -193,35 +193,35 @@ export default function RegionSelect() {
         </Breadcrumb>
 
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center text-foreground">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-widest text-center text-foreground">
             Select Your Region
           </h1>
         </div>
 
-        {/* Country Names - Each in own card, aligned to flags */}
-        <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
+        {/* Country Names - Responsive grid */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 w-full max-w-5xl mx-auto mb-3 sm:mb-4">
           {data.regions.map((region) => (
             <div
               key={`name-${region.code}`}
-              className={`min-w-0 bg-card border border-border rounded-xl py-3 px-4 text-center shadow-sm ${
+              className={`min-w-0 bg-card border border-border rounded-lg sm:rounded-xl py-2 sm:py-3 px-2 sm:px-4 text-center shadow-sm ${
                 !region.slug ? 'opacity-50' : ''
               }`}
             >
-              <span className="block text-xs sm:text-sm font-semibold text-foreground truncate">
+              <span className="block text-[10px] sm:text-xs lg:text-sm font-semibold text-foreground truncate">
                 {region.name}
               </span>
             </div>
           ))}
         </div>
 
-        {/* Flag Images - Inline row */}
-        <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+        {/* Flag Images - Fill remaining vertical space */}
+        <div className="flex-1 grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 w-full max-w-5xl mx-auto min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative min-w-0 rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
+              className={`group relative min-w-0 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
@@ -235,7 +235,7 @@ export default function RegionSelect() {
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-4 sm:mt-6">
           <Button variant="outline" size="sm" asChild>
             <Link to={`/products?category=${categorySlug}${sourceParam}`}>
               <Globe className="mr-2 h-4 w-4" />
