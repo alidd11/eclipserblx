@@ -35,11 +35,11 @@ serve(async (req) => {
       userId = claimsData?.user?.id || null;
     }
 
-    // Fetch community webhook URL and role IDs
+    // Fetch polls webhook URL (or fall back to community webhook) and role IDs
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["community_discord_webhook_url", "polls_discord_role_id", "community_discord_role_id"])
+      .in("key", ["polls_discord_webhook_url", "community_discord_webhook_url", "polls_discord_role_id", "community_discord_role_id"])
       .order("key");
 
     const settingsMap: Record<string, string> = {};
@@ -48,7 +48,8 @@ serve(async (req) => {
       settingsMap[s.key] = val;
     });
 
-    const webhookUrl = settingsMap["community_discord_webhook_url"];
+    // Use polls-specific webhook, fall back to community webhook
+    const webhookUrl = settingsMap["polls_discord_webhook_url"] || settingsMap["community_discord_webhook_url"];
     // Use polls-specific role, fall back to community role
     const roleId = settingsMap["polls_discord_role_id"] || settingsMap["community_discord_role_id"] || "";
     
