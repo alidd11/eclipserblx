@@ -191,12 +191,12 @@ export default function Categories() {
                   <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors" />
                   
                   {/* Content */}
-                  <div className="relative z-10 flex flex-col items-center justify-center p-3">
-                    <span className="text-sm sm:text-base font-bold text-white text-center leading-tight line-clamp-2 drop-shadow-md">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center">
+                    <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
                       {category.name}
                     </span>
-                    <span className="text-[10px] sm:text-xs text-white/70 mt-1">
-                      {productCount}
+                    <span className="text-[10px] sm:text-xs text-white/80 mt-1 font-medium">
+                      {productCount} {productCount === 1 ? 'item' : 'items'}
                     </span>
                   </div>
                 </Link>
