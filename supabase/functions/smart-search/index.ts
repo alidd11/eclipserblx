@@ -152,6 +152,18 @@ Examples:
 
     console.log("Parsed search params:", searchParams);
 
+    // Sanitize keywords to prevent SQL injection
+    // Only allow alphanumeric characters, spaces, hyphens, and underscores
+    const sanitizeKeyword = (keyword: string): string => {
+      if (!keyword || typeof keyword !== 'string') return '';
+      // Remove any characters that could be used for SQL injection
+      // Allow only alphanumeric, spaces, hyphens, underscores
+      return keyword
+        .replace(/[^a-zA-Z0-9\s\-_]/g, '')
+        .substring(0, 100) // Limit length
+        .trim();
+    };
+
     // Build the database query
     let dbQuery = supabase
       .from("products")
@@ -159,10 +171,14 @@ Examples:
       .eq("is_active", true)
       .eq("moderation_status", "approved");
 
-    // Apply keyword search
+    // Apply keyword search with sanitized input
     if (searchParams.keywords && searchParams.keywords.length > 0) {
-      const searchTerms = searchParams.keywords.join(" | ");
-      dbQuery = dbQuery.or(`name.ilike.%${searchParams.keywords[0]}%,description.ilike.%${searchParams.keywords[0]}%`);
+      const sanitizedKeyword = sanitizeKeyword(searchParams.keywords[0]);
+      if (sanitizedKeyword) {
+        // Escape ILIKE special characters (% and _) to prevent pattern injection
+        const escapedKeyword = sanitizedKeyword.replace(/[%_]/g, '\\$&');
+        dbQuery = dbQuery.or(`name.ilike.%${escapedKeyword}%,description.ilike.%${escapedKeyword}%`);
+      }
     }
 
     // Apply category filter
