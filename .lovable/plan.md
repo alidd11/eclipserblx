@@ -1,116 +1,110 @@
 
 
-# Stretch Region Cards to Fill Viewport Height
+# Redesign Region Cards: Labels Above, Full Flag Below
 
 ## Overview
-Make the country cards (UK / US / EU) extend vertically to fill the available screen space above the footer, while keeping the flag images at their current size anchored to the top.
+Redesign the region cards so the country names appear in a separate label section **above** the flag images, allowing the flags to be displayed at 100% visibility with no overlays.
 
-## Current State
-- Cards use `aspect-[2/3]` which creates a fixed aspect ratio
-- The flag image fills the entire card using `object-cover`
-- Cards end and footer begins with significant empty space between them
-
-## Proposed Changes
-
-### File to Modify
-`src/pages/RegionSelect.tsx`
-
-### Technical Approach
-
-**1. Make the page fill the viewport**
-- Wrap the main content in a flex container with `min-h-[calc(100dvh-var(--header-height))]` or use `flex-1` to fill available space
-- This ensures the section stretches to reach the footer
-
-**2. Make the card grid fill available height**
-- Change from `space-y-6` layout to a flex column layout
-- Give the card grid section `flex-1` so it expands to fill remaining space
-
-**3. Update card structure**
-- Remove `aspect-[2/3]` from the image container
-- Make cards `h-full` so they fill the grid cell height
-- Keep the flag image at a fixed height (e.g., `h-48 sm:h-56`) anchored to the top with `object-cover object-top`
-- The card container stretches but the image stays fixed size
-
-**4. Grid updates**
-- Add `h-full` to the grid so it fills its flex container
-- Cards will naturally stretch to match the tallest cell
-
-### Visual Comparison
+## Proposed Design
 
 ```text
-BEFORE:                          AFTER:
-┌─────────────────────┐          ┌─────────────────────┐
-│ Select Your Region  │          │ Select Your Region  │
-├─────┬─────┬─────────┤          ├─────┬─────┬─────────┤
-│ 🇬🇧  │ 🇺🇸  │ 🇪🇺       │          │ 🇬🇧  │ 🇺🇸  │ 🇪🇺       │
-│ UK  │ US  │ EU      │          │     │     │         │
-└─────┴─────┴─────────┘          │     │     │         │
-                                 │ UK  │ US  │ EU      │
-[   View All Regions   ]         └─────┴─────┴─────────┘
-                                 [   View All Regions   ]
-      (empty space)              ─────────────────────────
-─────────────────────────        │ Footer               │
-│ Footer               │
+┌─────────────────────┐
+│   United Kingdom    │  ← Solid card header with name + count
+│     12 items        │
+├─────────────────────┤
+│                     │
+│    🇬🇧 FLAG IMAGE    │  ← Full visibility, no overlay at all
+│                     │
+│                     │
+└─────────────────────┘
 ```
 
-### Code Changes
+## Technical Approach
 
-**Line 173-174 - Wrapper flex layout:**
-```tsx
-<MainLayout>
-  <div className="container flex flex-col min-h-[calc(100dvh-8rem)] py-6 sm:py-8">
-```
+### Card Structure
+- Use `flex flex-col` layout
+- **Top section**: Solid `bg-card` panel with country name and item count
+- **Bottom section**: Flag image with `object-cover` and NO gradient overlay
 
-**Line 200-201 - Grid fills available space:**
-```tsx
-{/* Region Cards - Full height stretch */}
-<div className="flex-1 grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto content-start">
-```
+### Flag Display
+- Keep `object-cover` to fill the space beautifully
+- Keep `object-top` to anchor flag designs properly
+- Remove ALL gradient overlays - the flag is completely unobscured
+- Maintain hover scale animation
 
-**Lines 209-220 - Card and image structure:**
-```tsx
-<Link
-  className={`group relative flex flex-col rounded-xl overflow-hidden border ... h-full`}
->
-  {/* Flag Image - Fixed height, anchored top */}
-  <div className="relative w-full h-48 sm:h-56">
-    <img
-      className="absolute inset-0 w-full h-full object-cover object-top ..."
-    />
-  </div>
-  
-  {/* Card extends below, text at absolute bottom */}
-  <div className="flex-1 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-  
-  {/* Content - Positioned at card bottom */}
-  <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
-    ...
-  </div>
-</Link>
-```
+### Label Section (Top)
+- Clean `bg-card` or `bg-muted` background with bottom border
+- Professional typography with proper spacing
+- High contrast text on solid background
 
-**Lines 144-147 - Update loading skeleton:**
+## File to Modify
+`src/pages/RegionSelect.tsx`
+
+## Code Changes
+
+### Lines 201-230 - Complete card redesign:
+
 ```tsx
-<div className="flex-1 grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
-  {[1, 2, 3].map((i) => (
-    <Skeleton key={i} className="h-full min-h-[300px] rounded-xl" />
+<div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+  {data.regions.map((region) => (
+    <Link
+      key={region.code}
+      to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
+      className={`group flex flex-col h-full rounded-2xl overflow-hidden border border-border bg-card shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
+        !region.slug ? 'opacity-50 pointer-events-none' : ''
+      }`}
+    >
+      {/* Label Section - Above the flag */}
+      <div className="bg-card border-b border-border p-3 sm:p-4 text-center flex-shrink-0">
+        <span className="block text-sm sm:text-base font-semibold text-foreground">
+          {region.name}
+        </span>
+        <span className="block text-xs text-muted-foreground mt-0.5">
+          {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
+        </span>
+      </div>
+
+      {/* Flag Image - Full visibility, no overlay */}
+      <div className="flex-1 relative overflow-hidden">
+        <img
+          src={region.image}
+          alt={`${region.name} flag`}
+          className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+    </Link>
   ))}
 </div>
 ```
 
-### Key Implementation Details
+### Lines 141-150 - Update loading skeleton:
 
-| Element | Current | New |
-|---------|---------|-----|
-| Container | `space-y-6` | `flex flex-col min-h-[calc(100dvh-8rem)]` |
-| Grid | Fixed height | `flex-1` to fill space |
-| Card | `aspect-[2/3]` | `h-full` (stretch with grid) |
-| Flag image | Full card coverage | Fixed `h-48 sm:h-56`, `object-top` anchor |
-| Empty space | None | `flex-1` filler div with gradient |
+```tsx
+<div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+  {[1, 2, 3].map((i) => (
+    <div key={i} className="flex flex-col h-full min-h-[300px] rounded-2xl overflow-hidden border border-border">
+      <Skeleton className="h-16 flex-shrink-0" />
+      <Skeleton className="flex-1" />
+    </div>
+  ))}
+</div>
+```
 
-This approach ensures:
-- Cards stretch from the header area down to just above the footer
-- Flag images remain their current visual size (not stretched)
-- The extra card height is filled with a gradient background
-- Text stays anchored at the bottom of each card
+## Visual Comparison
+
+| Aspect | Before | After |
+|--------|--------|-------|
+| Label position | Overlaid at bottom | Separate card at top |
+| Flag visibility | ~80% (gradient overlay) | 100% (no overlay) |
+| Text legibility | White on gradient | High contrast on solid bg |
+| Overlay | `from-black/80` gradient | None |
+| Card structure | Absolute positioning | Flex column layout |
+
+## Benefits
+- Flags are 100% visible with absolutely no darkening
+- Country names are clearly readable on solid backgrounds
+- Professional, modern card design
+- Better accessibility with high contrast text
+- Cards still stretch to fill viewport height
+- Flag images fill the entire bottom section beautifully
 
