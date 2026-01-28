@@ -12,8 +12,7 @@ import {
   Map,
   Package,
   Bot,
-  Building2,
-  ChevronRight
+  Building2
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +32,22 @@ const categoryIcons: Record<string, React.ElementType> = {
   'bundle-deals': Package,
   'bots': Bot,
   'buildings': Building2,
+};
+
+// Category background images (using Unsplash for professional imagery)
+const categoryImages: Record<string, string> = {
+  'civilian-vehicles': 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80',
+  'marked-police-vehicles': 'https://images.unsplash.com/photo-1584776296944-ab6fb57b0bba?w=400&q=80',
+  'unmarked-police-vehicles': 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=400&q=80',
+  'fire-vehicles': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80',
+  'ambulance-vehicles': 'https://images.unsplash.com/photo-1587745416684-47953f16f02f?w=400&q=80',
+  'aircraft': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80',
+  'uniforms': 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=400&q=80',
+  'military-vehicles': 'https://images.unsplash.com/photo-1547082299-de196ea013d6?w=400&q=80',
+  'maps': 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80',
+  'bundle-deals': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80',
+  'bots': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80',
+  'buildings': 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80',
 };
 
 export default function Categories() {
@@ -135,6 +150,7 @@ export default function Categories() {
             {categories?.map((category) => {
               const Icon = categoryIcons[category.slug] || Package;
               const productCount = category.product_count || 0;
+              const bgImage = categoryImages[category.slug];
 
               // Determine if this category should use region selection
               const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && category.has_sub_categories;
@@ -146,17 +162,32 @@ export default function Categories() {
                 <Link
                   key={category.id}
                   to={linkTo}
-                  className="group flex flex-col items-center justify-center aspect-square rounded-xl bg-card border border-border hover:bg-muted/50 hover:border-primary/30 hover:shadow-md transition-all p-3"
+                  className="group relative flex flex-col items-center justify-center aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all"
                 >
-                  <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors mb-2">
-                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-foreground/70 group-hover:text-primary transition-colors" />
+                  {/* Background Image */}
+                  {bgImage && (
+                    <img 
+                      src={bgImage} 
+                      alt="" 
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                  )}
+                  
+                  {/* Dark Overlay */}
+                  <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors" />
+                  
+                  {/* Content */}
+                  <div className="relative z-10 flex flex-col items-center justify-center p-3">
+                    <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-sm mb-2">
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium text-white text-center leading-tight line-clamp-2 drop-shadow-md">
+                      {category.name}
+                    </span>
+                    <span className="text-[10px] sm:text-xs text-white/70 mt-0.5">
+                      {productCount}
+                    </span>
                   </div>
-                  <span className="text-xs sm:text-sm font-medium text-center leading-tight line-clamp-2">
-                    {category.name}
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-                    {productCount}
-                  </span>
                 </Link>
               );
             })}
