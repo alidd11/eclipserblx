@@ -173,15 +173,15 @@ export function RoleManagementCard() {
                         <IconComponent className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <span className="font-medium text-sm mr-1">{role.display_name}</span>
+                        <span className="font-medium text-sm">{role.display_name}</span>
+                        <div className="flex items-center gap-2 mt-1">
                           {role.is_system && (
-                            <Badge variant="outline" className="text-[11px] px-2.5 py-1 h-auto font-normal border-muted-foreground/30 text-muted-foreground shrink-0">
-                              <Lock className="h-3 w-3 mr-1.5" />
+                            <Badge variant="outline" className="text-[11px] px-2 py-0.5 h-auto font-normal border-muted-foreground/30 text-muted-foreground">
+                              <Lock className="h-3 w-3 mr-1" />
                               System
                             </Badge>
                           )}
-                          <Badge className="text-[11px] px-3 py-1 h-auto font-medium bg-cyan-500 hover:bg-cyan-500 text-white shrink-0 rounded-full">
+                          <Badge className="text-[11px] px-2.5 py-0.5 h-auto font-medium bg-cyan-500 hover:bg-cyan-500 text-white rounded-full">
                             Level {role.hierarchy_level}
                           </Badge>
                         </div>
