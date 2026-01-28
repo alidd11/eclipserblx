@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Users, Clock, Shield, IdCard, ChevronRight, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -220,13 +221,40 @@ export default function StaffDirectory() {
           </Badge>
         </div>
 
-        <Tabs defaultValue="directory" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="directory" className="flex items-center gap-2">
+        <Tabs defaultValue="directory" className="space-y-4" onValueChange={() => {}}>
+          {/* Mobile dropdown */}
+          <div className="sm:hidden">
+            <Select defaultValue="directory" onValueChange={(value) => {
+              const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
+              trigger?.click();
+            }}>
+              <SelectTrigger className="w-full bg-card">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-[100]">
+                <SelectItem value="directory">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Directory
+                  </div>
+                </SelectItem>
+                <SelectItem value="logs">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    ID Logs
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="directory" data-value="directory" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Directory
             </TabsTrigger>
-            <TabsTrigger value="logs" className="flex items-center gap-2">
+            <TabsTrigger value="logs" data-value="logs" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               ID Logs
             </TabsTrigger>

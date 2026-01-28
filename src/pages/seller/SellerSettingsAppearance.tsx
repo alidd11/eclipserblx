@@ -162,13 +162,58 @@ export default function SellerSettingsAppearance() {
           </p>
         </div>
 
-        <Tabs defaultValue="theme" className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="theme">Theme</TabsTrigger>
-            <TabsTrigger value="hero">Hero</TabsTrigger>
-            <TabsTrigger value="typography">Typography</TabsTrigger>
-            <TabsTrigger value="features">Features</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        <Tabs defaultValue="theme" className="space-y-6" onValueChange={() => {}}>
+          {/* Mobile dropdown */}
+          <div className="sm:hidden">
+            <Select defaultValue="theme" onValueChange={(value) => {
+              const trigger = document.querySelector(`[data-value="${value}"]`) as HTMLElement;
+              trigger?.click();
+            }}>
+              <SelectTrigger className="w-full bg-card">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-[100]">
+                <SelectItem value="theme">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Theme
+                  </div>
+                </SelectItem>
+                <SelectItem value="hero">
+                  <div className="flex items-center gap-2">
+                    <Layout className="h-4 w-4" />
+                    Hero
+                  </div>
+                </SelectItem>
+                <SelectItem value="typography">
+                  <div className="flex items-center gap-2">
+                    <Type className="h-4 w-4" />
+                    Typography
+                  </div>
+                </SelectItem>
+                <SelectItem value="features">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4" />
+                    Features
+                  </div>
+                </SelectItem>
+                <SelectItem value="advanced">
+                  <div className="flex items-center gap-2">
+                    <Code className="h-4 w-4" />
+                    Advanced
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop tabs */}
+          <TabsList className="hidden sm:grid grid-cols-5 w-full">
+            <TabsTrigger value="theme" data-value="theme">Theme</TabsTrigger>
+            <TabsTrigger value="hero" data-value="hero">Hero</TabsTrigger>
+            <TabsTrigger value="typography" data-value="typography">Typography</TabsTrigger>
+            <TabsTrigger value="features" data-value="features">Features</TabsTrigger>
+            <TabsTrigger value="advanced" data-value="advanced">Advanced</TabsTrigger>
           </TabsList>
 
           {/* Theme Tab */}
