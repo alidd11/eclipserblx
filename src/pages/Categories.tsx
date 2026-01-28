@@ -167,27 +167,20 @@ export default function Categories() {
 
         {/* Categories - Names above, Images below */}
         {isLoading ? (
-          <>
-            {/* Skeleton for names */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 mb-3 sm:mb-4">
-              {[...Array(12)].map((_, i) => (
-                <Skeleton key={`name-${i}`} className="h-10 sm:h-12 rounded-xl" />
-              ))}
-            </div>
-            {/* Skeleton for images */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
-              {[...Array(12)].map((_, i) => (
-                <Skeleton key={`img-${i}`} className="aspect-square rounded-xl" />
-              ))}
-            </div>
-          </>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="flex flex-col gap-2">
+                <Skeleton className="h-10 sm:h-12 rounded-xl" />
+                <Skeleton className="aspect-square rounded-xl" />
+              </div>
+            ))}
+          </div>
         ) : (
-          <>
-            {/* Category Names - Each in own card */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 mb-3 sm:mb-4">
-              {categoryData.map((category) => (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+            {categoryData.map((category) => (
+              <div key={category.id} className="flex flex-col gap-2">
+                {/* Category Name - Above its image */}
                 <div
-                  key={`name-${category.id}`}
                   className={`min-w-0 bg-card border border-border rounded-xl py-2 sm:py-3 px-2 sm:px-3 text-center shadow-sm ${
                     category.productCount === 0 ? 'opacity-50' : ''
                   }`}
@@ -196,20 +189,14 @@ export default function Categories() {
                     {category.name}
                   </span>
                 </div>
-              ))}
-            </div>
 
-            {/* Category Images */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
-              {categoryData.map((category) => (
+                {/* Category Image */}
                 <Link
-                  key={category.id}
                   to={category.linkTo}
                   className={`group relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 ${
                     category.productCount === 0 ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
-                  {/* Background Image - Full visibility */}
                   {category.bgImage && (
                     <img 
                       src={category.bgImage} 
@@ -218,9 +205,9 @@ export default function Categories() {
                     />
                   )}
                 </Link>
-              ))}
-            </div>
-          </>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </MainLayout>
