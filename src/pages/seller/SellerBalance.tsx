@@ -105,7 +105,7 @@ export default function SellerBalance() {
   };
 
   const minPayout = 25; // Minimum payout threshold
-  const canRequestPayout = (balance?.available_balance || 0) >= minPayout && store?.payouts_enabled;
+  const canRequestPayout = (balance?.available_balance || 0) >= minPayout && store?.paymentDetails?.payouts_enabled;
   const payoutProgress = Math.min(((balance?.available_balance || 0) / minPayout) * 100, 100);
 
   const getPayoutStatusBadge = (status: string) => {
@@ -188,7 +188,7 @@ export default function SellerBalance() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!store?.payouts_enabled ? (
+            {!store?.paymentDetails?.payouts_enabled ? (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>

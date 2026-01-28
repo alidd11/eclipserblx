@@ -43,7 +43,7 @@ serve(async (req) => {
     // Get the store for this user
     const { data: store, error: storeError } = await supabaseClient
       .from('stores')
-      .select('id, stripe_account_id, name')
+      .select('id, name')
       .eq('owner_id', user.id)
       .single();
 
@@ -52,9 +52,16 @@ serve(async (req) => {
     }
     logStep("Found store", { storeId: store.id, storeName: store.name });
 
+    // Get existing payment details
+    const { data: paymentDetails } = await supabaseClient
+      .from('store_payment_details')
+      .select('stripe_account_id')
+      .eq('store_id', store.id)
+      .maybeSingle();
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    let accountId = store.stripe_account_id;
+    let accountId = paymentDetails?.stripe_account_id;
 
     // If no existing account, create one
     if (!accountId) {
@@ -76,11 +83,15 @@ serve(async (req) => {
       });
       accountId = account.id;
 
-      // Save to stores table
+      // Save to store_payment_details table (upsert in case row doesn't exist)
       const { error: updateError } = await supabaseClient
-        .from('stores')
-        .update({ stripe_account_id: accountId })
-        .eq('id', store.id);
+        .from('store_payment_details')
+        .upsert({ 
+          store_id: store.id, 
+          stripe_account_id: accountId 
+        }, { 
+          onConflict: 'store_id' 
+        });
 
       if (updateError) {
         logStep("Warning: Failed to save stripe_account_id", { error: updateError.message });

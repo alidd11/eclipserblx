@@ -119,37 +119,37 @@ export default function SellerSettingsPayments() {
 
   // Payout method state
   const [payoutMethod, setPayoutMethod] = useState<'stripe' | 'paypal' | 'bank_transfer'>(
-    store?.payout_method === 'paypal' ? 'paypal' : 
-    store?.payout_method === 'bank_transfer' ? 'bank_transfer' : 'stripe'
+    store?.paymentDetails?.payout_method === 'paypal' ? 'paypal' : 
+    store?.paymentDetails?.payout_method === 'bank_transfer' ? 'bank_transfer' : 'stripe'
   );
-  const [paypalEmail, setPaypalEmail] = useState(store?.paypal_email || '');
+  const [paypalEmail, setPaypalEmail] = useState(store?.paymentDetails?.paypal_email || '');
   
   // Bank transfer fields
-  const [bankName, setBankName] = useState(store?.bank_name || '');
-  const [bankAccountHolder, setBankAccountHolder] = useState(store?.bank_account_holder || '');
-  const [bankAccountNumber, setBankAccountNumber] = useState(store?.bank_account_number || '');
-  const [bankRoutingNumber, setBankRoutingNumber] = useState(store?.bank_routing_number || '');
-  const [bankSwiftBic, setBankSwiftBic] = useState(store?.bank_swift_bic || '');
-  const [bankCountry, setBankCountry] = useState(store?.bank_country || '');
+  const [bankName, setBankName] = useState(store?.paymentDetails?.bank_name || '');
+  const [bankAccountHolder, setBankAccountHolder] = useState(store?.paymentDetails?.bank_account_holder || '');
+  const [bankAccountNumber, setBankAccountNumber] = useState(store?.paymentDetails?.bank_account_number || '');
+  const [bankRoutingNumber, setBankRoutingNumber] = useState(store?.paymentDetails?.bank_routing_number || '');
+  const [bankSwiftBic, setBankSwiftBic] = useState(store?.paymentDetails?.bank_swift_bic || '');
+  const [bankCountry, setBankCountry] = useState(store?.paymentDetails?.bank_country || '');
 
   const stripeOnboardingComplete = searchParams.get('stripe_onboarding') === 'complete';
 
   // Sync state when store loads
   useEffect(() => {
-    if (store) {
+    if (store?.paymentDetails) {
       setPayoutMethod(
-        store.payout_method === 'paypal' ? 'paypal' : 
-        store.payout_method === 'bank_transfer' ? 'bank_transfer' : 'stripe'
+        store.paymentDetails.payout_method === 'paypal' ? 'paypal' : 
+        store.paymentDetails.payout_method === 'bank_transfer' ? 'bank_transfer' : 'stripe'
       );
-      setPaypalEmail(store.paypal_email || '');
-      setBankName(store.bank_name || '');
-      setBankAccountHolder(store.bank_account_holder || '');
-      setBankAccountNumber(store.bank_account_number || '');
-      setBankRoutingNumber(store.bank_routing_number || '');
-      setBankSwiftBic(store.bank_swift_bic || '');
-      setBankCountry(store.bank_country || '');
+      setPaypalEmail(store.paymentDetails.paypal_email || '');
+      setBankName(store.paymentDetails.bank_name || '');
+      setBankAccountHolder(store.paymentDetails.bank_account_holder || '');
+      setBankAccountNumber(store.paymentDetails.bank_account_number || '');
+      setBankRoutingNumber(store.paymentDetails.bank_routing_number || '');
+      setBankSwiftBic(store.paymentDetails.bank_swift_bic || '');
+      setBankCountry(store.paymentDetails.bank_country || '');
     }
-  }, [store]);
+  }, [store?.paymentDetails]);
 
   const { data: connectStatus, refetch: refetchConnectStatus, isLoading: connectStatusLoading } = useQuery({
     queryKey: ['connect-status', user?.id],
@@ -235,9 +235,9 @@ export default function SellerSettingsPayments() {
       };
 
       const { error } = await supabase
-        .from('stores')
+        .from('store_payment_details')
         .update(updateData)
-        .eq('id', store.id);
+        .eq('store_id', store.id);
 
       if (error) throw error;
     },
@@ -280,7 +280,7 @@ export default function SellerSettingsPayments() {
                     <p className="font-medium">Checking payment status...</p>
                   </div>
                 </div>
-              ) : connectStatus?.canReceivePayments || store?.payouts_enabled ? (
+              ) : connectStatus?.canReceivePayments || store?.paymentDetails?.payouts_enabled ? (
                 <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                   <CheckCircle className="h-6 w-6 text-green-500" />
                   <div className="flex-1">
@@ -296,7 +296,7 @@ export default function SellerSettingsPayments() {
                     </a>
                   </Button>
                 </div>
-              ) : connectStatus?.hasAccount || store?.stripe_account_id ? (
+              ) : connectStatus?.hasAccount || store?.paymentDetails?.stripe_account_id ? (
                 <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <AlertCircle className="h-6 w-6 text-yellow-500" />
                   <div className="flex-1">
@@ -504,14 +504,14 @@ export default function SellerSettingsPayments() {
                 {updatePayoutMethod.isPending ? 'Saving...' : 'Save Payout Method'}
               </Button>
 
-              {store?.payout_method && (
+              {store?.paymentDetails?.payout_method && (
                 <p className="text-sm text-muted-foreground text-center">
-                  Current method: <span className="font-medium capitalize">{store.payout_method?.replace('_', ' ')}</span>
-                  {store.payout_method === 'paypal' && store.paypal_email && (
-                    <span> ({store.paypal_email})</span>
+                  Current method: <span className="font-medium capitalize">{store.paymentDetails.payout_method?.replace('_', ' ')}</span>
+                  {store.paymentDetails.payout_method === 'paypal' && store.paymentDetails.paypal_email && (
+                    <span> ({store.paymentDetails.paypal_email})</span>
                   )}
-                  {store.payout_method === 'bank_transfer' && store.bank_name && (
-                    <span> ({store.bank_name})</span>
+                  {store.paymentDetails.payout_method === 'bank_transfer' && store.paymentDetails.bank_name && (
+                    <span> ({store.paymentDetails.bank_name})</span>
                   )}
                 </p>
               )}
