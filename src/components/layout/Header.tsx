@@ -1,8 +1,7 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, Search } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
-import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -33,22 +32,6 @@ const legalLinks = [
 
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 
-// Mobile search button that opens the command palette
-function MobileSearchButton() {
-  const { setOpen } = useSearchCommand();
-  
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
-      onClick={() => setOpen(true)}
-      aria-label="Search"
-    >
-      <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-    </Button>
-  );
-}
 
 interface HeaderProps {
   showDesktopNav?: boolean;
@@ -106,11 +89,12 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   };
 
   return (
-<header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
       <div className="px-4">
-        <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
+        {/* Main header row */}
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
           {/* Left side - Back button + Mobile menu + Logo */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Native-style Back Button */}
             <BackButton showLabel={false} className="sm:hidden" />
             <BackButton showLabel={true} className="hidden sm:flex" />
@@ -132,15 +116,17 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Button>
 
             {/* Logo - only show on mobile (sidebar shows it on desktop) */}
-            <Link to="/" className="flex items-center gap-3 md:hidden">
+            <Link to="/" className="flex items-center gap-2 md:hidden">
               <EclipseLogo size="sm" />
-              <span className="brand-text text-base gradient-text hidden sm:block">
-                {SITE_NAME}
-              </span>
             </Link>
           </div>
 
-          {/* Desktop: Branding + Search Bar + Currency */}
+          {/* Mobile: Inline Search + Currency */}
+          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
+            <HeaderSearchBar className="flex-1 min-w-0" compact />
+            <CurrencySelector compact className="shrink-0 h-8 px-2" />
+          </div>
+
           {/* Desktop: Branding + Search Bar + Currency */}
           <div className="hidden md:flex items-center gap-4 flex-1">
             {/* Branding - Always visible and fixed position in header */}
@@ -155,13 +141,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-0.5 sm:gap-2">
-            {/* Discord - hidden on very small screens */}
+          <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
+            {/* Discord - hidden on mobile */}
             <a
               href={discordUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden xs:block"
+              className="hidden md:block"
             >
               <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
                 <svg
@@ -175,11 +161,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               </Button>
             </a>
 
-            {/* Mobile Search Button - opens command palette */}
-            <MobileSearchButton />
-
             <NotificationBell />
-
 
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
@@ -220,12 +202,6 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           }}
         >
         <nav className="flex flex-col gap-1 p-2">
-            {/* Mobile Search Bar + Currency */}
-            <div className="flex items-center gap-2 mb-2">
-              <HeaderSearchBar className="flex-1" />
-              <CurrencySelector compact />
-            </div>
-            
             {/* Main Navigation */}
             {navLinks.map((link) => (
               <NavLink
