@@ -193,13 +193,10 @@ export default function RegionSelect() {
         </Breadcrumb>
 
         {/* Header */}
-        <div className="text-center space-y-1 mb-6">
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
             Select Your Region
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {data.parentCategory.name}
-          </p>
         </div>
 
         {/* Country Names - Each in own card, aligned to flags */}
