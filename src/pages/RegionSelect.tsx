@@ -211,7 +211,7 @@ export default function RegionSelect() {
               }`}
             >
               {/* Flag Background - Covers entire card */}
-              <div className="absolute inset-0 flex items-center justify-center bg-muted transition-transform duration-300 group-hover:scale-110">
+              <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
                 <span className="text-[8rem] sm:text-[10rem] leading-none select-none">
                   {region.flag}
                 </span>
