@@ -198,31 +198,31 @@ export default function RegionSelect() {
         </div>
 
         {/* Region Cards - Full height stretch */}
-        <div className="flex-1 grid grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto w-full">
+        <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative rounded-xl overflow-hidden border border-border/50 hover:border-primary/40 hover:shadow-lg transition-all ${
+              className={`group relative rounded-2xl overflow-hidden border-2 border-border/30 hover:border-primary/50 shadow-lg hover:shadow-xl transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Flag Image - Covers full card, anchored to top */}
+              {/* Flag Image - Full visibility, crisp display */}
               <img
                 src={region.image}
                 alt={`${region.name} flag`}
-                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
               />
 
-              {/* Gradient overlay - subtle, only at bottom for text */}
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+              {/* Minimal gradient - just for text area */}
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-              {/* Content - Positioned at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4 text-center">
-                <span className="text-sm sm:text-base font-semibold text-white leading-snug drop-shadow-lg">
+              {/* Content - Clean, professional text */}
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-5 text-center">
+                <span className="text-base sm:text-lg font-bold text-white tracking-wide drop-shadow-md">
                   {region.name}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-white/80 mt-0.5 font-medium">
+                <span className="block text-xs sm:text-sm text-white/90 mt-1 font-medium">
                   {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
                 </span>
               </div>
