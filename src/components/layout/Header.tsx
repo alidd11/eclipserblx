@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, Search } from 'lucide-react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, Search, ArrowLeft } from 'lucide-react';
 import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +14,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { CurrencySelector } from './CurrencySelector';
+import { hapticTap } from '@/lib/haptics';
 const navLinks = [
   { href: '/featured', label: 'Featured', icon: Sparkles },
   { href: '/products', label: 'Products', icon: Package },
@@ -58,10 +59,24 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  // Show back button when not on home page
+  const showBackButton = location.pathname !== '/';
+
+  const handleBack = () => {
+    hapticTap();
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -107,8 +122,21 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 <header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
       <div className="px-4">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
-          {/* Left side - Mobile menu + Logo + Desktop sidebar toggle */}
-          <div className="flex items-center gap-2">
+          {/* Left side - Back button + Mobile menu + Logo */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Back Button - shown when not on home page */}
+            {showBackButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            )}
+
             {/* Mobile menu button - uses onMenuClick if provided, otherwise internal state */}
             <Button
               variant="ghost"
@@ -124,7 +152,6 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             >
               {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
-
 
             {/* Logo - only show on mobile (sidebar shows it on desktop) */}
             <Link to="/" className="flex items-center gap-3 md:hidden">
