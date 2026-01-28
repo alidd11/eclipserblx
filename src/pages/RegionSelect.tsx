@@ -215,20 +215,20 @@ export default function RegionSelect() {
           ))}
         </div>
 
-        {/* Flag Images - Proper aspect ratio to show full flags */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 w-full max-w-5xl mx-auto">
+        {/* Flag Images - Fill remaining vertical space */}
+        <div className="flex-1 grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 w-full max-w-5xl mx-auto min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative aspect-[3/2] rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 bg-muted ${
+              className={`group relative min-w-0 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
               <img
                 src={region.image}
                 alt={`${region.name} flag`}
-                className="absolute inset-0 w-full h-full object-contain p-2 sm:p-4 transition-transform duration-300 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
               />
             </Link>
           ))}
