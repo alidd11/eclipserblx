@@ -1,161 +1,163 @@
 
 
-# Roblox-Style Role Permission System
+# Mobile Header Design Improvements
 
 ## Overview
+Enhance the visual design and user experience of the search bar and currency selector that were recently added to the mobile header row. The goal is to create a polished, native-app-quality interface that feels cohesive with the Eclipse brand while maintaining excellent usability on small screens.
 
-This plan redesigns the Role Permissions page to match Roblox's intuitive permission management interface, making it easier for admins to navigate and customize role permissions.
+---
 
-## Current State Analysis
+## Current State
+The mobile header currently displays:
+- Back button + Menu button + Logo on the left
+- Search bar (compact) + Currency selector (compact) in the center
+- Notification bell + Cart + User/Sign In on the right
 
-The existing system has:
-- **55 permissions** across 2 categories (actions, pages)
-- A working toggle system for enabling/disabling permissions per role
-- Role hierarchy with custom roles support
+**Current issues to address:**
+- Elements feel cramped with minimal visual hierarchy
+- Search bar and currency selector use the same visual style (both `bg-muted/50 border border-border`)
+- No clear visual distinction between interactive elements
+- Currency selector dropdown icon adds visual noise
+- Touch targets could feel small on some devices
 
-## Proposed Changes
+---
 
-### 1. Reorganize Permission Categories
+## Design Improvements
 
-Replace the current 2-category system with more intuitive Roblox-style categories:
+### 1. Visual Hierarchy & Grouping
 
-| New Category | Icon | Includes |
-|-------------|------|----------|
-| **Dashboard** | LayoutDashboard | view_dashboard, view_analytics, view_income, view_audit_logs |
-| **Store** | Package | view_products, manage_products, view_orders, manage_orders, view_reviews, manage_reviews, view_discounts, manage_discounts |
-| **Users** | Users | view_users, manage_users, delete_users, view_ip_bans, manage_ip_bans, view_subscribers, manage_subscriptions |
-| **Marketplace** | Store | view_seller_stores, manage_seller_stores, view_store_applications, review_store_applications, view_seller_payouts, process_payouts, view_seller_tickets, manage_seller_tickets |
-| **Communications** | MessageCircle | view_live_chat, respond_to_chat, view_contact_messages, respond_to_contacts, view_forum_reports, manage_forum_reports |
-| **Team** | Shield | view_staff_directory, view_staff_activity, manage_staff, view_applications, review_applications, view_job_channels, manage_job_channels |
-| **Affiliates** | Gift | view_affiliates, manage_affiliates, view_affiliate_applications, review_affiliate_applications, view_referrals, manage_referrals |
-| **System** | Settings | view_settings, manage_settings, view_permissions, manage_permissions, view_incidents, manage_incidents, view_bot_codes, manage_bot_codes, manage_user_roles |
+**Search Bar Enhancements:**
+- Make the search bar the dominant element with a slightly elevated appearance
+- Add a subtle inner shadow to create depth (pill-button feel)
+- Use a more muted placeholder to reduce visual weight
+- Consider a slight gradient or glass-effect background
 
-### 2. New UI Design
+**Currency Selector Refinements:**
+- Make it more compact and icon-focused (just the currency symbol)
+- Remove the chevron on mobile to save space
+- Add a subtle tap indicator (e.g., ring on focus)
+- Position it as a secondary action next to search
 
-Create a cleaner, Roblox-inspired interface with:
+### 2. Spacing & Touch Targets
+
+- Increase gap between search and currency from `gap-2` to `gap-2.5`
+- Ensure minimum 44px touch targets for PWA compliance
+- Add more breathing room with adjusted padding
+
+### 3. Color & Styling Refinements
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│  Role Permissions                                               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │  Admin  │ │ Product │ │  Order  │ │ Support │ │ Analyst │   │
-│  │   🔒    │ │ Manager │ │ Manager │ │  Agent  │ │         │   │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘   │
-│       ▲                                                         │
-│       │ Selected                                                │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 📊 Dashboard                                           ▼   ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │ ☑️ View Dashboard        Access the admin dashboard         ││
-│  │ ☑️ View Analytics        Access analytics page              ││
-│  │ ☐ View Income            Access income/revenue page         ││
-│  │ ☑️ View Audit Logs       Access audit logs                  ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 📦 Store                                               ▼   ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │ ☑️ View Products         Access products list               ││
-│  │ ☑️ Manage Products       Create, edit, delete products      ││
-│  │ ...                                                         ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  [←] [≡] [◉]    [🔍 Search...       ]  [£]   [🔔][🛒][👤] │
+│       │   │              │               │                   │
+│   Back Menu Logo    Search Bar     Currency    Actions       │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 3. Key UI Features
+**Search Bar:**
+- Background: `bg-muted/60` with subtle glass effect
+- Border: Softer `border-border/50` → `border-primary/40` on focus
+- Icon: Muted by default, primary on focus
+- Placeholder: Lighter weight, smaller size
 
-**Role Selection Bar**
-- Horizontal scrollable role cards with icons and colors
-- Shows permission count per role
-- Lock icon for admin (non-editable)
-- Quick hierarchy level indicator
+**Currency Selector:**
+- Background: `bg-background/50` (lighter than search)
+- Border: Subtle `border-border/50`
+- Symbol: Larger, primary color
+- No chevron on compact mode
+- Circular/pill shape for visual distinction
 
-**Category Accordion**
-- Collapsible sections for each permission category
-- Category icon and name as header
-- Permission count badge (enabled/total)
-- Expand/collapse all button
+### 4. Interactive States
 
-**Permission Toggles**
-- Clean checkbox or switch for each permission
-- Permission name (human-readable)
-- Description on hover or below
-- Visual feedback when enabled (highlighted row)
+**Search Bar:**
+- Idle: Subtle, recessed appearance
+- Hover/Tap: Slight lift, border glow
+- Focus ring: Primary color ring
 
-**Quick Actions**
-- "Select All" / "Deselect All" per category
-- Copy permissions from another role
-- Preset templates (e.g., "Support Template", "Manager Template")
+**Currency Selector:**
+- Idle: Circular badge appearance
+- Tap: Scale down briefly (haptic feedback already exists)
+- Selected state: Subtle primary border
 
-### 4. Database Migration
+### 5. Animation Polish
 
-Update the `permissions` table to use the new category structure:
-
-```sql
--- Update permission categories for better organization
-UPDATE public.permissions SET category = 'dashboard' WHERE name IN ('view_dashboard', 'view_analytics', 'view_income', 'view_audit_logs');
-UPDATE public.permissions SET category = 'store' WHERE name IN ('view_products', 'manage_products', 'view_orders', 'manage_orders', 'view_reviews', 'manage_reviews', 'view_discounts', 'manage_discounts');
--- ... (continue for all categories)
-```
-
-### 5. Implementation Files
-
-| File | Changes |
-|------|---------|
-| `src/pages/admin/RolePermissions.tsx` | Complete redesign with new UI |
-| `src/components/admin/PermissionCategory.tsx` | New component for collapsible category sections |
-| `src/components/admin/RoleSelector.tsx` | New component for role selection bar |
-| `supabase/migrations/...` | Update permission categories in database |
+- Add subtle scale animation on tap for both elements
+- Smooth border-color transitions
+- Consider a gentle pulse on the search bar to draw attention (first-time users only, store in localStorage)
 
 ---
 
-## Technical Details
+## Technical Implementation
 
-### New Permission Categories Mapping
+### Files to Modify
 
-```typescript
-const PERMISSION_CATEGORIES = {
-  dashboard: {
-    label: 'Dashboard & Analytics',
-    icon: LayoutDashboard,
-    permissions: ['view_dashboard', 'view_analytics', 'view_income', 'view_audit_logs']
-  },
-  store: {
-    label: 'Store Management',
-    icon: Package,
-    permissions: ['view_products', 'manage_products', 'view_orders', 'manage_orders', ...]
-  },
-  // ... more categories
-};
+1. **`src/components/layout/HeaderSearchBar.tsx`**
+   - Update compact mode styling with refined colors
+   - Add focus state enhancements
+   - Consider active state animation
+
+2. **`src/components/layout/CurrencySelector.tsx`**
+   - Update compact mode to remove chevron
+   - Make the button more circular/badge-like
+   - Enhance the visual styling
+
+3. **`src/components/layout/Header.tsx`**
+   - Adjust the mobile search+currency container spacing
+   - Fine-tune the overall mobile header layout
+   - Consider adjusting element order if needed
+
+### Code Changes Summary
+
+**HeaderSearchBar.tsx (compact mode):**
+```tsx
+// Refined compact styling
+className={cn(
+  "flex items-center gap-1.5 w-full h-9 px-3 rounded-full",
+  "bg-muted/40 backdrop-blur-sm",
+  "border border-border/40 hover:border-primary/40",
+  "text-muted-foreground/80 hover:text-foreground",
+  "transition-all duration-200 cursor-text",
+  "active:scale-[0.98]",
+  // ... focus states
+  compact && "h-8 px-2.5",
+  className
+)}
 ```
 
-### Accessibility Considerations
+**CurrencySelector.tsx (compact mode):**
+```tsx
+// Badge-style currency indicator
+className={cn(
+  "flex items-center justify-center h-8 w-8 rounded-full",
+  "bg-background/60 backdrop-blur-sm",
+  "border border-border/40 hover:border-primary/40",
+  "text-sm font-semibold text-foreground",
+  "transition-all duration-200",
+  "active:scale-[0.95]",
+  className
+)}
+// Remove chevron in compact mode
+// Show only currency symbol (£, $, €)
+```
 
-- All toggles keyboard navigable
-- Clear focus indicators
-- ARIA labels for screen readers
-- High contrast for enabled/disabled states
-
-### Mobile Optimization
-
-- Role selector becomes horizontal scroll on mobile
-- Categories stack vertically
-- Touch-friendly toggle targets (44px minimum)
-- Mobile dropdown for role selection on small screens
+**Header.tsx (mobile container):**
+```tsx
+// Refined spacing and alignment
+<div className="flex md:hidden items-center gap-2.5 flex-1 min-w-0">
+  <HeaderSearchBar className="flex-1 min-w-0" compact />
+  <CurrencySelector compact className="shrink-0" />
+</div>
+```
 
 ---
 
-## Summary
+## Expected Result
 
-This redesign transforms the permission management into a more intuitive, Roblox-inspired interface that:
-
-1. **Organizes permissions logically** into 8 intuitive categories
-2. **Simplifies navigation** with collapsible sections
-3. **Improves visual feedback** with clear enabled/disabled states
-4. **Maintains hierarchy enforcement** from the existing system
-5. **Works great on mobile** with responsive design
+A polished mobile header where:
+- ✅ Search bar is clearly the primary action with a soft, tappable pill design
+- ✅ Currency selector is a compact, circular badge that's easy to tap
+- ✅ Both elements feel cohesive with the Eclipse glass-effect aesthetic
+- ✅ Touch targets meet 44px minimum for PWA/mobile
+- ✅ Smooth micro-interactions provide satisfying feedback
+- ✅ Visual hierarchy guides users naturally to search first
 
