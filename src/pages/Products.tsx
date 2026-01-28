@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Filter, Search, ChevronDown, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { BackButton } from '@/components/ui/BackButton';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
@@ -168,9 +167,8 @@ export default function Products() {
         {/* Combined Header & Filter Card */}
         <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
           <CardContent className="p-4 space-y-3">
-            {/* Title Row with Back Button */}
+            {/* Title Row */}
             <div className="flex items-center gap-2">
-              <BackButton fallbackPath="/categories" />
               <Package className="h-5 w-5 text-primary/80" />
               <h1 className="text-lg font-display text-foreground">
                 {featuredOnly ? 'Featured Products' : activeCategory ? activeCategory.name : 'All Products'}
