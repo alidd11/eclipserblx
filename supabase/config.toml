@@ -243,3 +243,9 @@ verify_jwt = false
 
 [functions.notify-seller-document]
 verify_jwt = false
+
+[functions.send-community-announcement]
+verify_jwt = false
+
+[functions.send-discord-poll]
+verify_jwt = false

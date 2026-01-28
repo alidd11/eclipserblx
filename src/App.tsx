@@ -113,6 +113,7 @@ const AdminRolePermissions = lazy(() => import("./pages/admin/RolePermissions"))
 const AdminDiscordModmail = lazy(() => import("./pages/admin/DiscordModmail"));
 const AdminModmailBotSetup = lazy(() => import("./pages/admin/ModmailBotSetup"));
 const AdminCommunityAnnouncements = lazy(() => import("./pages/admin/CommunityAnnouncements"));
+const AdminDiscordPolls = lazy(() => import("./pages/admin/DiscordPolls"));
 const AdminTranscripts = lazy(() => import("./pages/admin/Transcripts"));
 const AdminDiscordOutreach = lazy(() => import("./pages/admin/DiscordOutreach"));
 const AdminDiscordOutreachDetail = lazy(() => import("./pages/admin/DiscordOutreachDetail"));
@@ -309,6 +310,7 @@ const App = () => (
                   <Route path="/admin/discord-modmail" element={<AdminDiscordModmail />} />
                   <Route path="/admin/modmail-bot-setup" element={<AdminModmailBotSetup />} />
                   <Route path="/admin/community-announcements" element={<AdminCommunityAnnouncements />} />
+                  <Route path="/admin/discord-polls" element={<AdminDiscordPolls />} />
                   <Route path="/admin/transcripts" element={<AdminTranscripts />} />
                   <Route path="/admin/discord-outreach" element={<AdminDiscordOutreach />} />
                   <Route path="/admin/discord-outreach/:id" element={<AdminDiscordOutreachDetail />} />
