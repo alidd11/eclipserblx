@@ -211,9 +211,9 @@ export default function RegionSelect() {
                 !region.slug ? 'opacity-50' : ''
               }`}
             >
-              <span className="text-sm sm:text-base font-semibold text-foreground">
-                {region.name}
-              </span>
+            <span className="text-sm sm:text-base font-semibold text-foreground whitespace-nowrap">
+              {region.name}
+            </span>
             </div>
           ))}
         </div>
