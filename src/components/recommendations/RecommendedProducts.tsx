@@ -181,21 +181,22 @@ export const RecommendedProducts = forwardRef<HTMLElement, RecommendedProductsPr
               )}
             >
               {currentProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  image={product.images?.[0] || '/placeholder.svg'}
-                  slug={product.slug}
-                  category={product.categories?.name}
-                  storeName={product.stores?.name}
-                  storeSlug={product.stores?.slug}
-                  storeLogo={product.stores?.logo_url}
-                  isVerified={product.stores?.is_verified}
-                  isTrusted={product.stores?.is_trusted}
-                  isResellable={(product as any).is_resellable}
-                />
+                <div key={product.id}>
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    image={product.images?.[0] || '/placeholder.svg'}
+                    slug={product.slug}
+                    category={product.categories?.name}
+                    storeName={product.stores?.name}
+                    storeSlug={product.stores?.slug}
+                    storeLogo={product.stores?.logo_url}
+                    isVerified={product.stores?.is_verified}
+                    isTrusted={product.stores?.is_trusted}
+                    isResellable={(product as any).is_resellable}
+                  />
+                </div>
               ))}
             </motion.div>
           </AnimatePresence>

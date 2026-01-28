@@ -193,14 +193,15 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
             )}
           >
             {currentProducts.map((product) => (
-              <ProductGridItem
-                key={product.id}
-                product={product}
-                formatPrice={formatPrice}
-                getMemberPrice={getMemberPrice}
-                getDiscountPercent={getDiscountPercent}
-                isEligibleForDiscount={isEligibleForDiscount}
-              />
+              <div key={product.id}>
+                <ProductGridItem
+                  product={product}
+                  formatPrice={formatPrice}
+                  getMemberPrice={getMemberPrice}
+                  getDiscountPercent={getDiscountPercent}
+                  isEligibleForDiscount={isEligibleForDiscount}
+                />
+              </div>
             ))}
           </motion.div>
         </AnimatePresence>
