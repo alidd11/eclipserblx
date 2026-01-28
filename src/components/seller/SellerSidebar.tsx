@@ -61,6 +61,15 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: 'integrations',
+    title: 'Integrations',
+    icon: Gamepad2,
+    items: [
+      { title: 'Roblox', icon: Gamepad2, href: '/seller/roblox' },
+      { title: 'Discord', icon: Bell, href: '/seller/settings/notifications' },
+    ],
+  },
+  {
     id: 'support',
     title: 'Support',
     icon: HelpCircle,
@@ -78,8 +87,6 @@ const navGroups: NavGroup[] = [
       { title: 'Appearance', icon: Palette, href: '/seller/settings/appearance' },
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
-      { title: 'Discord Settings', icon: Bell, href: '/seller/settings/notifications' },
-      { title: 'Roblox Settings', icon: Gamepad2, href: '/seller/settings/roblox' },
     ],
   },
 ];
