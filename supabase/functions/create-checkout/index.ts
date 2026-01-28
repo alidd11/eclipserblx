@@ -214,6 +214,17 @@ serve(async (req) => {
       logStep("Discount code ignored - Eclipse+ member (no stacking)");
     }
 
+    // Calculate final total after discounts
+    const finalTotal = serverSubtotal - discountAmount;
+    const finalTotalPence = Math.round(finalTotal * 100);
+
+    // Minimum order requirement: £1.00 (100 pence)
+    const MINIMUM_ORDER_PENCE = 100;
+    if (finalTotalPence < MINIMUM_ORDER_PENCE) {
+      logStep("Order below minimum", { finalTotalPence, minimum: MINIMUM_ORDER_PENCE });
+      throw new Error("Minimum order amount is £1.00");
+    }
+
     // Check if customer exists in Stripe
     let customerId: string | undefined;
     if (userEmail) {
