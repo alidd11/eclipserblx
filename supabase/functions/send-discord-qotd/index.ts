@@ -16,7 +16,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { question, qotdId, category } = await req.json();
+    const { question, qotdId, category, staffUserId, staffDisplayName } = await req.json();
 
     if (!question) {
       throw new Error('Question is required');
@@ -52,10 +52,13 @@ serve(async (req) => {
 
     const emoji = categoryEmojis[category] || '❓';
 
-    // Create Discord embed
+    // Build the sent by text
+    const sentByText = staffDisplayName ? `\n\n*Sent by ${staffDisplayName}*` : '';
+
+    // Create Discord embed with Eclipse branding
     const embed = {
       title: `${emoji} Question of the Day`,
-      description: `**${question}**\n\n\u200B\nShare your thoughts in the replies below! 💬`,
+      description: `**${question}**\n\n\u200B\nShare your thoughts in the replies below! 💬${sentByText}`,
       color: 0x5865F2, // Discord blurple
       footer: {
         text: 'Eclipse Marketplace • QOTD'
@@ -72,8 +75,13 @@ serve(async (req) => {
       content = `<@&${roleId}>`;
     }
 
+    // Use ?wait=true to get the message ID back for thread creation
+    const webhookWithWait = settingsMap.community_discord_webhook_url.includes('?') 
+      ? `${settingsMap.community_discord_webhook_url}&wait=true`
+      : `${settingsMap.community_discord_webhook_url}?wait=true`;
+
     // Send to Discord
-    const webhookResponse = await fetch(settingsMap.community_discord_webhook_url, {
+    const webhookResponse = await fetch(webhookWithWait, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -87,16 +95,50 @@ serve(async (req) => {
       throw new Error(`Discord webhook failed: ${errorText}`);
     }
 
-    // Try to get message ID for reactions
-    let discordMessageId = null;
+    // Get the message response to create a thread
+    const messageData = await webhookResponse.json();
+    const discordMessageId = messageData.id;
+    const channelId = messageData.channel_id;
+
+    // Create a thread on the message
+    let threadId = null;
+    if (discordMessageId && channelId) {
+      const botToken = Deno.env.get('DISCORD_BOT_TOKEN');
+      if (botToken) {
+        try {
+          // Create a public thread from the message
+          const threadResponse = await fetch(
+            `https://discord.com/api/v10/channels/${channelId}/messages/${discordMessageId}/threads`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bot ${botToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                name: `💬 QOTD Discussion`,
+                auto_archive_duration: 1440 // Archive after 24 hours of inactivity
+              })
+            }
+          );
+
+          if (threadResponse.ok) {
+            const threadData = await threadResponse.json();
+            threadId = threadData.id;
+            console.log('Thread created successfully:', threadId);
+          } else {
+            const threadError = await threadResponse.text();
+            console.log('Failed to create thread (non-critical):', threadError);
+          }
+        } catch (threadErr) {
+          console.log('Thread creation error (non-critical):', threadErr);
+        }
+      } else {
+        console.log('DISCORD_BOT_TOKEN not set - skipping thread creation');
+      }
+    }
     
-    // Note: If we need the message ID, we should use ?wait=true on the webhook URL
-    // const webhookWithWait = settingsMap.community_discord_webhook_url.includes('?') 
-    //   ? `${settingsMap.community_discord_webhook_url}&wait=true`
-    //   : `${settingsMap.community_discord_webhook_url}?wait=true`;
-    
-    
-    // Update the QOTD record with discord message ID if we have it
+    // Update the QOTD record with discord message ID
     if (qotdId) {
       await supabase
         .from('discord_qotd')
@@ -111,7 +153,7 @@ serve(async (req) => {
     console.log('QOTD posted successfully:', question);
 
     return new Response(
-      JSON.stringify({ success: true, message: 'QOTD posted to Discord' }),
+      JSON.stringify({ success: true, message: 'QOTD posted to Discord', threadId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
