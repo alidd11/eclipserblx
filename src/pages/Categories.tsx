@@ -158,7 +158,7 @@ export default function Categories() {
       <div className="container py-6 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center text-foreground">
             Categories
           </h1>
         </div>

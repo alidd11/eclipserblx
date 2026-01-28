@@ -194,7 +194,7 @@ export default function RegionSelect() {
 
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center text-foreground">
             Select Your Region
           </h1>
         </div>
