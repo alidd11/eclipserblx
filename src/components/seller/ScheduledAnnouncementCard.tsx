@@ -38,13 +38,13 @@ export function ScheduledAnnouncementCard() {
 
   const sendAnnouncement = useMutation({
     mutationFn: async (immediate: boolean) => {
-      if (!store?.discord_webhook_url) {
+      if (!store?.credentials?.discord_webhook_url) {
         throw new Error('Please configure your Discord webhook URL in Settings → Notifications');
       }
 
       const embed = getEmbed();
       
-      const response = await fetch(store.discord_webhook_url, {
+      const response = await fetch(store.credentials.discord_webhook_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ export function ScheduledAnnouncementCard() {
     };
   };
 
-  const canSend = formData.title.trim() && formData.description.trim() && store?.discord_webhook_url;
+  const canSend = formData.title.trim() && formData.description.trim() && store?.credentials?.discord_webhook_url;
 
   return (
     <Card>
@@ -120,7 +120,7 @@ export function ScheduledAnnouncementCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!store?.discord_webhook_url && (
+        {!store?.credentials?.discord_webhook_url && (
           <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm text-yellow-600 dark:text-yellow-400">
             Configure your Discord webhook in Settings → Notifications to enable announcements.
           </div>

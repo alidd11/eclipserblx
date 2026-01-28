@@ -246,7 +246,7 @@ serve(async (req) => {
         // Check if this is a seller product and get store commission rate
         const { data: product } = await supabaseClient
           .from("products")
-          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name, discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id)")
+          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name)")
           .eq("id", item.id)
           .single();
 
@@ -255,18 +255,22 @@ serve(async (req) => {
             owner_id: string; 
             commission_rate?: number; 
             name?: string; 
-            discord_webhook_url?: string;
-            discord_bot_token?: string;
-            discord_guild_id?: string;
-            discord_role_id?: string;
           }[] | null;
           const sellerId = storesArray?.[0]?.owner_id;
           const commissionRate = storesArray?.[0]?.commission_rate ?? 15; // Default 15% commission
           const storeName = storesArray?.[0]?.name;
-          const sellerWebhookUrl = storesArray?.[0]?.discord_webhook_url;
-          const discordBotToken = storesArray?.[0]?.discord_bot_token;
-          const discordGuildId = storesArray?.[0]?.discord_guild_id;
-          const discordRoleId = storesArray?.[0]?.discord_role_id;
+
+          // Fetch Discord credentials from separate secure table
+          const { data: credentials } = await supabaseClient
+            .from("store_credentials")
+            .select("discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id")
+            .eq("store_id", product.store_id)
+            .single();
+
+          const sellerWebhookUrl = credentials?.discord_webhook_url;
+          const discordBotToken = credentials?.discord_bot_token;
+          const discordGuildId = credentials?.discord_guild_id;
+          const discordRoleId = credentials?.discord_role_id;
           
           if (sellerId) {
             // Calculate net-based seller earnings

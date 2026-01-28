@@ -51,11 +51,11 @@ export default function SellerSettingsNotifications() {
     if (store) {
       setFormData({
         discord_url: store.discord_url || '',
-        discord_webhook_url: store.discord_webhook_url || '',
-        review_discord_webhook_url: store.review_discord_webhook_url || '',
-        discord_bot_token: store.discord_bot_token || '',
-        discord_guild_id: store.discord_guild_id || '',
-        discord_role_id: store.discord_role_id || '',
+        discord_webhook_url: store.credentials?.discord_webhook_url || '',
+        review_discord_webhook_url: store.credentials?.review_discord_webhook_url || '',
+        discord_bot_token: store.credentials?.discord_bot_token || '',
+        discord_guild_id: store.credentials?.discord_guild_id || '',
+        discord_role_id: store.credentials?.discord_role_id || '',
       });
     }
   }, [store]);
@@ -64,20 +64,31 @@ export default function SellerSettingsNotifications() {
     mutationFn: async (data: typeof formData) => {
       if (!store?.id) throw new Error('No store found');
       
-      const { error } = await supabase
+      // Update discord_url in stores table (public field)
+      const { error: storeError } = await supabase
         .from('stores')
         .update({
           discord_url: data.discord_url || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', store.id);
+
+      if (storeError) throw storeError;
+
+      // Update credentials in store_credentials table (sensitive fields)
+      const { error: credError } = await supabase
+        .from('store_credentials')
+        .upsert({
+          store_id: store.id,
           discord_webhook_url: data.discord_webhook_url || null,
           review_discord_webhook_url: data.review_discord_webhook_url || null,
           discord_bot_token: data.discord_bot_token || null,
           discord_guild_id: data.discord_guild_id || null,
           discord_role_id: data.discord_role_id || null,
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', store.id);
+        }, { onConflict: 'store_id' });
 
-      if (error) throw error;
+      if (credError) throw credError;
     },
     onSuccess: () => {
       toast.success('Notification settings updated successfully');

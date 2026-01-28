@@ -65,7 +65,7 @@ serve(async (req) => {
     if (productId) {
       const { data: product } = await supabase
         .from("products")
-        .select("name, is_seller_product, store_id, stores(name, review_discord_webhook_url)")
+        .select("name, is_seller_product, store_id, stores(name)")
         .eq("id", productId)
         .maybeSingle();
       
@@ -73,14 +73,21 @@ serve(async (req) => {
         productName = product.name;
       }
 
-      // Check if this is a seller product and get seller's review webhook
+      // Check if this is a seller product and get seller's review webhook from credentials table
       if (product?.is_seller_product && product.store_id) {
         const storesArray = product.stores as unknown as { 
           name?: string; 
-          review_discord_webhook_url?: string 
         }[] | null;
-        sellerWebhookUrl = storesArray?.[0]?.review_discord_webhook_url || null;
         storeName = storesArray?.[0]?.name || null;
+
+        // Fetch review webhook from secure credentials table
+        const { data: credentials } = await supabase
+          .from("store_credentials")
+          .select("review_discord_webhook_url")
+          .eq("store_id", product.store_id)
+          .maybeSingle();
+        
+        sellerWebhookUrl = credentials?.review_discord_webhook_url || null;
       }
     }
 
