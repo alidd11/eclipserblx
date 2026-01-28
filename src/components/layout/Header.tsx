@@ -121,10 +121,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
           </div>
 
-          {/* Mobile: Inline Search + Currency */}
-          <div className="flex md:hidden items-center gap-2.5 flex-1 min-w-0">
+          {/* Mobile: Inline Search + Currency + Notifications */}
+          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
             <HeaderSearchBar className="flex-1 min-w-0" compact />
-            <CurrencySelector compact className="shrink-0" />
+            <div className="flex items-center gap-1 shrink-0">
+              <CurrencySelector compact />
+              <NotificationBell />
+            </div>
           </div>
 
           {/* Desktop: Branding + Search Bar + Currency */}
@@ -161,7 +164,10 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               </Button>
             </a>
 
-            <NotificationBell />
+            {/* Desktop notification bell */}
+            <div className="hidden md:block">
+              <NotificationBell />
+            </div>
 
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
