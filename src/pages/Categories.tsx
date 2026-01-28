@@ -11,12 +11,26 @@ export default function Categories() {
   const sourceFilter = searchParams.get('source');
   const isMarketplace = sourceFilter === 'marketplace';
 
+  // Categories that should use the region selection flow
+  const REGIONAL_CATEGORY_SLUGS = [
+    'civilian-vehicles',
+    'marked-police-vehicles',
+    'unmarked-police-vehicles',
+    'fire-vehicles',
+    'ambulance-vehicles',
+    'military-vehicles',
+    'aircraft',
+    'uniforms',
+  ];
+
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories-page', sourceFilter],
     queryFn: async () => {
+      // Fetch only parent categories (those without a parent_id)
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, slug, description, display_order')
+        .select('id, name, slug, description, display_order, parent_id')
+        .is('parent_id', null)
         .order('display_order', { ascending: true });
 
       if (error) throw error;
@@ -25,23 +39,40 @@ export default function Categories() {
       const now = new Date().toISOString();
       const categoriesWithCounts = await Promise.all(
         (data || []).map(async (category) => {
+          // Check if this category has sub-categories
+          const { data: subCategories } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('parent_id', category.id);
+
+          const hasSubCategories = (subCategories?.length || 0) > 0;
+          const subCategoryIds = subCategories?.map((sc) => sc.id) || [];
+
+          // Count products in either this category or its sub-categories
           let countQuery = supabase
             .from('products')
             .select('id', { count: 'exact', head: true })
-            .eq('category_id', category.id)
             .eq('is_active', true)
             .or(`release_at.is.null,release_at.lte.${now}`);
-          
+
+          if (hasSubCategories) {
+            // Count products in all sub-categories
+            countQuery = countQuery.in('category_id', [...subCategoryIds, category.id]);
+          } else {
+            countQuery = countQuery.eq('category_id', category.id);
+          }
+
           // Filter to marketplace-only products when source=marketplace
           if (isMarketplace) {
             countQuery = countQuery.not('store_id', 'is', null);
           }
-          
+
           const { count } = await countQuery;
-          
+
           return {
             ...category,
             product_count: count || 0,
+            has_sub_categories: hasSubCategories,
           };
         })
       );
@@ -100,10 +131,16 @@ export default function Categories() {
               const iconColor = iconColorMap[index % 6];
               const productCount = category.product_count || 0;
 
+              // Determine if this category should use region selection
+              const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && category.has_sub_categories;
+              const linkTo = useRegionSelect
+                ? `/browse/${category.slug}/region${isMarketplace ? '?source=marketplace' : ''}`
+                : `/products?category=${category.slug}${isMarketplace ? '&source=marketplace' : ''}`;
+
               return (
                 <Link
                   key={category.id}
-                  to={`/products?category=${category.slug}${isMarketplace ? '&source=marketplace' : ''}`}
+                  to={linkTo}
                   className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />

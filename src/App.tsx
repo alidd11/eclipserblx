@@ -32,6 +32,7 @@ const Downloads = lazy(() => import("./pages/Downloads"));
 const Products = lazy(() => import("./pages/Products"));
 const Featured = lazy(() => import("./pages/Featured"));
 const Categories = lazy(() => import("./pages/Categories"));
+const RegionSelect = lazy(() => import("./pages/RegionSelect"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
@@ -200,6 +201,7 @@ const App = () => (
                   <Route path="/products" element={<Products />} />
                   <Route path="/featured" element={<Featured />} />
                   <Route path="/categories" element={<Categories />} />
+                  <Route path="/browse/:categorySlug/region" element={<RegionSelect />} />
                   <Route path="/products/:slug" element={<ProductDetail />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
