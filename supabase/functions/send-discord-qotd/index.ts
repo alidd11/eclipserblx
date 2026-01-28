@@ -16,10 +16,14 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { question, qotdId, category, staffUserId, staffDisplayName } = await req.json();
+    const { question, qotdId, category, staffUserId, staffDiscordId, staffDiscordDisplayName } = await req.json();
 
     if (!question) {
       throw new Error('Question is required');
+    }
+
+    if (!staffDiscordId) {
+      throw new Error('Staff Discord ID is required - please link your Discord account first');
     }
 
     // Get the community webhook URL and role IDs
@@ -52,8 +56,8 @@ serve(async (req) => {
 
     const emoji = categoryEmojis[category] || '❓';
 
-    // Build the sent by text
-    const sentByText = staffDisplayName ? `\n\n*Sent by ${staffDisplayName}*` : '';
+    // Build the sent by text with clickable Discord mention
+    const sentByText = `\n\n*Sent by <@${staffDiscordId}>*`;
 
     // Create Discord embed with Eclipse branding
     const embed = {

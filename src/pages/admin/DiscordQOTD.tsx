@@ -12,12 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { MessageCircleQuestion, Send, Sparkles, Clock, CheckCircle2, Loader2, RefreshCw, History, Undo2, Eye } from 'lucide-react';
+import { MessageCircleQuestion, Send, Sparkles, Clock, CheckCircle2, Loader2, RefreshCw, History, Undo2, Eye, AlertTriangle, Link } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Profile {
   display_name: string | null;
   username: string | null;
+  discord_id: string | null;
+  discord_username: string | null;
 }
 
 // Pre-defined question categories with example questions
@@ -124,7 +126,7 @@ export default function DiscordQOTD() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('display_name, username')
+        .select('display_name, username, discord_id, discord_username')
         .eq('user_id', user.id)
         .single();
       
@@ -214,8 +216,9 @@ export default function DiscordQOTD() {
 
       if (insertError) throw insertError;
 
-      // Get staff display name
-      const staffDisplayName = profile?.display_name || profile?.username || 'Staff';
+      // Get staff Discord info
+      const staffDiscordId = profile?.discord_id;
+      const staffDiscordDisplayName = profile?.discord_username || profile?.display_name || profile?.username || 'Staff';
 
       // Send to Discord - role ID handled by edge function from settings
       const { data, error } = await supabase.functions.invoke('send-discord-qotd', {
@@ -224,7 +227,8 @@ export default function DiscordQOTD() {
           qotdId: qotd.id,
           category: useAutoGenerate ? selectedCategory : 'custom',
           staffUserId: user.id,
-          staffDisplayName
+          staffDiscordId,
+          staffDiscordDisplayName
         }
       });
 
@@ -283,7 +287,47 @@ export default function DiscordQOTD() {
   };
 
   const currentCategory = QUESTION_CATEGORIES[selectedCategory as keyof typeof QUESTION_CATEGORIES];
-  const staffName = profile?.display_name || profile?.username || 'Staff';
+  const staffName = profile?.discord_username || profile?.display_name || profile?.username || 'Staff';
+  const hasDiscordLinked = !!profile?.discord_id;
+
+  // Show Discord link requirement if not linked
+  if (profile && !hasDiscordLinked) {
+    return (
+      <AdminLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold">Question of the Day</h1>
+            <p className="text-muted-foreground">
+              Engage your community with daily discussion questions
+            </p>
+          </div>
+
+          <Card className="border-yellow-500/30 bg-yellow-500/5">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center space-y-4 py-8">
+                <div className="h-16 w-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                  <AlertTriangle className="h-8 w-8 text-yellow-500" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Discord Account Required</h3>
+                  <p className="text-muted-foreground max-w-md">
+                    To post Questions of the Day, you need to link your Discord account first. 
+                    This allows your Discord profile to be tagged in the embed.
+                  </p>
+                </div>
+                <Button asChild className="gap-2 mt-4">
+                  <a href="/account">
+                    <Link className="h-4 w-4" />
+                    Link Discord Account
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
