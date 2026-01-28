@@ -32,12 +32,27 @@ export function CurrencySelector({ className, compact = false }: CurrencySelecto
             "text-sm font-medium text-foreground",
             "transition-all duration-200 cursor-pointer",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
+            compact && [
+              "h-8 w-8 p-0 rounded-full justify-center",
+              "bg-background/60 backdrop-blur-sm",
+              "border-border/50 hover:border-primary/40",
+              "active:scale-[0.95]"
+            ],
             className
           )}
         >
-          <span className="text-base">{currencyInfo.symbol}</span>
-          {!compact && <span className="text-muted-foreground">{currency}</span>}
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className={cn(
+            "font-semibold",
+            compact ? "text-sm text-primary" : "text-base"
+          )}>
+            {currencyInfo.symbol}
+          </span>
+          {!compact && (
+            <>
+              <span className="text-muted-foreground">{currency}</span>
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            </>
+          )}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px] bg-popover z-50">

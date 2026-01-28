@@ -23,14 +23,23 @@ export function HeaderSearchBar({ className, compact = false }: HeaderSearchBarP
         "text-muted-foreground hover:text-foreground",
         "transition-all duration-200 cursor-text",
         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
-        compact && "h-8 px-2.5 rounded-lg",
+        compact && [
+          "h-8 px-3 rounded-full",
+          "bg-muted/40 backdrop-blur-sm",
+          "border-border/50 hover:border-primary/40",
+          "active:scale-[0.98]",
+          "shadow-inner shadow-black/5"
+        ],
         className
       )}
     >
-      <Search className={cn("shrink-0", compact ? "h-3.5 w-3.5" : "h-4 w-4")} />
+      <Search className={cn(
+        "shrink-0 transition-colors",
+        compact ? "h-3.5 w-3.5 text-muted-foreground/70" : "h-4 w-4"
+      )} />
       <span className={cn(
         "flex-1 text-left truncate",
-        compact ? "text-xs" : "text-sm"
+        compact ? "text-xs text-muted-foreground/70" : "text-sm"
       )}>
         {compact ? "Search..." : "Search products, categories..."}
       </span>
