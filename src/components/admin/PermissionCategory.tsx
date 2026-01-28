@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
@@ -35,9 +35,14 @@ export function PermissionCategory({
   onToggle,
   isAdmin,
   isLoading,
-  defaultOpen = false,
+  defaultOpen = true,
 }: PermissionCategoryProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  // Sync with parent's expand/collapse all state
+  useEffect(() => {
+    setIsOpen(defaultOpen);
+  }, [defaultOpen]);
   
   const enabledCount = permissions.filter(p => enabledPermissions.has(p.id)).length;
   const totalCount = permissions.length;

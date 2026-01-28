@@ -111,7 +111,7 @@ export default function RolePermissions() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<string>('admin');
   const [activeTab, setActiveTab] = useState<'assign' | 'manage'>('assign');
-  const [allExpanded, setAllExpanded] = useState(false);
+  const [allExpanded, setAllExpanded] = useState(true);
 
   // Fetch custom roles
   const { data: customRoles, isLoading: rolesLoading } = useQuery({
