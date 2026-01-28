@@ -70,8 +70,10 @@ serve(async (req) => {
       );
     }
 
-    // Calculate end time
+    // Calculate end time and unix timestamps
     const endsAt = new Date(Date.now() + durationHours * 60 * 60 * 1000);
+    const currentUnixTimestamp = Math.floor(Date.now() / 1000);
+    const endUnixTimestamp = Math.floor(endsAt.getTime() / 1000);
 
     // Build emoji reactions for voting
     const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
@@ -81,33 +83,37 @@ serve(async (req) => {
       .map((opt, i) => `${numberEmojis[i]} ${opt}`)
       .join('\n');
 
-    // Build embed
+    // Storage URL for Eclipse branding banner
+    const brandingBannerUrl = `${supabaseUrl}/storage/v1/object/public/store-branding/eclipse-discord-banner.png`;
+
+    // Build embed following the QOTD template style
     const embed = {
-      title: `📊 ${title}`,
-      description: description 
-        ? `${description}\n\n**Options:**\n${optionsText}` 
-        : `**Options:**\n${optionsText}`,
+      title: `📊 ${pollType === 'poll' ? 'Community Poll' : 'Community Survey'}`,
+      description: [
+        `It is <t:${currentUnixTimestamp}:F> and we have a new ${pollType === 'poll' ? 'poll' : 'survey'} for you all to participate in!`,
+        '',
+        `**${title}**`,
+        '',
+        description ? `${description}\n` : '',
+        '**Options:**',
+        optionsText,
+        '',
+        `⏰ **Ends:** <t:${endUnixTimestamp}:R>`,
+        `📝 **Type:** ${allowMultiple ? 'Multiple choice' : 'Single choice'}`,
+        '',
+        'React below to vote! 🗳️'
+      ].filter(Boolean).join('\n'),
       color: pollType === 'poll' ? 0x5865F2 : 0x57F287,
-      fields: [
-        {
-          name: "⏰ Ends",
-          value: `<t:${Math.floor(endsAt.getTime() / 1000)}:R>`,
-          inline: true,
-        },
-        {
-          name: "📝 Type",
-          value: allowMultiple ? "Multiple choice" : "Single choice",
-          inline: true,
-        },
-      ],
-      footer: {
-        text: `Eclipse Marketplace • ${pollType === 'poll' ? 'Quick Poll' : 'Community Survey'}`,
+      image: {
+        url: brandingBannerUrl
       },
-      timestamp: new Date().toISOString(),
+      footer: {
+        text: `Eclipse Marketplace • ${pollType === 'poll' ? 'Poll' : 'Survey'}`,
+      },
     };
 
     // Ping role if configured
-    const content = roleId ? `<@&${roleId}> New poll!` : "📊 New community poll!";
+    const content = roleId ? `<@&${roleId}>` : '';
 
     console.log("Sending Discord poll...", { title, optionsCount: options.length, durationHours });
 
