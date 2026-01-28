@@ -141,12 +141,14 @@ export default function RegionSelect() {
             <Skeleton className="h-8 w-48 mx-auto" />
             <Skeleton className="h-5 w-32 mx-auto" />
           </div>
-        <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+          <div className="flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex flex-col h-full min-h-[300px] rounded-2xl overflow-hidden border border-border">
-                <Skeleton className="h-16 flex-shrink-0" />
-                <Skeleton className="flex-1" />
-              </div>
+              <Skeleton key={`name-${i}`} className="flex-1 h-12 rounded-xl" />
+            ))}
+          </div>
+          <div className="flex-1 flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={`flag-${i}`} className="flex-1 min-h-[250px] rounded-2xl" />
             ))}
           </div>
         </div>
@@ -200,34 +202,37 @@ export default function RegionSelect() {
           </p>
         </div>
 
-        {/* Region Cards - Full height stretch */}
-        <div className="flex-1 grid grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
+        {/* Country Names - Inline in a single card */}
+        <div className="flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full mb-4">
+          {data.regions.map((region) => (
+            <div
+              key={`name-${region.code}`}
+              className={`flex-1 bg-card border border-border rounded-xl p-3 sm:p-4 text-center shadow-sm ${
+                !region.slug ? 'opacity-50' : ''
+              }`}
+            >
+              <span className="text-sm sm:text-base font-semibold text-foreground">
+                {region.name}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Flag Images - Inline row */}
+        <div className="flex-1 flex justify-center gap-4 sm:gap-6 max-w-3xl mx-auto w-full">
           {data.regions.map((region) => (
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group flex flex-col h-full rounded-2xl overflow-hidden border border-border bg-card shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
+              className={`group flex-1 relative rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Label Section - Above the flag */}
-              <div className="bg-card border-b border-border p-3 sm:p-4 text-center flex-shrink-0">
-                <span className="block text-sm sm:text-base font-semibold text-foreground">
-                  {region.name}
-                </span>
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {region.productCount} {region.productCount === 1 ? 'item' : 'items'}
-                </span>
-              </div>
-
-              {/* Flag Image - Full visibility, no overlay */}
-              <div className="flex-1 relative overflow-hidden">
-                <img
-                  src={region.image}
-                  alt={`${region.name} flag`}
-                  className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
+              <img
+                src={region.image}
+                alt={`${region.name} flag`}
+                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+              />
             </Link>
           ))}
         </div>
