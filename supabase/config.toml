@@ -252,3 +252,6 @@ verify_jwt = false
 
 [functions.send-discord-qotd]
 verify_jwt = false
+
+[functions.ai-chat-support]
+verify_jwt = false
