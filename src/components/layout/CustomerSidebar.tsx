@@ -668,39 +668,37 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )}
       data-gesture-exempt="true"
     >
-      {/* Header spacer with collapse toggle - matches header height for alignment */}
-      <div className="h-14 sm:h-16 shrink-0 flex items-end px-2 pb-1.5">
-        {!isMobileDrawer && (
+      {/* Header spacer with collapse toggle - only show spacer on desktop */}
+      {!isMobileDrawer && (
+        <div className="h-14 sm:h-16 shrink-0 flex items-end px-2 pb-1.5">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
+                className={cn(
+                  "w-full h-8 text-[hsl(var(--sidebar-foreground)/0.6)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]",
+                  isCollapsed ? "justify-center px-0" : "justify-between"
+                )}
                 onClick={() => {
                   hapticTap();
                   onToggle();
                 }}
-                className={cn(
-                  "w-full text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8",
-                  isCollapsed ? "justify-center px-0" : "justify-between"
-                )}
               >
+                {!isCollapsed && <span className="text-xs">Collapse</span>}
                 {isCollapsed ? (
-                  <PanelLeft className="h-4 w-4" />
+                  <PanelLeft className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
                 ) : (
-                  <>
-                    <span className="text-xs font-medium">Collapse</span>
-                    <PanelLeftClose className="h-4 w-4" />
-                  </>
+                  <PanelLeftClose className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>
+            <TooltipContent side="right">
               {isCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             </TooltipContent>
           </Tooltip>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 px-2 pb-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
