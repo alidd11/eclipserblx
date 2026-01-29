@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       // Generate the state parameter
       const state = await encodeState(installationCodeId, userId);
 
-      // Build the Discord OAuth2 URL
+      // Build the Discord OAuth2 URL using bot-specific app ID
       const botAppId = botProduct.discord_application_id || discordClientId;
       const permissions = botProduct.discord_permissions || 8;
       const scopes = botProduct.oauth_scopes || ["bot", "applications.commands"];
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
       oauthUrl.searchParams.set("redirect_uri", redirectUri || `${supabaseUrl}/functions/v1/activate-bot-license`);
       oauthUrl.searchParams.set("state", state);
 
-      console.log(`[activate-bot-license] Generated OAuth URL for code ${installationCodeId}`);
+      console.log(`[activate-bot-license] Generated OAuth URL for code ${installationCodeId}, using app ${botAppId}`);
 
       return new Response(
         JSON.stringify({ oauthUrl: oauthUrl.toString() }),
@@ -172,10 +172,15 @@ Deno.serve(async (req) => {
       const installationCodeId = stateData.id;
       const userId = stateData.u;
 
-      // Verify the installation code is still valid
+      // Verify the installation code is still valid and get bot product details for token exchange
       const { data: installCode, error: installError } = await supabase
         .from("bot_installation_codes")
-        .select("id, user_id, activated_at, bot_product_id, product_name")
+        .select(`
+          id, user_id, activated_at, bot_product_id, product_name,
+          bot_products:bot_product_id (
+            discord_application_id
+          )
+        `)
         .eq("id", installationCodeId)
         .maybeSingle();
 
@@ -204,6 +209,20 @@ Deno.serve(async (req) => {
       }
 
       // Exchange code for access token to get guild info
+      // Use bot-specific credentials if available
+      const botProductData = installCode.bot_products as any;
+      const tokenClientId = botProductData?.discord_application_id || discordClientId;
+      
+      // Try to get bot-specific secret, fall back to default
+      // Currently supports LunarCast bot
+      let tokenClientSecret = discordClientSecret;
+      if (tokenClientId === "1455026162890702889") {
+        const lunarcastSecret = Deno.env.get("LUNARCAST_CLIENT_SECRET");
+        if (lunarcastSecret) {
+          tokenClientSecret = lunarcastSecret;
+        }
+      }
+      
       let guildName = null;
       let guildIcon = null;
       try {
@@ -211,8 +230,8 @@ Deno.serve(async (req) => {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({
-            client_id: discordClientId,
-            client_secret: discordClientSecret,
+            client_id: tokenClientId,
+            client_secret: tokenClientSecret,
             code,
             grant_type: "authorization_code",
             redirect_uri: `${supabaseUrl}/functions/v1/activate-bot-license`,
@@ -227,6 +246,8 @@ Deno.serve(async (req) => {
               ? `https://cdn.discordapp.com/icons/${guildId}/${tokenData.guild.icon}.png`
               : null;
           }
+        } else {
+          console.warn("[activate-bot-license] Token exchange failed:", await tokenResponse.text());
         }
       } catch (err) {
         console.warn("[activate-bot-license] Could not fetch guild info:", err);
