@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck, Shield, Bot, User } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck, Shield, Bot, User, CheckCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SecureCodeInput } from '@/components/chat/SecureCodeInput';
@@ -66,14 +66,88 @@ const LiveChatPage = () => {
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const [isAiResponding, setIsAiResponding] = useState(false);
   const [isEscalated, setIsEscalated] = useState(false);
+  const [isChatClosed, setIsChatClosed] = useState(false);
+  const [inactivityWarning, setInactivityWarning] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const INACTIVITY_WARNING_MS = 3 * 60 * 1000; // 3 minutes
+  const INACTIVITY_CLOSE_MS = 5 * 60 * 1000; // 5 minutes total
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  // Reset inactivity timer on activity
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    setInactivityWarning(false);
+
+    // Warning at 3 minutes
+    warningTimerRef.current = setTimeout(() => {
+      setInactivityWarning(true);
+    }, INACTIVITY_WARNING_MS);
+
+    // Auto-close at 5 minutes
+    inactivityTimerRef.current = setTimeout(async () => {
+      if (conversation) {
+        await supabase
+          .from('chat_conversations')
+          .update({ status: 'closed' })
+          .eq('id', conversation.id);
+        setIsChatClosed(true);
+      }
+    }, INACTIVITY_CLOSE_MS);
+  }, [conversation, INACTIVITY_WARNING_MS, INACTIVITY_CLOSE_MS]);
+
+  // Close chat manually
+  const handleCloseConversation = useCallback(async () => {
+    if (!conversation) return;
+    
+    await supabase
+      .from('chat_conversations')
+      .update({ status: 'closed' })
+      .eq('id', conversation.id);
+    
+    setIsChatClosed(true);
+    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+  }, [conversation]);
+
+  // Start new conversation after closing
+  const handleStartNewConversation = useCallback(() => {
+    setConversation(null);
+    setMessages([]);
+    setIsChatClosed(false);
+    setIsEscalated(false);
+    setInactivityWarning(false);
+    setIssueCategory('');
+    setIssueDescription('');
+  }, []);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    };
+  }, []);
+
+  // Start inactivity timer when conversation is active
+  useEffect(() => {
+    if (conversation && !isChatClosed) {
+      resetInactivityTimer();
+    }
+    return () => {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    };
+  }, [conversation, isChatClosed, resetInactivityTimer]);
 
   // Load existing conversation
   useEffect(() => {
@@ -333,6 +407,7 @@ const LiveChatPage = () => {
     const messageText = newMessage.trim();
     setNewMessage('');
     setIsSending(true);
+    resetInactivityTimer(); // Reset timer on activity
 
     // Optimistic update
     const optimisticId = `temp-${Date.now()}`;
@@ -374,8 +449,16 @@ const LiveChatPage = () => {
 
           if (aiError) {
             console.error('AI response error:', aiError);
-          } else if (aiData?.escalated) {
-            setIsEscalated(true);
+          } else {
+            if (aiData?.escalated) {
+              setIsEscalated(true);
+            }
+            // Check if AI detected chat should close
+            if (aiData?.shouldClose) {
+              setIsChatClosed(true);
+              if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+              if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+            }
           }
         } catch (aiErr) {
           console.error('AI chat error:', aiErr);
@@ -543,10 +626,23 @@ const LiveChatPage = () => {
                 )}
               </Button>
             </div>
+          ) : isChatClosed ? (
+            // Chat closed state
+            <div className="flex flex-col items-center justify-center p-8 text-center min-h-[40vh]">
+              <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+              <h3 className="font-semibold text-xl mb-2">Chat Ended</h3>
+              <p className="text-muted-foreground mb-6">
+                Thanks for chatting with us! We hope we were able to help.
+              </p>
+              <Button onClick={handleStartNewConversation} size="lg">
+                Start New Chat
+              </Button>
+            </div>
           ) : (
             // Chat interface
             <div className="flex flex-col h-[60vh] sm:h-[70vh]">
-              {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
                   {/* AI Support Notice */}
@@ -642,6 +738,16 @@ const LiveChatPage = () => {
                           <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:0.2s]" />
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Inactivity warning */}
+                  {inactivityWarning && (
+                    <div className="flex items-center justify-center gap-2 py-2 px-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm text-amber-600">
+                        Chat will close in 2 minutes due to inactivity
+                      </span>
                     </div>
                   )}
                   

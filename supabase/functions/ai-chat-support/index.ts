@@ -40,9 +40,50 @@ const ESCALATION_KEYWORDS = [
   "transfer me",
 ];
 
+// Keywords/phrases that indicate customer wants to close chat
+const CLOSING_PHRASES = [
+  "that's all",
+  "thats all",
+  "that's everything",
+  "thats everything",
+  "thanks that's all",
+  "thank you that's all",
+  "nothing else",
+  "no more questions",
+  "i'm done",
+  "im done",
+  "i am done",
+  "all good",
+  "all done",
+  "bye",
+  "goodbye",
+  "close chat",
+  "end chat",
+  "close this",
+  "that will be all",
+  "that's it",
+  "thats it",
+  "i think that's everything",
+  "i think thats everything",
+  "okay thanks",
+  "ok thanks",
+  "perfect thanks",
+  "great thanks",
+  "awesome thanks",
+  "have a good day",
+  "have a nice day",
+  "cheers",
+  "take care",
+];
+
 function shouldEscalate(message: string): boolean {
   const lowerMessage = message.toLowerCase();
   return ESCALATION_KEYWORDS.some((keyword) => lowerMessage.includes(keyword));
+}
+
+function shouldCloseChat(message: string): boolean {
+  const lowerMessage = message.toLowerCase().trim();
+  return CLOSING_PHRASES.some((phrase) => lowerMessage.includes(phrase));
 }
 
 serve(async (req) => {
@@ -236,11 +277,24 @@ Escalate to human for:
       aiMessage.toLowerCase().includes("human agent") ||
       aiMessage.toLowerCase().includes("staff member");
 
+    // Check if customer is trying to close the chat
+    const customerWantsToClose = shouldCloseChat(userMessage);
+    
+    // If customer wants to close, update conversation status
+    if (customerWantsToClose) {
+      console.log("[AI-CHAT] Customer indicated they want to close chat");
+      await supabase
+        .from("chat_conversations")
+        .update({ status: "closed", updated_at: new Date().toISOString() })
+        .eq("id", conversationId);
+    }
+
     return new Response(
       JSON.stringify({ 
         response: aiMessage,
         escalated: false,
         aiRecommendedEscalation,
+        shouldClose: customerWantsToClose,
         messageType: "ai_response"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
