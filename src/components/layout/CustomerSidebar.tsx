@@ -702,6 +702,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       )}
 
+      {/* Mobile drawer top spacer */}
+      {isMobileDrawer && <div className="h-2 shrink-0" />}
+
       {/* Navigation */}
       <nav className="flex-1 px-2 pb-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {navGroups.map((group) => (
