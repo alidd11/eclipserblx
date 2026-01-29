@@ -255,3 +255,12 @@ verify_jwt = false
 
 [functions.ai-chat-support]
 verify_jwt = false
+
+[functions.activate-bot-license]
+verify_jwt = false
+
+[functions.validate-bot-license]
+verify_jwt = false
+
+[functions.bot-guild-settings]
+verify_jwt = false

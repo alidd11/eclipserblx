@@ -575,17 +575,76 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_guild_settings: {
+        Row: {
+          bot_product_id: string
+          created_at: string
+          disabled_features: string[] | null
+          enabled_features: string[] | null
+          guild_id: string
+          id: string
+          installation_code_id: string
+          prefix: string | null
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          bot_product_id: string
+          created_at?: string
+          disabled_features?: string[] | null
+          enabled_features?: string[] | null
+          guild_id: string
+          id?: string
+          installation_code_id: string
+          prefix?: string | null
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          bot_product_id?: string
+          created_at?: string
+          disabled_features?: string[] | null
+          enabled_features?: string[] | null
+          guild_id?: string
+          id?: string
+          installation_code_id?: string
+          prefix?: string | null
+          settings?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_guild_settings_bot_product_id_fkey"
+            columns: ["bot_product_id"]
+            isOneToOne: false
+            referencedRelation: "bot_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bot_guild_settings_installation_code_id_fkey"
+            columns: ["installation_code_id"]
+            isOneToOne: false
+            referencedRelation: "bot_installation_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bot_installation_codes: {
         Row: {
+          activated_at: string | null
+          bot_product_id: string | null
           created_at: string
           discord_guild_icon: string | null
           discord_guild_name: string | null
           discord_invite: string | null
           discord_member_count: number | null
           expires_at: string
+          guild_id: string | null
           id: string
           installation_code: string
           is_used: boolean
+          license_expires_at: string | null
+          license_status: Database["public"]["Enums"]["bot_license_status"]
           order_id: string
           order_item_id: string
           processed_at: string | null
@@ -597,15 +656,20 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          activated_at?: string | null
+          bot_product_id?: string | null
           created_at?: string
           discord_guild_icon?: string | null
           discord_guild_name?: string | null
           discord_invite?: string | null
           discord_member_count?: number | null
           expires_at?: string
+          guild_id?: string | null
           id?: string
           installation_code: string
           is_used?: boolean
+          license_expires_at?: string | null
+          license_status?: Database["public"]["Enums"]["bot_license_status"]
           order_id: string
           order_item_id: string
           processed_at?: string | null
@@ -617,15 +681,20 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          activated_at?: string | null
+          bot_product_id?: string | null
           created_at?: string
           discord_guild_icon?: string | null
           discord_guild_name?: string | null
           discord_invite?: string | null
           discord_member_count?: number | null
           expires_at?: string
+          guild_id?: string | null
           id?: string
           installation_code?: string
           is_used?: boolean
+          license_expires_at?: string | null
+          license_status?: Database["public"]["Enums"]["bot_license_status"]
           order_id?: string
           order_item_id?: string
           processed_at?: string | null
@@ -638,6 +707,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "bot_installation_codes_bot_product_id_fkey"
+            columns: ["bot_product_id"]
+            isOneToOne: false
+            referencedRelation: "bot_products"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bot_installation_codes_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
@@ -649,6 +725,47 @@ export type Database = {
             columns: ["order_item_id"]
             isOneToOne: false
             referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bot_products: {
+        Row: {
+          created_at: string
+          discord_application_id: string
+          discord_permissions: number
+          id: string
+          is_active: boolean
+          oauth_scopes: string[]
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_application_id: string
+          discord_permissions?: number
+          id?: string
+          is_active?: boolean
+          oauth_scopes?: string[]
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_application_id?: string
+          discord_permissions?: number
+          id?: string
+          is_active?: boolean
+          oauth_scopes?: string[]
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -5285,6 +5402,7 @@ export type Database = {
         | "analyst"
         | "recruiter"
         | "seller"
+      bot_license_status: "pending" | "active" | "expired" | "revoked"
       outreach_activity_type:
         | "created"
         | "contacted"
@@ -5431,6 +5549,7 @@ export const Constants = {
         "recruiter",
         "seller",
       ],
+      bot_license_status: ["pending", "active", "expired", "revoked"],
       outreach_activity_type: [
         "created",
         "contacted",

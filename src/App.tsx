@@ -49,6 +49,7 @@ const Support = lazy(() => import("./pages/Support"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Status = lazy(() => import("./pages/Status"));
 const BotInstallation = lazy(() => import("./pages/BotInstallation"));
+const BotDashboard = lazy(() => import("./pages/BotDashboard"));
 const NotificationPreferences = lazy(() => import("./pages/NotificationPreferences"));
 const EclipsePlus = lazy(() => import("./pages/EclipsePlus"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
@@ -222,6 +223,7 @@ const App = () => (
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/status" element={<Status />} />
                   <Route path="/bot-installation" element={<BotInstallation />} />
+                  <Route path="/bot-dashboard" element={<BotDashboard />} />
                   <Route path="/notifications" element={<NotificationPreferences />} />
                   <Route path="/eclipse-plus" element={<EclipsePlus />} />
                   <Route path="/marketplace" element={<Marketplace />} />
