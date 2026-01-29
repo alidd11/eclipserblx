@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
+import { AddToServerButton } from '@/components/bots/AddToServerButton';
 // Format bytes to human readable size
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 B';
@@ -55,6 +55,10 @@ interface BotInstallationCode {
   discord_guild_name: string | null;
   discord_guild_icon: string | null;
   discord_member_count: number | null;
+  activated_at: string | null;
+  license_status: string;
+  bot_product_id: string | null;
+  product_name: string;
 }
 
 const BOT_CATEGORY_ID = '852838dc-adb6-4154-93fe-d1814fe46263';
@@ -87,7 +91,7 @@ export default function Downloads() {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('bot_installation_codes')
-        .select('id, installation_code, order_item_id, is_used, discord_invite, discord_guild_name, discord_guild_icon, discord_member_count')
+        .select('id, installation_code, order_item_id, is_used, discord_invite, discord_guild_name, discord_guild_icon, discord_member_count, activated_at, license_status, bot_product_id, product_name')
         .eq('user_id', user.id);
       if (error) throw error;
       return data as BotInstallationCode[];
@@ -618,18 +622,19 @@ export default function Downloads() {
                             
                             {/* Action Button - Desktop */}
                             <div className="hidden sm:block flex-shrink-0">
-                              {isBot ? (
-                                <Button
-                                  asChild
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
-                                >
-                                  <Link to="/bot-installation">
-                                    <Bot className="h-4 w-4 mr-2" />
-                                    View Guide
-                                  </Link>
-                                </Button>
+                              {isBot && botCode ? (
+                                <AddToServerButton
+                                  installationCodeId={botCode.id}
+                                  productName={botCode.product_name || item.product_name}
+                                  isActivated={!!botCode.activated_at}
+                                  guildName={botCode.discord_guild_name}
+                                  guildIcon={botCode.discord_guild_icon}
+                                  userId={user?.id || ''}
+                                />
+                              ) : isBot ? (
+                                <Badge variant="secondary" className="text-xs">
+                                  Loading...
+                                </Badge>
                               ) : (
                                 <Button
                                   onClick={() => handleDownload(item)}
@@ -817,18 +822,20 @@ export default function Downloads() {
                           
                           {/* Action Buttons - Mobile */}
                           <div className="sm:hidden pt-2 space-y-2">
-                            {isBot ? (
-                              <Button
-                                asChild
-                                variant="outline"
-                                size="sm"
-                                className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10 w-full"
-                              >
-                                <Link to="/bot-installation">
-                                  <Bot className="h-4 w-4 mr-2" />
-                                  View Guide
-                                </Link>
-                              </Button>
+                            {isBot && botCode ? (
+                              <AddToServerButton
+                                installationCodeId={botCode.id}
+                                productName={botCode.product_name || item.product_name}
+                                isActivated={!!botCode.activated_at}
+                                guildName={botCode.discord_guild_name}
+                                guildIcon={botCode.discord_guild_icon}
+                                userId={user?.id || ''}
+                                className="w-full"
+                              />
+                            ) : isBot ? (
+                              <Badge variant="secondary" className="text-xs">
+                                Loading...
+                              </Badge>
                             ) : (
                               <Button
                                 onClick={() => handleDownload(item)}
