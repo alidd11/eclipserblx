@@ -786,6 +786,71 @@
 }
 
 @layer utilities {
+  /* Fluid typography - scales smoothly between viewport sizes */
+  .text-fluid-xs {
+    font-size: clamp(0.625rem, 0.55rem + 0.25vw, 0.75rem);
+  }
+  
+  .text-fluid-sm {
+    font-size: clamp(0.75rem, 0.65rem + 0.35vw, 0.875rem);
+  }
+  
+  .text-fluid-base {
+    font-size: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+  }
+  
+  .text-fluid-lg {
+    font-size: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  }
+  
+  .text-fluid-xl {
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.25rem);
+  }
+  
+  .text-fluid-2xl {
+    font-size: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  }
+  
+  .text-fluid-3xl {
+    font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
+  }
+  
+  .text-fluid-4xl {
+    font-size: clamp(1.875rem, 1.5rem + 1.5vw, 2.25rem);
+  }
+  
+  .text-fluid-5xl {
+    font-size: clamp(2.25rem, 1.75rem + 2vw, 3rem);
+  }
+  
+  /* Responsive spacing utilities */
+  .gap-fluid {
+    gap: clamp(0.5rem, 0.25rem + 1vw, 1rem);
+  }
+  
+  .gap-fluid-lg {
+    gap: clamp(1rem, 0.5rem + 2vw, 2rem);
+  }
+  
+  .p-fluid {
+    padding: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+  }
+  
+  /* Container query support */
+  .container-query {
+    container-type: inline-size;
+  }
+  
+  /* Responsive card sizing */
+  .card-responsive {
+    @apply p-3 sm:p-4 lg:p-5;
+  }
+  
+  /* Touch-friendly tap targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
   .animate-glow {
     animation: glow 2s ease-in-out infinite alternate;
   }

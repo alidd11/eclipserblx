@@ -248,17 +248,17 @@ export function StoreLayout({
             borderColor: `${accentColor}20`,
           }}
         >
-          <div className="container flex items-center justify-between h-14 px-4">
-            <div className="flex items-center gap-2">
+          <div className="px-3 xs:px-4 sm:container flex items-center justify-between h-12 xs:h-14">
+            <div className="flex items-center gap-1.5 xs:gap-2">
               {/* Mobile Menu Button */}
               {isMobile && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9"
+                  className="h-8 w-8 xs:h-9 xs:w-9"
                   onClick={() => setMobileOpen(true)}
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-4 w-4 xs:h-5 xs:w-5" />
                 </Button>
               )}
 
@@ -267,33 +267,33 @@ export function StoreLayout({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9"
+                  className="h-8 w-8 xs:h-9 xs:w-9"
                   onClick={() => setSidebarVisible(!sidebarVisible)}
                 >
                   <PanelLeftClose className={cn(
-                    "h-5 w-5 transition-transform",
+                    "h-4 w-4 xs:h-5 xs:w-5 transition-transform",
                     !sidebarVisible && "rotate-180"
                   )} />
                 </Button>
               )}
 
-               <Link to={`/store/${store.slug || store.id}`} className="flex items-center gap-3">
+               <Link to={`/store/${store.slug || store.id}`} className="flex items-center gap-2 xs:gap-3">
                 {store.logo_url ? (
                   <img 
                     src={store.logo_url} 
                     alt={store.name}
-                     className="h-8 w-8 rounded-full object-contain"
+                     className="h-6 w-6 xs:h-8 xs:w-8 rounded-full object-contain"
                   />
                 ) : (
                   <div 
-                     className="h-8 w-8 rounded-full flex items-center justify-center"
+                     className="h-6 w-6 xs:h-8 xs:w-8 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: `${accentColor}20` }}
                   >
-                    <StoreIcon className="h-4 w-4" style={{ color: accentColor }} />
+                    <StoreIcon className="h-3 w-3 xs:h-4 xs:w-4" style={{ color: accentColor }} />
                   </div>
                 )}
                 <span 
-                  className="font-display font-bold text-lg"
+                  className="font-display font-bold text-base xs:text-lg"
                   style={{ color: accentColor }}
                 >
                   {store.name}
@@ -303,13 +303,13 @@ export function StoreLayout({
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 xs:gap-1">
                 {socialLinks.map((link, index) => (
                   <Button
                     key={index}
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    className="h-7 w-7 xs:h-8 xs:w-8 text-muted-foreground hover:text-foreground"
                     asChild
                   >
                     <a 
@@ -318,7 +318,7 @@ export function StoreLayout({
                       rel="noopener noreferrer"
                       aria-label={link.label}
                     >
-                      <link.icon className="h-4 w-4" />
+                      <link.icon className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                     </a>
                   </Button>
                 ))}
