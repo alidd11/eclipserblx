@@ -92,9 +92,9 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
     <header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
       <div className="px-4">
         {/* Main header row */}
-        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-3 sm:gap-4">
           {/* Left side - Back button + Mobile menu + Logo */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Native-style Back Button */}
             <BackButton showLabel={false} className="sm:hidden" />
             <BackButton showLabel={true} className="hidden sm:flex" />
@@ -103,7 +103,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground"
+              className="md:hidden h-9 w-9 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 if (onMenuClick) {
                   onMenuClick();
@@ -112,19 +112,19 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                 }
               }}
             >
-              {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
+              {!onMenuClick && mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
             {/* Logo - only show on mobile (sidebar shows it on desktop) */}
-            <Link to="/" className="flex items-center gap-2 md:hidden">
+            <Link to="/" className="flex items-center gap-2.5 md:hidden">
               <EclipseLogo size="sm" />
             </Link>
           </div>
 
           {/* Mobile: Inline Search + Currency + Notifications */}
-          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
+          <div className="flex md:hidden items-center gap-3 flex-1 min-w-0 mx-2">
             <HeaderSearchBar className="flex-1 min-w-0" compact />
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <CurrencySelector compact />
               <NotificationBell />
             </div>
@@ -144,7 +144,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Discord - hidden on mobile */}
             <a
               href={discordUrl}
