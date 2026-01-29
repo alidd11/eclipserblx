@@ -194,7 +194,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
           <SheetContent 
             side="left" 
-            className="p-0 w-72 border-r-0"
+            className="p-0 w-64 border-r-0"
             data-gesture-exempt="true"
             hideCloseButton
           >
