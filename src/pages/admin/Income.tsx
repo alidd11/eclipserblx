@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink, Wallet, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -18,7 +19,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
 
-// Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards)
+// Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards) - ESTIMATES ONLY
 const STRIPE_PERCENTAGE_FEE = 0.015;
 const STRIPE_FIXED_FEE = 0.20;
 
@@ -26,6 +27,23 @@ const STRIPE_FIXED_FEE = 0.20;
 const ROBUX_TO_GBP_RATE = 0.00275; // Approximate R$1 = £0.00275
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
+// Types for Stripe balance data
+interface StripeBalanceData {
+  balance: {
+    available: number;
+    pending: number;
+    currency: string;
+  };
+  summary: {
+    today: { gross: number; fees: number; net: number };
+    last7Days: { gross: number; fees: number; net: number };
+    last30Days: { gross: number; fees: number; net: number };
+    avgFeePercent: string;
+  };
+  dailyTrend: Array<{ date: string; gross: number; fees: number; net: number; count: number }>;
+  transactionCount: number;
+}
 
 export default function AdminIncome() {
   const { user } = useAuth();
@@ -148,6 +166,27 @@ export default function AdminIncome() {
     },
     enabled: isVerified,
   });
+
+  // Real Stripe balance and fees from edge function
+  const { data: stripeBalance, isLoading: stripeBalanceLoading, refetch: refetchStripeBalance } = useQuery<StripeBalanceData>({
+    queryKey: ['admin-stripe-balance'],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('get-stripe-balance');
+      if (error) throw error;
+      return data as StripeBalanceData;
+    },
+    enabled: isVerified,
+    staleTime: 60000, // Cache for 1 minute
+  });
+
+  // Format Stripe daily trend for chart
+  const stripeChartData = useMemo(() => {
+    if (!stripeBalance?.dailyTrend) return [];
+    return stripeBalance.dailyTrend.map(day => ({
+      ...day,
+      displayDate: format(new Date(day.date), 'MMM d'),
+    }));
+  }, [stripeBalance]);
 
   // 30-day income trend query with net calculation
   const { data: incomeTrend } = useQuery({
@@ -438,21 +477,321 @@ export default function AdminIncome() {
         </Card>
 
         {/* Income Tabs */}
-        <Tabs defaultValue="gross" className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+        <Tabs defaultValue="stripe" className="space-y-6">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <TabsTrigger value="stripe" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              Stripe Balance
+            </TabsTrigger>
             <TabsTrigger value="gross" className="gap-2">
               <TrendingUp className="h-4 w-4" />
               Gross Revenue
             </TabsTrigger>
             <TabsTrigger value="net" className="gap-2">
               <Percent className="h-4 w-4" />
-              Net Earnings
+              Net (Estimated)
             </TabsTrigger>
             <TabsTrigger value="robux" className="gap-2">
               <Gamepad2 className="h-4 w-4" />
               Robux
             </TabsTrigger>
           </TabsList>
+
+          {/* Stripe Balance Tab - REAL DATA */}
+          <TabsContent value="stripe" className="space-y-6">
+            {/* Stripe Balance Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="bg-green-600">Live Data</Badge>
+                <span className="text-sm text-muted-foreground">Real-time data from Stripe API</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => refetchStripeBalance()}
+                disabled={stripeBalanceLoading}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${stripeBalanceLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
+
+            {/* Stripe Balance Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Wallet className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-muted-foreground">Available Balance</span>
+                  </div>
+                  {stripeBalanceLoading ? (
+                    <Skeleton className="h-9 w-24" />
+                  ) : (
+                    <p className="text-3xl font-bold text-green-500">
+                      £{(stripeBalance?.balance.available ?? 0).toFixed(2)}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">Ready to pay out</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border-yellow-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-yellow-500" />
+                    <span className="text-sm font-medium text-muted-foreground">Pending Balance</span>
+                  </div>
+                  {stripeBalanceLoading ? (
+                    <Skeleton className="h-9 w-24" />
+                  ) : (
+                    <p className="text-3xl font-bold text-yellow-500">
+                      £{(stripeBalance?.balance.pending ?? 0).toFixed(2)}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">In transit</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-muted-foreground">30-Day Net</span>
+                  </div>
+                  {stripeBalanceLoading ? (
+                    <Skeleton className="h-9 w-24" />
+                  ) : (
+                    <p className="text-3xl font-bold text-blue-500">
+                      £{(stripeBalance?.summary.last30Days.net ?? 0).toFixed(2)}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">After Stripe fees</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Percent className="h-4 w-4 text-red-500" />
+                    <span className="text-sm font-medium text-muted-foreground">Avg Fee Rate</span>
+                  </div>
+                  {stripeBalanceLoading ? (
+                    <Skeleton className="h-9 w-16" />
+                  ) : (
+                    <p className="text-3xl font-bold text-red-500">
+                      {stripeBalance?.summary.avgFeePercent ?? '0'}%
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">Actual fees paid</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Detailed Stripe Summary */}
+            <div className="grid gap-4 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Today</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {stripeBalanceLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gross</span>
+                        <span className="font-medium">£{(stripeBalance?.summary.today.gross ?? 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fees</span>
+                        <span className="font-medium text-red-500">-£{(stripeBalance?.summary.today.fees ?? 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-medium">Net</span>
+                        <span className="font-bold text-green-600">£{(stripeBalance?.summary.today.net ?? 0).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Last 7 Days</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {stripeBalanceLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gross</span>
+                        <span className="font-medium">£{(stripeBalance?.summary.last7Days.gross ?? 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fees</span>
+                        <span className="font-medium text-red-500">-£{(stripeBalance?.summary.last7Days.fees ?? 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-medium">Net</span>
+                        <span className="font-bold text-green-600">£{(stripeBalance?.summary.last7Days.net ?? 0).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Last 30 Days</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {stripeBalanceLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gross</span>
+                        <span className="font-medium">£{(stripeBalance?.summary.last30Days.gross ?? 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fees</span>
+                        <span className="font-medium text-red-500">-£{(stripeBalance?.summary.last30Days.fees ?? 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-medium">Net</span>
+                        <span className="font-bold text-green-600">£{(stripeBalance?.summary.last30Days.net ?? 0).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Stripe 30-Day Trend Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>30-Day Revenue Trend (Actual)</CardTitle>
+                <CardDescription>Daily gross vs net earnings with actual Stripe fees</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {stripeBalanceLoading ? (
+                  <Skeleton className="h-[300px] w-full" />
+                ) : (
+                  <div className="h-[300px] w-full">
+                    <ChartContainer
+                      config={{
+                        gross: {
+                          label: "Gross Revenue",
+                          color: "hsl(var(--primary))",
+                        },
+                        net: {
+                          label: "Net Revenue",
+                          color: "hsl(142 76% 36%)",
+                        },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={stripeChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis
+                            dataKey="displayDate"
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                          />
+                          <YAxis
+                            tickFormatter={(value) => `£${value}`}
+                            tick={{ fontSize: 12 }}
+                            className="text-muted-foreground"
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <ChartTooltip
+                            content={({ active, payload }) => {
+                              if (!active || !payload?.length) return null;
+                              const data = payload[0].payload;
+                              return (
+                                <div className="bg-background border rounded-lg p-3 shadow-lg">
+                                  <p className="font-medium mb-2">{data.displayDate}</p>
+                                  <div className="space-y-1 text-sm">
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-muted-foreground">Gross:</span>
+                                      <span>£{data.gross.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-muted-foreground">Fees:</span>
+                                      <span className="text-red-500">-£{data.fees.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-4 border-t pt-1">
+                                      <span className="font-medium">Net:</span>
+                                      <span className="text-green-600 font-medium">£{data.net.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-4 text-xs text-muted-foreground">
+                                      <span>Transactions:</span>
+                                      <span>{data.count}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="gross"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="net"
+                            stroke="hsl(142 76% 36%)"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: "hsl(142 76% 36%)" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Info about data source */}
+            <Card className="bg-blue-500/5 border-blue-500/20">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium">Accurate Fee Tracking</p>
+                    <p className="text-sm text-muted-foreground">
+                      This tab shows <strong>actual fees</strong> charged by Stripe for each transaction, 
+                      including international card surcharges, currency conversion fees, and any other applicable charges. 
+                      Unlike estimated calculations, these numbers match your Stripe dashboard exactly.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Gross Revenue Tab */}
           <TabsContent value="gross" className="space-y-6">
@@ -598,14 +937,21 @@ export default function AdminIncome() {
             </div>
           </TabsContent>
 
-          {/* Net Earnings Tab */}
+          {/* Net Earnings Tab - ESTIMATED */}
           <TabsContent value="net" className="space-y-6">
             {/* Stripe Fee Info */}
-            <Card className="bg-muted/50 border-dashed">
+            <Card className="bg-yellow-500/10 border-yellow-500/20">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Percent className="h-4 w-4" />
-                  <span>Net earnings calculated after Stripe fees: <strong>1.5% + £0.20</strong> per transaction (UK domestic cards)</span>
+                <div className="flex items-start gap-3">
+                  <Percent className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-yellow-600">Estimated Values</p>
+                    <p className="text-sm text-muted-foreground">
+                      These calculations use a <strong>fixed estimate</strong> of 1.5% + £0.20 per transaction (UK domestic cards). 
+                      Actual fees vary based on card type, region, and payment method. 
+                      For accurate data, use the <strong>Stripe Balance</strong> tab.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
