@@ -103,7 +103,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden h-9 w-9 text-muted-foreground hover:text-foreground"
+              className="md:hidden h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 if (onMenuClick) {
                   onMenuClick();
@@ -112,7 +112,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                 }
               }}
             >
-              {!onMenuClick && mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
 
             {/* Logo - only show on mobile (sidebar shows it on desktop) */}
