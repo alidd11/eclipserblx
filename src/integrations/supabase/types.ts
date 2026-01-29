@@ -729,6 +729,53 @@ export type Database = {
           },
         ]
       }
+      bot_license_bundles: {
+        Row: {
+          bot_product_id: string
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          label: string | null
+          price_gbp: number
+          quantity: number
+          savings_percent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bot_product_id: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label?: string | null
+          price_gbp: number
+          quantity: number
+          savings_percent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bot_product_id?: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label?: string | null
+          price_gbp?: number
+          quantity?: number
+          savings_percent?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_license_bundles_bot_product_id_fkey"
+            columns: ["bot_product_id"]
+            isOneToOne: false
+            referencedRelation: "bot_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bot_products: {
         Row: {
           created_at: string
