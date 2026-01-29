@@ -1,51 +1,27 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
   Bot, 
-  Settings, 
   ChevronLeft, 
-  Save, 
   Loader2, 
   Server,
   CheckCircle,
-  Hash,
-  Zap,
-  Shield
+  ExternalLink,
+  Calendar,
+  Hash
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-
-interface GuildSettings {
-  id: string;
-  guild_id: string;
-  settings: Record<string, unknown>;
-  prefix: string;
-  enabled_features: string[];
-  disabled_features: string[];
-  bot_installation_codes?: {
-    product_name: string;
-    license_status: string;
-  };
-}
+import { format } from 'date-fns';
 
 export default function BotDashboard() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const queryClient = useQueryClient();
   const codeId = searchParams.get('code');
-
-  const [prefix, setPrefix] = useState('!');
-  const [enabledFeatures, setEnabledFeatures] = useState<Set<string>>(new Set());
 
   // Fetch user's bot installations
   const { data: installations, isLoading: loadingInstallations } = useQuery({
@@ -80,102 +56,6 @@ export default function BotDashboard() {
   const selectedInstallation = codeId 
     ? installations?.find(i => i.id === codeId)
     : installations?.[0];
-
-  // Fetch guild settings for selected installation
-  const { data: guildSettings, isLoading: loadingSettings } = useQuery({
-    queryKey: ['bot-guild-settings', selectedInstallation?.guild_id, selectedInstallation?.bot_product_id],
-    queryFn: async () => {
-      if (!selectedInstallation?.guild_id || !selectedInstallation?.bot_product_id) return null;
-      
-      const { data, error } = await supabase.functions.invoke('bot-guild-settings', {
-        body: {},
-        headers: {},
-      });
-
-      // Use URL params approach since the function expects query params
-      const params = new URLSearchParams({
-        guild_id: selectedInstallation.guild_id,
-        bot_product_id: selectedInstallation.bot_product_id,
-      });
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-guild-settings?${params}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to fetch settings');
-      const result = await response.json();
-      return result.settings as GuildSettings | null;
-    },
-    enabled: !!selectedInstallation?.guild_id && !!selectedInstallation?.bot_product_id,
-  });
-
-  // Update local state when settings are fetched
-  useEffect(() => {
-    if (guildSettings) {
-      setPrefix(guildSettings.prefix || '!');
-      setEnabledFeatures(new Set(guildSettings.enabled_features || []));
-    }
-  }, [guildSettings]);
-
-  // Save settings mutation
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedInstallation?.guild_id || !selectedInstallation?.bot_product_id) {
-        throw new Error('No installation selected');
-      }
-
-      const session = await supabase.auth.getSession();
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-guild-settings`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.data.session?.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            guildId: selectedInstallation.guild_id,
-            botProductId: selectedInstallation.bot_product_id,
-            prefix,
-            enabledFeatures: Array.from(enabledFeatures),
-            disabledFeatures: AVAILABLE_FEATURES.filter(f => !enabledFeatures.has(f.id)).map(f => f.id),
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to save settings');
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bot-guild-settings'] });
-      toast.success('Settings saved successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to save settings');
-    },
-  });
-
-  const toggleFeature = (featureId: string) => {
-    setEnabledFeatures(prev => {
-      const next = new Set(prev);
-      if (next.has(featureId)) {
-        next.delete(featureId);
-      } else {
-        next.add(featureId);
-      }
-      return next;
-    });
-  };
 
   if (!user) {
     return (
@@ -237,11 +117,11 @@ export default function BotDashboard() {
             Back to Downloads
           </Link>
           <h1 className="text-3xl font-display font-bold flex items-center gap-3">
-            <Settings className="h-8 w-8" />
-            Bot Dashboard
+            <Bot className="h-8 w-8" />
+            My Bots
           </h1>
           <p className="text-muted-foreground">
-            Configure settings for your installed bots
+            View your installed bots and manage them via BotGhost
           </p>
         </div>
 
@@ -292,133 +172,106 @@ export default function BotDashboard() {
             </CardContent>
           </Card>
 
-          {/* Settings Panel */}
+          {/* Server Info Panel */}
           <div className="space-y-6">
             {selectedInstallation ? (
               <>
                 {/* Server Header */}
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start gap-4">
                       {selectedInstallation.discord_guild_icon ? (
                         <img 
                           src={selectedInstallation.discord_guild_icon} 
                           alt={selectedInstallation.discord_guild_name || 'Server'} 
-                          className="w-16 h-16 rounded-full"
+                          className="w-20 h-20 rounded-2xl"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                          <Server className="h-8 w-8 text-muted-foreground" />
+                        <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center">
+                          <Server className="h-10 w-10 text-muted-foreground" />
                         </div>
                       )}
-                      <div>
-                        <h2 className="text-xl font-bold">
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold">
                           {selectedInstallation.discord_guild_name || 'Unknown Server'}
                         </h2>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground mb-3">
                           {selectedInstallation.product_name}
                         </p>
                         <Badge 
                           variant="outline" 
-                          className="mt-1 bg-green-500/10 text-green-500 border-green-500/30"
+                          className="bg-green-500/10 text-green-500 border-green-500/30"
                         >
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          Active
+                          License Active
                         </Badge>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* General Settings */}
+                {/* Server Details */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Hash className="h-5 w-5" />
-                      General Settings
-                    </CardTitle>
-                    <CardDescription>
-                      Configure basic bot settings for this server
-                    </CardDescription>
+                    <CardTitle className="text-lg">Installation Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="prefix">Command Prefix</Label>
-                      <Input
-                        id="prefix"
-                        value={prefix}
-                        onChange={(e) => setPrefix(e.target.value)}
-                        placeholder="!"
-                        className="max-w-[100px]"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        The prefix used before bot commands (e.g., !help)
-                      </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <Hash className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Server ID</p>
+                          <p className="font-mono text-sm">{selectedInstallation.guild_id}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Activated</p>
+                          <p className="text-sm">
+                            {selectedInstallation.activated_at 
+                              ? format(new Date(selectedInstallation.activated_at), 'MMM d, yyyy')
+                              : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Features */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Zap className="h-5 w-5" />
-                      Features
-                    </CardTitle>
-                    <CardDescription>
-                      Enable or disable bot features for this server
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {AVAILABLE_FEATURES.map((feature) => (
-                      <div 
-                        key={feature.id}
-                        className="flex items-center justify-between py-3 border-b last:border-0"
-                      >
-                        <div className="flex items-center gap-3">
-                          <feature.icon className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{feature.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {feature.description}
-                            </p>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={enabledFeatures.has(feature.id)}
-                          onCheckedChange={() => toggleFeature(feature.id)}
-                        />
+                {/* BotGhost Configuration */}
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-1">Configure Your Bot</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Bot settings, commands, and features are managed through BotGhost's dashboard. 
+                          Click below to open the configuration panel.
+                        </p>
                       </div>
-                    ))}
+                      <Button 
+                        asChild
+                        className="gradient-button border-0 shrink-0"
+                      >
+                        <a 
+                          href="https://botghost.com/dashboard" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          Open BotGhost
+                          <ExternalLink className="h-4 w-4 ml-2" />
+                        </a>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
-
-                {/* Save Button */}
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => saveMutation.mutate()}
-                    disabled={saveMutation.isPending}
-                    className="gradient-button border-0"
-                  >
-                    {saveMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Settings
-                      </>
-                    )}
-                  </Button>
-                </div>
               </>
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">
-                    Select a server to view and edit its bot settings
+                    Select a server to view its details
                   </p>
                 </CardContent>
               </Card>
@@ -429,31 +282,3 @@ export default function BotDashboard() {
     </MainLayout>
   );
 }
-
-// Available features that can be toggled
-const AVAILABLE_FEATURES = [
-  {
-    id: 'moderation',
-    name: 'Moderation',
-    description: 'Auto-moderation, bans, kicks, and warnings',
-    icon: Shield,
-  },
-  {
-    id: 'welcome',
-    name: 'Welcome Messages',
-    description: 'Greet new members with custom messages',
-    icon: Zap,
-  },
-  {
-    id: 'logging',
-    name: 'Audit Logging',
-    description: 'Log server events to a channel',
-    icon: Settings,
-  },
-  {
-    id: 'autoroles',
-    name: 'Auto Roles',
-    description: 'Automatically assign roles to new members',
-    icon: Shield,
-  },
-];
