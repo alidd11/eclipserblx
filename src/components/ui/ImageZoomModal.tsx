@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -140,7 +141,11 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
       <DialogContent 
         className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-none overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
+        aria-describedby={undefined}
       >
+        <VisuallyHidden>
+          <DialogTitle>{alt || 'Image viewer'}</DialogTitle>
+        </VisuallyHidden>
         {/* Controls */}
         <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
           <Button
