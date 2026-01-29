@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store, Lock, Clock } from 'lucide-react';
+import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, Link2, Unlink, HelpCircle, ExternalLink, Gamepad2, Crown, Users, Store, Lock, Clock, ShoppingCart } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -844,6 +844,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <Link
+            to="/orders"
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
+          >
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium">Orders</span>
+          </Link>
           <Link
             to="/downloads"
             className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
