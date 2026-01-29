@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode, useRef } fro
 import { safeStorage } from '@/lib/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
 
-interface CartItem {
+export interface CartItem {
   id: string;
   name: string;
   price: number;
@@ -11,6 +11,9 @@ interface CartItem {
   category_slug?: string;
   category_id?: string; // Added for Eclipse+ discount eligibility
   is_resellable?: boolean;
+  quantity?: number; // For bundle purchases (e.g., 3-pack of bot licenses)
+  bundle_id?: string; // Reference to the bundle if applicable
+  bundle_label?: string; // Human-readable bundle name (e.g., "3-Pack")
 }
 
 interface CartContextType {

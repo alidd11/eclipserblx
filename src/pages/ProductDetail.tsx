@@ -12,7 +12,8 @@ import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
-import { useCart } from '@/hooks/useCart';
+import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
+import { useCart, CartItem } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -39,6 +40,13 @@ export default function ProductDetail() {
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [selectedBundle, setSelectedBundle] = useState<{
+    id: string;
+    quantity: number;
+    price_gbp: number;
+    savings_percent: number;
+    label: string;
+  } | null>(null);
   const isMobile = useIsMobile();
   const videoRef = useRef<HTMLVideoElement>(null);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
@@ -272,18 +280,32 @@ export default function ProductDetail() {
   const hasMemberDiscount = isEligible && memberPrice < product.price;
   const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id, product.is_resellable);
 
+  // Check if this is a bot product
+  const isBotProduct = product.categories?.slug === 'bots';
+
   const handleAddToCart = () => {
     if (!inCart) {
-      addItem({
+      const cartItem: CartItem = {
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: isBotProduct && selectedBundle ? selectedBundle.price_gbp : product.price,
         image: product.images?.[0],
         slug: product.slug,
         category_slug: product.categories?.slug,
         category_id: product.category_id,
         is_resellable: product.is_resellable,
-      });
+      };
+
+      // Add bundle info if this is a bot product with a bundle selected
+      if (isBotProduct && selectedBundle) {
+        cartItem.quantity = selectedBundle.quantity;
+        cartItem.bundle_id = selectedBundle.id;
+        cartItem.bundle_label = selectedBundle.label;
+        // Append bundle label to name for clarity
+        cartItem.name = `${product.name} (${selectedBundle.label})`;
+      }
+
+      addItem(cartItem);
     }
   };
 
@@ -474,36 +496,61 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="space-y-2">
-                  {/* Regular price - shown prominently when not eligible for discount */}
-                  {!isEligible ? (
-                    <span className="text-4xl font-bold">
-                      {formatPrice(Number(product.price))}
-                    </span>
+                  {/* Bot products show bundle pricing instead of regular price */}
+                  {isBotProduct ? (
+                    <div className="space-y-4">
+                      <BotLicenseBundleSelector
+                        productId={product.id}
+                        onBundleSelect={setSelectedBundle}
+                        selectedBundleId={selectedBundle?.id}
+                      />
+                      {selectedBundle && (
+                        <div className="pt-2">
+                          <span className="text-3xl font-bold">
+                            {formatPrice(selectedBundle.price_gbp)}
+                          </span>
+                          {selectedBundle.quantity > 1 && (
+                            <span className="text-sm text-muted-foreground ml-2">
+                              for {selectedBundle.quantity} licenses
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <>
-                      {/* Regular price strikethrough */}
-                      <p className="text-lg text-muted-foreground line-through">
-                        {formatPrice(Number(product.price))}
-                      </p>
-                      {/* Member price prominently displayed */}
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
-                          <Sparkles className="h-6 w-6" />
-                          {formatPrice(memberPrice)}
+                      {/* Regular price - shown prominently when not eligible for discount */}
+                      {!isEligible ? (
+                        <span className="text-4xl font-bold">
+                          {formatPrice(Number(product.price))}
                         </span>
-                        <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
-                          {discountPercent}% off with Eclipse+
-                        </Badge>
-                      </div>
-                      {/* Call to action for non-subscribers */}
-                      {!isSubscribed && (
-                        <Link 
-                          to="/eclipse-plus" 
-                          className="inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                        >
-                          <Sparkles className="h-3.5 w-3.5" />
-                          Join Eclipse+ to unlock this price
-                        </Link>
+                      ) : (
+                        <>
+                          {/* Regular price strikethrough */}
+                          <p className="text-lg text-muted-foreground line-through">
+                            {formatPrice(Number(product.price))}
+                          </p>
+                          {/* Member price prominently displayed */}
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
+                              <Sparkles className="h-6 w-6" />
+                              {formatPrice(memberPrice)}
+                            </span>
+                            <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
+                              {discountPercent}% off with Eclipse+
+                            </Badge>
+                          </div>
+                          {/* Call to action for non-subscribers */}
+                          {!isSubscribed && (
+                            <Link 
+                              to="/eclipse-plus" 
+                              className="inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                            >
+                              <Sparkles className="h-3.5 w-3.5" />
+                              Join Eclipse+ to unlock this price
+                            </Link>
+                          )}
+                        </>
                       )}
                     </>
                   )}
