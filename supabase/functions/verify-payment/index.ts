@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,18 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit check - prevent abuse of payment verification
+    const clientIp = getClientIp(req);
+    const rateLimitResult = checkRateLimit({
+      ...RATE_LIMITS.WRITE,
+      identifier: clientIp,
+      action: 'verify-payment',
+    });
+
+    if (!rateLimitResult.allowed) {
+      logStep("Rate limit exceeded", { ip: clientIp });
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
     const { sessionId, paymentIntentId } = await req.json();
 
     if (!sessionId && !paymentIntentId) {
