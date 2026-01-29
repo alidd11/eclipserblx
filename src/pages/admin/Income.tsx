@@ -19,10 +19,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
 
-// Stripe UK fee calculation: 1.5% + 20p per transaction (domestic cards) - ESTIMATES ONLY
-const STRIPE_PERCENTAGE_FEE = 0.015;
-const STRIPE_FIXED_FEE = 0.20;
-
 // DevEx rate: R$1000 = ~$3.50 USD, assume £1 = $1.27
 const ROBUX_TO_GBP_RATE = 0.00275; // Approximate R$1 = £0.00275
 
@@ -127,7 +123,7 @@ export default function AdminIncome() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Income breakdown query with order counts for fee calculation
+  // Income breakdown query for gross revenue
   const { data: incomeBreakdown } = useQuery({
     queryKey: ['admin-income-breakdown'],
     queryFn: async () => {
@@ -150,10 +146,7 @@ export default function AdminIncome() {
         const filtered = paidOrders.filter(filterFn);
         const gross = filtered.reduce((sum, o) => sum + (o.total || 0), 0);
         const orderCount = filtered.length;
-        // Net = Gross - (1.5% per order) - (20p per order)
-        const fees = (gross * STRIPE_PERCENTAGE_FEE) + (orderCount * STRIPE_FIXED_FEE);
-        const net = gross - fees;
-        return { gross, net, orderCount, fees };
+        return { gross, orderCount };
       };
 
       const daily = calculatePeriod(o => isAfter(new Date(o.created_at), dayStart));
@@ -188,7 +181,7 @@ export default function AdminIncome() {
     }));
   }, [stripeBalance]);
 
-  // 30-day income trend query with net calculation
+  // 30-day income trend query for gross revenue chart
   const { data: incomeTrend } = useQuery({
     queryKey: ['admin-income-trend'],
     queryFn: async () => {
@@ -200,7 +193,7 @@ export default function AdminIncome() {
 
       if (error) throw error;
 
-      // Create a map for the last 30 days with order counts
+      // Create a map for the last 30 days
       const dailyData: Record<string, { total: number; orderCount: number }> = {};
       for (let i = 29; i >= 0; i--) {
         const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
@@ -216,18 +209,12 @@ export default function AdminIncome() {
         }
       });
 
-      return Object.entries(dailyData).map(([date, data]) => {
-        const fees = (data.total * STRIPE_PERCENTAGE_FEE) + (data.orderCount * STRIPE_FIXED_FEE);
-        const net = Math.max(0, data.total - fees);
-        return {
-          date,
-          displayDate: format(new Date(date), 'MMM d'),
-          total: data.total,
-          net,
-          orderCount: data.orderCount,
-          fees,
-        };
-      });
+      return Object.entries(dailyData).map(([date, data]) => ({
+        date,
+        displayDate: format(new Date(date), 'MMM d'),
+        total: data.total,
+        orderCount: data.orderCount,
+      }));
     },
     enabled: isVerified,
   });
@@ -307,11 +294,8 @@ export default function AdminIncome() {
   const incomeTrendStats = useMemo(() => {
     if (!incomeTrend) return null;
     const total30d = incomeTrend.reduce((sum, day) => sum + day.total, 0);
-    const net30d = incomeTrend.reduce((sum, day) => sum + day.net, 0);
-    const fees30d = incomeTrend.reduce((sum, day) => sum + day.fees, 0);
     const bestDayGross = Math.max(...incomeTrend.map((day) => day.total), 0);
-    const bestDayNet = Math.max(...incomeTrend.map((day) => day.net), 0);
-    return { total30d, net30d, fees30d, bestDayGross, bestDayNet, avgGross: total30d / 30, avgNet: net30d / 30 };
+    return { total30d, bestDayGross, avgGross: total30d / 30 };
   }, [incomeTrend]);
 
   // Memoized robux trend stats
@@ -358,25 +342,23 @@ export default function AdminIncome() {
       return;
     }
 
-    const headers = ['Date', 'Gross Income (£)', 'Net Income (£)'];
+    const headers = ['Date', 'Gross Income (£)'];
     const rows = incomeTrend.map((day) => [
       day.date, 
-      day.total.toFixed(2),
-      day.net.toFixed(2)
+      day.total.toFixed(2)
     ]);
     
     // Add summary
     const totalGross = incomeTrend.reduce((sum, day) => sum + day.total, 0);
-    const totalNet = incomeTrend.reduce((sum, day) => sum + day.net, 0);
-    rows.push(['', '', '']);
-    rows.push(['Summary', 'Gross', 'Net']);
-    rows.push(['30-Day Total', totalGross.toFixed(2), totalNet.toFixed(2)]);
-    rows.push(['Daily Average', (totalGross / 30).toFixed(2), (totalNet / 30).toFixed(2)]);
-    rows.push(['Today', (incomeBreakdown?.daily.gross ?? 0).toFixed(2), (incomeBreakdown?.daily.net ?? 0).toFixed(2)]);
-    rows.push(['This Week', (incomeBreakdown?.weekly.gross ?? 0).toFixed(2), (incomeBreakdown?.weekly.net ?? 0).toFixed(2)]);
-    rows.push(['This Month', (incomeBreakdown?.monthly.gross ?? 0).toFixed(2), (incomeBreakdown?.monthly.net ?? 0).toFixed(2)]);
-    rows.push(['This Year', (incomeBreakdown?.yearly.gross ?? 0).toFixed(2), (incomeBreakdown?.yearly.net ?? 0).toFixed(2)]);
-    rows.push(['All Time', (incomeBreakdown?.allTime.gross ?? 0).toFixed(2), (incomeBreakdown?.allTime.net ?? 0).toFixed(2)]);
+    rows.push(['', '']);
+    rows.push(['Summary', 'Gross']);
+    rows.push(['30-Day Total', totalGross.toFixed(2)]);
+    rows.push(['Daily Average', (totalGross / 30).toFixed(2)]);
+    rows.push(['Today', (incomeBreakdown?.daily.gross ?? 0).toFixed(2)]);
+    rows.push(['This Week', (incomeBreakdown?.weekly.gross ?? 0).toFixed(2)]);
+    rows.push(['This Month', (incomeBreakdown?.monthly.gross ?? 0).toFixed(2)]);
+    rows.push(['This Year', (incomeBreakdown?.yearly.gross ?? 0).toFixed(2)]);
+    rows.push(['All Time', (incomeBreakdown?.allTime.gross ?? 0).toFixed(2)]);
 
     const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -478,7 +460,7 @@ export default function AdminIncome() {
 
         {/* Income Tabs */}
         <Tabs defaultValue="stripe" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="stripe" className="gap-2">
               <Wallet className="h-4 w-4" />
               Stripe Balance
@@ -486,10 +468,6 @@ export default function AdminIncome() {
             <TabsTrigger value="gross" className="gap-2">
               <TrendingUp className="h-4 w-4" />
               Gross Revenue
-            </TabsTrigger>
-            <TabsTrigger value="net" className="gap-2">
-              <Percent className="h-4 w-4" />
-              Net (Estimated)
             </TabsTrigger>
             <TabsTrigger value="robux" className="gap-2">
               <Gamepad2 className="h-4 w-4" />
@@ -937,189 +915,6 @@ export default function AdminIncome() {
             </div>
           </TabsContent>
 
-          {/* Net Earnings Tab - ESTIMATED */}
-          <TabsContent value="net" className="space-y-6">
-            {/* Stripe Fee Info */}
-            <Card className="bg-yellow-500/10 border-yellow-500/20">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <Percent className="h-5 w-5 text-yellow-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-yellow-600">Estimated Values</p>
-                    <p className="text-sm text-muted-foreground">
-                      These calculations use a <strong>fixed estimate</strong> of 1.5% + £0.20 per transaction (UK domestic cards). 
-                      Actual fees vary based on card type, region, and payment method. 
-                      For accurate data, use the <strong>Stripe Balance</strong> tab.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Net Income Summary Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-medium text-muted-foreground">Today</span>
-                  </div>
-                  <p className="text-3xl font-bold text-green-500">£{(incomeBreakdown?.daily.net ?? 0).toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fees: £{(incomeBreakdown?.daily.fees ?? 0).toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm font-medium text-muted-foreground">This Week</span>
-                  </div>
-                  <p className="text-3xl font-bold text-blue-500">£{(incomeBreakdown?.weekly.net ?? 0).toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fees: £{(incomeBreakdown?.weekly.fees ?? 0).toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-purple-500" />
-                    <span className="text-sm font-medium text-muted-foreground">This Month</span>
-                  </div>
-                  <p className="text-3xl font-bold text-purple-500">£{(incomeBreakdown?.monthly.net ?? 0).toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fees: £{(incomeBreakdown?.monthly.fees ?? 0).toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm font-medium text-muted-foreground">This Year</span>
-                  </div>
-                  <p className="text-3xl font-bold text-amber-500">£{(incomeBreakdown?.yearly.net ?? 0).toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fees: £{(incomeBreakdown?.yearly.fees ?? 0).toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium text-muted-foreground">All Time</span>
-                  </div>
-                  <p className="text-3xl font-bold text-primary">£{(incomeBreakdown?.allTime.net ?? 0).toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fees: £{(incomeBreakdown?.allTime.fees ?? 0).toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* 30-Day Net Trend Chart with Statistics */}
-            <div className="grid gap-4 lg:grid-cols-[1fr,280px]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>30-Day Net Earnings Trend</CardTitle>
-                  <CardDescription>Daily net earnings after Stripe fees over the past 30 days</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px] w-full">
-                    <ChartContainer
-                      config={{
-                        net: {
-                          label: "Net Earnings",
-                          color: "hsl(142 76% 36%)",
-                        },
-                      }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis
-                            dataKey="displayDate"
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis
-                            tickFormatter={(value) => `£${value}`}
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip
-                            content={
-                              <ChartTooltipContent
-                                formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Net Earnings']}
-                              />
-                            }
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="net"
-                            stroke="hsl(142 76% 36%)"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 6, fill: "hsl(142 76% 36%)" }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Net Statistics Summary - Side Panel */}
-              {incomeTrendStats && (
-                <div className="flex flex-col gap-4">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">30-Day Net Total</p>
-                      <p className="text-3xl font-bold text-green-600">
-                        £{incomeTrendStats.net30d.toFixed(2)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">30-Day Fees</p>
-                      <p className="text-3xl font-bold text-red-500">
-                        £{incomeTrendStats.fees30d.toFixed(2)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Daily Average (Net)</p>
-                      <p className="text-3xl font-bold">
-                        £{incomeTrendStats.avgNet.toFixed(2)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Best Day Net (30d)</p>
-                      <p className="text-3xl font-bold text-green-500">
-                        £{incomeTrendStats.bestDayNet.toFixed(2)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </div>
-          </TabsContent>
 
           {/* Robux Earnings Tab */}
           <TabsContent value="robux" className="space-y-6">
