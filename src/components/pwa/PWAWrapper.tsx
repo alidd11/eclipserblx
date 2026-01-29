@@ -46,6 +46,34 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
     const standalone = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
+
+    // Handle returning from external links in iOS PWA
+    // This prevents viewport/safe-area glitches when coming back to the app
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted || standalone) {
+        // Force a minor layout recalculation to reset safe areas
+        requestAnimationFrame(() => {
+          window.scrollTo(0, window.scrollY);
+        });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && standalone) {
+        // When app becomes visible again, ensure viewport is correct
+        requestAnimationFrame(() => {
+          window.scrollTo(0, window.scrollY);
+        });
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Show recovery toast when connection is restored
