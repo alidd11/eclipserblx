@@ -196,6 +196,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
             side="left" 
             className="p-0 w-72 border-r-0"
             data-gesture-exempt="true"
+            hideCloseButton
           >
             <CustomerSidebar 
               collapsed={false}
