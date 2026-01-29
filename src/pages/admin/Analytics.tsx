@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, Download, TrendingUp, Calendar, BarChart3, Eye, UserPlus, UserCheck, Monitor, Smartphone, Tablet, Globe, Clock, ArrowRight } from 'lucide-react';
+import { Package, ShoppingCart, Users, Download, TrendingUp, Calendar, BarChart3, Eye, UserPlus, UserCheck, Monitor, Smartphone, Tablet, Globe, Clock, ArrowRight, Store, Link2, MousePointerClick } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function AdminAnalytics() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -268,6 +267,246 @@ export default function AdminAnalytics() {
     },
   });
 
+  // ============ SELLER ANALYTICS ============
+  const { data: sellerAnalyticsStats } = useQuery({
+    queryKey: ['admin-seller-analytics-stats'],
+    queryFn: async () => {
+      const [total, storeViews, productViews, uniqueStores] = await Promise.all([
+        supabase.from('seller_analytics').select('id', { count: 'exact', head: true }),
+        supabase.from('seller_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'store_view'),
+        supabase.from('seller_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'product_view'),
+        supabase.from('seller_analytics').select('store_id'),
+      ]);
+
+      const uniqueStoreIds = new Set(uniqueStores.data?.map(s => s.store_id) || []);
+
+      return {
+        total: total.count ?? 0,
+        storeViews: storeViews.count ?? 0,
+        productViews: productViews.count ?? 0,
+        uniqueStores: uniqueStoreIds.size,
+      };
+    },
+  });
+
+  // Seller analytics by event type
+  const { data: sellerEventTypes } = useQuery({
+    queryKey: ['admin-seller-event-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('seller_analytics')
+        .select('event_type');
+      
+      if (error) throw error;
+
+      const eventCount: Record<string, number> = {};
+      data?.forEach(e => {
+        const type = e.event_type || 'unknown';
+        eventCount[type] = (eventCount[type] || 0) + 1;
+      });
+      
+      return Object.entries(eventCount).map(([name, value]) => ({ 
+        name: name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+        value 
+      }));
+    },
+  });
+
+  // Seller analytics trend over 7 days
+  const { data: sellerAnalyticsTrend } = useQuery({
+    queryKey: ['admin-seller-analytics-trend'],
+    queryFn: async () => {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        const start = startOfDay(date).toISOString();
+        const end = endOfDay(date).toISOString();
+        
+        const [storeViews, productViews] = await Promise.all([
+          supabase.from('seller_analytics').select('id', { count: 'exact', head: true })
+            .eq('event_type', 'store_view')
+            .gte('created_at', start).lte('created_at', end),
+          supabase.from('seller_analytics').select('id', { count: 'exact', head: true })
+            .eq('event_type', 'product_view')
+            .gte('created_at', start).lte('created_at', end),
+        ]);
+        
+        days.push({
+          date: format(date, 'EEE'),
+          storeViews: storeViews.count ?? 0,
+          productViews: productViews.count ?? 0,
+        });
+      }
+      return days;
+    },
+  });
+
+  // Top stores by analytics
+  const { data: topStores } = useQuery({
+    queryKey: ['admin-top-stores'],
+    queryFn: async () => {
+      const { data: analytics, error } = await supabase
+        .from('seller_analytics')
+        .select('store_id');
+      
+      if (error) throw error;
+
+      const storeCount: Record<string, number> = {};
+      analytics?.forEach(a => {
+        if (a.store_id) {
+          storeCount[a.store_id] = (storeCount[a.store_id] || 0) + 1;
+        }
+      });
+
+      const topStoreIds = Object.entries(storeCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([id]) => id);
+
+      if (topStoreIds.length === 0) return [];
+
+      const { data: stores } = await supabase
+        .from('stores')
+        .select('id, name, logo_url')
+        .in('id', topStoreIds);
+
+      return topStoreIds.map(id => {
+        const store = stores?.find(s => s.id === id);
+        return {
+          id,
+          name: store?.name || 'Unknown Store',
+          logo_url: store?.logo_url,
+          views: storeCount[id],
+        };
+      });
+    },
+  });
+
+  // Seller analytics by device
+  const { data: sellerDeviceStats } = useQuery({
+    queryKey: ['admin-seller-device-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('seller_analytics')
+        .select('device_type');
+      
+      if (error) throw error;
+
+      const deviceCount: Record<string, number> = {};
+      data?.forEach(v => {
+        const device = v.device_type || 'unknown';
+        deviceCount[device] = (deviceCount[device] || 0) + 1;
+      });
+      
+      return Object.entries(deviceCount).map(([name, value]) => ({ name, value }));
+    },
+  });
+
+  // ============ REFERRAL ANALYTICS ============
+  const { data: referralStats } = useQuery({
+    queryKey: ['admin-referral-stats'],
+    queryFn: async () => {
+      const [totalClicks, uniqueReferrers, referrals] = await Promise.all([
+        supabase.from('referral_clicks').select('id', { count: 'exact', head: true }),
+        supabase.from('referral_clicks').select('referrer_id'),
+        supabase.from('referrals').select('id', { count: 'exact', head: true }),
+      ]);
+
+      const uniqueReferrerIds = new Set(uniqueReferrers.data?.map(r => r.referrer_id) || []);
+
+      return {
+        totalClicks: totalClicks.count ?? 0,
+        uniqueReferrers: uniqueReferrerIds.size,
+        conversions: referrals.count ?? 0,
+      };
+    },
+  });
+
+  // Referral trend over 7 days
+  const { data: referralTrend } = useQuery({
+    queryKey: ['admin-referral-trend'],
+    queryFn: async () => {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        const start = startOfDay(date).toISOString();
+        const end = endOfDay(date).toISOString();
+        
+        const { count } = await supabase
+          .from('referral_clicks')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', start)
+          .lte('created_at', end);
+        
+        days.push({
+          date: format(date, 'EEE'),
+          clicks: count ?? 0,
+        });
+      }
+      return days;
+    },
+  });
+
+  // Top referrers
+  const { data: topReferrers } = useQuery({
+    queryKey: ['admin-top-referrers'],
+    queryFn: async () => {
+      const { data: clicks, error } = await supabase
+        .from('referral_clicks')
+        .select('referrer_id, referral_code');
+      
+      if (error) throw error;
+
+      const referrerCount: Record<string, { clicks: number; code: string }> = {};
+      clicks?.forEach(c => {
+        if (c.referrer_id) {
+          if (!referrerCount[c.referrer_id]) {
+            referrerCount[c.referrer_id] = { clicks: 0, code: c.referral_code || '' };
+          }
+          referrerCount[c.referrer_id].clicks += 1;
+        }
+      });
+
+      const topReferrerIds = Object.keys(referrerCount).slice(0, 10);
+
+      if (topReferrerIds.length === 0) return [];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', topReferrerIds);
+
+      return Object.entries(referrerCount)
+        .sort((a, b) => b[1].clicks - a[1].clicks)
+        .slice(0, 10)
+        .map(([id, data]) => {
+          const profile = profiles?.find(p => p.user_id === id);
+          return {
+            id,
+            name: profile?.display_name || 'Unknown',
+            avatar_url: profile?.avatar_url,
+            code: data.code,
+            clicks: data.clicks,
+          };
+        });
+    },
+  });
+
+  // Recent referral clicks
+  const { data: recentReferrals } = useQuery({
+    queryKey: ['admin-recent-referrals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('referral_clicks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
   const chartConfig = {
@@ -277,6 +516,9 @@ export default function AdminAnalytics() {
     total: { label: 'Total Visits', color: 'hsl(var(--primary))' },
     new: { label: 'New Visitors', color: 'hsl(var(--chart-2))' },
     returning: { label: 'Returning', color: 'hsl(var(--chart-3))' },
+    storeViews: { label: 'Store Views', color: 'hsl(var(--primary))' },
+    productViews: { label: 'Product Views', color: 'hsl(var(--chart-2))' },
+    clicks: { label: 'Clicks', color: 'hsl(var(--primary))' },
   };
 
   const getDeviceIcon = (device: string) => {
@@ -293,7 +535,7 @@ export default function AdminAnalytics() {
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl sm:text-3xl font-display">Analytics</CardTitle>
-            <p className="text-muted-foreground text-sm">Detailed performance metrics and insights</p>
+            <p className="text-muted-foreground text-sm">Comprehensive platform metrics and insights</p>
           </CardHeader>
         </Card>
 
@@ -317,16 +559,31 @@ export default function AdminAnalytics() {
                     Page Visits
                   </div>
                 </SelectItem>
+                <SelectItem value="seller-analytics">
+                  <div className="flex items-center gap-2">
+                    <Store className="h-4 w-4" />
+                    Seller Analytics
+                  </div>
+                </SelectItem>
+                <SelectItem value="referrals">
+                  <div className="flex items-center gap-2">
+                    <Link2 className="h-4 w-4" />
+                    Referrals
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Desktop tabs */}
-          <TabsList className="hidden sm:grid w-full grid-cols-2">
+          <TabsList className="hidden sm:grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="page-visits">Page Visits</TabsTrigger>
+            <TabsTrigger value="seller-analytics">Seller Analytics</TabsTrigger>
+            <TabsTrigger value="referrals">Referrals</TabsTrigger>
           </TabsList>
 
+          {/* ============ OVERVIEW TAB ============ */}
           <TabsContent value="overview" className="space-y-4">
             {/* Combined Overview Card */}
             <Card className="bg-card border-border">
@@ -383,6 +640,54 @@ export default function AdminAnalytics() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quick Stats Row - Page Visits + Seller + Referrals */}
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+              <Card className="bg-card border-border">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Eye className="h-4 w-4" />
+                    Page Visits
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">{pageVisitStats?.total ?? 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {pageVisitStats?.newVisitors ?? 0} new · {pageVisitStats?.returningVisitors ?? 0} returning
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Store className="h-4 w-4" />
+                    Seller Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">{sellerAnalyticsStats?.total ?? 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {sellerAnalyticsStats?.storeViews ?? 0} store views · {sellerAnalyticsStats?.productViews ?? 0} product views
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Link2 className="h-4 w-4" />
+                    Referral Clicks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">{referralStats?.totalClicks ?? 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {referralStats?.uniqueReferrers ?? 0} referrers · {referralStats?.conversions ?? 0} conversions
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Charts Row */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
@@ -531,6 +836,7 @@ export default function AdminAnalytics() {
             </Card>
           </TabsContent>
 
+          {/* ============ PAGE VISITS TAB ============ */}
           <TabsContent value="page-visits" className="space-y-4">
             {/* Visitor Statistics Overview */}
             <Card className="bg-card border-border">
@@ -748,6 +1054,361 @@ export default function AdminAnalytics() {
                           <TableRow>
                             <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                               No visits recorded yet
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============ SELLER ANALYTICS TAB ============ */}
+          <TabsContent value="seller-analytics" className="space-y-4">
+            {/* Seller Overview */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  Seller Analytics Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                      <MousePointerClick className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{sellerAnalyticsStats?.total ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Total Events</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-chart-2/10">
+                      <Store className="h-5 w-5 text-chart-2" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{sellerAnalyticsStats?.storeViews ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Store Views</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-chart-3/10">
+                      <Package className="h-5 w-5 text-chart-3" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{sellerAnalyticsStats?.productViews ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Product Views</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-chart-4/10">
+                      <Users className="h-5 w-5 text-chart-4" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{sellerAnalyticsStats?.uniqueStores ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Active Stores</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Seller Trend Chart */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Seller Activity (Last 7 Days)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={sellerAnalyticsTrend || []} margin={{ left: 0, right: 8 }}>
+                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
+                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Area type="monotone" dataKey="storeViews" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} name="Store Views" />
+                      <Area type="monotone" dataKey="productViews" stackId="1" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.6} name="Product Views" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+              {/* Event Type Distribution */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <BarChart3 className="h-4 w-4" />
+                    By Event Type
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {sellerEventTypes?.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4 text-sm">No events yet</p>
+                  ) : (
+                    <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Pie
+                            data={sellerEventTypes || []}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={70}
+                            dataKey="value"
+                            nameKey="name"
+                            label={({ name, value }) => `${name}: ${value}`}
+                          >
+                            {sellerEventTypes?.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Device Distribution */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Monitor className="h-4 w-4" />
+                    By Device
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {sellerDeviceStats?.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p>
+                  ) : (
+                    <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Pie
+                            data={sellerDeviceStats || []}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={70}
+                            dataKey="value"
+                            nameKey="name"
+                            label={({ name }) => name}
+                          >
+                            {sellerDeviceStats?.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Top Stores */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  Top Stores by Views
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {topStores?.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No store activity yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {topStores?.map((store, index) => (
+                      <div key={store.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs shrink-0">
+                          {index + 1}
+                        </div>
+                        {store.logo_url ? (
+                          <img 
+                            src={store.logo_url} 
+                            alt={store.name} 
+                            className="w-9 h-9 rounded-lg object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <Store className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{store.name}</p>
+                        </div>
+                        <div className="flex items-center gap-1 text-primary font-bold text-sm shrink-0">
+                          <Eye className="h-3.5 w-3.5" />
+                          {store.views}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============ REFERRALS TAB ============ */}
+          <TabsContent value="referrals" className="space-y-4">
+            {/* Referral Overview */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Link2 className="h-5 w-5" />
+                  Referral Analytics Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                      <MousePointerClick className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{referralStats?.totalClicks ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Total Clicks</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-chart-2/10">
+                      <Users className="h-5 w-5 text-chart-2" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{referralStats?.uniqueReferrers ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Active Referrers</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-chart-3/10">
+                      <UserPlus className="h-5 w-5 text-chart-3" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{referralStats?.conversions ?? 0}</p>
+                      <p className="text-xs text-muted-foreground">Conversions</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Referral Trend Chart */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Referral Clicks (Last 7 Days)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={referralTrend || []} margin={{ left: 0, right: 8 }}>
+                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
+                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="clicks" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Top Referrers */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Top Referrers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {topReferrers?.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No referral activity yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {topReferrers?.map((referrer, index) => (
+                      <div key={referrer.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs shrink-0">
+                          {index + 1}
+                        </div>
+                        {referrer.avatar_url ? (
+                          <img 
+                            src={referrer.avatar_url} 
+                            alt={referrer.name} 
+                            className="w-9 h-9 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{referrer.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{referrer.code}</p>
+                        </div>
+                        <div className="flex items-center gap-1 text-primary font-bold text-sm shrink-0">
+                          <MousePointerClick className="h-3.5 w-3.5" />
+                          {referrer.clicks}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Referral Logs */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Recent Referral Clicks
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 sm:p-6">
+                <div className="overflow-x-auto">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-card z-10">
+                        <TableRow>
+                          <TableHead className="whitespace-nowrap">Time</TableHead>
+                          <TableHead className="whitespace-nowrap">Referral Code</TableHead>
+                          <TableHead className="whitespace-nowrap">User Agent</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {recentReferrals?.map((referral) => (
+                          <TableRow key={referral.id}>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                              {format(new Date(referral.created_at), 'MMM d, HH:mm')}
+                            </TableCell>
+                            <TableCell className="font-medium text-sm whitespace-nowrap font-mono">
+                              {referral.referral_code}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap max-w-[300px] truncate">
+                              {referral.user_agent || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {(!recentReferrals || recentReferrals.length === 0) && (
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                              No referral clicks recorded yet
                             </TableCell>
                           </TableRow>
                         )}
