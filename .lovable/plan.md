@@ -1,163 +1,110 @@
 
 
-# Mobile Header Design Improvements
+# Plan: Align Seller Dashboard with Admin Dashboard Template
 
 ## Overview
-Enhance the visual design and user experience of the search bar and currency selector that were recently added to the mobile header row. The goal is to create a polished, native-app-quality interface that feels cohesive with the Eclipse brand while maintaining excellent usability on small screens.
+Refactor the seller dashboard to adopt the proven patterns and components from the admin dashboard while preserving seller-specific functionality. This will improve code maintainability, PWA stability, and provide a consistent user experience.
 
----
+## Changes
 
-## Current State
-The mobile header currently displays:
-- Back button + Menu button + Logo on the left
-- Search bar (compact) + Currency selector (compact) in the center
-- Notification bell + Cart + User/Sign In on the right
+### 1. Adopt AdminStatCard Component for Stats
+Replace the custom stat cards in SellerDashboard with the reusable `AdminStatCard` component already available in the codebase.
 
-**Current issues to address:**
-- Elements feel cramped with minimal visual hierarchy
-- Search bar and currency selector use the same visual style (both `bg-muted/50 border border-border`)
-- No clear visual distinction between interactive elements
-- Currency selector dropdown icon adds visual noise
-- Touch targets could feel small on some devices
+**File:** `src/pages/seller/SellerDashboard.tsx`
+- Import `AdminStatCard` from `@/components/admin/AdminStatCard`
+- Replace the 4 manual stat cards with AdminStatCard instances
+- Apply consistent styling and color semantics
 
----
+### 2. Add Time-Based Greeting
+Mirror the admin dashboard's personalized greeting pattern.
 
-## Design Improvements
+**File:** `src/pages/seller/SellerDashboard.tsx`
+- Add `getTimeBasedGreeting()` helper function
+- Update header to show "Good morning/afternoon/evening, [Store Name]!"
+- Simplify the subtitle text
 
-### 1. Visual Hierarchy & Grouping
+### 3. Enhance SellerLayout with PWA Improvements
+Port the robust PWA handling from AdminLayout to improve iOS stability.
 
-**Search Bar Enhancements:**
-- Make the search bar the dominant element with a slightly elevated appearance
-- Add a subtle inner shadow to create depth (pill-button feel)
-- Use a more muted placeholder to reduce visual weight
-- Consider a slight gradient or glass-effect background
+**File:** `src/components/seller/SellerLayout.tsx`
+- Add iOS keyboard viewport handling (`--chat-vvh` CSS variable pattern)
+- Add chat page detection for messaging routes
+- Improve document scroll locking for chat contexts
+- Ensure proper safe-area handling matches admin
 
-**Currency Selector Refinements:**
-- Make it more compact and icon-focused (just the currency symbol)
-- Remove the chevron on mobile to save space
-- Add a subtle tap indicator (e.g., ring on focus)
-- Position it as a secondary action next to search
+### 4. Standardize Quick Actions Grid
+Ensure the quick actions grid matches the admin dashboard pattern exactly.
 
-### 2. Spacing & Touch Targets
+**File:** `src/pages/seller/SellerDashboard.tsx`
+- Update grid to use 3-column layout consistently (matching admin)
+- Wrap in a Card component with header like admin
+- Use muted/50 background patterns for items
 
-- Increase gap between search and currency from `gap-2` to `gap-2.5`
-- Ensure minimum 44px touch targets for PWA compliance
-- Add more breathing room with adjusted padding
+### 5. Update Dashboard Card Layout
+Reorganize cards to follow admin dashboard's vertical flow pattern.
 
-### 3. Color & Styling Refinements
+**File:** `src/pages/seller/SellerDashboard.tsx`
+- Move greeting to top with simplified layout
+- Group related cards (stats, health, activity)
+- Apply consistent card border and background classes
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  [←] [≡] [◉]    [🔍 Search...       ]  [£]   [🔔][🛒][👤] │
-│       │   │              │               │                   │
-│   Back Menu Logo    Search Bar     Currency    Actions       │
-└─────────────────────────────────────────────────────────────┘
+### 6. Add Seller-Specific Announcements Section (Optional Enhancement)
+Consider adding a store announcements section similar to admin, but for seller promotions/notes.
+
+**Decision Point:** This can be added in a future iteration if needed.
+
+## Technical Details
+
+### Component Reuse
+```
+AdminStatCard props:
+- label: string
+- value: string | number  
+- valueColor: 'default' | 'green' | 'blue' | 'yellow' | 'orange' | 'destructive' | 'primary'
+- subtitle?: string
+- className?: string
 ```
 
-**Search Bar:**
-- Background: `bg-muted/60` with subtle glass effect
-- Border: Softer `border-border/50` → `border-primary/40` on focus
-- Icon: Muted by default, primary on focus
-- Placeholder: Lighter weight, smaller size
-
-**Currency Selector:**
-- Background: `bg-background/50` (lighter than search)
-- Border: Subtle `border-border/50`
-- Symbol: Larger, primary color
-- No chevron on compact mode
-- Circular/pill shape for visual distinction
-
-### 4. Interactive States
-
-**Search Bar:**
-- Idle: Subtle, recessed appearance
-- Hover/Tap: Slight lift, border glow
-- Focus ring: Primary color ring
-
-**Currency Selector:**
-- Idle: Circular badge appearance
-- Tap: Scale down briefly (haptic feedback already exists)
-- Selected state: Subtle primary border
-
-### 5. Animation Polish
-
-- Add subtle scale animation on tap for both elements
-- Smooth border-color transitions
-- Consider a gentle pulse on the search bar to draw attention (first-time users only, store in localStorage)
-
----
-
-## Technical Implementation
-
-### Files to Modify
-
-1. **`src/components/layout/HeaderSearchBar.tsx`**
-   - Update compact mode styling with refined colors
-   - Add focus state enhancements
-   - Consider active state animation
-
-2. **`src/components/layout/CurrencySelector.tsx`**
-   - Update compact mode to remove chevron
-   - Make the button more circular/badge-like
-   - Enhance the visual styling
-
-3. **`src/components/layout/Header.tsx`**
-   - Adjust the mobile search+currency container spacing
-   - Fine-tune the overall mobile header layout
-   - Consider adjusting element order if needed
-
-### Code Changes Summary
-
-**HeaderSearchBar.tsx (compact mode):**
+### Example Transformation
+Current:
 ```tsx
-// Refined compact styling
-className={cn(
-  "flex items-center gap-1.5 w-full h-9 px-3 rounded-full",
-  "bg-muted/40 backdrop-blur-sm",
-  "border border-border/40 hover:border-primary/40",
-  "text-muted-foreground/80 hover:text-foreground",
-  "transition-all duration-200 cursor-text",
-  "active:scale-[0.98]",
-  // ... focus states
-  compact && "h-8 px-2.5",
-  className
-)}
+<Card>
+  <CardHeader>
+    <CardTitle>Total Revenue</CardTitle>
+    <DollarSign />
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">{formatCurrency(...)}</div>
+    <p className="text-xs">Lifetime earnings</p>
+  </CardContent>
+</Card>
 ```
 
-**CurrencySelector.tsx (compact mode):**
+After:
 ```tsx
-// Badge-style currency indicator
-className={cn(
-  "flex items-center justify-center h-8 w-8 rounded-full",
-  "bg-background/60 backdrop-blur-sm",
-  "border border-border/40 hover:border-primary/40",
-  "text-sm font-semibold text-foreground",
-  "transition-all duration-200",
-  "active:scale-[0.95]",
-  className
-)}
-// Remove chevron in compact mode
-// Show only currency symbol (£, $, €)
+<AdminStatCard
+  label="Total Revenue"
+  value={formatCurrency(store?.total_revenue || 0)}
+  valueColor="default"
+  subtitle="Lifetime earnings"
+/>
 ```
 
-**Header.tsx (mobile container):**
-```tsx
-// Refined spacing and alignment
-<div className="flex md:hidden items-center gap-2.5 flex-1 min-w-0">
-  <HeaderSearchBar className="flex-1 min-w-0" compact />
-  <CurrencySelector compact className="shrink-0" />
-</div>
-```
+## Files Modified
+1. `src/pages/seller/SellerDashboard.tsx` - Main dashboard refactor
+2. `src/components/seller/SellerLayout.tsx` - PWA enhancements (if needed)
 
----
+## Preserved Seller-Specific Elements
+- TOS Warning Banner (critical for compliance)
+- Store Link Card (unique to sellers)
+- Store Health Score widget (seller-specific metrics)
+- NotificationCenter (commerce-focused activity feed)
+- Pending Items Alert (moderation queue visibility)
 
-## Expected Result
-
-A polished mobile header where:
-- ✅ Search bar is clearly the primary action with a soft, tappable pill design
-- ✅ Currency selector is a compact, circular badge that's easy to tap
-- ✅ Both elements feel cohesive with the Eclipse glass-effect aesthetic
-- ✅ Touch targets meet 44px minimum for PWA/mobile
-- ✅ Smooth micro-interactions provide satisfying feedback
-- ✅ Visual hierarchy guides users naturally to search first
+## Benefits
+1. **Reduced code duplication** - Reuse AdminStatCard and patterns
+2. **Consistent UX** - Users moving between admin and seller dashboards will feel familiar
+3. **Improved PWA stability** - Port proven iOS handling
+4. **Easier maintenance** - Single pattern to update and improve
+5. **Professional appearance** - Consistent design language across the platform
 
