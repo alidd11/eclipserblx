@@ -10,6 +10,40 @@ import { cn } from '@/lib/utils';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 
+// Region flag images
+import ukFlag from '@/assets/regions/uk-flag.jpg';
+import usFlag from '@/assets/regions/us-flag.jpg';
+import euFlag from '@/assets/regions/eu-flag.jpg';
+
+// Helper to extract region from category name and return flag
+const RegionFlag = memo(function RegionFlag({ category }: { category: string }) {
+  const categoryLower = category.toLowerCase();
+  
+  let flagSrc: string | null = null;
+  let regionName = '';
+  
+  if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
+    flagSrc = ukFlag;
+    regionName = 'UK';
+  } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
+    flagSrc = usFlag;
+    regionName = 'US';
+  } else if (categoryLower.startsWith('eu ') || categoryLower.includes(' eu')) {
+    flagSrc = euFlag;
+    regionName = 'EU';
+  }
+  
+  if (!flagSrc) return null;
+  
+  return (
+    <img 
+      src={flagSrc} 
+      alt={regionName}
+      className="h-3 w-4 xs:h-3.5 xs:w-5 rounded-sm object-cover flex-shrink-0"
+    />
+  );
+});
+
 interface ProductCardProps {
   id: string;
   name: string;
@@ -163,9 +197,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         {/* Content */}
         <div className="p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5">
           {category && (
-            <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate">
-              {category}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <RegionFlag category={category} />
+              <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate">
+                {category}
+              </span>
+            </div>
           )}
           
           {/* Store info with logo and badges */}

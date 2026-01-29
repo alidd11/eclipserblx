@@ -11,6 +11,40 @@ import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Region flag images
+import ukFlag from '@/assets/regions/uk-flag.jpg';
+import usFlag from '@/assets/regions/us-flag.jpg';
+import euFlag from '@/assets/regions/eu-flag.jpg';
+
+// Helper to extract region from category name and return flag
+const RegionFlag = memo(function RegionFlag({ category }: { category: string }) {
+  const categoryLower = category.toLowerCase();
+  
+  let flagSrc: string | null = null;
+  let regionName = '';
+  
+  if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
+    flagSrc = ukFlag;
+    regionName = 'UK';
+  } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
+    flagSrc = usFlag;
+    regionName = 'US';
+  } else if (categoryLower.startsWith('eu ') || categoryLower.includes(' eu')) {
+    flagSrc = euFlag;
+    regionName = 'EU';
+  }
+  
+  if (!flagSrc) return null;
+  
+  return (
+    <img 
+      src={flagSrc} 
+      alt={regionName}
+      className="h-2.5 w-3.5 rounded-sm object-cover flex-shrink-0"
+    />
+  );
+});
+
 const ITEMS_PER_PAGE_DESKTOP = 3;
 const ITEMS_PER_PAGE_MOBILE = 2;
 const ROTATION_INTERVAL = 6000; // 6 seconds
@@ -305,9 +339,12 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
 
       {/* Content */}
       <div className="p-3">
-        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5 truncate">
-          {product.categories?.name || 'Product'}
-        </p>
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <RegionFlag category={product.categories?.name || ''} />
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
+            {product.categories?.name || 'Product'}
+          </p>
+        </div>
         <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors mb-2">
           {product.name}
         </h3>
