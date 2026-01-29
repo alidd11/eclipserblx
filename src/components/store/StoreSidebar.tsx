@@ -86,7 +86,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to={`/store/${storeSlug}`} onClick={onNavigate}>
-                <Home className="h-4 w-4" style={{ color: accentColor }} />
+                <Home className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
                 <span>Home</span>
               </Link>
             </Button>
@@ -97,7 +97,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to={`/store/${storeSlug}/about`} onClick={onNavigate}>
-                <Info className="h-4 w-4" style={{ color: accentColor }} />
+                <Info className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
                 <span>About</span>
               </Link>
             </Button>
@@ -108,7 +108,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/account" onClick={onNavigate}>
-                <User className="h-4 w-4" style={{ color: accentColor }} />
+                <User className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
                 <span>My Account</span>
               </Link>
             </Button>
@@ -118,7 +118,7 @@ export function StoreSidebar({
               className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
               onClick={() => scrollToSection('store-recommendations')}
             >
-              <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+              <Sparkles className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
               <span>Recommended</span>
             </Button>
 
@@ -128,7 +128,7 @@ export function StoreSidebar({
                 className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
                 onClick={() => scrollToSection('store-reviews')}
               >
-                <Star className="h-4 w-4 text-yellow-500" />
+                <Star className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] text-yellow-500" />
                 <span>Reviews</span>
                 <span className="ml-auto text-xs text-sidebar-foreground/50">
                   {averageRating.toFixed(1)}
@@ -155,7 +155,7 @@ export function StoreSidebar({
               style={!activeTab ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
               onClick={() => handleTabClick(null)}
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
               <span>All Products</span>
               <span className="ml-auto text-xs text-sidebar-foreground/50">
                 {productCount}
@@ -175,7 +175,7 @@ export function StoreSidebar({
                 style={activeTab === tab.slug ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
                 onClick={() => handleTabClick(tab.slug)}
               >
-                <Package className="h-4 w-4" />
+                <Package className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
                 <span className="truncate">{tab.name}</span>
               </Button>
             ))}
@@ -193,7 +193,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/terms" onClick={onNavigate}>
-                <FileText className="h-4 w-4" style={{ color: accentColor }} />
+                <FileText className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
                 <span>Terms of Service</span>
               </Link>
             </Button>
@@ -203,7 +203,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/privacy" onClick={onNavigate}>
-                <Shield className="h-4 w-4" style={{ color: accentColor }} />
+                <Shield className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
                 <span>Privacy Policy</span>
               </Link>
             </Button>
@@ -213,7 +213,7 @@ export function StoreSidebar({
               asChild
             >
               <Link to="/refund" onClick={onNavigate}>
-                <RefreshCw className="h-4 w-4" style={{ color: accentColor }} />
+                <RefreshCw className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
                 <span>Refund Policy</span>
               </Link>
             </Button>
@@ -230,7 +230,7 @@ export function StoreSidebar({
           asChild
         >
           <Link to="/marketplace">
-            <LayoutGrid className="h-4 w-4 mr-2" />
+            <LayoutGrid className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] mr-2" />
             Browse All Stores
           </Link>
         </Button>

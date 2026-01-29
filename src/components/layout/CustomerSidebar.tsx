@@ -276,12 +276,12 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         <div className="relative shrink-0">
           {typeof item.icon === 'function' && 'render' in item.icon ? (
             <item.icon className={cn(
-              "h-4 w-4 transition-all",
+              "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
               isActive ? "stroke-[2.5]" : "stroke-[1.5]"
             )} />
           ) : (
             <item.icon className={cn(
-              "h-4 w-4 transition-all",
+              "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
               isActive ? "stroke-[2.5]" : "stroke-[1.5]"
             )} />
           )}
@@ -427,7 +427,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 onClick={() => toggleGroup(group.id)}
               >
                 <group.icon className={cn(
-                  "h-4 w-4 transition-all",
+                  "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
                   hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
                 )} />
               </button>
@@ -448,7 +448,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                         onClick={handleNavClick}
                         className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
                       >
-                        <item.icon className="h-3.5 w-3.5" />
+                        <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         {item.title}
                       </a>
                     );
@@ -466,7 +466,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                           : "hover:bg-muted"
                       )}
                     >
-                      <item.icon className="h-3.5 w-3.5" />
+                      <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       {item.title}
                       {item.showStatusDot && (
                         <Circle className={cn('h-2 w-2 fill-current ml-auto', statusConfig[systemStatus].color)} />

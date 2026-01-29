@@ -171,7 +171,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     const LinkContent = (
       <>
         <item.icon className={cn(
-          "h-4 w-4 shrink-0 transition-all",
+          "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] shrink-0 transition-all",
           isActive ? "stroke-[2.5]" : "stroke-[1.5]"
         )} />
         {!isCollapsed && (
@@ -248,7 +248,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                 onClick={() => toggleGroup(group.id)}
               >
                 <group.icon className={cn(
-                  "h-4 w-4 transition-all",
+                  "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
                   hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
                 )} />
               </button>
@@ -271,7 +271,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                         : "hover:bg-muted"
                     )}
                   >
-                    <item.icon className="h-3.5 w-3.5" />
+                    <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     {item.title}
                   </NavLink>
                 ))}
@@ -302,7 +302,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             )}
           >
             <group.icon className={cn(
-              "h-4 w-4 shrink-0 transition-all",
+              "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] shrink-0 transition-all",
               hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
             )} />
             <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{group.title}</span>
@@ -342,10 +342,10 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           </>
         )}
         {isCollapsed && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center">
-                <Store className="h-5 w-5 text-[hsl(var(--sidebar-primary))]" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center">
+                    <Store className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(var(--sidebar-primary))]" />
               </div>
             </TooltipTrigger>
             <TooltipContent side="right">{store?.name || 'My Store'}</TooltipContent>
