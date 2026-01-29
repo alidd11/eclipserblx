@@ -117,7 +117,7 @@ export default function BotServers() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <AdminStatCard label="Total Servers" value={totalServers} />
           <AdminStatCard label="Active Licenses" value={activeServers} valueColor="green" />
           <AdminStatCard label="Unique Bots" value={uniqueBots} valueColor="primary" />
