@@ -343,7 +343,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
 
       {/* Content with flag background */}
       <div className="relative p-3 overflow-hidden">
-        {/* Flag background overlay (centered, fades at bottom) */}
+        {/* Flag background overlay (full width, fades at bottom) */}
         {(() => {
           const regionFlag = getRegionFlag(product.categories?.name, product.name);
           if (!regionFlag) return null;
@@ -360,7 +360,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
               <img
                 src={regionFlag.src}
                 alt=""
-                className="h-[80%] w-auto opacity-[0.08] object-cover"
+                className="w-full h-[80%] opacity-[0.08] object-cover"
               />
             </div>
           );
