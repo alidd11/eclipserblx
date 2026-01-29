@@ -200,16 +200,24 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
         {/* Content with flag background */}
         <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
-          {/* Flag background overlay - stops above button */}
+          {/* Flag background overlay (clipped + fades out before the CTA) */}
           {(() => {
             const regionFlag = getRegionFlag(category, name);
             if (!regionFlag) return null;
             return (
-              <div className="absolute inset-0 bottom-10 pointer-events-none overflow-hidden">
-                <img 
-                  src={regionFlag.src} 
+              <div
+                className="absolute inset-0 bottom-14 xs:bottom-16 pointer-events-none overflow-hidden"
+                style={{
+                  WebkitMaskImage:
+                    'linear-gradient(to bottom, black 0%, black 75%, transparent 100%)',
+                  maskImage:
+                    'linear-gradient(to bottom, black 0%, black 75%, transparent 100%)',
+                }}
+              >
+                <img
+                  src={regionFlag.src}
                   alt=""
-                  className="absolute right-0 top-1/2 -translate-y-1/2 h-full w-auto opacity-[0.08] object-cover"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 h-[90%] w-auto max-w-[70%] opacity-[0.06] object-cover"
                 />
               </div>
             );
