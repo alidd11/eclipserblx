@@ -30,11 +30,12 @@ interface DiscountCode {
 }
 
 export function ActiveOffersCard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   // Fetch active promotions
-  const { data: promotions = [] } = useQuery({
-    queryKey: ['active-promotions'],
+  const { data: promotions = [], isLoading: promotionsLoading } = useQuery({
+    // Include auth state so we don't cache an empty anon result and keep it after login.
+    queryKey: ['active-promotions', user?.id ?? 'anon'],
     queryFn: async () => {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
@@ -50,10 +51,12 @@ export function ActiveOffersCard() {
       if (error) throw error;
       return data as Promotion[];
     },
+    enabled: !authLoading,
+    staleTime: 30_000,
   });
 
   // Fetch user's claimed promotions
-  const { data: claimedPromotionIds = [] } = useQuery({
+  const { data: claimedPromotionIds = [], isLoading: claimsLoading } = useQuery({
     queryKey: ['user-promotion-claims', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -65,12 +68,14 @@ export function ActiveOffersCard() {
       if (error) throw error;
       return data.map(claim => claim.promotion_id);
     },
-    enabled: !!user,
+    enabled: !authLoading && !!user,
+    staleTime: 30_000,
   });
 
   // Fetch active discount codes
-  const { data: discountCodes = [] } = useQuery({
-    queryKey: ['active-discount-codes'],
+  const { data: discountCodes = [], isLoading: discountCodesLoading } = useQuery({
+    // Include auth state so we don't cache an empty anon result and keep it after login.
+    queryKey: ['active-discount-codes', user?.id ?? 'anon'],
     queryFn: async () => {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
@@ -84,11 +89,15 @@ export function ActiveOffersCard() {
       if (error) throw error;
       return data as DiscountCode[];
     },
+    enabled: !authLoading,
+    staleTime: 30_000,
   });
 
+  const isInitialLoading = authLoading || promotionsLoading || discountCodesLoading;
   const hasOffers = promotions.length > 0 || discountCodes.length > 0;
 
-  if (!hasOffers) return null;
+  // Avoid the "card dissolving" effect during initial load.
+  if (!hasOffers && !isInitialLoading) return null;
 
   const getPromotionIcon = (type: string, isClaimed: boolean) => {
     if (isClaimed) {
@@ -123,9 +132,6 @@ export function ActiveOffersCard() {
             <div className="flex items-center gap-2 mb-4">
               <Gift className="h-5 w-5 text-primary" />
               <h2 className="font-display font-semibold text-lg">Active Offers</h2>
-              <Badge variant="secondary" className="ml-auto text-xs">
-                {promotions.length + discountCodes.length} Available
-              </Badge>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -154,7 +160,7 @@ export function ActiveOffersCard() {
                           <Badge variant="outline" className="text-[10px] py-0 border-green-500/50 text-green-600 dark:text-green-400">
                             Claimed
                           </Badge>
-                        ) : !user && promo.new_users_only ? (
+                        ) : claimsLoading ? null : !user && promo.new_users_only ? (
                           <Link to="/auth">
                             <Badge variant="outline" className="text-[10px] py-0 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer">
                               <LogIn className="h-2.5 w-2.5 mr-1" />
