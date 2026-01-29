@@ -194,7 +194,8 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
           <SheetContent 
             side="left" 
-            className="p-0 w-64 border-r-0"
+            className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] bg-card"
+            style={{ height: '100dvh', maxHeight: '100dvh' }}
             data-gesture-exempt="true"
             hideCloseButton
           >
