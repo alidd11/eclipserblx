@@ -673,7 +673,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
       {/* Collapse Toggle Button - Above Navigation */}
       {!isMobileDrawer && (
-        <div className="px-2 pt-2">
+        <div className="px-2 py-1.5">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -706,7 +706,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+      <nav className="flex-1 px-2 pb-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {navGroups.map((group) => (
           <div key={group.id}>
             {renderGroup(group)}
