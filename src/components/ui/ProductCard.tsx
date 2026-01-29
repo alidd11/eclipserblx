@@ -217,7 +217,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 <img
                   src={regionFlag.src}
                   alt=""
-                  className="w-full h-[80%] opacity-[0.08] object-cover"
+                  className="w-full h-[95%] opacity-[0.08] object-cover"
                 />
               </div>
             );
