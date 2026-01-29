@@ -29,6 +29,7 @@ import NotFound from "./pages/NotFound";
 // Lazy loaded - user pages
 const Account = lazy(() => import("./pages/Account"));
 const Downloads = lazy(() => import("./pages/Downloads"));
+const Orders = lazy(() => import("./pages/Orders"));
 const Products = lazy(() => import("./pages/Products"));
 const Featured = lazy(() => import("./pages/Featured"));
 const Categories = lazy(() => import("./pages/Categories"));
@@ -202,6 +203,7 @@ const App = () => (
                   <Route path="/account" element={<Account />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/downloads" element={<Downloads />} />
+                  <Route path="/orders" element={<Orders />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/featured" element={<Featured />} />
                   <Route path="/categories" element={<Categories />} />
