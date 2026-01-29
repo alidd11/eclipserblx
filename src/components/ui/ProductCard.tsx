@@ -26,6 +26,11 @@ const getRegionFlag = (category?: string, productName?: string): { src: string; 
     return { src: beFlag, name: 'Belgium' };
   }
   
+  // UK Buildings
+  if (categoryLower.includes('uk buildings') || nameLower.includes('uk buildings')) {
+    return { src: ukFlag, name: 'UK' };
+  }
+  
   // Bundle Deals default to UK
   if (categoryLower === 'bundle deals' || categoryLower.includes('bundle')) {
     return { src: ukFlag, name: 'UK' };
