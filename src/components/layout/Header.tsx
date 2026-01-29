@@ -120,7 +120,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Right section: Icons (flush right) */}
-          <div className="flex items-center gap-1 shrink-0 ml-auto">
+          <div className="flex items-center -space-x-0.5 shrink-0 ml-auto">
             <CurrencySelector compact />
             <NotificationBell />
             <Link to="/cart">
