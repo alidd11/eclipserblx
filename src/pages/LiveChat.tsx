@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck, Shield } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck, Shield, Bot, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SecureCodeInput } from '@/components/chat/SecureCodeInput';
@@ -63,6 +63,8 @@ const LiveChatPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [showSecureInput, setShowSecureInput] = useState(false);
   const [isAgentTyping, setIsAgentTyping] = useState(false);
+  const [isAiResponding, setIsAiResponding] = useState(false);
+  const [isEscalated, setIsEscalated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -270,6 +272,8 @@ const LiveChatPage = () => {
 
       if (convError) throw convError;
 
+      const initialMessage = issueDescription.trim();
+
       // Send initial message
       const { error: msgError } = await supabase
         .from('chat_messages')
@@ -277,7 +281,7 @@ const LiveChatPage = () => {
           conversation_id: newConv.id,
           sender_type: 'customer',
           sender_id: user.id,
-          message: issueDescription.trim(),
+          message: initialMessage,
         });
 
       if (msgError) throw msgError;
@@ -292,6 +296,28 @@ const LiveChatPage = () => {
         customer_name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'Customer',
         issue_category: issueCategory,
       }).catch(err => console.error('Failed to send push notification:', err));
+
+      // Trigger AI response for initial message
+      setIsAiResponding(true);
+      try {
+        const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-chat-support', {
+          body: {
+            conversationId: newConv.id,
+            userMessage: initialMessage,
+            issueCategory: issueCategory,
+          },
+        });
+
+        if (aiError) {
+          console.error('AI response error:', aiError);
+        } else if (aiData?.escalated) {
+          setIsEscalated(true);
+        }
+      } catch (aiErr) {
+        console.error('AI chat error:', aiErr);
+      } finally {
+        setIsAiResponding(false);
+      }
     } catch (error) {
       console.error('Error starting conversation:', error);
       toast.error('Failed to start conversation');
@@ -332,6 +358,30 @@ const LiveChatPage = () => {
 
       // Remove optimistic message (real one will come via realtime)
       setMessages(prev => prev.filter(m => m.id !== optimisticId));
+
+      // Only call AI if not escalated to human staff
+      if (!isEscalated) {
+        setIsAiResponding(true);
+        try {
+          const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-chat-support', {
+            body: {
+              conversationId: conversation.id,
+              userMessage: messageText,
+              issueCategory: conversation.issue_category,
+            },
+          });
+
+          if (aiError) {
+            console.error('AI response error:', aiError);
+          } else if (aiData?.escalated) {
+            setIsEscalated(true);
+          }
+        } catch (aiErr) {
+          console.error('AI chat error:', aiErr);
+        } finally {
+          setIsAiResponding(false);
+        }
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
@@ -498,6 +548,24 @@ const LiveChatPage = () => {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
+                  {/* AI Support Notice */}
+                  {!isEscalated && (
+                    <div className="flex items-center justify-center gap-2 py-2 px-4 bg-primary/5 rounded-lg border border-primary/10">
+                      <Bot className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-muted-foreground">
+                        You're chatting with Eclipse AI Support
+                      </span>
+                    </div>
+                  )}
+                  {isEscalated && (
+                    <div className="flex items-center justify-center gap-2 py-2 px-4 bg-green-500/10 rounded-lg border border-green-500/20">
+                      <User className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-muted-foreground">
+                        Connected to human support
+                      </span>
+                    </div>
+                  )}
+
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
@@ -507,9 +575,18 @@ const LiveChatPage = () => {
                         className={`max-w-[80%] rounded-lg px-4 py-2 ${
                           msg.sender_type === 'customer'
                             ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                            : msg.message_type === 'ai_response'
+                              ? 'bg-primary/10 border border-primary/20'
+                              : 'bg-muted'
                         }`}
                       >
+                        {/* AI Badge for AI responses */}
+                        {msg.sender_type === 'agent' && msg.message_type === 'ai_response' && (
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <Bot className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-xs text-primary font-medium">AI Support</span>
+                          </div>
+                        )}
                         {msg.message_type === 'code_verification' && msg.secure_data ? (
                           <CodeVerificationMessage
                             secureData={msg.secure_data}
@@ -536,8 +613,26 @@ const LiveChatPage = () => {
                       </div>
                     </div>
                   ))}
+
+                  {/* AI responding indicator */}
+                  {isAiResponding && (
+                    <div className="flex justify-start">
+                      <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-4 w-4 text-primary animate-pulse" />
+                          <span className="text-sm text-primary">AI is typing</span>
+                          <div className="flex gap-1">
+                            <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" />
+                            <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce [animation-delay:0.1s]" />
+                            <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce [animation-delay:0.2s]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
-                  {isAgentTyping && (
+                  {/* Human agent typing indicator */}
+                  {isAgentTyping && !isAiResponding && (
                     <div className="flex justify-start">
                       <div className="bg-muted rounded-lg px-4 py-2">
                         <div className="flex gap-1">
