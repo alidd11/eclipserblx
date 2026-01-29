@@ -15,12 +15,24 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
+import beFlag from '@/assets/regions/be-flag.png';
 
-// Helper to get region flag from category name
-const getRegionFlag = (category?: string): { src: string; name: string } | null => {
-  if (!category) return null;
-  const categoryLower = category.toLowerCase();
+// Helper to get region flag from category name and/or product name
+const getRegionFlag = (category?: string, productName?: string): { src: string; name: string } | null => {
+  const categoryLower = category?.toLowerCase() || '';
+  const nameLower = productName?.toLowerCase() || '';
   
+  // Check for specific products first
+  if (nameLower.includes('ypres') || nameLower.includes('belgium')) {
+    return { src: beFlag, name: 'Belgium' };
+  }
+  
+  // Bundle Deals default to UK
+  if (categoryLower === 'bundle deals' || categoryLower.includes('bundle')) {
+    return { src: ukFlag, name: 'UK' };
+  }
+  
+  // Standard region checks
   if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
     return { src: ukFlag, name: 'UK' };
   } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
@@ -328,7 +340,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
       <div className="relative p-3 overflow-hidden">
         {/* Flag background overlay */}
         {(() => {
-          const regionFlag = getRegionFlag(product.categories?.name);
+          const regionFlag = getRegionFlag(product.categories?.name, product.name);
           if (!regionFlag) return null;
           return (
             <div className="absolute inset-0 pointer-events-none overflow-hidden">

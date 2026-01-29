@@ -14,12 +14,24 @@ import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
+import beFlag from '@/assets/regions/be-flag.png';
 
-// Helper to get region flag from category name
-const getRegionFlag = (category?: string): { src: string; name: string } | null => {
-  if (!category) return null;
-  const categoryLower = category.toLowerCase();
+// Helper to get region flag from category name and/or product name
+const getRegionFlag = (category?: string, productName?: string): { src: string; name: string } | null => {
+  const categoryLower = category?.toLowerCase() || '';
+  const nameLower = productName?.toLowerCase() || '';
   
+  // Check for specific products first
+  if (nameLower.includes('ypres') || nameLower.includes('belgium')) {
+    return { src: beFlag, name: 'Belgium' };
+  }
+  
+  // Bundle Deals default to UK
+  if (categoryLower === 'bundle deals' || categoryLower.includes('bundle')) {
+    return { src: ukFlag, name: 'UK' };
+  }
+  
+  // Standard region checks
   if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
     return { src: ukFlag, name: 'UK' };
   } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
@@ -185,7 +197,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
           {/* Flag background overlay */}
           {(() => {
-            const regionFlag = getRegionFlag(category);
+            const regionFlag = getRegionFlag(category, name);
             if (!regionFlag) return null;
             return (
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
