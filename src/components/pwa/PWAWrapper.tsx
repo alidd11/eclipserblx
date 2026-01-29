@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useLayoutEffect, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { RefreshCw, WifiOff, Wifi, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,30 +41,46 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   const PULL_THRESHOLD = 80;
 
+  // Check if running as PWA
   useEffect(() => {
-    // Check if running as PWA
     const standalone = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
+  }, []);
 
-    // Handle returning from external links in iOS PWA
-    // This prevents viewport/safe-area glitches when coming back to the app
-    const handlePageShow = (e: PageTransitionEvent) => {
-      if (e.persisted || standalone) {
-        // Force a minor layout recalculation to reset safe areas
-        requestAnimationFrame(() => {
-          window.scrollTo(0, window.scrollY);
-        });
+  // PERMANENT SAFE AREA FIX: Set html/body background to match the app background.
+  // This prevents the "white/grey strip" that appears behind safe-area insets
+  // when returning from external links, when iOS recalculates the viewport, or
+  // during any overscroll/rubber-banding. Same approach as AdminLayout.
+  useLayoutEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    
+    if (!standalone) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    // Store original styles to restore if component unmounts
+    const prevHtmlBg = html.style.backgroundColor;
+    const prevBodyBg = body.style.backgroundColor;
+
+    // Set background to match the theme background - this fills safe-area gaps
+    const themeBg = 'hsl(var(--background))';
+    html.style.backgroundColor = themeBg;
+    body.style.backgroundColor = themeBg;
+
+    // Handle returning from external links - reapply background on visibility change
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        html.style.backgroundColor = themeBg;
+        body.style.backgroundColor = themeBg;
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (!document.hidden && standalone) {
-        // When app becomes visible again, ensure viewport is correct
-        requestAnimationFrame(() => {
-          window.scrollTo(0, window.scrollY);
-        });
-      }
+    const handlePageShow = () => {
+      html.style.backgroundColor = themeBg;
+      body.style.backgroundColor = themeBg;
     };
 
     window.addEventListener('pageshow', handlePageShow);
@@ -73,6 +89,10 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
     return () => {
       window.removeEventListener('pageshow', handlePageShow);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Restore previous backgrounds (or keep theme bg if none was set)
+      html.style.backgroundColor = prevHtmlBg || themeBg;
+      body.style.backgroundColor = prevBodyBg || themeBg;
     };
   }, []);
 
