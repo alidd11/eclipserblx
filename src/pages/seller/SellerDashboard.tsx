@@ -3,19 +3,17 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
 import { NotificationCenter } from '@/components/seller/NotificationCenter';
 import { toast } from 'sonner';
 import { 
   Store, 
   Package, 
-  DollarSign, 
   ShoppingCart, 
-  TrendingUp,
   Plus,
   Clock,
   CheckCircle,
@@ -26,10 +24,19 @@ import {
   AlertTriangle,
   Star,
   BarChart3,
-  Tag
+  Tag,
+  DollarSign
 } from 'lucide-react';
 
 const CURRENT_TOS_VERSION = "1.0";
+
+// Time-based greeting helper
+function getTimeBasedGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function SellerDashboard() {
   const { store, balance } = useSellerStatus();
@@ -49,26 +56,6 @@ export default function SellerDashboard() {
       
       if (error) throw error;
       return !!data;
-    },
-    enabled: !!store?.id,
-  });
-
-  // Fetch recent orders for this seller
-  const { data: recentOrders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['seller-recent-orders', store?.id],
-    queryFn: async () => {
-      if (!store?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('seller_transactions')
-        .select('*')
-        .eq('store_id', store.id)
-        .eq('type', 'sale')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      return data || [];
     },
     enabled: !!store?.id,
   });
@@ -112,12 +99,21 @@ export default function SellerDashboard() {
     }
   };
 
+  const quickActions = [
+    { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
+    { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
+    { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
+    { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
+    { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
+    { title: 'Categories', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
+  ];
+
   return (
     <SellerLayout>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* TOS Warning Banner */}
         {!tosLoading && !hasSignedTos && (
-          <Card className="mb-6 border-amber-500/50 bg-amber-500/5">
+          <Card className="border-amber-500/50 bg-amber-500/5">
             <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
               <div className="flex items-center gap-3 flex-1">
                 <div className="p-2 rounded-lg bg-amber-500/10">
@@ -142,12 +138,14 @@ export default function SellerDashboard() {
           </Card>
         )}
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        {/* Greeting Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Store className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold">{store?.name}</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <Store className="h-7 w-7 text-primary" />
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                {getTimeBasedGreeting()}, {store?.name || 'Seller'}!
+              </h1>
               {store?.is_verified && (
                 <Badge variant="default" className="gap-1">
                   <CheckCircle className="h-3 w-3" />
@@ -156,7 +154,7 @@ export default function SellerDashboard() {
               )}
             </div>
             <p className="text-muted-foreground">
-              Manage your store, products, and earnings
+              Here's what's happening with your store today.
             </p>
           </div>
           <Button asChild>
@@ -169,7 +167,7 @@ export default function SellerDashboard() {
 
         {/* Store Link Card */}
         {storeUrl && (
-          <Card className="mb-6 bg-primary/5 border-primary/20 overflow-hidden">
+          <Card className="bg-primary/5 border-primary/20 overflow-hidden">
             <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-4">
               <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                 <ExternalLink className="h-5 w-5 text-primary flex-shrink-0" />
@@ -194,121 +192,84 @@ export default function SellerDashboard() {
           </Card>
         )}
 
-        {/* Quick Actions Grid - 3x3 on mobile, above stats */}
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6">
-          {[
-            { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
-            { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
-            { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
-            { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
-            { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
-            { title: 'Store Tabs', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
-          ].map((link) => (
-            <Link key={link.href} to={link.href}>
-              <Card className="h-full hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer group">
-                <CardContent className="p-3 sm:p-4 flex flex-col items-center text-center gap-1.5 sm:gap-2">
-                  <div className="p-2 sm:p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-xs sm:text-sm">{link.title}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground hidden lg:block">{link.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        {/* Stats Cards - Using AdminStatCard */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <AdminStatCard
+            label="Total Revenue"
+            value={formatCurrency(store?.total_revenue || 0)}
+            valueColor="default"
+            subtitle="Lifetime earnings"
+          />
+          <AdminStatCard
+            label="Available Balance"
+            value={formatCurrency(balance?.available_balance || 0)}
+            valueColor="green"
+            subtitle="Ready for payout"
+          />
+          <AdminStatCard
+            label="Total Sales"
+            value={store?.total_sales || 0}
+            valueColor="blue"
+            subtitle="Products sold"
+          />
+          <AdminStatCard
+            label="Products"
+            value={statsLoading ? '...' : productStats?.total || 0}
+            valueColor="default"
+            subtitle={`${productStats?.pending || 0} pending review`}
+          />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-              <CardTitle className="text-xs font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="px-3 pb-3">
-              <div className="text-lg sm:text-2xl font-bold truncate">
-                {formatCurrency(store?.total_revenue || 0)}
-              </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Lifetime earnings
-              </p>
-            </CardContent>
-          </Card>
+        {/* Quick Actions Grid - Wrapped in Card like Admin */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
+              {quickActions.map((action) => (
+                <Link key={action.href} to={action.href}>
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group">
+                    <div className="p-2 rounded-lg bg-background group-hover:bg-primary/10 transition-colors">
+                      <action.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <span className="text-xs font-medium">{action.title}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-              <CardTitle className="text-xs font-medium">Available Balance</CardTitle>
-              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="px-3 pb-3">
-              <div className="text-lg sm:text-2xl font-bold text-green-600 truncate">
-                {formatCurrency(balance?.available_balance || 0)}
-              </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Ready for payout
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-              <CardTitle className="text-xs font-medium">Total Sales</CardTitle>
-              <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="px-3 pb-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-lg sm:text-2xl font-bold">
-                  {store?.total_sales || 0}
+        {/* Reviews Quick Link for stores with sales */}
+        {store?.slug && (store?.total_sales || 0) > 0 && (
+          <Card className="bg-muted/30">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <Star className="h-5 w-5 text-yellow-500" />
+                <div>
+                  <p className="font-medium">Customer Reviews</p>
+                  <p className="text-sm text-muted-foreground">See what customers are saying</p>
                 </div>
-                {store?.slug && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="h-7 px-2 text-xs"
-                  >
-                    <Link to={`/store/${store.slug}/reviews`}>
-                      <Star className="h-3.5 w-3.5 mr-1" />
-                      Reviews
-                    </Link>
-                  </Button>
-                )}
               </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Products sold
-              </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/store/${store.slug}/reviews`}>
+                  View Reviews
+                </Link>
+              </Button>
             </CardContent>
           </Card>
+        )}
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3">
-              <CardTitle className="text-xs font-medium">Products</CardTitle>
-              <Package className="h-3.5 w-3.5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="px-3 pb-3">
-              <div className="text-lg sm:text-2xl font-bold">
-                {statsLoading ? '...' : productStats?.total || 0}
-              </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                {productStats?.pending || 0} pending review
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Store Health - Below finance stats */}
-        <div className="mb-6">
-          <StoreHealthScore />
-        </div>
+        {/* Store Health */}
+        <StoreHealthScore />
 
         {/* Activity Feed */}
         <NotificationCenter />
 
         {/* Pending Items Alert */}
         {productStats && productStats.pending > 0 && (
-          <Card className="mt-6 border-yellow-500/50 bg-yellow-500/5">
+          <Card className="border-yellow-500/50 bg-yellow-500/5">
             <CardContent className="flex items-center gap-4 py-4">
               <Clock className="h-8 w-8 text-yellow-500" />
               <div className="flex-1">

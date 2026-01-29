@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useCallback, useRef } from 'react';
+import { ReactNode, useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { SellerSidebar } from './SellerSidebar';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,7 +15,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 
 const SIDEBAR_COLLAPSED_KEY = 'seller-sidebar-collapsed';
-const EDGE_THRESHOLD = 30; // Match MainLayout edge threshold
+const EDGE_THRESHOLD = 30;
 const MIN_SWIPE_DISTANCE = 50;
 
 interface SellerLayoutProps {
@@ -30,13 +30,16 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   const isMobile = useIsMobile();
   const location = useLocation();
 
+  // Detect chat/messaging pages for iOS keyboard handling
+  const isChatPage = location.pathname === '/seller/messages' || location.pathname === '/seller/support';
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = safeStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
 
-  // Touch tracking for edge swipe - matching MainLayout pattern
+  // Touch tracking for edge swipe
   const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);
 
   // Toggle sidebar with haptic feedback
@@ -58,7 +61,126 @@ export function SellerLayout({ children }: SellerLayoutProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
-  // Handle edge swipe to open drawer - matching MainLayout pattern
+  // iOS PWA: Lock document scroll on chat pages to prevent rubber-banding
+  useLayoutEffect(() => {
+    if (!isChatPage) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    const prev = {
+      html: {
+        backgroundColor: html.style.backgroundColor,
+        overflow: html.style.overflow,
+        overflowX: html.style.overflowX,
+      },
+      body: {
+        backgroundColor: body.style.backgroundColor,
+        overflow: body.style.overflow,
+        overflowX: body.style.overflowX,
+      },
+    };
+
+    const chatBg = 'hsl(var(--card))';
+    html.style.backgroundColor = chatBg;
+    body.style.backgroundColor = chatBg;
+    html.style.overflow = 'hidden';
+    html.style.overflowX = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.overflowX = 'hidden';
+
+    return () => {
+      const themeBg = 'hsl(var(--background))';
+      html.style.backgroundColor = prev.html.backgroundColor || themeBg;
+      html.style.overflow = prev.html.overflow;
+      html.style.overflowX = prev.html.overflowX;
+      body.style.backgroundColor = prev.body.backgroundColor || themeBg;
+      body.style.overflow = prev.body.overflow;
+      body.style.overflowX = prev.body.overflowX;
+    };
+  }, [isChatPage]);
+
+  // iOS PWA: Manage --chat-vvh and --chat-safe-bottom for keyboard handling
+  useEffect(() => {
+    const html = document.documentElement;
+
+    if (!isChatPage) {
+      html.style.removeProperty('--chat-safe-bottom');
+      html.style.removeProperty('--chat-vvh');
+      delete html.dataset.chatKeyboard;
+      return;
+    }
+
+    html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
+    html.style.setProperty('--chat-vvh', '100dvh');
+    html.dataset.chatKeyboard = 'closed';
+
+    let disposed = false;
+    let baseVvHeight = window.visualViewport?.height ?? window.innerHeight;
+    let timers: number[] = [];
+
+    const updateViewport = () => {
+      if (disposed) return;
+
+      const vv = window.visualViewport;
+      const vvHeight = vv?.height ?? window.innerHeight;
+
+      const activeEl = document.activeElement;
+      const isInputFocused =
+        !!activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          (activeEl as HTMLElement).isContentEditable);
+
+      if (!isInputFocused) {
+        baseVvHeight = Math.max(baseVvHeight, vvHeight);
+      }
+
+      const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
+      const keyboardOpen = isInputFocused && keyboardHeight > 80;
+
+      html.style.setProperty('--chat-vvh', `${vvHeight}px`);
+      html.style.setProperty(
+        '--chat-safe-bottom',
+        keyboardOpen ? '8px' : 'calc(env(safe-area-inset-bottom) + 4px)'
+      );
+      html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
+    };
+
+    const updateStaggered = () => {
+      timers.forEach(t => clearTimeout(t));
+      updateViewport();
+      timers = [
+        window.setTimeout(updateViewport, 50),
+        window.setTimeout(updateViewport, 150),
+        window.setTimeout(updateViewport, 300),
+        window.setTimeout(updateViewport, 500),
+      ];
+    };
+
+    updateStaggered();
+
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', updateViewport);
+    vv?.addEventListener('scroll', updateViewport);
+    document.addEventListener('focusin', updateStaggered);
+    document.addEventListener('focusout', updateStaggered);
+
+    return () => {
+      disposed = true;
+      timers.forEach(t => clearTimeout(t));
+      vv?.removeEventListener('resize', updateViewport);
+      vv?.removeEventListener('scroll', updateViewport);
+      document.removeEventListener('focusin', updateStaggered);
+      document.removeEventListener('focusout', updateStaggered);
+
+      html.style.removeProperty('--chat-safe-bottom');
+      html.style.removeProperty('--chat-vvh');
+      delete html.dataset.chatKeyboard;
+    };
+  }, [isChatPage]);
+
+  // Handle edge swipe to open drawer
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (mobileOpen) return;
     
@@ -77,7 +199,6 @@ export function SellerLayout({ children }: SellerLayoutProps) {
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
     
-    // Only trigger if horizontal swipe is dominant
     if (deltaX > MIN_SWIPE_DISTANCE && deltaY < deltaX) {
       hapticTap();
       setMobileOpen(true);
@@ -104,8 +225,6 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   }, [sidebarCollapsed]);
 
   const loading = authLoading || sellerLoading || flagLoading || roleLoading;
-
-  // User can access seller dashboard if they have the seller role OR have an approved store
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
 
   if (loading) {
@@ -130,7 +249,13 @@ export function SellerLayout({ children }: SellerLayoutProps) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
+      <div
+        className={cn(
+          'flex w-full bg-background overflow-x-hidden relative',
+          isChatPage ? 'flex-col overflow-hidden bg-card' : 'min-h-[100dvh]'
+        )}
+        style={isChatPage ? { height: 'var(--chat-vvh, 100dvh)' } : undefined}
+      >
         {/* Desktop Sidebar */}
         <SellerSidebar
           collapsed={sidebarCollapsed}
@@ -154,13 +279,12 @@ export function SellerLayout({ children }: SellerLayoutProps) {
           </SheetContent>
         </Sheet>
 
-        {/* Main Content - Fixed header with scrollable content */}
+        {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
           {/* Sticky Header */}
           <header className="sticky top-0 z-40 w-full glass-effect pt-[env(safe-area-inset-top)]">
             <div className="px-4">
               <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
-                {/* Left side - Menu + Store Name */}
                 <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
@@ -185,8 +309,14 @@ export function SellerLayout({ children }: SellerLayoutProps) {
           </header>
 
           {/* Scrollable Content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">
-            <div className="p-4 md:p-6 lg:p-8 pb-[env(safe-area-inset-bottom)]">
+          <main className={cn(
+            "flex-1 overflow-x-hidden",
+            isChatPage ? "overflow-y-hidden" : "overflow-y-auto"
+          )}>
+            <div className={cn(
+              "p-4 md:p-6 lg:p-8",
+              isChatPage ? "" : "pb-[env(safe-area-inset-bottom)]"
+            )}>
               {children}
             </div>
           </main>
