@@ -92,13 +92,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
     <header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
       <div className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]">
         {/* Mobile header row */}
-        <div className="flex md:hidden h-14 items-center gap-2">
+        <div className="flex md:hidden h-14 items-center gap-1.5">
           {/* Left section: Menu + Logo (fixed width) */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 if (onMenuClick) {
                   onMenuClick();
@@ -124,10 +124,10 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <CurrencySelector compact />
             <NotificationBell />
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-7 w-7 text-muted-foreground hover:text-foreground">
-                <ShoppingCart className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="relative h-6 w-6 text-muted-foreground hover:text-foreground">
+                <ShoppingCart className="h-3.5 w-3.5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary text-[9px] font-medium text-primary-foreground flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[8px] font-medium text-primary-foreground flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
@@ -135,14 +135,14 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
-                  <User className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                  <User className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
-                  <User className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                  <User className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             )}
