@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,6 +57,19 @@ Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // Rate limit check - strict limit to prevent bot license abuse
+  const clientIp = getClientIp(req);
+  const rateLimitResult = checkRateLimit({
+    ...RATE_LIMITS.AUTH, // 5 requests per minute - very strict for license activation
+    identifier: clientIp,
+    action: 'activate-bot-license',
+  });
+
+  if (!rateLimitResult.allowed) {
+    console.log(`[activate-bot-license] Rate limit exceeded for IP: ${clientIp}`);
+    return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
   const url = new URL(req.url);
