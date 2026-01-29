@@ -37,7 +37,7 @@ export function FloatingActionButtons() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-20 right-4 z-50 flex flex-col gap-3"
+          className="fixed bottom-16 xs:bottom-20 right-3 xs:right-4 z-50 flex flex-col gap-2 xs:gap-3"
         >
           {/* Scroll to top */}
           <AnimatePresence>
@@ -50,9 +50,9 @@ export function FloatingActionButtons() {
                 <Button
                   size="icon"
                   onClick={scrollToTop}
-                  className="h-12 w-12 rounded-full shadow-lg bg-gradient-to-br from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white border-0"
+                  className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-gradient-to-br from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white border-0 touch-target"
                 >
-                  <ArrowUp className="h-5 w-5" />
+                  <ArrowUp className="h-4 w-4 xs:h-5 xs:w-5" />
                 </Button>
               </motion.div>
             )}
@@ -62,9 +62,9 @@ export function FloatingActionButtons() {
           <Button
             size="icon"
             onClick={() => openChat()}
-            className="h-12 w-12 rounded-full shadow-lg bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground border-0"
+            className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground border-0 touch-target"
           >
-            <MessageCircle className="h-5 w-5" />
+            <MessageCircle className="h-4 w-4 xs:h-5 xs:w-5" />
           </Button>
 
           {/* Cart with badge */}
@@ -72,15 +72,15 @@ export function FloatingActionButtons() {
             <Button
               size="icon"
               onClick={() => navigate('/cart')}
-              className="h-14 w-14 rounded-full shadow-xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-500 hover:via-yellow-600 hover:to-amber-700 text-white border-0 ring-2 ring-amber-300/50"
+              className="h-12 w-12 xs:h-14 xs:w-14 rounded-full shadow-xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-500 hover:via-yellow-600 hover:to-amber-700 text-white border-0 ring-2 ring-amber-300/50 touch-target"
             >
-              <ShoppingCart className="h-6 w-6" />
+              <ShoppingCart className="h-5 w-5 xs:h-6 xs:w-6" />
             </Button>
             {cartItemCount > 0 && (
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center shadow-md"
+                className="absolute -top-0.5 -right-0.5 xs:-top-1 xs:-right-1 h-5 w-5 xs:h-6 xs:w-6 rounded-full bg-red-500 text-white text-[10px] xs:text-xs font-bold flex items-center justify-center shadow-md"
               >
                 {cartItemCount > 9 ? '9+' : cartItemCount}
               </motion.span>

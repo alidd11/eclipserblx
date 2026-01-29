@@ -161,26 +161,26 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         </div>
 
         {/* Content */}
-        <div className="p-2.5 flex flex-col flex-1 gap-1.5">
+        <div className="p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5">
           {category && (
-            <span className="text-[10px] font-medium text-primary uppercase tracking-wider truncate">
+            <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate">
               {category}
             </span>
           )}
           
           {/* Store info with logo and badges */}
           {storeName && (
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1 xs:gap-1.5 text-[9px] xs:text-[10px] text-muted-foreground">
               {/* Store Logo */}
               {storeLogo ? (
                 <img 
                   src={storeLogo} 
                   alt={storeName}
-                  className="h-4 w-4 rounded object-contain bg-background flex-shrink-0"
+                  className="h-3.5 w-3.5 xs:h-4 xs:w-4 rounded object-contain bg-background flex-shrink-0"
                 />
               ) : (
-                <div className="h-4 w-4 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                  <Store className="h-2.5 w-2.5 text-muted-foreground" />
+                <div className="h-3.5 w-3.5 xs:h-4 xs:w-4 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                  <Store className="h-2 w-2 xs:h-2.5 xs:w-2.5 text-muted-foreground" />
                 </div>
               )}
               <span className="truncate">
@@ -209,15 +209,15 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 )}
               </span>
               {isVerified && (
-                <BadgeCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                <BadgeCheck className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-blue-500 flex-shrink-0" />
               )}
               {isTrusted && (
-                <Shield className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                <Shield className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-amber-500 flex-shrink-0" />
               )}
             </div>
           )}
           
-          <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
+          <h3 className="font-display font-semibold text-[11px] xs:text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
             {name}
           </h3>
 
@@ -226,23 +226,23 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             {hasMemberDiscount ? (
               <>
                 {/* Normal price */}
-                <span className="text-[10px] text-muted-foreground leading-none line-through">
+                <span className="text-[9px] xs:text-[10px] text-muted-foreground leading-none line-through">
                   {formatPrice(price)}
                 </span>
                 {/* Member price + discount badge */}
                 <div className="flex items-center gap-1">
-                  <span className="text-sm font-bold whitespace-nowrap leading-none text-amber-400">
+                  <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-amber-400">
                     {formatPrice(memberPrice)}
                   </span>
-                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
-                    <Sparkles className="h-2 w-2 flex-shrink-0" />
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[7px] xs:text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
+                    <Sparkles className="h-1.5 w-1.5 xs:h-2 xs:w-2 flex-shrink-0" />
                     {discountPercent}%
                   </span>
                 </div>
               </>
             ) : (
               /* Single price for Eclipse Savers or non-discountable products */
-              <span className="text-sm font-bold whitespace-nowrap leading-none text-foreground">
+              <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-foreground">
                 {formatPrice(price)}
               </span>
             )}
@@ -253,20 +253,22 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             size="sm"
             variant={inCart ? "secondary" : "default"}
             className={cn(
-              "h-8 w-full text-xs mt-2",
+              "h-7 xs:h-8 w-full text-[10px] xs:text-xs mt-1.5 xs:mt-2 touch-target",
               !inCart && "gradient-button border-0"
             )}
             onClick={handleAddToCart}
           >
             {inCart ? (
               <>
-                <Check className="h-3.5 w-3.5 mr-1" />
-                Added to Cart
+                <Check className="h-3 w-3 xs:h-3.5 xs:w-3.5 mr-1" />
+                <span className="hidden xs:inline">Added to Cart</span>
+                <span className="xs:hidden">Added</span>
               </>
             ) : (
               <>
-                <ShoppingCart className="h-3.5 w-3.5 mr-1" />
-                Add to Cart
+                <ShoppingCart className="h-3 w-3 xs:h-3.5 xs:w-3.5 mr-1" />
+                <span className="hidden xs:inline">Add to Cart</span>
+                <span className="xs:hidden">Add</span>
               </>
             )}
           </Button>
