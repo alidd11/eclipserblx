@@ -661,9 +661,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-card flex flex-col transition-all duration-300 h-[100dvh] sticky top-0 shrink-0",
-        "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
-        isCollapsed ? "w-14" : "w-52",
+        "bg-card flex flex-col transition-all duration-300 shrink-0",
+        isMobileDrawer 
+          ? "h-full w-full" 
+          : "h-[100dvh] sticky top-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
+        !isMobileDrawer && (isCollapsed ? "w-14" : "w-52"),
         className
       )}
       data-gesture-exempt="true"
