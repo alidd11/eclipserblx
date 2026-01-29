@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { openExternalUrl } from '@/lib/externalBrowser';
 
 // Bot category ID - products in this category get a higher discount
 export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
@@ -148,14 +149,7 @@ export function useSubscription() {
       if (data.error) throw new Error(data.error);
       
       if (data.url) {
-        // In iOS PWA standalone mode, window.open() is blocked - use location.href instead
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                            (window.navigator as any).standalone === true;
-        if (isStandalone) {
-          window.location.href = data.url;
-        } else {
-          window.open(data.url, '_blank');
-        }
+        await openExternalUrl(data.url);
       }
     } catch (error) {
       console.error('Error opening customer portal:', error);

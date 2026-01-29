@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link2, Unlink, Sparkles, Loader2, Copy, Check } from "lucide-react";
+import { openExternalUrl } from "@/lib/externalBrowser";
 
 interface DiscordLinkCardProps {
   userId: string;
@@ -154,7 +155,7 @@ export const DiscordLinkCard = ({
     handleOAuthCallback();
   }, [userId, currentDiscordId, hasEclipsePlus, onUpdate, toast]);
 
-  const handleLinkWithOAuth = () => {
+  const handleLinkWithOAuth = async () => {
     const clientId = getDiscordClientId();
     if (!clientId) {
       toast({
@@ -165,7 +166,7 @@ export const DiscordLinkCard = ({
       return;
     }
     setIsLinking(true);
-    window.location.href = getDiscordOAuthUrl();
+    await openExternalUrl(getDiscordOAuthUrl());
   };
 
   const handleUnlink = async () => {

@@ -296,14 +296,8 @@ export default function Advertise() {
       if (data.error) throw new Error(data.error);
       
       if (data.url) {
-        // In iOS PWA standalone mode, window.open() is blocked - use location.href instead
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                            (window.navigator as any).standalone === true;
-        if (isStandalone) {
-          window.location.href = data.url;
-        } else {
-          window.open(data.url, '_blank');
-        }
+        const { openExternalUrl } = await import('@/lib/externalBrowser');
+        await openExternalUrl(data.url);
       }
     } catch (error) {
       console.error('Portal error:', error);

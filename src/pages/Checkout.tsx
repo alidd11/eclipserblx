@@ -12,6 +12,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { PaymentMethodDisplay } from '@/components/payments/PaymentMethodDisplay';
+import { openExternalUrl } from '@/lib/externalBrowser';
 
 interface AppliedDiscount {
   id: string;
@@ -209,7 +210,7 @@ export default function Checkout() {
       if (error) throw error;
 
       if (data?.url) {
-        window.location.href = data.url;
+        await openExternalUrl(data.url);
       } else {
         throw new Error('No checkout URL returned');
       }
