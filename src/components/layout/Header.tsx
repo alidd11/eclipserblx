@@ -122,9 +122,9 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Mobile: Inline Search + Currency + Notifications */}
-          <div className="flex md:hidden items-center gap-2.5 flex-1 min-w-0 mx-1">
-            <HeaderSearchBar className="flex-1 min-w-0 max-w-[65%]" compact />
-            <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
+            <HeaderSearchBar className="flex-1 min-w-0" compact />
+            <div className="flex items-center -space-x-1 shrink-0">
               <CurrencySelector compact />
               <NotificationBell />
             </div>
@@ -144,7 +144,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
+          <div className="flex items-center -space-x-0.5 sm:gap-1 shrink-0">
             {/* Discord - hidden on mobile */}
             <a
               href={discordUrl}
