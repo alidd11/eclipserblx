@@ -90,20 +90,15 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
   return (
     <header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
-      <div className="px-4">
-        {/* Main header row */}
-        <div className="flex h-14 sm:h-16 items-center justify-between gap-3 sm:gap-4">
-          {/* Left side - Back button + Mobile menu + Logo */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Native-style Back Button */}
-            <BackButton showLabel={false} className="sm:hidden" />
-            <BackButton showLabel={true} className="hidden sm:flex" />
-
-            {/* Mobile menu button - uses onMenuClick if provided, otherwise internal state */}
+      <div className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]">
+        {/* Mobile header row */}
+        <div className="flex md:hidden h-14 items-center gap-2">
+          {/* Left section: Menu + Logo (fixed width) */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 if (onMenuClick) {
                   onMenuClick();
@@ -114,25 +109,55 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             >
               {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
-
-            {/* Logo - only show on mobile (sidebar shows it on desktop) */}
-            <Link to="/" className="flex items-center gap-2.5 md:hidden">
+            <Link to="/" className="flex items-center">
               <EclipseLogo size="sm" />
             </Link>
           </div>
 
-          {/* Mobile: Inline Search + Currency + Notifications */}
-          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
-            <HeaderSearchBar className="flex-1 min-w-0" compact />
-            <div className="flex items-center -space-x-1 shrink-0">
-              <CurrencySelector compact />
-              <NotificationBell />
-            </div>
+          {/* Middle section: Search bar (flex to fill) */}
+          <div className="flex-1 min-w-0">
+            <HeaderSearchBar compact />
           </div>
 
-          {/* Desktop: Branding + Search Bar + Currency */}
-          <div className="hidden md:flex items-center gap-4 flex-1">
-            {/* Branding - Always visible and fixed position in header */}
+          {/* Right section: Icons (flush right) */}
+          <div className="flex items-center gap-1 shrink-0 ml-auto">
+            <CurrencySelector compact />
+            <NotificationBell />
+            <Link to="/cart">
+              <Button variant="ghost" size="icon" className="relative h-8 w-8 text-muted-foreground hover:text-foreground">
+                <ShoppingCart className="h-4 w-4" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            {user ? (
+              <Link to="/account">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop header row */}
+        <div className="hidden md:flex h-16 items-center gap-4">
+          {/* Left side - Back button */}
+          <div className="flex items-center gap-3 shrink-0">
+            <BackButton showLabel={true} />
+          </div>
+
+          {/* Center: Branding + Search Bar */}
+          <div className="flex items-center gap-4 flex-1">
             <Link to="/" className="flex items-center gap-3 shrink-0">
               <EclipseLogo size="sm" />
               <span className="brand-text text-lg gradient-text whitespace-nowrap tracking-[0.25em]">
@@ -143,18 +168,16 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <CurrencySelector />
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center -space-x-0.5 sm:gap-1 shrink-0">
-            {/* Discord - hidden on mobile */}
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <a
               href={discordUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:block"
             >
-              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
                 <svg
-                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                   xmlns="http://www.w3.org/2000/svg"
@@ -164,16 +187,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               </Button>
             </a>
 
-            {/* Desktop notification bell */}
-            <div className="hidden md:block">
-              <NotificationBell />
-            </div>
+            <NotificationBell />
 
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
-                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 text-muted-foreground hover:text-foreground">
+                <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary text-[10px] sm:text-xs font-medium text-primary-foreground flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs font-medium text-primary-foreground flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
@@ -182,13 +202,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground">
-                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+                  <User className="h-5 w-5" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button className="gradient-button border-0 h-8 min-h-0 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm rounded-md">
+                <Button className="gradient-button border-0 h-9 px-4 text-sm rounded-md">
                   Sign In
                 </Button>
               </Link>
