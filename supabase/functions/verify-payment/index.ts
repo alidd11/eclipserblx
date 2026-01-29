@@ -435,29 +435,60 @@ serve(async (req) => {
       const isBotPurchase = item.category_slug === 'bots' || (item.name && item.name.toLowerCase().includes('bot'));
       
       if (isBotPurchase && insertedItemsArray[i]) {
-        // Generate unique installation code
-        const { data: codeResult } = await supabaseClient.rpc('generate_installation_code');
-        const installationCode = codeResult as string;
+        // Determine how many codes to generate (default to 1 for single license)
+        const bundleQuantity = item.quantity || 1;
+        const bundleId = item.bundle_id || null;
         
-        if (installationCode) {
-          const { error: codeError } = await supabaseClient
-            .from("bot_installation_codes")
-            .insert({
-              order_id: order.id,
-              order_item_id: insertedItemsArray[i].id,
-              user_id: userId,
-              installation_code: installationCode,
-              product_name: item.name,
-            });
+        logStep("Generating bot installation codes", { 
+          product: item.name, 
+          quantity: bundleQuantity,
+          bundleId 
+        });
+
+        // Look up the bot_product_id for this product
+        let botProductId: string | null = null;
+        if (item.id) {
+          const { data: botProduct } = await supabaseClient
+            .from("bot_products")
+            .select("id")
+            .eq("product_id", item.id)
+            .maybeSingle();
+          botProductId = botProduct?.id || null;
+        }
+
+        // Generate multiple codes based on bundle quantity
+        for (let codeIndex = 0; codeIndex < bundleQuantity; codeIndex++) {
+          const { data: codeResult } = await supabaseClient.rpc('generate_installation_code');
+          const installationCode = codeResult as string;
           
-          if (codeError) {
-            logStep("ERROR creating installation code", { error: codeError.message });
-          } else {
-            botInstallationCodes.push({
-              product_name: item.name,
-              installation_code: installationCode,
-            });
-            logStep("Installation code created", { code: installationCode, product: item.name });
+          if (installationCode) {
+            const { error: codeError } = await supabaseClient
+              .from("bot_installation_codes")
+              .insert({
+                order_id: order.id,
+                order_item_id: insertedItemsArray[i].id,
+                user_id: userId,
+                installation_code: installationCode,
+                product_name: bundleQuantity > 1 
+                  ? `${item.name.replace(/\s*\([^)]*\)$/, '')} (License ${codeIndex + 1}/${bundleQuantity})`
+                  : item.name,
+                bot_product_id: botProductId,
+              });
+            
+            if (codeError) {
+              logStep("ERROR creating installation code", { error: codeError.message, codeIndex });
+            } else {
+              botInstallationCodes.push({
+                product_name: item.name,
+                installation_code: installationCode,
+              });
+              logStep("Installation code created", { 
+                code: installationCode, 
+                product: item.name,
+                codeIndex: codeIndex + 1,
+                total: bundleQuantity
+              });
+            }
           }
         }
       }

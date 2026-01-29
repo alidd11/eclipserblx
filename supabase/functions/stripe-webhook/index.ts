@@ -317,7 +317,7 @@ async function processPayment(
       // Generate installation codes for bot purchases
       const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
       for (let i = 0; i < items.length; i++) {
-        const item = items[i] as { id: string; name: string; price: number; category_slug?: string };
+        const item = items[i] as { id: string; name: string; price: number; category_slug?: string; quantity?: number; bundle_id?: string };
         // Check category from metadata, database lookup, or name fallback
         const dbCategorySlug = item.id ? productCategories[item.id] : undefined;
         const isBotPurchase = item.category_slug === 'bots' || dbCategorySlug === 'bots' || item.name.toLowerCase().includes('bot');
@@ -330,29 +330,60 @@ async function processPayment(
         });
         
         if (isBotPurchase && insertedItemsArray[i]) {
-          // Generate unique installation code
-          const { data: codeResult } = await supabase.rpc('generate_installation_code');
-          const installationCode = codeResult as string;
+          // Determine how many codes to generate (default to 1 for single license)
+          const bundleQuantity = item.quantity || 1;
+          const bundleId = item.bundle_id || null;
           
-          if (installationCode) {
-            const { error: codeError } = await supabase
-              .from("bot_installation_codes")
-              .insert({
-                order_id: orderId,
-                order_item_id: insertedItemsArray[i].id,
-                user_id: userId,
-                installation_code: installationCode,
-                product_name: item.name,
-              });
+          logStep("Generating bot installation codes", { 
+            product: item.name, 
+            quantity: bundleQuantity,
+            bundleId 
+          });
+
+          // Look up the bot_product_id for this product
+          let botProductId: string | null = null;
+          if (item.id) {
+            const { data: botProduct } = await supabase
+              .from("bot_products")
+              .select("id")
+              .eq("product_id", item.id)
+              .maybeSingle();
+            botProductId = botProduct?.id || null;
+          }
+
+          // Generate multiple codes based on bundle quantity
+          for (let codeIndex = 0; codeIndex < bundleQuantity; codeIndex++) {
+            const { data: codeResult } = await supabase.rpc('generate_installation_code');
+            const installationCode = codeResult as string;
             
-            if (codeError) {
-              logStep("ERROR creating installation code", { error: codeError.message });
-            } else {
-              botInstallationCodes.push({
-                product_name: item.name,
-                installation_code: installationCode,
-              });
-              logStep("Installation code created", { code: installationCode, product: item.name });
+            if (installationCode) {
+              const { error: codeError } = await supabase
+                .from("bot_installation_codes")
+                .insert({
+                  order_id: orderId,
+                  order_item_id: insertedItemsArray[i].id,
+                  user_id: userId,
+                  installation_code: installationCode,
+                  product_name: bundleQuantity > 1 
+                    ? `${item.name.replace(/\s*\([^)]*\)$/, '')} (License ${codeIndex + 1}/${bundleQuantity})`
+                    : item.name,
+                  bot_product_id: botProductId,
+                });
+              
+              if (codeError) {
+                logStep("ERROR creating installation code", { error: codeError.message, codeIndex });
+              } else {
+                botInstallationCodes.push({
+                  product_name: item.name,
+                  installation_code: installationCode,
+                });
+                logStep("Installation code created", { 
+                  code: installationCode, 
+                  product: item.name,
+                  codeIndex: codeIndex + 1,
+                  total: bundleQuantity
+                });
+              }
             }
           }
         }
