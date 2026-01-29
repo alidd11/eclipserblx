@@ -16,6 +16,7 @@ import { SecureCodeInput } from '@/components/chat/SecureCodeInput';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { parseMessageWithLinks } from '@/lib/chatLinks';
 import { notifyNewLiveChat } from '@/lib/pushNotifications';
 interface SecureData {
   verified: boolean;
@@ -594,7 +595,7 @@ const LiveChatPage = () => {
                           />
                         ) : (
                           <>
-                            <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                            <p className="text-sm whitespace-pre-wrap">{parseMessageWithLinks(msg.message, msg.sender_type === 'customer')}</p>
                             {msg.attachment_url && (
                               <a
                                 href={msg.attachment_url}
