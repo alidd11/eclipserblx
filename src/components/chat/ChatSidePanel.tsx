@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { SecureCodeInput } from './SecureCodeInput';
 import { CodeVerificationMessage } from './CodeVerificationMessage';
 import { cn } from '@/lib/utils';
+import { parseMessageWithLinks } from '@/lib/chatLinks';
 import { motion, AnimatePresence } from 'framer-motion';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { notifyNewLiveChat } from '@/lib/pushNotifications';
@@ -690,7 +691,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                               />
                             ) : (
                               <>
-                                <p className="whitespace-pre-wrap">{msg.message}</p>
+                                <p className="whitespace-pre-wrap">{parseMessageWithLinks(msg.message, msg.sender_type === 'customer')}</p>
                                 {msg.attachment_url && (
                                   <a
                                     href={msg.attachment_url}
