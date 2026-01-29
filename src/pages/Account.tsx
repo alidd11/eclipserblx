@@ -845,18 +845,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         {/* Quick Actions */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           <Link
-            to="/orders"
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <ShoppingCart className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Orders</span>
-          </Link>
-          <Link
-            to="/downloads"
+            to="/purchases"
             className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
           >
             <Download className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Downloads</span>
+            <span className="text-xs font-medium">Purchases</span>
           </Link>
           <Link
             to="/products"
@@ -1043,7 +1036,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                                     variant="outline"
                                     className="shrink-0"
                                   >
-                                    <Link to="/downloads">
+                                    <Link to="/purchases">
                                       <Download className="h-3.5 w-3.5 mr-1.5" />
                                       Download
                                     </Link>
