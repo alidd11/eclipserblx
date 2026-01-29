@@ -16,34 +16,21 @@ import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
 
-// Helper to extract region from category name and return flag
-const RegionFlag = memo(function RegionFlag({ category }: { category: string }) {
+// Helper to get region flag from category name
+const getRegionFlag = (category?: string): { src: string; name: string } | null => {
+  if (!category) return null;
   const categoryLower = category.toLowerCase();
   
-  let flagSrc: string | null = null;
-  let regionName = '';
-  
   if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
-    flagSrc = ukFlag;
-    regionName = 'UK';
+    return { src: ukFlag, name: 'UK' };
   } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
-    flagSrc = usFlag;
-    regionName = 'US';
+    return { src: usFlag, name: 'US' };
   } else if (categoryLower.startsWith('eu ') || categoryLower.includes(' eu')) {
-    flagSrc = euFlag;
-    regionName = 'EU';
+    return { src: euFlag, name: 'EU' };
   }
   
-  if (!flagSrc) return null;
-  
-  return (
-    <img 
-      src={flagSrc} 
-      alt={regionName}
-      className="h-2.5 w-3.5 rounded-sm object-cover flex-shrink-0"
-    />
-  );
-});
+  return null;
+};
 
 const ITEMS_PER_PAGE_DESKTOP = 3;
 const ITEMS_PER_PAGE_MOBILE = 2;
@@ -337,15 +324,27 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-3">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <RegionFlag category={product.categories?.name || ''} />
-          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
-            {product.categories?.name || 'Product'}
-          </p>
-        </div>
-        <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors mb-2">
+      {/* Content with flag background */}
+      <div className="relative p-3 overflow-hidden">
+        {/* Flag background overlay */}
+        {(() => {
+          const regionFlag = getRegionFlag(product.categories?.name);
+          if (!regionFlag) return null;
+          return (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <img 
+                src={regionFlag.src} 
+                alt=""
+                className="absolute right-0 top-1/2 -translate-y-1/2 h-full w-auto opacity-[0.08] object-cover"
+              />
+            </div>
+          );
+        })()}
+        
+        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate mb-0.5 relative z-10">
+          {product.categories?.name || 'Product'}
+        </p>
+        <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors mb-2 relative z-10">
           {product.name}
         </h3>
         

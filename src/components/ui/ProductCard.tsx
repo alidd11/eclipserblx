@@ -15,34 +15,21 @@ import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
 
-// Helper to extract region from category name and return flag
-const RegionFlag = memo(function RegionFlag({ category }: { category: string }) {
+// Helper to get region flag from category name
+const getRegionFlag = (category?: string): { src: string; name: string } | null => {
+  if (!category) return null;
   const categoryLower = category.toLowerCase();
   
-  let flagSrc: string | null = null;
-  let regionName = '';
-  
   if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
-    flagSrc = ukFlag;
-    regionName = 'UK';
+    return { src: ukFlag, name: 'UK' };
   } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
-    flagSrc = usFlag;
-    regionName = 'US';
+    return { src: usFlag, name: 'US' };
   } else if (categoryLower.startsWith('eu ') || categoryLower.includes(' eu')) {
-    flagSrc = euFlag;
-    regionName = 'EU';
+    return { src: euFlag, name: 'EU' };
   }
   
-  if (!flagSrc) return null;
-  
-  return (
-    <img 
-      src={flagSrc} 
-      alt={regionName}
-      className="h-3 w-4 xs:h-3.5 xs:w-5 rounded-sm object-cover flex-shrink-0"
-    />
-  );
-});
+  return null;
+};
 
 interface ProductCardProps {
   id: string;
@@ -194,15 +181,28 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5">
+        {/* Content with flag background */}
+        <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
+          {/* Flag background overlay */}
+          {(() => {
+            const regionFlag = getRegionFlag(category);
+            if (!regionFlag) return null;
+            return (
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <img 
+                  src={regionFlag.src} 
+                  alt=""
+                  className="absolute right-0 top-1/2 -translate-y-1/2 h-full w-auto opacity-[0.08] object-cover"
+                />
+              </div>
+            );
+          })()}
+          
+          {/* Content layer */}
           {category && (
-            <div className="flex items-center gap-1.5">
-              <RegionFlag category={category} />
-              <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate">
-                {category}
-              </span>
-            </div>
+            <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate relative z-10">
+              {category}
+            </span>
           )}
           
           {/* Store info with logo and badges */}
