@@ -228,7 +228,7 @@ export default function RegionSelect() {
               <img
                 src={region.image}
                 alt={`${region.name} flag`}
-                className="absolute inset-0 w-full h-full object-cover object-center rotate-90 scale-150 transition-transform duration-300 group-hover:scale-[1.6]"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
               />
             </Link>
           ))}
