@@ -119,15 +119,15 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <HeaderSearchBar compact />
           </div>
 
-          {/* Right section: Icons (flush right) */}
-          <div className="flex items-center -space-x-0.5 shrink-0 ml-auto">
+          {/* Right section: Icons (flush right, tight spacing) */}
+          <div className="flex items-center shrink-0 ml-auto">
             <CurrencySelector compact />
             <NotificationBell />
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-8 w-8 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" className="relative h-7 w-7 text-muted-foreground hover:text-foreground">
                 <ShoppingCart className="h-4 w-4" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary text-[9px] font-medium text-primary-foreground flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
@@ -135,13 +135,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                   <User className="h-4 w-4" />
                 </Button>
               </Link>

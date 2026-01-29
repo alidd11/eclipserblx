@@ -33,7 +33,7 @@ export function CurrencySelector({ className, compact = false }: CurrencySelecto
             "transition-all duration-200 cursor-pointer",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
             compact && [
-              "h-8 w-8 p-0 rounded-lg justify-center",
+              "h-7 w-7 p-0 rounded-lg justify-center",
               "bg-transparent border-0",
               "hover:bg-primary/10",
               "active:scale-[0.95]"
