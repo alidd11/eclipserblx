@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { SITE_NAME } from '@/lib/constants';
 import { HelpCircle, MessageCircle, Headphones } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 const faqItems = [
   {
@@ -108,6 +109,7 @@ const faqItems = [
 ];
 
 export default function FAQ() {
+  usePageTracking({ pagePath: '/faq' });
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">

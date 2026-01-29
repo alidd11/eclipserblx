@@ -25,9 +25,11 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCurrency } from '@/hooks/useCurrency';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
+  usePageTracking({ pagePath: `/products/${slug}` });
   const location = useLocation();
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();

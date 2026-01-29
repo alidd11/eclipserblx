@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { GeneralChatChannel } from '@/components/forum/GeneralChatChannel';
 import { CreateThreadDialog } from '@/components/forum/CreateThreadDialog';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Badge configuration for user roles
 const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; className: string }> = {
@@ -122,6 +123,7 @@ interface ForumThread {
 }
 
 export default function Forum() {
+  usePageTracking({ pagePath: '/forum' });
   const { categorySlug } = useParams();
   const { user } = useAuth();
   const { isAdmin, isStaff, roles } = useAdminAuth();

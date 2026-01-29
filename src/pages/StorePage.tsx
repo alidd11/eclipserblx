@@ -32,6 +32,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Theme configurations
 const getThemeStyles = (theme: string, accentColor: string) => {
@@ -86,6 +87,7 @@ const PRODUCTS_PER_PAGE_DESKTOP = 8;
 
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
+  usePageTracking({ pagePath: `/store/${storeSlug}` });
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { AddToServerButton } from '@/components/bots/AddToServerButton';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Format bytes to human readable size
 const formatFileSize = (bytes: number): string => {
@@ -109,6 +110,7 @@ const formatPaymentMethod = (method: string | null): string => {
 const formatOrderId = (id: string): string => `#${id.slice(-6).toUpperCase()}`;
 
 export default function MyPurchases() {
+  usePageTracking({ pagePath: '/purchases' });
   const { user, session } = useAuth();
   const { formatPrice } = useCurrency();
   

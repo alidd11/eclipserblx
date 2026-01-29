@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { PaymentMethodDisplay } from '@/components/payments/PaymentMethodDisplay';
 import { openExternalUrl } from '@/lib/externalBrowser';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 interface AppliedDiscount {
   id: string;
@@ -23,6 +24,7 @@ interface AppliedDiscount {
 }
 
 export default function Checkout() {
+  usePageTracking({ pagePath: '/checkout' });
   const { items, total } = useCart();
   const { user, session, loading } = useAuth();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent } = useSubscription();

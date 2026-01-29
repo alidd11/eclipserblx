@@ -15,6 +15,7 @@ import { CATEGORIES } from '@/lib/constants';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
@@ -23,6 +24,7 @@ const PRODUCTS_PER_PAGE_DESKTOP = 16;
 const PRODUCTS_PER_PAGE_MOBILE = 12;
 
 export default function Products() {
+  usePageTracking({ pagePath: '/products' });
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();

@@ -9,8 +9,10 @@ import { useCart } from '@/hooks/useCart';
 import { useBadges } from '@/hooks/useBadges';
 import { useCurrency } from '@/hooks/useCurrency';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function OrderSuccess() {
+  usePageTracking({ pagePath: '/order-success' });
   const { checkBadges } = useBadges();
   const { formatPrice } = useCurrency();
   const [searchParams] = useSearchParams();
