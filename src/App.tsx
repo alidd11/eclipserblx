@@ -89,7 +89,7 @@ const AdminReferrals = lazy(() => import("./pages/admin/Referrals"));
 const AdminAffiliates = lazy(() => import("./pages/admin/Affiliates"));
 const AdminBotCodes = lazy(() => import("./pages/admin/BotCodes"));
 const AdminBotRequests = lazy(() => import("./pages/admin/BotRequests"));
-const AdminBotQueue = lazy(() => import("./pages/admin/BotQueue"));
+const AdminBotServers = lazy(() => import("./pages/admin/BotServers"));
 const AdminContactMessages = lazy(() => import("./pages/admin/ContactMessages"));
 const AdminForumReports = lazy(() => import("./pages/admin/ForumReports"));
 const AdminArchivedApplications = lazy(() => import("./pages/admin/ArchivedApplications"));
@@ -292,7 +292,7 @@ const App = () => (
                   <Route path="/admin/affiliates" element={<AdminAffiliates />} />
                   <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
                   <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
-                  <Route path="/admin/bot-queue" element={<AdminBotQueue />} />
+                  <Route path="/admin/bot-servers" element={<AdminBotServers />} />
                   <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
                   <Route path="/admin/forum-reports" element={<AdminForumReports />} />
                   <Route path="/admin/archived-applications" element={<AdminArchivedApplications />} />
