@@ -1,152 +1,111 @@
 
-# External Links in PWA: Open in Default Browser
+
+# Expand Page Tracking Across the Site
 
 ## Overview
-Currently, when users tap external links (like Discord OAuth for bot installation) in the PWA, they open within the PWA's webview. This causes issues with:
-- OAuth flows not completing properly
-- Users getting stuck in the in-app browser
-- The safe-area layout glitch when returning from external links
+Add the `usePageTracking` hook to key pages throughout the site to capture visitor analytics. Currently, tracking is only implemented on policy pages (Privacy Policy, Terms of Service, Refund Policy). This plan expands coverage to include high-traffic pages in the customer journey.
 
-The solution involves creating a unified utility that intelligently handles external links based on the platform (Native Capacitor vs PWA vs Regular Web).
+## Pages to Add Tracking
 
----
+### High Priority (Core Customer Journey)
+| Page | Path | File |
+|------|------|------|
+| Homepage | `/` | `src/pages/Index.tsx` |
+| Products List | `/products` | `src/pages/Products.tsx` |
+| Product Detail | `/products/:slug` | `src/pages/ProductDetail.tsx` |
+| Cart | `/cart` | `src/pages/Cart.tsx` |
+| Checkout | `/checkout` | `src/pages/Checkout.tsx` |
+| Order Success | `/order-success` | `src/pages/OrderSuccess.tsx` |
 
-## Solution Architecture
+### Medium Priority (Engagement Pages)
+| Page | Path | File |
+|------|------|------|
+| Categories | `/categories` | `src/pages/Categories.tsx` |
+| Store Page | `/store/:storeSlug` | `src/pages/StorePage.tsx` |
+| Eclipse+ | `/eclipse-plus` | `src/pages/EclipsePlus.tsx` |
+| Forum | `/forum` | `src/pages/Forum.tsx` |
+| Account | `/account` | `src/pages/Account.tsx` |
+| My Purchases | `/purchases` | `src/pages/MyPurchases.tsx` |
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    openExternalUrl(url)                         │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-              ┌──────────────┴──────────────┐
-              ▼                              ▼
-     ┌────────────────┐            ┌────────────────────┐
-     │ Capacitor Native │          │    Web (PWA/Browser)  │
-     └────────┬────────┘            └──────────┬──────────┘
-              │                                │
-              ▼                                ▼
-   ┌──────────────────────┐      ┌─────────────────────────────┐
-   │ @capacitor/browser   │      │ Check if Standalone PWA     │
-   │ Browser.open({url})  │      └──────────────┬──────────────┘
-   │                      │                     │
-   │ Opens SFSafariView   │      ┌──────────────┴──────────────┐
-   │ or Chrome Custom Tabs│      ▼                              ▼
-   └──────────────────────┘  ┌────────────┐            ┌──────────────┐
-                             │ Standalone │            │ Regular Web  │
-                             │ PWA        │            │ Browser      │
-                             └─────┬──────┘            └──────┬───────┘
-                                   │                          │
-                                   ▼                          ▼
-                         window.location.href       window.open(_blank)
-```
+### Lower Priority (Utility Pages)
+| Page | Path | File |
+|------|------|------|
+| Featured | `/featured` | `src/pages/Featured.tsx` |
+| Contact | `/contact` | `src/pages/Contact.tsx` |
+| FAQ | `/faq` | `src/pages/FAQ.tsx` |
+| Auth | `/auth` | `src/pages/Auth.tsx` |
 
----
+## Implementation Approach
 
-## Changes Required
+For each page, I will:
+1. Import the `usePageTracking` hook
+2. Call the hook at the top of the component with the appropriate page path
 
-### 1. Install `@capacitor/browser` Plugin
-Add the Capacitor Browser plugin as a dependency for native app builds.
-
-```bash
-npm install @capacitor/browser
-npx cap sync
-```
-
-### 2. Create Utility: `src/lib/externalBrowser.ts`
-A new utility file that provides a unified `openExternalUrl()` function:
-
+### Example Implementation
 ```typescript
-import { Capacitor } from '@capacitor/core';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
-export async function openExternalUrl(url: string): Promise<void> {
-  // Native Capacitor app - use Browser plugin
-  if (Capacitor.isNativePlatform()) {
-    const { Browser } = await import('@capacitor/browser');
-    await Browser.open({ url });
-    return;
-  }
-  
-  // PWA standalone mode - use location.href 
-  // (iOS PWA doesn't support window.open to Safari)
-  const isStandalone = 
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as any).standalone === true;
-  
-  if (isStandalone) {
-    window.location.href = url;
-  } else {
-    // Regular browser - open in new tab
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
-}
-
-export function isStandalonePWA(): boolean {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as any).standalone === true
-  );
+export default function Index() {
+  usePageTracking({ pagePath: '/' });
+  // ... rest of component
 }
 ```
 
-### 3. Update `AddToServerButton.tsx`
-Replace `window.location.href` with the new utility:
-
+### Dynamic Pages
+For pages with URL parameters (like product detail or store pages), the path will include the dynamic segment:
 ```typescript
-// Before
-window.location.href = data.oauthUrl;
+// ProductDetail.tsx
+usePageTracking({ pagePath: `/products/${slug}` });
 
-// After
-import { openExternalUrl } from '@/lib/externalBrowser';
-await openExternalUrl(data.oauthUrl);
+// StorePage.tsx
+usePageTracking({ pagePath: `/store/${storeSlug}` });
 ```
-
-### 4. Update Other External Link Handlers
-Apply the same pattern to other places that open external URLs:
-- `useSubscription.ts` - Stripe customer portal
-- `useAdSubscription.ts` - Ad subscription portal
-- `Checkout.tsx` - Stripe checkout
-- `Advertise.tsx` - Ad checkout
-- `DiscordLinkCard.tsx` - Discord OAuth linking
 
 ---
 
 ## Technical Details
 
-| Platform | Behavior |
-|----------|----------|
-| **Capacitor iOS** | Opens `SFSafariViewController` (in-app Safari sheet) |
-| **Capacitor Android** | Opens Chrome Custom Tabs |
-| **iOS PWA** | Redirects using `location.href` (Safari opens, user returns via "back to app" button) |
-| **Android PWA** | Uses `window.open` which opens Chrome |
-| **Desktop Browser** | Opens new tab with `window.open` |
+### Files to Modify (16 total)
 
-### Why PWAs Can't Open Default Browser Directly
-iOS Safari's security model prevents PWAs from programmatically opening external URLs in Safari. The workarounds are:
-1. **`location.href`** - Navigates the PWA away, requiring user to tap "back" in Safari to return
-2. **`window.open`** - On iOS PWA, this opens an in-app browser sheet (not full Safari)
+1. **`src/pages/Index.tsx`** - Add tracking for `/`
+2. **`src/pages/Products.tsx`** - Add tracking for `/products` (includes query params context)
+3. **`src/pages/ProductDetail.tsx`** - Add tracking for `/products/:slug`
+4. **`src/pages/Cart.tsx`** - Add tracking for `/cart`
+5. **`src/pages/Checkout.tsx`** - Add tracking for `/checkout`
+6. **`src/pages/OrderSuccess.tsx`** - Add tracking for `/order-success`
+7. **`src/pages/Categories.tsx`** - Add tracking for `/categories`
+8. **`src/pages/StorePage.tsx`** - Add tracking for `/store/:storeSlug`
+9. **`src/pages/EclipsePlus.tsx`** - Add tracking for `/eclipse-plus`
+10. **`src/pages/Forum.tsx`** - Add tracking for `/forum`
+11. **`src/pages/Account.tsx`** - Add tracking for `/account`
+12. **`src/pages/MyPurchases.tsx`** - Add tracking for `/purchases`
+13. **`src/pages/Featured.tsx`** - Add tracking for `/featured`
+14. **`src/pages/Contact.tsx`** - Add tracking for `/contact`
+15. **`src/pages/FAQ.tsx`** - Add tracking for `/faq`
+16. **`src/pages/Auth.tsx`** - Add tracking for `/auth`
 
-For bot OAuth flows, option 1 (`location.href`) is preferred because:
-- The OAuth callback redirects back to the app
-- It ensures full browser compatibility for the OAuth provider
+### Privacy Considerations
+The existing hook already:
+- Checks for analytics cookie consent before tracking
+- Only tracks once per page load (prevents duplicates)
+- Silently fails if tracking errors occur (doesn't interrupt UX)
+- Anonymizes visitors with a random UUID (not tied to user accounts)
 
----
+### Data Collected
+Each page visit records:
+- `page_path` - The URL path visited
+- `visitor_id` - Anonymous identifier
+- `is_new_visitor` - First-time visitor flag
+- `user_agent` - Browser/device info
+- `referrer` - Source URL
+- `device_type` - desktop/mobile/tablet
+- `browser` - Chrome/Firefox/Safari/etc.
 
-## Files to Create/Modify
+## Success Criteria
+After implementation, the `page_visits` table in your database will capture visits to all major pages, enabling you to:
+- See which pages get the most traffic
+- Track the customer journey from homepage to checkout
+- Identify drop-off points in the conversion funnel
+- Analyze device/browser distribution
+- Monitor referral sources
 
-| File | Action |
-|------|--------|
-| `src/lib/externalBrowser.ts` | **Create** - New utility for external URL handling |
-| `src/components/bots/AddToServerButton.tsx` | **Modify** - Use new utility |
-| `src/hooks/useSubscription.ts` | **Modify** - Use new utility (already has partial logic) |
-| `src/pages/Checkout.tsx` | **Modify** - Use new utility |
-| `src/components/account/DiscordLinkCard.tsx` | **Modify** - Use new utility |
-| `package.json` | **Modify** - Add `@capacitor/browser` dependency |
-
----
-
-## Summary
-This solution provides a clean, unified approach to handling external links across all platforms:
-- Native apps get the best experience with native in-app browsers
-- PWAs navigate away but OAuth callbacks bring users back automatically  
-- Regular browsers open new tabs as expected
-- The utility is reusable across all external link scenarios
