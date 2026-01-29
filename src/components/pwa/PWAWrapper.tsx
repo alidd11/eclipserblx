@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, ReactNode } from 'react';
+import { useState, useEffect, useLayoutEffect, ReactNode, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { RefreshCw, WifiOff, Wifi, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +9,7 @@ import { useSwipePrevent } from '@/hooks/useSwipePrevent';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { OrientationLockOverlay } from '@/components/pwa/OrientationLockOverlay';
 import { toast } from 'sonner';
+import { recalculatePWAViewport, isStandalonePWA } from '@/lib/externalBrowser';
 
 interface PWAWrapperProps {
   children: ReactNode;
@@ -70,24 +71,57 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
     html.style.backgroundColor = themeBg;
     body.style.backgroundColor = themeBg;
 
-    // Handle returning from external links - reapply background on visibility change
+    // Handle returning from external links - aggressive viewport recalculation
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         html.style.backgroundColor = themeBg;
         body.style.backgroundColor = themeBg;
+        
+        // Check if returning from external navigation
+        const wasExternal = sessionStorage.getItem('pwa-external-navigation');
+        if (wasExternal) {
+          sessionStorage.removeItem('pwa-external-navigation');
+          // Aggressive viewport recalculation after external navigation
+          recalculatePWAViewport();
+        }
       }
     };
 
-    const handlePageShow = () => {
+    const handlePageShow = (e: PageTransitionEvent) => {
       html.style.backgroundColor = themeBg;
       body.style.backgroundColor = themeBg;
+      
+      // If page was restored from bfcache or we're returning from navigation
+      if (e.persisted) {
+        recalculatePWAViewport();
+      }
+      
+      // Check for external navigation flag
+      const wasExternal = sessionStorage.getItem('pwa-external-navigation');
+      if (wasExternal) {
+        sessionStorage.removeItem('pwa-external-navigation');
+        recalculatePWAViewport();
+      }
+    };
+
+    // Also handle focus events for when Safari returns control to PWA
+    const handleFocus = () => {
+      const wasExternal = sessionStorage.getItem('pwa-external-navigation');
+      if (wasExternal) {
+        sessionStorage.removeItem('pwa-external-navigation');
+        // Delay to let iOS settle
+        setTimeout(() => recalculatePWAViewport(), 100);
+        setTimeout(() => recalculatePWAViewport(), 300);
+      }
     };
 
     window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       
       // Restore previous backgrounds (or keep theme bg if none was set)
