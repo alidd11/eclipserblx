@@ -221,14 +221,14 @@ export default function RegionSelect() {
             <Link
               key={region.code}
               to={region.slug ? `/products?category=${region.slug}${sourceParam}` : '#'}
-              className={`group relative min-w-0 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 bg-muted/30 ${
+              className={`group relative min-w-0 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300 ${
                 !region.slug ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
               <img
                 src={region.image}
                 alt={`${region.name} flag`}
-                className="absolute inset-0 w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover object-center rotate-90 scale-150 transition-transform duration-300 group-hover:scale-[1.6]"
               />
             </Link>
           ))}
