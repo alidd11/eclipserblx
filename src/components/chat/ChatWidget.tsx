@@ -37,71 +37,65 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
   const location = useLocation();
   const { toggleChat, isOpen, unreadCount } = useChatPanel();
   const status = getOpeningStatus();
-  const [showHours, setShowHours] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   // Hide the chat widget on admin pages only
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   if (isAdminRoute) return null;
 
-  // If support is open, show the simple chat bubble
-  if (status.isOpen) {
-    return (
-      <button
-        type="button"
-        data-gesture-exempt="true"
-        onClick={toggleChat}
-        className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
-        style={{
-          WebkitTapHighlightColor: 'transparent',
-          bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
-          right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
-        }}
-        aria-label={isOpen ? 'Close live chat' : 'Open live chat'}
-      >
-        <MessageCircle className="h-6 w-6 text-primary-foreground" aria-hidden="true" />
-        <span
-          aria-hidden="true"
-          className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background bg-success"
-        />
-        {unreadCount > 0 && !isOpen && (
-          <span className="absolute -bottom-1 -left-1 h-6 min-w-6 px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center animate-pulse">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-        <span className="sr-only">Live chat</span>
-      </button>
-    );
-  }
-
-  // Support is closed - show expandable hours panel
+  // Always show chat bubble - AI is available 24/7
   return (
     <>
-      {/* Collapsed state - just the bubble */}
-      {!showHours && (
+      {/* Main chat bubble - always clickable */}
+      {!showInfo && (
         <button
           type="button"
           data-gesture-exempt="true"
-          onClick={() => setShowHours(true)}
+          onClick={toggleChat}
           className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
           style={{
             WebkitTapHighlightColor: 'transparent',
             bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
           }}
-          aria-label="View support hours"
+          aria-label={isOpen ? 'Close chat' : 'Open chat'}
         >
           <MessageCircle className="h-6 w-6 text-primary-foreground" aria-hidden="true" />
+          {/* Status indicator - green for human+AI, blue for AI-only */}
           <span
             aria-hidden="true"
-            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background bg-warning"
+            className={`absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background ${
+              status.isOpen ? 'bg-success' : 'bg-primary'
+            }`}
           />
-          <span className="sr-only">Support closed - view hours</span>
+          {unreadCount > 0 && !isOpen && (
+            <span className="absolute -bottom-1 -left-1 h-6 min-w-6 px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center animate-pulse">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+          <span className="sr-only">Chat support</span>
         </button>
       )}
 
-      {/* Expanded state - hours panel */}
-      {showHours && (
+      {/* Info button - shows when user long-presses or wants to see hours */}
+      {!showInfo && (
+        <button
+          type="button"
+          onClick={() => setShowInfo(true)}
+          className="fixed z-[9998] h-6 w-6 rounded-full bg-muted/80 backdrop-blur-sm shadow-sm touch-manipulation cursor-pointer flex items-center justify-center hover:bg-muted transition-colors"
+          style={{
+            bottom: 'max(4.5rem, env(safe-area-inset-bottom, 0px) + 4rem)',
+            right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
+          }}
+          aria-label="View support info"
+        >
+          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+        </button>
+      )}
+
+      {/* Info panel - shows availability details */}
+      {showInfo && (
         <div
           className="fixed z-[9999] bg-card border border-border rounded-xl shadow-xl p-4 w-72"
           style={{
@@ -112,21 +106,31 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-warning animate-pulse" />
-              <span className="text-sm font-medium text-foreground">Support Closed</span>
+              <div className={`h-2 w-2 rounded-full ${status.isOpen ? 'bg-success' : 'bg-primary'} animate-pulse`} />
+              <span className="text-sm font-medium text-foreground">
+                {status.isOpen ? 'Live Support Available' : 'AI Support Active'}
+              </span>
             </div>
             <button
-              onClick={() => setShowHours(false)}
+              onClick={() => setShowInfo(false)}
               className="p-1 hover:bg-muted rounded-full transition-colors"
-              aria-label="Close hours panel"
+              aria-label="Close info panel"
             >
               <X className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
 
-          {/* Hours list */}
+          {/* AI availability notice */}
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-3">
+            <p className="text-xs text-foreground font-medium">🤖 AI Support Available 24/7</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Get instant help anytime. Complex issues will be queued for our team.
+            </p>
+          </div>
+
+          {/* Human hours list */}
           <div className="space-y-1 mb-4">
-            <p className="text-xs text-muted-foreground mb-2">Opening Hours</p>
+            <p className="text-xs text-muted-foreground mb-2">Human Support Hours</p>
             {DAY_NAMES.map((dayName, index) => {
               const hours = OPENING_HOURS[index];
               const isToday = index === status.currentDay;
@@ -147,25 +151,36 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
             })}
           </div>
 
-          {/* Support links */}
+          {/* Action buttons */}
           <div className="border-t border-border pt-3 space-y-2">
-            <p className="text-xs text-muted-foreground mb-2">Need help now?</p>
-            <Link
-              to="/faq"
-              onClick={() => setShowHours(false)}
-              className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors py-1"
+            <button
+              onClick={() => {
+                setShowInfo(false);
+                toggleChat();
+              }}
+              className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors py-2 px-4 rounded-lg"
             >
-              <HelpCircle className="h-4 w-4" />
-              <span>Browse FAQ</span>
-            </Link>
-            <Link
-              to="/forum"
-              onClick={() => setShowHours(false)}
-              className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors py-1"
-            >
-              <Users className="h-4 w-4" />
-              <span>Community Forum</span>
-            </Link>
+              <MessageCircle className="h-4 w-4" />
+              <span>Start Chat</span>
+            </button>
+            <div className="flex gap-2">
+              <Link
+                to="/faq"
+                onClick={() => setShowInfo(false)}
+                className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                <span>FAQ</span>
+              </Link>
+              <Link
+                to="/forum"
+                onClick={() => setShowInfo(false)}
+                className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
+              >
+                <Users className="h-3.5 w-3.5" />
+                <span>Forum</span>
+              </Link>
+            </div>
           </div>
         </div>
       )}
