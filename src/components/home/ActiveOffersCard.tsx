@@ -36,11 +36,14 @@ export function ActiveOffersCard() {
   const { data: promotions = [] } = useQuery({
     queryKey: ['active-promotions'],
     queryFn: async () => {
+      const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from('promotions')
         .select('id, name, description, promotion_type, eclipse_plus_days, ends_at, new_users_only')
         .eq('is_active', true)
-        .or('ends_at.is.null,ends_at.gt.now()')
+        // NOTE: PostgREST filters don't reliably support function calls like `now()` here.
+        // Use an explicit timestamp so active offers always load.
+        .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
         .order('created_at', { ascending: false })
         .limit(3);
       
@@ -69,11 +72,12 @@ export function ActiveOffersCard() {
   const { data: discountCodes = [] } = useQuery({
     queryKey: ['active-discount-codes'],
     queryFn: async () => {
+      const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from('discount_codes')
         .select('id, code, discount_type, discount_value, expires_at, min_order_amount')
         .eq('is_active', true)
-        .or('expires_at.is.null,expires_at.gt.now()')
+        .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
         .order('created_at', { ascending: false })
         .limit(3);
       
