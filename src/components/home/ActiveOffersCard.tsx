@@ -161,10 +161,16 @@ export function ActiveOffersCard() {
                           <Badge variant="outline" className="text-[10px] py-0">New Users</Badge>
                         ) : null}
                       </div>
-                      {promo.eclipse_plus_days && (
+                      {promo.eclipse_plus_days && !isClaimed && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {isClaimed ? 'Enjoying' : ''} {promo.eclipse_plus_days} days of Eclipse+ membership
+                          {promo.eclipse_plus_days} days of Eclipse+ membership
                         </p>
+                      )}
+                      {isClaimed && (
+                        <Link to="/eclipse-plus" className="text-xs text-amber-500 hover:text-amber-400 mt-0.5 inline-flex items-center gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          Get Eclipse+ for 30% off everything
+                        </Link>
                       )}
                       {promo.description && !isClaimed && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
