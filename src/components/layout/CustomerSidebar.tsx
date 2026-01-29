@@ -668,12 +668,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )}
       data-gesture-exempt="true"
     >
-      {/* Header spacer - matches header height for alignment */}
-      <div className="h-14 sm:h-16 shrink-0" />
-
-      {/* Collapse Toggle Button - Above Navigation */}
-      {!isMobileDrawer && (
-        <div className="px-2 py-1.5">
+      {/* Header spacer with collapse toggle - matches header height for alignment */}
+      <div className="h-14 sm:h-16 shrink-0 flex items-end px-2 pb-1.5">
+        {!isMobileDrawer && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -702,8 +699,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               {isCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             </TooltipContent>
           </Tooltip>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-2 pb-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
