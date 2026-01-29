@@ -164,8 +164,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Profile', icon: User, href: '/account' },
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
-        { title: 'My Orders', icon: ShoppingCart, href: '/orders' },
-        { title: 'Downloads', icon: Download, href: '/downloads' },
+        { title: 'My Purchases', icon: Download, href: '/purchases' },
         { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
         // Store Messages for sellers
         ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
