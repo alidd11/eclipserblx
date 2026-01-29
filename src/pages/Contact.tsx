@@ -19,8 +19,10 @@ import { contactFormSchema, validateWithSchema, isValidationError } from '@/lib/
 import { supabase } from '@/integrations/supabase/client';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function Contact() {
+  usePageTracking({ pagePath: '/contact' });
   const { user } = useAuth();
   const { discordUrl } = useDiscordUrl();
   const [isSubmitting, setIsSubmitting] = useState(false);

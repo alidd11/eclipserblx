@@ -18,6 +18,7 @@ import {
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Category images
 import civilianVehiclesImg from '@/assets/categories/civilian-vehicles.jpg';
@@ -66,6 +67,7 @@ const categoryImages: Record<string, string> = {
 };
 
 export default function Categories() {
+  usePageTracking({ pagePath: '/categories' });
   const [searchParams] = useSearchParams();
   const sourceFilter = searchParams.get('source');
   const isMarketplace = sourceFilter === 'marketplace';

@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function Cart() {
+  usePageTracking({ pagePath: '/cart' });
   const { items, removeItem, clearCart, total } = useCart();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
   const { formatPrice } = useCurrency();

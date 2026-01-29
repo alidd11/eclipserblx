@@ -35,8 +35,10 @@ import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
+  usePageTracking({ pagePath: '/account' });
   const { user, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();

@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PasswordStrengthMeter, isPasswordStrongEnough } from '@/components/auth/PasswordStrengthMeter';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -25,6 +26,7 @@ const emailSchema = z.object({
 type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify' | 'reset-verify';
 
 const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
+  usePageTracking({ pagePath: '/auth' });
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');

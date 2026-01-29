@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import { differenceInDays, differenceInHours, format } from 'date-fns';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 const faqs = [
   {
@@ -37,6 +38,7 @@ const benefits = [
 ];
 
 export default function EclipsePlus() {
+  usePageTracking({ pagePath: '/eclipse-plus' });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

@@ -11,8 +11,10 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { formatDistanceToNow } from 'date-fns';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function Featured() {
+  usePageTracking({ pagePath: '/featured' });
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
 

@@ -5,10 +5,12 @@ import { TrustSignals } from '@/components/home/TrustSignals';
 import { RecommendedProducts } from '@/components/recommendations/RecommendedProducts';
 import { usePWAAdminRedirect } from '@/hooks/usePWAAdminRedirect';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function Index() {
   // Redirect to admin login if this PWA was installed from admin context
   usePWAAdminRedirect();
+  usePageTracking({ pagePath: '/' });
 
   return (
     <MainLayout>
