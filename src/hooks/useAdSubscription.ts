@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { openExternalUrl } from '@/lib/externalBrowser';
 
 export type AdTier = 'basic' | 'pro' | 'premium';
 export type AdBillingPeriod = 'monthly' | 'annual';
@@ -123,9 +124,9 @@ export function useAdSubscriptionCheckout() {
       
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.url) {
-        window.location.href = data.url;
+        await openExternalUrl(data.url);
       }
     },
     onError: (error: Error) => {
@@ -161,9 +162,9 @@ export function usePurchasePings() {
       
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.url) {
-        window.location.href = data.url;
+        await openExternalUrl(data.url);
       }
     },
     onError: (error: Error) => {

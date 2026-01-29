@@ -4,6 +4,7 @@ import { Bot, ExternalLink, Loader2, CheckCircle, Settings } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { openExternalUrl } from '@/lib/externalBrowser';
 
 interface AddToServerButtonProps {
   installationCodeId: string;
@@ -53,8 +54,8 @@ export function AddToServerButton({
       }
 
       if (data?.oauthUrl) {
-        // Redirect to Discord OAuth
-        window.location.href = data.oauthUrl;
+        // Redirect to Discord OAuth - opens in default browser on PWA/native
+        await openExternalUrl(data.oauthUrl);
       }
     } catch (err: unknown) {
       console.error('Failed to generate invite URL:', err);
