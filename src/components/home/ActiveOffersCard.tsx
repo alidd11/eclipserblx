@@ -174,7 +174,7 @@ export function ActiveOffersCard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
       >
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-amber-500/5">
+        <Card className="border-border bg-card">
           <CardContent className="p-4 md:p-6">
             <div className="flex items-center gap-2 mb-4">
               <Gift className="h-5 w-5 text-primary" />
