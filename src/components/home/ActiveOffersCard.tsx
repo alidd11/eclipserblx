@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Tag, Clock, Gift, Check, LogIn, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -174,12 +174,13 @@ export function ActiveOffersCard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
       >
-        <Card className="border-border bg-card">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Gift className="h-5 w-5 text-primary" />
-              <h2 className="font-display font-semibold text-lg">Active Offers</h2>
+        <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Gift className="h-3 w-3 md:h-4 md:w-4 text-primary" />
             </div>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Offers</span>
+          </div>
 
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {/* Promotions */}
@@ -325,8 +326,7 @@ export function ActiveOffersCard() {
               ))}
             </div>
 
-          </CardContent>
-        </Card>
+        </div>
       </motion.div>
     </SectionWrapper>
   );
