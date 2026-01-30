@@ -70,7 +70,7 @@ function generateOtpEmailHtml(token: string, email_action_type: string): string 
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="text-align: center; vertical-align: middle;">
-                          <img src="https://d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovableproject.com/apple-touch-icon.png" alt="Eclipse" width="48" height="48" style="display: block; border-radius: 12px;">
+                          <img src="https://eclipserblx.com/apple-touch-icon.png" alt="Eclipse" width="48" height="48" style="display: block; border-radius: 12px;">
                         </td>
                         <td style="padding-left: 14px;">
                           <span style="font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 3px; font-family: Georgia, serif;">ECLIPSE</span>

@@ -126,7 +126,7 @@ serve(async (req) => {
     });
 
     // Redirect to the advertisement's link URL or a fallback
-    const redirectUrl = ad.link_url || Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || "/";
+    const redirectUrl = ad.link_url || "https://eclipserblx.com/";
 
     return new Response(null, {
       status: 302,

@@ -106,7 +106,7 @@ serve(async (req) => {
     }
 
     // Create account link for onboarding
-    const origin = req.headers.get("origin") || "https://roleplay-hub-shop.lovable.app";
+    const origin = req.headers.get("origin") || "https://eclipserblx.com";
     
     const accountLink = await stripe.accountLinks.create({
       account: accountId,

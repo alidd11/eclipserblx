@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       color: 0x7C3AED, // Purple to match Eclipse theme
       author: {
         name: `${staffName} — Eclipse Support`,
-        icon_url: "https://roleplay-hub-shop.lovable.app/favicon.ico",
+        icon_url: "https://eclipserblx.com/favicon.ico",
       },
       description: payload.content,
       footer: {
