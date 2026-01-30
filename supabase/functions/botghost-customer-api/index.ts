@@ -222,92 +222,83 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
     });
   }
 
-  // Get membership status (latest record)
-  const { data: subscription, error: subscriptionError } = await supabase
-    .from("subscriptions")
-    .select("tier, billing_period, current_period_end, status, created_at")
+  // Get full profile with Roblox info
+  const { data: fullProfile } = await supabase
+    .from("profiles")
+    .select("roblox_id, roblox_username, discord_username")
     .eq("user_id", profile.user_id)
-    .order("created_at", { ascending: false })
-    .limit(1)
     .maybeSingle();
 
-  if (subscriptionError) {
-    console.error("[botghost-customer-api] Subscription lookup error:", subscriptionError);
-  }
+  // Get purchased products (recent 5)
+  const { data: orderItems } = await supabase
+    .from("order_items")
+    .select(`
+      product_name,
+      orders!inner (
+        user_id,
+        status
+      )
+    `)
+    .eq("orders.user_id", profile.user_id)
+    .in("orders.status", ["paid", "completed"])
+    .limit(5);
 
-  // Get order stats
-  const { count: orderCount } = await supabase
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", profile.user_id)
-    .in("status", ["paid", "completed"]);
+  const purchasedProducts = orderItems?.map((item: any) => item.product_name) || [];
+  const purchasedDisplay = purchasedProducts.length > 0 
+    ? purchasedProducts.join("\n") 
+    : "none";
 
-  // Get total spent
-  const { data: spentData } = await supabase
-    .from("orders")
-    .select("total")
-    .eq("user_id", profile.user_id)
-    .in("status", ["paid", "completed"]);
+  // Build Roblox section
+  const robloxUsername = fullProfile?.roblox_username || "Not linked";
+  const robloxId = fullProfile?.roblox_id || null;
+  const robloxSection = robloxId 
+    ? `${robloxUsername}\n\`${robloxId}\`` 
+    : "Not linked";
 
-  // NOTE: order totals are stored in GBP (not pennies)
-  const totalSpent = spentData?.reduce((sum: number, o: any) => sum + Number(o.total ?? 0), 0) || 0;
-  const totalSpentFormatted = new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  }).format(totalSpent);
+  // Build Discord section
+  const discordUsername = fullProfile?.discord_username || body.discord_username || "Unknown";
+  const discordSection = `${discordUsername}\n\`${body.discord_id}\``;
 
-  const formatTier = (tier: unknown) => {
-    const raw = String(tier ?? "").trim();
-    if (!raw) return "Eclipse+";
-    const label = raw.replace(/_/g, " ");
-    return label.charAt(0).toUpperCase() + label.slice(1);
-  };
-
-  const membershipDisplay = subscription
-    ? `⭐ ${formatTier(subscription.tier)}${subscription.status && subscription.status !== "active" ? ` (${subscription.status})` : ""}`
-    : "Free";
+  // Roblox avatar thumbnail (if linked)
+  const robloxThumbnail = robloxId 
+    ? `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxId}&width=150&height=150&format=png`
+    : null;
 
   return jsonResponse({
     success: true,
     embed: {
-      title: `👤 ${profile.display_name || profile.username}`,
-      description: `**@${profile.username}**\n\u200B`,
-      color: 0x5865F2,
-      fields: [
-        {
-          name: "📦 Purchases",
-          value: `${orderCount || 0} orders`,
-          inline: true,
-        },
-        {
-          name: "💰 Total Spent",
-          value: totalSpentFormatted,
-          inline: true,
-        },
-        {
-          name: "🎖️ Membership",
-          value: membershipDisplay,
-          inline: true,
-        },
-      ],
-      thumbnail: profile.avatar_url ? { url: profile.avatar_url } : undefined,
+      title: `Profile of ${profile.username}`,
+      color: 0xF5A623, // Orange/amber accent like in the reference
+      description: `**Roblox**\n${robloxSection}\n\n**Discord**\n${discordSection}\n\n**Purchased Products**\n${purchasedDisplay}`,
+      thumbnail: robloxThumbnail ? { url: robloxThumbnail } : undefined,
       footer: {
         text: "Eclipse • Your UK:RP Asset Marketplace",
         icon_url: "https://eclipserblx.com/favicon.ico",
       },
-      image: {
-        url: ECLIPSE_BANNER,
-      },
       timestamp: new Date().toISOString(),
     },
-    message: `👤 **${profile.display_name || profile.username}** (@${profile.username})\n\n📦 **Purchases:** ${orderCount || 0} orders\n💰 **Total Spent:** ${totalSpentFormatted}\n🎖️ **Membership:** ${membershipDisplay}`,
+    components: [
+      {
+        type: 1, // Action Row
+        components: [
+          {
+            type: 2, // Button
+            style: 5, // Link button
+            label: "Manage my Account",
+            url: "https://eclipserblx.com/account",
+            emoji: { name: "🔗" },
+          },
+        ],
+      },
+    ],
+    message: `**Profile of ${profile.username}**\n\n**Roblox:** ${robloxUsername}${robloxId ? ` (${robloxId})` : ""}\n**Discord:** ${discordUsername} (${body.discord_id})\n**Purchased Products:** ${purchasedDisplay}\n\n🔗 Manage: https://eclipserblx.com/account`,
     profile: {
       username: profile.username,
-      display_name: profile.display_name,
-      avatar_url: profile.avatar_url,
-      membership: subscription ? `${subscription.plan_name} (Active)` : "Free",
-      order_count: orderCount || 0,
-      total_spent_formatted: totalSpentFormatted,
+      roblox_username: robloxUsername,
+      roblox_id: robloxId,
+      discord_username: discordUsername,
+      discord_id: body.discord_id,
+      purchased_products: purchasedProducts,
     },
   });
 }
