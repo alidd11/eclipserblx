@@ -404,7 +404,7 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
         className={cn(
           'flex w-full max-w-full min-w-0',
           isChatPage
-            ? 'flex-col overflow-hidden bg-card'
+            ? 'flex-row overflow-hidden bg-card'
             : 'min-h-screen bg-background'
         )}
         style={isChatPage ? { height: 'var(--chat-vvh, 100dvh)' } : undefined}
