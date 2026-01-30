@@ -119,8 +119,8 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <HeaderSearchBar compact />
           </div>
 
-          {/* Right section: Icons (flush right, tight spacing) */}
-          <div className="flex items-center shrink-0 ml-auto">
+          {/* Right section: Icons (flush right, tighter spacing) */}
+          <div className="flex items-center shrink-0 ml-auto gap-0.5">
             <CurrencySelector compact />
             <NotificationBell />
             <Link to="/cart">
