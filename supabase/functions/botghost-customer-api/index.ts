@@ -225,7 +225,7 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
   // Get full profile with Roblox info
   const { data: fullProfile } = await supabase
     .from("profiles")
-    .select("roblox_id, roblox_username, discord_username")
+    .select("roblox_user_id, roblox_username, discord_username")
     .eq("user_id", profile.user_id)
     .maybeSingle();
 
@@ -250,7 +250,7 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
 
   // Build Roblox section
   const robloxUsername = fullProfile?.roblox_username || "Not linked";
-  const robloxId = fullProfile?.roblox_id || null;
+  const robloxId = fullProfile?.roblox_user_id || null;
   const robloxSection = robloxId 
     ? `${robloxUsername}\n\`${robloxId}\`` 
     : "Not linked";
