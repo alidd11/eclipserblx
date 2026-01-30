@@ -264,3 +264,6 @@ verify_jwt = false
 
 [functions.bot-guild-settings]
 verify_jwt = false
+
+[functions.send-team-invite]
+verify_jwt = false
