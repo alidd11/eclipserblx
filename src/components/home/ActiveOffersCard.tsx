@@ -176,12 +176,6 @@ export function ActiveOffersCard() {
                           {promo.eclipse_plus_days} days of Eclipse+ membership
                         </p>
                       )}
-                      {isClaimed && (
-                        <Link to="/eclipse-plus" className="text-xs text-amber-500 hover:text-amber-400 mt-0.5 inline-flex items-center gap-1">
-                          <Sparkles className="h-3 w-3" />
-                          Get Eclipse+ for 30% off everything
-                        </Link>
-                      )}
                       {promo.description && !isClaimed && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                           {promo.description}
