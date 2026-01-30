@@ -1,12 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.d330fb3c8e4c4ae98517806e609eff0f.admin',
+  appId: 'com.eclipserblx.admin',
   appName: 'Eclipse Admin',
   webDir: 'dist',
   server: {
-    // For development: connect to live Lovable sandbox admin route
-    url: 'https://d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovableproject.com/admin/login?forceHideBadge=true',
+    // For development: connect to live Eclipse admin route
+    url: 'https://eclipserblx.com/admin/login?forceHideBadge=true',
     cleartext: true
   },
   plugins: {

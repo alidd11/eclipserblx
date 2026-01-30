@@ -79,7 +79,7 @@ function generateEmailHtml(storeName: string, ownerName: string, reason?: string
                   </p>
                   
                   <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://roleplay-hub-shop.lovable.app/contact" 
+                    <a href="https://eclipserblx.com/contact" 
                        style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 14px;">
                       Contact Support
                     </a>
