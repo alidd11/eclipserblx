@@ -246,17 +246,50 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
 
   const totalSpent = spentData?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
 
+  const membershipDisplay = subscription ? `⭐ ${subscription.plan_name}` : "Free";
+  const totalSpentFormatted = `£${(totalSpent / 100).toFixed(2)}`;
+
   return jsonResponse({
     success: true,
+    embed: {
+      title: `👤 ${profile.display_name || profile.username}`,
+      description: `**@${profile.username}**\n\u200B`,
+      color: 0x5865F2,
+      fields: [
+        {
+          name: "📦 Purchases",
+          value: `${orderCount || 0} orders`,
+          inline: true,
+        },
+        {
+          name: "💰 Total Spent",
+          value: totalSpentFormatted,
+          inline: true,
+        },
+        {
+          name: "🎖️ Membership",
+          value: membershipDisplay,
+          inline: true,
+        },
+      ],
+      thumbnail: profile.avatar_url ? { url: profile.avatar_url } : undefined,
+      footer: {
+        text: "Eclipse • Your UK:RP Asset Marketplace",
+        icon_url: "https://eclipserblx.com/favicon.ico",
+      },
+      image: {
+        url: ECLIPSE_BANNER,
+      },
+      timestamp: new Date().toISOString(),
+    },
+    message: `👤 **${profile.display_name || profile.username}** (@${profile.username})\n\n📦 **Purchases:** ${orderCount || 0} orders\n💰 **Total Spent:** ${totalSpentFormatted}\n🎖️ **Membership:** ${membershipDisplay}`,
     profile: {
       username: profile.username,
       display_name: profile.display_name,
-      customer_id: profile.customer_id,
       avatar_url: profile.avatar_url,
       membership: subscription ? `${subscription.plan_name} (Active)` : "Free",
       order_count: orderCount || 0,
-      total_spent_pence: totalSpent,
-      total_spent_formatted: `£${(totalSpent / 100).toFixed(2)}`,
+      total_spent_formatted: totalSpentFormatted,
     },
   });
 }
