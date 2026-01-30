@@ -1,14 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Tag, Clock, Gift, Check, LogIn } from 'lucide-react';
+import { Sparkles, Tag, Clock, Gift, Check, LogIn, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { SectionWrapper } from './SectionWrapper';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface Promotion {
   id: string;
@@ -30,11 +32,12 @@ interface DiscountCode {
 }
 
 export function ActiveOffersCard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, session } = useAuth();
+  const queryClient = useQueryClient();
+  const [claimingPromoId, setClaimingPromoId] = useState<string | null>(null);
 
   // Fetch active promotions
   const { data: promotions = [], isLoading: promotionsLoading } = useQuery({
-    // Include auth state so we don't cache an empty anon result and keep it after login.
     queryKey: ['active-promotions', user?.id ?? 'anon'],
     queryFn: async () => {
       const nowIso = new Date().toISOString();
@@ -42,8 +45,6 @@ export function ActiveOffersCard() {
         .from('promotions')
         .select('id, name, description, promotion_type, eclipse_plus_days, ends_at, new_users_only')
         .eq('is_active', true)
-        // NOTE: PostgREST filters don't reliably support function calls like `now()` here.
-        // Use an explicit timestamp so active offers always load.
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
         .order('created_at', { ascending: false })
         .limit(3);
@@ -74,7 +75,6 @@ export function ActiveOffersCard() {
 
   // Fetch active discount codes
   const { data: discountCodes = [], isLoading: discountCodesLoading } = useQuery({
-    // Include auth state so we don't cache an empty anon result and keep it after login.
     queryKey: ['active-discount-codes', user?.id ?? 'anon'],
     queryFn: async () => {
       const nowIso = new Date().toISOString();
@@ -93,10 +93,41 @@ export function ActiveOffersCard() {
     staleTime: 30_000,
   });
 
+  const handleClaimPromotion = async () => {
+    if (!session?.access_token) {
+      toast.error('Please sign in to claim offers');
+      return;
+    }
+
+    setClaimingPromoId('claiming');
+    try {
+      const { data, error } = await supabase.functions.invoke('claim-signup-promotion', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.claimed) {
+        toast.success(`Claimed ${data.days} days of Eclipse+!`);
+        // Refresh claims and subscription data
+        queryClient.invalidateQueries({ queryKey: ['user-promotion-claims'] });
+        queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      } else {
+        toast.info(data?.message || 'No eligible promotions to claim');
+      }
+    } catch (error) {
+      console.error('Error claiming promotion:', error);
+      toast.error('Failed to claim offer');
+    } finally {
+      setClaimingPromoId(null);
+    }
+  };
+
   const isInitialLoading = authLoading || promotionsLoading || discountCodesLoading;
   const hasOffers = promotions.length > 0 || discountCodes.length > 0;
 
-  // Avoid the "card dissolving" effect during initial load.
   if (!hasOffers && !isInitialLoading) return null;
 
   const getPromotionIcon = (type: string, isClaimed: boolean) => {
@@ -138,54 +169,87 @@ export function ActiveOffersCard() {
               {/* Promotions */}
               {promotions.map((promo) => {
                 const isClaimed = claimedPromotionIds.includes(promo.id);
+                const isClaiming = claimingPromoId === 'claiming';
                 
                 return (
                   <div
                     key={promo.id}
-                    className={`flex items-start gap-3 p-3 rounded-lg bg-card/50 border transition-colors ${
+                    className={`flex flex-col p-3 rounded-lg bg-card/50 border transition-colors ${
                       isClaimed 
                         ? 'border-green-500/30 bg-green-500/5' 
                         : 'border-border hover:border-primary/30'
                     }`}
                   >
-                    <div className={`flex-shrink-0 p-2 rounded-full ${
-                      isClaimed ? 'bg-green-500/10' : 'bg-primary/10'
-                    }`}>
-                      {getPromotionIcon(promo.promotion_type, isClaimed)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm truncate">{promo.name}</span>
-                        {isClaimed ? (
-                          <Badge variant="outline" className="text-[10px] py-0 border-green-500/50 text-green-600 dark:text-green-400">
-                            Claimed
-                          </Badge>
-                        ) : claimsLoading ? null : !user && promo.new_users_only ? (
-                          <Link to="/auth">
-                            <Badge variant="outline" className="text-[10px] py-0 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer">
-                              <LogIn className="h-2.5 w-2.5 mr-1" />
-                              Sign Up to Claim
-                            </Badge>
-                          </Link>
-                        ) : promo.new_users_only ? (
-                          <Badge variant="outline" className="text-[10px] py-0">New Users</Badge>
-                        ) : null}
+                    <div className="flex items-start gap-3">
+                      <div className={`flex-shrink-0 p-2 rounded-full ${
+                        isClaimed ? 'bg-green-500/10' : 'bg-primary/10'
+                      }`}>
+                        {getPromotionIcon(promo.promotion_type, isClaimed)}
                       </div>
-                      {promo.eclipse_plus_days && !isClaimed && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {promo.eclipse_plus_days} days of Eclipse+ membership
-                        </p>
-                      )}
-                      {promo.description && !isClaimed && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                          {promo.description}
-                        </p>
-                      )}
-                      {promo.ends_at && !isClaimed && (
-                        <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          Ends {format(new Date(promo.ends_at), 'MMM d')}
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-sm">{promo.name}</span>
+                        {promo.eclipse_plus_days && !isClaimed && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {promo.eclipse_plus_days} days of Eclipse+ membership
+                          </p>
+                        )}
+                        {promo.description && !isClaimed && (
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                            {promo.description}
+                          </p>
+                        )}
+                        {promo.ends_at && !isClaimed && (
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            Ends {format(new Date(promo.ends_at), 'MMM d')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Claim / Claimed Button */}
+                    <div className="mt-3">
+                      {isClaimed ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full border-green-500/50 text-green-600 dark:text-green-400 cursor-default"
+                          disabled
+                        >
+                          <Check className="h-3.5 w-3.5 mr-1.5" />
+                          Claimed
+                        </Button>
+                      ) : !user ? (
+                        <Link to="/auth" className="block">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                          >
+                            <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                            Sign Up to Claim
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                          onClick={handleClaimPromotion}
+                          disabled={isClaiming || claimsLoading}
+                        >
+                          {isClaiming ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                              Claiming...
+                            </>
+                          ) : (
+                            <>
+                              <Gift className="h-3.5 w-3.5 mr-1.5" />
+                              Claim Offer
+                            </>
+                          )}
+                        </Button>
                       )}
                     </div>
                   </div>
