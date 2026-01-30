@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { SectionWrapper } from './SectionWrapper';
+
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -168,12 +168,11 @@ export function ActiveOffersCard() {
   };
 
   return (
-    <SectionWrapper as="div" className="pt-0 pb-4">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-      >
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3, duration: 0.4 }}
+    >
         <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -327,7 +326,6 @@ export function ActiveOffersCard() {
             </div>
 
         </div>
-      </motion.div>
-    </SectionWrapper>
+    </motion.div>
   );
 }
