@@ -290,14 +290,17 @@ export function ActiveOffersCard() {
               ))}
             </div>
 
-            <div className="mt-4 flex justify-center">
-              <Link to="/eclipse-plus">
-                <Button variant="outline" size="sm" className="gap-2 border-amber-500/50 text-amber-500 hover:bg-amber-500/10">
-                  <Sparkles className="h-4 w-4" />
-                  Get Eclipse+ for 30% Off Everything
-                </Button>
-              </Link>
-            </div>
+            {/* Only show Eclipse+ upsell if there are unclaimed promotions */}
+            {promotions.some(promo => !claimedPromotionIds.includes(promo.id)) && (
+              <div className="mt-4 flex justify-center">
+                <Link to="/eclipse-plus">
+                  <Button variant="outline" size="sm" className="gap-2 border-amber-500/50 text-amber-500 hover:bg-amber-500/10">
+                    <Sparkles className="h-4 w-4" />
+                    Get Eclipse+ for 30% Off Everything
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
