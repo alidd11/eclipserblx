@@ -259,10 +259,23 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
   const discordUsername = fullProfile?.discord_username || body.discord_username || "Unknown";
   const discordSection = `${discordUsername}\n\`${body.discord_id}\``;
 
-  // Roblox avatar thumbnail (if linked)
-  const robloxThumbnail = robloxId 
-    ? `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxId}&width=150&height=150&format=png`
-    : null;
+  // Roblox avatar thumbnail (if linked) - fetch from Roblox API for direct CDN URL
+  let robloxThumbnail: string | null = null;
+  if (robloxId) {
+    try {
+      const thumbnailResponse = await fetch(
+        `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`
+      );
+      if (thumbnailResponse.ok) {
+        const thumbnailData = await thumbnailResponse.json();
+        if (thumbnailData.data?.[0]?.imageUrl) {
+          robloxThumbnail = thumbnailData.data[0].imageUrl;
+        }
+      }
+    } catch (e) {
+      console.error("[botghost-customer-api] Failed to fetch Roblox thumbnail:", e);
+    }
+  }
 
   return jsonResponse({
     success: true,
