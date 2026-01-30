@@ -335,8 +335,11 @@ function HeroProductCard({ product }: { product: any }) {
   const { formatPrice } = useCurrency();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images);
   const isVideo = isVideoUrl(displayMedia);
-  const memberPrice = getMemberPrice(product.price, product.category_id);
-  const discount = getDiscountPercent(product.category_id);
+  
+  // Pass is_resellable to properly exclude resell items from Eclipse+ pricing
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
+  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
+  const discount = getDiscountPercent(product.category_id, product.is_resellable);
 
   return (
     <Link 
@@ -407,15 +410,15 @@ function HeroProductCard({ product }: { product: any }) {
             
             <div className="flex items-center gap-4">
               <div className="text-right">
-                {isEligibleForDiscount(product.category_id) && (
+                {isEligible && (
                   <p className="text-sm text-white/50 line-through">
                     {formatPrice(Number(product.price))}
                   </p>
                 )}
                 <p className="text-2xl md:text-3xl font-bold text-white">
-                  {formatPrice(memberPrice)}
+                  {isEligible ? formatPrice(memberPrice) : formatPrice(Number(product.price))}
                 </p>
-                {isEligibleForDiscount(product.category_id) && (
+                {isEligible && (
                   <p className="text-xs text-amber-400 font-medium">
                     Save {discount}% with Eclipse+
                   </p>
