@@ -98,7 +98,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 if (onMenuClick) {
                   onMenuClick();
@@ -107,7 +107,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                 }
               }}
             >
-              {!onMenuClick && mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {!onMenuClick && mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Link to="/" className="flex items-center">
               <EclipseLogo size="sm" />
