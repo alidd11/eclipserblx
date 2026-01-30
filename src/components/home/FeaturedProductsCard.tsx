@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useCallback, useRef, useMemo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, Play } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -305,21 +305,14 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
       <div className="relative aspect-[4/3] overflow-hidden">
         {displayMedia ? (
           isVideo ? (
-            <>
-              <video 
-                src={displayMedia} 
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
-                  <Play className="h-4 w-4 text-white ml-0.5" fill="white" />
-                </div>
-              </div>
-            </>
+            <video 
+              src={displayMedia} 
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
           ) : (
             <img 
               src={displayMedia} 
