@@ -1168,6 +1168,39 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_link_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discord_user_id: string | null
+          discord_username: string | null
+          expires_at: string
+          id: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discord_user_id?: string | null
+          discord_username?: string | null
+          expires_at?: string
+          id?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discord_user_id?: string | null
+          discord_username?: string | null
+          expires_at?: string
+          id?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       discord_modmail_messages: {
         Row: {
           attachments: Json | null
@@ -5390,9 +5423,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_expired_link_codes: { Args: never; Returns: undefined }
       escalate_unanswered_tickets: { Args: never; Returns: number }
       generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
+      generate_discord_link_code: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       generate_staff_id: { Args: never; Returns: string }

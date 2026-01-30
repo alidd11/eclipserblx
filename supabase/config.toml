@@ -1,5 +1,11 @@
 project_id = "qlnbergwjfrmgkjhrbkj"
 
+[functions.discord-customer-bot]
+verify_jwt = false
+
+[functions.register-discord-commands]
+verify_jwt = false
+
 [auth.hook.send_email]
 enabled = true
 uri = "pg-functions://postgres/supabase_functions/http_request"
