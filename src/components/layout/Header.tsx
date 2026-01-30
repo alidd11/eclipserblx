@@ -124,10 +124,10 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <CurrencySelector compact />
             <NotificationBell />
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-6 w-6 text-muted-foreground hover:text-foreground">
-                <ShoppingCart className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="icon" className="relative h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground">
+                <ShoppingCart className="h-4 w-4" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[8px] font-medium text-primary-foreground flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary text-[8px] font-medium text-primary-foreground flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
@@ -135,14 +135,14 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
-                  <User className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
-                  <User className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4" />
                 </Button>
               </Link>
             )}
