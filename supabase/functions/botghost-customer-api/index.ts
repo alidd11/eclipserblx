@@ -101,19 +101,17 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
       success: true,
       linked: true,
       embed: {
-        title: "✅ Account Linked",
-        description: `Your Discord is successfully linked to your Eclipse account.\n\n**Account Details**\n\u200B`,
-        color: 0x22c55e, // Green
+        title: "🔗 Account Connected",
+        description: `Your Discord account has been successfully linked to Eclipse!\n\n` +
+          `**Eclipse Account:** @${profile.username}\n` +
+          `**Discord:** <@${body.discord_id}>\n\n` +
+          `You now have full access to your customer portal commands.\n\u200B`,
+        color: 0x5865F2, // Discord Blurple
         fields: [
           {
-            name: "👤 Username",
-            value: `@${profile.username}`,
-            inline: true,
-          },
-          {
-            name: "🆔 Customer ID", 
-            value: profile.customer_id,
-            inline: true,
+            name: "📦 Available Commands",
+            value: "`/profile` — View your account\n`/purchases` — See order history\n`/download` — Get your files",
+            inline: false,
           },
         ],
         footer: {
@@ -125,7 +123,7 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
         },
         timestamp: new Date().toISOString(),
       },
-      message: `✅ Your Discord is linked to **@${profile.username}** (${profile.customer_id}).`,
+      message: `🔗 **Account Connected**\n\nYour Discord is linked to **@${profile.username}** on Eclipse.\n\nUse \`/profile\`, \`/purchases\`, or \`/download\` to access your account.`,
       username: profile.username,
       customer_id: profile.customer_id,
     });
