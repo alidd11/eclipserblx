@@ -88,25 +88,26 @@ async function getLinkedAccount(supabase: any, discordId: string) {
   return profile;
 }
 
-// Handle /link - Requires a code to link account
+// Handle /link - Auto-links if Discord ID exists, otherwise requires code
 async function handleLink(supabase: any, body: BotGhostRequest) {
-  // Check if already linked
+  // Check if this Discord ID is already linked to any account
   const existingProfile = await getLinkedAccount(supabase, body.discord_id);
+  
   if (existingProfile) {
     return jsonResponse({
       success: true,
       linked: true,
-      message: `✅ Your Discord is already linked to **@${existingProfile.username}** (${existingProfile.customer_id}).\n\nUse **/profile** to view your account details!`,
+      message: `✅ Your Discord is linked to **@${existingProfile.username}** (${existingProfile.customer_id}).\n\nUse **/profile** to view your account details!`,
       username: existingProfile.username,
       customer_id: existingProfile.customer_id,
     });
   }
 
-  // Code is required
+  // Not linked - code is required for new links
   if (!body.code) {
     return jsonResponse({
       success: false,
-      error: "❌ **Code Required**\n\nPlease provide a link code:\n`/link code:YOUR_CODE`\n\n**How to get a code:**\n1. Go to https://eclipserblx.com/account\n2. Find the **Discord Account** card\n3. Click the **Discord Bot** tab\n4. Click **Generate Link Code**",
+      error: "🔗 **Discord Not Linked**\n\nTo link your account:\n1. Go to https://eclipserblx.com/account\n2. Find the **Discord Account** card\n3. Click the **Discord Bot** tab\n4. Click **Generate Link Code**\n5. Use `/link code:YOUR_CODE`",
     });
   }
 
