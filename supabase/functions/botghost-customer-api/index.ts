@@ -222,13 +222,18 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
     });
   }
 
-  // Get membership status
-  const { data: subscription } = await supabase
+  // Get membership status (latest record)
+  const { data: subscription, error: subscriptionError } = await supabase
     .from("subscriptions")
-    .select("plan_name, current_period_end, status")
+    .select("tier, billing_period, current_period_end, status, created_at")
     .eq("user_id", profile.user_id)
-    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
+
+  if (subscriptionError) {
+    console.error("[botghost-customer-api] Subscription lookup error:", subscriptionError);
+  }
 
   // Get order stats
   const { count: orderCount } = await supabase
@@ -244,10 +249,23 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
     .eq("user_id", profile.user_id)
     .in("status", ["paid", "completed"]);
 
-  const totalSpent = spentData?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
+  // NOTE: order totals are stored in GBP (not pennies)
+  const totalSpent = spentData?.reduce((sum: number, o: any) => sum + Number(o.total ?? 0), 0) || 0;
+  const totalSpentFormatted = new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+  }).format(totalSpent);
 
-  const membershipDisplay = subscription ? `⭐ ${subscription.plan_name}` : "Free";
-  const totalSpentFormatted = `£${(totalSpent / 100).toFixed(2)}`;
+  const formatTier = (tier: unknown) => {
+    const raw = String(tier ?? "").trim();
+    if (!raw) return "Eclipse+";
+    const label = raw.replace(/_/g, " ");
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  };
+
+  const membershipDisplay = subscription
+    ? `⭐ ${formatTier(subscription.tier)}${subscription.status && subscription.status !== "active" ? ` (${subscription.status})` : ""}`
+    : "Free";
 
   return jsonResponse({
     success: true,
