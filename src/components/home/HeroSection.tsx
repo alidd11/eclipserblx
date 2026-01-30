@@ -9,6 +9,7 @@ import { SectionWrapper } from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { MarketplaceHeroButton } from '@/components/marketplace/MarketplaceHeroButton';
 import { ActiveOffersCard } from './ActiveOffersCard';
+import { PromotionCarousel } from './PromotionCarousel';
 
 export function HeroSection() {
   return (
@@ -72,11 +73,21 @@ export function HeroSection() {
               <ActiveOffersCard />
             </motion.div>
 
-            {/* Featured Products Card */}
+            {/* Promotion Carousel */}
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
+              className="mt-4"
+            >
+              <PromotionCarousel />
+            </motion.div>
+
+            {/* Featured Products Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.4 }}
               className="mt-4"
             >
               <FeaturedProductsCard />
@@ -163,12 +174,22 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Featured Products - Full width below */}
+          {/* Promotion Carousel - Full width */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
             className="mt-6"
+          >
+            <PromotionCarousel />
+          </motion.div>
+
+          {/* Featured Products - Full width below */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.4 }}
+            className="mt-4"
           >
             <FeaturedProductsCard />
           </motion.div>
