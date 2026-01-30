@@ -20,8 +20,8 @@ const commands: CommandConfig[] = [
     action: "link",
     jsonBody: `{
   "action": "link",
-  "discord_id": "{user.id}",
-  "discord_username": "{user.username}"
+  "discord_id": "{User.id}",
+  "discord_username": "{User.username}"
 }`,
     responseVariable: "{link.response.message}",
   },
@@ -31,9 +31,9 @@ const commands: CommandConfig[] = [
     action: "verify_code",
     jsonBody: `{
   "action": "verify_code",
-  "discord_id": "{user.id}",
-  "discord_username": "{user.username}",
-  "code": "{command.options.code}"
+  "discord_id": "{User.id}",
+  "discord_username": "{User.username}",
+  "code": "{option_code}"
 }`,
     responseVariable: "{link.response.message}",
     notes: "Add a 'code' option (string, required) to the command",
@@ -44,8 +44,8 @@ const commands: CommandConfig[] = [
     action: "profile",
     jsonBody: `{
   "action": "profile",
-  "discord_id": "{user.id}",
-  "discord_username": "{user.username}"
+  "discord_id": "{User.id}",
+  "discord_username": "{User.username}"
 }`,
     responseVariable: "{link.response.message}",
   },
@@ -55,8 +55,8 @@ const commands: CommandConfig[] = [
     action: "purchases",
     jsonBody: `{
   "action": "purchases",
-  "discord_id": "{user.id}",
-  "discord_username": "{user.username}"
+  "discord_id": "{User.id}",
+  "discord_username": "{User.username}"
 }`,
     responseVariable: "{link.response.message}",
   },
@@ -66,9 +66,9 @@ const commands: CommandConfig[] = [
     action: "download",
     jsonBody: `{
   "action": "download",
-  "discord_id": "{user.id}",
-  "discord_username": "{user.username}",
-  "product_name": "{command.options.product}"
+  "discord_id": "{User.id}",
+  "discord_username": "{User.username}",
+  "product_name": "{option_product}"
 }`,
     responseVariable: "{link.response.message}",
     notes: "Add a 'product' option (string, optional) to the command. If omitted, lists available products.",
