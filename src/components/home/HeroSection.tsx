@@ -10,6 +10,9 @@ import { motion } from 'framer-motion';
 import { MarketplaceHeroButton } from '@/components/marketplace/MarketplaceHeroButton';
 import { ActiveOffersCard } from './ActiveOffersCard';
 import { PromotionCarousel } from './PromotionCarousel';
+import { TopSellersCard } from '@/components/marketplace/TopSellersCard';
+import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
+import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
 
 export function HeroSection() {
   return (
@@ -184,11 +187,23 @@ export function HeroSection() {
             <PromotionCarousel />
           </motion.div>
 
-          {/* Featured Products - Full width below */}
+          {/* Marketplace Widgets Row - 3 columns */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.4 }}
+            className="mt-4 grid grid-cols-3 gap-4"
+          >
+            <TopSellersCard />
+            <NewArrivalsCard />
+            <CategoriesGridCard />
+          </motion.div>
+
+          {/* Featured Products - Full width below */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
             className="mt-4"
           >
             <FeaturedProductsCard />
