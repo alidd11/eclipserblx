@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Link2, Unlink, Sparkles, Loader2, Copy, Check, MessageSquare, RefreshCw } from "lucide-react";
+import { Link2, Unlink, Sparkles, Loader2, Copy, Check } from "lucide-react";
 import { openExternalUrl } from "@/lib/externalBrowser";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DiscordLinkCardProps {
   userId: string;
@@ -18,8 +17,6 @@ interface DiscordLinkCardProps {
 }
 
 // Discord OAuth configuration
-// Client ID is public; keep env var support, but fall back to the known app id to avoid blocking linking
-// when the build environment doesn't inject VITE_* vars (common in preview/mobile webviews).
 const DEFAULT_DISCORD_CLIENT_ID = "1460773107446059273";
 
 const getDiscordClientId = () => {
@@ -29,7 +26,6 @@ const getDiscordClientId = () => {
 };
 
 const getRedirectUri = () => {
-  // Use URL() to avoid subtle slash / encoding mismatches.
   return new URL("/account", window.location.origin).toString();
 };
 
@@ -52,10 +48,6 @@ export const DiscordLinkCard = ({
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   const [copiedRedirect, setCopiedRedirect] = useState(false);
-  const [linkCode, setLinkCode] = useState<string | null>(null);
-  const [linkCodeExpiry, setLinkCodeExpiry] = useState<Date | null>(null);
-  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
   const { toast } = useToast();
 
   const copyRedirectUri = async () => {
@@ -173,64 +165,6 @@ export const DiscordLinkCard = ({
     setIsLinking(true);
     await openExternalUrl(getDiscordOAuthUrl());
   };
-
-  // Generate a link code for Discord bot linking
-  const handleGenerateLinkCode = async () => {
-    setIsGeneratingCode(true);
-    try {
-      // Generate code using the database function
-      const { data: codeData, error: codeError } = await supabase.rpc("generate_discord_link_code");
-      
-      if (codeError) throw codeError;
-
-      const code = codeData as string;
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-      // Insert into database
-      const { error: insertError } = await supabase.from("discord_link_codes").insert({
-        user_id: userId,
-        code,
-        expires_at: expiresAt.toISOString(),
-      });
-
-      if (insertError) throw insertError;
-
-      setLinkCode(code);
-      setLinkCodeExpiry(expiresAt);
-      
-      toast({
-        title: "Link Code Generated",
-        description: "Use /link in Discord with this code within 10 minutes.",
-      });
-    } catch (err: unknown) {
-      console.error("Error generating link code:", err);
-      toast({
-        title: "Failed to Generate Code",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingCode(false);
-    }
-  };
-
-  const copyLinkCode = async () => {
-    if (!linkCode) return;
-    try {
-      await navigator.clipboard.writeText(linkCode);
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 1500);
-    } catch {
-      toast({
-        title: "Copy failed",
-        description: "Please copy the code manually.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Check if code is expired
-  const isCodeExpired = linkCodeExpiry ? new Date() > linkCodeExpiry : true;
 
   const handleUnlink = async () => {
     setIsUnlinking(true);
@@ -364,160 +298,66 @@ export const DiscordLinkCard = ({
             )}
           </div>
         ) : (
-          <Tabs defaultValue="oauth" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="oauth" className="text-xs">
-                <Link2 className="w-3 h-3 mr-1" />
-                Browser
-              </TabsTrigger>
-              <TabsTrigger value="bot" className="text-xs">
-                <MessageSquare className="w-3 h-3 mr-1" />
-                Discord Bot
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="oauth" className="space-y-4">
-              <Button
-                onClick={handleLinkWithOAuth}
-                disabled={isLinking}
-                className="w-full bg-[#5865F2] hover:bg-[#4752C4]"
-              >
-                {isLinking ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Redirecting to Discord...
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-                    </svg>
-                    Link with Discord
-                  </>
-                )}
-              </Button>
-
-              <details className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <summary className="cursor-pointer text-xs text-muted-foreground">
-                  Having trouble linking? Show redirect details
-                </summary>
-                <div className="mt-3 space-y-2">
-                  <div className="text-xs">
-                    <p className="text-muted-foreground">Redirect URI in use (must match Discord exactly):</p>
-                    <p className="mt-1 break-all font-mono text-foreground/90">{getRedirectUri()}</p>
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={copyRedirectUri}>
-                    {copiedRedirect ? (
-                      <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy redirect URI
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </details>
-
-              {accountsLocked ? (
-                <p className="text-xs text-amber-500/80 text-center">
-                  ⚠️ As a seller, once linked this account cannot be unlinked. Contact staff if you need to make changes later.
-                </p>
+          <div className="space-y-4">
+            <Button
+              onClick={handleLinkWithOAuth}
+              disabled={isLinking}
+              className="w-full bg-[#5865F2] hover:bg-[#4752C4]"
+            >
+              {isLinking ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Redirecting to Discord...
+                </>
               ) : (
-                <p className="text-xs text-muted-foreground text-center">
-                  You'll be redirected to Discord to authorize the connection
-                </p>
-              )}
-            </TabsContent>
-
-            <TabsContent value="bot" className="space-y-4">
-              <div className="text-sm text-muted-foreground text-center mb-4">
-                Link your account using our Discord bot commands
-              </div>
-
-              {linkCode && !isCodeExpired ? (
-                <div className="space-y-3">
-                  <div className="p-4 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/30 text-center">
-                    <p className="text-xs text-muted-foreground mb-2">Your Link Code</p>
-                    <p className="text-2xl font-mono font-bold tracking-widest text-[#5865F2]">
-                      {linkCode}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Expires in {Math.max(0, Math.ceil((linkCodeExpiry!.getTime() - Date.now()) / 60000))} minutes
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={copyLinkCode}
-                    >
-                      {copiedCode ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy Code
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleGenerateLinkCode}
-                      disabled={isGeneratingCode}
-                    >
-                      <RefreshCw className={`w-4 h-4 ${isGeneratingCode ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
-                    <p className="text-xs text-muted-foreground">
-                      <strong>Step 2:</strong> In Discord, type:
-                    </p>
-                    <code className="block mt-1 text-sm font-mono text-foreground/90">
-                      /link code:{linkCode}
-                    </code>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Button
-                    onClick={handleGenerateLinkCode}
-                    disabled={isGeneratingCode}
-                    variant="outline"
-                    className="w-full border-[#5865F2]/50 hover:bg-[#5865F2]/10"
+                <>
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
                   >
-                    {isGeneratingCode ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Generate Link Code
-                      </>
-                    )}
-                  </Button>
-
-                  <p className="text-xs text-muted-foreground text-center">
-                    Generate a code here, then use <code className="bg-muted px-1 rounded">/link</code> in our Discord server
-                  </p>
-                </div>
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                  </svg>
+                  Link with Discord
+                </>
               )}
-            </TabsContent>
-          </Tabs>
+            </Button>
+
+            <details className="rounded-lg border border-border/50 bg-muted/30 p-3">
+              <summary className="cursor-pointer text-xs text-muted-foreground">
+                Having trouble linking? Show redirect details
+              </summary>
+              <div className="mt-3 space-y-2">
+                <div className="text-xs">
+                  <p className="text-muted-foreground">Redirect URI in use (must match Discord exactly):</p>
+                  <p className="mt-1 break-all font-mono text-foreground/90">{getRedirectUri()}</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={copyRedirectUri}>
+                  {copiedRedirect ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy redirect URI
+                    </>
+                  )}
+                </Button>
+              </div>
+            </details>
+
+            {accountsLocked ? (
+              <p className="text-xs text-amber-500/80 text-center">
+                ⚠️ As a seller, once linked this account cannot be unlinked. Contact staff if you need to make changes later.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center">
+                You'll be redirected to Discord to authorize the connection
+              </p>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
