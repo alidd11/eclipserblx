@@ -4,10 +4,15 @@ import { safeStorage } from '@/lib/safeStorage';
 
 interface UseServiceWorkerUpdateOptions {
   showNotifications?: boolean;
+  /**
+   * When true, reloads the page once after a new service worker takes control.
+   * Useful for PWAs so users automatically get the latest assets.
+   */
+  autoReloadOnUpdate?: boolean;
 }
 
 export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = {}) => {
-  const { showNotifications = true } = options;
+  const { showNotifications = true, autoReloadOnUpdate = false } = options;
   const didReloadRef = useRef(false);
 
   // Send message to service worker
@@ -79,7 +84,15 @@ export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = 
     // Listen for controller change (SW activated) - no auto-reload
     const handleControllerChange = () => {
       console.log('[App] SW controller changed - update available');
-      // Don't auto-reload - let user decide when to refresh
+
+      // Auto-reload (PWA) to ensure new bundles/assets are used immediately.
+      if (autoReloadOnUpdate && !didReloadRef.current) {
+        didReloadRef.current = true;
+        window.location.reload();
+        return;
+      }
+
+      // Otherwise, don't auto-reload - let user decide when to refresh
       if (showNotifications && !didReloadRef.current) {
         didReloadRef.current = true;
         showInfoNotification('Update Ready', 'Refresh the page to apply the latest update');
@@ -92,7 +105,7 @@ export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = 
       navigator.serviceWorker.removeEventListener('message', handleMessage);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
-  }, [showNotifications]);
+  }, [showNotifications, autoReloadOnUpdate]);
 
   return {
     clearAllCaches,

@@ -1,7 +1,7 @@
 // Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.0.2';
+const SW_VERSION = '1.0.3';
 const CACHE_PREFIX = 'eclipse-v';
 const OFFLINE_CACHE = 'offline-v1';
 const OFFLINE_URL = '/offline.html';
@@ -13,8 +13,10 @@ const clearOldCaches = async () => {
     // Keep only current version caches and workbox caches
     if (name.startsWith('workbox-')) return false;
     if (name === 'supabase-cache') return false;
-    if (name === 'image-cache') return false;
     if (name === 'font-cache') return false;
+    // NOTE: Do NOT persist image-cache across SW updates.
+    // Images (like region flags) are user-visible and can change between releases,
+    // and stale image-cache causes the installed PWA to appear "stuck" on old assets.
     // Clear any other stale caches
     return true;
   });
