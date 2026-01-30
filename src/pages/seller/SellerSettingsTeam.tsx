@@ -167,20 +167,45 @@ export default function SellerSettingsTeam() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       
-      const { error } = await supabase
+      // Get inviter's profile for the email
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+      
+      const { data: inviteData, error } = await supabase
         .from('store_team_invites')
         .insert({
           store_id: store.id,
           email: email.toLowerCase().trim(),
           role,
           invited_by: user.id,
-        });
+        })
+        .select('id')
+        .single();
       
       if (error) {
         if (error.code === '23505') {
           throw new Error('An invite has already been sent to this email');
         }
         throw error;
+      }
+      
+      // Send invitation email via edge function
+      const { error: emailError } = await supabase.functions.invoke('send-team-invite', {
+        body: {
+          email: email.toLowerCase().trim(),
+          store_name: store.name,
+          inviter_name: inviterProfile?.display_name || 'A store owner',
+          role,
+          invite_token: inviteData.id,
+        },
+      });
+      
+      if (emailError) {
+        console.error('Failed to send invitation email:', emailError);
+        // Don't throw - the invite was created, just the email failed
       }
     },
     onSuccess: () => {
