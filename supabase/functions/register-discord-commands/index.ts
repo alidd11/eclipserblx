@@ -78,12 +78,13 @@ Deno.serve(async (req) => {
     );
   }
 
-  const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN");
-  const discordClientId = Deno.env.get("DISCORD_CLIENT_ID");
+  // Use separate Customer Bot credentials
+  const discordBotToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+  const discordClientId = Deno.env.get("DISCORD_CUSTOMER_BOT_CLIENT_ID");
 
   if (!discordBotToken || !discordClientId) {
     return new Response(
-      JSON.stringify({ error: "Discord bot credentials not configured" }),
+      JSON.stringify({ error: "Discord Customer Bot credentials not configured. Required: DISCORD_CUSTOMER_BOT_TOKEN, DISCORD_CUSTOMER_BOT_CLIENT_ID" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

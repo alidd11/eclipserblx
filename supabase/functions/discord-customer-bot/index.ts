@@ -1,7 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verify } from "https://esm.sh/discord-verify@1.2.0";
 
-const DISCORD_PUBLIC_KEY = "b87fe7be359aeef9c3f4f75c9f6f00f45a0bf3b5ec7b16d87c8c32bf5d0d7b8c"; // Eclipse Marketplace app public key
+// Customer Bot - separate from Eclipse Marketplace app
+// Secrets needed: DISCORD_CUSTOMER_BOT_PUBLIC_KEY, DISCORD_CUSTOMER_BOT_TOKEN
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,8 +66,12 @@ Deno.serve(async (req) => {
       return new Response("Invalid request signature", { status: 401, headers: corsHeaders });
     }
 
-    // For development, skip verification if public key not set
-    const publicKey = Deno.env.get("DISCORD_BOT_PUBLIC_KEY") || DISCORD_PUBLIC_KEY;
+    const publicKey = Deno.env.get("DISCORD_CUSTOMER_BOT_PUBLIC_KEY");
+    
+    if (!publicKey) {
+      console.error("[discord-customer-bot] DISCORD_CUSTOMER_BOT_PUBLIC_KEY not configured");
+      return new Response("Bot not configured", { status: 500, headers: corsHeaders });
+    }
     
     try {
       const isValid = await verify(body, signature, timestamp, publicKey, crypto.subtle);
@@ -75,8 +80,8 @@ Deno.serve(async (req) => {
         return new Response("Invalid request signature", { status: 401, headers: corsHeaders });
       }
     } catch (verifyError) {
-      console.log("[discord-customer-bot] Signature verification error:", verifyError);
-      // Continue anyway for development - Discord will fail if not valid
+      console.error("[discord-customer-bot] Signature verification error:", verifyError);
+      return new Response("Signature verification failed", { status: 401, headers: corsHeaders });
     }
 
     const interaction: DiscordInteraction = JSON.parse(body);
