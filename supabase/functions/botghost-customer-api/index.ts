@@ -88,79 +88,24 @@ async function getLinkedAccount(supabase: any, discordId: string) {
   return profile;
 }
 
-// Handle /link - Auto-links if Discord ID exists, otherwise requires code
+// Handle /link - Check if Discord is linked on the website
 async function handleLink(supabase: any, body: BotGhostRequest) {
-  // Check if this Discord ID is already linked to any account
-  const existingProfile = await getLinkedAccount(supabase, body.discord_id);
-  
-  if (existingProfile) {
+  const profile = await getLinkedAccount(supabase, body.discord_id);
+
+  if (profile) {
     return jsonResponse({
       success: true,
       linked: true,
-      message: `✅ Your Discord is linked to **@${existingProfile.username}** (${existingProfile.customer_id}).\n\nUse **/profile** to view your account details!`,
-      username: existingProfile.username,
-      customer_id: existingProfile.customer_id,
+      message: `✅ Your Discord is linked to **@${profile.username}** (${profile.customer_id}).\n\nUse **/profile** to view your account details!`,
+      username: profile.username,
+      customer_id: profile.customer_id,
     });
   }
-
-  // Not linked - code is required for new links
-  if (!body.code) {
-    return jsonResponse({
-      success: false,
-      error: "🔗 **Discord Not Linked**\n\nTo link your account:\n1. Go to https://eclipserblx.com/account\n2. Find the **Discord Account** card\n3. Click the **Discord Bot** tab\n4. Click **Generate Link Code**\n5. Use `/link code:YOUR_CODE`",
-    });
-  }
-
-  const code = body.code.toUpperCase().trim();
-
-  // Find valid code
-  const { data: linkCode, error: codeError } = await supabase
-    .from("discord_link_codes")
-    .select("id, user_id, expires_at, verified_at")
-    .eq("code", code)
-    .gt("expires_at", new Date().toISOString())
-    .is("verified_at", null)
-    .maybeSingle();
-
-  if (codeError || !linkCode) {
-    return jsonResponse({
-      success: false,
-      error: "❌ **Invalid or Expired Code**\n\nPlease generate a new code from your Eclipse account:\nhttps://eclipserblx.com/account",
-    });
-  }
-
-  // Mark code as verified and link Discord account
-  await supabase
-    .from("discord_link_codes")
-    .update({
-      discord_user_id: body.discord_id,
-      discord_username: body.discord_username || "Unknown",
-      verified_at: new Date().toISOString(),
-    })
-    .eq("id", linkCode.id);
-
-  // Update profile with Discord info
-  await supabase
-    .from("profiles")
-    .update({
-      discord_id: body.discord_id,
-      discord_username: body.discord_username || "Unknown",
-    })
-    .eq("user_id", linkCode.user_id);
-
-  // Get the linked profile for response
-  const { data: linkedProfile } = await supabase
-    .from("profiles")
-    .select("username, customer_id")
-    .eq("user_id", linkCode.user_id)
-    .single();
 
   return jsonResponse({
-    success: true,
-    linked: true,
-    message: `✅ **Account Linked Successfully!**\n\nYour Discord is now linked to **@${linkedProfile?.username || "your account"}**.\n\nYou can now use:\n• **/profile** - View your account\n• **/purchases** - See your purchases\n• **/download** - Get download links`,
-    username: linkedProfile?.username,
-    customer_id: linkedProfile?.customer_id,
+    success: false,
+    linked: false,
+    message: "🔗 **Discord Not Linked**\n\nTo link your account:\n1. Go to https://eclipserblx.com/account\n2. Find the **Discord Account** card\n3. Click **Link with Discord**\n4. Authorize the connection\n\nOnce linked, run **/link** again to confirm!",
   });
 }
 
