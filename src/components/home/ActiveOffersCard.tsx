@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Tag, Clock, Gift, Check, LogIn, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { SectionWrapper } from './SectionWrapper';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,10 +31,26 @@ interface DiscountCode {
   min_order_amount: number | null;
 }
 
+const PROMO_BENEFITS = [
+  "30% off all purchases",
+  "Priority support access",
+  "Early access to new releases",
+  "Exclusive member discounts",
+];
+
 export function ActiveOffersCard() {
   const { user, loading: authLoading, session } = useAuth();
   const queryClient = useQueryClient();
   const [claimingPromoId, setClaimingPromoId] = useState<string | null>(null);
+  const [benefitIndex, setBenefitIndex] = useState(0);
+
+  // Rotate benefits every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBenefitIndex((prev) => (prev + 1) % PROMO_BENEFITS.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch active promotions
   const { data: promotions = [], isLoading: promotionsLoading } = useQuery({
@@ -182,27 +198,46 @@ export function ActiveOffersCard() {
                   >
                     <div className="flex items-start gap-3">
                       <div className={`flex-shrink-0 p-2 rounded-full ${
-                        isClaimed ? 'bg-green-500/10' : 'bg-primary/10'
+                        isClaimed ? 'bg-green-500/10' : 'bg-amber-500/10'
                       }`}>
                         {getPromotionIcon(promo.promotion_type, isClaimed)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="font-medium text-sm">{promo.name}</span>
-                        {promo.eclipse_plus_days && !isClaimed && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {promo.eclipse_plus_days} days of Eclipse+ membership
-                          </p>
-                        )}
-                        {promo.description && !isClaimed && (
-                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                            {promo.description}
-                          </p>
-                        )}
-                        {promo.ends_at && !isClaimed && (
-                          <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            Ends {format(new Date(promo.ends_at), 'MMM d')}
-                          </div>
+                        {isClaimed ? (
+                          <span className="font-medium text-sm text-green-600 dark:text-green-400">Offer Claimed!</span>
+                        ) : (
+                          <>
+                            <span className="font-medium text-sm text-amber-600 dark:text-amber-400">
+                              🎁 New Member Exclusive
+                            </span>
+                            {promo.eclipse_plus_days && (
+                              <p className="text-xs text-foreground font-medium mt-0.5">
+                                {promo.eclipse_plus_days} days of Eclipse+ FREE
+                              </p>
+                            )}
+                            {/* Sliding benefits */}
+                            <div className="h-4 mt-1 overflow-hidden">
+                              <AnimatePresence mode="wait">
+                                <motion.p
+                                  key={benefitIndex}
+                                  initial={{ y: 10, opacity: 0 }}
+                                  animate={{ y: 0, opacity: 1 }}
+                                  exit={{ y: -10, opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="text-[11px] text-muted-foreground flex items-center gap-1"
+                                >
+                                  <Check className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                                  {PROMO_BENEFITS[benefitIndex]}
+                                </motion.p>
+                              </AnimatePresence>
+                            </div>
+                            {promo.ends_at && (
+                              <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                Ends {format(new Date(promo.ends_at), 'MMM d')}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
