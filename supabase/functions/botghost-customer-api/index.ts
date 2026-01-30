@@ -280,13 +280,18 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
   // Log what we're returning for debugging
   console.log("[botghost-customer-api] Roblox thumbnail URL:", robloxThumbnail);
 
+  // Expose a simple string field for BotGhost's Embed Thumbnail URL input
+  // (BotGhost commonly builds embeds from response.message rather than passing through response.embed)
+  const robloxThumbnailUrl = robloxThumbnail;
+
   return jsonResponse({
     success: true,
+    roblox_thumbnail_url: robloxThumbnailUrl,
     embed: {
       title: `Profile of ${profile.username}`,
       color: 0xF5A623, // Orange/amber accent like in the reference
       description: `**Roblox**\n${robloxSection}\n\n**Discord**\n${discordSection}\n\n**Purchased Products**\n${purchasedDisplay}`,
-      thumbnail: robloxThumbnail ? { url: robloxThumbnail } : null,
+      thumbnail: robloxThumbnailUrl ? { url: robloxThumbnailUrl } : null,
       footer: {
         text: "Eclipse • Your UK:RP Asset Marketplace",
         icon_url: "https://eclipserblx.com/favicon.ico",
@@ -312,6 +317,7 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
       username: profile.username,
       roblox_username: robloxUsername,
       roblox_id: robloxId,
+      roblox_thumbnail_url: robloxThumbnailUrl,
       discord_username: discordUsername,
       discord_id: body.discord_id,
       purchased_products: purchasedProducts,
