@@ -88,45 +88,17 @@ async function getLinkedAccount(supabase: any, discordId: string) {
   return profile;
 }
 
-// Handle /link - Check if linked or provide full profile (auto-profile when linked)
+// Handle /link - Check if linked or provide instructions
 async function handleLink(supabase: any, body: BotGhostRequest) {
   const profile = await getLinkedAccount(supabase, body.discord_id);
 
   if (profile) {
-    // Auto-show profile info when already linked
-    const { data: subscription } = await supabase
-      .from("subscriptions")
-      .select("plan_name, current_period_end, status")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .maybeSingle();
-
-    const { count: orderCount } = await supabase
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", profile.user_id)
-      .in("status", ["paid", "completed"]);
-
-    const { data: spentData } = await supabase
-      .from("orders")
-      .select("total")
-      .eq("user_id", profile.user_id)
-      .in("status", ["paid", "completed"]);
-
-    const totalSpent = spentData?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
-
     return jsonResponse({
       success: true,
       linked: true,
-      message: `✅ **Account Linked**\n\n👤 **${profile.display_name || profile.username}** (@${profile.username})\n🆔 Customer ID: \`${profile.customer_id}\`\n\n💳 Membership: ${subscription ? `${subscription.plan_name}` : "Free"}\n📦 Orders: ${orderCount || 0}\n💰 Total Spent: £${(totalSpent / 100).toFixed(2)}\n\n🔗 **Portal:** https://eclipserblx.com/account`,
+      message: `✅ Your Discord is already linked to **@${profile.username}** (${profile.customer_id}).\n\nUse the **profile** command to view your account details!`,
       username: profile.username,
       customer_id: profile.customer_id,
-      profile: {
-        display_name: profile.display_name,
-        membership: subscription ? subscription.plan_name : "Free",
-        order_count: orderCount || 0,
-        total_spent_formatted: `£${(totalSpent / 100).toFixed(2)}`,
-      },
     });
   }
 
