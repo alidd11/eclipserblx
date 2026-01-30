@@ -29,6 +29,7 @@ const promotions = [
 ];
 
 export function PromotionCarousel() {
+  const [isReady, setIsReady] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, skipSnaps: false },
     [Autoplay({ delay: 8000, stopOnInteraction: false, stopOnMouseEnter: true })]
@@ -42,10 +43,17 @@ export function PromotionCarousel() {
 
   useEffect(() => {
     if (!emblaApi) return;
+    
+    // Mark as ready once embla is initialized
+    setIsReady(true);
+    
     emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
     onSelect();
+    
     return () => {
       emblaApi.off('select', onSelect);
+      emblaApi.off('reInit', onSelect);
     };
   }, [emblaApi, onSelect]);
 
@@ -54,10 +62,16 @@ export function PromotionCarousel() {
     [emblaApi]
   );
 
+  // Always render content, but control visibility with opacity for smooth transition
+  const currentPromo = promotions[selectedIndex] || promotions[0];
+
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden">
-      {/* Carousel container */}
-      <div ref={emblaRef} className="overflow-hidden">
+      {/* Carousel container - with opacity transition */}
+      <div 
+        ref={emblaRef} 
+        className={`overflow-hidden transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0 absolute'}`}
+      >
         <div className="flex">
           {promotions.map((promo) => (
             <div key={promo.id} className="flex-[0_0_100%] min-w-0">
@@ -103,6 +117,43 @@ export function PromotionCarousel() {
           ))}
         </div>
       </div>
+
+      {/* Fallback content shown until carousel is ready */}
+      {!isReady && (
+        <div className="p-5 md:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className={`w-12 h-12 rounded-xl ${currentPromo.bgAccent} flex items-center justify-center shrink-0`}>
+                <currentPromo.icon className={`h-6 w-6 ${currentPromo.accentColor}`} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-base md:text-lg truncate">{currentPromo.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 max-w-md">
+                  {currentPromo.description}
+                </p>
+              </div>
+            </div>
+            <Link to={currentPromo.link} className="shrink-0 hidden sm:block">
+              <Button 
+                variant="outline" 
+                className={`${currentPromo.id === 'affiliate' ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}
+              >
+                {currentPromo.cta}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+          <Link to={currentPromo.link} className="block sm:hidden mt-4">
+            <Button 
+              variant="outline" 
+              className={`w-full ${currentPromo.id === 'affiliate' ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}
+            >
+              {currentPromo.cta}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Dot indicators */}
       <div className="flex justify-center gap-2 pb-4">
