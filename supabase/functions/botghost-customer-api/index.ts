@@ -88,6 +88,10 @@ async function getLinkedAccount(supabase: any, discordId: string) {
   return profile;
 }
 
+// Eclipse branding footer
+const ECLIPSE_BRANDING = "\n\n━━━━━━━━━━━━━━━━━━━━━━\n<:eclipse:1234567890> **Eclipse** • Your UK:RP Asset Marketplace\n🌐 [eclipserblx.com](https://eclipserblx.com)";
+const ECLIPSE_BANNER = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/product-images/eclipse-discord-banner.png";
+
 // Handle /link - Check if Discord is linked on the website
 async function handleLink(supabase: any, body: BotGhostRequest) {
   const profile = await getLinkedAccount(supabase, body.discord_id);
@@ -96,7 +100,32 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
     return jsonResponse({
       success: true,
       linked: true,
-      message: `✅ Your Discord is linked to **@${profile.username}** (${profile.customer_id}).\n\nUse **/profile** to view your account details!`,
+      embed: {
+        title: "✅ Account Linked",
+        description: `Your Discord is successfully linked to your Eclipse account.\n\n**Account Details**\n\u200B`,
+        color: 0x22c55e, // Green
+        fields: [
+          {
+            name: "👤 Username",
+            value: `@${profile.username}`,
+            inline: true,
+          },
+          {
+            name: "🆔 Customer ID", 
+            value: profile.customer_id,
+            inline: true,
+          },
+        ],
+        footer: {
+          text: "Eclipse • Your UK:RP Asset Marketplace",
+          icon_url: "https://eclipserblx.com/favicon.ico",
+        },
+        image: {
+          url: ECLIPSE_BANNER,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      message: `✅ Your Discord is linked to **@${profile.username}** (${profile.customer_id}).`,
       username: profile.username,
       customer_id: profile.customer_id,
     });
@@ -105,7 +134,32 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
   return jsonResponse({
     success: false,
     linked: false,
-    message: "🔗 **Discord Not Linked**\n\nTo link your account:\n1. Go to https://eclipserblx.com/account\n2. Find the **Discord Account** card\n3. Click **Link with Discord**\n4. Authorize the connection\n\nOnce linked, run **/link** again to confirm!",
+    embed: {
+      title: "🔗 Link Your Discord",
+      description: "Your Discord isn't linked to an Eclipse account yet.\n\nFollow the steps below to link your account and unlock exclusive features!\n\n\u200B",
+      color: 0x5865F2, // Discord Blurple
+      fields: [
+        {
+          name: "📋 How to Link",
+          value: "**1.** Visit [eclipserblx.com/account](https://eclipserblx.com/account)\n**2.** Find the **Discord Account** card\n**3.** Click **Link with Discord**\n**4.** Authorize the connection\n**5.** Run `/link` again to confirm!",
+          inline: false,
+        },
+        {
+          name: "✨ Benefits",
+          value: "• View your profile & purchases\n• Download products directly\n• Access Eclipse+ perks",
+          inline: false,
+        },
+      ],
+      footer: {
+        text: "Eclipse • Your UK:RP Asset Marketplace",
+        icon_url: "https://eclipserblx.com/favicon.ico",
+      },
+      image: {
+        url: ECLIPSE_BANNER,
+      },
+      timestamp: new Date().toISOString(),
+    },
+    message: "🔗 **Discord Not Linked** - Visit https://eclipserblx.com/account to link your account!",
   });
 }
 
