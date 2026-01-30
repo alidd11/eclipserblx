@@ -72,6 +72,7 @@ const LiveChatPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const messagesChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -121,6 +122,29 @@ const LiveChatPage = () => {
 
   // Start new conversation after closing
   const handleStartNewConversation = useCallback(() => {
+    // Clean up existing channels before resetting state
+    if (messagesChannelRef.current) {
+      supabase.removeChannel(messagesChannelRef.current);
+      messagesChannelRef.current = null;
+    }
+    if (typingChannelRef.current) {
+      supabase.removeChannel(typingChannelRef.current);
+      typingChannelRef.current = null;
+    }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+    if (warningTimerRef.current) {
+      clearTimeout(warningTimerRef.current);
+      warningTimerRef.current = null;
+    }
+    
+    // Reset all state
     setConversation(null);
     setMessages([]);
     setIsChatClosed(false);
@@ -128,6 +152,8 @@ const LiveChatPage = () => {
     setInactivityWarning(false);
     setIssueCategory('');
     setIssueDescription('');
+    setIsAgentTyping(false);
+    setIsAiResponding(false);
   }, []);
 
   // Clean up timers on unmount
@@ -189,7 +215,7 @@ const LiveChatPage = () => {
 
   // Subscribe to real-time messages
   useEffect(() => {
-    if (!conversation?.id) return;
+    if (!conversation?.id || isChatClosed) return;
 
     const channel = supabase
       .channel(`chat_messages_${conversation.id}`)
@@ -216,6 +242,9 @@ const LiveChatPage = () => {
       )
       .subscribe();
 
+    // Store ref for cleanup
+    messagesChannelRef.current = channel;
+
     // Typing indicator channel - uses presence to match admin's broadcast
     const typingChannel = supabase
       .channel(`typing-${conversation.id}`)
@@ -232,6 +261,7 @@ const LiveChatPage = () => {
     typingChannelRef.current = typingChannel;
 
     return () => {
+      messagesChannelRef.current = null;
       typingChannelRef.current = null;
       supabase.removeChannel(channel);
       supabase.removeChannel(typingChannel);
@@ -239,7 +269,7 @@ const LiveChatPage = () => {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [conversation?.id, scrollToBottom]);
+  }, [conversation?.id, isChatClosed, scrollToBottom]);
 
   useEffect(() => {
     scrollToBottom();
