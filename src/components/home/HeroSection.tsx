@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Rocket } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from './StatsCard';
 import { ReviewCard } from './ReviewCard';
@@ -13,84 +13,93 @@ import { ActiveOffersCard } from './ActiveOffersCard';
 export function HeroSection() {
   return (
     <section className="relative">
-      {/* Simple gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-      
-      <SectionWrapper as="div" className="pt-8 md:pt-16 relative">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Hero Content - Clean, minimal card */}
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-10">
-            <div className="text-center space-y-5 max-w-3xl mx-auto">
-              {/* Simple badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                <Rocket className="h-4 w-4" />
-                Roblox Creator Marketplace
-              </div>
+      <SectionWrapper as="div" className="pt-6 md:pt-10 relative">
+        {/* Hero Content - Editorial asymmetric layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* Left column - Main content */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-7 space-y-6"
+          >
+            {/* Hero Card */}
+            <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
+              <div className="space-y-4">
+                {/* Subtle category label */}
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Roblox Creator Marketplace
+                </span>
 
-              {/* Main heading */}
-              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
-                Inspiring Your Innovation
-              </h1>
+                {/* Main heading - tighter, more editorial */}
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-tight">
+                  Inspiring Your
+                  <br />
+                  <span className="text-primary">Innovation</span>
+                </h1>
 
-              {/* Concise description */}
-              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-                Premium liveries, UI kits, and Discord bots. Instant download, lifetime updates.
-              </p>
+                {/* Description - left aligned, editorial */}
+                <p className="text-base text-muted-foreground max-w-md leading-relaxed">
+                  Premium liveries, UI kits, and Discord bots from verified creators. 
+                  Instant download, lifetime updates.
+                </p>
 
-              {/* Clean CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <Link to="/products">
-                  <Button size="lg" className="text-base px-8 py-6">
-                    Browse Products
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link to="/eclipse-plus">
-                  <Button size="lg" variant="outline" className="text-base px-8 py-6 border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Eclipse+
-                  </Button>
-                </Link>
-                <MarketplaceHeroButton />
+                {/* CTAs - stacked on desktop for editorial feel */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Link to="/products">
+                    <Button size="lg" className="text-base px-6">
+                      Browse Products
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link to="/eclipse-plus">
+                    <Button size="lg" variant="outline" className="text-base px-6 border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Eclipse+
+                    </Button>
+                  </Link>
+                  <MarketplaceHeroButton />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Active Offers Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-            className="mt-6"
-          >
+            {/* Active Offers */}
             <ActiveOffersCard />
           </motion.div>
 
-          {/* Featured Products Card */}
+          {/* Right column - Stats & Discord stacked */}
           <motion.div 
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="mt-4"
-          >
-            <FeaturedProductsCard />
-          </motion.div>
-
-          {/* Stats, Reviews & Discord Cards */}
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.4 }}
-            className="mt-4 flex flex-col gap-3 md:grid md:grid-cols-3"
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="lg:col-span-5 space-y-4"
           >
             <StatsCard />
             <ReviewCard />
-            <DiscordWidget />
+            <div className="hidden lg:block">
+              <DiscordWidget />
+            </div>
           </motion.div>
+        </div>
+
+        {/* Featured Products - Full width below */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="mt-6"
+        >
+          <FeaturedProductsCard />
+        </motion.div>
+
+        {/* Discord Widget - Mobile only (shown in right column on desktop) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+          className="mt-4 lg:hidden"
+        >
+          <DiscordWidget />
         </motion.div>
       </SectionWrapper>
     </section>
