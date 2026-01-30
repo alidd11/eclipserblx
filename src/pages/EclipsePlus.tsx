@@ -267,7 +267,7 @@ export default function EclipsePlus() {
               
               <div className="mt-4 space-y-1">
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold">£4.99</span>
+                  <span className="text-4xl font-bold">£3.99</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
               </div>

@@ -331,7 +331,7 @@ export default function Checkout() {
                       You could save {formatPrice(potentialSavings)} with Eclipse+
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Get up to 35% off all products + 1 free item monthly for just £4.99/mo
+                      Get up to 35% off all products + 1 free item monthly for just £3.99/mo
                     </p>
                   </div>
                 </div>

@@ -127,7 +127,7 @@ export function SubscriptionCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Join Eclipse+ for just £4.99/month and get 1 free product monthly plus {ECLIPSE_PLUS_DISCOUNT}% off all purchases (excluding bots).
+          Join Eclipse+ for just £3.99/month and get 1 free product monthly plus {ECLIPSE_PLUS_DISCOUNT}% off all purchases (excluding bots).
         </p>
         
         <div className="flex flex-col sm:flex-row gap-2">
