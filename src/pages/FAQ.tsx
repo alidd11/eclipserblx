@@ -51,7 +51,7 @@ const faqItems = [
       },
       {
         question: 'What is Eclipse+ and what discounts does it offer?',
-        answer: 'Eclipse+ is our membership for serious creators — £4.99/month gets you 30% off standard products, 35% off Bots, and one free product each month. The discounts apply automatically at checkout. One thing to note: "Eclipse Savers" products are already discounted, so they\'re excluded from the membership perks.',
+        answer: 'Eclipse+ is our membership for serious creators — £3.99/month gets you 30% off standard products, 35% off Bots, and one free product each month. The discounts apply automatically at checkout. One thing to note: "Eclipse Savers" products are already discounted, so they\'re excluded from the membership perks.',
       },
       {
         question: 'Can I use a discount code with my Eclipse+ membership?',

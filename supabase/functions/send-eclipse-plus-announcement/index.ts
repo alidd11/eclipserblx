@@ -71,8 +71,8 @@ Deno.serve(async (req) => {
           inline: false,
         },
         {
-          name: "💎 Only £4.99/month",
-          value: "Get all these benefits for just **£4.99** per month. Cancel anytime.\n\u200B",
+          name: "💎 Only £3.99/month",
+          value: "Get all these benefits for just **£3.99** per month. Cancel anytime.\n\u200B",
           inline: false,
         },
         {

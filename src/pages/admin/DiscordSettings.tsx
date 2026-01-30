@@ -2027,7 +2027,7 @@ export default function DiscordSettings() {
                     <li>30% discount on all products</li>
                     <li>Monthly free product claim</li>
                     <li>Discord role assignment feature</li>
-                    <li>Pricing information (£4.99/month)</li>
+                    <li>Pricing information (£3.99/month)</li>
                   </ul>
                 </div>
 
