@@ -78,25 +78,7 @@ const NOTE_TYPE_COLORS: Record<string, string> = {
   commendation: 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
-type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
-
-const ROLE_COLORS: Record<AppRole, string> = {
-  admin: 'bg-red-500/20 text-red-400 border-red-500/30',
-  product_manager: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  order_manager: 'bg-green-500/20 text-green-400 border-green-500/30',
-  support_agent: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  analyst: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  recruiter: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-};
-
-const ROLE_LABELS: Record<AppRole, string> = {
-  admin: 'Admin',
-  product_manager: 'Product Manager',
-  order_manager: 'Order Manager',
-  support_agent: 'Support Agent',
-  analyst: 'Analyst',
-  recruiter: 'Recruiter',
-};
+// Note: Roles are now fetched dynamically from custom_roles table
 
 export default function StaffProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -139,7 +121,7 @@ export default function StaffProfile() {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as { role: AppRole; created_at: string }[];
+      return data as { role: string; created_at: string }[];
     },
     enabled: !!userId && isAdmin,
   });
@@ -281,34 +263,53 @@ export default function StaffProfile() {
   // Role management types
   type DbAppRole = Database['public']['Enums']['app_role'];
   
-  const ROLE_OPTIONS: { value: DbAppRole; label: string; color: string }[] = [
-    { value: 'admin', label: 'Admin', color: 'bg-red-500/10 text-red-500 border-red-500/30' },
-    { value: 'product_manager', label: 'Product Manager', color: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
-    { value: 'order_manager', label: 'Order Manager', color: 'bg-green-500/10 text-green-500 border-green-500/30' },
-    { value: 'support_agent', label: 'Support Agent', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
-    { value: 'analyst', label: 'Analyst', color: 'bg-purple-500/10 text-purple-500 border-purple-500/30' },
-    { value: 'recruiter', label: 'Recruiter', color: 'bg-violet-500/10 text-violet-500 border-violet-500/30' },
-    { value: 'seller', label: 'Seller', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' },
-  ];
+  // Fetch custom roles from database
+  const { data: customRoles = [] } = useQuery({
+    queryKey: ['custom-roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('custom_roles')
+        .select('*')
+        .order('hierarchy_level', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // Get available roles (ones not already assigned and within hierarchy)
   const availableRoles = () => {
     const existing = roles.map(r => r.role as string);
-    return ROLE_OPTIONS.filter(r => {
+    return customRoles.filter(r => {
       // Exclude roles the user already has
-      if (existing.includes(r.value)) return false;
-      
-      // Get the target role's hierarchy level from database
-      const targetLevel = roleHierarchy?.find(h => h.role === r.value)?.hierarchy_level ?? 999;
+      if (existing.includes(r.name)) return false;
       
       // Only show roles at or below current user's hierarchy level
-      if ((currentUserHierarchy ?? 0) < targetLevel) return false;
+      if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
       
       // Special case: Only primary admin can assign admin role
-      if (r.value === 'admin' && !isPrimaryAdmin) return false;
+      if (r.name === 'admin' && !isPrimaryAdmin) return false;
       
       return true;
     });
+  };
+  
+  // Helper to get role display info from custom_roles
+  const getRoleInfo = (roleName: string) => {
+    const customRole = customRoles.find(r => r.name === roleName);
+    if (customRole) {
+      return {
+        displayName: customRole.display_name,
+        color: customRole.color,
+        icon: customRole.icon
+      };
+    }
+    // Fallback for any roles not in custom_roles
+    return {
+      displayName: roleName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      color: 'bg-gray-500',
+      icon: 'shield'
+    };
   };
 
   // Check if current user can remove a specific role
@@ -319,8 +320,8 @@ export default function StaffProfile() {
     // Admin role can only be removed by primary admin
     if (role === 'admin') return false;
     
-    // Get the target role's hierarchy level
-    const targetLevel = roleHierarchy?.find(h => h.role === role)?.hierarchy_level ?? 999;
+    // Get the target role's hierarchy level from custom_roles
+    const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
     
     // Can only remove roles at or below current user's hierarchy level
     return (currentUserHierarchy ?? 0) >= targetLevel;
@@ -510,15 +511,18 @@ export default function StaffProfile() {
 
                 {/* Roles */}
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
-                  {roles.map(({ role }) => (
-                    <Badge
-                      key={role}
-                      variant="outline"
-                      className={`${ROLE_COLORS[role]}`}
-                    >
-                      {ROLE_LABELS[role]}
-                    </Badge>
-                  ))}
+                  {roles.map(({ role }) => {
+                    const roleInfo = getRoleInfo(role);
+                    return (
+                      <Badge
+                        key={role}
+                        variant="outline"
+                        className={`${roleInfo.color} text-white border-transparent`}
+                      >
+                        {roleInfo.displayName}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -638,8 +642,8 @@ export default function StaffProfile() {
                   </SelectTrigger>
                   <SelectContent>
                     {availableRoles().map((r) => (
-                      <SelectItem key={r.value} value={r.value}>
-                        {r.label}
+                      <SelectItem key={r.name} value={r.name}>
+                        {r.display_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -665,31 +669,34 @@ export default function StaffProfile() {
               </p>
             ) : (
               <div className="space-y-2">
-                {roles.map(({ role, created_at }, index) => (
-                  <div
-                    key={`${role}-${index}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className={ROLE_COLORS[role]}>
-                        {ROLE_LABELS[role]}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        Assigned {format(new Date(created_at), 'MMM d, yyyy')}
-                      </span>
+                {roles.map(({ role, created_at }, index) => {
+                  const roleInfo = getRoleInfo(role);
+                  return (
+                    <div
+                      key={`${role}-${index}`}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className={`${roleInfo.color} text-white border-transparent`}>
+                          {roleInfo.displayName}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          Assigned {format(new Date(created_at), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                      {canRemoveRole(role as DbAppRole) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => setRoleToRemove({ role: role as DbAppRole, displayName: roleInfo.displayName })}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                    {canRemoveRole(role as DbAppRole) && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => setRoleToRemove({ role: role as DbAppRole, displayName: ROLE_LABELS[role] })}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
