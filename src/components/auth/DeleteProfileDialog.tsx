@@ -61,56 +61,29 @@ export function DeleteProfileDialog({
         return;
       }
 
-      // Delete user data in order (respecting foreign key constraints)
-      // 1. Delete download logs
-      await supabase.from('download_logs').delete().eq('user_id', user.id);
+      // Soft delete user data - mark as deleted instead of permanently removing
+      // This allows data recovery if needed
       
-      // 2. Delete order items for user's orders
-      const { data: userOrders } = await supabase
+      // 1. Soft delete orders (sets deleted_at timestamp)
+      await supabase
         .from('orders')
-        .select('id')
-        .eq('user_id', user.id);
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
       
-      if (userOrders && userOrders.length > 0) {
-        const orderIds = userOrders.map(o => o.id);
-        await supabase.from('order_items').delete().in('order_id', orderIds);
-      }
+      // 2. Soft delete reviews
+      await supabase
+        .from('reviews')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
       
-      // 3. Delete orders
-      await supabase.from('orders').delete().eq('user_id', user.id);
-      
-      // 4. Delete reviews
-      await supabase.from('reviews').delete().eq('user_id', user.id);
-      
-      // 5. Delete forum posts
-      await supabase.from('forum_posts').delete().eq('user_id', user.id);
-      
-      // 6. Delete forum threads
-      await supabase.from('forum_threads').delete().eq('user_id', user.id);
-      
-      // 7. Delete forum chat messages
-      await supabase.from('forum_chat_messages').delete().eq('user_id', user.id);
-      
-      // 8. Delete chat messages
-      await supabase.from('chat_messages').delete().eq('sender_id', user.id);
-      
-      // 9. Delete chat conversations
-      await supabase.from('chat_conversations').delete().eq('user_id', user.id);
-      
-      // 10. Delete support tickets messages and tickets
-      const { data: userTickets } = await supabase
-        .from('support_tickets')
-        .select('id')
-        .eq('user_id', user.id);
-      
-      if (userTickets && userTickets.length > 0) {
-        const ticketIds = userTickets.map(t => t.id);
-        await supabase.from('ticket_messages').delete().in('ticket_id', ticketIds);
-      }
-      await supabase.from('support_tickets').delete().eq('user_id', user.id);
-      
-      // 11. Delete profile
-      await supabase.from('profiles').delete().eq('user_id', user.id);
+      // 3. Soft delete profile (marks account as deleted)
+      await supabase
+        .from('profiles')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
 
       // Sign out the user
       await supabase.auth.signOut();
