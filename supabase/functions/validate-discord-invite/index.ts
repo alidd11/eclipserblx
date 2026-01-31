@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { inviteUrl } = await req.json();
+    const body = await req.json();
+    // Support both snake_case and camelCase for compatibility
+    const inviteUrl = body.invite_url || body.inviteUrl;
 
     if (!inviteUrl) {
       return new Response(
