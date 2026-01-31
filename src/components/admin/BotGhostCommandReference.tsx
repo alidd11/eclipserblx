@@ -47,7 +47,8 @@ const commands: CommandConfig[] = [
   "discord_id": "{User.id}",
   "discord_username": "{User.username}"
 }`,
-    responseVariable: "{link.response.message}",
+    responseVariable: "{profile.response.message}",
+    notes: "Add a Link Button action after the embed. Set URL to: {profile.response.button_url} and Label to: Manage my Account",
   },
   {
     name: "/purchases",
