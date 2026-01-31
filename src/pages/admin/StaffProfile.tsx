@@ -39,12 +39,17 @@ import {
   Plus,
   Trash2,
   Loader2,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
 import { StaffDocuments } from '@/components/admin/StaffDocuments';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { Database } from '@/integrations/supabase/types';
+
+const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
 interface StaffNote {
   id: string;
@@ -95,7 +100,8 @@ const ROLE_LABELS: Record<AppRole, string> = {
 
 export default function StaffProfile() {
   const { userId } = useParams<{ userId: string }>();
-  const { hasRole, user, loading: authLoading } = useAdminAuth();
+  const { hasRole, loading: authLoading } = useAdminAuth();
+  const { user } = useAuth();
   const isAdmin = hasRole('admin');
   const queryClient = useQueryClient();
   
@@ -103,6 +109,8 @@ export default function StaffProfile() {
   const [newNoteType, setNewNoteType] = useState('general');
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  const [newRole, setNewRole] = useState<Database['public']['Enums']['app_role'] | ''>('');
+  const [roleToRemove, setRoleToRemove] = useState<{ role: Database['public']['Enums']['app_role']; displayName: string } | null>(null);
 
   // Fetch staff profile details
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -225,6 +233,151 @@ export default function StaffProfile() {
       }));
     },
     enabled: !!userId && isAdmin,
+  });
+
+  // Check if current user is the primary admin
+  const { data: currentProfile } = useQuery({
+    queryKey: ['current-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
+
+  // Fetch role hierarchy levels from database
+  const { data: roleHierarchy } = useQuery({
+    queryKey: ['role-hierarchy'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('role_hierarchy')
+        .select('role, hierarchy_level');
+      if (error) throw error;
+      return data as { role: string; hierarchy_level: number }[];
+    },
+  });
+
+  // Fetch current user's max hierarchy level
+  const { data: currentUserHierarchy } = useQuery({
+    queryKey: ['current-user-hierarchy', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const { data, error } = await supabase
+        .rpc('get_user_max_hierarchy', { _user_id: user.id });
+      if (error) throw error;
+      return data ?? 0;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Role management types
+  type DbAppRole = Database['public']['Enums']['app_role'];
+  
+  const ROLE_OPTIONS: { value: DbAppRole; label: string; color: string }[] = [
+    { value: 'admin', label: 'Admin', color: 'bg-red-500/10 text-red-500 border-red-500/30' },
+    { value: 'product_manager', label: 'Product Manager', color: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
+    { value: 'order_manager', label: 'Order Manager', color: 'bg-green-500/10 text-green-500 border-green-500/30' },
+    { value: 'support_agent', label: 'Support Agent', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
+    { value: 'analyst', label: 'Analyst', color: 'bg-purple-500/10 text-purple-500 border-purple-500/30' },
+    { value: 'recruiter', label: 'Recruiter', color: 'bg-violet-500/10 text-violet-500 border-violet-500/30' },
+    { value: 'seller', label: 'Seller', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' },
+  ];
+
+  // Get available roles (ones not already assigned and within hierarchy)
+  const availableRoles = () => {
+    const existing = roles.map(r => r.role as string);
+    return ROLE_OPTIONS.filter(r => {
+      // Exclude roles the user already has
+      if (existing.includes(r.value)) return false;
+      
+      // Get the target role's hierarchy level from database
+      const targetLevel = roleHierarchy?.find(h => h.role === r.value)?.hierarchy_level ?? 999;
+      
+      // Only show roles at or below current user's hierarchy level
+      if ((currentUserHierarchy ?? 0) < targetLevel) return false;
+      
+      // Special case: Only primary admin can assign admin role
+      if (r.value === 'admin' && !isPrimaryAdmin) return false;
+      
+      return true;
+    });
+  };
+
+  // Check if current user can remove a specific role
+  const canRemoveRole = (role: DbAppRole) => {
+    // Primary admin can remove any role
+    if (isPrimaryAdmin) return true;
+    
+    // Admin role can only be removed by primary admin
+    if (role === 'admin') return false;
+    
+    // Get the target role's hierarchy level
+    const targetLevel = roleHierarchy?.find(h => h.role === role)?.hierarchy_level ?? 999;
+    
+    // Can only remove roles at or below current user's hierarchy level
+    return (currentUserHierarchy ?? 0) >= targetLevel;
+  };
+
+  // Add role mutation
+  const addRoleMutation = useMutation({
+    mutationFn: async ({ role }: { role: DbAppRole }) => {
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
+      if (error) throw error;
+      
+      // Log the action to audit_logs
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action: 'role_added',
+        resource: 'user_roles',
+        details: { target_user_id: userId, target_email: profile?.email, role }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-roles', userId] });
+      queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
+      setNewRole('');
+      toast.success('Role added');
+    },
+    onError: (error: any) => {
+      if (error.message?.includes('hierarchy') || error.message?.includes('privilege')) {
+        toast.error("You don't have permission to assign this role");
+      } else {
+        toast.error(error.message);
+      }
+    },
+  });
+
+  // Remove role mutation
+  const removeRoleMutation = useMutation({
+    mutationFn: async ({ role }: { role: DbAppRole }) => {
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
+      if (error) throw error;
+      
+      // Log the action to audit_logs
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action: 'role_removed',
+        resource: 'user_roles',
+        details: { target_user_id: userId, target_email: profile?.email, role }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-roles', userId] });
+      queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
+      setRoleToRemove(null);
+      toast.success('Role removed');
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
   });
 
   // Add note mutation
@@ -458,15 +611,48 @@ export default function StaffProfile() {
           </Card>
         </div>
 
-        {/* Role History */}
+        {/* Role Management */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <IdCard className="h-5 w-5" />
-              Role History
+              Role Management
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* Add Role */}
+            {availableRoles().length > 0 && (
+              <div className="flex gap-2">
+                <Select
+                  value={newRole}
+                  onValueChange={(value) => setNewRole(value as DbAppRole)}
+                >
+                  <SelectTrigger className="flex-1 bg-muted/30">
+                    <SelectValue placeholder="Select role to add..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles().map((r) => (
+                      <SelectItem key={r.value} value={r.value}>
+                        {r.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="icon"
+                  disabled={!newRole || addRoleMutation.isPending}
+                  onClick={() => newRole && addRoleMutation.mutate({ role: newRole as DbAppRole })}
+                >
+                  {addRoleMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {/* Current Roles */}
             {roles.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No roles assigned
@@ -478,12 +664,24 @@ export default function StaffProfile() {
                     key={`${role}-${index}`}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
                   >
-                    <Badge variant="outline" className={ROLE_COLORS[role]}>
-                      {ROLE_LABELS[role]}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Assigned {format(new Date(created_at), 'MMM d, yyyy')}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className={ROLE_COLORS[role]}>
+                        {ROLE_LABELS[role]}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Assigned {format(new Date(created_at), 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                    {canRemoveRole(role as DbAppRole) && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => setRoleToRemove({ role: role as DbAppRole, displayName: ROLE_LABELS[role] })}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -644,6 +842,32 @@ export default function StaffProfile() {
               }}
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Role Confirmation Dialog */}
+      <AlertDialog open={!!roleToRemove} onOpenChange={(open) => !open && setRoleToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove the <strong>{roleToRemove?.displayName}</strong> role from {profile?.display_name || 'this staff member'}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (roleToRemove) {
+                  removeRoleMutation.mutate({ role: roleToRemove.role });
+                }
+              }}
+              disabled={removeRoleMutation.isPending}
+            >
+              {removeRoleMutation.isPending ? 'Removing...' : 'Remove Role'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
