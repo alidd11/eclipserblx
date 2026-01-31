@@ -287,6 +287,8 @@ async function handleProfile(supabase: any, body: BotGhostRequest) {
   return jsonResponse({
     success: true,
     roblox_thumbnail_url: robloxThumbnailUrl,
+    button_url: "https://eclipserblx.com/account",
+    button_label: "Manage my Account",
     embed: {
       title: `Profile of ${profile.username}`,
       color: 0xF5A623, // Orange/amber accent like in the reference
