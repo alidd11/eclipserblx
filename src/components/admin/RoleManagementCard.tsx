@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -9,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Lock, Shield, Users, Package, MessageCircle, BarChart3, FileText, Star, Crown, Zap, Eye } from 'lucide-react';
-import { useState } from 'react';
 import { CreateRoleDialog } from './CreateRoleDialog';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -43,6 +43,29 @@ export function RoleManagementCard() {
   const { isAdmin } = useAdminAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRole, setEditRole] = useState<CustomRole | null>(null);
+  const [userEmail, setUserEmail] = useState<string | undefined>();
+
+  // Fetch user email from profile
+  const { data: profileData } = useQuery({
+    queryKey: ['user-profile-email', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  useEffect(() => {
+    if (profileData?.email) {
+      setUserEmail(profileData.email);
+    }
+  }, [profileData]);
 
   // Fetch current user's hierarchy level
   const { data: currentUserHierarchy = 0 } = useQuery({
@@ -259,6 +282,7 @@ export function RoleManagementCard() {
         onOpenChange={handleDialogClose}
         editRole={editRole}
         currentUserHierarchy={currentUserHierarchy}
+        userEmail={userEmail}
       />
     </>
   );
