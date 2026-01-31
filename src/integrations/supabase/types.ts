@@ -3058,45 +3058,24 @@ export type Database = {
         }
         Relationships: []
       }
-      role_hierarchy: {
-        Row: {
-          created_at: string | null
-          hierarchy_level: number
-          role: Database["public"]["Enums"]["app_role"]
-        }
-        Insert: {
-          created_at?: string | null
-          hierarchy_level?: number
-          role: Database["public"]["Enums"]["app_role"]
-        }
-        Update: {
-          created_at?: string | null
-          hierarchy_level?: number
-          role?: Database["public"]["Enums"]["app_role"]
-        }
-        Relationships: []
-      }
       role_permissions: {
         Row: {
           created_at: string
           granted_by: string | null
           id: string
           permission_id: string
-          role: Database["public"]["Enums"]["app_role"]
         }
         Insert: {
           created_at?: string
           granted_by?: string | null
           id?: string
           permission_id: string
-          role: Database["public"]["Enums"]["app_role"]
         }
         Update: {
           created_at?: string
           granted_by?: string | null
           id?: string
           permission_id?: string
-          role?: Database["public"]["Enums"]["app_role"]
         }
         Relationships: [
           {
@@ -5152,24 +5131,32 @@ export type Database = {
           created_at: string
           hierarchy_level: number | null
           id: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           user_id: string
         }
         Insert: {
           created_at?: string
           hierarchy_level?: number | null
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           user_id: string
         }
         Update: {
           created_at?: string
           hierarchy_level?: number | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["name"]
+          },
+        ]
       }
       wishlist: {
         Row: {
@@ -5388,10 +5375,7 @@ export type Database = {
     Functions: {
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       can_assign_role: {
-        Args: {
-          _assigner_id: string
-          _target_role: Database["public"]["Enums"]["app_role"]
-        }
+        Args: { _assigner_id: string; _target_role: string }
         Returns: boolean
       }
       can_manage_user_roles: {
@@ -5440,13 +5424,7 @@ export type Database = {
         Args: { _permission_name: string; _user_id: string }
         Returns: boolean
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_store_owner: {
         Args: { store_uuid: string; user_uuid: string }
@@ -5476,14 +5454,6 @@ export type Database = {
       revert_expired_custom_rates: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role:
-        | "admin"
-        | "product_manager"
-        | "order_manager"
-        | "support_agent"
-        | "analyst"
-        | "recruiter"
-        | "seller"
       bot_license_status: "pending" | "active" | "expired" | "revoked"
       outreach_activity_type:
         | "created"
@@ -5622,15 +5592,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: [
-        "admin",
-        "product_manager",
-        "order_manager",
-        "support_agent",
-        "analyst",
-        "recruiter",
-        "seller",
-      ],
       bot_license_status: ["pending", "active", "expired", "revoked"],
       outreach_activity_type: [
         "created",
