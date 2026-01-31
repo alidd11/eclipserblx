@@ -68,7 +68,7 @@ export default function StaffDirectory() {
 
   // Fetch staff members with their roles
   const { data: staffMembers = [], isLoading: staffLoading } = useQuery({
-    queryKey: ['staff-directory', customRoles],
+    queryKey: ['staff-directory', customRoles.length],
     queryFn: async () => {
       // Get all user roles
       const { data: roles, error: rolesError } = await supabase
@@ -129,7 +129,7 @@ export default function StaffDirectory() {
         return (a.display_name || 'Unknown').localeCompare(b.display_name || 'Unknown');
       });
     },
-    enabled: isAdmin && customRoles.length > 0,
+    enabled: isAdmin,
   });
 
   // Fetch staff ID logs
