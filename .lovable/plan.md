@@ -1,43 +1,97 @@
 
-# Fix: Region Select Flags Not Displaying Correctly
+# Plan: Add "Manage my Account" Button Like Parcel Bot
 
-## Problem
+## Overview
+Configure the `/profile` command to display a proper Discord button below the embed, matching the Parcel bot's clean button style with an external link icon.
 
-The flag images on the Region Select page are being heavily cropped because:
-- The containers are tall and narrow (portrait orientation on mobile)
-- `object-cover` stretches and crops the landscape-oriented flag images to fill the container
-- `object-center` centers the crop, cutting off key parts of flags (UK's Union Jack corners, US's blue field)
+## How Discord Buttons Work with BotGhost
 
-## Solution
+Discord buttons cannot be created purely from API responses - they must be configured in BotGhost's command builder. The API provides the data (URLs, labels), and BotGhost's "Button" action uses that data to create the actual button component.
 
-Change from `object-cover` to `object-contain` so the full flag is always visible within the container, with the container background filling any empty space.
+## Implementation
 
-## Technical Changes
+### 1. Update Edge Function Response
 
-### File: `src/pages/RegionSelect.tsx`
+Add a dedicated `button_url` field to make it easy for BotGhost to reference:
 
-**Change the image styling:**
+**File: `supabase/functions/botghost-customer-api/index.ts`**
 
-```tsx
-// Before (line 231)
-className="absolute inset-0 w-full h-full object-cover object-center ..."
-
-// After
-className="absolute inset-0 w-full h-full object-contain object-center ..."
+```typescript
+return jsonResponse({
+  success: true,
+  roblox_thumbnail_url: robloxThumbnailUrl,
+  
+  // New: Explicit button configuration for BotGhost
+  button_url: "https://eclipserblx.com/account",
+  button_label: "Manage my Account",
+  
+  embed: { ... },
+  // ...existing fields
+});
 ```
 
-**Add a background color to the container** so any empty space around the flag looks clean:
+### 2. BotGhost Configuration Steps
 
-```tsx
-// Before (line 224)
-className={`group relative min-w-0 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md ...`}
+In BotGhost's command builder for `/profile`:
 
-// After - add bg-muted/50 for subtle background behind contained flag
-className={`group relative min-w-0 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-md bg-muted/30 ...`}
+1. **Add a Button Action** after the embed response:
+   - Type: **Link Button**
+   - Label: `Manage my Account`
+   - URL: `{profile.response.button_url}` (or hardcode `https://eclipserblx.com/account`)
+   - Emoji: Use the external link emoji or leave blank
+
+2. The button will appear below the embed just like in the Parcel reference
+
+### 3. Update Admin Reference Documentation
+
+Update `BotGhostCommandReference.tsx` to include instructions for adding the button:
+
+```typescript
+{
+  name: "/profile",
+  description: "View linked account profile",
+  action: "profile",
+  jsonBody: `{
+  "action": "profile",
+  "discord_id": "{User.id}",
+  "discord_username": "{User.username}"
+}`,
+  responseVariable: "{profile.response.message}",
+  notes: "Add a Link Button action after the embed. Set URL to: https://eclipserblx.com/account and Label to: Manage my Account",
+}
 ```
 
-## Result
+## Visual Result
 
-- Full flags will be visible at all screen sizes
-- No important flag elements will be cropped
-- Clean muted background fills any gaps around the flag
+```text
++----------------------------------+
+| Profile of alidd1          [IMG] |
+|                                  |
+| Roblox                           |
+| Alii_DD1                         |
+| `4261672558`                     |
+|                                  |
+| Discord                          |
+| alidd1                           |
+| `1098631267563610292`            |
+|                                  |
+| Purchased Products               |
+| none                             |
++----------------------------------+
+
+[Manage my Account ↗]  <-- Button below embed
+```
+
+## Technical Notes
+
+| Component | Source |
+|-----------|--------|
+| Embed content | API response |
+| Thumbnail | API `roblox_thumbnail_url` field |
+| Button | BotGhost native Link Button action |
+| Button URL | API `button_url` field or hardcoded |
+
+## Files to Modify
+
+1. **`supabase/functions/botghost-customer-api/index.ts`** - Add `button_url` and `button_label` fields to profile response
+2. **`src/components/admin/BotGhostCommandReference.tsx`** - Add note about configuring the Link Button in BotGhost
