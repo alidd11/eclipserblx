@@ -716,7 +716,7 @@ function ApplicationFormDialog({
             />
             <Label htmlFor="termsAccept" className="text-sm leading-normal cursor-pointer">
               I agree to the{' '}
-              <Link to="/seller/terms" className="text-primary hover:underline" target="_blank">
+              <Link to="/seller/documents/terms" className="text-primary hover:underline" target="_blank">
                 Seller Terms of Service
               </Link>{' '}
               and the 15% platform commission on net sales.
