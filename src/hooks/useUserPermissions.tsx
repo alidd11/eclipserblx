@@ -10,58 +10,48 @@ export function useUserPermissions() {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      // Get all permissions for user's roles
-      const { data, error } = await supabase
+      // Step 1: Get user's roles
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          role,
-          custom_roles!inner(name),
-          role_permissions!inner(
-            permissions!inner(name)
-          )
-        `)
+        .select('role')
         .eq('user_id', user.id);
       
-      if (error) {
-        console.error('Error fetching permissions:', error);
-        // Fallback: fetch permissions via a simpler query
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
-        
-        if (!roleData?.length) return [];
-        
-        const roles = roleData.map(r => r.role);
-        
-        const { data: permData } = await supabase
-          .from('role_permissions')
-          .select('permissions(name)')
-          .in('role', roles);
-        
-        if (!permData) return [];
-        
-        const permSet = new Set<string>();
-        permData.forEach((rp: any) => {
-          if (rp.permissions?.name) {
-            permSet.add(rp.permissions.name);
-          }
-        });
-        
-        return Array.from(permSet);
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+        return [];
       }
       
-      // Extract unique permission names
-      const permSet = new Set<string>();
-      data?.forEach((ur: any) => {
-        ur.role_permissions?.forEach((rp: any) => {
-          if (rp.permissions?.name) {
-            permSet.add(rp.permissions.name);
-          }
-        });
-      });
+      if (!userRoles?.length) return [];
       
-      return Array.from(permSet);
+      const roles = userRoles.map(r => r.role);
+      
+      // Step 2: Get permission IDs for those roles
+      const { data: rolePerms, error: permError } = await supabase
+        .from('role_permissions')
+        .select('permission_id')
+        .in('role', roles);
+      
+      if (permError) {
+        console.error('Error fetching role permissions:', permError);
+        return [];
+      }
+      
+      if (!rolePerms?.length) return [];
+      
+      const permissionIds = [...new Set(rolePerms.map(rp => rp.permission_id))];
+      
+      // Step 3: Get permission names
+      const { data: perms, error: namesError } = await supabase
+        .from('permissions')
+        .select('name')
+        .in('id', permissionIds);
+      
+      if (namesError) {
+        console.error('Error fetching permission names:', namesError);
+        return [];
+      }
+      
+      return perms?.map(p => p.name) ?? [];
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
