@@ -62,8 +62,8 @@ const commands: CommandConfig[] = [
     responseVariable: "{link.response.message}",
   },
   {
-    name: "/download",
-    description: "Get download link for a product",
+    name: "/retrieve",
+    description: "Get download link for a product (sent via DM)",
     action: "download",
     jsonBody: `{
   "action": "download",
@@ -72,7 +72,7 @@ const commands: CommandConfig[] = [
   "product_name": "{option_product}"
 }`,
     responseVariable: "{link.response.message}",
-    notes: "Add a 'product' option (string, optional) to the command. If omitted, lists available products.",
+    notes: "Add a 'product' option (string, optional). In BotGhost, set the response to 'Send as DM' so the download link is private. If no product specified, lists available products.",
   },
 ];
 
