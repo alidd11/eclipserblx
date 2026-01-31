@@ -160,15 +160,9 @@ export default function AdminUsers() {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Filter out profiles where the auth user no longer exists
-      const validProfiles = await Promise.all(
-        (data || []).map(async (profile) => {
-          const { data: exists } = await supabase.rpc('auth_user_exists', { _user_id: profile.user_id });
-          return exists ? profile : null;
-        })
-      );
-      
-      return validProfiles.filter(Boolean);
+      // Return all profiles - auth_user_exists check was causing performance issues
+      // Profile cleanup for orphaned records should be handled by a scheduled job instead
+      return data || [];
     },
   });
 
