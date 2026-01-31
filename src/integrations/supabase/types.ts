@@ -1063,6 +1063,81 @@ export type Database = {
         }
         Relationships: []
       }
+      data_audit_log: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          operation: string
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation: string
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
+      data_exports: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          export_type: string
+          file_path: string | null
+          id: string
+          record_count: number | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          export_type: string
+          file_path?: string | null
+          id?: string
+          record_count?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          export_type?: string
+          file_path?: string | null
+          id?: string
+          record_count?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       discord_advertisements: {
         Row: {
           created_at: string
@@ -2222,6 +2297,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_email: string
+          deleted_at: string | null
           discount_amount: number | null
           discount_code_id: string | null
           id: string
@@ -2239,6 +2315,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_email: string
+          deleted_at?: string | null
           discount_amount?: number | null
           discount_code_id?: string | null
           id?: string
@@ -2256,6 +2333,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_email?: string
+          deleted_at?: string | null
           discount_amount?: number | null
           discount_code_id?: string | null
           id?: string
@@ -2413,6 +2491,7 @@ export type Database = {
           asset_file_url: string | null
           category_id: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           discord_message_id: string | null
           discord_thread_id: string | null
@@ -2441,6 +2520,7 @@ export type Database = {
           asset_file_url?: string | null
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           discord_message_id?: string | null
           discord_thread_id?: string | null
@@ -2469,6 +2549,7 @@ export type Database = {
           asset_file_url?: string | null
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           discord_message_id?: string | null
           discord_thread_id?: string | null
@@ -2526,6 +2607,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           customer_id: string | null
+          deleted_at: string | null
           discord_id: string | null
           discord_username: string | null
           display_name: string | null
@@ -2551,6 +2633,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
+          deleted_at?: string | null
           discord_id?: string | null
           discord_username?: string | null
           display_name?: string | null
@@ -2576,6 +2659,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
+          deleted_at?: string | null
           discord_id?: string | null
           discord_username?: string | null
           display_name?: string | null
@@ -2964,6 +3048,7 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          deleted_at: string | null
           external_reviewer_name: string | null
           external_source: string | null
           id: string
@@ -2980,6 +3065,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          deleted_at?: string | null
           external_reviewer_name?: string | null
           external_source?: string | null
           id?: string
@@ -2996,6 +3082,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          deleted_at?: string | null
           external_reviewer_name?: string | null
           external_source?: string | null
           id?: string
@@ -4672,6 +4759,7 @@ export type Database = {
           custom_rate_expires_at: string | null
           custom_rate_set_at: string | null
           custom_rate_set_by: string | null
+          deleted_at: string | null
           description: string | null
           discord_url: string | null
           featured_product_ids: string[] | null
@@ -4735,6 +4823,7 @@ export type Database = {
           custom_rate_expires_at?: string | null
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           discord_url?: string | null
           featured_product_ids?: string[] | null
@@ -4798,6 +4887,7 @@ export type Database = {
           custom_rate_expires_at?: string | null
           custom_rate_set_at?: string | null
           custom_rate_set_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           discord_url?: string | null
           featured_product_ids?: string[] | null
@@ -5453,6 +5543,10 @@ export type Database = {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined
       }
+      restore_deleted: {
+        Args: { p_record_id: string; p_table_name: string }
+        Returns: boolean
+      }
       reverse_affiliate_commission: {
         Args: { p_order_id: string; p_refund_id: string }
         Returns: undefined
@@ -5462,6 +5556,10 @@ export type Database = {
         Returns: undefined
       }
       revert_expired_custom_rates: { Args: never; Returns: undefined }
+      soft_delete: {
+        Args: { p_record_id: string; p_table_name: string }
+        Returns: boolean
+      }
     }
     Enums: {
       bot_license_status: "pending" | "active" | "expired" | "revoked"
