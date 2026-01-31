@@ -490,6 +490,12 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     product_name: product.name,
     download_url: signedUrlData.signedUrl,
     expires_in: "1 hour",
-    message: `📥 **${product.name}**\n\nYour download link is ready! ⚠️ This link expires in 1 hour.\n\n🔗 Do not share this link.`,
+    message: `Hey <@${body.discord_id}>!\n\n` +
+      `**Your Download is Ready**\n\n` +
+      `You've requested the download for **${product.name}**.\n\n` +
+      `🔗 **Download Link:**\n${signedUrlData.signedUrl}\n\n` +
+      `⏳ This link will expire in **1 hour**.\n\n` +
+      `⚠️ **Please do not share this link** — it is unique to your account.\n\n` +
+      `Need help? Visit [eclipserblx.com/support](https://eclipserblx.com/support)`,
   });
 }
