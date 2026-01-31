@@ -67,6 +67,7 @@ export default function StaffDirectory() {
   });
 
   // Fetch staff members with their roles
+  // Note: No longer depends on customRoles.length to avoid blocking initial load
   const { data: staffMembers = [], isLoading: staffLoading } = useQuery({
     queryKey: ['staff-directory', customRoles.length],
     queryFn: async () => {
