@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { SITE_NAME } from '@/lib/constants';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
@@ -22,7 +23,7 @@ interface NavItem {
   title: string;
   icon: LucideIcon;
   href: string;
-  roles: string[];
+  permissions?: string[]; // Required permissions (any of these)
   dividerAfter?: boolean;
 }
 
@@ -33,13 +34,15 @@ interface NavGroup {
   items: NavItem[];
 }
 
+// Navigation items with permission-based access
+// Empty permissions array = accessible to all staff
 const navGroups: NavGroup[] = [
   {
     id: 'overview',
     title: 'Overview',
     icon: LayoutDashboard,
     items: [
-      { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', roles: [] },
+      { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', permissions: [] },
     ],
   },
   {
@@ -47,18 +50,18 @@ const navGroups: NavGroup[] = [
     title: 'Daily Operations',
     icon: ShoppingCart,
     items: [
-      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', roles: ['admin', 'product_manager', 'analyst'] },
-      { title: 'Income', icon: TrendingUp, href: '/admin/income', roles: ['admin', 'analyst'] },
-      { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', roles: ['admin'], dividerAfter: true },
-      { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', roles: ['admin', 'support_agent'] },
-      { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', roles: ['admin', 'support_agent'] },
-      { title: 'QOTD', icon: MessageCircle, href: '/admin/discord-qotd', roles: ['admin', 'support_agent'] },
-      { title: 'Promotions', icon: Tags, href: '/admin/promotions', roles: ['admin', 'product_manager'], dividerAfter: true },
-      { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', roles: ['admin'] },
-      { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', roles: ['admin', 'analyst'] },
-      { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', roles: ['admin'], dividerAfter: true },
-      { title: 'Discord Outreach', icon: Megaphone, href: '/admin/discord-outreach', roles: ['admin', 'recruiter'] },
-      { title: 'Bot Servers', icon: Bell, href: '/admin/bot-servers', roles: [] },
+      { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', permissions: ['view_analytics'] },
+      { title: 'Income', icon: TrendingUp, href: '/admin/income', permissions: ['view_income'] },
+      { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', permissions: ['view_analytics'], dividerAfter: true },
+      { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', permissions: ['manage_discord_engagement'] },
+      { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', permissions: ['manage_discord_engagement'] },
+      { title: 'QOTD', icon: MessageCircle, href: '/admin/discord-qotd', permissions: ['manage_discord_engagement'] },
+      { title: 'Promotions', icon: Tags, href: '/admin/promotions', permissions: ['manage_discounts'], dividerAfter: true },
+      { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', permissions: ['manage_affiliates'] },
+      { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', permissions: ['view_affiliates'] },
+      { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', permissions: ['review_affiliate_applications'], dividerAfter: true },
+      { title: 'Discord Outreach', icon: Megaphone, href: '/admin/discord-outreach', permissions: ['view_job_channels'] },
+      { title: 'Bot Servers', icon: Bell, href: '/admin/bot-servers', permissions: ['view_bot_codes'] },
     ],
   },
   {
@@ -66,14 +69,14 @@ const navGroups: NavGroup[] = [
     title: 'Communications',
     icon: MessageCircle,
     items: [
-      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', roles: ['admin', 'support_agent'] },
-      { title: 'Discord Modmail', icon: Mail, href: '/admin/discord-modmail', roles: ['admin', 'support_agent'] },
-      { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', roles: ['admin', 'support_agent'] },
-      { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', roles: ['admin', 'support_agent'] },
-      { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', roles: ['admin', 'support_agent'], dividerAfter: true },
-      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', roles: [] },
-      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', roles: ['admin'] },
-      { title: 'Modmail Bot Setup', icon: Bot, href: '/admin/modmail-bot-setup', roles: ['admin'] },
+      { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', permissions: ['view_live_chat'] },
+      { title: 'Discord Modmail', icon: Mail, href: '/admin/discord-modmail', permissions: ['view_live_chat'] },
+      { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', permissions: ['view_contact_messages'] },
+      { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', permissions: ['view_forum_reports'] },
+      { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', permissions: ['view_live_chat'], dividerAfter: true },
+      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', permissions: [] },
+      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', permissions: ['manage_staff'] },
+      { title: 'Modmail Bot Setup', icon: Bot, href: '/admin/modmail-bot-setup', permissions: ['manage_settings'] },
     ],
   },
   {
@@ -81,11 +84,11 @@ const navGroups: NavGroup[] = [
     title: 'Store',
     icon: Package,
     items: [
-      { title: 'Products', icon: Package, href: '/admin/products', roles: ['admin', 'product_manager', 'analyst'] },
-      { title: 'Categories', icon: FolderOpen, href: '/admin/categories', roles: ['admin'] },
-      { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', roles: ['admin', 'product_manager', 'order_manager', 'analyst'] },
-      { title: 'Refunds', icon: RotateCcw, href: '/admin/refunds', roles: ['admin'] },
-      { title: 'Reviews', icon: Star, href: '/admin/reviews', roles: ['admin', 'product_manager'] },
+      { title: 'Products', icon: Package, href: '/admin/products', permissions: ['view_products'] },
+      { title: 'Categories', icon: FolderOpen, href: '/admin/categories', permissions: ['manage_products'] },
+      { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', permissions: ['view_orders'] },
+      { title: 'Refunds', icon: RotateCcw, href: '/admin/refunds', permissions: ['manage_orders'] },
+      { title: 'Reviews', icon: Star, href: '/admin/reviews', permissions: ['view_reviews'] },
     ],
   },
   {
@@ -93,15 +96,15 @@ const navGroups: NavGroup[] = [
     title: 'Marketplace',
     icon: Store,
     items: [
-      { title: 'Seller Stores', icon: Store, href: '/admin/seller-commissions', roles: ['admin'] },
-      { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', roles: ['admin'] },
-      { title: 'Seller Products', icon: Package, href: '/admin/seller-products', roles: ['admin'] },
-      { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', roles: ['admin'] },
-      { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', roles: ['admin', 'moderator'] },
-      { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', roles: ['admin'], dividerAfter: true },
-      { title: 'Seller Documents', icon: FolderOpen, href: '/admin/seller-documents', roles: ['admin'] },
-      { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', roles: ['admin'] },
-      { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', roles: ['admin', 'moderator'] },
+      { title: 'Seller Stores', icon: Store, href: '/admin/seller-commissions', permissions: ['view_seller_stores'] },
+      { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', permissions: ['view_store_applications'] },
+      { title: 'Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },
+      { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', permissions: ['view_seller_payouts'] },
+      { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', permissions: ['view_seller_tickets'] },
+      { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', permissions: ['view_store_applications'], dividerAfter: true },
+      { title: 'Seller Documents', icon: FolderOpen, href: '/admin/seller-documents', permissions: ['manage_seller_stores'] },
+      { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', permissions: ['manage_seller_stores'] },
+      { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', permissions: ['view_seller_stores'] },
     ],
   },
   {
@@ -109,12 +112,12 @@ const navGroups: NavGroup[] = [
     title: 'Team',
     icon: Users,
     items: [
-      { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', roles: ['admin'] },
-      { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', roles: ['admin'] },
-      { title: 'Staff Documents', icon: FolderOpen, href: '/admin/staff-documents', roles: ['admin'], dividerAfter: true },
-      { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', roles: ['admin', 'recruiter'] },
-      { title: 'Applications', icon: FileText, href: '/admin/applications', roles: ['admin', 'recruiter'] },
-      { title: 'Archived', icon: Archive, href: '/admin/archived-applications', roles: ['admin'] },
+      { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', permissions: ['view_staff_directory'] },
+      { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', permissions: ['view_staff_activity'] },
+      { title: 'Staff Documents', icon: FolderOpen, href: '/admin/staff-documents', permissions: ['manage_staff'], dividerAfter: true },
+      { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', permissions: ['view_job_channels'] },
+      { title: 'Applications', icon: FileText, href: '/admin/applications', permissions: ['view_applications'] },
+      { title: 'Archived', icon: Archive, href: '/admin/archived-applications', permissions: ['review_applications'] },
     ],
   },
   {
@@ -122,9 +125,9 @@ const navGroups: NavGroup[] = [
     title: 'Customers',
     icon: Users,
     items: [
-      { title: 'Customers', icon: Users, href: '/admin/users', roles: ['admin', 'order_manager', 'analyst'] },
-      { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', roles: ['admin'] },
-      { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', roles: ['admin'] },
+      { title: 'Customers', icon: Users, href: '/admin/users', permissions: ['view_users'] },
+      { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', permissions: ['view_ip_bans'] },
+      { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', permissions: ['view_subscribers'] },
     ],
   },
   {
@@ -132,13 +135,13 @@ const navGroups: NavGroup[] = [
     title: 'System',
     icon: Settings,
     items: [
-      { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', roles: ['admin'] },
-      { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', roles: ['admin'] },
-      { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', roles: ['admin'], dividerAfter: true },
-      { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', roles: ['admin'] },
-      { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', roles: ['admin'], dividerAfter: true },
-      { title: 'Settings', icon: Settings, href: '/admin/settings', roles: [] },
-      { title: 'Help', icon: HelpCircle, href: '/admin/help', roles: [] },
+      { title: 'Incidents', icon: AlertTriangle, href: '/admin/incidents', permissions: ['view_incidents'] },
+      { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', permissions: ['view_audit_logs'] },
+      { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', permissions: ['manage_permissions'], dividerAfter: true },
+      { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', permissions: ['manage_settings'] },
+      { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
+      { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
+      { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],
   },
 ];
@@ -154,7 +157,8 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false }: AdminSidebarProps) {
   const { signOut } = useAuth();
-  const { isAdmin, hasRole } = useAdminAuth();
+  const { isAdmin } = useAdminAuth();
+  const { hasAnyPermission } = useUserPermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -211,8 +215,15 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
   };
 
-  const canAccessItem = (item: NavItem) => 
-    item.roles.length === 0 || isAdmin || item.roles.some(role => hasRole(role));
+  // Permission-based access control
+  const canAccessItem = (item: NavItem) => {
+    // No permissions required = accessible to all staff
+    if (!item.permissions || item.permissions.length === 0) return true;
+    // Admin has full access
+    if (isAdmin) return true;
+    // Check if user has any of the required permissions
+    return hasAnyPermission(item.permissions);
+  };
 
   const getFilteredGroups = () => {
     return navGroups
