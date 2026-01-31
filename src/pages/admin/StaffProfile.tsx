@@ -47,7 +47,7 @@ import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Database } from '@/integrations/supabase/types';
+// Note: Roles are now text-based (stored in custom_roles table), not an enum
 
 const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
@@ -91,8 +91,8 @@ export default function StaffProfile() {
   const [newNoteType, setNewNoteType] = useState('general');
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
-  const [newRole, setNewRole] = useState<Database['public']['Enums']['app_role'] | ''>('');
-  const [roleToRemove, setRoleToRemove] = useState<{ role: Database['public']['Enums']['app_role']; displayName: string } | null>(null);
+  const [newRole, setNewRole] = useState<string>('');
+  const [roleToRemove, setRoleToRemove] = useState<{ role: string; displayName: string } | null>(null);
 
   // Fetch staff profile details
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -235,19 +235,7 @@ export default function StaffProfile() {
 
   const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
 
-  // Fetch role hierarchy levels from database
-  const { data: roleHierarchy } = useQuery({
-    queryKey: ['role-hierarchy'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('role_hierarchy')
-        .select('role, hierarchy_level');
-      if (error) throw error;
-      return data as { role: string; hierarchy_level: number }[];
-    },
-  });
-
-  // Fetch current user's max hierarchy level
+  // Fetch current user's max hierarchy level (uses custom_roles table now)
   const { data: currentUserHierarchy } = useQuery({
     queryKey: ['current-user-hierarchy', user?.id],
     queryFn: async () => {
@@ -259,9 +247,6 @@ export default function StaffProfile() {
     },
     enabled: !!user?.id,
   });
-
-  // Role management types
-  type DbAppRole = Database['public']['Enums']['app_role'];
   
   // Fetch custom roles from database
   const { data: customRoles = [] } = useQuery({
@@ -313,7 +298,7 @@ export default function StaffProfile() {
   };
 
   // Check if current user can remove a specific role
-  const canRemoveRole = (role: DbAppRole) => {
+  const canRemoveRole = (role: string) => {
     // Primary admin can remove any role
     if (isPrimaryAdmin) return true;
     
@@ -329,7 +314,7 @@ export default function StaffProfile() {
 
   // Add role mutation
   const addRoleMutation = useMutation({
-    mutationFn: async ({ role, targetUserId }: { role: DbAppRole; targetUserId: string }) => {
+    mutationFn: async ({ role, targetUserId }: { role: string; targetUserId: string }) => {
       const { error } = await supabase.from('user_roles').insert({ user_id: targetUserId, role });
       if (error) throw error;
       
@@ -361,7 +346,7 @@ export default function StaffProfile() {
 
   // Remove role mutation
   const removeRoleMutation = useMutation({
-    mutationFn: async ({ role, targetUserId }: { role: DbAppRole; targetUserId: string }) => {
+    mutationFn: async ({ role, targetUserId }: { role: string; targetUserId: string }) => {
       const { error } = await supabase.from('user_roles').delete().eq('user_id', targetUserId).eq('role', role);
       if (error) throw error;
       
@@ -635,7 +620,7 @@ export default function StaffProfile() {
               <div className="flex gap-2">
                 <Select
                   value={newRole}
-                  onValueChange={(value) => setNewRole(value as DbAppRole)}
+                  onValueChange={(value) => setNewRole(value)}
                 >
                   <SelectTrigger className="flex-1 bg-muted/30">
                     <SelectValue placeholder="Select role to add..." />
@@ -651,7 +636,7 @@ export default function StaffProfile() {
                 <Button
                   size="icon"
                   disabled={!newRole || addRoleMutation.isPending}
-                  onClick={() => newRole && userId && addRoleMutation.mutate({ role: newRole as DbAppRole, targetUserId: userId })}
+                  onClick={() => newRole && userId && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}
                 >
                   {addRoleMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -684,12 +669,12 @@ export default function StaffProfile() {
                           Assigned {format(new Date(created_at), 'MMM d, yyyy')}
                         </span>
                       </div>
-                      {canRemoveRole(role as DbAppRole) && (
+                      {canRemoveRole(role) && (
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => setRoleToRemove({ role: role as DbAppRole, displayName: roleInfo.displayName })}
+                          onClick={() => setRoleToRemove({ role: role, displayName: roleInfo.displayName })}
                         >
                           <X className="h-4 w-4" />
                         </Button>

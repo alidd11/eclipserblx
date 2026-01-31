@@ -43,28 +43,24 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Database } from '@/integrations/supabase/types';
 import { GrantEclipsePlusDialog } from '@/components/admin/GrantEclipsePlusDialog';
 import { CustomerProfileDialog } from '@/components/admin/CustomerProfileDialog';
 
-type AppRole = Database['public']['Enums']['app_role'];
-
-const ROLES: { value: AppRole; label: string; color: string }[] = [
-  { value: 'admin', label: 'Admin', color: 'bg-red-500/10 text-red-500 border-red-500/30' },
-  { value: 'product_manager', label: 'Product Manager', color: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
-  { value: 'order_manager', label: 'Order Manager', color: 'bg-green-500/10 text-green-500 border-green-500/30' },
-  { value: 'support_agent', label: 'Support Agent', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
-  { value: 'analyst', label: 'Analyst', color: 'bg-purple-500/10 text-purple-500 border-purple-500/30' },
-  { value: 'recruiter', label: 'Recruiter', color: 'bg-violet-500/10 text-violet-500 border-violet-500/30' },
-  { value: 'seller', label: 'Seller', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' },
-];
+// Note: Roles are now text-based, fetched from custom_roles table
+interface CustomRole {
+  name: string;
+  display_name: string;
+  color: string;
+  icon: string;
+  hierarchy_level: number;
+}
 
 const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
 export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [newRole, setNewRole] = useState<AppRole | ''>('');
+  const [newRole, setNewRole] = useState<string>('');
   const [ipBanDialogUser, setIpBanDialogUser] = useState<any>(null);
   const [ipAddress, setIpAddress] = useState('');
   const [banReason, setBanReason] = useState('');
@@ -128,15 +124,16 @@ export default function AdminUsers() {
 
   const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
 
-  // Fetch role hierarchy levels from database
-  const { data: roleHierarchy } = useQuery({
-    queryKey: ['role-hierarchy'],
+  // Fetch custom roles from database
+  const { data: customRoles = [] } = useQuery({
+    queryKey: ['custom-roles'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('role_hierarchy')
-        .select('role, hierarchy_level');
+        .from('custom_roles')
+        .select('name, display_name, color, icon, hierarchy_level')
+        .order('hierarchy_level', { ascending: false });
       if (error) throw error;
-      return data as { role: string; hierarchy_level: number }[];
+      return data;
     },
   });
 
@@ -188,7 +185,7 @@ export default function AdminUsers() {
   const isAdmin = userRoles?.some(r => r.user_id === user?.id && r.role === 'admin') ?? false;
 
   const addRoleMutation = useMutation({
-    mutationFn: async ({ userId, role, targetEmail, displayName }: { userId: string; role: AppRole; targetEmail: string; displayName?: string }) => {
+    mutationFn: async ({ userId, role, targetEmail, displayName }: { userId: string; role: string; targetEmail: string; displayName?: string }) => {
       const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
       if (error) throw error;
       
@@ -287,7 +284,7 @@ export default function AdminUsers() {
   });
 
   const removeRoleMutation = useMutation({
-    mutationFn: async ({ userId, role, targetEmail }: { userId: string; role: AppRole; targetEmail: string }) => {
+    mutationFn: async ({ userId, role, targetEmail }: { userId: string; role: string; targetEmail: string }) => {
       const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
       if (error) throw error;
       
@@ -369,44 +366,41 @@ export default function AdminUsers() {
     return userRoles?.filter(r => r.user_id === userId) || [];
   };
 
-  const getRoleBadge = (role: AppRole) => {
-    const config = ROLES.find(r => r.value === role);
+  const getRoleBadge = (role: string) => {
+    const config = customRoles.find(r => r.name === role);
     return (
-      <Badge key={role} variant="outline" className={config?.color || ''}>
-        {config?.label || role}
+      <Badge key={role} variant="outline" className={`${config?.color || 'bg-gray-500'} text-white border-transparent`}>
+        {config?.display_name || role}
       </Badge>
     );
   };
 
   const availableRoles = (userId: string) => {
     const existing = getUserRoles(userId).map(r => r.role);
-    return ROLES.filter(r => {
+    return customRoles.filter(r => {
       // Exclude roles the user already has
-      if (existing.includes(r.value)) return false;
-      
-      // Get the target role's hierarchy level from database
-      const targetLevel = roleHierarchy?.find(h => h.role === r.value)?.hierarchy_level ?? 999;
+      if (existing.includes(r.name)) return false;
       
       // Only show roles at or below current user's hierarchy level
-      if ((currentUserHierarchy ?? 0) < targetLevel) return false;
+      if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
       
       // Special case: Only primary admin can assign admin role (extra protection)
-      if (r.value === 'admin' && !isPrimaryAdmin) return false;
+      if (r.name === 'admin' && !isPrimaryAdmin) return false;
       
       return true;
     });
   };
 
   // Check if current user can remove a specific role
-  const canRemoveRole = (role: AppRole) => {
+  const canRemoveRole = (role: string) => {
     // Primary admin can remove any role
     if (isPrimaryAdmin) return true;
     
     // Admin role can only be removed by primary admin
     if (role === 'admin') return false;
     
-    // Get the target role's hierarchy level
-    const targetLevel = roleHierarchy?.find(h => h.role === role)?.hierarchy_level ?? 999;
+    // Get the target role's hierarchy level from custom_roles
+    const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
     
     // Can only remove roles at or below current user's hierarchy level
     return (currentUserHierarchy ?? 0) >= targetLevel;
@@ -666,20 +660,23 @@ export default function AdminUsers() {
                   {getUserRoles(selectedUser.user_id).length === 0 ? (
                     <span className="text-sm text-muted-foreground">No roles assigned</span>
                   ) : (
-                    getUserRoles(selectedUser.user_id).map((r) => (
-                      <Badge key={r.id} variant="outline" className="gap-1 py-1.5 px-2">
-                        {ROLES.find(role => role.value === r.role)?.label || r.role}
-                        {/* Only show remove button if user has permission based on hierarchy */}
-                        {canRemoveRole(r.role) && (
-                          <button
-                            onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role, targetEmail: selectedUser.email })}
-                            className="ml-1 hover:text-destructive touch-manipulation"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </Badge>
-                    ))
+                    getUserRoles(selectedUser.user_id).map((r) => {
+                      const roleInfo = customRoles.find(role => role.name === r.role);
+                      return (
+                        <Badge key={r.id} variant="outline" className={`gap-1 py-1.5 px-2 ${roleInfo?.color || ''} text-white border-transparent`}>
+                          {roleInfo?.display_name || r.role}
+                          {/* Only show remove button if user has permission based on hierarchy */}
+                          {canRemoveRole(r.role) && (
+                            <button
+                              onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role, targetEmail: selectedUser.email })}
+                              className="ml-1 hover:text-destructive touch-manipulation"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </Badge>
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -688,14 +685,14 @@ export default function AdminUsers() {
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-2">Add Role</p>
                   <div className="flex gap-2">
-                    <Select value={newRole} onValueChange={(v) => setNewRole(v as AppRole)}>
+                    <Select value={newRole} onValueChange={(v) => setNewRole(v)}>
                       <SelectTrigger className="flex-1 h-10">
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableRoles(selectedUser.user_id).map((role) => (
-                          <SelectItem key={role.value} value={role.value} className="py-2.5">
-                            {role.label}
+                          <SelectItem key={role.name} value={role.name} className="py-2.5">
+                            {role.display_name}
                           </SelectItem>
                         ))}
                       </SelectContent>

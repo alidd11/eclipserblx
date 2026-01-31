@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate, Link } from 'react-router-dom';
 
-type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
+// Note: Roles are now dynamic, fetched from custom_roles table
 
 interface StaffMember {
   user_id: string;
@@ -23,7 +23,7 @@ interface StaffMember {
   avatar_url: string | null;
   staff_id: string | null;
   customer_id: string | null;
-  roles: AppRole[];
+  roles: string[];
   created_at: string;
 }
 
@@ -36,23 +36,13 @@ interface StaffIdLog {
   display_name?: string | null;
 }
 
-const ROLE_COLORS: Record<AppRole, string> = {
-  admin: 'bg-red-500/20 text-red-400 border-red-500/30',
-  product_manager: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  order_manager: 'bg-green-500/20 text-green-400 border-green-500/30',
-  support_agent: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  analyst: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  recruiter: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-};
-
-const ROLE_LABELS: Record<AppRole, string> = {
-  admin: 'Admin',
-  product_manager: 'Product Manager',
-  order_manager: 'Order Manager',
-  support_agent: 'Support Agent',
-  analyst: 'Analyst',
-  recruiter: 'Recruiter',
-};
+interface CustomRole {
+  name: string;
+  display_name: string;
+  color: string;
+  icon: string;
+  hierarchy_level: number;
+}
 
 export default function StaffDirectory() {
   const { hasRole, loading: authLoading } = useAdminAuth();
@@ -62,22 +52,23 @@ export default function StaffDirectory() {
   // Check if user is admin
   const isAdmin = hasRole('admin');
 
-  // Fetch role hierarchy from database for consistent sorting
-  const { data: roleHierarchyData } = useQuery({
-    queryKey: ['role-hierarchy'],
+  // Fetch custom roles from database for consistent sorting
+  const { data: customRoles = [] } = useQuery<CustomRole[]>({
+    queryKey: ['custom-roles'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('role_hierarchy')
-        .select('role, hierarchy_level');
+        .from('custom_roles')
+        .select('name, display_name, color, icon, hierarchy_level')
+        .order('hierarchy_level', { ascending: false });
       if (error) throw error;
-      return data as { role: string; hierarchy_level: number }[];
+      return data;
     },
     enabled: isAdmin,
   });
 
   // Fetch staff members with their roles
   const { data: staffMembers = [], isLoading: staffLoading } = useQuery({
-    queryKey: ['staff-directory', roleHierarchyData],
+    queryKey: ['staff-directory', customRoles],
     queryFn: async () => {
       // Get all user roles
       const { data: roles, error: rolesError } = await supabase
@@ -99,22 +90,12 @@ export default function StaffDirectory() {
 
       if (profilesError) throw profilesError;
 
-      // Build dynamic hierarchy map from database
+      // Build dynamic hierarchy map from custom_roles
       const ROLE_HIERARCHY: Record<string, number> = {};
-      if (roleHierarchyData) {
-        roleHierarchyData.forEach(h => {
+      if (customRoles.length > 0) {
+        customRoles.forEach(r => {
           // Convert hierarchy_level to rank (higher level = lower rank number for sorting)
-          ROLE_HIERARCHY[h.role] = 100 - h.hierarchy_level;
-        });
-      } else {
-        // Fallback if data not loaded yet
-        Object.assign(ROLE_HIERARCHY, {
-          admin: 0,
-          product_manager: 50,
-          order_manager: 50,
-          support_agent: 70,
-          analyst: 70,
-          recruiter: 70,
+          ROLE_HIERARCHY[r.name] = 100 - r.hierarchy_level;
         });
       }
 
@@ -122,7 +103,7 @@ export default function StaffDirectory() {
       const staffMap = new Map<string, StaffMember>();
 
       profiles?.forEach(profile => {
-        const userRoles = roles?.filter(r => r.user_id === profile.user_id).map(r => r.role as AppRole) || [];
+        const userRoles = roles?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
         staffMap.set(profile.user_id, {
           user_id: profile.user_id,
           display_name: profile.display_name,
@@ -135,7 +116,7 @@ export default function StaffDirectory() {
         });
       });
 
-      const getHighestRoleRank = (roles: AppRole[]): number => {
+      const getHighestRoleRank = (roles: string[]): number => {
         if (roles.length === 0) return 999;
         return Math.min(...roles.map(role => ROLE_HIERARCHY[role] ?? 999));
       };
@@ -148,7 +129,7 @@ export default function StaffDirectory() {
         return (a.display_name || 'Unknown').localeCompare(b.display_name || 'Unknown');
       });
     },
-    enabled: isAdmin && !!roleHierarchyData,
+    enabled: isAdmin && customRoles.length > 0,
   });
 
   // Fetch staff ID logs
@@ -317,15 +298,18 @@ export default function StaffDirectory() {
 
                             {/* Roles */}
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {member.roles.map(role => (
-                                <Badge
-                                  key={role}
-                                  variant="outline"
-                                  className={`text-[10px] px-1.5 py-0 ${ROLE_COLORS[role]}`}
-                                >
-                                  {ROLE_LABELS[role]}
-                                </Badge>
-                              ))}
+                              {member.roles.map(role => {
+                                const roleInfo = customRoles.find(r => r.name === role);
+                                return (
+                                  <Badge
+                                    key={role}
+                                    variant="outline"
+                                    className={`text-[10px] px-1.5 py-0 ${roleInfo?.color || 'bg-gray-500'} text-white border-transparent`}
+                                  >
+                                    {roleInfo?.display_name || role}
+                                  </Badge>
+                                );
+                              })}
                             </div>
                           </div>
                           <ChevronRight className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />

@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
-type AppRole = Database['public']['Enums']['app_role'];
+// Note: Roles are now text-based (stored in custom_roles table), not an enum
 
 interface ChatMessage {
   id: string;
@@ -42,7 +42,7 @@ interface StaffMember {
   user_id: string;
   display_name: string | null;
   email: string;
-  role?: AppRole;
+  role?: string;
 }
 
 interface TypingUser {
@@ -67,7 +67,8 @@ const getFileName = (url: string): string => {
   }
 };
 
-const roleBadges: Record<AppRole, { label: string; className: string }> = {
+// Default role badges for fallback
+const DEFAULT_ROLE_BADGES: Record<string, { label: string; className: string }> = {
   admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
   product_manager: { label: 'Products', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   order_manager: { label: 'Orders', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
@@ -219,7 +220,7 @@ function StaffMessagesContent() {
       
       return Object.fromEntries(
         data.map(r => [r.user_id, r.role])
-      ) as Record<string, AppRole>;
+      ) as Record<string, string>;
     },
     enabled: messages.length > 0,
   });
@@ -833,7 +834,7 @@ function StaffMessagesContent() {
             messages.map((message, index) => {
               const isOwn = message.user_id === user?.id;
               const role = userRoles[message.user_id];
-              const roleBadge = role ? roleBadges[role] : null;
+              const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
               
               const prevMessage = index > 0 ? messages[index - 1] : null;
               const isGrouped = prevMessage && 

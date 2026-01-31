@@ -3064,18 +3064,21 @@ export type Database = {
           granted_by: string | null
           id: string
           permission_id: string
+          role: string
         }
         Insert: {
           created_at?: string
           granted_by?: string | null
           id?: string
           permission_id: string
+          role: string
         }
         Update: {
           created_at?: string
           granted_by?: string | null
           id?: string
           permission_id?: string
+          role?: string
         }
         Relationships: [
           {
@@ -3084,6 +3087,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "permissions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["name"]
           },
         ]
       }
