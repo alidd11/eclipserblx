@@ -36,10 +36,13 @@ import {
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+
 interface CreateRoleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentUserHierarchy?: number;
+  userEmail?: string;
   editRole?: {
     id: string;
     name: string;
@@ -78,7 +81,8 @@ const COLOR_OPTIONS = [
   { value: 'bg-teal-500', label: 'Teal' },
 ];
 
-export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0 }: CreateRoleDialogProps) {
+export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0, userEmail }: CreateRoleDialogProps) {
+  const isPrimaryAdmin = userEmail === PRIMARY_ADMIN_EMAIL;
   const queryClient = useQueryClient();
   const isEditing = !!editRole;
   
@@ -210,7 +214,9 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
           <DialogTitle>{isEditing ? 'Edit Role' : 'Create New Role'}</DialogTitle>
           <DialogDescription>
             {isEditing 
-              ? 'Update the role settings. System roles cannot have their name changed.'
+              ? isPrimaryAdmin 
+                ? 'Update the role settings. As primary admin, you can edit all roles.'
+                : 'Update the role settings. System roles cannot have their name changed.'
               : 'Create a new role with custom permissions.'}
           </DialogDescription>
         </DialogHeader>
@@ -223,7 +229,7 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
               value={formData.display_name}
               onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
               placeholder="e.g. Content Moderator"
-              disabled={editRole?.is_system}
+              disabled={editRole?.is_system && !isPrimaryAdmin}
             />
           </div>
 
