@@ -490,12 +490,29 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     product_name: product.name,
     download_url: signedUrlData.signedUrl,
     expires_in: "1 hour",
-    message: `Hey <@${body.discord_id}>!\n\n` +
-      `**Your Download is Ready**\n\n` +
-      `You've requested the download for **${product.name}**.\n\n` +
-      `🔗 **Download Link:**\n${signedUrlData.signedUrl}\n\n` +
-      `⏳ This link will expire in **1 hour**.\n\n` +
-      `⚠️ **Please do not share this link** — it is unique to your account.\n\n` +
-      `Need help? Visit [eclipserblx.com/support](https://eclipserblx.com/support)`,
+    embed: {
+      title: "📥 Your Download is Ready",
+      description: `Hey <@${body.discord_id}>!\n\n` +
+        `You've requested the download for **${product.name}**.\n\n` +
+        `⏳ This link will expire in **1 hour**.\n\n` +
+        `⚠️ **Please do not share this link** — it is unique to your account.\n\u200B`,
+      color: 0x5865F2, // Discord Blurple
+      fields: [
+        {
+          name: "🔗 Download Link",
+          value: `[Click here to download](${signedUrlData.signedUrl})`,
+          inline: false,
+        },
+      ],
+      footer: {
+        text: "Eclipse • Your UK:RP Asset Marketplace",
+        icon_url: "https://eclipserblx.com/favicon.ico",
+      },
+      image: {
+        url: ECLIPSE_BANNER,
+      },
+      timestamp: new Date().toISOString(),
+    },
+    message: `Hey <@${body.discord_id}>! Your download for **${product.name}** is ready. Check the embed above for your link.`,
   });
 }
