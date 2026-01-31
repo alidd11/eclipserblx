@@ -328,8 +328,8 @@ export default function StaffProfile() {
 
   // Add role mutation
   const addRoleMutation = useMutation({
-    mutationFn: async ({ role }: { role: DbAppRole }) => {
-      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
+    mutationFn: async ({ role, targetUserId }: { role: DbAppRole; targetUserId: string }) => {
+      const { error } = await supabase.from('user_roles').insert({ user_id: targetUserId, role });
       if (error) throw error;
       
       // Log the action to audit_logs
@@ -337,12 +337,15 @@ export default function StaffProfile() {
         user_id: user?.id,
         action: 'role_added',
         resource: 'user_roles',
-        details: { target_user_id: userId, target_email: profile?.email, role }
+        details: { target_user_id: targetUserId, target_email: profile?.email, role }
       });
+      
+      return { targetUserId };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-roles', userId] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['staff-roles', data.targetUserId] });
       queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
       setNewRole('');
       toast.success('Role added');
     },
@@ -357,8 +360,8 @@ export default function StaffProfile() {
 
   // Remove role mutation
   const removeRoleMutation = useMutation({
-    mutationFn: async ({ role }: { role: DbAppRole }) => {
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
+    mutationFn: async ({ role, targetUserId }: { role: DbAppRole; targetUserId: string }) => {
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', targetUserId).eq('role', role);
       if (error) throw error;
       
       // Log the action to audit_logs
@@ -366,12 +369,15 @@ export default function StaffProfile() {
         user_id: user?.id,
         action: 'role_removed',
         resource: 'user_roles',
-        details: { target_user_id: userId, target_email: profile?.email, role }
+        details: { target_user_id: targetUserId, target_email: profile?.email, role }
       });
+      
+      return { targetUserId };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-roles', userId] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['staff-roles', data.targetUserId] });
       queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
       setRoleToRemove(null);
       toast.success('Role removed');
     },
@@ -641,7 +647,7 @@ export default function StaffProfile() {
                 <Button
                   size="icon"
                   disabled={!newRole || addRoleMutation.isPending}
-                  onClick={() => newRole && addRoleMutation.mutate({ role: newRole as DbAppRole })}
+                  onClick={() => newRole && userId && addRoleMutation.mutate({ role: newRole as DbAppRole, targetUserId: userId })}
                 >
                   {addRoleMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -862,7 +868,7 @@ export default function StaffProfile() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 if (roleToRemove) {
-                  removeRoleMutation.mutate({ role: roleToRemove.role });
+                  removeRoleMutation.mutate({ role: roleToRemove.role, targetUserId: userId! });
                 }
               }}
               disabled={removeRoleMutation.isPending}
