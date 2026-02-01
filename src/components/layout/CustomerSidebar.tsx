@@ -140,8 +140,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Home', icon: Home, href: '/' },
         // Seller Dashboard - conditional, prominently positioned
         ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
-        // Affiliate Dashboard - conditional
-        ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
     {
@@ -156,6 +154,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
         // Store Messages for sellers
         ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
+        // Affiliate Dashboard - conditional
+        ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
     {
