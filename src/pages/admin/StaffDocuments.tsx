@@ -42,7 +42,7 @@ const getCategoryColor = (category: string) => {
 
 export default function StaffDocuments() {
   return (
-    <AdminLayout requiredRoles={["admin"]}>
+    <AdminLayout requiredPermissions={['manage_staff']}>
       <div className="space-y-6">
         {/* Header */}
         <div>

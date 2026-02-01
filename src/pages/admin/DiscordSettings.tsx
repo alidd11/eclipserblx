@@ -1170,7 +1170,7 @@ export default function DiscordSettings() {
 
   if (isLoading) {
     return (
-      <AdminLayout requiredPermissions={['manage_discord']}>
+      <AdminLayout requiredPermissions={['manage_settings']}>
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -1179,7 +1179,7 @@ export default function DiscordSettings() {
   }
 
   return (
-    <AdminLayout requiredPermissions={['manage_discord']}>
+    <AdminLayout requiredPermissions={['manage_settings']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

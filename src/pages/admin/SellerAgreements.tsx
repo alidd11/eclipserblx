@@ -100,7 +100,7 @@ export default function SellerAgreements() {
   const signedCount = stores?.filter(s => !!s.agreement_signed_at).length || 0;
 
   return (
-    <AdminLayout requiredRoles={["admin", "moderator"]}>
+    <AdminLayout requiredPermissions={['view_seller_stores']}>
       <div className="space-y-6">
         {/* Header */}
         <div>

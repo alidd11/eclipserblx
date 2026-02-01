@@ -293,7 +293,7 @@ export default function DiscordQOTD() {
   // Show Discord link requirement if not linked
   if (profile && !hasDiscordLinked) {
     return (
-      <AdminLayout requiredPermissions={['manage_discord']}>
+      <AdminLayout requiredPermissions={['manage_discord_engagement']}>
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold">Question of the Day</h1>
@@ -330,7 +330,7 @@ export default function DiscordQOTD() {
   }
 
   return (
-    <AdminLayout requiredPermissions={['manage_discord']}>
+    <AdminLayout requiredPermissions={['manage_discord_engagement']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Question of the Day</h1>

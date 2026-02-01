@@ -144,7 +144,7 @@ export default function AdminForumReports() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['manage_forum']}>
+    <AdminLayout requiredPermissions={['manage_forum_reports']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

@@ -35,7 +35,7 @@ export default function ModmailBotSetup() {
 "dashboard_webhook_secret": "your-secret-key-here"`;
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['manage_settings']}>
       <div className="space-y-6">
         {/* Header */}
         <div>

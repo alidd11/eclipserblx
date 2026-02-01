@@ -381,7 +381,7 @@ export default function AdminAuditLogs() {
   );
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['view_audit_logs']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">
