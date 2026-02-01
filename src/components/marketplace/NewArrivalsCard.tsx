@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Sparkles, ChevronRight, Clock } from 'lucide-react';
+import { Sparkles, ChevronRight, Clock, BadgeCheck, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +18,9 @@ interface NewProduct {
   stores: {
     name: string;
     slug: string;
+    logo_url: string | null;
+    is_verified: boolean;
+    is_trusted: boolean;
   } | null;
 }
 
@@ -36,7 +39,7 @@ export function NewArrivalsCard() {
           price,
           images,
           created_at,
-          stores (name, slug, is_active)
+          stores (name, slug, logo_url, is_verified, is_trusted, is_active)
         `)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${now}`)
@@ -102,7 +105,15 @@ export function NewArrivalsCard() {
                 </span>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {product.stores && (
-                    <span className="truncate">{product.stores.name}</span>
+                    <span className="flex items-center gap-1 truncate">
+                      {product.stores.name}
+                      {product.stores.is_verified && (
+                        <BadgeCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                      )}
+                      {product.stores.is_trusted && (
+                        <Shield className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                      )}
+                    </span>
                   )}
                   <span className="flex items-center gap-0.5">
                     <Clock className="h-3 w-3" />
