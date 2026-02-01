@@ -103,17 +103,11 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
         <CardContent className="p-4 relative overflow-hidden">
           {/* Flag background overlay */}
           {regionFlag && (
-            <div
-              className="absolute inset-0 bottom-10 pointer-events-none overflow-hidden flex items-center justify-center"
-              style={{
-                WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-                maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-              }}
-            >
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
               <img
                 src={regionFlag.src}
                 alt=""
-                className="w-full h-[95%] opacity-[0.08] object-cover"
+                className="absolute inset-0 w-full h-full opacity-[0.08] object-cover"
               />
             </div>
           )}
