@@ -1,67 +1,98 @@
 
-# ✅ Navigation Improvements Between Main Website and Seller Stores (IMPLEMENTED)
 
-## Current Architecture Analysis
+# Unified Visual Design System
 
-The platform currently has two distinct navigation experiences:
+## Problem Analysis
 
-1. **Main Website (MainLayout)**: Uses `CustomerSidebar` with a hierarchical structure (Quick Access → Discover → Browse → Community → My Account → Help)
+After analyzing the codebase, I identified several visual inconsistencies across different sections of the platform:
 
-2. **Seller Store Pages (StoreLayout)**: Uses a separate `StoreSidebar` with store-specific navigation (Home, About, Categories, Legal links, "Browse All Stores" footer button)
+### Current Inconsistencies
 
-**Current Pain Points:**
-- No persistent way to return to a recently visited store from the main site
-- Switching between store pages and main marketplace requires multiple clicks
-- Store sidebar has no visual connection to the main navigation system
-- No "breadcrumb trail" showing context when deep in a store
+| Area | Issue |
+|------|-------|
+| **Store Layout vs Main Layout** | Store pages use a completely separate header design without the main Eclipse branding and search bar |
+| **Sidebar Styling** | Three different sidebar implementations: `CustomerSidebar`, `StoreSidebar`, and `SellerSidebar` with varying padding, typography, and structure |
+| **Header Heights** | Main header is `h-14 sm:h-16` but StoreLayout header is `h-12 xs:h-14` |
+| **Footer Variations** | Main `Footer` component differs from the inline store footer in `StoreLayout` |
+| **Breadcrumb Placement** | Only store pages have breadcrumbs; main site lacks contextual navigation |
+| **Landing Page** | Uses different spacing, typography scales, and animation patterns than the rest of the site |
+| **Category Cards** | Landing page uses gradient-heavy cards while marketplace uses subdued card styling |
+| **Search Experience** | Main site has the command palette search; store pages lack integrated search |
 
 ---
 
-## Proposed Navigation Improvements
+## Proposed Unified Design System
 
-### 1. Recently Visited Stores Section in Customer Sidebar
-Add a collapsible "Recent Stores" group to the main `CustomerSidebar` that tracks and displays the last 3-5 stores the user visited.
+### 1. Universal Header Component
+Replace the custom store header with the shared `Header` component (already done for SellerLayout).
 
-**Implementation:**
-- Store visit history in localStorage (keyed by store slug)
-- Display store logo + name in sidebar with accent color indicator
-- Limit to 5 most recent, auto-expire after 7 days
-- Click navigates directly to store page
+**Changes:**
+- `StoreLayout.tsx`: Replace custom header with `<Header />` component
+- Add store context badge/indicator within the main header
+- Ensure search functionality works across all pages
 
-### 2. Universal "Back to Marketplace" Button in Store Layout
-Add a prominent, persistent button in the `StoreLayout` header that provides one-click return to the main marketplace.
+### 2. Synchronized Sidebar Structure
+Align all three sidebars to share the same visual DNA:
 
-**Implementation:**
-- Position left of store branding in header
-- Uses Eclipse branding/colors for consistency
-- Tooltip: "Return to Eclipse Marketplace"
+**Standardized Properties:**
+- Same padding: `p-3` for content, `p-4` for headers
+- Same nav item heights: `h-9` with `gap-2`
+- Same icon sizing: `h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]`
+- Same typography: section labels as `text-xs font-medium uppercase tracking-wider`
+- Same active state: `bg-primary text-primary-foreground`
 
-### 3. Contextual Breadcrumb Navigation
-Add a subtle breadcrumb bar below the main header when viewing store pages that shows the navigation path.
+**Changes:**
+- `StoreSidebar.tsx`: Adopt `CustomerSidebar` styling patterns
+- Add consistent Eclipse branding footer to all sidebars
 
-**Example:** `Eclipse > Stores > [Store Name] > [Category Name]`
+### 3. Unified Footer Component
+Use the main `Footer` component everywhere instead of inline footers.
 
-**Implementation:**
-- Appears only on store pages
-- Uses existing breadcrumb components from `src/components/ui/breadcrumb.tsx`
-- Links back to marketplace and store home
+**Changes:**
+- `StoreLayout.tsx`: Replace inline footer with `<Footer />` component
+- Add optional store attribution line to Footer
 
-### 4. Followed Stores Quick Access
-For logged-in users, add a "My Stores" or "Following" section in the Customer Sidebar that shows stores they follow.
+### 4. Consistent Spacing System
+Standardize container and section spacing across all pages.
 
-**Implementation:**
-- Fetch from `store_follows` table
-- Display up to 5 followed stores with logos
-- "View All" link to dedicated followed stores page
-- Real-time badge for new products from followed stores (optional)
+**Pattern:**
+```text
+Section padding: py-16 sm:py-20
+Container: container mx-auto px-4
+Card gaps: gap-4 sm:gap-6
+Grid gaps: gap-4 sm:gap-6
+```
 
-### 5. Unified Header Appearance
-Harmonize the visual appearance of store headers with the main site header for a more seamless experience.
+**Changes:**
+- Landing page sections: Align with marketplace spacing
+- Store pages: Use consistent container widths
 
-**Implementation:**
-- Add Eclipse logo/branding element to store header (small, non-intrusive)
-- Maintain store's accent color but include marketplace context
-- Consider a "Powered by Eclipse" badge that links home
+### 5. Landing Page Visual Alignment
+Reduce visual disparity between landing page and marketplace.
+
+**Changes:**
+- `LandingCategories.tsx`: Use card styling that matches marketplace cards (border-border, bg-card)
+- `LandingFeaturedProducts.tsx`: Use the shared `ProductCard` component instead of custom inline cards
+- Reduce hero background complexity for a cleaner look
+- Align CTA button styles with standard Button components
+
+### 6. Universal Breadcrumb System
+Add contextual breadcrumbs throughout the site, not just on store pages.
+
+**New Component:**
+- Create `UniversalBreadcrumb.tsx` for main site navigation
+- Pattern: `Eclipse > [Section] > [Subsection]`
+
+**Integration:**
+- Add to `MainLayout.tsx` below header
+- Automatically generate from current route
+
+### 7. Search Integration Everywhere
+Ensure the search command palette is accessible from all layouts.
+
+**Changes:**
+- `StoreLayout.tsx`: Add `SearchCommandProvider` wrapper
+- Add search trigger to store header
 
 ---
 
@@ -69,88 +100,129 @@ Harmonize the visual appearance of store headers with the main site header for a
 
 ### Files to Create
 ```
-src/hooks/useRecentStores.ts        - Hook to manage localStorage-based recent store history
-src/components/sidebar/RecentStoresSection.tsx - UI component for recent stores in sidebar
-src/components/sidebar/FollowedStoresSection.tsx - UI component for followed stores
-src/components/store/MarketplaceBreadcrumb.tsx - Breadcrumb for store context
+src/components/layout/UniversalBreadcrumb.tsx - Route-based breadcrumb component
 ```
 
 ### Files to Modify
-```
-src/components/layout/CustomerSidebar.tsx
-  - Add RecentStoresSection after Quick Access group
-  - Add FollowedStoresSection for logged-in users
 
+**High Priority (Core Layout Unification):**
+```
 src/components/store/StoreLayout.tsx
-  - Add "Back to Eclipse" button in header
-  - Integrate MarketplaceBreadcrumb component
-  - Add small Eclipse branding element
+  - Import and use shared Header component
+  - Import and use shared Footer component
+  - Wrap with SearchCommandProvider
+  - Remove custom header implementation
+  - Remove inline footer
 
 src/components/store/StoreSidebar.tsx
-  - Update "Browse All Stores" to match main sidebar styling
+  - Align padding to CustomerSidebar pattern
   - Add Eclipse branding in footer
+  - Standardize nav item styling
+  - Update typography scale
 ```
 
-### Data Flow
+**Medium Priority (Visual Consistency):**
+```
+src/components/landing/LandingCategories.tsx
+  - Replace gradient cards with consistent card styling
+  - Reduce heavy visual effects
+
+src/components/landing/LandingFeaturedProducts.tsx
+  - Replace custom ProductCard with shared component
+  - Standardize card hover effects
+
+src/components/landing/LandingHero.tsx
+  - Tone down background gradients
+  - Align button styling
+```
+
+**Lower Priority (Enhancements):**
+```
+src/components/layout/MainLayout.tsx
+  - Add UniversalBreadcrumb below header
+
+src/components/layout/Footer.tsx
+  - Add optional store context line
+```
+
+---
+
+## Visual Before/After Comparison
+
+### Store Pages
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                     User Navigation                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   Main Site (CustomerSidebar)                                │
-│   ┌──────────────────────┐                                   │
-│   │ Quick Access         │                                   │
-│   │ ├─ Home              │                                   │
-│   │ └─ Seller Dashboard  │                                   │
-│   │                      │                                   │
-│   │ Recent Stores ←──────┼──── localStorage (last 5 visits) │
-│   │ ├─ Store A           │                                   │
-│   │ ├─ Store B           │                                   │
-│   │ └─ Store C           │                                   │
-│   │                      │                                   │
-│   │ Following ←──────────┼──── store_follows table          │
-│   │ ├─ Followed Store 1  │                                   │
-│   │ └─ Followed Store 2  │                                   │
-│   │                      │                                   │
-│   │ Discover             │                                   │
-│   │ └─ Marketplace ──────┼───→ /marketplace                 │
-│   └──────────────────────┘                                   │
-│              │                                                │
-│              ▼                                                │
-│   Store Page (StoreLayout)                                   │
-│   ┌──────────────────────────────────────────┐               │
-│   │ [Eclipse] ← Back │ Store Header          │               │
-│   ├──────────────────────────────────────────┤               │
-│   │ Eclipse > Stores > Store Name            │ ← Breadcrumb  │
-│   ├──────────────────────────────────────────┤               │
-│   │ StoreSidebar │ Store Content             │               │
-│   │ ├─ Home      │                           │               │
-│   │ ├─ About     │ Records visit to          │               │
-│   │ ├─ Categories│ localStorage ─────────────┼──→ Recent    │
-│   │ └─ Legal     │                           │     Stores    │
-│   └──────────────────────────────────────────┘               │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+BEFORE:
+  Custom header with different height (h-12)
+  Store-specific social icons
+  Separate breadcrumb bar
+  Inline footer with different styling
+  No search integration
+
+AFTER:
+  Shared Header component (h-14 sm:h-16)
+  Store badge in unified header
+  Integrated breadcrumbs
+  Shared Footer component
+  Command palette search available
+```
+
+### Sidebars
+```text
+BEFORE:
+  CustomerSidebar: Collapsible groups, notification dots
+  StoreSidebar: Flat list, accent colors
+  SellerSidebar: Collapsible groups, different spacing
+
+AFTER:
+  Unified structure across all three
+  Same padding, typography, and spacing
+  Consistent active/hover states
+  Eclipse branding footer on all
+```
+
+### Landing vs Marketplace
+```text
+BEFORE:
+  Landing: Gradient category cards, custom product cards
+  Marketplace: Subdued cards, shared ProductCard
+
+AFTER:
+  Both use consistent card styling
+  Shared ProductCard component everywhere
+  Unified hover effects and shadows
 ```
 
 ---
 
-## Priority Order
+## Implementation Order
 
-| Priority | Feature | Effort | Impact |
-|----------|---------|--------|--------|
-| 1 | Universal "Back to Marketplace" button | Low | High |
-| 2 | Recently Visited Stores section | Medium | High |
-| 3 | Contextual Breadcrumb navigation | Low | Medium |
-| 4 | Followed Stores Quick Access | Medium | Medium |
-| 5 | Unified Header Appearance | Low | Low |
+1. **Store Layout Unification** (High Impact)
+   - Replace store header with shared Header
+   - Replace store footer with shared Footer
+   - Integrate search command palette
+
+2. **Sidebar Standardization** (High Impact)
+   - Update StoreSidebar styling
+   - Add Eclipse branding to all sidebars
+
+3. **Landing Page Refinement** (Medium Impact)
+   - Update category card styling
+   - Use shared ProductCard component
+
+4. **Breadcrumb System** (Low Impact)
+   - Create UniversalBreadcrumb
+   - Add to MainLayout
 
 ---
 
-## User Experience Benefits
+## Design Tokens Preserved
 
-- **Reduced Friction**: One-click return to marketplace from any store page
-- **Context Awareness**: Breadcrumbs show where users are in the navigation hierarchy
-- **Personalization**: Recent and followed stores create a customized browsing experience
-- **Consistency**: Unified visual language between main site and store pages
-- **Discovery**: Easy access to previously browsed stores encourages repeat visits
+The existing CSS custom properties and Tailwind configuration will be maintained:
+- Color system: primary, secondary, muted, accent
+- Typography: font-display (Orbitron), font-sans (Inter)
+- Spacing: Tailwind defaults
+- Border radius: var(--radius)
+- Shadows: Standard Tailwind shadows
+
+This ensures the gaming aesthetic is preserved while achieving visual consistency.
+
