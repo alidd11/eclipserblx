@@ -1,65 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Store, Sparkles, TrendingUp, Users, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Store, Sparkles, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useCountUp } from '@/hooks/useCountUp';
-import { useCurrency } from '@/hooks/useCurrency';
-
-interface PlatformStats {
-  totalSales: number;
-  totalProducts: number;
-  totalSellers: number;
-}
-
-function AnimatedStat({ 
-  value, 
-  label, 
-  prefix = '', 
-  suffix = '' 
-}: { 
-  value: number; 
-  label: string; 
-  prefix?: string;
-  suffix?: string;
-}) {
-  const { count, elementRef } = useCountUp({ end: value, duration: 2000 });
-  
-  return (
-    <div ref={elementRef} className="text-center">
-      <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
-        {prefix}{count.toLocaleString()}{suffix}
-      </div>
-      <div className="text-xs sm:text-sm text-muted-foreground mt-1">{label}</div>
-    </div>
-  );
-}
 
 export function LandingHero() {
-  const { formatPrice } = useCurrency();
-  
-  // Fetch real platform stats
-  const { data: stats } = useQuery({
-    queryKey: ['platform-stats'],
-    queryFn: async (): Promise<PlatformStats> => {
-      const [ordersResult, productsResult, storesResult] = await Promise.all([
-        supabase.from('orders').select('total').eq('status', 'completed'),
-        supabase.from('products').select('id', { count: 'exact' }).eq('is_active', true),
-        supabase.from('stores').select('id', { count: 'exact' }).eq('status', 'approved').eq('is_active', true).eq('is_testing', false),
-      ]);
-      
-      const totalSales = ordersResult.data?.reduce((sum, order) => sum + (order.total || 0), 0) || 0;
-      
-      return {
-        totalSales,
-        totalProducts: productsResult.count || 0,
-        totalSellers: storesResult.count || 0,
-      };
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden">
       {/* Background with gradient overlay */}
@@ -124,7 +68,7 @@ export function LandingHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link to="/become-seller">
               <Button size="lg" className="text-lg px-8 py-6 h-auto">
@@ -149,30 +93,6 @@ export function LandingHero() {
                 Eclipse+
               </Button>
             </Link>
-          </motion.div>
-
-          {/* Stats Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto"
-          >
-            <div className="grid grid-cols-3 gap-6 sm:gap-8">
-              <AnimatedStat 
-                value={stats?.totalSales || 0} 
-                label="Processed Sales" 
-                prefix="£"
-              />
-              <AnimatedStat 
-                value={stats?.totalProducts || 0} 
-                label="Products Listed" 
-              />
-              <AnimatedStat 
-                value={stats?.totalSellers || 0} 
-                label="Active Sellers" 
-              />
-            </div>
           </motion.div>
         </div>
       </div>
