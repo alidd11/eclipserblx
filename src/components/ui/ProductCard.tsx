@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -68,9 +68,11 @@ interface ProductCardProps {
   isResellable?: boolean;
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
+  followerCount?: number;
+  averageRating?: number;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, followerCount, averageRating }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -276,6 +278,21 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               {isTrusted && (
                 <Shield className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-amber-500 flex-shrink-0" />
               )}
+              {/* Follower count */}
+              {typeof followerCount === 'number' && followerCount > 0 && (
+                <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">
+                  <Users className="h-2.5 w-2.5 xs:h-3 xs:w-3" />
+                  <span>{followerCount}</span>
+                </span>
+              )}
+            </div>
+          )}
+          
+          {/* Product Rating */}
+          {typeof averageRating === 'number' && averageRating > 0 && (
+            <div className="flex items-center gap-0.5 text-[9px] xs:text-[10px]">
+              <Star className="h-2.5 w-2.5 xs:h-3 xs:w-3 fill-amber-400 text-amber-400" />
+              <span className="font-medium text-foreground">{averageRating.toFixed(1)}</span>
             </div>
           )}
           

@@ -78,6 +78,7 @@ export function StoreBestSellers({
               category={(product.categories as any)?.name}
               isResellable={product.is_resellable}
               showBestSellerBadge
+              averageRating={product.average_rating}
             />
           ))}
         </div>
