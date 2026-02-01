@@ -27,7 +27,7 @@ export function LandingCTA() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/seller/apply">
+            <Link to="/marketplace">
               <Button size="lg" className="text-lg px-8 py-6 h-auto w-full sm:w-auto">
                 <Store className="mr-2 h-5 w-5" />
                 Open Your Store
