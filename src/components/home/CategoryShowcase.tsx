@@ -50,7 +50,7 @@ export function CategoryShowcase() {
           {categories.map((category) => (
             <Link
               key={category.slug}
-              to={`/categories/${category.slug}`}
+              to={`/products?category=${category.slug}`}
               className="group"
             >
               <div className="gaming-card-hover p-6 h-full flex flex-col">

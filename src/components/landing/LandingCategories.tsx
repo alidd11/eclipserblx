@@ -24,11 +24,23 @@ interface Category {
   icon: string | null;
 }
 
+// Categories that should use the region selection flow
+const REGIONAL_CATEGORY_SLUGS = [
+  'civilian-vehicles',
+  'marked-police-vehicles',
+  'unmarked-police-vehicles',
+  'fire-vehicles',
+  'ambulance-vehicles',
+  'military-vehicles',
+  'aircraft',
+  'uniforms',
+];
+
 export function LandingCategories() {
   const { data: categories } = useQuery({
     queryKey: ['landing-categories'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: categoryData, error } = await supabase
         .from('categories')
         .select('id, name, slug, description, icon')
         .is('parent_id', null)
@@ -36,7 +48,23 @@ export function LandingCategories() {
         .limit(8);
       
       if (error) throw error;
-      return data as Category[];
+      
+      // Check if each category has sub-categories
+      const categoriesWithSubCheck = await Promise.all(
+        (categoryData || []).map(async (category) => {
+          const { data: subCategories } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('parent_id', category.id);
+          
+          return {
+            ...category,
+            has_sub_categories: (subCategories?.length || 0) > 0,
+          };
+        })
+      );
+      
+      return categoriesWithSubCheck as (Category & { has_sub_categories: boolean })[];
     },
     staleTime: 10 * 60 * 1000,
   });
@@ -67,6 +95,12 @@ export function LandingCategories() {
           {categories.map((category, index) => {
             const config = categoryConfig[category.slug] || { icon: Box };
             const IconComponent = config.icon;
+            
+            // Determine the correct link based on whether it's a regional category with sub-categories
+            const useRegionSelect = REGIONAL_CATEGORY_SLUGS.includes(category.slug) && category.has_sub_categories;
+            const linkTo = useRegionSelect
+              ? `/browse/${category.slug}/region`
+              : `/products?category=${category.slug}`;
 
             return (
               <motion.div
@@ -76,7 +110,7 @@ export function LandingCategories() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
               >
-                <Link to={`/categories/${category.slug}`} className="group block h-full">
+                <Link to={linkTo} className="group block h-full">
                   <Card className="h-full border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-300">
                     <CardContent className="p-6 flex flex-col items-center text-center">
                       <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
