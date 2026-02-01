@@ -296,7 +296,7 @@ export default function SellerStoreDetail() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['view_seller_stores']}>
         <div className="space-y-6">
           <Skeleton className="h-8 w-48" />
           <div className="grid gap-6 md:grid-cols-2">
@@ -310,7 +310,7 @@ export default function SellerStoreDetail() {
 
   if (!store) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['view_seller_stores']}>
         <div className="text-center py-12">
           <p className="text-muted-foreground">Store not found</p>
           <Button variant="outline" onClick={() => navigate('/admin/seller-commissions')} className="mt-4">
@@ -324,7 +324,7 @@ export default function SellerStoreDetail() {
   const ownerProfile = store.profiles as any;
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_seller_stores']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">

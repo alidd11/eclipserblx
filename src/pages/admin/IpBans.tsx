@@ -119,7 +119,7 @@ export default function IpBans() {
   const expiredBans = filteredBans?.filter(ban => isExpired(ban.expires_at)) || [];
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_ip_bans']}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

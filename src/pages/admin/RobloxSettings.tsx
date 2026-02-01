@@ -173,7 +173,7 @@ export default function RobloxSettings() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['manage_settings']}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -182,7 +182,7 @@ export default function RobloxSettings() {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_settings']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
