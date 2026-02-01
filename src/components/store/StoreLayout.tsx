@@ -6,13 +6,17 @@ import {
   Twitter,
   Youtube,
   Menu,
-  PanelLeftClose
+  PanelLeftClose,
+  ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 import { StoreSidebar } from './StoreSidebar';
+import { MarketplaceBreadcrumb } from './MarketplaceBreadcrumb';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRecentStores } from '@/hooks/useRecentStores';
 import { cn } from '@/lib/utils';
 
 // Discord icon component
@@ -66,6 +70,7 @@ interface StoreLayoutProps {
   };
   tabs?: StoreTab[];
   activeTab?: string | null;
+  activeTabName?: string | null;
   onTabChange?: (tabSlug: string | null) => void;
   productCount?: number;
   totalSales?: number;
@@ -78,6 +83,7 @@ export function StoreLayout({
   store,
   tabs = [],
   activeTab = null,
+  activeTabName = null,
   onTabChange,
   productCount = 0,
   totalSales = 0,
@@ -88,6 +94,19 @@ export function StoreLayout({
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const { recordVisit } = useRecentStores();
+
+  // Record store visit when component mounts
+  useEffect(() => {
+    if (store.slug || store.id) {
+      recordVisit({
+        slug: store.slug || store.id,
+        name: store.name,
+        logoUrl: store.logo_url,
+        accentColor: store.accent_color,
+      });
+    }
+  }, [store.slug, store.id, store.name, store.logo_url, store.accent_color, recordVisit]);
 
   // Swipe gesture tracking for mobile
   const touchStartX = useRef<number | null>(null);
@@ -277,16 +296,36 @@ export function StoreLayout({
                 </Button>
               )}
 
-               <Link to={`/store/${store.slug || store.id}`} className="flex items-center gap-2 xs:gap-3">
+              {/* Back to Marketplace Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
+                    asChild
+                  >
+                    <Link to="/marketplace">
+                      <ChevronLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline text-xs">Marketplace</span>
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Return to Eclipse Marketplace</TooltipContent>
+              </Tooltip>
+
+              <span className="text-muted-foreground/30 hidden sm:inline">|</span>
+
+              <Link to={`/store/${store.slug || store.id}`} className="flex items-center gap-2 xs:gap-3">
                 {store.logo_url ? (
                   <img 
                     src={store.logo_url} 
                     alt={store.name}
-                     className="h-6 w-6 xs:h-8 xs:w-8 rounded-full object-contain"
+                    className="h-6 w-6 xs:h-8 xs:w-8 rounded-full object-contain"
                   />
                 ) : (
                   <div 
-                     className="h-6 w-6 xs:h-8 xs:w-8 rounded-full flex items-center justify-center"
+                    className="h-6 w-6 xs:h-8 xs:w-8 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: `${accentColor}20` }}
                   >
                     <StoreIcon className="h-3 w-3 xs:h-4 xs:w-4" style={{ color: accentColor }} />
@@ -326,6 +365,14 @@ export function StoreLayout({
             )}
           </div>
         </header>
+
+        {/* Breadcrumb Navigation */}
+        <MarketplaceBreadcrumb
+          storeName={store.name}
+          storeSlug={store.slug || store.id}
+          categoryName={activeTabName}
+          accentColor={accentColor}
+        />
 
         {/* Main Content */}
         <main className="flex-1">
