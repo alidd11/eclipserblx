@@ -44,8 +44,8 @@ export function NewArrivalsCard() {
         .limit(10);
       
       if (error) throw error;
-      // Include products without stores (Eclipse main store) or with active stores
-      const filtered = (data || []).filter(p => !p.stores || p.stores.is_active !== false);
+      // Only include products with active stores
+      const filtered = (data || []).filter(p => p.stores?.is_active === true);
       return filtered.slice(0, 5) as unknown as NewProduct[];
     },
   });

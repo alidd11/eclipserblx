@@ -1,25 +1,18 @@
-import { MainLayout } from '@/components/layout/MainLayout';
-import { HeroSection } from '@/components/home/HeroSection';
-import { ForumShowcase } from '@/components/home/ForumShowcase';
-import { TrustSignals } from '@/components/home/TrustSignals';
-import { RecommendedProducts } from '@/components/recommendations/RecommendedProducts';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePWAAdminRedirect } from '@/hooks/usePWAAdminRedirect';
-import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
-import { usePageTracking } from '@/hooks/usePageTracking';
 
 export default function Index() {
+  const navigate = useNavigate();
+  
   // Redirect to admin login if this PWA was installed from admin context
   usePWAAdminRedirect();
-  usePageTracking({ pagePath: '/' });
 
-  return (
-    <MainLayout>
-      <OrganizationSchema />
-      <WebsiteSearchSchema />
-      <HeroSection />
-      <RecommendedProducts />
-      <ForumShowcase />
-      <TrustSignals />
-    </MainLayout>
-  );
+  // Redirect homepage to marketplace (marketplace-first platform)
+  useEffect(() => {
+    navigate('/marketplace', { replace: true });
+  }, [navigate]);
+
+  // Show nothing during redirect
+  return null;
 }

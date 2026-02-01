@@ -103,8 +103,8 @@ export default function Products() {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Include products without stores (Eclipse main store) or with active stores
-      const filtered = (data || []).filter(p => !p.stores || p.stores.is_active !== false);
+      // Only include products with active stores
+      const filtered = (data || []).filter(p => p.stores?.is_active === true);
       
       // Sort products based on selected sort option
       const now = new Date();

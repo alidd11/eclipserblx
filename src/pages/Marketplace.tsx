@@ -254,13 +254,11 @@ export default function Marketplace() {
   // Use filtered stores when searching, otherwise use all stores
   const storesList = isSearching ? filteredStores : (stores || []);
   
-  // Split stores into rows of varying sizes for responsive grid
-  // First store shows at the very top, then rows = 8 stores (on large screens), then remaining stores
-  const firstBatchStores = storesList.slice(0, 9);
-  const remainingStores = storesList.slice(9);
-  // Stores to show in the grid (excluding the featured first store)
-  const gridStores = storesList.slice(1, 9);
-  const gridRemainingStores = storesList.slice(9);
+  // All stores are treated equally - no special first store positioning
+  const allStores = storesList;
+  // For pagination: first 9 stores in main view, rest in "More Stores"
+  const mainStores = allStores.slice(0, 9);
+  const remainingStores = allStores.slice(9);
 
   // Show seller application process if marketplace is not public (for non-admin users)
   if (!isMarketplacePublic && !isAdmin) {
@@ -411,13 +409,6 @@ export default function Marketplace() {
           </div>
         )}
 
-        {/* Eclipse Main Store - Show at very top when not searching */}
-        {!isSearching && firstBatchStores.length > 0 && (
-          <section>
-            <StoreCard store={firstBatchStores[0]} showTestingBadge={isAdmin} />
-          </section>
-        )}
-
         {/* Featured Products - Show at top when not searching */}
         {!isSearching && (
           <section>
@@ -433,18 +424,18 @@ export default function Marketplace() {
           </section>
         )}
 
-        {/* Grid of stores (excluding the featured first store) */}
+        {/* Grid of all stores - equal treatment */}
         <section>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
+              Array.from({ length: 9 }).map((_, i) => (
                 <StoreCardSkeleton key={i} />
               ))
-            ) : gridStores.length > 0 ? (
-              gridStores.map((store) => (
+            ) : mainStores.length > 0 ? (
+              mainStores.map((store) => (
                 <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))
-            ) : !isSearching && firstBatchStores.length === 0 ? (
+            ) : !isSearching && allStores.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-muted-foreground">No stores available yet.</p>
@@ -456,13 +447,12 @@ export default function Marketplace() {
           </div>
         </section>
 
-
         {/* Remaining stores */}
-        {gridRemainingStores.length > 0 && (
+        {remainingStores.length > 0 && (
           <section>
             <h2 className="text-xl font-semibold mb-4">More Stores</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {gridRemainingStores.map((store) => (
+              {remainingStores.map((store) => (
                 <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))}
             </div>
