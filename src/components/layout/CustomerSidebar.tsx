@@ -124,7 +124,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  // Navigation groups - reorganized for better customer journey
+  // Navigation groups - Account prioritized at top for quick personal access
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
@@ -136,6 +136,20 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
         // Affiliate Dashboard - conditional
         ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
+      ],
+    },
+    {
+      id: 'account',
+      title: 'My Account',
+      icon: User,
+      items: [
+        { title: 'Profile', icon: User, href: '/account' },
+        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
+        { title: 'My Purchases', icon: Download, href: '/purchases' },
+        { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
+        // Store Messages for sellers
+        ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
       ],
     },
     {
@@ -158,20 +172,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Forum', icon: MessageSquare, href: '/forum' },
         { title: 'Jobs', icon: Briefcase, href: '/jobs' },
         { title: 'Discord', icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
-      ],
-    },
-    {
-      id: 'account',
-      title: 'My Account',
-      icon: User,
-      items: [
-        { title: 'Profile', icon: User, href: '/account' },
-        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
-        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
-        { title: 'My Purchases', icon: Download, href: '/purchases' },
-        { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
-        // Store Messages for sellers
-        ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
       ],
     },
     {
