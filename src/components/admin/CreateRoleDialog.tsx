@@ -148,15 +148,22 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
 
   const updateMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const updateData: Record<string, unknown> = {
+        display_name: data.display_name,
+        color: data.color,
+        icon: data.icon,
+        hierarchy_level: data.hierarchy_level,
+        description: data.description || null,
+      };
+      
+      // Only primary admin can change the system name
+      if (isPrimaryAdmin && data.name) {
+        updateData.name = data.name.toLowerCase().replace(/\s+/g, '_');
+      }
+      
       const { error } = await supabase
         .from('custom_roles')
-        .update({
-          display_name: data.display_name,
-          color: data.color,
-          icon: data.icon,
-          hierarchy_level: data.hierarchy_level,
-          description: data.description || null,
-        })
+        .update(updateData)
         .eq('id', editRole!.id);
       if (error) throw error;
     },
@@ -244,6 +251,24 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
               />
               <p className="text-xs text-muted-foreground">
                 Used internally. Leave blank to auto-generate.
+              </p>
+            </div>
+          )}
+
+          {isEditing && isPrimaryAdmin && (
+            <div className="space-y-2">
+              <Label htmlFor="name">System Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  name: e.target.value.toLowerCase().replace(/\s+/g, '_') 
+                }))}
+                placeholder="e.g. content_moderator"
+              />
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                ⚠️ Changing this will automatically migrate all users with this role
               </p>
             </div>
           )}
