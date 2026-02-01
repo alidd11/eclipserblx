@@ -330,7 +330,7 @@ export default function ContactMessages() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['manage_contact_messages']}>
+    <AdminLayout requiredPermissions={['view_contact_messages']}>
       <div className="space-y-6">
         {/* Header */}
         <div>

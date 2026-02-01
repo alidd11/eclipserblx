@@ -291,7 +291,7 @@ export default function AdminIncidents() {
 
   if (isLoading) {
     return (
-      <AdminLayout requiredRoles={['admin']}>
+      <AdminLayout requiredPermissions={['view_incidents']}>
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -300,7 +300,7 @@ export default function AdminIncidents() {
   }
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['view_incidents']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">

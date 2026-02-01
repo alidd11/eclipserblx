@@ -206,7 +206,7 @@ export default function StaffActivityPage() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['view_staff_activity']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">

@@ -230,7 +230,7 @@ export default function RolePermissions() {
   const isAdmin = selectedRole === 'admin';
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['manage_permissions']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Role Permissions</h1>

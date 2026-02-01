@@ -173,20 +173,15 @@ export default function StaffDirectory() {
 
   if (authLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['view_staff_directory']}>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       </AdminLayout>
     );
   }
-
-  if (!isAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
-
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_staff_directory']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

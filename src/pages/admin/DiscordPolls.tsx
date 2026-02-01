@@ -140,7 +140,7 @@ export default function DiscordPolls() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['manage_discord']}>
+    <AdminLayout requiredPermissions={['manage_discord_engagement']}>
       <div className="px-4 sm:px-6 pt-4 pb-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Discord Polls</h1>

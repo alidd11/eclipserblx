@@ -55,7 +55,7 @@ export default function MarketplaceInterest() {
   ).length ?? 0;
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['view_store_applications']}>
       <div className="container py-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Marketplace Interest</h1>

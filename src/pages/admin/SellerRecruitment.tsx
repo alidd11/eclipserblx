@@ -9,7 +9,7 @@ export default function SellerRecruitment() {
   };
 
   return (
-    <AdminLayout requiredRoles={["admin"]}>
+    <AdminLayout requiredPermissions={['manage_seller_stores']}>
       {/* Print-optimized styles */}
       <style>
         {`
