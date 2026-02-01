@@ -1193,7 +1193,7 @@ function AdminChatContent() {
 
 export default function AdminChat() {
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_admin_chat']}>
       <AdminChatContent />
     </AdminLayout>
   );

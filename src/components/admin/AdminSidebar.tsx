@@ -75,7 +75,7 @@ const navGroups: NavGroup[] = [
       { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', permissions: ['view_forum_reports'] },
       { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', permissions: ['view_live_chat'], dividerAfter: true },
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', permissions: [] },
-      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', permissions: ['manage_staff'] },
+      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', permissions: ['view_admin_chat'] },
       { title: 'Modmail Bot Setup', icon: Bot, href: '/admin/modmail-bot-setup', permissions: ['manage_settings'] },
     ],
   },
