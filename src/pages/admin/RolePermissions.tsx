@@ -174,6 +174,8 @@ export default function RolePermissions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
+      // Also invalidate all user-permissions caches so staff see changes immediately
+      queryClient.invalidateQueries({ queryKey: ['user-permissions'] });
       toast.success('Permission updated');
     },
     onError: (error) => {
