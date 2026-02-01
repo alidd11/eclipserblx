@@ -130,6 +130,7 @@ const SellerProductEditor = lazy(() => import("./pages/seller/SellerProductEdito
 const SellerOrders = lazy(() => import("./pages/seller/SellerOrders"));
 const SellerBalance = lazy(() => import("./pages/seller/SellerBalance"));
 const SellerStoreTabs = lazy(() => import("./pages/seller/SellerStoreTabs"));
+const SellerCategories = lazy(() => import("./pages/seller/SellerCategories"));
 const SellerDiscounts = lazy(() => import("./pages/seller/SellerDiscounts"));
 const SellerAnalytics = lazy(() => import("./pages/seller/SellerAnalytics"));
 const SellerDocuments = lazy(() => import("./pages/seller/SellerDocuments"));
@@ -245,6 +246,7 @@ const App = () => (
                   <Route path="/seller/orders" element={<SellerOrders />} />
                   <Route path="/seller/balance" element={<SellerBalance />} />
                   <Route path="/seller/tabs" element={<SellerStoreTabs />} />
+                  <Route path="/seller/categories" element={<SellerCategories />} />
                   <Route path="/seller/discounts" element={<SellerDiscounts />} />
                   <Route path="/seller/documents" element={<SellerDocuments />} />
                   <Route path="/seller/documents/terms" element={<SellerTermsOfService />} />
