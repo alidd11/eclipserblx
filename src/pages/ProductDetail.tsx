@@ -550,6 +550,11 @@ export default function ProductDetail() {
                 })}
               </div>
             )}
+            
+            {/* Store Details Card - below thumbnails, matching gallery width */}
+            {product.stores && (
+              <StoreDetailsCard store={product.stores} className="w-full" />
+            )}
           </div>
 
           {/* Details */}
@@ -563,17 +568,12 @@ export default function ProductDetail() {
                     </Badge>
                   )}
                   <h1 className="text-3xl md:text-4xl font-display font-bold">{product.name}</h1>
-                  {product.is_featured && (
+                {product.is_featured && (
                     <Badge className="bg-primary/10 text-primary border-primary/20">
                       Featured Product
                     </Badge>
                   )}
                 </div>
-                
-                {/* Store Details Card - prominently placed */}
-                {product.stores && (
-                  <StoreDetailsCard store={product.stores} />
-                )}
 
                 <div className="space-y-2">
                   {/* Bot products show bundle pricing instead of regular price */}
