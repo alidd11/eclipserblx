@@ -80,15 +80,17 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
             </div>
           )}
           
-          {store.average_rating !== undefined && store.average_rating > 0 && (
-            <div className="p-2 rounded-lg bg-muted/50">
-              <div className="flex items-center justify-center gap-1 text-amber-500">
-                <Star className="h-3.5 w-3.5 fill-current" />
-                <span className="font-semibold text-sm">{store.average_rating.toFixed(1)}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Rating</p>
+          <div className="p-2 rounded-lg bg-muted/50">
+            <div className="flex items-center justify-center gap-1 text-amber-500">
+              <Star className="h-3.5 w-3.5 fill-current" />
+              <span className="font-semibold text-sm">
+                {store.average_rating && store.average_rating > 0 
+                  ? store.average_rating.toFixed(1) 
+                  : '—'}
+              </span>
             </div>
-          )}
+            <p className="text-[10px] text-muted-foreground mt-0.5">Rating</p>
+          </div>
         </div>
         
         {/* Visit store button */}
