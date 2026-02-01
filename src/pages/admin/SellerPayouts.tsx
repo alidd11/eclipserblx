@@ -124,7 +124,7 @@ export default function SellerPayouts() {
     .reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
 
   return (
-    <AdminLayout requiredPermissions={['manage_sellers']}>
+    <AdminLayout requiredPermissions={['view_seller_payouts']}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

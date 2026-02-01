@@ -416,7 +416,7 @@ export default function AdminUsers() {
   });
 
   return (
-    <AdminLayout requiredPermissions={['manage_users']}>
+    <AdminLayout requiredPermissions={['view_users']}>
       <div className="space-y-6 min-h-0">
         <div>
           <h1 className="text-3xl font-display font-bold">Customers</h1>

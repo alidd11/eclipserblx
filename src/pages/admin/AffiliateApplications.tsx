@@ -241,7 +241,7 @@ const AffiliateApplications = () => {
   );
 
   return (
-    <AdminLayout requiredPermissions={['manage_affiliates']}>
+    <AdminLayout requiredPermissions={['review_affiliate_applications']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Affiliate Applications</h1>
