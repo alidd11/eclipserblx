@@ -9,11 +9,13 @@ import {
   Shield,
   RefreshCw,
   Home,
-  User
+  User,
+  ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { cn } from '@/lib/utils';
 
 interface StoreTab {
@@ -64,36 +66,46 @@ export function StoreSidebar({
   };
 
   return (
-    <div className="h-full flex flex-col bg-sidebar pt-[env(safe-area-inset-top)]">
-      {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
+    <div className="h-full flex flex-col bg-sidebar pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      {/* Header - synchronized with main sidebar */}
+      <div className="h-14 sm:h-16 flex items-center px-4 border-b border-sidebar-border shrink-0">
         <h2 
           className="font-display font-bold text-lg truncate"
           style={{ color: accentColor }}
         >
           {storeName}
         </h2>
-        <p className="text-xs text-sidebar-foreground/60 mt-0.5">Store Navigation</p>
       </div>
 
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-1">
-          {/* Navigation */}
-          <div className="mb-2">
+          {/* Quick Access */}
+          <div className="mb-2 space-y-0.5">
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               asChild
             >
-              <Link to={`/store/${storeSlug}`} onClick={onNavigate}>
-                <Home className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
-                <span>Home</span>
+              <Link to="/marketplace" onClick={onNavigate}>
+                <ChevronLeft className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
+                <span>Back to Marketplace</span>
               </Link>
             </Button>
 
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+              asChild
+            >
+              <Link to={`/store/${storeSlug}`} onClick={onNavigate}>
+                <Home className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
+                <span>Store Home</span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               asChild
             >
               <Link to={`/store/${storeSlug}/about`} onClick={onNavigate}>
@@ -104,7 +116,7 @@ export function StoreSidebar({
 
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               asChild
             >
               <Link to="/account" onClick={onNavigate}>
@@ -115,7 +127,7 @@ export function StoreSidebar({
 
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               onClick={() => scrollToSection('store-recommendations')}
             >
               <Sparkles className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" style={{ color: accentColor }} />
@@ -125,12 +137,12 @@ export function StoreSidebar({
             {averageRating && (
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+                className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
                 onClick={() => scrollToSection('store-reviews')}
               >
                 <Star className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] text-yellow-500" />
-                <span>Reviews</span>
-                <span className="ml-auto text-xs text-sidebar-foreground/50">
+                <span className="flex-1 text-left">Reviews</span>
+                <span className="text-xs text-muted-foreground/50">
                   {averageRating.toFixed(1)}
                 </span>
               </Button>
@@ -140,24 +152,23 @@ export function StoreSidebar({
           {/* Categories */}
           <Separator className="my-3" />
           <div>
-            <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
+            <p className="text-xs font-medium text-muted-foreground/50 uppercase tracking-wider px-3 mb-2">
               Categories
             </p>
             
             <Button
               variant={!activeTab ? 'secondary' : 'ghost'}
               className={cn(
-                "w-full justify-start gap-2 h-9",
+                "w-full justify-start gap-3 h-9 px-3 text-sm font-medium rounded-lg",
                 !activeTab 
-                  ? "text-sidebar-foreground" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
-              style={!activeTab ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
               onClick={() => handleTabClick(null)}
             >
               <LayoutGrid className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
-              <span>All Products</span>
-              <span className="ml-auto text-xs text-sidebar-foreground/50">
+              <span className="flex-1 text-left">All Products</span>
+              <span className="text-xs opacity-70">
                 {productCount}
               </span>
             </Button>
@@ -167,16 +178,15 @@ export function StoreSidebar({
                 key={tab.id}
                 variant={activeTab === tab.slug ? 'secondary' : 'ghost'}
                 className={cn(
-                  "w-full justify-start gap-2 h-9",
+                  "w-full justify-start gap-3 h-9 px-3 text-sm font-medium rounded-lg",
                   activeTab === tab.slug 
-                    ? "text-sidebar-foreground" 
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
-                style={activeTab === tab.slug ? { backgroundColor: `${accentColor}20`, color: accentColor } : undefined}
                 onClick={() => handleTabClick(tab.slug)}
               >
                 <Package className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
-                <span className="truncate">{tab.name}</span>
+                <span className="truncate flex-1 text-left">{tab.name}</span>
               </Button>
             ))}
           </div>
@@ -184,12 +194,12 @@ export function StoreSidebar({
           {/* Legal Section */}
           <Separator className="my-3" />
           <div>
-            <p className="text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider px-2 mb-2">
+            <p className="text-xs font-medium text-muted-foreground/50 uppercase tracking-wider px-3 mb-2">
               Legal
             </p>
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               asChild
             >
               <Link to="/terms" onClick={onNavigate}>
@@ -199,7 +209,7 @@ export function StoreSidebar({
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               asChild
             >
               <Link to="/privacy" onClick={onNavigate}>
@@ -209,7 +219,7 @@ export function StoreSidebar({
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 h-9 text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start gap-3 h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
               asChild
             >
               <Link to="/refund" onClick={onNavigate}>
@@ -221,19 +231,16 @@ export function StoreSidebar({
         </div>
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-sidebar-border">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          asChild
+      {/* Footer with Eclipse Branding */}
+      <div className="p-3 border-t border-sidebar-border shrink-0">
+        <Link
+          to="/"
+          className="flex items-center justify-center gap-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={onNavigate}
         >
-          <Link to="/marketplace">
-            <LayoutGrid className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] mr-2" />
-            Browse All Stores
-          </Link>
-        </Button>
+          <EclipseLogo size="xs" />
+          <span className="text-xs">Powered by Eclipse</span>
+        </Link>
       </div>
     </div>
   );

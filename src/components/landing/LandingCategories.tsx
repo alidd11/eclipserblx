@@ -1,42 +1,19 @@
 import { Link } from 'react-router-dom';
-import { Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2 } from 'lucide-react';
+import { Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
 
-const categoryConfig: Record<string, { icon: typeof Car; gradient: string; image?: string }> = {
-  'vehicle-liveries': { 
-    icon: Car, 
-    gradient: 'from-blue-600 to-cyan-500',
-  },
-  'scripts-systems': { 
-    icon: Code, 
-    gradient: 'from-purple-600 to-pink-500',
-  },
-  'discord-bots': { 
-    icon: Bot, 
-    gradient: 'from-indigo-600 to-violet-500',
-  },
-  'ui-kits': { 
-    icon: Layout, 
-    gradient: 'from-green-600 to-emerald-500',
-  },
-  '3d-models': { 
-    icon: Box, 
-    gradient: 'from-orange-600 to-amber-500',
-  },
-  'graphics': { 
-    icon: Palette, 
-    gradient: 'from-pink-600 to-rose-500',
-  },
-  'tools': { 
-    icon: Wrench, 
-    gradient: 'from-slate-600 to-zinc-500',
-  },
-  'games': { 
-    icon: Gamepad2, 
-    gradient: 'from-red-600 to-orange-500',
-  },
+const categoryConfig: Record<string, { icon: typeof Car }> = {
+  'vehicle-liveries': { icon: Car },
+  'scripts-systems': { icon: Code },
+  'discord-bots': { icon: Bot },
+  'ui-kits': { icon: Layout },
+  '3d-models': { icon: Box },
+  'graphics': { icon: Palette },
+  'tools': { icon: Wrench },
+  'games': { icon: Gamepad2 },
 };
 
 interface Category {
@@ -67,7 +44,7 @@ export function LandingCategories() {
   if (!categories?.length) return null;
 
   return (
-    <section className="py-16 sm:py-20 bg-muted/30">
+    <section className="py-16 sm:py-20">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -85,13 +62,10 @@ export function LandingCategories() {
           </p>
         </motion.div>
 
-        {/* Category Grid */}
+        {/* Category Grid - using consistent card styling */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {categories.map((category, index) => {
-            const config = categoryConfig[category.slug] || { 
-              icon: Box, 
-              gradient: 'from-primary to-primary/70' 
-            };
+            const config = categoryConfig[category.slug] || { icon: Box };
             const IconComponent = config.icon;
 
             return (
@@ -102,31 +76,22 @@ export function LandingCategories() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
               >
-                <Link
-                  to={`/categories/${category.slug}`}
-                  className="group block"
-                >
-                  <div className={`
-                    relative h-32 sm:h-40 rounded-xl overflow-hidden
-                    bg-gradient-to-br ${config.gradient}
-                    transition-all duration-300
-                    hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20
-                  `}>
-                    {/* Overlay for text readability */}
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-                    
-                    {/* Icon */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <IconComponent className="h-12 w-12 sm:h-16 sm:w-16 text-white/80 group-hover:scale-110 transition-transform" />
-                    </div>
-                    
-                    {/* Category Name */}
-                    <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-gradient-to-t from-black/60 to-transparent">
-                      <h3 className="font-semibold text-white text-sm sm:text-base">
+                <Link to={`/categories/${category.slug}`} className="group block h-full">
+                  <Card className="h-full border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+                        <IconComponent className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                      </div>
+                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                         {category.name}
                       </h3>
-                    </div>
-                  </div>
+                      {category.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {category.description}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
                 </Link>
               </motion.div>
             );
@@ -143,9 +108,10 @@ export function LandingCategories() {
         >
           <Link 
             to="/products" 
-            className="text-primary hover:text-primary/80 font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
           >
-            View all categories →
+            View all categories
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
       </div>
