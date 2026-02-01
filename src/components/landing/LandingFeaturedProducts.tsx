@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, ShieldCheck, Award } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,6 @@ interface FeaturedProduct {
   slug: string;
   price: number;
   images: string[] | null;
-  average_rating: number | null;
-  review_count: number | null;
   stores: {
     name: string;
     slug: string;
@@ -78,18 +76,6 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             <span className="text-lg font-bold text-primary">
               {formatPrice(product.price)}
             </span>
-            
-            {product.average_rating && product.average_rating > 0 ? (
-              <div className="flex items-center gap-1 text-amber-500">
-                <Star className="h-4 w-4 fill-current" />
-                <span className="text-sm font-medium">{product.average_rating.toFixed(1)}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Star className="h-4 w-4" />
-                <span className="text-sm">—</span>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -117,7 +103,7 @@ export function LandingFeaturedProducts() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, average_rating, review_count,
+          id, name, slug, price, images,
           stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
