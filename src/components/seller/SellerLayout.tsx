@@ -5,14 +5,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Loader2, Menu } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
+import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 
 const SIDEBAR_COLLAPSED_KEY = 'seller-sidebar-collapsed';
 const EDGE_THRESHOLD = 30;
@@ -249,6 +252,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
 
   return (
     <TooltipProvider delayDuration={0}>
+      <ScrollProgressIndicator />
       <div
         className={cn(
           'flex w-full bg-background overflow-x-hidden relative',
@@ -267,8 +271,10 @@ export function SellerLayout({ children }: SellerLayoutProps) {
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent
             side="left"
-            className="p-0 w-72 border-r-0"
+            className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
+            style={{ height: '100dvh', maxHeight: '100dvh' }}
             data-gesture-exempt="true"
+            hideCloseButton
           >
             <SellerSidebar
               collapsed={false}
@@ -281,47 +287,31 @@ export function SellerLayout({ children }: SellerLayoutProps) {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
-          {/* Sticky Header */}
-          <header className="sticky top-0 z-40 w-full glass-effect pt-[env(safe-area-inset-top)]">
-            <div className="px-4">
-              <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 md:hidden"
-                    onClick={() => {
-                      hapticTap();
-                      setMobileOpen(true);
-                    }}
-                  >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                  <div className="min-w-0">
-                    <h1 className="font-display font-bold text-lg truncate text-primary">
-                      {store?.name || 'My Store'}
-                    </h1>
-                    <p className="text-xs text-muted-foreground hidden sm:block">Seller Dashboard</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </header>
+          {/* Shared Header from MainLayout */}
+          <Header 
+            showDesktopNav={false} 
+            onMenuClick={() => setMobileOpen(true)} 
+            onSidebarToggle={toggleSidebar} 
+          />
 
           {/* Scrollable Content */}
           <main className={cn(
             "flex-1 overflow-x-hidden",
-            isChatPage ? "overflow-y-hidden" : "overflow-y-auto"
+            isChatPage ? "overflow-y-hidden" : "overflow-y-auto pb-[env(safe-area-inset-bottom)]"
           )}>
             <div className={cn(
               "p-4 md:p-6 lg:p-8",
-              isChatPage ? "" : "pb-[env(safe-area-inset-bottom)]"
+              isChatPage ? "" : ""
             )}>
               {children}
             </div>
+            {!isChatPage && <Footer />}
           </main>
         </div>
       </div>
+
+      {/* Floating Action Buttons */}
+      <FloatingActionButtons />
     </TooltipProvider>
   );
 }
