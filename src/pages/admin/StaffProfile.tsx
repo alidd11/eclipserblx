@@ -427,7 +427,7 @@ export default function StaffProfile() {
 
   if (authLoading || profileLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['view_staff_directory']}>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
@@ -441,7 +441,7 @@ export default function StaffProfile() {
 
   if (!profile) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['view_staff_directory']}>
         <div className="text-center py-12">
           <p className="text-muted-foreground">Staff member not found</p>
           <Button asChild className="mt-4">
@@ -458,7 +458,7 @@ export default function StaffProfile() {
   const hireDate = application?.reviewed_at || staffIdLog?.assigned_at || roles[0]?.created_at;
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_staff_directory']}>
       <div className="space-y-6 max-w-4xl mx-auto pb-8">
         {/* Back Button */}
         <Button variant="ghost" size="sm" asChild>

@@ -62,7 +62,7 @@ export default function AdvertisementAnalytics() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout requiredPermissions={['view_analytics']}>
         <div className="space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -77,7 +77,7 @@ export default function AdvertisementAnalytics() {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_analytics']}>
       <div className="space-y-6">
         {/* Header */}
         <div>
