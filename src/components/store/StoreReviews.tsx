@@ -9,13 +9,6 @@ import { Star, MessageSquare, BadgeCheck, SlidersHorizontal, ArrowUpDown, X } fr
 import { cn } from '@/lib/utils';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -292,40 +285,48 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
           </DropdownMenu>
 
           {/* Rating Filter */}
-          <Select value={ratingFilter} onValueChange={(v) => setRatingFilter(v as RatingFilter)}>
-            <SelectTrigger className="w-[120px] h-8 text-sm">
-              <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
-              <SelectValue placeholder="Rating" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              <SelectItem value="all">All Ratings</SelectItem>
-              <SelectItem value="5">
-                <span className="flex items-center gap-1">
-                  5 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 h-8 w-[120px]">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span className="flex-1 text-left">
+                  {ratingFilter === 'all' ? 'All Ratings' : `${ratingFilter} Stars`}
                 </span>
-              </SelectItem>
-              <SelectItem value="4">
-                <span className="flex items-center gap-1">
-                  4 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                </span>
-              </SelectItem>
-              <SelectItem value="3">
-                <span className="flex items-center gap-1">
-                  3 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                </span>
-              </SelectItem>
-              <SelectItem value="2">
-                <span className="flex items-center gap-1">
-                  2 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                </span>
-              </SelectItem>
-              <SelectItem value="1">
-                <span className="flex items-center gap-1">
-                  1 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[140px] bg-popover z-50">
+              <DropdownMenuLabel>Filter by Rating</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={ratingFilter} onValueChange={(v) => setRatingFilter(v as RatingFilter)}>
+                <DropdownMenuRadioItem value="all">All Ratings</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="5">
+                  <span className="flex items-center gap-1">
+                    5 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  </span>
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="4">
+                  <span className="flex items-center gap-1">
+                    4 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  </span>
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="3">
+                  <span className="flex items-center gap-1">
+                    3 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  </span>
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="2">
+                  <span className="flex items-center gap-1">
+                    2 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  </span>
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="1">
+                  <span className="flex items-center gap-1">
+                    1 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  </span>
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Verified Only Toggle */}
           {verifiedCount > 0 && (
