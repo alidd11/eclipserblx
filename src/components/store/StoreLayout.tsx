@@ -1,7 +1,5 @@
 import { ReactNode, useState, useCallback, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, PanelLeftClose } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Menu } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -15,7 +13,10 @@ import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRecentStores } from '@/hooks/useRecentStores';
 import { hapticTap } from '@/lib/haptics';
+import { safeStorage } from '@/lib/safeStorage';
 import { cn } from '@/lib/utils';
+
+const SIDEBAR_STORAGE_KEY = 'store-sidebar-collapsed';
 
 interface StoreTab {
   id: string;
@@ -58,16 +59,24 @@ function StoreLayoutContent({
   activeTabName = null,
   onTabChange,
   productCount = 0,
-  totalSales = 0,
   averageRating,
-  bio,
 }: StoreLayoutProps) {
   const accentColor = store.accent_color || '#8b5cf6';
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
   const { recordVisit } = useRecentStores();
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
+
+  // Sidebar collapse state with localStorage persistence
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const stored = safeStorage.getItem(SIDEBAR_STORAGE_KEY);
+    return stored === 'true';
+  });
+
+  // Persist sidebar collapse state
+  useEffect(() => {
+    safeStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   // Record store visit when component mounts
   useEffect(() => {
@@ -179,7 +188,7 @@ function StoreLayoutContent({
       if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
         hapticTap();
-        setSidebarVisible(prev => !prev);
+        setSidebarCollapsed(prev => !prev);
       }
     };
 
@@ -191,26 +200,28 @@ function StoreLayoutContent({
     onTabChange?.(tabSlug);
   };
 
+  const handleSidebarToggle = () => {
+    hapticTap();
+    setSidebarCollapsed(prev => !prev);
+  };
+
   return (
     <>
       <ScrollProgressIndicator />
       <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
         {/* Desktop Sidebar */}
-        {!isMobile && sidebarVisible && (
-          <aside className="w-64 border-r border-border flex-shrink-0 sticky top-0 h-[100dvh]">
-            <StoreSidebar
-              storeSlug={store.slug || store.id}
-              storeName={store.name}
-              accentColor={accentColor}
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              productCount={productCount}
-              totalSales={totalSales}
-              averageRating={averageRating}
-              bio={bio}
-            />
-          </aside>
+        {!isMobile && (
+          <StoreSidebar
+            storeSlug={store.slug || store.id}
+            storeName={store.name}
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            productCount={productCount}
+            averageRating={averageRating}
+            collapsed={sidebarCollapsed}
+            onToggle={handleSidebarToggle}
+          />
         )}
 
         {/* Mobile Sidebar (Sheet) */}
@@ -226,15 +237,15 @@ function StoreLayoutContent({
               <StoreSidebar
                 storeSlug={store.slug || store.id}
                 storeName={store.name}
-                accentColor={accentColor}
                 tabs={tabs}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 onNavigate={() => setMobileOpen(false)}
                 productCount={productCount}
-                totalSales={totalSales}
                 averageRating={averageRating}
-                bio={bio}
+                collapsed={false}
+                onToggle={() => {}}
+                isMobileDrawer
               />
             </SheetContent>
           </Sheet>
@@ -246,7 +257,7 @@ function StoreLayoutContent({
           <Header 
             showDesktopNav={false} 
             onMenuClick={() => setMobileOpen(true)}
-            onSidebarToggle={() => setSidebarVisible(!sidebarVisible)}
+            onSidebarToggle={handleSidebarToggle}
           />
 
           {/* Breadcrumb Bar */}
