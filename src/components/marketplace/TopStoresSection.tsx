@@ -84,20 +84,6 @@ export function TopStoresSection() {
           return (
             <Link key={store.id} to={`/store/${store.slug}`}>
               <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden h-full border-border/50 hover:border-primary/30 relative">
-                {/* Rank Badge */}
-                <div className="absolute top-2 left-2 z-10">
-                  <Badge 
-                    className={`text-white border-0 gap-1 ${
-                      index === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
-                      index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
-                      'bg-gradient-to-r from-amber-700 to-amber-800'
-                    }`}
-                  >
-                    <Crown className="h-3 w-3" />
-                    #{index + 1}
-                  </Badge>
-                </div>
-
                 {/* Banner */}
                 <div 
                   className="h-24 relative overflow-hidden"
