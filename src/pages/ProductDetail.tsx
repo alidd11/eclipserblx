@@ -13,6 +13,8 @@ import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
+import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
+import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
 import { useCart, CartItem } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
@@ -73,7 +75,7 @@ export default function ProductDetail() {
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug)`)
+        .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`)
         .eq('slug', slug);
 
       // Customers should only see active + released products.
@@ -639,6 +641,11 @@ export default function ProductDetail() {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Store Details Card */}
+            {product.stores && (
+              <StoreDetailsCard store={product.stores} />
+            )}
           </div>
         </div>
 
