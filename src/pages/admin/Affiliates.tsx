@@ -243,7 +243,7 @@ export default function AdminAffiliates() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['manage_affiliates']}>
+    <AdminLayout requiredPermissions={['view_affiliates']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Affiliate Program</h1>

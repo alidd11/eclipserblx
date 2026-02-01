@@ -384,7 +384,7 @@ export default function AdminReviews() {
   );
 
   return (
-    <AdminLayout requiredPermissions={['manage_reviews']}>
+    <AdminLayout requiredPermissions={['view_reviews']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

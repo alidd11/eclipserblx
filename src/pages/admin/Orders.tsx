@@ -172,7 +172,7 @@ export default function AdminOrders() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['manage_orders']}>
+    <AdminLayout requiredPermissions={['view_orders']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

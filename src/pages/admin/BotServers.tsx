@@ -109,7 +109,7 @@ export default function BotServers() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['manage_products']}>
+    <AdminLayout requiredPermissions={['view_bot_codes']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Bot Servers</h1>
