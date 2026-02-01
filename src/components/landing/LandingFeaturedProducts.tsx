@@ -9,6 +9,33 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 
+// Region flag images
+import ukFlag from '@/assets/regions/uk-flag.jpg';
+import usFlag from '@/assets/regions/us-flag.jpg';
+import euFlag from '@/assets/regions/eu-flag.jpg';
+import beFlag from '@/assets/regions/be-flag.png';
+
+// Helper to get region flag from product name
+const getRegionFlag = (productName?: string): { src: string; name: string } | null => {
+  const nameLower = productName?.toLowerCase() || '';
+  
+  // Check for specific products first
+  if (nameLower.includes('ypres') || nameLower.includes('belgium')) {
+    return { src: beFlag, name: 'Belgium' };
+  }
+  
+  // Standard region checks based on product name
+  if (nameLower.startsWith('uk ') || nameLower.includes(' uk ')) {
+    return { src: ukFlag, name: 'UK' };
+  } else if (nameLower.startsWith('us ') || nameLower.includes(' us ')) {
+    return { src: usFlag, name: 'US' };
+  } else if (nameLower.startsWith('eu ') || nameLower.includes(' eu ')) {
+    return { src: euFlag, name: 'EU' };
+  }
+  
+  return null;
+};
+
 interface FeaturedProduct {
   id: string;
   name: string;
@@ -26,6 +53,7 @@ interface FeaturedProduct {
 
 function ProductCard({ product }: { product: FeaturedProduct }) {
   const { formatPrice } = useCurrency();
+  const regionFlag = getRegionFlag(product.name);
   
   return (
     <Link to={`/product/${product.slug}`} className="group block">
@@ -67,12 +95,29 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
           </div>
         </div>
 
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-2">
+        <CardContent className="p-4 relative overflow-hidden">
+          {/* Flag background overlay */}
+          {regionFlag && (
+            <div
+              className="absolute inset-0 bottom-10 pointer-events-none overflow-hidden flex items-center justify-center"
+              style={{
+                WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+                maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+              }}
+            >
+              <img
+                src={regionFlag.src}
+                alt=""
+                className="w-full h-[95%] opacity-[0.08] object-cover"
+              />
+            </div>
+          )}
+          
+          <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-2 relative z-10">
             {product.name}
           </h3>
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-lg font-bold text-primary">
               {formatPrice(product.price)}
             </span>
