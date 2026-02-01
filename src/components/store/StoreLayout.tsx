@@ -248,37 +248,11 @@ function StoreLayoutContent({
             onSidebarToggle={() => setSidebarVisible(!sidebarVisible)}
           />
 
-          {/* Store Context Bar + Breadcrumb */}
+          {/* Breadcrumb Bar */}
           <div 
-            className="border-b px-4 py-2 flex items-center gap-3"
+            className="border-b px-4 py-2"
             style={{ borderColor: `${accentColor}20` }}
           >
-            <Link 
-              to={`/store/${store.slug || store.id}`} 
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            >
-              {store.logo_url ? (
-                <img 
-                  src={store.logo_url} 
-                  alt={store.name}
-                  className="h-6 w-6 rounded-full object-contain"
-                />
-              ) : (
-                <div 
-                  className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
-                >
-                  {store.name.charAt(0)}
-                </div>
-              )}
-              <span 
-                className="font-display font-bold text-sm"
-                style={{ color: accentColor }}
-              >
-                {store.name}
-              </span>
-            </Link>
-            <span className="text-muted-foreground/30">|</span>
             <MarketplaceBreadcrumb
               storeName={store.name}
               storeSlug={store.slug || store.id}
