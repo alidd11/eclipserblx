@@ -449,7 +449,7 @@ export default function AdminCategories() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['manage_products']}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

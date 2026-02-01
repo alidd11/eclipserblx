@@ -530,7 +530,7 @@ export default function AdminAnalytics() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['view_analytics']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">

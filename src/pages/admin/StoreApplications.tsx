@@ -321,7 +321,7 @@ export default function StoreApplications() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['manage_sellers']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Store Applications</h1>

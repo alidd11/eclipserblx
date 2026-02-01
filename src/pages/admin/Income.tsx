@@ -376,7 +376,7 @@ export default function AdminIncome() {
   // Password verification screen
   if (!isVerified) {
     return (
-      <AdminLayout requiredRoles={['admin']}>
+      <AdminLayout requiredPermissions={['view_income']}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
@@ -432,7 +432,7 @@ export default function AdminIncome() {
   }
 
   return (
-    <AdminLayout requiredRoles={['admin']}>
+    <AdminLayout requiredPermissions={['view_income']}>
       <div className="space-y-8 w-full">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

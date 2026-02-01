@@ -104,7 +104,7 @@ export default function CommunityAnnouncements() {
   const selectedType = ANNOUNCEMENT_TYPES.find(t => t.value === formData.announcementType);
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_discord']}>
       <div className="px-4 sm:px-6 pt-4 pb-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Community Announcements</h1>

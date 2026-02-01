@@ -105,7 +105,7 @@ export default function AdminBotRequests() {
   const pendingCount = pendingRequests?.length ?? 0;
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_products']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Bot Installation Requests</h1>

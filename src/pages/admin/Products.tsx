@@ -652,7 +652,7 @@ export default function AdminProducts() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin', 'product_manager']}>
+    <AdminLayout requiredPermissions={['manage_products']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

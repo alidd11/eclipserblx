@@ -660,7 +660,7 @@ export default function AdminLiveChat() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
   return (
-    <AdminLayout requiredRoles={['admin', 'support_agent']}>
+    <AdminLayout requiredPermissions={['view_live_chat']}>
       <div className="h-full flex flex-col min-h-0 overflow-hidden p-3 lg:p-4 pb-[max(0.75rem,var(--chat-safe-bottom,env(safe-area-inset-bottom)))]">
         {/* Header Card - compact on mobile */}
         <Card className="bg-card border-border mb-3 shrink-0">

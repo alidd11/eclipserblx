@@ -318,7 +318,7 @@ export default function Transcripts() {
   const transcripts = getActiveTranscripts();
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_live_chat']}>
       <div className="space-y-6">
         {/* Header */}
         <div>
