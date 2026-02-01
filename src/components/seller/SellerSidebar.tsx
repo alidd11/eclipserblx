@@ -187,8 +187,8 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         ? "flex items-center justify-center py-2.5"
         : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
       isActive
-        ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]"
-        : "text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
+        ? "bg-primary text-primary-foreground"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted"
     );
 
     if (!isCollapsed) {
@@ -242,8 +242,8 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
-                    ? "bg-[hsl(var(--sidebar-primary)/0.15)] text-[hsl(var(--sidebar-primary))]"
-                    : "text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
@@ -297,8 +297,8 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               "transition-all duration-100 active:scale-[0.98] active:opacity-90",
               "focus:outline-none focus-visible:outline-none",
               hasActiveItem
-                ? "text-[hsl(var(--sidebar-primary))]"
-                : "text-[hsl(var(--sidebar-foreground)/0.6)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.5)]"
+                ? "text-primary"
+                : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
             )}
           >
             <group.icon className={cn(
@@ -324,28 +324,28 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
   return (
     <aside className={cn(
       "flex flex-col transition-all duration-300 shrink-0",
-      "bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))]",
+      "bg-card text-foreground",
       isMobileDrawer 
         ? "h-full w-full border-0 max-h-[100dvh]" 
-        : "h-screen sticky top-0 border-r border-[hsl(var(--sidebar-border))]",
+        : "h-screen sticky top-0 border-r border-border",
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-64"),
       className
     )}>
       {/* Header */}
-      <div className="p-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-[hsl(var(--sidebar-border))]">
+      <div className="p-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-border">
         {!isCollapsed && (
           <>
-            <h1 className="font-display font-bold text-xl text-[hsl(var(--sidebar-primary))] truncate">
+            <h1 className="font-display font-bold text-xl text-primary truncate">
               {store?.name || 'My Store'}
             </h1>
-            <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.6)]">Seller Dashboard</p>
+            <p className="text-xs text-muted-foreground">Seller Dashboard</p>
           </>
         )}
         {isCollapsed && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center justify-center">
-                    <Store className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(var(--sidebar-primary))]" />
+                    <Store className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
             </TooltipTrigger>
             <TooltipContent side="right">{store?.name || 'My Store'}</TooltipContent>
@@ -361,7 +361,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       </nav>
       
       {/* Footer Links */}
-      <div className="border-t border-[hsl(var(--sidebar-border))] p-2 space-y-1">
+      <div className="border-t border-border p-2 space-y-1">
         {/* View Store Link */}
         {storeUrl && (
           <>
@@ -371,7 +371,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                   <Link
                     to={storeUrl}
                     onClick={handleNavClick}
-                    className="flex items-center justify-center py-2.5 rounded-lg text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] transition-all"
+                    className="flex items-center justify-center py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>
@@ -382,7 +382,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <Link
                 to={storeUrl}
                 onClick={handleNavClick}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] transition-all"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
               >
                 <ExternalLink className="h-4 w-4" />
                 <span>View Store</span>
@@ -398,7 +398,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-center text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))]"
+                className="w-full justify-center text-muted-foreground hover:text-destructive hover:bg-muted"
                 onClick={() => {
                   hapticTap();
                   setShowSignOutDialog(true);
@@ -413,7 +413,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-destructive hover:bg-[hsl(var(--sidebar-accent))] rounded-lg px-3 py-2.5"
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg px-3 py-2.5"
             onClick={() => {
               hapticTap();
               setShowSignOutDialog(true);
@@ -427,12 +427,12 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
 
       {/* Desktop-only Collapse Toggle */}
       {!isMobileDrawer && (
-        <div className="p-2 border-t border-[hsl(var(--sidebar-border))]">
+        <div className="p-2 border-t border-border">
           <Button
             variant="ghost"
             size="sm"
             className={cn(
-              "w-full text-[hsl(var(--sidebar-foreground)/0.7)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]",
+              "w-full text-muted-foreground hover:text-foreground hover:bg-muted",
               isCollapsed ? "justify-center px-2" : "justify-start"
             )}
             onClick={() => {
