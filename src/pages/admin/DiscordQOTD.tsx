@@ -119,9 +119,9 @@ export default function DiscordQOTD() {
   const [previewQuestion, setPreviewQuestion] = useState<string | null>(null);
   const [previousQuestion, setPreviousQuestion] = useState<string | null>(null);
 
-  // Fetch current user's profile
+  // Fetch current user's profile with Discord info
   const { data: profile } = useQuery({
-    queryKey: ['user-profile', user?.id],
+    queryKey: ['user-profile-discord', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       const { data, error } = await supabase
@@ -133,7 +133,9 @@ export default function DiscordQOTD() {
       if (error) throw error;
       return data as Profile;
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    staleTime: 1000 * 30, // Refresh every 30 seconds to catch Discord link updates
+    refetchOnWindowFocus: true,
   });
 
   // Fetch QOTD history
