@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Shield, Store, Users, Star, Package, ChevronRight } from 'lucide-react';
+import { BadgeCheck, Shield, Store, Star, Package, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,6 @@ interface StoreDetailsCardProps {
     description?: string | null;
     is_verified?: boolean;
     is_trusted?: boolean;
-    follower_count?: number;
     product_count?: number;
     average_rating?: number;
     accent_color?: string | null;
@@ -70,7 +69,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
         </div>
         
         {/* Store stats */}
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="grid grid-cols-2 gap-2 text-center">
           {store.product_count !== undefined && store.product_count > 0 && (
             <div className="p-2 rounded-lg bg-muted/50">
               <div className="flex items-center justify-center gap-1 text-primary">
@@ -78,16 +77,6 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
                 <span className="font-semibold text-sm">{store.product_count}</span>
               </div>
               <p className="text-[10px] text-muted-foreground mt-0.5">Products</p>
-            </div>
-          )}
-          
-          {store.follower_count !== undefined && store.follower_count > 0 && (
-            <div className="p-2 rounded-lg bg-muted/50">
-              <div className="flex items-center justify-center gap-1 text-primary">
-                <Users className="h-3.5 w-3.5" />
-                <span className="font-semibold text-sm">{store.follower_count}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Followers</p>
             </div>
           )}
           
