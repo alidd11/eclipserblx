@@ -19,9 +19,14 @@ import beFlag from '@/assets/regions/be-flag.png';
 const getRegionFlag = (productName?: string): { src: string; name: string } | null => {
   const nameLower = productName?.toLowerCase() || '';
   
-  // Check for specific products first
+  // Check for specific products/brands first
   if (nameLower.includes('ypres') || nameLower.includes('belgium')) {
     return { src: beFlag, name: 'Belgium' };
+  }
+  
+  // UK brands
+  if (nameLower.includes('land rover') || nameLower.includes('landrover')) {
+    return { src: ukFlag, name: 'UK' };
   }
   
   // Standard region checks based on product name
