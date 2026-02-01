@@ -15,7 +15,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 
 import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
 import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
-import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
+import { BecomeSellerCard } from '@/components/marketplace/BecomeSellerCard';
+import { HowItWorksCard } from '@/components/marketplace/HowItWorksCard';
 
 interface StoreData {
   id: string;
@@ -421,6 +422,14 @@ export default function Marketplace() {
           <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <NewArrivalsCard />
             <CategoriesGridCard />
+          </section>
+        )}
+
+        {/* Seller Promotion Cards */}
+        {!isSearching && (
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <BecomeSellerCard />
+            <HowItWorksCard />
           </section>
         )}
 
