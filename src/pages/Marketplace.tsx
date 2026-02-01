@@ -17,6 +17,7 @@ import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
 import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
 import { BecomeSellerCard } from '@/components/marketplace/BecomeSellerCard';
 import { HowItWorksCard } from '@/components/marketplace/HowItWorksCard';
+import { TopStoresSection } from '@/components/marketplace/TopStoresSection';
 
 interface StoreData {
   id: string;
@@ -410,7 +411,14 @@ export default function Marketplace() {
           </div>
         )}
 
-        {/* Featured Products - Show at top when not searching */}
+        {/* Top Stores - Show at top when not searching */}
+        {!isSearching && (
+          <section>
+            <TopStoresSection />
+          </section>
+        )}
+
+        {/* Featured Products - Show when not searching */}
         {!isSearching && (
           <section>
             <FeaturedProductsCard />
