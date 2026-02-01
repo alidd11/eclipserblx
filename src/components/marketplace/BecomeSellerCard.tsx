@@ -30,7 +30,7 @@ export function BecomeSellerCard() {
               </div>
             </div>
 
-            <Link to="/seller/apply">
+            <Link to="/account">
               <Button size="sm" className="mt-2">
                 Apply Now
                 <ArrowRight className="ml-2 h-4 w-4" />
