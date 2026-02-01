@@ -57,6 +57,12 @@ DiscordIcon.displayName = 'DiscordIcon';
 
 const STORAGE_KEY = 'customer-sidebar-groups';
 
+// Unified icon styling constants for seamless appearance
+const ICON_SIZE = "h-[1.125rem] w-[1.125rem]";
+const ICON_SIZE_SMALL = "h-4 w-4"; // For tooltip/compact contexts
+const ICON_STROKE_ACTIVE = "stroke-[2.25]";
+const ICON_STROKE_DEFAULT = "stroke-[1.75]";
+
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 
 interface CustomerSidebarProps {
@@ -278,17 +284,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     const LinkContent = (
       <>
         <div className="relative shrink-0">
-          {typeof item.icon === 'function' && 'render' in item.icon ? (
-            <item.icon className={cn(
-              "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
-              isActive ? "stroke-[2.5]" : "stroke-[1.5]"
-            )} />
-          ) : (
-            <item.icon className={cn(
-              "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
-              isActive ? "stroke-[2.5]" : "stroke-[1.5]"
-            )} />
-          )}
+          <item.icon className={cn(
+            ICON_SIZE,
+            "transition-colors",
+            isActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
+          )} />
           {/* Red notification dot */}
           {item.showNotificationDot && unreadNotifications > 0 && (
             <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
@@ -431,8 +431,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 onClick={() => toggleGroup(group.id)}
               >
                 <group.icon className={cn(
-                  "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] transition-all",
-                  hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
+                  ICON_SIZE,
+                  "transition-colors",
+                  hasActiveItem ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
                 )} />
               </button>
             </TooltipTrigger>
@@ -452,7 +453,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                         onClick={handleNavClick}
                         className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
                       >
-                        <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <item.icon className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
                         {item.title}
                       </a>
                     );
@@ -470,7 +471,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                           : "hover:bg-muted"
                       )}
                     >
-                      <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <item.icon className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
                       {item.title}
                       {item.showStatusDot && (
                         <Circle className={cn('h-2 w-2 fill-current ml-auto', statusConfig[systemStatus].color)} />
@@ -505,16 +506,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             )}
           >
             <group.icon className={cn(
-              "h-4 w-4 shrink-0 transition-all",
-              hasActiveItem ? "stroke-[2.5]" : "stroke-[1.5]"
+              ICON_SIZE, "shrink-0 transition-colors",
+              hasActiveItem ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
             )} />
             <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{group.title}</span>
-            <ChevronDown 
-              className={cn(
-                "h-4 w-4 shrink-0 transition-transform duration-200",
-                isOpen ? "rotate-0" : "-rotate-90"
-              )} 
-            />
+            <ChevronDown className={cn(
+              ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
+              isOpen ? "rotate-0" : "-rotate-90"
+            )} />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-0.5 pt-0.5">
@@ -548,8 +547,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 )}
               >
                 <Package className={cn(
-                  "h-4 w-4 transition-all",
-                  isBrowseActive ? "stroke-[2.5]" : "stroke-[1.5]"
+                  ICON_SIZE, "transition-colors",
+                  isBrowseActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
                 )} />
               </button>
             </TooltipTrigger>
@@ -567,7 +566,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                     isActive && !location.search.includes('category=') ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                   )}
                 >
-                  <Grid3X3 className="h-3.5 w-3.5" />
+                  <Grid3X3 className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
                   All Products
                 </NavLink>
                 <NavLink
@@ -578,7 +577,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                     isActive || location.pathname.startsWith('/browse/') ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                   )}
                 >
-                  <FolderOpen className="h-3.5 w-3.5" />
+                  <FolderOpen className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
                   Categories
                 </NavLink>
               </div>
@@ -607,16 +606,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             )}
           >
             <Package className={cn(
-              "h-4 w-4 shrink-0 transition-all",
-              isBrowseActive ? "stroke-[2.5]" : "stroke-[1.5]"
+              ICON_SIZE, "shrink-0 transition-colors",
+              isBrowseActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
             )} />
             <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">Browse</span>
-            <ChevronDown 
-              className={cn(
-                "h-4 w-4 shrink-0 transition-transform duration-200",
-                (openGroups['browse'] ?? true) ? "rotate-0" : "-rotate-90"
-              )} 
-            />
+            <ChevronDown className={cn(
+              ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
+              (openGroups['browse'] ?? true) ? "rotate-0" : "-rotate-90"
+            )} />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-0.5 pt-0.5">
@@ -634,7 +631,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
-            <Grid3X3 className="h-4 w-4 shrink-0" />
+            <Grid3X3 className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
             <span className="leading-none">All Products</span>
           </NavLink>
           
@@ -651,7 +648,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
-            <FolderOpen className="h-4 w-4 shrink-0" />
+            <FolderOpen className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
             <span className="leading-none">Categories</span>
           </NavLink>
         </CollapsibleContent>
@@ -693,9 +690,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               >
                 {!isCollapsed && <span className="text-xs">Collapse</span>}
                 {isCollapsed ? (
-                  <PanelLeft className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
+                  <PanelLeft className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
                 ) : (
-                  <PanelLeftClose className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
+                  <PanelLeftClose className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
                 )}
               </Button>
             </TooltipTrigger>
