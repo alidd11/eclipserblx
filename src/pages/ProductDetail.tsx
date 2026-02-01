@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Store as StoreIcon } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -209,6 +209,16 @@ export default function ProductDetail() {
     return productReviews?.filter(r => r.is_verified_purchase).length || 0;
   }, [productReviews]);
 
+  // Calculate average rating and review count for the overlay
+  const { averageRating, reviewCount } = useMemo(() => {
+    if (!productReviews || productReviews.length === 0) {
+      return { averageRating: null, reviewCount: 0 };
+    }
+    const ratings = productReviews.map(r => r.rating).filter(r => typeof r === 'number');
+    const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
+    return { averageRating: avg, reviewCount: productReviews.length };
+  }, [productReviews]);
+
   // Scroll to reviews section if hash is #reviews
   useEffect(() => {
     if (location.hash === '#reviews' && reviewSectionRef.current && product) {
@@ -409,10 +419,71 @@ export default function ProductDetail() {
                 </div>
               )}
               
+              {/* Store info + Rating overlay at bottom of image */}
+              {product.stores && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-8 z-10">
+                  <div className="flex items-center justify-between gap-2">
+                    {/* Store info */}
+                    <Link 
+                      to={`/store/${product.stores.slug}`}
+                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {product.stores.logo_url ? (
+                        <img 
+                          src={product.stores.logo_url} 
+                          alt={product.stores.name}
+                          className="h-8 w-8 rounded-lg object-contain bg-white/10 flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                          <StoreIcon className="h-4 w-4 text-white/70" />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-white font-medium truncate max-w-[150px]">
+                          {product.stores.name}
+                        </span>
+                        {product.stores.is_verified && (
+                          <BadgeCheck className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                        )}
+                        {product.stores.is_trusted && (
+                          <Shield className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                        )}
+                      </div>
+                    </Link>
+                    
+                    {/* Rating display */}
+                    {reviewCount > 0 && averageRating !== null && (
+                      <div className="flex items-center gap-1 text-white">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={cn(
+                                "h-4 w-4",
+                                star <= Math.round(averageRating)
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "fill-transparent text-white/40"
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium ml-1">
+                          {averageRating.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-white/70">
+                          ({reviewCount})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
-              {/* Pagination dots */}
+              {/* Pagination dots - positioned above the store overlay */}
               {images.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none">
+                <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
                   {images.map((_, i) => (
                     <div
                       key={i}
