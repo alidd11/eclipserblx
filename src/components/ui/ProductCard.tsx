@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star, Users } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -68,11 +68,10 @@ interface ProductCardProps {
   isResellable?: boolean;
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
-  followerCount?: number;
   averageRating?: number;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, followerCount, averageRating }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -168,12 +167,50 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             </div>
           )}
           
-          {/* Corner watermark */}
-          <div className="absolute bottom-1.5 right-1.5 pointer-events-none">
-            <span className="text-[8px] font-display font-bold text-white/70 tracking-wider drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              ECLIPSE
-            </span>
-          </div>
+          {/* Store info overlay at bottom of image */}
+          {storeName && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-2 pt-6">
+              <div className="flex items-center gap-1.5">
+                {/* Store Logo */}
+                {storeLogo ? (
+                  <img 
+                    src={storeLogo} 
+                    alt={storeName}
+                    className="h-5 w-5 rounded object-contain bg-white/10 flex-shrink-0"
+                  />
+                ) : (
+                  <div className="h-5 w-5 rounded bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Store className="h-3 w-3 text-white/70" />
+                  </div>
+                )}
+                <span 
+                  className="text-[10px] text-white/90 font-medium truncate hover:text-white transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    if (storeSlug) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/store/${storeSlug}`);
+                    }
+                  }}
+                >
+                  {storeName}
+                </span>
+                {isVerified && (
+                  <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+                )}
+                {isTrusted && (
+                  <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
+                )}
+                {/* Product Rating */}
+                {typeof averageRating === 'number' && averageRating > 0 && (
+                  <span className="flex items-center gap-0.5 ml-auto text-white/90">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Badges */}
           <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
@@ -230,70 +267,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate relative z-10">
               {category}
             </span>
-          )}
-          
-          {/* Store info with logo and badges */}
-          {storeName && (
-            <div className="flex items-center gap-1 xs:gap-1.5 text-[9px] xs:text-[10px] text-muted-foreground">
-              {/* Store Logo */}
-              {storeLogo ? (
-                <img 
-                  src={storeLogo} 
-                  alt={storeName}
-                  className="h-3.5 w-3.5 xs:h-4 xs:w-4 rounded object-contain bg-background flex-shrink-0"
-                />
-              ) : (
-                <div className="h-3.5 w-3.5 xs:h-4 xs:w-4 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                  <Store className="h-2 w-2 xs:h-2.5 xs:w-2.5 text-muted-foreground" />
-                </div>
-              )}
-              <span className="truncate">
-                {storeSlug ? (
-                  <span 
-                    role="link"
-                    tabIndex={0}
-                    className="hover:text-primary transition-colors cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigate(`/store/${storeSlug}`);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        navigate(`/store/${storeSlug}`);
-                      }
-                    }}
-                  >
-                    {storeName}
-                  </span>
-                ) : (
-                  storeName
-                )}
-              </span>
-              {isVerified && (
-                <BadgeCheck className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-blue-500 flex-shrink-0" />
-              )}
-              {isTrusted && (
-                <Shield className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-amber-500 flex-shrink-0" />
-              )}
-              {/* Follower count */}
-              {typeof followerCount === 'number' && followerCount > 0 && (
-                <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">
-                  <Users className="h-2.5 w-2.5 xs:h-3 xs:w-3" />
-                  <span>{followerCount}</span>
-                </span>
-              )}
-            </div>
-          )}
-          
-          {/* Product Rating */}
-          {typeof averageRating === 'number' && averageRating > 0 && (
-            <div className="flex items-center gap-0.5 text-[9px] xs:text-[10px]">
-              <Star className="h-2.5 w-2.5 xs:h-3 xs:w-3 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-foreground">{averageRating.toFixed(1)}</span>
-            </div>
           )}
           
           <h3 className="font-display font-semibold text-[11px] xs:text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
