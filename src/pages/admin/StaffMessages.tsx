@@ -70,7 +70,7 @@ const getFileName = (url: string): string => {
 // Default role badges for fallback
 const DEFAULT_ROLE_BADGES: Record<string, { label: string; className: string }> = {
   admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  product_manager: { label: 'Products', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  lead_administrator: { label: 'Lead Admin', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   order_manager: { label: 'Orders', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
   support_agent: { label: 'Support', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
   analyst: { label: 'Analyst', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },

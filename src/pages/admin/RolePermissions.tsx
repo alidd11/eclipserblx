@@ -27,7 +27,7 @@ import { RoleManagementCard } from '@/components/admin/RoleManagementCard';
 import { RoleSelector } from '@/components/admin/RoleSelector';
 import { PermissionCategory } from '@/components/admin/PermissionCategory';
 
-type AppRole = 'admin' | 'product_manager' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
+type AppRole = 'admin' | 'lead_administrator' | 'order_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
 interface Permission {
   id: string;
