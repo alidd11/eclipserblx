@@ -2,6 +2,7 @@ import { ReactNode, forwardRef, useState, useEffect, useCallback, useRef } from 
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { CustomerSidebar } from './CustomerSidebar';
+import { UniversalBreadcrumb } from './UniversalBreadcrumb';
 import { safeStorage } from '@/lib/safeStorage';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
@@ -211,6 +212,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         {/* Main Content - Fixed header with scrollable content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
           <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} onSidebarToggle={toggleSidebar} />
+          <UniversalBreadcrumb />
           <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
             {children}
             <Footer />

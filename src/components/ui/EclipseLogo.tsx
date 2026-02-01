@@ -2,11 +2,12 @@ import { cn } from '@/lib/utils';
 
 interface EclipseLogoProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
   const sizeClasses = {
+    xs: 'h-5 w-5',
     sm: 'h-7 w-7',
     md: 'h-8 w-8',
     lg: 'h-10 w-10',

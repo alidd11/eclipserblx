@@ -1,50 +1,21 @@
 import { ReactNode, useState, useCallback, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Store as StoreIcon, 
-  ExternalLink,
-  Twitter,
-  Youtube,
-  Menu,
-  PanelLeftClose,
-  ChevronLeft
-} from 'lucide-react';
+import { Menu, PanelLeftClose } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 import { StoreSidebar } from './StoreSidebar';
 import { MarketplaceBreadcrumb } from './MarketplaceBreadcrumb';
+import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
+import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
+import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
+import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRecentStores } from '@/hooks/useRecentStores';
+import { hapticTap } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-
-// Discord icon component
-function DiscordIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-    </svg>
-  );
-}
-
-// TikTok icon component
-function TikTokIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-    </svg>
-  );
-}
-
-// Roblox icon component
-function RobloxIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M5.164 0L0 18.627 18.836 24 24 5.373 5.164 0zm10.291 14.273l-5.728-1.545 1.545-5.728 5.728 1.545-1.545 5.728z"/>
-    </svg>
-  );
-}
 
 interface StoreTab {
   id: string;
@@ -78,7 +49,7 @@ interface StoreLayoutProps {
   bio?: string | null;
 }
 
-export function StoreLayout({ 
+function StoreLayoutContent({ 
   children, 
   store,
   tabs = [],
@@ -95,6 +66,7 @@ export function StoreLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const { recordVisit } = useRecentStores();
+  const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
 
   // Record store visit when component mounts
   useEffect(() => {
@@ -174,6 +146,7 @@ export function StoreLayout({
         isMostlyHorizontal &&
         !mobileOpen
       ) {
+        hapticTap();
         setMobileOpen(true);
       }
 
@@ -199,47 +172,31 @@ export function StoreLayout({
     };
   }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
-  const socialLinks = [
-    { url: store.discord_url, icon: DiscordIcon, label: 'Discord' },
-    { url: store.twitter_url, icon: Twitter, label: 'Twitter' },
-    { url: store.youtube_url, icon: Youtube, label: 'YouTube' },
-    { url: store.tiktok_url, icon: TikTokIcon, label: 'TikTok' },
-    { url: store.roblox_url, icon: RobloxIcon, label: 'Roblox' },
-    { url: store.website_url, icon: ExternalLink, label: 'Website' },
-  ].filter(link => link.url);
+  // Keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        hapticTap();
+        setSidebarVisible(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleTabChange = (tabSlug: string | null) => {
     onTabChange?.(tabSlug);
   };
 
   return (
-    <div className="min-h-[100dvh] flex bg-background">
-      {/* Desktop Sidebar */}
-      {!isMobile && sidebarVisible && (
-        <aside className="w-64 border-r border-border flex-shrink-0 sticky top-0 h-[100dvh]">
-          <StoreSidebar
-            storeSlug={store.slug || store.id}
-            storeName={store.name}
-            accentColor={accentColor}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            productCount={productCount}
-            totalSales={totalSales}
-            averageRating={averageRating}
-            bio={bio}
-          />
-        </aside>
-      )}
-
-      {/* Mobile Sidebar (Sheet) */}
-      {isMobile && (
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetContent
-            side="left"
-            className="p-0 w-72 max-w-[85vw] border-r border-border"
-            data-gesture-exempt="true"
-          >
+    <>
+      <ScrollProgressIndicator />
+      <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
+        {/* Desktop Sidebar */}
+        {!isMobile && sidebarVisible && (
+          <aside className="w-64 border-r border-border flex-shrink-0 sticky top-0 h-[100dvh]">
             <StoreSidebar
               storeSlug={store.slug || store.id}
               storeName={store.name}
@@ -247,189 +204,114 @@ export function StoreLayout({
               tabs={tabs}
               activeTab={activeTab}
               onTabChange={handleTabChange}
-              onNavigate={() => setMobileOpen(false)}
               productCount={productCount}
               totalSales={totalSales}
               averageRating={averageRating}
               bio={bio}
             />
-          </SheetContent>
-        </Sheet>
-      )}
+          </aside>
+        )}
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Store Header */}
-        <header 
-          className="sticky top-0 z-50 border-b backdrop-blur-md pt-[env(safe-area-inset-top)]"
-          style={{ 
-            backgroundColor: `hsl(var(--background) / 0.95)`,
-            borderColor: `${accentColor}20`,
-          }}
-        >
-          <div className="px-3 xs:px-4 sm:container flex items-center justify-between h-12 xs:h-14">
-            <div className="flex items-center gap-1.5 xs:gap-2">
-              {/* Mobile Menu Button */}
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 xs:h-9 xs:w-9"
-                  onClick={() => setMobileOpen(true)}
-                >
-                  <Menu className="h-4 w-4 xs:h-5 xs:w-5" />
-                </Button>
-              )}
-
-              {/* Desktop Sidebar Toggle */}
-              {!isMobile && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 xs:h-9 xs:w-9"
-                  onClick={() => setSidebarVisible(!sidebarVisible)}
-                >
-                  <PanelLeftClose className={cn(
-                    "h-4 w-4 xs:h-5 xs:w-5 transition-transform",
-                    !sidebarVisible && "rotate-180"
-                  )} />
-                </Button>
-              )}
-
-              {/* Back to Marketplace Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
-                    asChild
-                  >
-                    <Link to="/marketplace">
-                      <ChevronLeft className="h-4 w-4" />
-                      <span className="hidden sm:inline text-xs">Marketplace</span>
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Return to Eclipse Marketplace</TooltipContent>
-              </Tooltip>
-
-              <span className="text-muted-foreground/30 hidden sm:inline">|</span>
-
-              <Link to={`/store/${store.slug || store.id}`} className="flex items-center gap-2 xs:gap-3">
-                {store.logo_url ? (
-                  <img 
-                    src={store.logo_url} 
-                    alt={store.name}
-                    className="h-6 w-6 xs:h-8 xs:w-8 rounded-full object-contain"
-                  />
-                ) : (
-                  <div 
-                    className="h-6 w-6 xs:h-8 xs:w-8 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: `${accentColor}20` }}
-                  >
-                    <StoreIcon className="h-3 w-3 xs:h-4 xs:w-4" style={{ color: accentColor }} />
-                  </div>
-                )}
-                <span 
-                  className="font-display font-bold text-base xs:text-lg"
-                  style={{ color: accentColor }}
-                >
-                  {store.name}
-                </span>
-              </Link>
-            </div>
-
-            {/* Social Links */}
-            {socialLinks.length > 0 && (
-              <div className="flex items-center gap-0.5 xs:gap-1">
-                {socialLinks.map((link, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 xs:h-8 xs:w-8 text-muted-foreground hover:text-foreground"
-                    asChild
-                  >
-                    <a 
-                      href={link.url!} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      aria-label={link.label}
-                    >
-                      <link.icon className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-                    </a>
-                  </Button>
-                ))}
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* Breadcrumb Navigation */}
-        <MarketplaceBreadcrumb
-          storeName={store.name}
-          storeSlug={store.slug || store.id}
-          categoryName={activeTabName}
-          accentColor={accentColor}
-        />
+        {/* Mobile Sidebar (Sheet) */}
+        {isMobile && (
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetContent
+              side="left"
+              className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
+              style={{ height: '100dvh', maxHeight: '100dvh' }}
+              data-gesture-exempt="true"
+              hideCloseButton
+            >
+              <StoreSidebar
+                storeSlug={store.slug || store.id}
+                storeName={store.name}
+                accentColor={accentColor}
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                onNavigate={() => setMobileOpen(false)}
+                productCount={productCount}
+                totalSales={totalSales}
+                averageRating={averageRating}
+                bio={bio}
+              />
+            </SheetContent>
+          </Sheet>
+        )}
 
         {/* Main Content */}
-        <main className="flex-1">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
+          {/* Unified Header */}
+          <Header 
+            showDesktopNav={false} 
+            onMenuClick={() => setMobileOpen(true)}
+            onSidebarToggle={() => setSidebarVisible(!sidebarVisible)}
+          />
 
-        {/* Store Footer */}
-        <footer className="border-t border-border bg-card/50">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-2">
-                {store.logo_url ? (
-                  <img 
-                    src={store.logo_url} 
-                    alt={store.name}
-                    className="h-6 w-6 rounded-full object-contain"
-                  />
-                ) : (
-                  <StoreIcon className="h-5 w-5" style={{ color: accentColor }} />
-                )}
-                <span className="text-sm text-muted-foreground">
-                  © {new Date().getFullYear()} {store.name}. All rights reserved.
-                </span>
-              </div>
-              
-              {/* Legal Links */}
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                <Link to="/terms" className="hover:text-foreground transition-colors">
-                  Terms of Service
-                </Link>
-                <span className="text-border hidden sm:inline">|</span>
-                <Link to="/privacy" className="hover:text-foreground transition-colors">
-                  Privacy Policy
-                </Link>
-                <span className="text-border hidden sm:inline">|</span>
-                <Link to="/refunds" className="hover:text-foreground transition-colors">
-                  Refund Policy
-                </Link>
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                Powered by{' '}
-                <Link 
-                  to="/" 
-                  className="font-medium hover:text-foreground transition-colors"
-                  style={{ color: accentColor }}
+          {/* Store Context Bar + Breadcrumb */}
+          <div 
+            className="border-b px-4 py-2 flex items-center gap-3"
+            style={{ borderColor: `${accentColor}20` }}
+          >
+            <Link 
+              to={`/store/${store.slug || store.id}`} 
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              {store.logo_url ? (
+                <img 
+                  src={store.logo_url} 
+                  alt={store.name}
+                  className="h-6 w-6 rounded-full object-contain"
+                />
+              ) : (
+                <div 
+                  className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
                 >
-                  Eclipse Marketplace
-                </Link>
-              </div>
-            </div>
+                  {store.name.charAt(0)}
+                </div>
+              )}
+              <span 
+                className="font-display font-bold text-sm"
+                style={{ color: accentColor }}
+              >
+                {store.name}
+              </span>
+            </Link>
+            <span className="text-muted-foreground/30">|</span>
+            <MarketplaceBreadcrumb
+              storeName={store.name}
+              storeSlug={store.slug || store.id}
+              categoryName={activeTabName}
+              accentColor={accentColor}
+              compact
+            />
           </div>
-        </footer>
 
-        {/* Chat Widget */}
-        <ChatWidget />
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
+            {children}
+            <Footer />
+          </main>
+        </div>
       </div>
-    </div>
+
+      {/* Floating Action Buttons */}
+      <FloatingActionButtons />
+
+      {/* Search Command Palette */}
+      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+
+      {/* Chat Widget */}
+      <ChatWidget />
+    </>
+  );
+}
+
+export function StoreLayout(props: StoreLayoutProps) {
+  return (
+    <SearchCommandProvider>
+      <StoreLayoutContent {...props} />
+    </SearchCommandProvider>
   );
 }

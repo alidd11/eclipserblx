@@ -5,28 +5,12 @@ import { motion } from 'framer-motion';
 
 export function LandingHero() {
   return (
-    <section className="relative min-h-[80vh] flex items-center overflow-hidden">
-      {/* Background with gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-      
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ duration: 2 }}
-          className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
-          transition={{ duration: 2, delay: 0.5 }}
-          className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
-        />
-      </div>
+    <section className="relative min-h-[70vh] flex items-center overflow-hidden">
+      {/* Simplified background - cleaner look */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <div className="container mx-auto px-4 py-16 sm:py-20 lg:py-24 relative z-10">
+      <div className="container mx-auto px-4 py-16 sm:py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <motion.div
@@ -63,7 +47,7 @@ export function LandingHero() {
             scripts, and resources. Low fees. Instant payouts. Trusted by thousands.
           </motion.p>
 
-          {/* CTAs - Seller-first */}
+          {/* CTAs - using standard Button component styling */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -71,14 +55,14 @@ export function LandingHero() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link to="/become-seller">
-              <Button size="lg" className="text-lg px-8 py-6 h-auto">
+              <Button size="lg" className="h-12 px-6 text-base">
                 <Store className="mr-2 h-5 w-5" />
                 Start Selling Today
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/marketplace">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 h-auto">
+              <Button size="lg" variant="outline" className="h-12 px-6 text-base">
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 Browse Marketplace
               </Button>
@@ -87,7 +71,7 @@ export function LandingHero() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="text-lg px-8 py-6 h-auto border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
+                className="h-12 px-6 text-base border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
               >
                 <Sparkles className="mr-2 h-5 w-5" />
                 Eclipse+
