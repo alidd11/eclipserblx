@@ -1,218 +1,168 @@
 
 
-# Unified Visual Design System
+# Unified Store Sidebar Plan
 
-## Problem Analysis
+## Overview
+Transform the Store Sidebar (`StoreSidebar.tsx`) to match the structure and styling of the main marketplace sidebar (`CustomerSidebar.tsx`), creating a seamless and consistent navigation experience across the entire platform - similar to ClearlyDev and BuiltByBit.
 
-After analyzing the codebase, I identified several visual inconsistencies across different sections of the platform:
+## Current State Analysis
 
-### Current Inconsistencies
+### CustomerSidebar (Main Marketplace)
+- Collapsible groups with chevron toggles
+- Unified icon sizing constants (`ICON_SIZE`, `ICON_STROKE_ACTIVE`, etc.)
+- Collapsible sections with persistent state (localStorage)
+- Desktop collapse/expand functionality with Ctrl+B shortcut
+- Tooltip support for collapsed mode
+- Haptic feedback on interactions
+- System status integration
+- Recent/Followed stores sections
 
-| Area | Issue |
-|------|-------|
-| **Store Layout vs Main Layout** | Store pages use a completely separate header design without the main Eclipse branding and search bar |
-| **Sidebar Styling** | Three different sidebar implementations: `CustomerSidebar`, `StoreSidebar`, and `SellerSidebar` with varying padding, typography, and structure |
-| **Header Heights** | Main header is `h-14 sm:h-16` but StoreLayout header is `h-12 xs:h-14` |
-| **Footer Variations** | Main `Footer` component differs from the inline store footer in `StoreLayout` |
-| **Breadcrumb Placement** | Only store pages have breadcrumbs; main site lacks contextual navigation |
-| **Landing Page** | Uses different spacing, typography scales, and animation patterns than the rest of the site |
-| **Category Cards** | Landing page uses gradient-heavy cards while marketplace uses subdued card styling |
-| **Search Experience** | Main site has the command palette search; store pages lack integrated search |
+### StoreSidebar (Current)
+- Simple flat list with separators
+- Button-based navigation items
+- No collapsible sections
+- No collapse/expand state
+- Inconsistent icon sizing
+- Store-accent colored icons
+- Fixed "Powered by Eclipse" footer
 
----
+## Implementation Plan
 
-## Proposed Unified Design System
+### 1. Adopt Unified Styling Constants
+Add the same icon sizing and stroke constants used in CustomerSidebar:
+```tsx
+const ICON_SIZE = "h-[1.125rem] w-[1.125rem]";
+const ICON_SIZE_SMALL = "h-4 w-4";
+const ICON_STROKE_ACTIVE = "stroke-[2.25]";
+const ICON_STROKE_DEFAULT = "stroke-[1.75]";
+```
 
-### 1. Universal Header Component
-Replace the custom store header with the shared `Header` component (already done for SellerLayout).
+### 2. Convert to Collapsible Group Structure
+Reorganize navigation into collapsible groups:
 
-**Changes:**
-- `StoreLayout.tsx`: Replace custom header with `<Header />` component
-- Add store context badge/indicator within the main header
-- Ensure search functionality works across all pages
+**Quick Access** (non-collapsible, top-level)
+- Back to Marketplace
+- Store Home
+- About
 
-### 2. Synchronized Sidebar Structure
-Align all three sidebars to share the same visual DNA:
+**My Account** (collapsible)
+- Profile
+- My Cart
+- Wishlist
+- Purchases
 
-**Standardized Properties:**
-- Same padding: `p-3` for content, `p-4` for headers
-- Same nav item heights: `h-9` with `gap-2`
-- Same icon sizing: `h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]`
-- Same typography: section labels as `text-xs font-medium uppercase tracking-wider`
-- Same active state: `bg-primary text-primary-foreground`
+**Store** (collapsible)
+- Recommended (scroll anchor)
+- Reviews (scroll anchor with rating badge)
 
-**Changes:**
-- `StoreSidebar.tsx`: Adopt `CustomerSidebar` styling patterns
-- Add consistent Eclipse branding footer to all sidebars
+**Browse** (collapsible)
+- All Products (with count badge)
+- [Dynamic store categories/tabs]
 
-### 3. Unified Footer Component
-Use the main `Footer` component everywhere instead of inline footers.
+**Legal** (collapsible)
+- Terms of Service
+- Privacy Policy
+- Refund Policy
 
-**Changes:**
-- `StoreLayout.tsx`: Replace inline footer with `<Footer />` component
-- Add optional store attribution line to Footer
+### 3. Add Collapse/Expand Support
+- Add `collapsed` prop support to StoreSidebar
+- Implement tooltip mode for collapsed state
+- Persist collapse state via localStorage
+- Support Ctrl+B keyboard shortcut (already in StoreLayout)
 
-### 4. Consistent Spacing System
-Standardize container and section spacing across all pages.
+### 4. Unify Component Structure
+- Use NavLink instead of Button for internal links
+- Apply identical `renderNavItem` and `renderGroup` patterns
+- Match padding, spacing, and transitions exactly
+- Use Collapsible components from radix-ui
 
-**Pattern:**
+### 5. Remove Store-Specific Styling
+- Remove accent-colored icons (use neutral theme tokens)
+- Remove "Powered by Eclipse" footer (platform branding handled by Header)
+- Remove store-specific visual customizations for sidebar
+
+### 6. Update StoreLayout Integration
+- Pass `collapsed` state to StoreSidebar
+- Add collapse toggle button in sidebar header
+- Synchronize mobile drawer behavior
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/store/StoreSidebar.tsx` | Complete rewrite using CustomerSidebar patterns |
+| `src/components/store/StoreLayout.tsx` | Add sidebar collapse state management |
+
+## Visual Architecture
+
 ```text
-Section padding: py-16 sm:py-20
-Container: container mx-auto px-4
-Card gaps: gap-4 sm:gap-6
-Grid gaps: gap-4 sm:gap-6
++----------------------------------+
+| [Eclipse Logo]      [Collapse ▼] |  <- Unified header with toggle
++----------------------------------+
+| ◀ Back to Marketplace            |  <- Quick Access (always visible)
+| 🏠 Store Home                    |
+| ℹ️ About                          |
++----------------------------------+
+| ▼ MY ACCOUNT                     |  <- Collapsible group
+|   👤 Profile                     |
+|   🛒 My Cart                     |
+|   ❤️ Wishlist                    |
+|   📦 My Purchases                |
++----------------------------------+
+| ▼ STORE                          |  <- Collapsible group
+|   ✨ Recommended                 |
+|   ⭐ Reviews          4.8        |  <- Rating badge
++----------------------------------+
+| ▼ BROWSE                         |  <- Collapsible group
+|   📦 All Products     12         |  <- Product count badge
+|   📁 Category 1                  |
+|   📁 Category 2                  |
++----------------------------------+
+| ▼ LEGAL                          |  <- Collapsible group
+|   📄 Terms of Service            |
+|   🛡️ Privacy Policy              |
+|   🔄 Refund Policy               |
++----------------------------------+
 ```
 
-**Changes:**
-- Landing page sections: Align with marketplace spacing
-- Store pages: Use consistent container widths
+## Technical Details
 
-### 5. Landing Page Visual Alignment
-Reduce visual disparity between landing page and marketplace.
-
-**Changes:**
-- `LandingCategories.tsx`: Use card styling that matches marketplace cards (border-border, bg-card)
-- `LandingFeaturedProducts.tsx`: Use the shared `ProductCard` component instead of custom inline cards
-- Reduce hero background complexity for a cleaner look
-- Align CTA button styles with standard Button components
-
-### 6. Universal Breadcrumb System
-Add contextual breadcrumbs throughout the site, not just on store pages.
-
-**New Component:**
-- Create `UniversalBreadcrumb.tsx` for main site navigation
-- Pattern: `Eclipse > [Section] > [Subsection]`
-
-**Integration:**
-- Add to `MainLayout.tsx` below header
-- Automatically generate from current route
-
-### 7. Search Integration Everywhere
-Ensure the search command palette is accessible from all layouts.
-
-**Changes:**
-- `StoreLayout.tsx`: Add `SearchCommandProvider` wrapper
-- Add search trigger to store header
-
----
-
-## Technical Implementation Details
-
-### Files to Create
-```
-src/components/layout/UniversalBreadcrumb.tsx - Route-based breadcrumb component
+### Props Interface Update
+```tsx
+interface StoreSidebarProps {
+  storeSlug: string;
+  storeName: string;
+  tabs?: StoreTab[];
+  activeTab: string | null;
+  onTabChange: (tabSlug: string | null) => void;
+  onNavigate?: () => void;
+  productCount?: number;
+  averageRating?: number | null;
+  // New unified props:
+  collapsed: boolean;
+  onToggle: () => void;
+  isMobileDrawer?: boolean;
+}
 ```
 
-### Files to Modify
+### Removed Props
+- `accentColor` - No longer using store-specific accent colors in sidebar
+- `totalSales` - Not displayed in unified sidebar
+- `bio` - Not displayed in sidebar
 
-**High Priority (Core Layout Unification):**
-```
-src/components/store/StoreLayout.tsx
-  - Import and use shared Header component
-  - Import and use shared Footer component
-  - Wrap with SearchCommandProvider
-  - Remove custom header implementation
-  - Remove inline footer
+### State Management
+- Collapse state managed in StoreLayout
+- Group open/close state persisted to localStorage with key `store-sidebar-groups`
+- Synchronized with CustomerSidebar behavior
 
-src/components/store/StoreSidebar.tsx
-  - Align padding to CustomerSidebar pattern
-  - Add Eclipse branding in footer
-  - Standardize nav item styling
-  - Update typography scale
-```
+## Expected Outcome
+The store sidebar will be visually indistinguishable from the main marketplace sidebar in terms of:
+- Typography and spacing
+- Icon sizing and stroke weights
+- Collapsible group behavior
+- Hover/active states
+- Collapse/expand animations
+- Mobile drawer appearance
 
-**Medium Priority (Visual Consistency):**
-```
-src/components/landing/LandingCategories.tsx
-  - Replace gradient cards with consistent card styling
-  - Reduce heavy visual effects
-
-src/components/landing/LandingFeaturedProducts.tsx
-  - Replace custom ProductCard with shared component
-  - Standardize card hover effects
-
-src/components/landing/LandingHero.tsx
-  - Tone down background gradients
-  - Align button styling
-```
-
-**Lower Priority (Enhancements):**
-```
-src/components/layout/MainLayout.tsx
-  - Add UniversalBreadcrumb below header
-
-src/components/layout/Footer.tsx
-  - Add optional store context line
-```
-
----
-
-## Visual Before/After Comparison
-
-### Store Pages
-```text
-BEFORE:
-  Custom header with different height (h-12)
-  Store-specific social icons
-  Separate breadcrumb bar
-  Inline footer with different styling
-  No search integration
-
-AFTER:
-  Shared Header component (h-14 sm:h-16)
-  Store badge in unified header
-  Integrated breadcrumbs
-  Shared Footer component
-  Command palette search available
-```
-
-### Sidebars
-```text
-BEFORE:
-  CustomerSidebar: Collapsible groups, notification dots
-  StoreSidebar: Flat list, accent colors
-  SellerSidebar: Collapsible groups, different spacing
-
-AFTER:
-  Unified structure across all three
-  Same padding, typography, and spacing
-  Consistent active/hover states
-  Eclipse branding footer on all
-```
-
-### Landing vs Marketplace
-```text
-BEFORE:
-  Landing: Gradient category cards, custom product cards
-  Marketplace: Subdued cards, shared ProductCard
-
-AFTER:
-  Both use consistent card styling
-  Shared ProductCard component everywhere
-  Unified hover effects and shadows
-```
-
----
-
-## Implementation Status
-
-✅ **Completed:**
-1. **Store Layout Unification** - Replaced custom header/footer with shared Header/Footer components, added SearchCommandProvider
-2. **Sidebar Standardization** - Aligned StoreSidebar with CustomerSidebar patterns, added Eclipse branding footer
-3. **Landing Page Refinement** - Updated category cards to use consistent bg-card styling, simplified hero gradients
-4. **Breadcrumb System** - Created UniversalBreadcrumb for main site, enhanced MarketplaceBreadcrumb with compact mode
-
----
-
-## Design Tokens Preserved
-
-The existing CSS custom properties and Tailwind configuration will be maintained:
-- Color system: primary, secondary, muted, accent
-- Typography: font-display (Orbitron), font-sans (Inter)
-- Spacing: Tailwind defaults
-- Border radius: var(--radius)
-- Shadows: Standard Tailwind shadows
-
-This ensures the gaming aesthetic is preserved while achieving visual consistency.
-
+This creates the unified "platform feel" seen on ClearlyDev and BuiltByBit where all sidebars share the same visual language.
 
