@@ -115,7 +115,7 @@ export default function ManualPayouts() {
   const totalPending = pendingRequests.reduce((sum, r) => sum + r.amount, 0);
 
   return (
-    <AdminLayout requiredRoles={["admin"]}>
+    <AdminLayout requiredPermissions={['manage_affiliates']}>
       <div className="space-y-6">
         {/* Header */}
         <div>

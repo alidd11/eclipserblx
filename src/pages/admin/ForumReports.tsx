@@ -144,7 +144,7 @@ export default function AdminForumReports() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin', 'support_agent']}>
+    <AdminLayout requiredPermissions={['manage_forum']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

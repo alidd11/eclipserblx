@@ -249,7 +249,7 @@ export default function AdminBotCodes() {
   const expiredCodes = codes?.filter(c => !c.is_used && isExpired(c.expires_at)).length ?? 0;
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_products']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Bot Installation Codes</h1>

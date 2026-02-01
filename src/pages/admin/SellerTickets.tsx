@@ -319,7 +319,7 @@ export default function SellerTickets() {
   const escalatedCount = tickets?.filter(t => t.escalated_at && !['resolved', 'closed'].includes(t.status)).length || 0;
 
   return (
-    <AdminLayout requiredRoles={['admin', 'moderator']}>
+    <AdminLayout requiredPermissions={['view_live_chat']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Seller Support Tickets</h1>

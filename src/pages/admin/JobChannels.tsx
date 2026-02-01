@@ -206,7 +206,7 @@ export default function JobChannels() {
   };
 
   return (
-    <AdminLayout requiredRoles={['admin', 'recruiter']}>
+    <AdminLayout requiredPermissions={['manage_job_channels']}>
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">

@@ -300,7 +300,7 @@ export default function DiscordModmail() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_discord']}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

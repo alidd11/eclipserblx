@@ -117,7 +117,7 @@ export default function SellerCommissions() {
   const inactiveCount = stores?.filter(s => !s.is_active).length ?? 0;
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_sellers']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Seller Stores</h1>

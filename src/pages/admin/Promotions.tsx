@@ -408,7 +408,7 @@ export default function AdminPromotions() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['manage_discounts']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Promotions</h1>

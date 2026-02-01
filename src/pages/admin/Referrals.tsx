@@ -132,7 +132,7 @@ export default function AdminReferrals() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout requiredPermissions={['view_affiliate_analytics']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Referrals</h1>
