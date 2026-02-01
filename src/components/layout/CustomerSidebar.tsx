@@ -18,6 +18,9 @@ import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useRecentStores } from '@/hooks/useRecentStores';
+import { RecentStoresSection } from '@/components/sidebar/RecentStoresSection';
+import { FollowedStoresSection } from '@/components/sidebar/FollowedStoresSection';
 
 interface NavItem {
   title: string;
@@ -69,6 +72,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { discordUrl } = useDiscordUrl();
   const { settings: affiliateSettings } = useAffiliateSettings();
   const { isSeller } = useSellerStatus();
+  const { recentStores } = useRecentStores();
   const navigate = useNavigate();
   const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -710,6 +714,22 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         {navGroups.map((group) => (
           <div key={group.id}>
             {renderGroup(group)}
+            {/* Insert Recent Stores after Quick Access */}
+            {group.id === 'quick-access' && recentStores.length > 0 && (
+              <RecentStoresSection
+                stores={recentStores}
+                collapsed={isCollapsed}
+                onNavigate={onNavigate}
+              />
+            )}
+            {/* Insert Followed Stores for logged-in users */}
+            {group.id === 'quick-access' && user && (
+              <FollowedStoresSection
+                userId={user.id}
+                collapsed={isCollapsed}
+                onNavigate={onNavigate}
+              />
+            )}
             {/* Insert Browse section (All Products + Categories) after Discover group */}
             {group.id === 'discover' && renderBrowseSection()}
           </div>
