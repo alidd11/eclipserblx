@@ -70,7 +70,7 @@ export default function Products() {
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug), stores(is_active)`);
+        .select(`*, categories(name, slug), stores(name, slug, logo_url, is_verified, is_trusted, is_active)`);
 
       // Customers should only see active + released products.
       // Staff can preview scheduled and inactive products.
@@ -375,6 +375,11 @@ function ProductsGrid({
             isFeatured={product.is_featured}
             createdAt={product.created_at}
             isResellable={product.is_resellable}
+            storeName={product.stores?.name}
+            storeSlug={product.stores?.slug}
+            storeLogo={product.stores?.logo_url}
+            isVerified={product.stores?.is_verified}
+            isTrusted={product.stores?.is_trusted}
           />
         ))}
       </div>
