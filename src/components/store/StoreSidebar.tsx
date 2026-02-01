@@ -67,14 +67,15 @@ export function StoreSidebar({
 
   return (
     <div className="h-full flex flex-col bg-sidebar pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      {/* Header - synchronized with main sidebar */}
+      {/* Header - synchronized with main sidebar (neutral branding) */}
       <div className="h-14 sm:h-16 flex items-center px-4 border-b border-sidebar-border shrink-0">
-        <h2 
-          className="font-display font-bold text-lg truncate"
-          style={{ color: accentColor }}
+        <Link 
+          to="/" 
+          onClick={onNavigate}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          {storeName}
-        </h2>
+          <EclipseLogo size="sm" />
+        </Link>
       </div>
 
       <ScrollArea className="flex-1">
