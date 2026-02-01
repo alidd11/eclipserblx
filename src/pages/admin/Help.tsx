@@ -33,9 +33,9 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 // Map display roles to database role values
 const ROLE_MAP: Record<string, string[]> = {
-  'All Staff': ['admin', 'product_manager', 'order_manager', 'support_agent', 'analyst', 'recruiter'],
+  'All Staff': ['admin', 'lead_administrator', 'order_manager', 'support_agent', 'analyst', 'recruiter'],
   'Admin': ['admin'],
-  'Product Manager': ['product_manager'],
+  'Lead Administrator': ['lead_administrator'],
   'Order Manager': ['order_manager'],
   'Support Agent': ['support_agent'],
   'Analyst': ['analyst'],

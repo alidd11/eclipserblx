@@ -45,7 +45,7 @@ const roleBadges: Record<string, { label: string; icon: React.ComponentType<{ cl
     icon: Crown, 
     className: 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30' 
   },
-  product_manager: { 
+  lead_administrator: { 
     label: 'Staff', 
     icon: Shield, 
     className: 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30' 
@@ -245,7 +245,7 @@ export default function Forum() {
     if (roles.includes('admin')) return roleBadges.admin;
     if (roles.includes('recruiter')) return roleBadges.recruiter;
     if (roles.includes('support_agent')) return roleBadges.support_agent;
-    if (roles.some(r => ['product_manager', 'order_manager', 'analyst'].includes(r))) return roleBadges.product_manager;
+    if (roles.some(r => ['lead_administrator', 'order_manager', 'analyst'].includes(r))) return roleBadges.lead_administrator;
     return null;
   };
 
