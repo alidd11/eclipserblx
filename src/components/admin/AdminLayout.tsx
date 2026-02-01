@@ -14,6 +14,7 @@ import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotificat
 import { useSellerTicketNotifications } from '@/hooks/useSellerTicketNotifications';
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 
 
@@ -22,10 +23,12 @@ const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 interface AdminLayoutProps {
   children: ReactNode;
   requiredRoles?: string[];
+  requiredPermissions?: string[];
 }
 
-export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) {
+export function AdminLayout({ children, requiredRoles = [], requiredPermissions = [] }: AdminLayoutProps) {
   const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
+  const { hasAnyPermission, isLoading: permissionsLoading } = useUserPermissions();
   const isMobile = useIsMobile();
   const location = useLocation();
   const isChatPage =
@@ -355,7 +358,10 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
     safeStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  if (loading) {
+  const gateNeedsPermissions = requiredPermissions.length > 0 && !!user?.id && !isAdmin;
+  const isGateLoading = loading || (gateNeedsPermissions && permissionsLoading);
+
+  if (isGateLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -382,6 +388,21 @@ export function AdminLayout({ children, requiredRoles = [] }: AdminLayoutProps) 
   if (requiredRoles.length > 0 && !isAdmin) {
     const hasRequiredRole = requiredRoles.some(role => hasRole(role));
     if (!hasRequiredRole) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-display font-bold">Access Denied</h1>
+            <p className="text-muted-foreground">You don't have the required permissions for this page.</p>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Check required permissions
+  if (requiredPermissions.length > 0 && !isAdmin) {
+    const hasRequiredPermission = hasAnyPermission(requiredPermissions);
+    if (!hasRequiredPermission) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center space-y-4">
