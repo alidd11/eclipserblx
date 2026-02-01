@@ -373,7 +373,7 @@ export function StoreLayout({
                   className="font-medium hover:text-foreground transition-colors"
                   style={{ color: accentColor }}
                 >
-                  Eclipse Store
+                  Eclipse Marketplace
                 </Link>
               </div>
             </div>

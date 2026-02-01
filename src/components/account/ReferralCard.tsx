@@ -110,7 +110,7 @@ export function ReferralCard() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join Eclipse Store',
+          title: 'Join Eclipse Marketplace',
           text: 'Sign up using my referral link and we both get 10% off!',
           url: referralLink,
         });

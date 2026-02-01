@@ -89,7 +89,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
         .limit(12);
       
       if (error) throw error;
-      return (data?.filter(p => !p.stores || p.stores.is_active !== false) ?? []) as FeaturedProduct[];
+      return (data?.filter(p => p.stores?.is_active === true) ?? []) as FeaturedProduct[];
     },
     staleTime: 1000 * 60 * 5,
   });

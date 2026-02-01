@@ -62,8 +62,8 @@ serve(async (req) => {
           .limit(limit * 2);
 
         if (followedProducts && followedProducts.length > 0) {
-          // Filter to include products without stores or with active stores
-          const filtered = followedProducts.filter((p: any) => !p.stores || p.stores.is_active !== false);
+          // Only include products with active stores
+          const filtered = followedProducts.filter((p: any) => p.stores?.is_active === true);
           recommendations = filtered.slice(0, limit);
           strategy = "followed_stores";
         }
@@ -91,8 +91,8 @@ serve(async (req) => {
             .limit((limit - recommendations.length) * 2);
 
           if (similarProducts) {
-            // Filter to include products without stores or with active stores
-            const filtered = similarProducts.filter((p: any) => !p.stores || p.stores.is_active !== false);
+            // Only include products with active stores
+            const filtered = similarProducts.filter((p: any) => p.stores?.is_active === true);
             recommendations = [...recommendations, ...filtered.slice(0, limit - recommendations.length)];
             strategy = recommendations.length > followedStoreIds.length ? "similar_categories" : strategy;
           }
@@ -120,8 +120,8 @@ serve(async (req) => {
           .limit((limit - recommendations.length) * 2);
 
         if (similar) {
-          // Filter to include products without stores or with active stores
-          const filtered = similar.filter((p: any) => !p.stores || p.stores.is_active !== false);
+          // Only include products with active stores
+          const filtered = similar.filter((p: any) => p.stores?.is_active === true);
           recommendations = [...recommendations, ...filtered.slice(0, limit - recommendations.length)];
           strategy = "similar_products";
         }
@@ -141,8 +141,8 @@ serve(async (req) => {
         .limit((limit - recommendations.length) * 2);
 
       if (popular) {
-        // Filter to include products without stores or with active stores
-        const filtered = popular.filter((p: any) => !p.stores || p.stores.is_active !== false);
+        // Only include products with active stores
+        const filtered = popular.filter((p: any) => p.stores?.is_active === true);
         const withoutDupes = filtered.filter((p: any) => !existingIds.includes(p.id));
         recommendations = [...recommendations, ...withoutDupes.slice(0, limit - recommendations.length)];
       }

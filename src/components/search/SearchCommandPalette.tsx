@@ -106,8 +106,8 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
           .limit(10);
 
         if (!error && data) {
-          // Include products without stores (Eclipse main store) or with active stores
-          const filtered = data.filter(p => !p.stores || p.stores.is_active !== false);
+          // Only include products with active stores
+          const filtered = data.filter(p => p.stores?.is_active === true);
           setProducts(filtered.slice(0, 5));
         }
       } catch {

@@ -11,7 +11,7 @@ export function MarketplaceHeroButton() {
         className="text-lg px-8 py-6 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-colors"
       >
         <Store className="mr-2 h-5 w-5 text-primary" />
-        <span className="text-foreground">Eclipse Marketplace</span>
+        <span className="text-foreground">Browse Marketplace</span>
       </Button>
     </Link>
   );
