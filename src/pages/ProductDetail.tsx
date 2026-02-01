@@ -498,6 +498,11 @@ export default function ProductDetail() {
                     </Badge>
                   )}
                 </div>
+                
+                {/* Store Details Card - prominently placed */}
+                {product.stores && (
+                  <StoreDetailsCard store={product.stores} />
+                )}
 
                 <div className="space-y-2">
                   {/* Bot products show bundle pricing instead of regular price */}
@@ -642,10 +647,6 @@ export default function ProductDetail() {
               </CardContent>
             </Card>
             
-            {/* Store Details Card */}
-            {product.stores && (
-              <StoreDetailsCard store={product.stores} />
-            )}
           </div>
         </div>
 
