@@ -136,7 +136,7 @@ export default function StorePage() {
 
   // All stores now use store_tabs uniformly - no special Eclipse Store handling
 
-  // Fetch store tabs
+  // Fetch store tabs (custom categories created by seller)
   const { data: storeTabs } = useQuery({
     queryKey: ['store-tabs-public', store?.id],
     queryFn: async () => {
@@ -155,13 +155,58 @@ export default function StorePage() {
     enabled: !!store?.id,
   });
 
-  // Fetch tab product IDs if a tab is selected
+  // Fetch enabled global categories for this store
+  const { data: enabledGlobalCategories } = useQuery({
+    queryKey: ['store-global-categories', store?.id],
+    queryFn: async () => {
+      if (!store?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('store_categories')
+        .select(`
+          id,
+          category_id,
+          display_order,
+          categories:category_id (
+            id,
+            name,
+            slug,
+            icon
+          )
+        `)
+        .eq('store_id', store.id)
+        .eq('is_enabled', true)
+        .order('display_order');
+      
+      if (error) throw error;
+      
+      // Transform to match StoreTabs interface
+      return (data || [])
+        .filter(sc => sc.categories)
+        .map(sc => ({
+          id: sc.categories.id,
+          name: sc.categories.name,
+          slug: sc.categories.slug,
+          icon: sc.categories.icon,
+          isGlobalCategory: true,
+        }));
+    },
+    enabled: !!store?.id,
+  });
+
+  // Combine store tabs with global categories
+  const allTabs = [
+    ...(storeTabs || []).map(t => ({ ...t, isGlobalCategory: false })),
+    ...(enabledGlobalCategories || []),
+  ];
+
+  // Fetch tab product IDs if a custom tab is selected
   const { data: tabProductIds, isLoading: tabProductsLoading } = useQuery({
     queryKey: ['tab-product-ids', store?.id, activeTab, storeTabs?.map(t => t.id).join(',')],
     queryFn: async () => {
       if (!store?.id || !activeTab || !storeTabs) return null;
       
-      // Find the tab by slug
+      // Find the tab by slug in custom store tabs only
       const tab = storeTabs.find(t => t.slug === activeTab);
       if (!tab) {
         return null;
@@ -176,7 +221,8 @@ export default function StorePage() {
       if (error) throw error;
       return data.map(p => p.product_id);
     },
-    enabled: !!store?.id && !!activeTab && !!storeTabs && storeTabs.length > 0,
+    enabled: !!store?.id && !!activeTab && !!storeTabs && storeTabs.length > 0 && 
+             !enabledGlobalCategories?.some(c => c.slug === activeTab),
   });
 
   // Fetch store products
@@ -187,7 +233,7 @@ export default function StorePage() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('*, categories(id, name, slug)')
         .eq('store_id', store.id)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
@@ -199,10 +245,26 @@ export default function StorePage() {
     enabled: !!store?.id,
   });
 
-  // Filter products based on active tab
-  const filteredProducts = activeTab && tabProductIds 
-    ? products?.filter(p => tabProductIds.includes(p.id))
-    : products;
+  // Check if activeTab is a global category
+  const activeGlobalCategory = enabledGlobalCategories?.find(c => c.slug === activeTab);
+
+  // Filter products based on active tab (custom tab or global category)
+  const filteredProducts = (() => {
+    if (!activeTab) return products;
+    
+    // If it's a global category, filter by category_id
+    if (activeGlobalCategory) {
+      return products?.filter(p => p.categories?.slug === activeTab);
+    }
+    
+    // If it's a custom store tab, filter by tabProductIds
+    if (tabProductIds) {
+      return products?.filter(p => tabProductIds.includes(p.id));
+    }
+    
+    return products;
+  })();
+
 
   const handleTabClick = (tabSlug: string | null) => {
     if (tabSlug) {
@@ -294,7 +356,7 @@ export default function StorePage() {
         tiktok_url: store.tiktok_url,
         website_url: store.website_url,
       }}
-      tabs={storeTabs || []}
+      tabs={allTabs}
       activeTab={activeTab}
       onTabChange={handleTabClick}
       productCount={store.product_count || 0}

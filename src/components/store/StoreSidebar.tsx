@@ -23,6 +23,7 @@ interface StoreTab {
   name: string;
   slug: string;
   icon?: string | null;
+  isGlobalCategory?: boolean;
 }
 
 interface StoreSidebarProps {
