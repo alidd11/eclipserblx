@@ -235,7 +235,9 @@ export function useSubscription() {
   }, []);
 
   // Check if a product is eligible for free claim
-  const isEligibleForFreeClaim = useCallback((categoryId?: string | null, isResellable?: boolean): boolean => {
+  const isEligibleForFreeClaim = useCallback((categoryId?: string | null, isResellable?: boolean, eclipseFreeEligible?: boolean): boolean => {
+    // Seller opted out of free claims
+    if (eclipseFreeEligible === false) return false;
     // Resellable products are NOT eligible for free claims
     if (isResellable) return false;
     // Neither Bots nor Eclipse Savers are eligible for free claims

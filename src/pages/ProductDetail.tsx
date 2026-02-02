@@ -292,7 +292,7 @@ export default function ProductDetail() {
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
-  const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id, product.is_resellable);
+  const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id, product.is_resellable, product.eclipse_free_eligible);
 
   // Check if this is a bot product
   const isBotProduct = product.categories?.slug === 'bots';
@@ -650,6 +650,7 @@ export default function ProductDetail() {
                     productName={product.name} 
                     categoryId={product.category_id}
                     isResellable={product.is_resellable}
+                    eclipseFreeEligible={product.eclipse_free_eligible}
                   />
                 )}
 

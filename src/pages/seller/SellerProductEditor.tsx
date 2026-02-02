@@ -45,6 +45,7 @@ interface ProductFormData {
   description: string;
   category_id: string;
   is_active: boolean;
+  eclipse_free_eligible: boolean;
   images: string[];
   asset_file_url: string;
   schedule_enabled: boolean;
@@ -59,6 +60,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
   description: '',
   category_id: '',
   is_active: true,
+  eclipse_free_eligible: true,
   images: [],
   asset_file_url: '',
   schedule_enabled: false,
@@ -131,6 +133,7 @@ export default function SellerProductEditor() {
         description: product.description || '',
         category_id: product.category_id || '',
         is_active: product.is_active ?? true,
+        eclipse_free_eligible: product.eclipse_free_eligible ?? true,
         images: product.images || [],
         asset_file_url: product.asset_file_url || '',
         schedule_enabled: hasSchedule,
@@ -299,6 +302,7 @@ export default function SellerProductEditor() {
         description: data.description,
         category_id: data.category_id || null,
         is_active: data.is_active,
+        eclipse_free_eligible: data.eclipse_free_eligible,
         images: data.images,
         asset_file_url: data.asset_file_url || null,
         store_id: store.id,
@@ -483,6 +487,19 @@ export default function SellerProductEditor() {
                 <Switch
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Eclipse+ Free Claim</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow Eclipse+ members to claim this product for free
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.eclipse_free_eligible}
+                  onCheckedChange={(checked) => setFormData({ ...formData, eclipse_free_eligible: checked })}
                 />
               </div>
 
