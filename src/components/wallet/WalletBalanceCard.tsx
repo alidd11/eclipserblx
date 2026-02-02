@@ -17,7 +17,7 @@ export function WalletBalanceCard({
   isLoading 
 }: WalletBalanceCardProps) {
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden w-full">
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/60" />
       
       <CardHeader className="pb-3">

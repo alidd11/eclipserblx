@@ -84,14 +84,16 @@ export default function Credits() {
           </div>
         </div>
 
-        {/* Balance Card */}
-        <WalletBalanceCard
-          balance={balance}
-          totalPurchased={totalPurchased}
-          totalGifted={totalGifted}
-          totalSpent={totalSpent}
-          isLoading={isLoading}
-        />
+        {/* Balance Card - Always visible */}
+        <div className="w-full">
+          <WalletBalanceCard
+            balance={balance}
+            totalPurchased={totalPurchased}
+            totalGifted={totalGifted}
+            totalSpent={totalSpent}
+            isLoading={isLoading}
+          />
+        </div>
 
         {/* Eclipse+ Banner */}
         <EclipsePlusBanner show={!eclipsePlusBonusClaimed} />

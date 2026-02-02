@@ -139,8 +139,15 @@ export default function OrderSuccess() {
                   <span>{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold">{formatPrice(Number(order.total))}</span>
+                  <span className="text-muted-foreground">
+                    {order.payment_method === 'credits' ? 'Credits Used' : 'Total'}
+                  </span>
+                  <span className="font-bold">
+                    {order.payment_method === 'credits' 
+                      ? `${Number(order.total).toFixed(2)} credits`
+                      : formatPrice(Number(order.total))
+                    }
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Status</span>
