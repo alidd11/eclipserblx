@@ -83,34 +83,54 @@ const UserIdsSection = ({ userId, customerId }: {
   };
 
   const idItems = [
-    customerId && { label: 'Customer ID', value: customerId, key: 'customer' },
-    affiliateApp?.affiliate_id && { label: 'Affiliate ID', value: affiliateApp.affiliate_id, key: 'affiliate' },
-    store?.store_id && { label: 'Seller ID', value: store.store_id, key: 'seller' },
-  ].filter(Boolean) as { label: string; value: string; key: string }[];
+    customerId && { label: 'Customer', value: customerId, key: 'customer', icon: User },
+    affiliateApp?.affiliate_id && { label: 'Affiliate', value: affiliateApp.affiliate_id, key: 'affiliate', icon: Award },
+    store?.store_id && { label: 'Seller', value: store.store_id, key: 'seller', icon: Store },
+  ].filter(Boolean) as { label: string; value: string; key: string; icon: React.ElementType }[];
 
   return (
-    <div className="border-t border-border px-4 sm:px-6 py-3">
-      <div className="flex flex-col gap-2">
-        {idItems.map((item) => (
-          <div key={item.key} className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium shrink-0">
-                {item.label}
-              </span>
-              <span className="text-xs font-mono text-foreground/80 truncate">{item.value}</span>
-            </div>
-            <button
-              onClick={() => copyToClipboard(item.value, item.key)}
-              className="shrink-0 p-1 text-muted-foreground hover:text-foreground transition-colors"
+    <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
+      <div className="grid gap-2.5">
+        {idItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div 
+              key={item.key} 
+              className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-background/60 border border-border/40 hover:border-border/60 transition-colors"
             >
-              {copiedStates[item.key] ? (
-                <Check className="h-3 w-3 text-green-500" />
-              ) : (
-                <Copy className="h-3 w-3" />
-              )}
-            </button>
-          </div>
-        ))}
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="shrink-0 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                  <Icon className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground block leading-none mb-0.5">
+                    {item.label} ID
+                  </span>
+                  <span className="text-xs font-mono text-foreground truncate block">{item.value}</span>
+                </div>
+              </div>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => copyToClipboard(item.value, item.key)}
+                      className="shrink-0 h-7 w-7 rounded-md bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {copiedStates[item.key] ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="text-xs">
+                    {copiedStates[item.key] ? 'Copied!' : 'Copy ID'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -583,19 +603,29 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
             {/* Badges Row (earned + status like Eclipse+) */}
             {(isSubscribed || (userBadges && userBadges.length > 0)) && (
-              <div className="border-t border-border px-4 sm:px-6 py-3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">Badges</span>
-                    {isSubscribed && (
-                      <Badge variant="secondary" className="gap-1 text-[10px] h-5">
-                        <Sparkles className="h-2.5 w-2.5" />
-                        Eclipse+
-                      </Badge>
-                    )}
-                  </div>
-
-                  <BadgeShowcase badges={badges} userBadges={userBadges} />
+              <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
+                <div className="space-y-3">
+                  {/* Status Badges (Eclipse+, etc.) */}
+                  {isSubscribed && (
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-semibold text-primary">Eclipse+ Member</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Earned Badges */}
+                  {userBadges && userBadges.length > 0 && (
+                    <div className="space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium block">
+                        Earned Badges
+                      </span>
+                      <div className="p-2.5 rounded-lg bg-background/60 border border-border/40">
+                        <BadgeShowcase badges={badges} userBadges={userBadges} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
