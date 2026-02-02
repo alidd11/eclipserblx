@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
-
 // Region flag images
 import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
@@ -56,76 +56,78 @@ interface FeaturedProduct {
   } | null;
 }
 
-function ProductCard({ product }: { product: FeaturedProduct }) {
-  const { formatPrice } = useCurrency();
-  const regionFlag = getRegionFlag(product.name);
-  
-  return (
-    <Link to={`/product/${product.slug}`} className="group block">
-      <Card className="overflow-hidden h-full border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
-        {/* Image */}
-        <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-          {product.images?.[0] ? (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              <span className="text-muted-foreground">No image</span>
-            </div>
-          )}
-          
-          {/* Store overlay at bottom */}
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
-            <div className="flex items-center gap-2">
-              {product.stores?.logo_url ? (
-                <img 
-                  src={product.stores.logo_url} 
-                  alt={product.stores.name}
-                  className="h-6 w-6 rounded-md object-contain bg-white/10"
-                />
-              ) : null}
-              <span className="text-white text-xs font-medium truncate">
-                {product.stores?.name}
-              </span>
-              {product.stores?.is_verified && (
-                <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-              )}
-              {product.stores?.is_trusted && (
-                <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />
-              )}
-            </div>
-          </div>
-        </div>
-
-        <CardContent className="p-4 relative overflow-hidden">
-          {/* Flag background overlay */}
-          {regionFlag && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
+  function ProductCard({ product }, ref) {
+    const { formatPrice } = useCurrency();
+    const regionFlag = getRegionFlag(product.name);
+    
+    return (
+      <Link ref={ref} to={`/products/${product.slug}`} className="group block">
+        <Card className="overflow-hidden h-full border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
+          {/* Image */}
+          <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+            {product.images?.[0] ? (
               <img
-                src={regionFlag.src}
-                alt=""
-                className="absolute inset-0 w-full h-full opacity-[0.08] object-cover"
+                src={product.images[0]}
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted">
+                <span className="text-muted-foreground">No image</span>
+              </div>
+            )}
+            
+            {/* Store overlay at bottom */}
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+              <div className="flex items-center gap-2">
+                {product.stores?.logo_url ? (
+                  <img 
+                    src={product.stores.logo_url} 
+                    alt={product.stores.name}
+                    className="h-6 w-6 rounded-md object-contain bg-white/10"
+                  />
+                ) : null}
+                <span className="text-white text-xs font-medium truncate">
+                  {product.stores?.name}
+                </span>
+                {product.stores?.is_verified && (
+                  <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+                )}
+                {product.stores?.is_trusted && (
+                  <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />
+                )}
+              </div>
             </div>
-          )}
-          
-          <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-2 relative z-10">
-            {product.name}
-          </h3>
-          
-          <div className="flex items-center justify-between relative z-10">
-            <span className="text-lg font-bold text-primary">
-              {formatPrice(product.price)}
-            </span>
           </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
+
+          <CardContent className="p-4 relative overflow-hidden">
+            {/* Flag background overlay */}
+            {regionFlag && (
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <img
+                  src={regionFlag.src}
+                  alt=""
+                  className="absolute inset-0 w-full h-full opacity-[0.08] object-cover"
+                />
+              </div>
+            )}
+            
+            <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-2 relative z-10">
+              {product.name}
+            </h3>
+            
+            <div className="flex items-center justify-between relative z-10">
+              <span className="text-lg font-bold text-primary">
+                {formatPrice(product.price)}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
+);
 
 function ProductSkeleton() {
   return (
