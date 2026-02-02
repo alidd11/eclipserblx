@@ -1613,7 +1613,7 @@ export default function DiscordSettings() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Gift className="h-5 w-5 text-green-400" />
-                  <CardTitle>Affiliate Programme Webhook</CardTitle>
+                  <CardTitle>#affiliate-programme</CardTitle>
                 </div>
                 <CardDescription>
                   Send affiliate programme announcements to Discord
@@ -1677,7 +1677,7 @@ export default function DiscordSettings() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-amber-400" />
-                  <CardTitle>Eclipse+ Membership Webhook</CardTitle>
+                  <CardTitle>#eclipse+</CardTitle>
                 </div>
                 <CardDescription>
                   Send Eclipse+ membership announcements to Discord
@@ -1755,7 +1755,7 @@ export default function DiscordSettings() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-purple-400" />
-                  <CardTitle>Marketplace Marketing Webhook</CardTitle>
+                  <CardTitle>#eclipse-marketplace</CardTitle>
                 </div>
                 <CardDescription>
                   Send marketplace announcements to Discord to attract buyers and sellers
@@ -1834,7 +1834,7 @@ export default function DiscordSettings() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Palette className="h-5 w-5 text-rose-400" />
-                  <CardTitle>Promotions Webhook</CardTitle>
+                  <CardTitle>#promotions-discounts</CardTitle>
                 </div>
                 <CardDescription>
                   Receive Discord notifications for discount codes and special offers
@@ -1912,7 +1912,7 @@ export default function DiscordSettings() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <BadgeDollarSign className="h-5 w-5 text-amber-400" />
-                  <CardTitle>Advertisements Webhook</CardTitle>
+                  <CardTitle>#paid-promotions</CardTitle>
                 </div>
                 <CardDescription>
                   Configure where Discord advertisement subscriptions post their ads
