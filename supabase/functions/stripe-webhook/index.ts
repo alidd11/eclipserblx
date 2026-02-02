@@ -168,17 +168,32 @@ async function processPayment(
 ) {
   const { paymentId, paymentType, customerEmail, metadata, amountTotal } = data;
   
-  logStep("Processing payment", { paymentId, customerEmail, amountTotal });
+  logStep("Processing payment", { paymentId, paymentType, customerEmail, amountTotal });
 
-  // Check if order already exists
+  // RACE CONDITION FIX: For checkout sessions, also check by payment_intent_id
+  // This prevents duplicates when payment_intent.succeeded and checkout.session.completed
+  // both fire nearly simultaneously (before either creates the order)
+  let paymentIntentId: string | null = null;
+  if (paymentType === "checkout_session") {
+    try {
+      const session = await stripe.checkout.sessions.retrieve(paymentId);
+      paymentIntentId = session.payment_intent as string | null;
+    } catch {
+      // Continue - we'll still check by paymentId
+    }
+  }
+
+  // Check if order already exists (by payment_id OR payment_intent_id)
   const { data: existingOrder } = await supabase
     .from("orders")
-    .select("id")
-    .eq("payment_id", paymentId)
+    .select("id, payment_id")
+    .or(paymentIntentId 
+      ? `payment_id.eq.${paymentId},payment_id.eq.${paymentIntentId}` 
+      : `payment_id.eq.${paymentId}`)
     .maybeSingle();
 
   if (existingOrder) {
-    logStep("Order already exists", { orderId: (existingOrder as { id: string }).id });
+    logStep("Order already exists", { orderId: (existingOrder as { id: string }).id, existingPaymentId: (existingOrder as { payment_id: string }).payment_id });
     return;
   }
 
