@@ -256,8 +256,9 @@ export default function Marketplace() {
   // Use filtered stores when searching, otherwise use all stores
   const storesList = isSearching ? filteredStores : (stores || []);
   
-  // All stores are treated equally - no special first store positioning
-  const allStores = storesList;
+  // Top 3 stores are shown in TopStoresSection, exclude them from main grid to avoid duplication
+  const topStoreIds = new Set((stores || []).slice(0, 3).map(s => s.id));
+  const allStores = isSearching ? storesList : storesList.filter(s => !topStoreIds.has(s.id));
   // For pagination: first 9 stores in main view, rest in "More Stores"
   const mainStores = allStores.slice(0, 9);
   const remainingStores = allStores.slice(9);

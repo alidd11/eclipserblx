@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Store, ShieldCheck, Award, Users, ChevronRight, Crown } from 'lucide-react';
+import { Store, ShieldCheck, Award, Users, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,10 +42,6 @@ export function TopStoresSection() {
   if (isLoading) {
     return (
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Crown className="h-5 w-5 text-amber-500" />
-          Top Stores
-        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="overflow-hidden">
@@ -74,12 +70,8 @@ export function TopStoresSection() {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-semibold flex items-center gap-2">
-        <Crown className="h-5 w-5 text-amber-500" />
-        Top Stores
-      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stores.map((store, index) => {
+        {stores.map((store) => {
           const accentColor = store.accent_color || '#8B5CF6';
           return (
             <Link key={store.id} to={`/store/${store.slug}`}>
