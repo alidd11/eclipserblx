@@ -288,3 +288,6 @@ verify_jwt = false
 
 [functions.get-credit-balance]
 verify_jwt = false
+
+[functions.generate-store-branding]
+verify_jwt = false
