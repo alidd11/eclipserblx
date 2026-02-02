@@ -120,6 +120,9 @@ serve(async (req) => {
       if (event.type === "customer.subscription.created" && subscription.status === "active") {
         discordEvent = "subscription_activated";
         isActive = true;
+        
+        // Grant Eclipse+ credit bonus on first subscription
+        await grantEclipsePlusCreditBonus(supabaseAdmin, userId);
       } else if (event.type === "customer.subscription.updated") {
         if (subscription.status === "active") {
           discordEvent = "subscription_activated";
@@ -225,3 +228,38 @@ serve(async (req) => {
     });
   }
 });
+
+// Grant Eclipse+ £10 credit bonus on first subscription
+async function grantEclipsePlusCreditBonus(
+  supabase: any,
+  userId: string
+) {
+  try {
+    const { data: success, error } = await supabase.rpc('claim_eclipse_plus_credit_bonus', {
+      p_user_id: userId
+    });
+    
+    if (error) {
+      console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Error granting credit bonus: ${error.message}`);
+      return;
+    }
+    
+    if (success) {
+      console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Granted £10 Eclipse+ credit bonus to user: ${userId}`);
+      
+      // Create notification
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          title: "🎁 Welcome to Eclipse+!",
+          message: "You've received £10 in store credit as a welcome bonus. Enjoy shopping!",
+          type: "general",
+        });
+    } else {
+      console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] User ${userId} already claimed Eclipse+ bonus`);
+    }
+  } catch (e) {
+    console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Failed to grant credit bonus: ${String(e)}`);
+  }
+}

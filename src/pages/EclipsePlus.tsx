@@ -34,7 +34,7 @@ const faqs = [
 const benefits = [
   { icon: Percent, title: '30% Off Everything', description: 'Save on all purchases (35% on bots)' },
   { icon: Gift, title: '1 Free Product Monthly', description: 'Claim any eligible product for free' },
-  { icon: Crown, title: 'Priority Support', description: 'Get help faster from our team' },
+  { icon: Crown, title: '£10 Credit Bonus', description: 'Get £10 store credit on signup' },
 ];
 
 export default function EclipsePlus() {

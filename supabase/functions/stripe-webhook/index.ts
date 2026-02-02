@@ -70,8 +70,12 @@ serve(async (req) => {
       const session = event.data.object as Stripe.Checkout.Session;
       logStep("Processing checkout.session.completed", { sessionId: session.id, metadata: session.metadata });
       
+      // Check if this is a credit purchase
+      if (session.metadata?.type === "credit_purchase") {
+        await processCreditPurchase(supabaseAdmin, session);
+      }
       // Check if this is an ad ping purchase
-      if (session.metadata?.type === "ad_ping_purchase") {
+      else if (session.metadata?.type === "ad_ping_purchase") {
         await processAdPingPurchase(supabaseAdmin, session);
       } else {
         await processPayment(supabaseAdmin, stripe, {
@@ -787,4 +791,49 @@ async function processAdPingPurchase(
   } else {
     logStep("Ping credits added", { herePings, everyonePings, newHereBalance, newEveryoneBalance });
   }
+}
+
+// Process credit purchase
+async function processCreditPurchase(
+  supabase: SupabaseClient,
+  session: Stripe.Checkout.Session
+) {
+  const metadata = session.metadata || {};
+  const userId = metadata.user_id;
+  const creditAmount = parseFloat(metadata.credit_amount || "0");
+
+  logStep("Processing credit purchase", { userId, creditAmount, sessionId: session.id });
+
+  if (!userId || creditAmount <= 0) {
+    logStep("ERROR: Invalid credit purchase data", { userId, creditAmount });
+    return;
+  }
+
+  // Add credits using the database function
+  const { data: transaction, error: creditError } = await supabase.rpc('add_credits', {
+    p_user_id: userId,
+    p_amount: creditAmount,
+    p_type: 'purchase',
+    p_description: `Credit purchase - £${creditAmount.toFixed(2)}`,
+    p_reference_id: session.id,
+    p_gifted_by: null,
+    p_order_id: null,
+  });
+
+  if (creditError) {
+    logStep("ERROR adding credits", { error: creditError.message });
+    return;
+  }
+
+  logStep("Credits added successfully", { userId, creditAmount, transactionId: transaction?.id });
+
+  // Create notification for the user
+  await supabase
+    .from("notifications")
+    .insert({
+      user_id: userId,
+      title: "💰 Credits Added!",
+      message: `£${creditAmount.toFixed(2)} has been added to your credit balance.`,
+      type: "general",
+    });
 }
