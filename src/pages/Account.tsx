@@ -83,20 +83,17 @@ const UserIdsSection = ({ userId, customerId, onCopyCustomerId, copiedId }: {
   ].filter(Boolean) as { label: string; value: string; copyable: boolean }[];
 
   return (
-    <div className="border-t border-border">
-      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
-        {idItems.map((item) => (
-          <div
-            key={item.label}
-            className="px-4 py-3 flex flex-col gap-1"
-          >
+    <div className="border-t border-border px-4 sm:px-6 py-2.5">
+      <div className="flex items-center gap-3 overflow-x-auto flex-nowrap">
+        {idItems.map((item, idx) => (
+          <div key={item.label} className="flex items-center gap-2 shrink-0">
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
-              {item.label}
+              {item.label.replace(' ID', '')}:
             </span>
             {item.copyable ? (
               <button
                 onClick={onCopyCustomerId}
-                className="flex items-center gap-1.5 text-sm font-mono text-foreground/80 hover:text-foreground transition-colors w-fit"
+                className="inline-flex items-center gap-1.5 text-sm font-mono text-foreground/80 hover:text-foreground transition-colors"
               >
                 <span>{item.value}</span>
                 {copiedId ? (
@@ -107,6 +104,9 @@ const UserIdsSection = ({ userId, customerId, onCopyCustomerId, copiedId }: {
               </button>
             ) : (
               <span className="text-sm font-mono text-foreground/80">{item.value}</span>
+            )}
+            {idx < idItems.length - 1 && (
+              <span className="text-muted-foreground/30">•</span>
             )}
           </div>
         ))}
@@ -456,101 +456,100 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         <Card className="bg-card border-border overflow-hidden">
           <CardContent className="p-0">
             {/* Profile Header */}
-            <div className="p-4 sm:p-6 flex items-center gap-4">
-              <AvatarUpload
-                userId={user.id}
-                currentAvatarUrl={profile?.avatar_url || null}
-                discordAvatarUrl={discordAvatar?.avatar_url || null}
-                displayName={profile?.display_name || fallbackDisplayName || ''}
-                onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
-                compact
-              />
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {editingUsername ? (
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <div className="relative flex-1 sm:flex-none">
-                        <input
-                          type="text"
-                          value={newUsername}
-                          onChange={(e) => setNewUsername(e.target.value)}
-                          className="px-2 py-1 text-xl sm:text-2xl font-bold tracking-tight rounded-md border bg-input w-full sm:w-64 pr-8"
-                          autoFocus
-                          placeholder="Display name"
-                        />
-                        {newUsername.trim().length >= 2 && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            {checkingUsername ? (
-                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                            ) : usernameAvailable === true ? (
-                              <Check className="h-4 w-4 text-green-500" />
-                            ) : usernameAvailable === false ? (
-                              <X className="h-4 w-4 text-destructive" />
-                            ) : null}
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 shrink-0"
-                        onClick={handleSaveUsername}
-                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                      >
-                        {savingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 shrink-0"
-                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+            <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-4 min-w-0 w-full">
+                <AvatarUpload
+                  userId={user.id}
+                  currentAvatarUrl={profile?.avatar_url || null}
+                  discordAvatarUrl={discordAvatar?.avatar_url || null}
+                  displayName={profile?.display_name || fallbackDisplayName || ''}
+                  onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+                  compact
+                />
+                
+                <div className="flex-1 min-w-0">
+                {editingUsername ? (
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 min-w-0">
+                      <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="px-2 py-1 text-xl sm:text-2xl font-bold tracking-tight rounded-md border bg-input w-full pr-8"
+                        autoFocus
+                        placeholder="Display name"
+                      />
+                      {newUsername.trim().length >= 2 && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          {checkingUsername ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : usernameAvailable === true ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="h-4 w-4 text-destructive" />
+                          ) : null}
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <>
-                      <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
-                        {profile?.display_name || fallbackDisplayName || 'User'}
-                      </h1>
-                      {!cooldownInfo.onCooldown ? (
-                        <button
-                          onClick={startEditingUsername}
-                          className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                      ) : (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-muted-foreground/60 p-1 cursor-help shrink-0">
-                                <Clock className="h-3.5 w-3.5" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>You can change your name in {cooldownInfo.remainingDays}d</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                      {isSubscribed && (
-                        <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5 shrink-0">
-                          <Sparkles className="h-2.5 w-2.5" />
-                          Eclipse+
-                        </Badge>
-                      )}
-                    </>
-                  )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 shrink-0"
+                      onClick={handleSaveUsername}
+                      disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                    >
+                      {savingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 shrink-0"
+                      onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2">
+                    <h1 className="min-w-0 flex-1 text-xl sm:text-2xl font-bold tracking-tight truncate">
+                      {profile?.display_name || fallbackDisplayName || 'User'}
+                    </h1>
+                    {!cooldownInfo.onCooldown ? (
+                      <button
+                        onClick={startEditingUsername}
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    ) : (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-muted-foreground/60 p-1 cursor-help shrink-0">
+                              <Clock className="h-3.5 w-3.5" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>You can change your name in {cooldownInfo.remainingDays}d</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <p className="text-sm text-muted-foreground">@{profile?.username || fallbackDisplayName}</p>
+                  <span className="text-muted-foreground/40">•</span>
+                  <p className="text-xs text-muted-foreground">
+                    Member since {new Date(user.created_at).toLocaleDateString()}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">@{profile?.username || fallbackDisplayName}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Member since {new Date(user.created_at).toLocaleDateString()}
-                </p>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
                 {adminLoading ? (
                   <Button variant="ghost" size="icon" disabled className="h-9 w-9">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -589,37 +588,21 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               copiedId={copiedId}
             />
 
-            {/* Badges Row */}
-            {userBadges && userBadges.length > 0 && (
+            {/* Badges Row (earned + status like Eclipse+) */}
+            {(isSubscribed || (userBadges && userBadges.length > 0)) && (
               <div className="border-t border-border px-4 sm:px-6 py-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium mr-1">Badges</span>
-                  {badges?.filter(badge => userBadges.some(ub => ub.badge_id === badge.id)).slice(0, 6).map((badge) => (
-                    <TooltipProvider key={badge.id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div 
-                            className="h-7 w-7 rounded-full flex items-center justify-center text-sm"
-                            style={{ backgroundColor: `${badge.color}20`, color: badge.color }}
-                          >
-                            {badge.icon}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="font-medium">{badge.name}</p>
-                          <p className="text-xs text-muted-foreground">{badge.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                  {userBadges.length > 6 && (
-                    <Link 
-                      to="/account#profile" 
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      +{userBadges.length - 6} more
-                    </Link>
-                  )}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">Badges</span>
+                    {isSubscribed && (
+                      <Badge variant="secondary" className="gap-1 text-[10px] h-5">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        Eclipse+
+                      </Badge>
+                    )}
+                  </div>
+
+                  <BadgeShowcase badges={badges} userBadges={userBadges} />
                 </div>
               </div>
             )}
