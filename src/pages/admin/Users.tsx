@@ -632,78 +632,93 @@ export default function AdminUsers() {
                   return (
                     <div 
                       key={profile.id} 
-                      className={`rounded-lg border border-border bg-muted/30 p-4 space-y-3 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`}
+                      className={`rounded-lg border border-border bg-card p-4 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`}
                       onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
-                            {roles.length === 0 ? (
-                              <Badge variant="secondary" className="text-xs">Customer</Badge>
-                            ) : (
-                              roles.map(r => getRoleBadge(r.role))
-                            )}
+                      {/* Header: Name and Badge */}
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-base truncate pr-2">
+                          {profile.display_name || 'Unnamed'}
+                        </h3>
+                        {roles.length === 0 ? (
+                          <Badge variant="secondary" className="text-xs shrink-0">Customer</Badge>
+                        ) : (
+                          <div className="flex gap-1.5 shrink-0">
+                            {roles.map(r => getRoleBadge(r.role))}
                           </div>
-                          {profile.customer_id && (
-                            <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Joined {new Date(profile.created_at).toLocaleDateString()}
+                        )}
+                      </div>
+
+                      {/* Info Section */}
+                      <div className="space-y-1.5 mb-4">
+                        {profile.customer_id && (
+                          <p className="text-xs font-mono text-primary">
+                            ID: {profile.customer_id}
                           </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                          {isPrimaryAdmin && (
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              className="h-10 w-10"
-                              onClick={() => setViewProfileUser(profile)}
-                              title="View Profile"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          )}
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Joined {new Date(profile.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      {/* Actions Row */}
+                      <div 
+                        className="flex items-center gap-2 pt-3 border-t border-border" 
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {isPrimaryAdmin && (
                           <Button 
                             variant="outline" 
                             size="icon"
-                            className="h-10 w-10"
-                            onClick={() => setSelectedUser(profile)}
+                            className="h-9 w-9"
+                            onClick={() => setViewProfileUser(profile)}
+                            title="View Profile"
                           >
-                            <Shield className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                          {isAdmin && (
-                            <>
-                              <Button 
-                                variant="outline" 
-                                size="icon"
-                                className="h-10 w-10 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
-                                onClick={() => setGrantEclipsePlusUser(profile)}
-                                title="Grant Eclipse+"
-                              >
-                                <Sparkles className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="icon"
-                                className="h-10 w-10 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
-                                onClick={() => setIpBanDialogUser(profile)}
-                              >
-                                <Ban className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                          {canDeleteUser(profile) && (
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          className="h-9 w-9"
+                          onClick={() => setSelectedUser(profile)}
+                          title="Manage Roles"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                        {isAdmin && (
+                          <>
                             <Button 
                               variant="outline" 
                               size="icon"
-                              className="h-10 w-10 text-destructive border-destructive/50 hover:bg-destructive/10"
-                              onClick={() => setDeleteConfirmUser(profile)}
+                              className="h-9 w-9 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
+                              onClick={() => setGrantEclipsePlusUser(profile)}
+                              title="Grant Eclipse+"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Sparkles className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              className="h-9 w-9 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
+                              onClick={() => setIpBanDialogUser(profile)}
+                              title="IP Ban"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        {canDeleteUser(profile) && (
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            className="h-9 w-9 text-destructive border-destructive/50 hover:bg-destructive/10"
+                            onClick={() => setDeleteConfirmUser(profile)}
+                            title="Delete Account"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
