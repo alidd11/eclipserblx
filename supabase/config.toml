@@ -289,3 +289,6 @@ verify_jwt = false
 
 [functions.generate-store-branding]
 verify_jwt = false
+
+[functions.sync-discord-roles]
+verify_jwt = false
