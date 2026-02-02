@@ -49,7 +49,7 @@ import { SortableMediaItem } from '@/components/admin/SortableMediaItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
-import { ECLIPSE_STORE_ID } from '@/lib/constants';
+import { ECLIPSE_STORE_ID, VINO_STORE_ID } from '@/lib/constants';
 
 interface ProductForm {
   id?: string;
@@ -69,8 +69,8 @@ interface ProductForm {
   robux_enabled: boolean;
   robux_product_id: string;
   robux_price: string;
-  // Marketplace sync
-  sync_to_marketplace: boolean;
+  // Marketplace store selection (null = no store, 'eclipse' or 'vino')
+  marketplace_store: 'eclipse' | 'vino' | null;
 }
 
 const emptyForm: ProductForm = {
@@ -89,7 +89,7 @@ const emptyForm: ProductForm = {
   robux_enabled: false,
   robux_product_id: '',
   robux_price: '',
-  sync_to_marketplace: true, // Default to syncing
+  marketplace_store: 'eclipse', // Default to Eclipse Store
 };
 
 interface MassEditForm {
@@ -316,9 +316,13 @@ export default function AdminProducts() {
           typeof robuxPriceValue === 'number' && Number.isFinite(robuxPriceValue)
             ? robuxPriceValue
             : null,
-        // Marketplace sync: link to Eclipse Store if enabled
-        store_id: data.sync_to_marketplace ? ECLIPSE_STORE_ID : null,
-        moderation_status: data.sync_to_marketplace ? 'approved' : null,
+        // Marketplace store selection
+        store_id: data.marketplace_store === 'eclipse' 
+          ? ECLIPSE_STORE_ID 
+          : data.marketplace_store === 'vino' 
+            ? VINO_STORE_ID 
+            : null,
+        moderation_status: data.marketplace_store ? 'approved' : null,
         is_seller_product: false, // Distinguishes from community seller products
       };
 
@@ -573,7 +577,11 @@ export default function AdminProducts() {
       robux_enabled: !!product.robux_enabled,
       robux_product_id: product.robux_product_id || '',
       robux_price: product.robux_price ? String(product.robux_price) : '',
-      sync_to_marketplace: product.store_id === ECLIPSE_STORE_ID,
+      marketplace_store: product.store_id === ECLIPSE_STORE_ID 
+        ? 'eclipse' 
+        : product.store_id === VINO_STORE_ID 
+          ? 'vino' 
+          : null,
     });
     setIsDialogOpen(true);
   };
@@ -1196,21 +1204,27 @@ export default function AdminProducts() {
               )}
             </div>
 
-            {/* Marketplace Sync Section */}
+            {/* Marketplace Store Selection */}
             <div className="space-y-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sync_to_marketplace" className="font-medium flex items-center gap-2">
-                  <Store className="h-4 w-4 text-primary" />
-                  Sync to Eclipse Marketplace Store
-                </Label>
-                <Switch
-                  id="sync_to_marketplace"
-                  checked={form.sync_to_marketplace}
-                  onCheckedChange={(checked) => setForm({ ...form, sync_to_marketplace: checked })}
-                />
-              </div>
+              <Label className="font-medium flex items-center gap-2">
+                <Store className="h-4 w-4 text-primary" />
+                Marketplace Store
+              </Label>
+              <Select 
+                value={form.marketplace_store || 'none'} 
+                onValueChange={(v) => setForm({ ...form, marketplace_store: v === 'none' ? null : v as 'eclipse' | 'vino' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select store" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="eclipse">Eclipse Store</SelectItem>
+                  <SelectItem value="vino">Vino</SelectItem>
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground">
-                When enabled, this product will also appear in the marketplace under the Eclipse Store
+                Select which marketplace store this product appears under
               </p>
             </div>
 
