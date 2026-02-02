@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
-  Sparkles, Download, PanelLeftClose, PanelLeft, Megaphone
+  Sparkles, Download, PanelLeftClose, PanelLeft, Megaphone, Wallet
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -149,6 +149,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: 'Profile', icon: User, href: '/account' },
         { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Wallet', icon: Wallet, href: '/credits' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'My Purchases', icon: Download, href: '/purchases' },
         { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
