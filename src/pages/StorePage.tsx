@@ -11,7 +11,7 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { StoreReviews } from '@/components/store/StoreReviews';
-import { StoreStatsBar } from '@/components/store/StoreStatsBar';
+
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { StoreBestSellers } from '@/components/store/StoreBestSellers';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
@@ -710,17 +710,6 @@ export default function StorePage() {
             />
           </div>
 
-          <div className="container px-4">
-            <StoreStatsBar
-              productCount={store.product_count || 0}
-              totalSales={store.total_sales || 0}
-              averageRating={store.average_rating}
-              followerCount={store.follower_count || 0}
-              memberSince={store.created_at}
-              accentColor={accentColor}
-              storeSlug={store.slug || storeSlug || ''}
-            />
-          </div>
 
           <div className="container px-4 mt-4">
             {/* Products Section */}
