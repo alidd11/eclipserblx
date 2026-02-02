@@ -179,44 +179,29 @@ const StatusBadgesSection = ({
 
   const hasAffiliate = !!affiliateApp?.affiliate_id;
   const hasSeller = !!store?.id;
-  const hasAnyStatus = isSubscribed || hasAffiliate || hasSeller || (userBadges && userBadges.length > 0);
+  const hasAnyStatus = isSubscribed || hasAffiliate || hasSeller;
 
   if (!hasAnyStatus) return null;
 
   return (
-    <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
-      <div className="space-y-3">
-        {/* Status Badges (Eclipse+, Affiliate, Seller) */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          {isSubscribed && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30 whitespace-nowrap shrink-0">
-              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="text-xs font-semibold text-primary">Eclipse+ Member</span>
-            </div>
-          )}
-          {hasAffiliate && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 whitespace-nowrap shrink-0">
-              <Award className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              <span className="text-xs font-semibold text-amber-500">Affiliate Partner</span>
-            </div>
-          )}
-          {hasSeller && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 whitespace-nowrap shrink-0">
-              <Store className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-              <span className="text-xs font-semibold text-emerald-500">Verified Seller</span>
-            </div>
-          )}
-        </div>
-
-        {/* Earned Badges */}
-        {userBadges && userBadges.length > 0 && (
-          <div className="space-y-2">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium block">
-              Earned Badges
-            </span>
-            <div className="p-2.5 rounded-lg bg-background/60 border border-border/40">
-              <BadgeShowcase badges={badges} userBadges={userBadges} />
-            </div>
+    <div className="border-t border-border/50 px-4 sm:px-6 py-3 bg-muted/30">
+      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+        {isSubscribed && (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
+            <Sparkles className="h-3 w-3 text-primary" />
+            <span className="text-[10px] font-semibold text-primary">Eclipse+</span>
+          </div>
+        )}
+        {hasAffiliate && (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+            <Award className="h-3 w-3 text-amber-500" />
+            <span className="text-[10px] font-semibold text-amber-500">Affiliate</span>
+          </div>
+        )}
+        {hasSeller && (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
+            <Store className="h-3 w-3 text-emerald-500" />
+            <span className="text-[10px] font-semibold text-emerald-500">Seller</span>
           </div>
         )}
       </div>
