@@ -428,16 +428,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     <MainLayout ref={ref}>
       <div className="container py-8 space-y-6 max-w-4xl ml-auto mr-4 sm:mr-8 lg:mr-auto">
         {/* My Profile Card */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <User className="h-4 w-4" />
-              My Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Profile Info Row */}
-            <div className="flex items-center gap-4">
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-0">
+            {/* Profile Header */}
+            <div className="p-4 sm:p-6 flex items-center gap-4">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
@@ -449,9 +443,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-semibold truncate">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
                     {profile?.display_name || fallbackDisplayName || 'User'}
-                  </h2>
+                  </h1>
                   {isSubscribed && (
                     <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5 shrink-0">
                       <Sparkles className="h-2.5 w-2.5" />
@@ -496,8 +490,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </div>
             </div>
 
-            {/* IDs Row */}
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs pt-2 border-t border-border">
+            {/* IDs Section */}
+            <div className="border-t border-border px-4 sm:px-6 py-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
               {profile?.customer_id && (
                 <button
                   onClick={copyCustomerId}
@@ -516,32 +510,32 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <SellerIdDisplay userId={user.id} />
             </div>
 
-            {/* Quick Links */}
-            <div className="grid grid-cols-4 gap-2 pt-2">
+            {/* Quick Stats Bar */}
+            <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
               <Link
                 to="/purchases"
-                className="flex flex-col items-center justify-center py-2 rounded-md hover:bg-muted/50 transition-colors"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <Download className="h-4 w-4 text-primary mb-1" />
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Purchases</span>
               </Link>
               <Link
                 to="/credits"
-                className="flex flex-col items-center justify-center py-2 rounded-md hover:bg-muted/50 transition-colors"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <CreditCard className="h-4 w-4 text-primary mb-1" />
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Wallet</span>
               </Link>
               <Link
                 to="/chat-history"
-                className="flex flex-col items-center justify-center py-2 rounded-md hover:bg-muted/50 transition-colors"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <MessageSquare className="h-4 w-4 text-primary mb-1" />
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Support</span>
               </Link>
               <Link
                 to="/notifications"
-                className="flex flex-col items-center justify-center py-2 rounded-md hover:bg-muted/50 transition-colors"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <Bell className="h-4 w-4 text-primary mb-1" />
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Alerts</span>
