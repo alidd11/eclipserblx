@@ -131,13 +131,49 @@ serve(async (req) => {
       }
     }
 
-    // Build Discord embed (Parcel-style with description instead of fields)
+    // Build ClearlyDev-style Discord embed
     const embed: Record<string, unknown> = {
-      title: "New Purchase",
-      description,
-      color: 0x9b59b6, // Purple color
+      author: {
+        name: "Eclipse Marketplace",
+      },
+      title: "🛒 New Purchase",
+      color: 0x5865F2, // Discord blurple
+      fields: [
+        {
+          name: "📦 Products",
+          value: productList,
+          inline: false,
+        },
+      ],
+      footer: {
+        text: "View on eclipserblx.com",
+      },
       timestamp: new Date().toISOString(),
     };
+
+    // Add Roblox field if linked
+    if (robloxUserId && robloxUsername) {
+      (embed.fields as Array<{name: string; value: string; inline: boolean}>).push({
+        name: "🎮 Roblox",
+        value: `${robloxUsername}\n(${robloxUserId})`,
+        inline: true,
+      });
+    }
+
+    // Add Discord field if linked
+    if (discordId && discordUsername) {
+      (embed.fields as Array<{name: string; value: string; inline: boolean}>).push({
+        name: "💬 Discord",
+        value: `${discordUsername}\n(${discordId})`,
+        inline: true,
+      });
+    } else if (discordId) {
+      (embed.fields as Array<{name: string; value: string; inline: boolean}>).push({
+        name: "💬 Discord",
+        value: `<@${discordId}>\n(${discordId})`,
+        inline: true,
+      });
+    }
 
     // Add thumbnail if we have a Roblox avatar
     if (thumbnailUrl) {

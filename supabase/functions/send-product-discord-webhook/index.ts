@@ -17,68 +17,10 @@ interface ProductPayload {
   robux_price?: number;
   robux_enabled?: boolean;
   is_resellable?: boolean;
+  store_id?: string;
+  store_name?: string;
+  store_logo_url?: string;
 }
-
-interface WebhookField {
-  id: string;
-  name: string;
-  value: string;
-  inline: boolean;
-  enabled: boolean;
-}
-
-interface WebhookTemplate {
-  title: string;
-  titleEmoji: string;
-  color: string;
-  threadNameFormat: string;
-  showTimestamp: boolean;
-  showThumbnail: boolean;
-  showMainImage: boolean;
-  showAdditionalImages: boolean;
-  fields: WebhookField[];
-}
-
-const DEFAULT_TEMPLATE: WebhookTemplate = {
-  title: "{titleEmoji} Eclipse - {product_name}",
-  titleEmoji: "🏠",
-  color: "#9b59b6",
-  threadNameFormat: "Eclipse - {product_name}",
-  showTimestamp: true,
-  showThumbnail: true,
-  showMainImage: true,
-  showAdditionalImages: true,
-  fields: [
-    {
-      id: "product_info",
-      name: "📦 Product Information",
-      value: "The following product is made for Roblox.\n\n{product_description}",
-      inline: false,
-      enabled: true,
-    },
-    {
-      id: "category_info",
-      name: "📋 {category_name} Info",
-      value: "This product is from our {category_name} collection.",
-      inline: false,
-      enabled: true,
-    },
-    {
-      id: "purchase_locations",
-      name: "🛒 Purchase Locations",
-      value: "{robux_line}💷 **{gbp_price}** — [Our Store]({product_url}){eclipse_plus_line}",
-      inline: false,
-      enabled: true,
-    },
-    {
-      id: "support",
-      name: "💬 Need Help?",
-      value: "For assistance, contact our support team.",
-      inline: false,
-      enabled: true,
-    },
-  ],
-};
 
 // Helper to convert category name to slug format
 function categoryNameToSlug(name: string): string {
@@ -90,30 +32,32 @@ function categoryNameToSlug(name: string): string {
     .replace(/^_+|_+$/g, "");
 }
 
-// Apply placeholders to a string
-function applyPlaceholders(
-  text: string,
-  payload: ProductPayload,
-  extras: {
-    gbpPrice: string;
-    eclipsePlusPrice: string;
-    robuxPrice: string;
-    robuxLine: string;
-    eclipsePlusLine: string;
-    description: string;
-    productUrl: string;
-  }
-): string {
-  return text
-    .replace(/{product_name}/g, payload.product_name)
-    .replace(/{product_description}/g, extras.description)
-    .replace(/{product_url}/g, extras.productUrl)
-    .replace(/{category_name}/g, payload.category_name || "Products")
-    .replace(/{gbp_price}/g, extras.gbpPrice)
-    .replace(/{eclipse_plus_price}/g, extras.eclipsePlusPrice)
-    .replace(/{robux_price}/g, extras.robuxPrice)
-    .replace(/{robux_line}/g, extras.robuxLine)
-    .replace(/{eclipse_plus_line}/g, extras.eclipsePlusLine);
+// Convert HTML description to plain text
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<ul[^>]*>/gi, "")
+    .replace(/<\/ul>/gi, "\n")
+    .replace(/<ol[^>]*>/gi, "")
+    .replace(/<\/ol>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<p>\s*<\/p>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<p[^>]*>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<strong[^>]*>/gi, "**")
+    .replace(/<\/strong>/gi, "**")
+    .replace(/<em[^>]*>/gi, "*")
+    .replace(/<\/em>/gi, "*")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/• \n/g, "• ")
+    .replace(/:\s*\n•/g, ":\n•")
+    .trim();
 }
 
 // Delete existing Discord thread if it exists
@@ -134,10 +78,9 @@ async function deleteExistingThread(threadId: string, botToken: string): Promise
       return true;
     }
 
-    // Thread might already be deleted or bot lacks permissions
     if (response.status === 404) {
       console.log(`Thread ${threadId} not found (already deleted)`);
-      return true; // Consider this a success - thread is gone
+      return true;
     }
 
     const errorText = await response.text();
@@ -149,8 +92,21 @@ async function deleteExistingThread(threadId: string, botToken: string): Promise
   }
 }
 
+// Format price for display
+function formatPrice(price: number, currency: string = "GBP"): string {
+  if (currency === "GBP") {
+    return `£${price.toFixed(2)}`;
+  }
+  return `$${price.toFixed(2)}`;
+}
+
+// Format relative time for Discord timestamp
+function getDiscordTimestamp(): string {
+  const now = Math.floor(Date.now() / 1000);
+  return `<t:${now}:R>`;
+}
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -177,7 +133,6 @@ Deno.serve(async (req) => {
       if (existingProduct?.discord_thread_id) {
         console.log(`Product has existing Discord thread: ${existingProduct.discord_thread_id}`);
         await deleteExistingThread(existingProduct.discord_thread_id, discordBotToken);
-        // Small delay to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
@@ -190,7 +145,6 @@ Deno.serve(async (req) => {
 
     console.log("Looking up webhook for category slug:", categorySlug);
 
-    // Build the settings key for this category
     const settingsKey = categorySlug ? `product_webhook_${categorySlug}` : null;
 
     if (!settingsKey) {
@@ -201,11 +155,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch the webhook URL and template from settings
+    // Fetch the webhook URL from settings
     const { data: settingsData, error: settingsError } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", [settingsKey, "product_webhook_template"]);
+      .eq("key", settingsKey);
 
     if (settingsError) {
       console.error("Failed to fetch settings:", settingsError);
@@ -215,22 +169,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse settings
     let webhookUrl: string | null = null;
-    let template: WebhookTemplate = DEFAULT_TEMPLATE;
-
     for (const setting of settingsData || []) {
       if (setting.key === settingsKey && setting.value) {
         webhookUrl = String(setting.value).replace(/^"|"$/g, "").trim();
-      } else if (setting.key === "product_webhook_template" && setting.value) {
-        try {
-          const parsed = typeof setting.value === "string"
-            ? JSON.parse(setting.value.replace(/^"|"$/g, ""))
-            : setting.value;
-          template = parsed as WebhookTemplate;
-        } catch (e) {
-          console.log("Failed to parse template, using default:", e);
-        }
       }
     }
 
@@ -250,41 +192,42 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Using template and webhook for category "${payload.category_name}"`);
+    // Fetch store info if we have a product_id but no store info
+    let storeName = payload.store_name || "Eclipse Marketplace";
+    let storeLogoUrl = payload.store_logo_url;
 
-    // Prepare placeholder values - Discord field limit is 1024 chars
-    // Convert paragraph/line break tags to newlines, then strip remaining HTML
+    if (payload.product_id && (!payload.store_name || !payload.store_logo_url)) {
+      const { data: productData } = await supabase
+        .from("products")
+        .select(`
+          store_id,
+          stores(
+            id,
+            name,
+            logo_url
+          )
+        `)
+        .eq("id", payload.product_id)
+        .maybeSingle();
+
+      if (productData?.stores) {
+        // Handle both single object and array responses
+        const storeData = Array.isArray(productData.stores) 
+          ? productData.stores[0] 
+          : productData.stores;
+        if (storeData) {
+          storeName = storeData.name || storeName;
+          storeLogoUrl = storeData.logo_url || storeLogoUrl;
+        }
+      }
+    }
+
+    // Prepare description - clean HTML and truncate
     const rawDescription = payload.product_description
-      ? payload.product_description
-          // First, handle list structures properly
-          .replace(/<ul[^>]*>/gi, "")  // Remove opening ul tags
-          .replace(/<\/ul>/gi, "\n")  // Closing ul = newline
-          .replace(/<ol[^>]*>/gi, "")  // Remove opening ol tags
-          .replace(/<\/ol>/gi, "\n")  // Closing ol = newline
-          .replace(/<li[^>]*>/gi, "• ")  // Add bullet for list items
-          .replace(/<\/li>/gi, "\n")  // List item end = newline
-          // Handle paragraphs
-          .replace(/<p>\s*<\/p>/gi, "\n")  // Empty paragraphs = single newline
-          .replace(/<\/p>/gi, "\n\n")  // Regular paragraphs = double newline (section breaks)
-          .replace(/<p[^>]*>/gi, "")  // Remove opening p tags
-          // Handle other elements
-          .replace(/<br\s*\/?>/gi, "\n")  // Line breaks = single newline
-          .replace(/<strong[^>]*>/gi, "**")  // Bold start
-          .replace(/<\/strong>/gi, "**")  // Bold end
-          .replace(/<em[^>]*>/gi, "*")  // Italic start
-          .replace(/<\/em>/gi, "*")  // Italic end
-          .replace(/<[^>]*>/g, "")  // Strip remaining HTML tags
-          .replace(/&nbsp;/g, " ")  // Replace HTML spaces
-          .replace(/&amp;/g, "&")  // Replace HTML ampersands
-          .replace(/&lt;/g, "<")  // Replace HTML less than
-          .replace(/&gt;/g, ">")  // Replace HTML greater than
-          .replace(/\n{3,}/g, "\n\n")  // Collapse 3+ newlines to double
-          .replace(/• \n/g, "• ")  // Fix bullet followed by immediate newline
-          .replace(/:\s*\n•/g, ":\n•")  // Fix colon spacing before bullets
-          .trim()
-      : "A new product is now available on Eclipse!";
-    // Check if product is eligible for Eclipse+ discount (not resellable, not Eclipse Savers category)
-    // Note: category slugs may be stored with underscores or hyphens.
+      ? htmlToPlainText(payload.product_description)
+      : "A new product is now available!";
+
+    // Check eligibility for member pricing display
     const categorySlugNormalized = (payload.category_slug || "").toLowerCase();
     const categoryNameNormalized = (payload.category_name || "").toLowerCase();
     const isEclipseSavers =
@@ -293,7 +236,7 @@ Deno.serve(async (req) => {
       categoryNameNormalized === "eclipse savers";
     const isEligibleForEclipsePlus = !payload.is_resellable && !isEclipseSavers;
 
-    // Strip Eclipse+ references from description for ineligible products
+    // Strip member pricing references for ineligible products
     let cleanedDescription = rawDescription;
     if (!isEligibleForEclipsePlus) {
       cleanedDescription = rawDescription
@@ -302,213 +245,94 @@ Deno.serve(async (req) => {
         .replace(/30%\s*off/gi, "")
         .replace(/member\s*price/gi, "")
         .replace(/member\s*discount/gi, "")
-        .replace(/\n{3,}/g, "\n\n") // Clean up extra newlines after removal
+        .replace(/\n{3,}/g, "\n\n")
         .trim();
     }
 
-    const description = cleanedDescription.length > 900 
-      ? cleanedDescription.substring(0, 897) + "..." 
+    // Truncate description to Discord's limits
+    const description = cleanedDescription.length > 900
+      ? cleanedDescription.substring(0, 897) + "..."
       : cleanedDescription;
 
-    const gbpPrice = `£${payload.product_price.toFixed(2)}`;
-    const eclipsePlusPrice = `£${(payload.product_price * 0.7).toFixed(2)}`;
-    
-    // Only provide robux values if robux is enabled AND has a price
-    const hasRobux = payload.robux_enabled && payload.robux_price;
-    const robuxPrice = hasRobux ? `R$${payload.robux_price!.toLocaleString()}` : "";
-    const robuxLine = hasRobux 
-      ? `<:Robux:1145238657427578911>  **R$${payload.robux_price!.toLocaleString()}** - [Roblox Hub](https://www.roblox.com/games/14585849356/KILLr-Projects-Hub)\n` 
-      : "";
     const productUrl = `https://eclipserblx.com/products/${payload.product_slug}`;
+    const priceDisplay = formatPrice(payload.product_price);
 
-    // Only show Eclipse+ line if product is eligible for the discount
-    const eclipsePlusLine = isEligibleForEclipsePlus 
-      ? `\n🌙 **${eclipsePlusPrice}** — Eclipse+ (30% off)`
-      : "";
+    // Build ClearlyDev-style embed
+    // Author = Store branding
+    // Title = Product name (linked)
+    // Description = Product description
+    // Fields = Category, Price, Published (with emojis)
+    // Image = Product image
+    // Footer = Site branding
 
-    const placeholderExtras = {
-      gbpPrice,
-      eclipsePlusPrice,
-      robuxPrice,
-      robuxLine,
-      eclipsePlusLine,
-      description,
-      productUrl,
-    };
-
-    // Build embed title
-    const embedTitle = applyPlaceholders(
-      template.title.replace(/{titleEmoji}/g, template.titleEmoji),
-      payload,
-      placeholderExtras
-    );
-
-    // Build embed fields from template
-    const embedFields: Array<{ name: string; value: string; inline: boolean }> = [];
-    for (const field of template.fields) {
-      if (!field.enabled) continue;
-
-      // Skip category info field if no category
-      if (field.id === "category_info" && !payload.category_name) continue;
-
-      let fieldName = applyPlaceholders(field.name, payload, placeholderExtras);
-      let fieldValue = applyPlaceholders(field.value, payload, placeholderExtras);
-
-      // For ineligible products, strip any hardcoded Eclipse+ references from field values
-       if (!isEligibleForEclipsePlus && field.id === "purchase_locations") {
-        fieldValue = fieldValue
-          .split('\n')
-          .filter(line => {
-             // Remove any lines mentioning Eclipse+, member pricing, or discounts.
-             // Must be case-insensitive and also catch custom emoji names like <:Eclipseplus:...>
-             const normalized = (line || "").toLowerCase();
-             const isEclipsePlusLine =
-               normalized.includes('eclipse+') ||
-               normalized.includes('eclipse plus') ||
-               normalized.includes('eclipseplus') ||
-               normalized.includes('eclipse-plus') ||
-               normalized.includes('/eclipse-plus') ||
-               normalized.includes('member') ||
-               normalized.includes('discount') ||
-               normalized.includes('% off') ||
-               normalized.includes('30% off') ||
-               normalized.includes('30%');
-            return !isEclipsePlusLine;
-          })
-          .join('\n');
-      }
-
-      // For purchase_locations, filter out Robux line if not enabled
-      if (field.id === "purchase_locations" && !hasRobux) {
-        fieldValue = fieldValue
-          .split('\n')
-          .filter(line => {
-            // Remove Robux lines if robux is not enabled
-            const isRobuxLine = line.includes(':Robux:') || line.includes('Roblox Hub') || line.includes('R$');
-            return !isRobuxLine;
-          })
-          .join('\n');
-      }
-
-      // Skip fields with empty values
-      if (!fieldValue || fieldValue.trim() === '') continue;
-
-      // Skip fields with empty names (Discord requires field names)
-      if (!fieldName || fieldName.trim() === '') {
-        console.log(`Skipping field with empty name: ${field.id}`);
-        continue;
-      }
-
-      // Validate Discord field limits
-      if (fieldName.length > 256) {
-        console.log(`Field name too long (${fieldName.length} chars), truncating: ${field.id}`);
-        fieldName = fieldName.substring(0, 253) + '...';
-      }
-      
-      if (fieldValue.length > 1024) {
-        console.log(`Field value too long (${fieldValue.length} chars), truncating: ${field.id}`);
-        fieldValue = fieldValue.substring(0, 1021) + '...';
-      }
-
-      embedFields.push({
-        name: fieldName,
-        value: fieldValue,
-        inline: field.inline,
-      });
-    }
-
-    // Validate we have at least one field
-    if (embedFields.length === 0) {
-      console.error('No valid embed fields generated, cannot send webhook');
-      return new Response(
-        JSON.stringify({ error: "No valid embed fields generated" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate total fields count
-    if (embedFields.length > 25) {
-      console.log(`Too many fields (${embedFields.length}), limiting to 25`);
-      embedFields.splice(25);
-    }
-
-    // Parse color (hex to int)
-    const colorInt = parseInt(template.color.replace("#", ""), 16) || 0x9b59b6;
-
-    // Validate embed title
-    let embedTitleFinal = embedTitle;
-    if (!embedTitleFinal || embedTitleFinal.trim() === '') {
-      console.log('Empty embed title, using fallback');
-      embedTitleFinal = `Eclipse - ${payload.product_name}`;
-    }
-    if (embedTitleFinal.length > 256) {
-      console.log(`Embed title too long (${embedTitleFinal.length} chars), truncating`);
-      embedTitleFinal = embedTitleFinal.substring(0, 253) + '...';
-    }
-
-    // Build embed
     const embed: Record<string, unknown> = {
-      title: embedTitleFinal,
+      author: {
+        name: storeName,
+        icon_url: storeLogoUrl || undefined,
+      },
+      title: payload.product_name,
       url: productUrl,
-      color: colorInt,
-      fields: embedFields,
+      description: description,
+      color: 0x5865F2, // Discord blurple for consistent marketplace look
+      fields: [
+        {
+          name: "📁 Category",
+          value: payload.category_name || "Products",
+          inline: false,
+        },
+        {
+          name: "💰 Price",
+          value: priceDisplay,
+          inline: false,
+        },
+        {
+          name: "📅 Published",
+          value: getDiscordTimestamp(),
+          inline: false,
+        },
+      ],
+      footer: {
+        text: `View on eclipserblx.com`,
+      },
+      timestamp: new Date().toISOString(),
     };
 
-    // Add timestamp if enabled
-    if (template.showTimestamp) {
-      embed.timestamp = new Date().toISOString();
-    }
-
-    // Add thumbnail if enabled and images available
-    if (template.showThumbnail && payload.product_images && payload.product_images.length > 0) {
-      embed.thumbnail = { url: payload.product_images[0] };
-    }
-
-    // Add main image if enabled
-    if (template.showMainImage && payload.product_images && payload.product_images.length > 0) {
+    // Add product image if available
+    if (payload.product_images && payload.product_images.length > 0) {
       embed.image = { url: payload.product_images[0] };
     }
 
-    // Build the embeds array
+    // Build embeds array - add additional images as separate embeds (up to Discord's 10 limit)
     const embeds = [embed];
-
-    // Add additional images as separate embeds if enabled (up to 9 more for a total of 10 - Discord's limit)
-    // NOTE: Omitting the 'url' property prevents Discord from grouping images into a grid
-    if (template.showAdditionalImages && payload.product_images && payload.product_images.length > 1) {
+    if (payload.product_images && payload.product_images.length > 1) {
       const additionalImages = payload.product_images.slice(1, 10);
       for (const imageUrl of additionalImages) {
         embeds.push({
           image: { url: imageUrl },
-          color: colorInt,
+          color: 0x5865F2,
         });
       }
     }
 
-    console.log(`Sending webhook to Discord forum channel for category: ${payload.category_name}`);
+    console.log(`Sending ClearlyDev-style webhook for: ${payload.product_name}`);
 
-    // Build thread name from template
-    const threadName = applyPlaceholders(template.threadNameFormat, payload, placeholderExtras);
+    // Build thread name for forum channels
+    const threadName = `${storeName} - ${payload.product_name}`;
 
-    // For forum channels, we need to create a new thread using thread_name
     const forumPayload: Record<string, unknown> = {
       embeds,
-      thread_name: threadName,
+      thread_name: threadName.length > 100 ? threadName.substring(0, 97) + "..." : threadName,
     };
 
-    // Log payload for debugging (limit to first embed only to avoid huge logs)
     console.log('Sending webhook with payload:', JSON.stringify({
       thread_name: threadName,
-      embed_title: embed.title,
-      embed_field_count: embedFields.length,
+      store_name: storeName,
+      product_name: payload.product_name,
       embed_count: embeds.length,
-      has_thumbnail: !!embed.thumbnail,
-      has_image: !!embed.image,
-      has_timestamp: !!embed.timestamp
     }));
 
-    // Send to Discord forum channel with ?wait=true to get the response
-    const webhookUrlWithWait = webhookUrl.includes("?") 
-      ? `${webhookUrl}&wait=true` 
+    const webhookUrlWithWait = webhookUrl.includes("?")
+      ? `${webhookUrl}&wait=true`
       : `${webhookUrl}?wait=true`;
 
     const response = await fetch(webhookUrlWithWait, {
@@ -530,24 +354,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse the response to get message and thread IDs
+    // Parse response for thread/message IDs
     let newThreadId: string | null = null;
     let newMessageId: string | null = null;
 
     try {
       const responseData = await response.json();
       console.log("Discord webhook response:", JSON.stringify(responseData));
-      
-      // For forum webhooks, channel_id is the thread ID
       newMessageId = responseData.id || null;
       newThreadId = responseData.channel_id || null;
-      
       console.log(`New Discord thread ID: ${newThreadId}, message ID: ${newMessageId}`);
     } catch (e) {
       console.log("Could not parse webhook response:", e);
     }
 
-    // Update the product with the new Discord thread/message IDs
+    // Update product with Discord thread/message IDs
     if (payload.product_id && (newThreadId || newMessageId)) {
       const { error: updateError } = await supabase
         .from("products")
@@ -564,12 +385,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Product Discord notification sent successfully to ${payload.category_name} forum`);
+    console.log(`Product Discord notification sent successfully for ${storeName}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Product notification sent to ${payload.category_name} Discord forum`,
+      JSON.stringify({
+        success: true,
+        message: `Product notification sent to Discord`,
         discord_thread_id: newThreadId,
         discord_message_id: newMessageId,
       }),
