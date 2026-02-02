@@ -744,22 +744,37 @@ function AdminChatContent() {
   const handleSend = async () => {
     if (!newMessage.trim() && !selectedFile) return;
 
+    // Capture values before clearing
+    const messageToSend = newMessage;
+    const fileToSend = selectedFile;
+    const replyTo = replyToMessage;
+
+    // Clear input immediately for better UX
+    setNewMessage('');
+    setSelectedFile(null);
+    setReplyToMessage(null);
+    setShowMentionSuggestions(false);
+
     setIsUploading(true);
     try {
       let attachmentUrl: string | null = null;
       
-      if (selectedFile) {
-        attachmentUrl = await uploadFile(selectedFile);
+      if (fileToSend) {
+        attachmentUrl = await uploadFile(fileToSend);
       }
 
       await sendMessageMutation.mutateAsync({ 
-        message: newMessage, 
+        message: messageToSend, 
         attachmentUrl,
-        replyToId: replyToMessage?.id || null
+        replyToId: replyTo?.id || null
       });
     } catch (error) {
       console.error('Send error:', error);
       toast.error('Failed to send message');
+      // Restore message on error
+      setNewMessage(messageToSend);
+      setSelectedFile(fileToSend);
+      setReplyToMessage(replyTo);
     } finally {
       setIsUploading(false);
     }

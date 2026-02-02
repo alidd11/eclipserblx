@@ -727,28 +727,43 @@ function StaffMessagesContent() {
   const handleSend = async () => {
     if (!newMessage.trim() && !selectedFile) return;
 
+    // Capture values before clearing
+    const messageToSend = newMessage;
+    const fileToSend = selectedFile;
+    const replyTo = replyToMessage;
+
+    // Clear input immediately for better UX
+    setNewMessage('');
+    setSelectedFile(null);
+    setReplyToMessage(null);
+    setShowMentionSuggestions(false);
+
     let attachmentUrl: string | null = null;
 
-    if (selectedFile) {
+    if (fileToSend) {
       setIsUploading(true);
       try {
-        attachmentUrl = await uploadFile(selectedFile);
-        if (!attachmentUrl && !newMessage.trim()) {
+        attachmentUrl = await uploadFile(fileToSend);
+        if (!attachmentUrl && !messageToSend.trim()) {
           setIsUploading(false);
           return;
         }
       } catch (err) {
         toast.error('Failed to upload file');
         setIsUploading(false);
+        // Restore message on error
+        setNewMessage(messageToSend);
+        setSelectedFile(fileToSend);
+        setReplyToMessage(replyTo);
         return;
       }
       setIsUploading(false);
     }
 
     sendMessageMutation.mutate({ 
-      message: newMessage, 
+      message: messageToSend, 
       attachmentUrl, 
-      replyToId: replyToMessage?.id || null 
+      replyToId: replyTo?.id || null 
     });
   };
 
