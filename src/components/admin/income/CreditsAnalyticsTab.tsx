@@ -19,12 +19,25 @@ export function CreditsAnalyticsTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('credit_transactions')
-        .select('*, profiles!credit_transactions_user_id_fkey(display_name, username)')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(500);
 
       if (error) throw error;
-      return data ?? [];
+      
+      // Fetch user profiles separately
+      const userIds = [...new Set((data ?? []).map(t => t.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, username')
+        .in('user_id', userIds);
+      
+      const profileMap = new Map((profiles ?? []).map(p => [p.user_id, p]));
+      
+      return (data ?? []).map(tx => ({
+        ...tx,
+        profile: profileMap.get(tx.user_id) || null,
+      }));
     },
   });
 
@@ -417,7 +430,7 @@ export function CreditsAnalyticsTab() {
                   recentTransactions.map((tx) => (
                     <TableRow key={tx.id}>
                       <TableCell className="font-medium">
-                        {(tx.profiles as any)?.display_name || (tx.profiles as any)?.username || 'Unknown'}
+                        {tx.profile?.display_name || tx.profile?.username || 'Unknown'}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={getTypeColor(tx.type)}>
