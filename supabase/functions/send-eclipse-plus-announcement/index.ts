@@ -42,47 +42,53 @@ Deno.serve(async (req) => {
     
     const storagePublicBase = `${supabaseUrl}/storage/v1/object/public`;
 
-    // Eclipse logo for author icon
-    const eclipseLogoUrl = `${storagePublicBase}/store-branding/eclipse-logo.png`;
+    // Eclipse branding banner
+    const brandingBannerUrl = `${storagePublicBase}/store-branding/eclipse-discord-banner.png`;
 
     const mainEmbed = {
-      author: {
-        name: "Eclipse+",
-        icon_url: eclipseLogoUrl,
-      },
-      title: "Premium Membership",
-      url: "https://eclipserblx.com/eclipse-plus",
-      description: "Unlock exclusive benefits and save on every purchase with our premium membership. Join the Eclipse+ family today!",
-      color: 0x5865F2, // Discord blurple
+      title: "✨ Eclipse+ Membership",
+      description: "Unlock exclusive benefits and save on every purchase with our premium membership. Join the Eclipse+ family today!\n\n━━━━━━━━━━━━━━━━━━━━━━",
+      color: 0xFFD700, // Gold for premium feel
       fields: [
         {
-          name: "🎉 Welcome Bonus",
-          value: "£10 store credit on first sign up",
+          name: "🎉 £10 Welcome Bonus",
+          value: "Receive **£10 in store credit** instantly when you subscribe — spend it on anything!\n\u200B",
           inline: false,
         },
         {
-          name: "💰 Discount",
-          value: "30% off all non-bot products",
+          name: "💰 30% Discount",
+          value: "Enjoy **30% off** all non-bot products in our store. The savings add up fast!\n\u200B",
           inline: false,
         },
         {
-          name: "🎁 Free Product",
-          value: "Claim one free product every month",
+          name: "🎁 Monthly Free Product",
+          value: "Claim **one free product** every month — exclusively for Eclipse+ members.\n\u200B",
+          inline: false,
+        },
+        {
+          name: "🏷️ Member Pricing",
+          value: "See your exclusive **member prices** displayed throughout the store with gold badges.\n\u200B",
           inline: false,
         },
         {
           name: "⚡ Discord Role",
-          value: "Exclusive Eclipse+ role in our server",
+          value: "Link your Discord and receive the exclusive **Eclipse+** role in our server automatically.\n\u200B",
           inline: false,
         },
         {
-          name: "💎 Price",
-          value: "£3.99/month • Cancel anytime",
+          name: "💎 Only £3.99/month",
+          value: "Get all these benefits for just **£3.99** per month. Cancel anytime.\n\u200B",
+          inline: false,
+        },
+        {
+          name: "🚀 Get Started",
+          value: "[**Subscribe to Eclipse+ →**](https://eclipserblx.com/eclipse-plus)\n\nQuestions? Reach out to our support team anytime.",
           inline: false,
         },
       ],
+      image: { url: brandingBannerUrl },
       footer: {
-        text: "View on eclipserblx.com",
+        text: "Eclipse+ Membership • Premium Benefits",
       },
     };
 
