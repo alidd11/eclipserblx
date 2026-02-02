@@ -21,7 +21,7 @@ import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useRecentStores } from '@/hooks/useRecentStores';
 import { RecentStoresSection } from '@/components/sidebar/RecentStoresSection';
-import { FollowedStoresSection } from '@/components/sidebar/FollowedStoresSection';
+
 
 interface NavItem {
   title: string;
@@ -150,6 +150,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Profile', icon: User, href: '/account' },
         { title: 'Cart', icon: ShoppingCart, href: '/cart' },
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
+        { title: 'Following', icon: Store, href: '/account/following' },
         { title: 'Purchases', icon: Download, href: '/purchases' },
         { title: 'Wallet', icon: Wallet, href: '/credits' },
         { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
@@ -714,14 +715,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             {group.id === 'quick-access' && recentStores.length > 0 && (
               <RecentStoresSection
                 stores={recentStores}
-                collapsed={isCollapsed}
-                onNavigate={onNavigate}
-              />
-            )}
-            {/* Insert Followed Stores for logged-in users */}
-            {group.id === 'quick-access' && user && (
-              <FollowedStoresSection
-                userId={user.id}
                 collapsed={isCollapsed}
                 onNavigate={onNavigate}
               />
