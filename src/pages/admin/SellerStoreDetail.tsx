@@ -10,10 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2, Sparkles, PowerOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GenerateStoreBranding } from '@/components/admin/GenerateStoreBranding';
@@ -28,6 +28,14 @@ export default function SellerStoreDetail() {
   const [customRate, setCustomRate] = useState('');
   const [expirationDate, setExpirationDate] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [actionPassword, setActionPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'delete' | 'deactivate' | null>(null);
+
+  // Password for destructive store actions
+  const STORE_ACTION_PASSWORD = 'VinoAI2024!';
+  const isAdminManagedStore = storeId ? ADMIN_MANAGED_STORES.includes(storeId as any) : false;
 
   // Fetch store details with owner info
   const { data: store, isLoading } = useQuery({
@@ -733,41 +741,172 @@ export default function SellerStoreDetail() {
               
               <Separator />
               
-              <div className="pt-2">
-                <Button 
-                  variant="destructive" 
-                  className="w-full"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Store
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  This will deactivate all products and remove the store. Order history will be preserved.
-                </p>
-              </div>
+              {/* Deactivate button - for non-admin stores when active */}
+              {!isAdminManagedStore && store.is_active && (
+                <div className="pt-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+                    onClick={() => {
+                      setPendingAction('deactivate');
+                      setActionPassword('');
+                      setPasswordError(false);
+                      setShowDeactivateDialog(true);
+                    }}
+                  >
+                    <PowerOff className="h-4 w-4" />
+                    Deactivate Store
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Temporarily disable the store. Products will be hidden but data preserved.
+                  </p>
+                </div>
+              )}
+
+              {/* Delete button - only for non-admin stores */}
+              {!isAdminManagedStore && (
+                <>
+                  <Separator />
+                  <div className="pt-2">
+                    <Button 
+                      variant="destructive" 
+                      className="w-full gap-2"
+                      onClick={() => {
+                        setPendingAction('delete');
+                        setActionPassword('');
+                        setPasswordError(false);
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete Store
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      This will deactivate all products and remove the store. Order history will be preserved.
+                    </p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Delete Confirmation */}
+        {/* Deactivate Confirmation with Password */}
+        <AlertDialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Deactivate Store?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This will temporarily disable "{store.name}". The store can be reactivated later.
+                Enter the admin password to confirm.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-4 py-4">
+              <Input
+                type="password"
+                placeholder="Enter admin password"
+                value={actionPassword}
+                onChange={(e) => {
+                  setActionPassword(e.target.value);
+                  setPasswordError(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (actionPassword === STORE_ACTION_PASSWORD) {
+                      toggleActiveMutation.mutate(false);
+                      setShowDeactivateDialog(false);
+                      setActionPassword('');
+                    } else {
+                      setPasswordError(true);
+                    }
+                  }
+                }}
+                className={passwordError ? 'border-destructive' : ''}
+              />
+              {passwordError && (
+                <p className="text-sm text-destructive">Incorrect password. Please try again.</p>
+              )}
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setActionPassword('')}>Cancel</AlertDialogCancel>
+              <Button
+                variant="outline"
+                className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+                onClick={() => {
+                  if (actionPassword === STORE_ACTION_PASSWORD) {
+                    toggleActiveMutation.mutate(false);
+                    setShowDeactivateDialog(false);
+                    setActionPassword('');
+                  } else {
+                    setPasswordError(true);
+                  }
+                }}
+              >
+                Deactivate Store
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete Confirmation with Password */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Store?</AlertDialogTitle>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Delete Store?
+              </AlertDialogTitle>
               <AlertDialogDescription>
                 This will permanently delete "{store.name}" and deactivate all its products. 
                 Order history will be preserved. This action cannot be undone.
+                Enter the admin password to confirm.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="space-y-4 py-4">
+              <Input
+                type="password"
+                placeholder="Enter admin password"
+                value={actionPassword}
+                onChange={(e) => {
+                  setActionPassword(e.target.value);
+                  setPasswordError(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (actionPassword === STORE_ACTION_PASSWORD) {
+                      deleteStoreMutation.mutate();
+                      setShowDeleteDialog(false);
+                      setActionPassword('');
+                    } else {
+                      setPasswordError(true);
+                    }
+                  }
+                }}
+                className={passwordError ? 'border-destructive' : ''}
+              />
+              {passwordError && (
+                <p className="text-sm text-destructive">Incorrect password. Please try again.</p>
+              )}
+            </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteStoreMutation.mutate()}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              <AlertDialogCancel onClick={() => setActionPassword('')}>Cancel</AlertDialogCancel>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (actionPassword === STORE_ACTION_PASSWORD) {
+                    deleteStoreMutation.mutate();
+                    setShowDeleteDialog(false);
+                    setActionPassword('');
+                  } else {
+                    setPasswordError(true);
+                  }
+                }}
               >
                 Delete Store
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
