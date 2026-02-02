@@ -79,29 +79,30 @@ export function PaymentMethodDisplay({
   const hasMoreCards = paymentMethods.length > 2;
 
   return (
-    <StripeProvider fallback={
-      <div className="space-y-4">
-        <Button
-          onClick={onCardCheckout}
-          className="w-full h-14 gradient-button border-0 text-base font-semibold"
-          disabled={isProcessing}
-        >
-          <CreditCard className="h-5 w-5 mr-2" />
-          {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)}`}
-        </Button>
-        <TrustBadge />
-      </div>
-    }>
-      <div className="space-y-4">
-        {/* Pay with Credits - Show first if user has credits */}
-        <CreditPaymentButton
-          items={items}
-          total={total}
-          isProcessing={isProcessing}
-          onProcessing={onProcessing}
-        />
+    <div className="space-y-4">
+      {/* Pay with Credits - Show first if user has credits (outside StripeProvider) */}
+      <CreditPaymentButton
+        items={items}
+        total={total}
+        isProcessing={isProcessing}
+        onProcessing={onProcessing}
+      />
 
-        {/* Saved Cards - Show for returning customers */}
+      <StripeProvider fallback={
+        <div className="space-y-4">
+          <Button
+            onClick={onCardCheckout}
+            className="w-full h-14 gradient-button border-0 text-base font-semibold"
+            disabled={isProcessing}
+          >
+            <CreditCard className="h-5 w-5 mr-2" />
+            {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)}`}
+          </Button>
+          <TrustBadge />
+        </div>
+      }>
+        <div className="space-y-4">
+          {/* Saved Cards - Show for returning customers */}
         {isLoadingMethods ? (
           <div className="space-y-2">
             <Skeleton className="h-14 w-full rounded-lg" />
@@ -227,8 +228,9 @@ export function PaymentMethodDisplay({
         </div>
 
         <TrustBadge />
-      </div>
-    </StripeProvider>
+        </div>
+      </StripeProvider>
+    </div>
   );
 }
 
