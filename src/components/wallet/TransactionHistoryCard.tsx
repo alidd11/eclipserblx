@@ -64,7 +64,7 @@ function getTransactionLabel(type: CreditTransaction['type']) {
 
 export function TransactionHistoryCard({ transactions, isLoading }: TransactionHistoryCardProps) {
   return (
-    <Card>
+    <Card className="max-w-full overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <History className="h-4 w-4" />
