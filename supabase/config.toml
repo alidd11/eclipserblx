@@ -273,3 +273,12 @@ verify_jwt = false
 
 [functions.send-team-invite]
 verify_jwt = false
+
+[functions.create-credit-checkout]
+verify_jwt = false
+
+[functions.gift-credits]
+verify_jwt = false
+
+[functions.get-credit-balance]
+verify_jwt = false

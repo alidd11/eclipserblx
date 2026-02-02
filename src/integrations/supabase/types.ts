@@ -1024,6 +1024,83 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          eclipse_plus_bonus_claimed: boolean
+          total_gifted: number
+          total_purchased: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          eclipse_plus_bonus_claimed?: boolean
+          total_gifted?: number
+          total_purchased?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          eclipse_plus_bonus_claimed?: boolean
+          total_gifted?: number
+          total_purchased?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          gifted_by: string | null
+          id: string
+          order_id: string | null
+          reference_id: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          gifted_by?: string | null
+          id?: string
+          order_id?: string | null
+          reference_id?: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          gifted_by?: string | null
+          id?: string
+          order_id?: string | null
+          reference_id?: string | null
+          type?: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_roles: {
         Row: {
           color: string
@@ -5525,6 +5602,34 @@ export type Database = {
       }
     }
     Functions: {
+      add_credits: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_gifted_by?: string
+          p_order_id?: string
+          p_reference_id?: string
+          p_type: Database["public"]["Enums"]["credit_transaction_type"]
+          p_user_id: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          description: string | null
+          gifted_by: string | null
+          id: string
+          order_id: string | null
+          reference_id: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       can_assign_role: {
         Args: { _assigner_id: string; _target_role: string }
@@ -5557,6 +5662,10 @@ export type Database = {
           p_max_requests?: number
           p_window_minutes?: number
         }
+        Returns: boolean
+      }
+      claim_eclipse_plus_credit_bonus: {
+        Args: { p_user_id: string }
         Returns: boolean
       }
       cleanup_expired_link_codes: { Args: never; Returns: undefined }
@@ -5612,9 +5721,24 @@ export type Database = {
         Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
       }
+      spend_credits: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_order_id?: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       bot_license_status: "pending" | "active" | "expired" | "revoked"
+      credit_transaction_type:
+        | "purchase"
+        | "gift"
+        | "spend"
+        | "refund"
+        | "subscription_bonus"
       outreach_activity_type:
         | "created"
         | "contacted"
@@ -5753,6 +5877,13 @@ export const Constants = {
   public: {
     Enums: {
       bot_license_status: ["pending", "active", "expired", "revoked"],
+      credit_transaction_type: [
+        "purchase",
+        "gift",
+        "spend",
+        "refund",
+        "subscription_bonus",
+      ],
       outreach_activity_type: [
         "created",
         "contacted",

@@ -57,6 +57,7 @@ const LiveChat = lazy(() => import("./pages/LiveChat"));
 const Affiliate = lazy(() => import("./pages/Affiliate"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Advertise = lazy(() => import("./pages/Advertise"));
+const Credits = lazy(() => import("./pages/Credits"));
 const MyAdvertisementsPage = lazy(() => import("./pages/Account/MyAdvertisementsPage"));
 const AdAnalyticsPage = lazy(() => import("./pages/Account/AdAnalyticsPage"));
 
@@ -122,6 +123,7 @@ const AdminDiscordOutreachDetail = lazy(() => import("./pages/admin/DiscordOutre
 const AdminEmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
 const AdminRefunds = lazy(() => import("./pages/admin/Refunds"));
 const AdminAdvertisementAnalytics = lazy(() => import("./pages/admin/AdvertisementAnalytics"));
+const AdminGiftCredits = lazy(() => import("./pages/admin/GiftCredits"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -232,6 +234,7 @@ const App = () => (
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/advertise" element={<Advertise />} />
+                  <Route path="/credits" element={<Credits />} />
                   <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
                   <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
                   <Route path="/support/chat" element={<LiveChat />} />
@@ -326,6 +329,7 @@ const App = () => (
                   <Route path="/admin/discord-outreach/:id" element={<AdminDiscordOutreachDetail />} />
                   <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
                   <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
+                  <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
