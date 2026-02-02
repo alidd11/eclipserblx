@@ -136,6 +136,94 @@ const UserIdsSection = ({ userId, customerId }: {
   );
 };
 
+// Status Badges Section (Eclipse+, Affiliate, Seller)
+const StatusBadgesSection = ({ 
+  userId, 
+  isSubscribed, 
+  userBadges, 
+  badges 
+}: { 
+  userId: string; 
+  isSubscribed: boolean;
+  userBadges: ReturnType<typeof useBadges>['userBadges'];
+  badges: ReturnType<typeof useBadges>['badges'];
+}) => {
+  const { data: affiliateApp } = useQuery({
+    queryKey: ['affiliate-status', userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('affiliate_applications')
+        .select('status, affiliate_id')
+        .eq('user_id', userId)
+        .eq('status', 'approved')
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: store } = useQuery({
+    queryKey: ['seller-status', userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('stores')
+        .select('id, name, store_id')
+        .eq('owner_id', userId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const hasAffiliate = !!affiliateApp?.affiliate_id;
+  const hasSeller = !!store?.id;
+  const hasAnyStatus = isSubscribed || hasAffiliate || hasSeller || (userBadges && userBadges.length > 0);
+
+  if (!hasAnyStatus) return null;
+
+  return (
+    <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
+      <div className="space-y-3">
+        {/* Status Badges (Eclipse+, Affiliate, Seller) */}
+        <div className="flex flex-wrap items-center gap-2">
+          {isSubscribed && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary">Eclipse+ Member</span>
+            </div>
+          )}
+          {hasAffiliate && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+              <Award className="h-3.5 w-3.5 text-amber-500" />
+              <span className="text-xs font-semibold text-amber-500">Affiliate Partner</span>
+            </div>
+          )}
+          {hasSeller && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
+              <Store className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-xs font-semibold text-emerald-500">Verified Seller</span>
+            </div>
+          )}
+        </div>
+
+        {/* Earned Badges */}
+        {userBadges && userBadges.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium block">
+              Earned Badges
+            </span>
+            <div className="p-2.5 rounded-lg bg-background/60 border border-border/40">
+              <BadgeShowcase badges={badges} userBadges={userBadges} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
   const { user, signOut, loading: authLoading } = useAuth();
@@ -602,33 +690,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             />
 
             {/* Badges Row (earned + status like Eclipse+) */}
-            {(isSubscribed || (userBadges && userBadges.length > 0)) && (
-              <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
-                <div className="space-y-3">
-                  {/* Status Badges (Eclipse+, etc.) */}
-                  {isSubscribed && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
-                        <Sparkles className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-xs font-semibold text-primary">Eclipse+ Member</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Earned Badges */}
-                  {userBadges && userBadges.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium block">
-                        Earned Badges
-                      </span>
-                      <div className="p-2.5 rounded-lg bg-background/60 border border-border/40">
-                        <BadgeShowcase badges={badges} userBadges={userBadges} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            <StatusBadgesSection userId={user.id} isSubscribed={isSubscribed} userBadges={userBadges} badges={badges} />
 
             {/* Quick Stats Bar */}
             <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
