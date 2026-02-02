@@ -73,7 +73,7 @@ export default function Credits() {
   return (
     <MainLayout>
       <div
-        className="pl-4 pr-[calc(env(safe-area-inset-right)+2.5rem)] sm:px-6 py-6 mx-auto w-full max-w-2xl min-w-0 space-y-6"
+        className="pl-4 sm:pl-6 pr-[calc(env(safe-area-inset-right)+2.5rem)] py-6 mx-auto w-full max-w-2xl min-w-0 space-y-6"
       >
         {/* Header */}
         <div className="flex items-center gap-3">
