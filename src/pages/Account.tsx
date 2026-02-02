@@ -512,50 +512,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   return (
     <MainLayout ref={ref}>
       <div className="container py-8 space-y-6 max-w-4xl ml-auto mr-4 sm:mr-8 lg:mr-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-display font-bold">My Account</h1>
-          {adminLoading ? (
-            <Button variant="outline" disabled>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Checking access…
-            </Button>
-          ) : isStaff ? (
-            <Button variant="outline" onClick={() => navigate('/admin')}>
-              <Shield className="h-4 w-4 mr-2" />
-              Admin Dashboard
-            </Button>
-          ) : null}
-        </div>
-
-        {/* Profile Details - Unified card with all identity info */}
-
-        {/* Profile Details - Unified card with all identity info */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5" />
-                Profile Details
-              </CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowSignOutDialog(true)}
-                    className="text-muted-foreground hover:text-destructive h-8 w-8"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Sign Out</TooltipContent>
-              </Tooltip>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Profile Header - Roblox style */}
-            <div className="flex items-start gap-4">
+        {/* Profile Card - Compact header with avatar and key info */}
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-0">
+            {/* Profile Header */}
+            <div className="p-4 sm:p-6 flex items-center gap-4">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
@@ -565,330 +526,90 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 compact
               />
               
-              <div className="flex-1 min-w-0 pt-1">
-                {/* Display Name - Large and prominent */}
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-2xl font-bold tracking-tight">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
                     {profile?.display_name || fallbackDisplayName || 'User'}
-                  </h2>
+                  </h1>
                   {isSubscribed && (
-                    <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5">
+                    <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5 shrink-0">
                       <Sparkles className="h-2.5 w-2.5" />
                       Eclipse+
                     </Badge>
                   )}
-                  {profileLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
-                
-                {/* Username - Smaller, muted */}
                 <p className="text-sm text-muted-foreground">@{profile?.username || fallbackDisplayName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Member since {new Date(user.created_at).toLocaleDateString()}
+                </p>
               </div>
-            </div>
 
-            {/* Edit Display Name Section */}
-            {editingUsername ? (
-              <div className="space-y-2 p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground">Change Display Name</p>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-md border bg-input pr-10"
-                    autoFocus
-                    placeholder="Enter new display name"
-                  />
-                  {newUsername.trim().length >= 2 && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {checkingUsername ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      ) : usernameAvailable === true ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : usernameAvailable === false ? (
-                        <X className="h-4 w-4 text-destructive" />
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-                {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                  <p className="text-xs text-destructive">This display name is already taken</p>
-                )}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleSaveUsername}
-                    disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                  >
-                    {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+              <div className="flex items-center gap-1 shrink-0">
+                {adminLoading ? (
+                  <Button variant="ghost" size="icon" disabled className="h-9 w-9">
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Display Name</p>
-                  <p className="text-sm font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
-                </div>
-                {cooldownInfo.onCooldown ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 text-muted-foreground cursor-help">
-                          <Clock className="h-2.5 w-2.5 mr-1" />
-                          {cooldownInfo.remainingDays}d
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={startEditingUsername}
-                    className="h-8"
-                  >
-                    <Pencil className="h-3 w-3 mr-1.5" />
-                    Edit
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {/* Customer ID and Member Since row */}
-            <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-muted/30">
-              {profile?.customer_id && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Customer ID</p>
-                  <button
-                    onClick={copyCustomerId}
-                    className="flex items-center gap-1.5 font-mono text-sm hover:text-primary transition-colors"
-                  >
-                    {profile.customer_id}
-                    {copiedId ? (
-                      <Check className="h-3 w-3 text-green-500" />
-                    ) : (
-                      <Copy className="h-3 w-3 text-muted-foreground" />
-                    )}
-                  </button>
-                </div>
-              )}
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Member Since</p>
-                <p className="text-sm font-medium">{new Date(user.created_at).toLocaleDateString()}</p>
-              </div>
-            </div>
-            
-            {/* Discord Section - Using OAuth Component */}
-            <DiscordLinkCard
-              userId={user.id}
-              currentDiscordId={profile?.discord_id || null}
-              currentDiscordUsername={profile?.discord_username || null}
-              hasEclipsePlus={isSubscribed}
-              accountsLocked={(profile as any)?.accounts_locked}
-              onUpdate={() => {
-                queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-                queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
-              }}
-            />
-            
-            {/* Roblox Section */}
-            <div className="p-3 rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Gamepad2 className="w-4 h-4 text-emerald-500" />
-                <p className="text-xs font-medium text-muted-foreground">Roblox Account</p>
-              </div>
-              
-              {profile?.roblox_user_id && profile?.roblox_username ? (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage 
-                        src={getRobloxAvatarUrl(profile.roblox_user_id)} 
-                        alt={profile.roblox_username} 
-                      />
-                      <AvatarFallback className="bg-emerald-500/20">
-                        <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <p className="font-medium text-sm truncate">{profile.roblox_username}</p>
-                        {robloxPremiumStatus.checked && robloxPremiumStatus.hasPremium && (
-                          <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] px-1.5 py-0 h-4">
-                            <Crown className="w-2 h-2 mr-0.5" />
-                            Premium
-                          </Badge>
-                        )}
-                        {robloxGroupInfo.checked && robloxGroupInfo.inGroup && (
-                          <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 text-[9px] px-1.5 py-0 h-4">
-                            <Users className="w-2 h-2 mr-0.5" />
-                            {robloxGroupInfo.roleName || 'Member'}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground font-mono truncate">
-                        ID: {profile.roblox_user_id}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      asChild
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    >
-                      <a
-                        href={`https://www.roblox.com/users/${profile.roblox_user_id}/profile`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleUnlinkRoblox}
-                      disabled={isUnlinkingRoblox || (profile as any)?.accounts_locked}
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    >
-                      {isUnlinkingRoblox ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (profile as any)?.accounts_locked ? (
-                        <Lock className="w-3.5 h-3.5" />
-                      ) : (
-                        <Unlink className="w-3.5 h-3.5" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Roblox username"
-                      value={robloxInputUsername}
-                      onChange={(e) => {
-                        setRobloxInputUsername(e.target.value);
-                        setRobloxVerificationError(null);
-                        setRobloxVerifiedData(null);
-                      }}
-                      className="flex-1 h-8 text-xs"
-                    />
-                    <Button
-                      onClick={handleVerifyRobloxUsername}
-                      disabled={!robloxInputUsername.trim() || isVerifyingRoblox}
-                      size="sm"
-                      variant="secondary"
-                      className="h-8 text-xs"
-                    >
-                      {isVerifyingRoblox ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        'Verify'
-                      )}
-                    </Button>
-                  </div>
-                  
-                  {robloxVerificationError && (
-                    <div className="flex items-center gap-2 text-xs text-destructive">
-                      <X className="h-3 w-3" />
-                      {robloxVerificationError}
-                    </div>
-                  )}
-                  
-                  {robloxVerifiedData && (
-                    <div className="flex items-center justify-between p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage 
-                            src={getRobloxAvatarUrl(robloxVerifiedData.id)} 
-                            alt={robloxVerifiedData.displayName} 
-                          />
-                          <AvatarFallback className="bg-emerald-500/20">
-                            <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <Check className="h-3 w-3 text-green-500" />
-                            <p className="font-medium text-xs">{robloxVerifiedData.displayName}</p>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground">
-                            @{robloxVerifiedData.name}
-                          </p>
-                        </div>
-                      </div>
-                      <Button size="sm" onClick={handleLinkRobloxAccount} className="h-7 text-xs">
-                        Link
+                ) : isStaff ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} className="h-9 w-9">
+                        <Shield className="h-4 w-4" />
                       </Button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    </TooltipTrigger>
+                    <TooltipContent>Admin Dashboard</TooltipContent>
+                  </Tooltip>
+                ) : null}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowSignOutDialog(true)}
+                      className="text-muted-foreground hover:text-destructive h-9 w-9"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Sign Out</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+
+            {/* Quick Stats Bar */}
+            <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
+              <Link
+                to="/purchases"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
+              >
+                <Download className="h-4 w-4 text-primary mb-1" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground">Purchases</span>
+              </Link>
+              <Link
+                to="/credits"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
+              >
+                <CreditCard className="h-4 w-4 text-primary mb-1" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground">Wallet</span>
+              </Link>
+              <Link
+                to="/chat-history"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
+              >
+                <MessageSquare className="h-4 w-4 text-primary mb-1" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground">Support</span>
+              </Link>
+              <Link
+                to="/notifications"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
+              >
+                <Bell className="h-4 w-4 text-primary mb-1" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground">Alerts</span>
+              </Link>
             </div>
           </CardContent>
         </Card>
 
         {/* Eclipse+ Subscription Card */}
-        <SubscriptionCard />
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          <Link
-            to="/purchases"
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <Download className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Purchases</span>
-          </Link>
-          <Link
-            to="/products"
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <Package className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Products</span>
-          </Link>
-          <Link
-            to="/chat-history"
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <MessageSquare className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Support</span>
-          </Link>
-          <Link
-            to="/notifications"
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <Bell className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Alerts</span>
-          </Link>
-          <button
-            onClick={() => handleTabChange('shopping')}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Orders</span>
-          </button>
-          <button
-            onClick={() => handleTabChange('preferences')}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors text-center"
-          >
-            <Settings className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium">Settings</span>
-          </button>
-        </div>
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
@@ -912,12 +633,278 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile">
-            {/* Badges - Full Width */}
-            <Card className="bg-card border-border mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
+          <TabsContent value="profile" className="space-y-6">
+            {/* Edit Display Name */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Pencil className="h-4 w-4" />
+                  Display Name
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {editingUsername ? (
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="w-full px-3 py-2 text-sm rounded-md border bg-input pr-10"
+                        autoFocus
+                        placeholder="Enter new display name"
+                      />
+                      {newUsername.trim().length >= 2 && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingUsername ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : usernameAvailable === true ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="h-4 w-4 text-destructive" />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
+                      <p className="text-xs text-destructive">This display name is already taken</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveUsername}
+                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                      >
+                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
+                      <p className="text-xs text-muted-foreground">Your public display name</p>
+                    </div>
+                    {cooldownInfo.onCooldown ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline" className="text-xs text-muted-foreground cursor-help">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {cooldownInfo.remainingDays}d
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={startEditingUsername}>
+                        <Pencil className="h-3 w-3 mr-1.5" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Linked Accounts */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Link2 className="h-4 w-4" />
+                  Linked Accounts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Discord */}
+                <DiscordLinkCard
+                  userId={user.id}
+                  currentDiscordId={profile?.discord_id || null}
+                  currentDiscordUsername={profile?.discord_username || null}
+                  hasEclipsePlus={isSubscribed}
+                  accountsLocked={(profile as any)?.accounts_locked}
+                  onUpdate={() => {
+                    queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                    queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
+                  }}
+                />
+                
+                {/* Roblox */}
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gamepad2 className="w-4 h-4 text-emerald-500" />
+                    <p className="text-xs font-medium text-muted-foreground">Roblox Account</p>
+                  </div>
+                  
+                  {profile?.roblox_user_id && profile?.roblox_username ? (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage 
+                            src={getRobloxAvatarUrl(profile.roblox_user_id)} 
+                            alt={profile.roblox_username} 
+                          />
+                          <AvatarFallback className="bg-emerald-500/20">
+                            <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-medium text-sm truncate">{profile.roblox_username}</p>
+                            {robloxPremiumStatus.checked && robloxPremiumStatus.hasPremium && (
+                              <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] px-1.5 py-0 h-4">
+                                <Crown className="w-2 h-2 mr-0.5" />
+                                Premium
+                              </Badge>
+                            )}
+                            {robloxGroupInfo.checked && robloxGroupInfo.inGroup && (
+                              <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 text-[9px] px-1.5 py-0 h-4">
+                                <Users className="w-2 h-2 mr-0.5" />
+                                {robloxGroupInfo.roleName || 'Member'}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-mono truncate">
+                            ID: {profile.roblox_user_id}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          asChild
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                          <a
+                            href={`https://www.roblox.com/users/${profile.roblox_user_id}/profile`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleUnlinkRoblox}
+                          disabled={isUnlinkingRoblox || (profile as any)?.accounts_locked}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                          {isUnlinkingRoblox ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (profile as any)?.accounts_locked ? (
+                            <Lock className="w-3.5 h-3.5" />
+                          ) : (
+                            <Unlink className="w-3.5 h-3.5" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Roblox username"
+                          value={robloxInputUsername}
+                          onChange={(e) => {
+                            setRobloxInputUsername(e.target.value);
+                            setRobloxVerificationError(null);
+                            setRobloxVerifiedData(null);
+                          }}
+                          className="flex-1 h-8 text-xs"
+                        />
+                        <Button
+                          onClick={handleVerifyRobloxUsername}
+                          disabled={!robloxInputUsername.trim() || isVerifyingRoblox}
+                          size="sm"
+                          variant="secondary"
+                          className="h-8 text-xs"
+                        >
+                          {isVerifyingRoblox ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            'Verify'
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {robloxVerificationError && (
+                        <div className="flex items-center gap-2 text-xs text-destructive">
+                          <X className="h-3 w-3" />
+                          {robloxVerificationError}
+                        </div>
+                      )}
+                      
+                      {robloxVerifiedData && (
+                        <div className="flex items-center justify-between p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage 
+                                src={getRobloxAvatarUrl(robloxVerifiedData.id)} 
+                                alt={robloxVerifiedData.displayName} 
+                              />
+                              <AvatarFallback className="bg-emerald-500/20">
+                                <Gamepad2 className="h-3.5 w-3.5 text-emerald-500" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <Check className="h-3 w-3 text-green-500" />
+                                <p className="font-medium text-xs">{robloxVerifiedData.displayName}</p>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">
+                                @{robloxVerifiedData.name}
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" onClick={handleLinkRobloxAccount} className="h-7 text-xs">
+                            Link
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Customer ID */}
+                {profile?.customer_id && (
+                  <div className="p-3 rounded-lg bg-muted/30">
+                    <p className="text-xs text-muted-foreground mb-1">Customer ID</p>
+                    <button
+                      onClick={copyCustomerId}
+                      className="flex items-center gap-1.5 font-mono text-sm hover:text-primary transition-colors"
+                    >
+                      {profile.customer_id}
+                      {copiedId ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3 text-muted-foreground" />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Eclipse+ Subscription */}
+            <SubscriptionCard />
+
+            {/* Badges */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Award className="h-4 w-4" />
                   My Badges
                 </CardTitle>
               </CardHeader>
@@ -926,15 +913,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </CardContent>
             </Card>
 
-            {/* Grid for other cards */}
+            {/* Grid for referral/affiliate cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Marketplace Beta - Only visible to users with feature flag access */}
               {hasMarketplaceAccess && <BecomeSellerCard />}
-
-              {/* Referral Card */}
               <ReferralCard />
-
-              {/* Affiliate Earnings Card */}
               <AffiliateCard />
             </div>
           </TabsContent>
