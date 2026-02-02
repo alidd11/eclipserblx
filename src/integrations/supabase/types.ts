@@ -2573,6 +2573,7 @@ export type Database = {
           discord_message_id: string | null
           discord_thread_id: string | null
           download_count: number | null
+          eclipse_free_eligible: boolean
           id: string
           images: string[] | null
           is_active: boolean | null
@@ -2602,6 +2603,7 @@ export type Database = {
           discord_message_id?: string | null
           discord_thread_id?: string | null
           download_count?: number | null
+          eclipse_free_eligible?: boolean
           id?: string
           images?: string[] | null
           is_active?: boolean | null
@@ -2631,6 +2633,7 @@ export type Database = {
           discord_message_id?: string | null
           discord_thread_id?: string | null
           download_count?: number | null
+          eclipse_free_eligible?: boolean
           id?: string
           images?: string[] | null
           is_active?: boolean | null
