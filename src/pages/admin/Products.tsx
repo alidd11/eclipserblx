@@ -49,9 +49,7 @@ import { SortableMediaItem } from '@/components/admin/SortableMediaItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
-
-// Eclipse Store ID for marketplace sync
-const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
+import { ECLIPSE_STORE_ID } from '@/lib/constants';
 
 interface ProductForm {
   id?: string;
