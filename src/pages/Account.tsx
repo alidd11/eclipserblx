@@ -38,11 +38,9 @@ import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Unified IDs display component
-const UserIdsSection = ({ userId, customerId, onCopyCustomerId, copiedId }: { 
+const UserIdsSection = ({ userId, customerId }: { 
   userId: string; 
   customerId: string | null;
-  onCopyCustomerId: () => void;
-  copiedId: boolean;
 }) => {
   const { data: affiliateApp } = useQuery({
     queryKey: ['affiliate-id', userId],
@@ -76,38 +74,41 @@ const UserIdsSection = ({ userId, customerId, onCopyCustomerId, copiedId }: {
   const hasAnyId = customerId || affiliateApp?.affiliate_id || store?.store_id;
   if (!hasAnyId) return null;
 
+  const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
+
+  const copyToClipboard = async (value: string, key: string) => {
+    await navigator.clipboard.writeText(value);
+    setCopiedStates(prev => ({ ...prev, [key]: true }));
+    setTimeout(() => setCopiedStates(prev => ({ ...prev, [key]: false })), 2000);
+  };
+
   const idItems = [
-    customerId && { label: 'Customer ID', value: customerId, copyable: true },
-    affiliateApp?.affiliate_id && { label: 'Affiliate ID', value: affiliateApp.affiliate_id, copyable: false },
-    store?.store_id && { label: 'Seller ID', value: store.store_id, copyable: false },
-  ].filter(Boolean) as { label: string; value: string; copyable: boolean }[];
+    customerId && { label: 'Customer ID', value: customerId, key: 'customer' },
+    affiliateApp?.affiliate_id && { label: 'Affiliate ID', value: affiliateApp.affiliate_id, key: 'affiliate' },
+    store?.store_id && { label: 'Seller ID', value: store.store_id, key: 'seller' },
+  ].filter(Boolean) as { label: string; value: string; key: string }[];
 
   return (
-    <div className="border-t border-border px-4 sm:px-6 py-2.5">
-      <div className="flex items-center gap-3 overflow-x-auto flex-nowrap">
-        {idItems.map((item, idx) => (
-          <div key={item.label} className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
-              {item.label.replace(' ID', '')}:
-            </span>
-            {item.copyable ? (
-              <button
-                onClick={onCopyCustomerId}
-                className="inline-flex items-center gap-1.5 text-sm font-mono text-foreground/80 hover:text-foreground transition-colors"
-              >
-                <span>{item.value}</span>
-                {copiedId ? (
-                  <Check className="h-3 w-3 text-green-500" />
-                ) : (
-                  <Copy className="h-3 w-3 text-muted-foreground" />
-                )}
-              </button>
-            ) : (
-              <span className="text-sm font-mono text-foreground/80">{item.value}</span>
-            )}
-            {idx < idItems.length - 1 && (
-              <span className="text-muted-foreground/30">•</span>
-            )}
+    <div className="border-t border-border px-4 sm:px-6 py-3">
+      <div className="flex flex-col gap-2">
+        {idItems.map((item) => (
+          <div key={item.key} className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium shrink-0">
+                {item.label}
+              </span>
+              <span className="text-xs font-mono text-foreground/80 truncate">{item.value}</span>
+            </div>
+            <button
+              onClick={() => copyToClipboard(item.value, item.key)}
+              className="shrink-0 p-1 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {copiedStates[item.key] ? (
+                <Check className="h-3 w-3 text-green-500" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+            </button>
           </div>
         ))}
       </div>
@@ -456,26 +457,25 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         <Card className="bg-card border-border overflow-hidden">
           <CardContent className="p-0">
             {/* Profile Header */}
-            <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-center gap-4 min-w-0 w-full">
-                <AvatarUpload
-                  userId={user.id}
-                  currentAvatarUrl={profile?.avatar_url || null}
-                  discordAvatarUrl={discordAvatar?.avatar_url || null}
-                  displayName={profile?.display_name || fallbackDisplayName || ''}
-                  onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
-                  compact
-                />
-                
-                <div className="flex-1 min-w-0">
+            <div className="p-4 sm:p-6 flex flex-col items-center text-center gap-3 relative">
+              <AvatarUpload
+                userId={user.id}
+                currentAvatarUrl={profile?.avatar_url || null}
+                discordAvatarUrl={discordAvatar?.avatar_url || null}
+                displayName={profile?.display_name || fallbackDisplayName || ''}
+                onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
+                compact
+              />
+              
+              <div className="w-full max-w-xs">
                 {editingUsername ? (
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1 min-w-0">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="relative flex-1">
                       <input
                         type="text"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
-                        className="px-2 py-1 text-xl sm:text-2xl font-bold tracking-tight rounded-md border bg-input w-full pr-8"
+                        className="px-2 py-1 text-base font-bold tracking-tight rounded-md border bg-input w-full pr-8 text-center"
                         autoFocus
                         placeholder="Display name"
                       />
@@ -510,23 +510,23 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-start gap-2">
-                    <h1 className="min-w-0 flex-1 text-xl sm:text-2xl font-bold tracking-tight truncate">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <h1 className="text-base sm:text-lg font-bold tracking-tight">
                       {profile?.display_name || fallbackDisplayName || 'User'}
                     </h1>
                     {!cooldownInfo.onCooldown ? (
                       <button
                         onClick={startEditingUsername}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
+                        className="text-muted-foreground hover:text-foreground transition-colors p-0.5 shrink-0"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3 w-3" />
                       </button>
                     ) : (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-muted-foreground/60 p-1 cursor-help shrink-0">
-                              <Clock className="h-3.5 w-3.5" />
+                            <span className="text-muted-foreground/60 p-0.5 cursor-help shrink-0">
+                              <Clock className="h-3 w-3" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -538,18 +538,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   </div>
                 )}
 
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <p className="text-sm text-muted-foreground">@{profile?.username || fallbackDisplayName}</p>
-                  <span className="text-muted-foreground/40">•</span>
-                  <p className="text-xs text-muted-foreground">
-                    Member since {new Date(user.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">@{profile?.username || fallbackDisplayName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Member since {new Date(user.created_at).toLocaleDateString()}
+                </p>
               </div>
 
-              </div>
-
-              <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
+              <div className="flex items-center gap-1 absolute top-4 right-4 sm:top-6 sm:right-6">
                 {adminLoading ? (
                   <Button variant="ghost" size="icon" disabled className="h-9 w-9">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -584,8 +579,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <UserIdsSection 
               userId={user.id} 
               customerId={profile?.customer_id || null}
-              onCopyCustomerId={copyCustomerId}
-              copiedId={copiedId}
             />
 
             {/* Badges Row (earned + status like Eclipse+) */}
