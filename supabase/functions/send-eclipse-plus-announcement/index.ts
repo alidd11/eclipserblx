@@ -56,6 +56,11 @@ Deno.serve(async (req) => {
       color: 0x5865F2, // Discord blurple
       fields: [
         {
+          name: "🎉 Welcome Bonus",
+          value: "£10 store credit on first sign up",
+          inline: false,
+        },
+        {
           name: "💰 Discount",
           value: "30% off all non-bot products",
           inline: false,
