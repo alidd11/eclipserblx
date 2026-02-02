@@ -57,10 +57,13 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all staff user IDs
+    // Fetch all staff user IDs (exclude subscription-only roles like eclipse_plus_member)
+    const excludedRoles = ['eclipse_plus_member'];
+    
     const { data: staffRoles, error: staffRolesError } = await service
       .from("user_roles")
-      .select("user_id");
+      .select("user_id, role")
+      .not('role', 'in', `(${excludedRoles.join(',')})`);
 
     if (staffRolesError) throw staffRolesError;
 
