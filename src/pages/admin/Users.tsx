@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -57,8 +58,11 @@ interface CustomRole {
 
 const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
+const CUSTOMERS_PER_PAGE = 10;
+
 export default function AdminUsers() {
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<string>('');
   const [ipBanDialogUser, setIpBanDialogUser] = useState<any>(null);
@@ -412,25 +416,87 @@ export default function AdminUsers() {
   const subscriptionOnlyRoles = ['eclipse_plus_member'];
 
   // Filter profiles to only show customers (users without any staff roles)
-  const filteredProfiles = profiles?.filter((profile) => {
-    const roles = getUserRoles(profile.user_id);
-    // Show users who have no roles OR only have subscription roles (like Eclipse+)
-    const hasStaffRole = roles.some(r => !subscriptionOnlyRoles.includes(r.role));
-    return !hasStaffRole;
-  });
+  const filteredProfiles = useMemo(() => {
+    return profiles?.filter((profile) => {
+      const roles = getUserRoles(profile.user_id);
+      // Show users who have no roles OR only have subscription roles (like Eclipse+)
+      const hasStaffRole = roles.some(r => !subscriptionOnlyRoles.includes(r.role));
+      return !hasStaffRole;
+    }) || [];
+  }, [profiles, userRoles]);
+
+  // Search filtered customers
+  const searchFilteredProfiles = useMemo(() => {
+    if (!search.trim()) return filteredProfiles;
+    const query = search.toLowerCase();
+    return filteredProfiles.filter(profile => 
+      profile.customer_id?.toLowerCase().includes(query) ||
+      profile.display_name?.toLowerCase().includes(query) ||
+      profile.username?.toLowerCase().includes(query)
+    );
+  }, [filteredProfiles, search]);
+
+  // Pagination calculations
+  const totalCustomers = searchFilteredProfiles.length;
+  const totalPages = Math.ceil(totalCustomers / CUSTOMERS_PER_PAGE);
+  const startIndex = (currentPage - 1) * CUSTOMERS_PER_PAGE;
+  const endIndex = startIndex + CUSTOMERS_PER_PAGE;
+  const paginatedProfiles = searchFilteredProfiles.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Stats
+  const stats = useMemo(() => ({
+    total: filteredProfiles.length,
+    eclipsePlus: filteredProfiles.filter(p => 
+      getUserRoles(p.user_id).some(r => r.role === 'eclipse_plus_member')
+    ).length,
+  }), [filteredProfiles, userRoles]);
 
   return (
     <AdminLayout requiredPermissions={['view_users']}>
       <div className="space-y-6 min-h-0">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Customers</h1>
-          <p className="text-muted-foreground">Manage customer accounts</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-display font-bold">Customers</h1>
+            <p className="text-muted-foreground">Manage customer accounts</p>
+          </div>
         </div>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <Users className="h-3 w-3 md:h-4 md:w-4" />
+                Total Customers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.total}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-amber-500" />
+                Eclipse+ Members
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.eclipsePlus}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by customer ID..."
+            placeholder="Search by customer ID, name or username..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-card"
@@ -438,85 +504,190 @@ export default function AdminUsers() {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block rounded-lg border border-border bg-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>User</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Customer List</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>User</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                        Loading...
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedProfiles.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                        No customers found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedProfiles.map((profile) => {
+                      const roles = getUserRoles(profile.user_id);
+                      return (
+                        <TableRow key={profile.id}>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-medium">{profile.display_name || 'No name'}</p>
+                                {roles.length === 0 ? (
+                                  <Badge variant="secondary" className="text-xs">Customer</Badge>
+                                ) : (
+                                  roles.map(r => getRoleBadge(r.role))
+                                )}
+                              </div>
+                              {profile.username && (
+                                <p className="text-xs text-muted-foreground">@{profile.username}</p>
+                              )}
+                              {profile.customer_id && (
+                                <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                              {isPrimaryAdmin && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => setViewProfileUser(profile)}
+                                  className="text-muted-foreground hover:text-primary"
+                                  title="View Profile"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}>
+                                <Shield className="h-4 w-4 mr-2" />
+                                Roles
+                              </Button>
+                              {isAdmin && (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setGrantEclipsePlusUser(profile)}
+                                    className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
+                                    title="Grant Eclipse+"
+                                  >
+                                    <Sparkles className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setIpBanDialogUser(profile)}
+                                    className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                                  >
+                                    <Ban className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                              {canDeleteUser(profile) && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => setDeleteConfirmUser(profile)}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3 p-4">
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : filteredProfiles?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                    No customers found
-                  </TableCell>
-                </TableRow>
+                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              ) : paginatedProfiles.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No customers found
+                </div>
               ) : (
-                filteredProfiles?.map((profile) => {
+                paginatedProfiles.map((profile) => {
                   const roles = getUserRoles(profile.user_id);
                   return (
-                    <TableRow key={profile.id}>
-                      <TableCell>
-                        <div className="space-y-1">
+                    <div 
+                      key={profile.id} 
+                      className={`rounded-lg border border-border bg-muted/30 p-4 space-y-3 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`}
+                      onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 space-y-2">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium">{profile.display_name || 'No name'}</p>
+                            <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
                             {roles.length === 0 ? (
                               <Badge variant="secondary" className="text-xs">Customer</Badge>
                             ) : (
                               roles.map(r => getRoleBadge(r.role))
                             )}
                           </div>
-                          {profile.username && (
-                            <p className="text-xs text-muted-foreground">@{profile.username}</p>
-                          )}
                           {profile.customer_id && (
                             <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
                           )}
+                          <p className="text-xs text-muted-foreground">
+                            Joined {new Date(profile.created_at).toLocaleDateString()}
+                          </p>
                         </div>
-                      </TableCell>
-                      <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                           {isPrimaryAdmin && (
                             <Button 
-                              variant="ghost" 
-                              size="sm" 
+                              variant="outline" 
+                              size="icon"
+                              className="h-10 w-10"
                               onClick={() => setViewProfileUser(profile)}
-                              className="text-muted-foreground hover:text-primary"
                               title="View Profile"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}>
-                            <Shield className="h-4 w-4 mr-2" />
-                            Roles
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => setSelectedUser(profile)}
+                          >
+                            <Shield className="h-4 w-4" />
                           </Button>
                           {isAdmin && (
                             <>
                               <Button 
-                                variant="ghost" 
-                                size="sm" 
+                                variant="outline" 
+                                size="icon"
+                                className="h-10 w-10 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
                                 onClick={() => setGrantEclipsePlusUser(profile)}
-                                className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
                                 title="Grant Eclipse+"
                               >
                                 <Sparkles className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
-                                size="sm" 
+                                variant="outline" 
+                                size="icon"
+                                className="h-10 w-10 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
                                 onClick={() => setIpBanDialogUser(profile)}
-                                className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
                               >
                                 <Ban className="h-4 w-4" />
                               </Button>
@@ -524,116 +695,79 @@ export default function AdminUsers() {
                           )}
                           {canDeleteUser(profile) && (
                             <Button 
-                              variant="ghost" 
-                              size="sm" 
+                              variant="outline" 
+                              size="icon"
+                              className="h-10 w-10 text-destructive border-destructive/50 hover:bg-destructive/10"
                               onClick={() => setDeleteConfirmUser(profile)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   );
                 })
               )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-3 pb-4">
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
-          ) : filteredProfiles?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No customers found
             </div>
-          ) : (
-            filteredProfiles?.map((profile) => {
-              const roles = getUserRoles(profile.user_id);
-              return (
-                <div 
-                  key={profile.id} 
-                  className={`rounded-lg border border-border bg-card p-4 space-y-3 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`}
-                  onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium">{profile.display_name || 'Unnamed'}</p>
-                        {roles.length === 0 ? (
-                          <Badge variant="secondary" className="text-xs">Customer</Badge>
-                        ) : (
-                          roles.map(r => getRoleBadge(r.role))
-                        )}
-                      </div>
-                      {profile.customer_id && (
-                        <p className="text-xs font-mono text-primary">Customer ID: {profile.customer_id}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Joined {new Date(profile.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                      {isPrimaryAdmin && (
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="h-10 w-10"
-                          onClick={() => setViewProfileUser(profile)}
-                          title="View Profile"
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t p-4">
+                <p className="text-sm text-muted-foreground hidden sm:block">
+                  Page {currentPage} of {totalPages}
+                </p>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          className="w-8 h-8 p-0"
+                          onClick={() => setCurrentPage(pageNum)}
                         >
-                          <Eye className="h-4 w-4" />
+                          {pageNum}
                         </Button>
-                      )}
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        className="h-10 w-10"
-                        onClick={() => setSelectedUser(profile)}
-                      >
-                        <Shield className="h-4 w-4" />
-                      </Button>
-                      {isAdmin && (
-                        <>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            className="h-10 w-10 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
-                            onClick={() => setGrantEclipsePlusUser(profile)}
-                            title="Grant Eclipse+"
-                          >
-                            <Sparkles className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            className="h-10 w-10 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
-                            onClick={() => setIpBanDialogUser(profile)}
-                          >
-                            <Ban className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                      {canDeleteUser(profile) && (
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="h-10 w-10 text-destructive border-destructive/50 hover:bg-destructive/10"
-                          onClick={() => setDeleteConfirmUser(profile)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="gap-1"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
-              );
-            })
-          )}
-        </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Manage Roles Dialog */}
