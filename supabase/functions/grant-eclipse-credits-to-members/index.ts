@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -53,99 +52,81 @@ serve(async (req) => {
     }
     logStep("Staff verification passed");
 
-    // Get Stripe to find active subscribers
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    // Get ALL active Eclipse+ members from subscriptions table
+    // This includes: Stripe subscribers, admin-granted, and promotion-claimed
+    const { data: subscriptions, error: subError } = await supabaseAdmin
+      .from("subscriptions")
+      .select("user_id, stripe_subscription_id, granted_by, grant_reason")
+      .eq("status", "active");
 
-    // Get all active subscriptions
-    const subscriptions = await stripe.subscriptions.list({
-      status: 'active',
-      limit: 100,
-    });
+    if (subError) {
+      throw new Error(`Failed to fetch subscriptions: ${subError.message}`);
+    }
 
-    logStep("Found active subscriptions", { count: subscriptions.data.length });
+    logStep("Found active Eclipse+ members", { count: subscriptions?.length || 0 });
 
     let grantedCount = 0;
     let alreadyClaimedCount = 0;
-    let notFoundCount = 0;
-    const results: Array<{ email: string; status: string }> = [];
+    let errorCount = 0;
+    const results: Array<{ userId: string; source: string; status: string }> = [];
 
-    for (const subscription of subscriptions.data) {
-      const customerId = subscription.customer as string;
+    for (const subscription of subscriptions || []) {
+      const userId = subscription.user_id;
       
-      // Get customer email
-      let customerEmail: string | null = null;
-      try {
-        const customer = await stripe.customers.retrieve(customerId);
-        if (!customer.deleted) {
-          customerEmail = customer.email;
-        }
-      } catch (e) {
-        logStep("Failed to get customer", { customerId, error: String(e) });
-        continue;
-      }
-
-      if (!customerEmail) {
-        notFoundCount++;
-        continue;
-      }
-
-      // Find user by email
-      const { data: profile } = await supabaseAdmin
-        .from("profiles")
-        .select("user_id")
-        .eq("email", customerEmail)
-        .maybeSingle();
-
-      if (!profile?.user_id) {
-        notFoundCount++;
-        results.push({ email: customerEmail, status: 'user_not_found' });
-        continue;
+      // Determine source of subscription
+      let source = 'unknown';
+      if (subscription.stripe_subscription_id) {
+        source = 'stripe';
+      } else if (subscription.granted_by) {
+        source = 'admin_granted';
+      } else if (subscription.grant_reason?.includes('promotion')) {
+        source = 'promotion';
+      } else {
+        source = 'other';
       }
 
       // Try to grant the bonus
       const { data: success, error } = await supabaseAdmin.rpc('claim_eclipse_plus_credit_bonus', {
-        p_user_id: profile.user_id
+        p_user_id: userId
       });
 
       if (error) {
-        logStep("Error granting bonus", { userId: profile.user_id, error: error.message });
-        results.push({ email: customerEmail, status: 'error' });
+        logStep("Error granting bonus", { userId, error: error.message });
+        results.push({ userId, source, status: 'error' });
+        errorCount++;
         continue;
       }
 
       if (success) {
         grantedCount++;
-        results.push({ email: customerEmail, status: 'granted' });
+        results.push({ userId, source, status: 'granted' });
         
         // Create notification
         await supabaseAdmin
           .from("notifications")
           .insert({
-            user_id: profile.user_id,
+            user_id: userId,
             title: "🎁 Eclipse+ Credit Bonus!",
             message: "You've received £10 in store credit as an Eclipse+ member benefit. Enjoy shopping!",
             type: "general",
           });
           
-        logStep("Granted bonus", { email: customerEmail });
+        logStep("Granted bonus", { userId, source });
       } else {
         alreadyClaimedCount++;
-        results.push({ email: customerEmail, status: 'already_claimed' });
+        results.push({ userId, source, status: 'already_claimed' });
       }
     }
 
-    logStep("Completed", { grantedCount, alreadyClaimedCount, notFoundCount });
+    logStep("Completed", { grantedCount, alreadyClaimedCount, errorCount });
 
     return new Response(JSON.stringify({ 
       success: true,
       summary: {
-        totalSubscriptions: subscriptions.data.length,
+        totalMembers: subscriptions?.length || 0,
         granted: grantedCount,
         alreadyClaimed: alreadyClaimedCount,
-        notFound: notFoundCount,
+        errors: errorCount,
       },
       results,
     }), {
