@@ -25,12 +25,11 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   const [isPulling, setIsPulling] = useState(false);
   const [hasShownRecoveryToast, setHasShownRecoveryToast] = useState(false);
   
-  // Initialize SW update handler - notifications disabled
+  // Initialize SW update handler - notifications disabled, no auto-reload
+  // Auto-reload was causing constant refreshes during development
   const { clearAllCaches, forceUpdate } = useServiceWorkerUpdate({
     showNotifications: false,
-    // Ensure installed PWA actually updates its cached assets (flags, etc.)
-    // without the user needing to manually refresh.
-    autoReloadOnUpdate: true,
+    autoReloadOnUpdate: false,
   });
   
   // Initialize app version check for remote forced updates - notifications disabled
@@ -53,17 +52,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
   }, []);
-
-  // In standalone PWA mode, aggressively check for SW updates on launch.
-  // If a new SW becomes active, useServiceWorkerUpdate will reload once.
-  useEffect(() => {
-    if (!isStandalone) return;
-    // Small delay to avoid racing initial render / SW init.
-    const t = setTimeout(() => {
-      forceUpdate();
-    }, 250);
-    return () => clearTimeout(t);
-  }, [isStandalone, forceUpdate]);
 
   // PERMANENT SAFE AREA FIX: Set html/body background to match the app background.
   // This prevents the "white/grey strip" that appears behind safe-area insets
