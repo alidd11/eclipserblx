@@ -99,18 +99,6 @@ export function StoreStatsBar({
   const yearsActive = memberYear ? currentYear - memberYear : null;
 
   const stats = [
-    {
-      icon: Package,
-      value: productCount,
-      label: 'Products',
-      suffix: '',
-    },
-    {
-      icon: ShoppingCart,
-      value: totalSales,
-      label: 'Sales',
-      suffix: '+',
-    },
     ...(averageRating ? [{
       icon: Star,
       value: averageRating,
