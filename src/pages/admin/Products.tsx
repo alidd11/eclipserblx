@@ -332,39 +332,6 @@ export default function AdminProducts() {
         const { error } = await supabase.from('products').update(payload).eq('id', data.id);
         if (error) throw error;
 
-        // Send Discord webhook for updated active products (will auto-delete old embed)
-        if (payload.is_active) {
-          let categoryName: string | undefined;
-          let categorySlug: string | undefined;
-          if (payload.category_id) {
-            const category = categories?.find(c => c.id === payload.category_id);
-            categoryName = category?.name;
-            categorySlug = category?.slug;
-          }
-
-          console.log('[WEBHOOK] Sending webhook for SINGLE product update:', data.id, payload.name);
-          supabase.functions.invoke('send-product-discord-webhook', {
-            body: {
-              product_id: data.id,
-              product_name: payload.name,
-              product_slug: payload.slug,
-              product_price: payload.price,
-              product_description: payload.description,
-              product_images: payload.images,
-              category_name: categoryName,
-              category_slug: categorySlug,
-              robux_price: payload.robux_price,
-              robux_enabled: payload.robux_enabled,
-              is_resellable: payload.is_resellable,
-            },
-          }).then(result => {
-            if (result.error) {
-              console.error('[WEBHOOK] Failed:', result.error);
-            } else if (result.data?.success) {
-              console.log('[WEBHOOK] Success for:', data.id, result.data);
-            }
-          });
-        }
       } else {
         const { data: newProduct, error } = await supabase.from('products').insert(payload).select().single();
         if (error) throw error;
@@ -392,36 +359,6 @@ export default function AdminProducts() {
               console.error('Failed to notify subscribers:', result.error);
             } else {
               console.log('New product notifications sent:', result.data);
-            }
-          });
-
-          // Get category slug for webhook lookup
-          let categorySlug: string | undefined;
-          if (payload.category_id) {
-            const category = categories?.find(c => c.id === payload.category_id);
-            categorySlug = category?.slug;
-          }
-
-          // Send Discord webhook for new product (forum announcement)
-          supabase.functions.invoke('send-product-discord-webhook', {
-            body: {
-              product_id: newProduct.id,
-              product_name: payload.name,
-              product_slug: payload.slug,
-              product_price: payload.price,
-              product_description: payload.description,
-              product_images: payload.images,
-              category_name: categoryName,
-              category_slug: categorySlug,
-              robux_price: payload.robux_price,
-              robux_enabled: payload.robux_enabled,
-              is_resellable: payload.is_resellable,
-            },
-          }).then(result => {
-            if (result.error) {
-              console.error('Failed to send Discord webhook:', result.error);
-            } else if (result.data?.success) {
-              console.log('Discord product notification sent:', result.data);
             }
           });
         }
