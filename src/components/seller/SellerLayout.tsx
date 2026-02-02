@@ -16,6 +16,8 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
+import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
+import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 
 const SIDEBAR_COLLAPSED_KEY = 'seller-sidebar-collapsed';
 const EDGE_THRESHOLD = 30;
@@ -25,7 +27,8 @@ interface SellerLayoutProps {
   children: ReactNode;
 }
 
-export function SellerLayout({ children }: SellerLayoutProps) {
+function SellerLayoutContent({ children }: SellerLayoutProps) {
+  const searchCommand = useSearchCommand();
   const { user, loading: authLoading } = useAuth();
   const { isSeller: isApprovedSeller, loading: sellerLoading, store } = useSellerStatus();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
@@ -253,6 +256,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <ScrollProgressIndicator />
+      <SearchCommandPalette open={searchCommand.open} onOpenChange={searchCommand.setOpen} />
       <div
         className={cn(
           'flex w-full bg-background overflow-x-hidden relative',
@@ -313,5 +317,14 @@ export function SellerLayout({ children }: SellerLayoutProps) {
       {/* Floating Action Buttons */}
       <FloatingActionButtons />
     </TooltipProvider>
+  );
+}
+
+// Wrapper component that provides the SearchCommandProvider context
+export function SellerLayout(props: SellerLayoutProps) {
+  return (
+    <SearchCommandProvider>
+      <SellerLayoutContent {...props} />
+    </SearchCommandProvider>
   );
 }
