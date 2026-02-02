@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink, Wallet, RefreshCw } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink, Wallet, RefreshCw, Coins } from 'lucide-react';
+import { CreditsAnalyticsTab } from '@/components/admin/income/CreditsAnalyticsTab';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -461,10 +462,14 @@ export default function AdminIncome() {
 
         {/* Income Tabs */}
         <Tabs defaultValue="stripe" className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="stripe" className="gap-2">
               <Wallet className="h-4 w-4" />
               Stripe Balance
+            </TabsTrigger>
+            <TabsTrigger value="credits" className="gap-2">
+              <Coins className="h-4 w-4" />
+              Credits
             </TabsTrigger>
             <TabsTrigger value="gross" className="gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -807,6 +812,11 @@ export default function AdminIncome() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Credits Tab */}
+          <TabsContent value="credits" className="space-y-6">
+            <CreditsAnalyticsTab />
           </TabsContent>
 
           {/* Gross Revenue Tab */}
