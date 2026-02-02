@@ -49,6 +49,8 @@ interface DiscordSettings {
   qotd_discord_role_id: string;
   polls_discord_webhook_url: string;
   polls_discord_role_id: string;
+  product_drops_discord_webhook_url: string;
+  early_product_drops_discord_webhook_url: string;
 }
 
 
@@ -87,6 +89,8 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   qotd_discord_role_id: '',
   polls_discord_webhook_url: '',
   polls_discord_role_id: '',
+  product_drops_discord_webhook_url: '',
+  early_product_drops_discord_webhook_url: '',
 };
 
 
@@ -1043,6 +1047,14 @@ export default function DiscordSettings() {
                 <BadgeDollarSign className="h-4 w-4 hidden sm:block" />
                 Ads
               </TabsTrigger>
+              <TabsTrigger value="product-drops" className="gap-2">
+                <Package className="h-4 w-4 hidden sm:block" />
+                Drops
+              </TabsTrigger>
+              <TabsTrigger value="early-drops" className="gap-2">
+                <Shield className="h-4 w-4 hidden sm:block" />
+                Early Drops
+              </TabsTrigger>
               <TabsTrigger value="community" className="gap-2">
                 <MessageSquare className="h-4 w-4 hidden sm:block" />
                 Community
@@ -1985,6 +1997,112 @@ export default function DiscordSettings() {
                     and set up the webhook there to keep user advertisements organized and separate from 
                     official announcements.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Product Drops Webhook Tab */}
+          <TabsContent value="product-drops">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-cyan-400" />
+                  <CardTitle>#product-drops</CardTitle>
+                </div>
+                <CardDescription>
+                  Announce new product releases to your community
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="productDropsWebhook">Webhook URL</Label>
+                  <Input
+                    id="productDropsWebhook"
+                    value={formData.product_drops_discord_webhook_url}
+                    onChange={(e) => handleChange('product_drops_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for product drop announcements in your Discord server
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent automatically:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>New product release announcements</li>
+                    <li>Product images and descriptions</li>
+                    <li>Pricing and availability</li>
+                    <li>Direct links to purchase</li>
+                  </ul>
+                </div>
+
+                <div className="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Package className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-cyan-400">Product Drop Notifications</p>
+                      <p className="text-sm text-muted-foreground">
+                        When products are published or scheduled releases go live, 
+                        notifications will be sent to this channel.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Early Product Drops Webhook Tab */}
+          <TabsContent value="early-drops">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-violet-400" />
+                  <CardTitle>#early-product-drops</CardTitle>
+                </div>
+                <CardDescription>
+                  Give VIP members early access to product announcements
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="earlyProductDropsWebhook">Webhook URL</Label>
+                  <Input
+                    id="earlyProductDropsWebhook"
+                    value={formData.early_product_drops_discord_webhook_url}
+                    onChange={(e) => handleChange('early_product_drops_discord_webhook_url', e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Create a dedicated webhook for early product announcements (VIP/Eclipse+ members)
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-medium">What gets sent automatically:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Early access product announcements</li>
+                    <li>Exclusive previews before public release</li>
+                    <li>VIP-only product drops</li>
+                    <li>Priority purchase links</li>
+                  </ul>
+                </div>
+
+                <div className="bg-violet-500/10 border border-violet-500/30 p-4 rounded-lg">
+                  <div className="flex gap-2">
+                    <Shield className="h-4 w-4 text-violet-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-violet-400">Early Access Channel</p>
+                      <p className="text-sm text-muted-foreground">
+                        This channel is for VIP members and Eclipse+ subscribers who get 
+                        early access to product drops before the public announcement.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
