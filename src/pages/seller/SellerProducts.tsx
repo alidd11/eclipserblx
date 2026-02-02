@@ -62,11 +62,17 @@ import {
   Loader2,
   ImagePlus,
   Calendar,
-  Save
+  Save,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { hapticTap } from '@/lib/haptics';
+import { ECLIPSE_STORE_ID } from '@/lib/constants';
+
+// Helper to check if product is managed by Eclipse (admin-only)
+const isEclipseProduct = (product: any) => product.store_id === ECLIPSE_STORE_ID && !product.is_seller_product;
 
 interface ProductForm {
   id?: string;
@@ -243,6 +249,12 @@ export default function SellerProducts() {
 
   // Open dialog for editing
   const openEdit = (product: any) => {
+    // Prevent editing Eclipse Store products
+    if (isEclipseProduct(product)) {
+      toast.info('This product is managed by Eclipse admins and cannot be edited here.');
+      return;
+    }
+    
     hapticTap();
     const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
     setForm({
@@ -483,43 +495,58 @@ export default function SellerProducts() {
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product: any) => (
-              <Card 
-                key={product.id}
-                className="overflow-hidden cursor-pointer hover:border-primary/50 transition-colors active:scale-[0.98]"
-                onClick={() => openEdit(product)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    {product.images?.[0] ? (
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="h-14 w-14 rounded-lg object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                        <Package className="h-6 w-6 text-muted-foreground" />
+            filteredProducts.map((product: any) => {
+              const isLocked = isEclipseProduct(product);
+              return (
+                <Card 
+                  key={product.id}
+                  className={`overflow-hidden transition-colors ${isLocked ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer hover:border-primary/50 active:scale-[0.98]'}`}
+                  onClick={() => !isLocked && openEdit(product)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {product.images?.[0] ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="h-14 w-14 rounded-lg object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">{product.name}</p>
+                          {isLocked && (
+                            <Badge variant="secondary" className="gap-1 text-xs flex-shrink-0">
+                              <ShieldCheck className="h-3 w-3" />
+                              Eclipse
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {(product.categories as any)?.name || 'Uncategorized'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="font-semibold text-sm">{formatCurrency(product.price)}</span>
+                          {getModerationBadge(product.moderation_status)}
+                          {!product.is_active && (
+                            <Badge variant="outline" className="text-xs">Inactive</Badge>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(product.categories as any)?.name || 'Uncategorized'}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <span className="font-semibold text-sm">{formatCurrency(product.price)}</span>
-                        {getModerationBadge(product.moderation_status)}
-                        {!product.is_active && (
-                          <Badge variant="outline" className="text-xs">Inactive</Badge>
-                        )}
-                      </div>
+                      {isLocked ? (
+                        <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      ) : (
+                        <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      )}
                     </div>
-                    <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           ) : (
             <Card>
               <CardContent className="text-center py-12">
@@ -567,73 +594,93 @@ export default function SellerProducts() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product: any) => (
-                      <TableRow 
-                        key={product.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => openEdit(product)}
-                      >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={selectedProductIds.includes(product.id)}
-                            onCheckedChange={() => {
-                              if (selectedProductIds.includes(product.id)) {
-                                setSelectedProductIds(selectedProductIds.filter(id => id !== product.id));
-                              } else {
-                                setSelectedProductIds([...selectedProductIds, product.id]);
-                              }
-                            }}
-                            aria-label="Select product"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            {product.images?.[0] ? (
-                              <img
-                                src={product.images[0]}
-                                alt={product.name}
-                                className="h-10 w-10 rounded object-cover"
-                              />
-                            ) : (
-                              <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                                <Package className="h-5 w-5 text-muted-foreground" />
+                    {filteredProducts.map((product: any) => {
+                      const isLocked = isEclipseProduct(product);
+                      return (
+                        <TableRow 
+                          key={product.id}
+                          className={isLocked ? 'opacity-75' : 'cursor-pointer hover:bg-muted/50'}
+                          onClick={() => !isLocked && openEdit(product)}
+                        >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedProductIds.includes(product.id)}
+                              onCheckedChange={() => {
+                                if (selectedProductIds.includes(product.id)) {
+                                  setSelectedProductIds(selectedProductIds.filter(id => id !== product.id));
+                                } else {
+                                  setSelectedProductIds([...selectedProductIds, product.id]);
+                                }
+                              }}
+                              aria-label="Select product"
+                              disabled={isLocked}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              {product.images?.[0] ? (
+                                <img
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  className="h-10 w-10 rounded object-cover"
+                                />
+                              ) : (
+                                <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                                  <Package className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{product.name}</p>
+                                  {isLocked && (
+                                    <Badge variant="secondary" className="gap-1 text-xs">
+                                      <ShieldCheck className="h-3 w-3" />
+                                      Eclipse
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(product.created_at).toLocaleDateString()}
+                                </p>
                               </div>
-                            )}
-                            <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(product.created_at).toLocaleDateString()}
-                              </p>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {(product.categories as any)?.name || 'Uncategorized'}
-                        </TableCell>
-                        <TableCell>{formatCurrency(product.price)}</TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            {getModerationBadge(product.moderation_status)}
-                            {!product.is_active && (
-                              <Badge variant="outline" className="block w-fit">Inactive</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {(product.categories as any)?.name || 'Uncategorized'}
+                          </TableCell>
+                          <TableCell>{formatCurrency(product.price)}</TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {getModerationBadge(product.moderation_status)}
+                              {!product.is_active && (
+                                <Badge variant="outline" className="block w-fit">Inactive</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{product.download_count || 0}</TableCell>
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                            {isLocked ? (
+                              <Button variant="ghost" size="icon" disabled title="Managed by Eclipse admins">
+                                <Lock className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            ) : (
+                              <>
+                                <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => setDeleteProductId(product.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </>
                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{product.download_count || 0}</TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => setDeleteProductId(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

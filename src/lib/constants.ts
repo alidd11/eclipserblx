@@ -3,6 +3,10 @@ export const SITE_DESCRIPTION = "Premium Roblox assets for your roleplay servers
 export const DISCORD_URL = "https://discord.gg/EmQnXwv6VZ";
 export const ROBLOX_GAME_URL = "https://www.roblox.com/games/YOUR_GAME_ID";
 
+// Eclipse Store - the main marketplace store managed by admins only
+// Products linked to this store are READ-ONLY in the seller dashboard
+export const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
+
 export const CATEGORIES = [
   { name: "Vehicle Liveries", slug: "vehicle-liveries", icon: "Car" },
   { name: "Scripts & Systems", slug: "scripts-systems", icon: "Code" },
