@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
-  Sparkles, Download, PanelLeftClose, PanelLeft, Heart, Wallet,
+  Sparkles, Download, Heart, Wallet, LogOut, ChevronLeft, ChevronRight,
   MessageSquareText, Megaphone, FileQuestion
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
@@ -662,70 +662,123 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-card flex flex-col transition-all duration-300 shrink-0",
+        "bg-card text-foreground flex flex-col transition-all duration-300 shrink-0",
         isMobileDrawer 
-          ? "h-[100dvh] w-64 overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" 
-          : "h-[100dvh] sticky top-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
+          ? "h-full w-full border-0 max-h-[100dvh]" 
+          : "h-screen sticky top-0 border-r border-border",
         !isMobileDrawer && (isCollapsed ? "w-14" : "w-52"),
         className
       )}
       data-gesture-exempt="true"
     >
-      {/* Header spacer with collapse toggle - only show spacer on desktop */}
-      {!isMobileDrawer && (
-        <div className="h-14 sm:h-16 shrink-0 flex items-end px-2 pb-1.5">
+      {/* Header */}
+      <div className="p-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-border">
+        {!isCollapsed && (
+          <>
+            <h1 className="font-display font-bold text-xl text-primary truncate">
+              Eclipse
+            </h1>
+            <p className="text-xs text-muted-foreground">Marketplace</p>
+          </>
+        )}
+        {isCollapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "w-full h-8 text-[hsl(var(--sidebar-foreground)/0.6)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]",
-                  isCollapsed ? "justify-center px-0" : "justify-between"
-                )}
-                onClick={() => {
-                  hapticTap();
-                  onToggle();
-                }}
-              >
-                {!isCollapsed && <span className="text-xs">Collapse</span>}
-                {isCollapsed ? (
-                  <PanelLeft className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
-                ) : (
-                  <PanelLeftClose className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
-                )}
-              </Button>
+              <div className="flex items-center justify-center">
+                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              </div>
             </TooltipTrigger>
-            <TooltipContent side="right">
-              {isCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
-            </TooltipContent>
+            <TooltipContent side="right">Eclipse Marketplace</TooltipContent>
           </Tooltip>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+        <div className="space-y-1">
+          {navGroups.map((group) => (
+            <div key={group.id}>
+              {renderGroup(group)}
+              {/* Insert Recent Stores after Quick Access */}
+              {group.id === 'quick-access' && recentStores.length > 0 && (
+                <RecentStoresSection
+                  stores={recentStores}
+                  collapsed={isCollapsed}
+                  onNavigate={onNavigate}
+                />
+              )}
+              {/* Insert Browse section (All Products + Categories) after Discover group */}
+              {group.id === 'discover' && renderBrowseSection()}
+            </div>
+          ))}
+        </div>
+      </nav>
+
+      {/* Footer Links */}
+      {user && (
+        <div className="border-t border-border p-2 space-y-1">
+          {/* Sign Out */}
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center text-muted-foreground hover:text-destructive hover:bg-muted"
+                  onClick={() => {
+                    hapticTap();
+                    setShowSignOutDialog(true);
+                  }}
+                >
+                  <LogOut className={ICON_SIZE_SMALL} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Sign Out</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg px-3 py-2.5"
+              onClick={() => {
+                hapticTap();
+                setShowSignOutDialog(true);
+              }}
+            >
+              <LogOut className={cn(ICON_SIZE_SMALL, "shrink-0")} />
+              <span className="ml-3">Sign Out</span>
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Mobile drawer top spacer */}
-      {isMobileDrawer && <div className="h-2 shrink-0" />}
-
-      {/* Navigation */}
-      <nav className="flex-1 px-2 pb-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map((group) => (
-          <div key={group.id}>
-            {renderGroup(group)}
-            {/* Insert Recent Stores after Quick Access */}
-            {group.id === 'quick-access' && recentStores.length > 0 && (
-              <RecentStoresSection
-                stores={recentStores}
-                collapsed={isCollapsed}
-                onNavigate={onNavigate}
-              />
+      {/* Desktop-only Collapse Toggle */}
+      {!isMobileDrawer && (
+        <div className="p-2 border-t border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "w-full text-muted-foreground hover:text-foreground hover:bg-muted",
+              isCollapsed ? "justify-center px-2" : "justify-start"
             )}
-            {/* Insert Browse section (All Products + Categories) after Discover group */}
-            {group.id === 'discover' && renderBrowseSection()}
-          </div>
-        ))}
-      </nav>
+            onClick={() => {
+              hapticTap();
+              onToggle();
+            }}
+          >
+            {isCollapsed ? (
+              <ChevronRight className={ICON_SIZE_SMALL} />
+            ) : (
+              <>
+                <ChevronLeft className={cn(ICON_SIZE_SMALL, "mr-2")} />
+                Collapse
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
-      {/* Sign Out Dialog */}
       <SignOutConfirmDialog
         open={showSignOutDialog}
         onOpenChange={setShowSignOutDialog}
