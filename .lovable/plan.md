@@ -1,102 +1,79 @@
 
+# Plan: Generate Vino Store Logo and Banner
 
 ## Overview
+Create visually appealing branding assets for the Vino Store using AI image generation, then upload them to the store's branding storage.
 
-Adding a second admin-controlled store called "Vino" alongside the existing "Eclipse Store". Both stores will be managed from the admin dashboard, and all payments will continue to be received by Eclipse (no commission splitting). The key change is replacing the current on/off toggle with a store selector dropdown.
+## Store Context
+- **Name**: Vino
+- **Theme**: Premium Roblox assets marketplace
+- **Accent Color**: #8b5cf6 (purple/violet)
+- **Vibe**: Premium, professional, modern gaming aesthetic
 
-## What This Achieves
+## Design Direction
 
-- Admins can choose which store (Eclipse Store or Vino) a product appears under
-- Each store has its own branding (logo, name, badges) displayed on product cards
-- Products from both stores remain read-only in the seller dashboard
-- All revenue goes to Eclipse - no changes to payment flow
+### Logo (200x200px)
+A clean, modern logo featuring:
+- A stylized "V" lettermark or wine glass motif (playing on "Vino" = wine)
+- Purple/violet gradient tones matching the accent color (#8b5cf6)
+- Minimalist, premium aesthetic suitable for dark and light backgrounds
+- Gaming-inspired but sophisticated feel
 
-## Implementation Steps
+### Banner (1200x400px)
+A wide banner featuring:
+- Abstract geometric or fluid gradient background in purple/violet tones
+- Subtle tech/gaming elements (code patterns, pixel accents, or grid lines)
+- Premium, luxurious feel with depth and dimension
+- No text (clean design that works with overlaid store name)
 
-### Step 1: Create the Vino Store in the Database
+## Technical Implementation
 
-Insert a new store record with the same owner as Eclipse Store, marked as verified and trusted:
+### Step 1: Create Edge Function for AI Image Generation
+Create a new edge function `generate-store-branding` that:
+- Uses the Lovable AI gateway with `google/gemini-2.5-flash-image` model
+- Generates images based on specific prompts for logo and banner
+- Returns the generated images as base64
 
-```text
-+------------------+----------------------------------------+
-| Field            | Value                                  |
-+------------------+----------------------------------------+
-| name             | Vino                                   |
-| slug             | vino                                   |
-| owner_id         | (same as Eclipse Store owner)          |
-| is_verified      | true                                   |
-| is_trusted       | true                                   |
-| is_active        | true                                   |
-| payout_method    | stripe (required field)                |
-+------------------+----------------------------------------+
-```
+### Step 2: Create Admin UI Component
+Build a simple admin action button that:
+- Calls the edge function to generate images
+- Converts base64 to File objects
+- Uploads to `store-branding` storage bucket
+- Updates the store record with new URLs
 
-### Step 2: Add Vino Store Constant
+### Step 3: Update Store Record
+After successful upload:
+- Update the `stores` table with new `logo_url` and `banner_url`
 
-Update `src/lib/constants.ts` to add:
-- `VINO_STORE_ID` constant with the new store's UUID
-- `ADMIN_MANAGED_STORES` array containing both store IDs for easy checking
+## Files to Create/Modify
 
-### Step 3: Update Admin Products Form
-
-Modify `src/pages/admin/Products.tsx`:
-
-**Form State Changes:**
-- Replace `sync_to_marketplace: boolean` with `marketplace_store: string | null`
-- Store ID values: `null` (no store), Eclipse Store ID, or Vino Store ID
-
-**UI Changes:**
-- Replace the simple toggle with a dropdown selector:
-  - "None" - Product not linked to any marketplace store
-  - "Eclipse Store" - Links to Eclipse Store
-  - "Vino" - Links to Vino store
-- Update the save logic to use the selected store ID
-
-### Step 4: Update Seller Dashboard Protection
-
-Modify `src/pages/seller/SellerProducts.tsx`:
-- Update `isEclipseProduct` function to check against `ADMIN_MANAGED_STORES` array
-- This ensures Vino products are also protected from seller edits
-
-### Step 5: Product Display (No Changes Needed)
-
-The ProductCard already joins to the `stores` table and displays:
-- Store name
-- Store logo  
-- Verified/Trusted badges
-
-This will automatically work for Vino products once they're linked.
-
----
+| File | Action | Purpose |
+|------|--------|---------|
+| `supabase/functions/generate-store-branding/index.ts` | Create | Edge function for AI image generation |
+| `src/components/admin/GenerateStoreBranding.tsx` | Create | Admin UI to trigger generation |
+| `src/pages/admin/StoresAdmin.tsx` | Modify | Add generate branding button for admin stores |
 
 ## Technical Details
 
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/lib/constants.ts` | Add `VINO_STORE_ID` and `ADMIN_MANAGED_STORES` |
-| `src/pages/admin/Products.tsx` | Replace toggle with store selector dropdown |
-| `src/pages/seller/SellerProducts.tsx` | Update admin-managed store check |
-
-### Database Migration
-
-One INSERT statement to create the Vino store with required fields.
-
-### Form Field Mapping
-
+### Edge Function Structure
 ```text
-Current:
-  sync_to_marketplace: true  → store_id = ECLIPSE_STORE_ID
-  sync_to_marketplace: false → store_id = null
-
-New:
-  marketplace_store: "eclipse" → store_id = ECLIPSE_STORE_ID
-  marketplace_store: "vino"    → store_id = VINO_STORE_ID  
-  marketplace_store: null      → store_id = null
+generate-store-branding/
+  index.ts - Main handler calling Lovable AI gateway
 ```
 
-### Backward Compatibility
+### AI Prompts
+**Logo prompt**: "Minimalist premium logo design, stylized letter V with wine glass silhouette integration, purple violet gradient (#8b5cf6), modern gaming aesthetic, clean vector style, dark background, professional brand mark, 200x200 square format"
 
-Existing products with `store_id = ECLIPSE_STORE_ID` will continue to work. The edit form will pre-select "Eclipse Store" when loading these products.
+**Banner prompt**: "Wide banner design 1200x400, abstract flowing purple violet gradient background (#8b5cf6), subtle geometric patterns, premium luxurious feel, modern tech aesthetic, no text, dark theme, suitable for gaming marketplace header"
 
+### Storage Flow
+1. Generate image via AI
+2. Convert base64 to Blob
+3. Upload to `store-branding/{store_id}/logo.png` and `banner.png`
+4. Get public URLs
+5. Update store record
+
+## Security Considerations
+- Edge function should verify admin authentication
+- Rate limit generation requests
+- Validate store ID exists before processing
