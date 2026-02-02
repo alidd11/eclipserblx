@@ -29,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ProductWebhookTemplateEditor } from '@/components/admin/ProductWebhookTemplateEditor';
 import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
 
 interface DiscordSettings {
@@ -52,18 +51,6 @@ interface DiscordSettings {
   polls_discord_role_id: string;
 }
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-interface CategoryWebhook {
-  category_id: string;
-  category_name: string;
-  category_slug: string;
-  webhook_url: string;
-}
 
 interface BoostTrial {
   id: string;
@@ -172,8 +159,6 @@ export default function DiscordSettings() {
   } | null>(null);
 
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<string | null>(null);
-  const [isResendingAllProducts, setIsResendingAllProducts] = useState(false);
-  const [resendProgress, setResendProgress] = useState<{ current: number; total: number; success: number; failed: number } | null>(null);
 
 
   // Fetch boost rewards settings
@@ -288,66 +273,6 @@ export default function DiscordSettings() {
       return { ...DEFAULT_SETTINGS, ...settingsMap };
     },
   });
-
-  // Fetch categories for product webhooks
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug')
-        .order('display_order');
-      if (error) throw error;
-      return data as Category[];
-    },
-  });
-
-  // Fetch category webhooks
-  const { data: categoryWebhooks, refetch: refetchCategoryWebhooks } = useQuery({
-    queryKey: ['category-webhooks'],
-    queryFn: async () => {
-      if (!categories?.length) return [];
-      
-      const webhookKeys = categories.map(c => `product_webhook_${c.slug}`);
-      const { data, error } = await supabase
-        .from('settings')
-        .select('key, value')
-        .in('key', webhookKeys);
-      
-      if (error) throw error;
-      
-      return categories.map(cat => ({
-        category_id: cat.id,
-        category_name: cat.name,
-        category_slug: cat.slug,
-        webhook_url: (() => {
-          const setting = data?.find(s => s.key === `product_webhook_${cat.slug}`);
-          if (!setting?.value) return '';
-          const val = typeof setting.value === 'string' 
-            ? setting.value.replace(/^"|"$/g, '') 
-            : String(setting.value);
-          return val;
-        })(),
-      })) as CategoryWebhook[];
-    },
-    enabled: !!categories?.length,
-  });
-
-  // State for category webhooks
-  const [categoryWebhookForm, setCategoryWebhookForm] = useState<Record<string, string>>({});
-  const [testingCategory, setTestingCategory] = useState<string | null>(null);
-  const [categoryTestResults, setCategoryTestResults] = useState<Record<string, { success: boolean; message: string; details?: string }>>({});
-
-  // Initialize category webhook form when data loads
-  useEffect(() => {
-    if (categoryWebhooks) {
-      const formData: Record<string, string> = {};
-      categoryWebhooks.forEach(cw => {
-        formData[cw.category_slug] = cw.webhook_url;
-      });
-      setCategoryWebhookForm(formData);
-    }
-  }, [categoryWebhooks]);
 
   useEffect(() => {
     if (settings) {
@@ -811,219 +736,6 @@ export default function DiscordSettings() {
     }
   };
 
-  const handleTestCategoryWebhook = async (categorySlug: string, categoryName: string) => {
-    if (!user?.id) {
-      toast.error('You must be logged in');
-      return;
-    }
-    
-    const webhookUrl = categoryWebhookForm[categorySlug];
-    if (!webhookUrl) {
-      toast.error(`Please enter a webhook URL for ${categoryName} first`);
-      return;
-    }
-    
-    setTestingCategory(categorySlug);
-    setCategoryTestResults(prev => ({ ...prev, [categorySlug]: undefined as any }));
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-product-discord-webhook', {
-        body: {
-          product_id: 'test-product-id',
-          product_name: `Test ${categoryName} Product`,
-          product_slug: 'test-product',
-          product_price: 9.99,
-          product_description: `This is a test product notification for the ${categoryName} category. The webhook is working correctly!`,
-          product_images: [],
-          category_name: categoryName,
-          category_slug: categorySlug,
-          robux_price: 1000,
-          robux_enabled: true,
-          is_resellable: false,
-        },
-      });
-      
-      if (error) {
-        setCategoryTestResults(prev => ({
-          ...prev,
-          [categorySlug]: {
-            success: false,
-            message: 'Function invocation failed',
-            details: error.message,
-          },
-        }));
-        toast.error(`${categoryName} webhook test failed`);
-      } else if (data?.skipped) {
-        setCategoryTestResults(prev => ({
-          ...prev,
-          [categorySlug]: {
-            success: false,
-            message: 'Webhook skipped',
-            details: data.message || 'No webhook URL configured',
-          },
-        }));
-        toast.warning(`${categoryName} webhook skipped - check configuration`);
-      } else if (data?.success) {
-        setCategoryTestResults(prev => ({
-          ...prev,
-          [categorySlug]: {
-            success: true,
-            message: 'Test notification sent!',
-            details: 'Check your Discord channel',
-          },
-        }));
-        toast.success(`${categoryName} webhook test sent successfully!`);
-      } else {
-        setCategoryTestResults(prev => ({
-          ...prev,
-          [categorySlug]: {
-            success: false,
-            message: data?.error || 'Unknown error',
-            details: data?.details,
-          },
-        }));
-        toast.error(`${categoryName} webhook test failed`);
-      }
-    } catch (err: any) {
-      console.error('Category webhook test error:', err);
-      setCategoryTestResults(prev => ({
-        ...prev,
-        [categorySlug]: {
-          success: false,
-          message: 'Request failed',
-          details: err.message,
-        },
-      }));
-      toast.error(`Failed to test ${categoryName} webhook`);
-    } finally {
-      setTestingCategory(null);
-    }
-  };
-
-  // Save category webhooks
-  const saveCategoryWebhooksMutation = useMutation({
-    mutationFn: async (webhooks: Record<string, string>) => {
-      for (const [slug, url] of Object.entries(webhooks)) {
-        const key = `product_webhook_${slug}`;
-        const { data: existing } = await supabase
-          .from('settings')
-          .select('id')
-          .eq('key', key)
-          .maybeSingle();
-
-        if (existing) {
-          const { error } = await supabase
-            .from('settings')
-            .update({ value: JSON.stringify(url) })
-            .eq('key', key);
-          if (error) throw error;
-        } else if (url) {
-          const { error } = await supabase
-            .from('settings')
-            .insert([{ key, value: JSON.stringify(url) }]);
-          if (error) throw error;
-        }
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['category-webhooks'] });
-      toast.success('Product webhook settings saved');
-    },
-    onError: (error) => {
-      console.error('Failed to save category webhooks:', error);
-      toast.error('Failed to save product webhook settings');
-    },
-  });
-
-  const handleSaveCategoryWebhooks = () => {
-    saveCategoryWebhooksMutation.mutate(categoryWebhookForm);
-  };
-
-  // Resend all product webhooks
-  const handleResendAllProductWebhooks = async () => {
-    setIsResendingAllProducts(true);
-    setResendProgress(null);
-
-    try {
-      // Fetch all active products with their category info
-      const { data: products, error } = await supabase
-        .from('products')
-        .select('id, name, slug, price, description, images, robux_price, robux_enabled, is_resellable, category_id, categories(name, slug)')
-        .eq('is_active', true);
-
-      if (error) {
-        throw error;
-      }
-
-      if (!products?.length) {
-        toast.error('No active products found');
-        setIsResendingAllProducts(false);
-        return;
-      }
-
-      setResendProgress({ current: 0, total: products.length, success: 0, failed: 0 });
-
-      let successCount = 0;
-      let failedCount = 0;
-
-      for (let i = 0; i < products.length; i++) {
-        const product = products[i];
-        const category = product.categories as { name: string; slug: string } | null;
-
-        try {
-          const { error: webhookError } = await supabase.functions.invoke('send-product-discord-webhook', {
-            body: {
-              product_id: product.id,
-              product_name: product.name,
-              product_slug: product.slug,
-              product_price: product.price,
-              product_description: product.description,
-              product_images: product.images,
-              category_name: category?.name,
-              category_slug: category?.slug,
-              robux_price: product.robux_price,
-              robux_enabled: product.robux_enabled,
-              is_resellable: product.is_resellable,
-            },
-          });
-
-          if (webhookError) {
-            console.error(`Webhook failed for ${product.name}:`, webhookError);
-            failedCount++;
-          } else {
-            successCount++;
-          }
-        } catch (err) {
-          console.error(`Webhook error for ${product.name}:`, err);
-          failedCount++;
-        }
-
-        setResendProgress({
-          current: i + 1,
-          total: products.length,
-          success: successCount,
-          failed: failedCount,
-        });
-
-        // Delay to avoid Discord API rate limiting (502 errors)
-        if (i < products.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1500));
-        }
-      }
-
-      if (failedCount === 0) {
-        toast.success(`All ${successCount} product webhooks sent successfully!`);
-      } else {
-        toast.warning(`Sent ${successCount} webhooks, ${failedCount} failed`);
-      }
-    } catch (err: any) {
-      console.error('Failed to resend product webhooks:', err);
-      toast.error('Failed to resend product webhooks: ' + err.message);
-    } finally {
-      setIsResendingAllProducts(false);
-    }
-  };
-
   const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus' | 'marketplace') => {
     if (!user?.id) {
       toast.error('You must be logged in');
@@ -1247,12 +959,6 @@ export default function DiscordSettings() {
                       Eclipse+
                     </div>
                   </SelectItem>
-                  <SelectItem value="products">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4" />
-                      Products
-                    </div>
-                  </SelectItem>
                   <SelectItem value="marketplace">
                     <div className="flex items-center gap-2">
                       <Megaphone className="h-4 w-4" />
@@ -1324,10 +1030,6 @@ export default function DiscordSettings() {
               <TabsTrigger value="eclipse-plus" className="gap-2">
                 <Sparkles className="h-4 w-4 hidden sm:block" />
                 Eclipse+
-              </TabsTrigger>
-              <TabsTrigger value="products" className="gap-2">
-                <Package className="h-4 w-4 hidden sm:block" />
-                Products
               </TabsTrigger>
               <TabsTrigger value="marketplace" className="gap-2">
                 <Megaphone className="h-4 w-4 hidden sm:block" />
@@ -2045,180 +1747,6 @@ export default function DiscordSettings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Products Forum Webhook Tab */}
-          <TabsContent value="products">
-            <div className="space-y-6">
-              {/* Sub-tabs for Products section */}
-              <Tabs defaultValue="webhooks" className="space-y-4">
-                <TabsList className="w-full sm:w-auto">
-                  <TabsTrigger value="webhooks" className="gap-2">
-                    <Webhook className="h-4 w-4" />
-                    Category Webhooks
-                  </TabsTrigger>
-                  <TabsTrigger value="template" className="gap-2">
-                    <Palette className="h-4 w-4" />
-                    Embed Template
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Category Webhooks Sub-tab */}
-                <TabsContent value="webhooks">
-                  <Card className="bg-card border-border">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <Package className="h-5 w-5 text-primary" />
-                        <CardTitle>Category Product Webhooks</CardTitle>
-                      </div>
-                      <CardDescription>
-                        Configure a separate Discord forum webhook for each product category
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
-                        <div className="flex gap-2">
-                          <Package className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium text-primary">Automatic Category Routing</p>
-                            <p className="text-sm text-muted-foreground">
-                              When you create a new product, it will automatically be posted to the Discord forum 
-                              channel for its category. If no webhook is configured for a category, the notification is skipped.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        {categories?.map((category) => (
-                          <div key={category.id} className="border border-border rounded-lg p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary">{category.name}</Badge>
-                                <span className="text-xs text-muted-foreground font-mono">
-                                  product_webhook_{category.slug}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                              <Input
-                                value={categoryWebhookForm[category.slug] || ''}
-                                onChange={(e) => setCategoryWebhookForm(prev => ({
-                                  ...prev,
-                                  [category.slug]: e.target.value,
-                                }))}
-                                placeholder="https://discord.com/api/webhooks/..."
-                                className="bg-background flex-1"
-                              />
-                              <Button
-                                onClick={() => handleTestCategoryWebhook(category.slug, category.name)}
-                                variant="outline"
-                                size="sm"
-                                disabled={testingCategory === category.slug || !categoryWebhookForm[category.slug]}
-                              >
-                                {testingCategory === category.slug ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Send className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                            
-                            {categoryTestResults[category.slug] && (
-                              <div className={`text-xs p-2 rounded ${
-                                categoryTestResults[category.slug].success 
-                                  ? 'bg-green-500/10 text-green-500' 
-                                  : 'bg-destructive/10 text-destructive'
-                              }`}>
-                                <div className="flex items-center gap-1">
-                                  {categoryTestResults[category.slug].success ? (
-                                    <CheckCircle2 className="h-3 w-3" />
-                                  ) : (
-                                    <XCircle className="h-3 w-3" />
-                                  )}
-                                  <span>{categoryTestResults[category.slug].message}</span>
-                                </div>
-                                {categoryTestResults[category.slug].details && (
-                                  <p className="mt-1 opacity-75">{categoryTestResults[category.slug].details}</p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        
-                        {!categories?.length && (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p>No categories found. Create categories first to configure webhooks.</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                          onClick={handleSaveCategoryWebhooks}
-                          className="flex-1"
-                          disabled={saveCategoryWebhooksMutation.isPending}
-                        >
-                          {saveCategoryWebhooksMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                          Save Product Webhooks
-                        </Button>
-                        <Button
-                          onClick={handleResendAllProductWebhooks}
-                          variant="secondary"
-                          disabled={isResendingAllProducts}
-                          className="gap-2"
-                        >
-                          {isResendingAllProducts ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                          Resend All Product Webhooks
-                        </Button>
-                      </div>
-
-                      {resendProgress && (
-                        <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>Progress: {resendProgress.current}/{resendProgress.total}</span>
-                            <span className="text-muted-foreground">
-                              <span className="text-green-500">{resendProgress.success} sent</span>
-                              {resendProgress.failed > 0 && (
-                                <span className="text-destructive ml-2">{resendProgress.failed} failed</span>
-                              )}
-                            </span>
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${(resendProgress.current / resendProgress.total) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                        <p className="text-sm font-medium">What gets sent automatically:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                          <li>Product name and description</li>
-                          <li>Category-specific disclaimer</li>
-                          <li>Purchase locations (Robux, GBP, Eclipse+ price)</li>
-                          <li>Up to 4 product images</li>
-                          <li>Direct link to product page</li>
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Template Editor Sub-tab */}
-                <TabsContent value="template">
-                  <ProductWebhookTemplateEditor />
-                </TabsContent>
-              </Tabs>
-            </div>
           </TabsContent>
 
           {/* Marketplace Marketing Tab */}

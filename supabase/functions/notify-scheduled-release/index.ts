@@ -143,43 +143,7 @@ serve(async (req) => {
 
       console.log(`[notify-scheduled-release] Activated product: ${product.name}`);
 
-      // Step 2: Call send-product-discord-webhook for category-specific Discord post
-      try {
-        const webhookResponse = await fetch(`${supabaseUrl}/functions/v1/send-product-discord-webhook`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            product_id: product.id,
-            product_name: product.name,
-            product_slug: product.slug,
-            product_price: product.price,
-            product_description: product.description,
-            product_images: product.images,
-            category_id: product.category_id,
-            category_name: product.categories?.name,
-            store_id: product.store_id,
-            store_name: product.stores?.name,
-            robux_enabled: product.robux_enabled,
-            robux_price: product.robux_price,
-            is_resellable: product.is_resellable,
-            is_scheduled_release: true,
-          }),
-        });
-
-        const webhookResult = await webhookResponse.json();
-        
-        if (webhookResponse.ok && webhookResult.success) {
-          console.log(`[notify-scheduled-release] Discord webhook sent for ${product.name}:`, webhookResult);
-          discordWebhooksSent++;
-        } else {
-          console.error(`[notify-scheduled-release] Discord webhook failed for ${product.name}:`, webhookResult);
-        }
-      } catch (webhookError) {
-        console.error(`[notify-scheduled-release] Discord webhook error for ${product.name}:`, webhookError);
-      }
+      // Note: Discord product webhooks removed - marketplace no longer sends product notifications
 
       // Step 3: Get followers of this store who want new product notifications
       const { data: followers, error: followError } = await supabase
