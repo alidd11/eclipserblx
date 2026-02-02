@@ -1,5 +1,8 @@
 project_id = "qlnbergwjfrmgkjhrbkj"
 
+[functions.purchase-with-credits]
+verify_jwt = false
+
 [functions.discord-customer-bot]
 verify_jwt = false
 
