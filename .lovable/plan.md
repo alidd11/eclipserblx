@@ -1,79 +1,162 @@
 
-# Plan: Generate Vino Store Logo and Banner
+# Voice-Narrated Seller Guide Video
 
 ## Overview
-Create visually appealing branding assets for the Vino Store using AI image generation, then upload them to the store's branding storage.
+Create an interactive, voice-narrated video presentation that explains everything sellers need to know about Eclipse. The presentation will feature AI-generated narration (using ElevenLabs TTS) synchronized with animated slides/content.
 
-## Store Context
-- **Name**: Vino
-- **Theme**: Premium Roblox assets marketplace
-- **Accent Color**: #8b5cf6 (purple/violet)
-- **Vibe**: Premium, professional, modern gaming aesthetic
+---
 
-## Design Direction
+## User Experience
 
-### Logo (200x200px)
-A clean, modern logo featuring:
-- A stylized "V" lettermark or wine glass motif (playing on "Vino" = wine)
-- Purple/violet gradient tones matching the accent color (#8b5cf6)
-- Minimalist, premium aesthetic suitable for dark and light backgrounds
-- Gaming-inspired but sophisticated feel
+### How It Works
+1. Seller visits the **Seller Guide** page (`/seller/documents/guide`)
+2. A new prominent **"Watch Video Guide"** button appears at the top
+3. Clicking opens a modal with an interactive slideshow presentation
+4. Each slide has:
+   - Visual content (text, icons, illustrations)
+   - AI-narrated audio that auto-plays
+   - Play/pause and skip controls
+   - Progress indicator
+5. Sellers can navigate between slides or let it auto-advance
 
-### Banner (1200x400px)
-A wide banner featuring:
-- Abstract geometric or fluid gradient background in purple/violet tones
-- Subtle tech/gaming elements (code patterns, pixel accents, or grid lines)
-- Premium, luxurious feel with depth and dimension
-- No text (clean design that works with overlaid store name)
+### Presentation Structure (10 Slides)
+1. **Welcome to Eclipse** - Introduction and overview
+2. **Why Sell on Eclipse?** - Key benefits
+3. **You Own Your Work** - IP ownership promise
+4. **Earnings Breakdown** - Commission rates (85-90%)
+5. **Payout Options** - Stripe, PayPal, Bank Transfer
+6. **Store Customization** - Themes and branding
+7. **Seller Tools** - Discord notifications, team management
+8. **Security Features** - AI scanning, moderation
+9. **Getting Started** - 4-step process
+10. **Start Selling Today** - Call to action
+
+---
 
 ## Technical Implementation
 
-### Step 1: Create Edge Function for AI Image Generation
-Create a new edge function `generate-store-branding` that:
-- Uses the Lovable AI gateway with `google/gemini-2.5-flash-image` model
-- Generates images based on specific prompts for logo and banner
-- Returns the generated images as base64
+### Phase 1: Connect ElevenLabs
 
-### Step 2: Create Admin UI Component
-Build a simple admin action button that:
-- Calls the edge function to generate images
-- Converts base64 to File objects
-- Uploads to `store-branding` storage bucket
-- Updates the store record with new URLs
+Connect the ElevenLabs connector to enable text-to-speech capabilities for generating AI narration.
 
-### Step 3: Update Store Record
-After successful upload:
-- Update the `stores` table with new `logo_url` and `banner_url`
+### Phase 2: Create TTS Edge Function
+
+Create a new edge function `elevenlabs-tts` that:
+- Accepts text to narrate and voice settings
+- Calls ElevenLabs API to generate speech
+- Returns audio buffer
+
+```text
+supabase/functions/elevenlabs-tts/index.ts
+├── Accept POST with { text, voiceId }
+├── Call ElevenLabs TTS API
+├── Return audio/mpeg stream
+└── Handle errors gracefully
+```
+
+### Phase 3: Build Video Presentation Component
+
+Create a new component structure:
+
+```text
+src/components/seller/
+├── SellerVideoGuide.tsx        # Main modal wrapper
+├── VideoSlide.tsx              # Individual slide component
+└── VideoSlideContent.tsx       # Slide content definitions
+```
+
+**SellerVideoGuide.tsx**
+- Full-screen modal presentation player
+- Slide navigation (next/prev/dots)
+- Audio playback controls
+- Auto-advance when narration ends
+- Loading states for audio generation
+
+**VideoSlide.tsx**
+- Animated slide transitions (framer-motion)
+- Icon/visual displays
+- Text content with bullet points
+- Audio player integration
+
+**VideoSlideContent.tsx**
+- Define all 10 slides with:
+  - Title, description, bullet points
+  - Icons to display
+  - Narration script text
+
+### Phase 4: Update Seller Guide Page
+
+Modify `src/pages/seller/SellerGuide.tsx`:
+- Add "Watch Video Guide" button in header
+- Import and render VideoGuide modal
+- Track modal open/close state
+
+### Phase 5: Audio Caching
+
+Implement caching to avoid regenerating audio:
+- Store generated audio URLs in browser cache/localStorage
+- Pre-generate audio for all slides on first load
+- Show loading progress during generation
+
+---
 
 ## Files to Create/Modify
 
 | File | Action | Purpose |
 |------|--------|---------|
-| `supabase/functions/generate-store-branding/index.ts` | Create | Edge function for AI image generation |
-| `src/components/admin/GenerateStoreBranding.tsx` | Create | Admin UI to trigger generation |
-| `src/pages/admin/StoresAdmin.tsx` | Modify | Add generate branding button for admin stores |
+| `supabase/functions/elevenlabs-tts/index.ts` | Create | TTS edge function |
+| `supabase/config.toml` | Modify | Add function config |
+| `src/components/seller/SellerVideoGuide.tsx` | Create | Main video modal |
+| `src/components/seller/VideoSlide.tsx` | Create | Slide display component |
+| `src/components/seller/slideContent.ts` | Create | Slide definitions |
+| `src/pages/seller/SellerGuide.tsx` | Modify | Add watch button |
 
-## Technical Details
+---
 
-### Edge Function Structure
-```text
-generate-store-branding/
-  index.ts - Main handler calling Lovable AI gateway
-```
+## Voice Configuration
 
-### AI Prompts
-**Logo prompt**: "Minimalist premium logo design, stylized letter V with wine glass silhouette integration, purple violet gradient (#8b5cf6), modern gaming aesthetic, clean vector style, dark background, professional brand mark, 200x200 square format"
+Using ElevenLabs voice: **Brian** (`nPczCjzI2devNBz1zQrb`)
+- Clear, professional male voice
+- Good for instructional content
+- Natural pacing for learning
 
-**Banner prompt**: "Wide banner design 1200x400, abstract flowing purple violet gradient background (#8b5cf6), subtle geometric patterns, premium luxurious feel, modern tech aesthetic, no text, dark theme, suitable for gaming marketplace header"
+---
 
-### Storage Flow
-1. Generate image via AI
-2. Convert base64 to Blob
-3. Upload to `store-branding/{store_id}/logo.png` and `banner.png`
-4. Get public URLs
-5. Update store record
+## UI Design
 
-## Security Considerations
-- Edge function should verify admin authentication
-- Rate limit generation requests
-- Validate store ID exists before processing
+### Video Modal
+- Dark overlay background
+- Centered 16:9 aspect ratio container
+- Slide content area with gradient background
+- Bottom control bar:
+  - Play/Pause button
+  - Progress bar
+  - Slide counter (e.g., "3 / 10")
+  - Skip to next button
+  - Close button
+
+### Slide Design
+- Gradient background matching Eclipse branding
+- Large icon at top
+- Title text (bold, large)
+- Description/bullet points
+- Subtle animation entrance effects
+
+---
+
+## Dependencies
+
+No new packages required:
+- Uses existing `framer-motion` for animations
+- Uses Supabase edge functions for TTS
+- Standard HTML5 Audio API for playback
+
+---
+
+## Accessibility
+
+- Keyboard navigation (arrows, space, escape)
+- Subtitles/transcript option (matches narration text)
+- Play/pause controls always visible
+- Screen reader friendly navigation
+
