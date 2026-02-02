@@ -274,6 +274,10 @@ export default function SellerStoreDetail() {
 
   const getEffectiveRate = () => {
     if (!store) return defaultRate;
+    // Admin-managed stores (Eclipse, Vino) have 0% commission
+    if (ADMIN_MANAGED_STORES.includes(storeId as any)) {
+      return 0;
+    }
     if (store.custom_rate_expires_at && new Date(store.custom_rate_expires_at) <= new Date()) {
       return store.commission_rate ?? defaultRate;
     }
@@ -563,60 +567,79 @@ export default function SellerStoreDetail() {
             </CardContent>
           </Card>
 
-          {/* Commission Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Percent className="h-5 w-5" />
-                Commission Settings
-              </CardTitle>
-              <CardDescription>
-                Current effective rate: <Badge>{getEffectiveRate()}%</Badge>
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label>Custom Commission Rate (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    placeholder={`Default: ${defaultRate}%`}
-                    value={customRate}
-                    onChange={(e) => setCustomRate(e.target.value)}
-                  />
+          {/* Commission Settings - Hidden for admin-managed stores */}
+          {!ADMIN_MANAGED_STORES.includes(storeId as any) ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Percent className="h-5 w-5" />
+                  Commission Settings
+                </CardTitle>
+                <CardDescription>
+                  Current effective rate: <Badge>{getEffectiveRate()}%</Badge>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label>Custom Commission Rate (%)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder={`Default: ${defaultRate}%`}
+                      value={customRate}
+                      onChange={(e) => setCustomRate(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Rate Expiration Date (Optional)</Label>
+                    <Input
+                      type="date"
+                      value={expirationDate}
+                      onChange={(e) => setExpirationDate(e.target.value)}
+                    />
+                    {store.custom_rate_expires_at && (
+                      <p className="text-xs text-muted-foreground">
+                        Current expiration: {format(parseISO(store.custom_rate_expires_at), 'MMM d, yyyy')}
+                        {new Date(store.custom_rate_expires_at) <= new Date() && (
+                          <Badge variant="destructive" className="ml-2 text-xs">Expired</Badge>
+                        )}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label>Rate Expiration Date (Optional)</Label>
-                  <Input
-                    type="date"
-                    value={expirationDate}
-                    onChange={(e) => setExpirationDate(e.target.value)}
-                  />
-                  {store.custom_rate_expires_at && (
-                    <p className="text-xs text-muted-foreground">
-                      Current expiration: {format(parseISO(store.custom_rate_expires_at), 'MMM d, yyyy')}
-                      {new Date(store.custom_rate_expires_at) <= new Date() && (
-                        <Badge variant="destructive" className="ml-2 text-xs">Expired</Badge>
-                      )}
-                    </p>
+                
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveRate} disabled={updateRateMutation.isPending}>
+                    Save Rate
+                  </Button>
+                  {isCustomRateActive() && (
+                    <Button variant="outline" onClick={handleResetRate} disabled={updateRateMutation.isPending}>
+                      Reset to Default
+                    </Button>
                   )}
                 </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button onClick={handleSaveRate} disabled={updateRateMutation.isPending}>
-                  Save Rate
-                </Button>
-                {isCustomRateActive() && (
-                  <Button variant="outline" onClick={handleResetRate} disabled={updateRateMutation.isPending}>
-                    Reset to Default
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Percent className="h-5 w-5" />
+                  Commission Settings
+                </CardTitle>
+                <CardDescription>
+                  Current effective rate: <Badge>0%</Badge>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  This is a platform-managed store with a fixed 0% commission rate. Commission settings cannot be modified.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Balance Information */}
           <Card>
