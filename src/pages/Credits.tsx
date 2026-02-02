@@ -72,7 +72,9 @@ export default function Credits() {
 
   return (
     <MainLayout>
-      <div className="px-4 py-6 mx-auto w-full max-w-2xl space-y-6">
+      <div
+        className="pl-4 pr-[calc(env(safe-area-inset-right)+2.5rem)] sm:px-6 py-6 mx-auto w-full max-w-2xl min-w-0 space-y-6"
+      >
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
@@ -97,7 +99,7 @@ export default function Credits() {
         <EclipsePlusBanner show={!eclipsePlusBonusClaimed} />
 
         {/* Two column layout for Add Credits & History */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 min-w-0">
           <AddCreditsCard
             onPurchase={purchaseCredits}
             isLoggedIn={!!user}
