@@ -32,13 +32,14 @@ interface StripeBalanceData {
     currency: string;
   };
   summary: {
-    today: { gross: number; fees: number; net: number };
-    last7Days: { gross: number; fees: number; net: number };
-    last30Days: { gross: number; fees: number; net: number };
+    today: { gross: number; fees: number; net: number; refunds?: number; refundCount?: number };
+    last7Days: { gross: number; fees: number; net: number; refunds?: number; refundCount?: number };
+    last30Days: { gross: number; fees: number; net: number; refunds?: number; refundCount?: number };
     avgFeePercent: string;
   };
-  dailyTrend: Array<{ date: string; gross: number; fees: number; net: number; count: number }>;
+  dailyTrend: Array<{ date: string; gross: number; fees: number; net: number; count: number; refunds?: number; refundCount?: number }>;
   transactionCount: number;
+  refundCount?: number;
 }
 
 export default function AdminIncome() {
@@ -496,7 +497,7 @@ export default function AdminIncome() {
             </div>
 
             {/* Stripe Balance Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 mb-2">
@@ -564,6 +565,25 @@ export default function AdminIncome() {
                   <p className="text-xs text-muted-foreground mt-1">Actual fees paid</p>
                 </CardContent>
               </Card>
+
+              <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <RefreshCw className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm font-medium text-muted-foreground">30-Day Refunds</span>
+                  </div>
+                  {stripeBalanceLoading ? (
+                    <Skeleton className="h-9 w-24" />
+                  ) : (
+                    <p className="text-3xl font-bold text-orange-500">
+                      £{(stripeBalance?.summary.last30Days.refunds ?? 0).toFixed(2)}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stripeBalance?.summary.last30Days.refundCount ?? 0} refund{(stripeBalance?.summary.last30Days.refundCount ?? 0) !== 1 ? 's' : ''}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Detailed Stripe Summary */}
@@ -589,6 +609,12 @@ export default function AdminIncome() {
                         <span className="text-muted-foreground">Fees</span>
                         <span className="font-medium text-red-500">-£{(stripeBalance?.summary.today.fees ?? 0).toFixed(2)}</span>
                       </div>
+                      {(stripeBalance?.summary.today.refunds ?? 0) > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Refunds</span>
+                          <span className="font-medium text-orange-500">-£{(stripeBalance?.summary.today.refunds ?? 0).toFixed(2)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-medium">Net</span>
                         <span className="font-bold text-green-600">£{(stripeBalance?.summary.today.net ?? 0).toFixed(2)}</span>
@@ -619,6 +645,12 @@ export default function AdminIncome() {
                         <span className="text-muted-foreground">Fees</span>
                         <span className="font-medium text-red-500">-£{(stripeBalance?.summary.last7Days.fees ?? 0).toFixed(2)}</span>
                       </div>
+                      {(stripeBalance?.summary.last7Days.refunds ?? 0) > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Refunds ({stripeBalance?.summary.last7Days.refundCount})</span>
+                          <span className="font-medium text-orange-500">-£{(stripeBalance?.summary.last7Days.refunds ?? 0).toFixed(2)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-medium">Net</span>
                         <span className="font-bold text-green-600">£{(stripeBalance?.summary.last7Days.net ?? 0).toFixed(2)}</span>
@@ -649,6 +681,12 @@ export default function AdminIncome() {
                         <span className="text-muted-foreground">Fees</span>
                         <span className="font-medium text-red-500">-£{(stripeBalance?.summary.last30Days.fees ?? 0).toFixed(2)}</span>
                       </div>
+                      {(stripeBalance?.summary.last30Days.refunds ?? 0) > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Refunds ({stripeBalance?.summary.last30Days.refundCount})</span>
+                          <span className="font-medium text-orange-500">-£{(stripeBalance?.summary.last30Days.refunds ?? 0).toFixed(2)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-medium">Net</span>
                         <span className="font-bold text-green-600">£{(stripeBalance?.summary.last30Days.net ?? 0).toFixed(2)}</span>

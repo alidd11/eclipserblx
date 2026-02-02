@@ -130,7 +130,7 @@ serve(async (req) => {
         paymentIntentId: charge.payment_intent as string | null,
         refundAmount: charge.amount_refunded,
         isFullRefund: charge.refunded,
-      });
+      }, stripe);
     } else {
       logStep("Unhandled event type", { type: event.type });
     }
@@ -575,7 +575,8 @@ interface RefundData {
 
 async function processRefund(
   supabase: SupabaseClient,
-  data: RefundData
+  data: RefundData,
+  stripe?: Stripe
 ) {
   const { chargeId, paymentIntentId, refundAmount, isFullRefund } = data;
   
@@ -594,19 +595,61 @@ async function processRefund(
     
     if (orderByPi) {
       order = orderByPi as { id: string; user_id: string | null; customer_email: string; status: string };
+      logStep("Found order by payment_intent", { orderId: order.id });
     }
   }
 
-  // If not found, look up checkout session that might have this payment intent
-  if (!order && paymentIntentId) {
-    // Look for orders that might have been created via checkout session
-    // The payment_id stored might be the checkout session ID, not the payment intent
-    // We need to check orders and match by other means or search by charge metadata
-    logStep("Order not found by payment_intent, checking recent orders");
+  // If not found, try to look up via Stripe's checkout sessions list
+  if (!order && paymentIntentId && stripe) {
+    logStep("Order not found by payment_intent, searching checkout sessions...");
+    try {
+      // Search for checkout sessions that used this payment intent
+      const sessions = await stripe.checkout.sessions.list({
+        payment_intent: paymentIntentId,
+        limit: 1,
+      });
+      
+      if (sessions.data.length > 0) {
+        const sessionId = sessions.data[0].id;
+        logStep("Found checkout session for payment_intent", { sessionId, paymentIntentId });
+        
+        const { data: orderBySession } = await supabase
+          .from("orders")
+          .select("id, user_id, customer_email, status")
+          .eq("payment_id", sessionId)
+          .maybeSingle();
+        
+        if (orderBySession) {
+          order = orderBySession as { id: string; user_id: string | null; customer_email: string; status: string };
+          logStep("Found order by checkout session", { orderId: order.id, sessionId });
+        }
+      }
+    } catch (e) {
+      logStep("Error searching checkout sessions", { error: String(e) });
+    }
+  }
+
+  // Fallback: search orders by approximate amount and recent date
+  if (!order && refundAmount) {
+    logStep("Trying fallback search by amount...");
+    const refundGBP = refundAmount / 100;
+    const { data: ordersByAmount } = await supabase
+      .from("orders")
+      .select("id, user_id, customer_email, status, total, created_at")
+      .eq("total", refundGBP)
+      .in("status", ["paid", "fulfilled"])
+      .is("refunded_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    
+    if (ordersByAmount && ordersByAmount.length > 0) {
+      order = ordersByAmount[0] as { id: string; user_id: string | null; customer_email: string; status: string };
+      logStep("Found order by amount fallback", { orderId: order.id, total: refundGBP });
+    }
   }
 
   if (!order) {
-    logStep("WARNING: Could not find order for refund", { chargeId, paymentIntentId });
+    logStep("WARNING: Could not find order for refund", { chargeId, paymentIntentId, refundAmount });
     return;
   }
 
