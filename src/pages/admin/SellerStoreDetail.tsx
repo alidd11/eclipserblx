@@ -13,9 +13,11 @@ import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2 } from 'lucide-react';
+import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GenerateStoreBranding } from '@/components/admin/GenerateStoreBranding';
+import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
 export default function SellerStoreDetail() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -646,6 +648,30 @@ export default function SellerStoreDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Branding Generation - Only for admin-managed stores */}
+          {ADMIN_MANAGED_STORES.includes(storeId as any) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  AI Branding
+                </CardTitle>
+                <CardDescription>
+                  Generate logo and banner using AI
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <GenerateStoreBranding
+                  storeId={storeId!}
+                  storeName={store.name}
+                  accentColor={store.accent_color || '#8b5cf6'}
+                  currentLogoUrl={store.logo_url || undefined}
+                  currentBannerUrl={store.banner_url || undefined}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Store Controls */}
           <Card>
