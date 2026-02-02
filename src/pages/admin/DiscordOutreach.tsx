@@ -368,7 +368,7 @@ export default function DiscordOutreach() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['view_job_channels']}>
+    <AdminLayout requiredPermissions={['view_discord_outreach']}>
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">

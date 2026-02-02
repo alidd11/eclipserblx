@@ -231,7 +231,7 @@ export default function DiscordOutreachDetail() {
 
   if (isLoading) {
     return (
-      <AdminLayout requiredPermissions={['view_job_channels']}>
+      <AdminLayout requiredPermissions={['view_discord_outreach']}>
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
           <div className="grid lg:grid-cols-3 gap-4">
@@ -248,7 +248,7 @@ export default function DiscordOutreachDetail() {
 
   if (!record) {
     return (
-      <AdminLayout requiredPermissions={['view_job_channels']}>
+      <AdminLayout requiredPermissions={['view_discord_outreach']}>
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold">Record not found</h2>
           <Button variant="outline" className="mt-4" onClick={() => navigate("/admin/discord-outreach")}>
@@ -261,7 +261,7 @@ export default function DiscordOutreachDetail() {
   }
 
   return (
-    <AdminLayout requiredPermissions={['view_job_channels']}>
+    <AdminLayout requiredPermissions={['view_discord_outreach']}>
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
