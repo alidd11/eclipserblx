@@ -1,9 +1,9 @@
 import { useState, useEffect, forwardRef } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
-  HelpCircle, Mail, FileQuestion, Activity, ChevronDown, ShoppingCart, 
-  User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen, Heart, MessageSquareText,
-  Sparkles, Download, PanelLeftClose, PanelLeft, Megaphone, Wallet
+  HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
+  User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
+  Sparkles, Download, PanelLeftClose, PanelLeft
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -130,7 +130,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  // Navigation groups - Account prioritized at top for quick personal access
+  // Navigation groups - streamlined for clarity
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
@@ -138,7 +138,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Home,
       items: [
         { title: 'Home', icon: Home, href: '/' },
-        // Seller Dashboard - conditional, prominently positioned
         ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
       ],
     },
@@ -148,14 +147,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: User,
       items: [
         { title: 'Profile', icon: User, href: '/account' },
-        { title: 'My Cart', icon: ShoppingCart, href: '/cart' },
-        { title: 'Wallet', icon: Wallet, href: '/credits' },
-        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
-        { title: 'My Purchases', icon: Download, href: '/purchases' },
+        { title: 'Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Purchases', icon: Download, href: '/purchases' },
         { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
-        // Store Messages for sellers
-        ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
-        // Affiliate Dashboard - conditional
         ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
@@ -167,10 +161,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Featured', icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: 'Marketplace', icon: Store, href: '/marketplace' },
-        { title: 'Advertise With Us', icon: Megaphone, href: '/advertise' },
       ],
     },
-    // Note: "Browse" section with All Products + Categories is rendered via renderCategoriesSection()
+    // Note: "Browse" section with All Products + Categories is rendered via renderBrowseSection()
     {
       id: 'community',
       title: 'Community',
@@ -182,14 +175,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       ],
     },
     {
-      id: 'help',
-      title: 'Help',
+      id: 'support',
+      title: 'Support',
       icon: HelpCircle,
       items: [
         { title: 'Help Center', icon: HelpCircle, href: '/support' },
-        { title: 'Contact Us', icon: Mail, href: '/contact' },
-        { title: 'FAQ', icon: FileQuestion, href: '/faq' },
-        { title: 'System Status', icon: Activity, href: '/status', showStatusDot: true },
+        { title: 'Contact', icon: Mail, href: '/contact' },
+        { title: 'Status', icon: Activity, href: '/status', showStatusDot: true },
       ],
     },
   ];
