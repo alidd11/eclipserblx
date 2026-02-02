@@ -187,7 +187,7 @@ const StatusBadgesSection = ({
     <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
       <div className="space-y-3">
         {/* Status Badges (Eclipse+, Affiliate, Seller) */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           {isSubscribed && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
