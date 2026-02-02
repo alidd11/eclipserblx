@@ -179,7 +179,7 @@ export default function StoreMessages() {
           )
         `)
         .eq('user_id', user.id)
-        .eq('status', 'completed')
+        .in('status', ['paid', 'completed'])
         .order('created_at', { ascending: false });
       
       if (error) throw error;
