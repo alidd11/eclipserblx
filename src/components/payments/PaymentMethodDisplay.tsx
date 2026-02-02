@@ -7,6 +7,7 @@ import { useSavedPaymentMethods } from '@/hooks/useSavedPaymentMethods';
 import { StripeProvider } from './StripeProvider';
 import { PaymentRequestButton } from './PaymentRequestButton';
 import { SavedCardButton } from './SavedCardButton';
+import { CreditPaymentButton } from './CreditPaymentButton';
 
 interface CartItem {
   id: string;
@@ -92,7 +93,15 @@ export function PaymentMethodDisplay({
       </div>
     }>
       <div className="space-y-4">
-        {/* Saved Cards - Show first for returning customers */}
+        {/* Pay with Credits - Show first if user has credits */}
+        <CreditPaymentButton
+          items={items}
+          total={total}
+          isProcessing={isProcessing}
+          onProcessing={onProcessing}
+        />
+
+        {/* Saved Cards - Show for returning customers */}
         {isLoadingMethods ? (
           <div className="space-y-2">
             <Skeleton className="h-14 w-full rounded-lg" />
