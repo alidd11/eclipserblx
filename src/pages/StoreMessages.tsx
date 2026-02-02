@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -55,6 +56,7 @@ interface PurchasedStore {
 
 export default function StoreMessages() {
   const { user } = useAuth();
+  const { isKeyboardVisible } = useIOSKeyboardFix();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -271,6 +273,15 @@ export default function StoreMessages() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Scroll to bottom when keyboard opens on iOS
+  useEffect(() => {
+    if (isKeyboardVisible && scrollRef.current) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+      }, 100);
+    }
+  }, [isKeyboardVisible]);
 
   // Create conversation mutation
   const createConversationMutation = useMutation({
@@ -637,7 +648,7 @@ export default function StoreMessages() {
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} className="h-[400px] overflow-y-auto p-4">
+            <div ref={scrollRef} className="h-[min(400px,50dvh)] overflow-y-auto p-4">
               {messagesLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

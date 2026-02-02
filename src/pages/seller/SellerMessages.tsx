@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -45,6 +46,7 @@ interface StoreMessage {
 export default function SellerMessages() {
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
+  const { isKeyboardVisible } = useIOSKeyboardFix();
   const storeId = store?.id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -175,6 +177,15 @@ export default function SellerMessages() {
     }
   }, [messages]);
 
+  // Scroll to bottom when keyboard opens on iOS
+  useEffect(() => {
+    if (isKeyboardVisible && scrollRef.current) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+      }, 100);
+    }
+  }, [isKeyboardVisible]);
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ conversationId, message }: { conversationId: string; message: string }) => {
@@ -278,7 +289,7 @@ export default function SellerMessages() {
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} className="h-[400px] overflow-y-auto p-4">
+            <div ref={scrollRef} className="h-[min(400px,50dvh)] overflow-y-auto p-4">
               {messagesLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
