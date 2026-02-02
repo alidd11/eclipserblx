@@ -37,6 +37,59 @@ import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
+// Helper component to display affiliate ID if user is an approved affiliate
+const AffiliateIdDisplay = ({ userId }: { userId: string }) => {
+  const { data: affiliateApp } = useQuery({
+    queryKey: ['affiliate-id', userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('affiliate_applications')
+        .select('affiliate_id')
+        .eq('user_id', userId)
+        .eq('status', 'approved')
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  if (!affiliateApp?.affiliate_id) return null;
+
+  return (
+    <span className="flex items-center gap-1.5 text-muted-foreground">
+      <span className="text-muted-foreground/70">Affiliate:</span>
+      <span className="font-mono">{affiliateApp.affiliate_id}</span>
+    </span>
+  );
+};
+
+// Helper component to display seller/store ID if user owns a store
+const SellerIdDisplay = ({ userId }: { userId: string }) => {
+  const { data: store } = useQuery({
+    queryKey: ['seller-id', userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('stores')
+        .select('store_id')
+        .eq('owner_id', userId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  if (!store?.store_id) return null;
+
+  return (
+    <span className="flex items-center gap-1.5 text-muted-foreground">
+      <span className="text-muted-foreground/70">Seller:</span>
+      <span className="font-mono">{store.store_id}</span>
+    </span>
+  );
+};
+
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
   const { user, signOut, loading: authLoading } = useAuth();
@@ -374,7 +427,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   return (
     <MainLayout ref={ref}>
       <div className="container py-8 space-y-6 max-w-4xl ml-auto mr-4 sm:mr-8 lg:mr-auto">
-        {/* Profile Card - Compact header with avatar and key info */}
+        {/* My Profile Card */}
         <Card className="bg-card border-border overflow-hidden">
           <CardContent className="p-0">
             {/* Profile Header */}
@@ -435,6 +488,26 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   <TooltipContent>Sign Out</TooltipContent>
                 </Tooltip>
               </div>
+            </div>
+
+            {/* IDs Section */}
+            <div className="border-t border-border px-4 sm:px-6 py-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+              {profile?.customer_id && (
+                <button
+                  onClick={copyCustomerId}
+                  className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span className="text-muted-foreground/70">Customer:</span>
+                  <span className="font-mono">{profile.customer_id}</span>
+                  {copiedId ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                </button>
+              )}
+              <AffiliateIdDisplay userId={user.id} />
+              <SellerIdDisplay userId={user.id} />
             </div>
 
             {/* Quick Stats Bar */}
@@ -594,25 +667,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               }}
             />
 
-            {/* Customer ID */}
-            {profile?.customer_id && (
-              <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground mb-1">Customer ID</p>
-                  <button
-                    onClick={copyCustomerId}
-                    className="flex items-center gap-1.5 font-mono text-sm hover:text-primary transition-colors"
-                  >
-                    {profile.customer_id}
-                    {copiedId ? (
-                      <Check className="h-3 w-3 text-green-500" />
-                    ) : (
-                      <Copy className="h-3 w-3 text-muted-foreground" />
-                    )}
-                  </button>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Eclipse+ Subscription */}
             <SubscriptionCard />
