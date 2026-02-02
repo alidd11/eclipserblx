@@ -47,7 +47,7 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect }: AddC
   };
 
   return (
-    <Card>
+    <Card className="max-w-full overflow-hidden">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Plus className="h-4 w-4" />
