@@ -5,13 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, ShieldCheck, Shield } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, UserCheck, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Shield, Settings, Bell, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +25,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 interface DiscordSettings {
   discord_invite_url: string;
@@ -51,7 +50,6 @@ interface DiscordSettings {
   early_product_drops_discord_webhook_url: string;
 }
 
-
 const DEFAULT_SETTINGS: DiscordSettings = {
   discord_invite_url: '',
   discord_webhook_url: '',
@@ -74,74 +72,43 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   early_product_drops_discord_webhook_url: '',
 };
 
+interface WebhookTestResult {
+  success: boolean;
+  message: string;
+  details?: string;
+}
+
+// Webhook field configuration for reusable components
+interface WebhookConfig {
+  id: string;
+  label: string;
+  description: string;
+  settingKey: keyof DiscordSettings;
+  icon: React.ReactNode;
+  iconColor: string;
+  testable?: boolean;
+  roleIdKey?: keyof DiscordSettings;
+  roleIdLabel?: string;
+  infoItems?: string[];
+  alertInfo?: { title: string; description: string; color: string };
+}
 
 export default function DiscordSettings() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [formData, setFormData] = useState<DiscordSettings>(DEFAULT_SETTINGS);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('invite');
-  
-  
-  // Test states
-  const [isTestingOrderWebhook, setIsTestingOrderWebhook] = useState(false);
-  const [orderWebhookTestResult, setOrderWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-  
-  const [isTestingReviewWebhook, setIsTestingReviewWebhook] = useState(false);
-  const [reviewWebhookTestResult, setReviewWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-  
-  const [isTestingRoleWebhook, setIsTestingRoleWebhook] = useState(false);
-  const [roleWebhookTestResult, setRoleWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-  
-  const [isTestingAffiliateWebhook, setIsTestingAffiliateWebhook] = useState(false);
-  const [affiliateWebhookTestResult, setAffiliateWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    general: true,
+    notifications: false,
+    announcements: false,
+    configuration: false,
+  });
 
-  const [isTestingEclipsePlusWebhook, setIsTestingEclipsePlusWebhook] = useState(false);
-  const [eclipsePlusWebhookTestResult, setEclipsePlusWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-
-  const [isTestingMarketplaceWebhook, setIsTestingMarketplaceWebhook] = useState(false);
-  const [marketplaceWebhookTestResult, setMarketplaceWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-
-  const [isTestingPromotionsWebhook, setIsTestingPromotionsWebhook] = useState(false);
-  const [promotionsWebhookTestResult, setPromotionsWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-
-  const [isTestingCommunityWebhook, setIsTestingCommunityWebhook] = useState(false);
-  const [communityWebhookTestResult, setCommunityWebhookTestResult] = useState<{
-    success: boolean;
-    message: string;
-    details?: string;
-  } | null>(null);
-
+  // Test states - consolidated
+  const [testingWebhook, setTestingWebhook] = useState<string | null>(null);
+  const [webhookTestResults, setWebhookTestResults] = useState<Record<string, WebhookTestResult>>({});
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<string | null>(null);
-
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['discord-settings'],
@@ -149,48 +116,14 @@ export default function DiscordSettings() {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['discord_invite_url', 'discord_webhook_url', 'review_discord_webhook_url', 'affiliate_discord_webhook_url', 'eclipse_plus_discord_webhook_url', 'marketplace_discord_webhook_url', 'promotions_discord_webhook_url', 'advertisements_discord_webhook_url', 'advertisements_partnership_ping_role_id', 'discord_widget_server_id', 'community_discord_webhook_url', 'community_discord_role_id', 'discord_ping_role_id', 'qotd_discord_webhook_url', 'qotd_discord_role_id', 'polls_discord_webhook_url', 'polls_discord_role_id']);
+        .in('key', Object.keys(DEFAULT_SETTINGS));
 
       if (error) throw error;
 
       const settingsMap: Partial<DiscordSettings> = {};
       data?.forEach((item) => {
         const val = typeof item.value === 'string' ? item.value.replace(/^"|"$/g, '') : item.value;
-        if (item.key === 'discord_invite_url') {
-          settingsMap.discord_invite_url = String(val);
-        } else if (item.key === 'discord_webhook_url') {
-          settingsMap.discord_webhook_url = String(val);
-        } else if (item.key === 'review_discord_webhook_url') {
-          settingsMap.review_discord_webhook_url = String(val);
-        } else if (item.key === 'affiliate_discord_webhook_url') {
-          settingsMap.affiliate_discord_webhook_url = String(val);
-        } else if (item.key === 'eclipse_plus_discord_webhook_url') {
-          settingsMap.eclipse_plus_discord_webhook_url = String(val);
-        } else if (item.key === 'marketplace_discord_webhook_url') {
-          settingsMap.marketplace_discord_webhook_url = String(val);
-        } else if (item.key === 'promotions_discord_webhook_url') {
-          settingsMap.promotions_discord_webhook_url = String(val);
-        } else if (item.key === 'advertisements_discord_webhook_url') {
-          settingsMap.advertisements_discord_webhook_url = String(val);
-        } else if (item.key === 'advertisements_partnership_ping_role_id') {
-          settingsMap.advertisements_partnership_ping_role_id = String(val);
-        } else if (item.key === 'discord_widget_server_id') {
-          settingsMap.discord_widget_server_id = String(val);
-        } else if (item.key === 'community_discord_webhook_url') {
-          settingsMap.community_discord_webhook_url = String(val);
-        } else if (item.key === 'community_discord_role_id') {
-          settingsMap.community_discord_role_id = String(val);
-        } else if (item.key === 'discord_ping_role_id') {
-          settingsMap.discord_ping_role_id = String(val);
-        } else if (item.key === 'qotd_discord_webhook_url') {
-          settingsMap.qotd_discord_webhook_url = String(val);
-        } else if (item.key === 'qotd_discord_role_id') {
-          settingsMap.qotd_discord_role_id = String(val);
-        } else if (item.key === 'polls_discord_webhook_url') {
-          settingsMap.polls_discord_webhook_url = String(val);
-        } else if (item.key === 'polls_discord_role_id') {
-          settingsMap.polls_discord_role_id = String(val);
-        }
+        (settingsMap as any)[item.key] = String(val);
       });
 
       return { ...DEFAULT_SETTINGS, ...settingsMap };
@@ -203,7 +136,6 @@ export default function DiscordSettings() {
     }
   }, [settings]);
 
-  // Save settings mutation
   const saveMutation = useMutation({
     mutationFn: async (data: DiscordSettings) => {
       const entries = Object.entries(data) as [keyof DiscordSettings, string][];
@@ -232,19 +164,14 @@ export default function DiscordSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['discord-settings'] });
       queryClient.invalidateQueries({ queryKey: ['store-settings'] });
-      toast.success('Discord settings saved successfully');
+      toast.success('Settings saved');
     },
-    onError: (error) => {
-      console.error('Failed to save Discord settings:', error);
-      toast.error('Failed to save Discord settings');
+    onError: () => {
+      toast.error('Failed to save settings');
     },
   });
 
-
-  const handleSave = () => {
-    saveMutation.mutate(formData);
-  };
-
+  const handleSave = () => saveMutation.mutate(formData);
   const handleChange = (key: keyof DiscordSettings, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -252,503 +179,221 @@ export default function DiscordSettings() {
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
-    toast.success('Copied to clipboard');
+    toast.success('Copied');
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleTestOrderWebhook = async () => {
-    if (!formData.discord_webhook_url) {
-      toast.error('Please enter an Order Notification Webhook URL first');
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  // Generic webhook test handler
+  const testWebhook = async (type: string, webhookUrl: string, testFn: () => Promise<WebhookTestResult>) => {
+    if (!webhookUrl) {
+      toast.error('Please enter a webhook URL first');
       return;
     }
-
-    setIsTestingOrderWebhook(true);
-    setOrderWebhookTestResult(null);
-
+    setTestingWebhook(type);
+    setWebhookTestResults((prev) => ({ ...prev, [type]: undefined as any }));
+    
     try {
-      // Build Parcel-style description
-      let description = '**Product Name**\nTest Product';
-      description += '\n**Roblox**\nTestUser123\n(123456789)';
-      description += '\n**Discord**\nTestUser#1234\n(987654321)';
-
-      // Test by sending to the webhook directly with Parcel-style format
-      const response = await fetch(formData.discord_webhook_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          embeds: [{
-            title: 'New Purchase',
-            description,
-            color: 0x9b59b6,
-            thumbnail: {
-              url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter',
-            },
-            timestamp: new Date().toISOString(),
-          }],
-        }),
-      });
-
-      if (response.ok) {
-        setOrderWebhookTestResult({
-          success: true,
-          message: 'Test notification sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Order webhook test sent successfully!');
+      const result = await testFn();
+      setWebhookTestResults((prev) => ({ ...prev, [type]: result }));
+      if (result.success) {
+        toast.success(result.message);
       } else {
-        setOrderWebhookTestResult({
-          success: false,
-          message: 'Webhook request failed',
-          details: `Status: ${response.status}`,
-        });
-        toast.error('Order webhook test failed');
+        toast.error(result.message);
       }
     } catch (err: any) {
-      console.error('Order webhook test error:', err);
-      setOrderWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to test order webhook');
+      const result = { success: false, message: 'Request failed', details: err.message };
+      setWebhookTestResults((prev) => ({ ...prev, [type]: result }));
+      toast.error('Test failed');
     } finally {
-      setIsTestingOrderWebhook(false);
+      setTestingWebhook(null);
     }
   };
 
-  const handleTestReviewWebhook = async () => {
-    if (!user?.id) {
-      toast.error('You must be logged in');
-      return;
-    }
-    
-    if (!formData.review_discord_webhook_url) {
-      toast.error('Please enter a Review Notification Webhook URL first');
-      return;
-    }
-    
-    setIsTestingReviewWebhook(true);
-    setReviewWebhookTestResult(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-review-discord-notification', {
-        body: {
-          reviewId: 'test-review-id',
-          rating: 5,
-          title: 'Amazing Service!',
-          content: 'This is a test review notification. The webhook is working correctly!',
-          userId: user.id,
-          productId: null,
-        },
-      });
-      
-      if (error) {
-        setReviewWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Review webhook test failed');
-      } else if (data?.skipped) {
-        setReviewWebhookTestResult({
-          success: false,
-          message: 'Webhook skipped',
-          details: data.message || 'No webhook URL configured',
-        });
-        toast.warning('Webhook skipped - no URL configured');
-      } else if (data?.success) {
-        setReviewWebhookTestResult({
-          success: true,
-          message: 'Test review notification sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Review webhook test sent successfully!');
-      } else {
-        setReviewWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Review webhook test failed');
-      }
-    } catch (err: any) {
-      console.error('Review webhook test error:', err);
-      setReviewWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to test review webhook');
-    } finally {
-      setIsTestingReviewWebhook(false);
-    }
+  // Test functions for each webhook type
+  const testOrderWebhook = async (): Promise<WebhookTestResult> => {
+    const response = await fetch(formData.discord_webhook_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [{
+          title: 'New Purchase',
+          description: '**Product Name**\nTest Product\n**Roblox**\nTestUser123\n(123456789)\n**Discord**\nTestUser#1234\n(987654321)',
+          color: 0x9b59b6,
+          thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
+          timestamp: new Date().toISOString(),
+        }],
+      }),
+    });
+    return response.ok 
+      ? { success: true, message: 'Test sent!', details: 'Check Discord' }
+      : { success: false, message: 'Webhook failed', details: `Status: ${response.status}` };
   };
 
-  const handleTestRoleWebhook = async () => {
-    if (!user?.id) {
-      toast.error('You must be logged in');
-      return;
-    }
-    
-    setIsTestingRoleWebhook(true);
-    setRoleWebhookTestResult(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-discord-webhook', {
-        body: {
-          user_id: user.id,
-          event: 'subscription_activated',
-          granted_by_admin: true,
-        },
-      });
-      
-      if (error) {
-        setRoleWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Webhook test failed');
-      } else if (data?.skipped) {
-        setRoleWebhookTestResult({
-          success: false,
-          message: 'Webhook skipped',
-          details: data.message || 'User has not linked their Discord account',
-        });
-        toast.warning('Webhook skipped - no Discord ID linked');
-      } else if (data?.success) {
-        setRoleWebhookTestResult({
-          success: true,
-          message: 'Webhook sent successfully!',
-          details: `Sent to Discord ID: ${data.discord_id}`,
-        });
-        toast.success('Webhook test sent successfully!');
-      } else {
-        setRoleWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Webhook test failed');
-      }
-    } catch (err: any) {
-      console.error('Discord webhook test error:', err);
-      setRoleWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to test webhook');
-    } finally {
-      setIsTestingRoleWebhook(false);
-    }
+  const testReviewWebhook = async (): Promise<WebhookTestResult> => {
+    const { data, error } = await supabase.functions.invoke('send-review-discord-notification', {
+      body: { reviewId: 'test', rating: 5, title: 'Test Review', content: 'Webhook test!', userId: user?.id },
+    });
+    if (error) return { success: false, message: 'Function failed', details: error.message };
+    if (data?.success) return { success: true, message: 'Test sent!', details: 'Check Discord' };
+    return { success: false, message: data?.error || 'Unknown error', details: data?.details };
   };
 
-  const handleTestAffiliateWebhook = async () => {
-    if (!user?.id) {
-      toast.error('You must be logged in');
-      return;
-    }
-    
-    if (!formData.affiliate_discord_webhook_url) {
-      toast.error('Please enter an Affiliate Webhook URL first');
-      return;
-    }
-    
-    setIsTestingAffiliateWebhook(true);
-    setAffiliateWebhookTestResult(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-affiliate-announcement', {
-        body: {},
-      });
-      
-      if (error) {
-        setAffiliateWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Affiliate webhook test failed');
-      } else if (data?.success) {
-        setAffiliateWebhookTestResult({
-          success: true,
-          message: 'Affiliate announcement sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Affiliate webhook test sent successfully!');
-      } else {
-        setAffiliateWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Affiliate webhook test failed');
-      }
-    } catch (err: any) {
-      console.error('Affiliate webhook test error:', err);
-      setAffiliateWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to test affiliate webhook');
-    } finally {
-      setIsTestingAffiliateWebhook(false);
-    }
+  const testPromotionsWebhook = async (): Promise<WebhookTestResult> => {
+    const { data, error } = await supabase.functions.invoke('send-promotion-discord-webhook', {
+      body: { custom: { title: 'Test Promotion', description: 'Webhook test!', code: 'TEST25', discount_value: '25% OFF', expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() } },
+    });
+    if (error) return { success: false, message: 'Function failed', details: error.message };
+    if (data?.success) return { success: true, message: 'Test sent!', details: 'Check Discord' };
+    return { success: false, message: data?.error || 'Unknown error', details: data?.details };
   };
 
-  const handleTestEclipsePlusWebhook = async () => {
-    if (!user?.id) {
-      toast.error('You must be logged in');
-      return;
-    }
-    
-    if (!formData.eclipse_plus_discord_webhook_url) {
-      toast.error('Please enter an Eclipse+ Webhook URL first');
-      return;
-    }
-    
-    setIsTestingEclipsePlusWebhook(true);
-    setEclipsePlusWebhookTestResult(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-eclipse-plus-announcement', {
-        body: {},
-      });
-      
-      if (error) {
-        setEclipsePlusWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Eclipse+ webhook failed');
-      } else if (data?.success) {
-        setEclipsePlusWebhookTestResult({
-          success: true,
-          message: 'Eclipse+ announcement sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Eclipse+ announcement sent successfully!');
-      } else {
-        setEclipsePlusWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Eclipse+ webhook failed');
-      }
-    } catch (err: any) {
-      console.error('Eclipse+ webhook error:', err);
-      setEclipsePlusWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to send Eclipse+ announcement');
-    } finally {
-      setIsTestingEclipsePlusWebhook(false);
-    }
+  const testCommunityWebhook = async (): Promise<WebhookTestResult> => {
+    const { data, error } = await supabase.functions.invoke('send-community-announcement', {
+      body: { type: 'custom', title: 'Test Announcement', message: 'Webhook test!' },
+    });
+    if (error) return { success: false, message: 'Function failed', details: error.message };
+    if (data?.success) return { success: true, message: 'Test sent!', details: 'Check Discord' };
+    return { success: false, message: data?.error || 'Unknown error', details: data?.details };
   };
 
-  const handleTestMarketplaceWebhook = async () => {
-    if (!user?.id) {
-      toast.error('You must be logged in');
-      return;
-    }
-    
-    if (!formData.marketplace_discord_webhook_url) {
-      toast.error('Please enter a Marketplace Webhook URL first');
-      return;
-    }
-    
-    setIsTestingMarketplaceWebhook(true);
-    setMarketplaceWebhookTestResult(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-marketplace-announcement', {
-        body: {},
-      });
-      
-      if (error) {
-        setMarketplaceWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Marketplace webhook failed');
-      } else if (data?.success) {
-        setMarketplaceWebhookTestResult({
-          success: true,
-          message: 'Marketplace announcement sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Marketplace announcement sent successfully!');
-      } else {
-        setMarketplaceWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Marketplace webhook failed');
-      }
-    } catch (err: any) {
-      console.error('Marketplace webhook error:', err);
-      setMarketplaceWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to send Marketplace announcement');
-    } finally {
-      setIsTestingMarketplaceWebhook(false);
-    }
+  const testRoleWebhook = async (): Promise<WebhookTestResult> => {
+    const { data, error } = await supabase.functions.invoke('send-discord-webhook', {
+      body: { user_id: user?.id, event: 'subscription_activated', granted_by_admin: true },
+    });
+    if (error) return { success: false, message: 'Function failed', details: error.message };
+    if (data?.skipped) return { success: false, message: 'Skipped', details: data.message || 'No Discord linked' };
+    if (data?.success) return { success: true, message: 'Role assigned!', details: `Discord ID: ${data.discord_id}` };
+    return { success: false, message: data?.error || 'Unknown error', details: data?.details };
   };
 
-  const handleSendAnnouncementFromDropdown = async (type: 'affiliate' | 'eclipse_plus' | 'marketplace') => {
+  // Announcement handlers
+  const sendAnnouncement = async (type: 'affiliate' | 'eclipse_plus' | 'marketplace') => {
     if (!user?.id) {
       toast.error('You must be logged in');
       return;
     }
 
-    let functionName: string;
-    let webhookKey: keyof DiscordSettings;
-    let label: string;
+    const config = {
+      affiliate: { fn: 'send-affiliate-announcement', key: 'affiliate_discord_webhook_url' as const, label: 'Affiliate' },
+      eclipse_plus: { fn: 'send-eclipse-plus-announcement', key: 'eclipse_plus_discord_webhook_url' as const, label: 'Eclipse+' },
+      marketplace: { fn: 'send-marketplace-announcement', key: 'marketplace_discord_webhook_url' as const, label: 'Marketplace' },
+    }[type];
 
-    switch (type) {
-      case 'affiliate':
-        functionName = 'send-affiliate-announcement';
-        webhookKey = 'affiliate_discord_webhook_url';
-        label = 'Affiliate';
-        break;
-      case 'eclipse_plus':
-        functionName = 'send-eclipse-plus-announcement';
-        webhookKey = 'eclipse_plus_discord_webhook_url';
-        label = 'Eclipse+';
-        break;
-      case 'marketplace':
-        functionName = 'send-marketplace-announcement';
-        webhookKey = 'marketplace_discord_webhook_url';
-        label = 'Marketplace';
-        break;
-    }
-
-    if (!formData[webhookKey]) {
-      toast.error(`Please configure the ${label} webhook URL first`);
+    if (!formData[config.key]) {
+      toast.error(`Configure ${config.label} webhook first`);
       return;
     }
 
     setIsSendingAnnouncement(type);
-
     try {
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: {},
-      });
-
-      if (error) {
-        toast.error(`${label} announcement failed: ${error.message}`);
-      } else if (data?.success) {
-        toast.success(`${label} announcement sent to Discord!`);
-      } else {
-        toast.error(data?.error || `${label} announcement failed`);
-      }
+      const { data, error } = await supabase.functions.invoke(config.fn, { body: {} });
+      if (error) toast.error(`${config.label} failed: ${error.message}`);
+      else if (data?.success) toast.success(`${config.label} sent!`);
+      else toast.error(data?.error || 'Failed');
     } catch (err: any) {
-      console.error(`${label} announcement error:`, err);
-      toast.error(`Failed to send ${label} announcement`);
+      toast.error(`Failed: ${err.message}`);
     } finally {
       setIsSendingAnnouncement(null);
     }
   };
 
-  const handleTestPromotionsWebhook = async () => {
-    if (!formData.promotions_discord_webhook_url) {
-      toast.error('Please enter a Promotions Webhook URL first');
-      return;
-    }
-
-    setIsTestingPromotionsWebhook(true);
-    setPromotionsWebhookTestResult(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('send-promotion-discord-webhook', {
-        body: {
-          custom: {
-            title: 'Test Promotion',
-            description: 'This is a test promotion announcement. Your webhook is configured correctly!',
-            code: 'TESTCODE25',
-            discount_value: '25% OFF',
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-        },
-      });
-
-      if (error) {
-        setPromotionsWebhookTestResult({
-          success: false,
-          message: 'Function invocation failed',
-          details: error.message,
-        });
-        toast.error('Promotions webhook test failed');
-      } else if (data?.success) {
-        setPromotionsWebhookTestResult({
-          success: true,
-          message: 'Test notification sent!',
-          details: 'Check your Discord channel',
-        });
-        toast.success('Promotions webhook test sent successfully!');
-      } else {
-        setPromotionsWebhookTestResult({
-          success: false,
-          message: data?.error || 'Unknown error',
-          details: data?.details,
-        });
-        toast.error('Promotions webhook test failed');
-      }
-    } catch (err: any) {
-      console.error('Promotions webhook test error:', err);
-      setPromotionsWebhookTestResult({
-        success: false,
-        message: 'Request failed',
-        details: err.message,
-      });
-      toast.error('Failed to test promotions webhook');
-    } finally {
-      setIsTestingPromotionsWebhook(false);
-    }
-  };
-
-  const TestResultBadge = ({ result }: { result: { success: boolean; message: string; details?: string } | null }) => {
+  // Test result badge component
+  const TestResultBadge = ({ result }: { result: WebhookTestResult | undefined }) => {
     if (!result) return null;
-    
     return (
-      <div className={`mt-3 p-3 rounded-lg ${
-        result.success 
-          ? 'bg-green-500/10 border border-green-500/30' 
-          : 'bg-red-500/10 border border-red-500/30'
-      }`}>
-        <div className="flex items-start gap-2">
-          {result.success ? (
-            <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5" />
-          ) : (
-            <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
-          )}
-          <div className="space-y-1">
-            <p className={`text-sm font-medium ${
-              result.success ? 'text-green-400' : 'text-red-400'
-            }`}>
-              {result.message}
-            </p>
-            {result.details && (
-              <p className="text-xs text-muted-foreground">
-                {result.details}
-              </p>
-            )}
-          </div>
+      <div className={cn(
+        'mt-3 p-3 rounded-lg flex items-start gap-2',
+        result.success ? 'bg-green-500/10 border border-green-500/30' : 'bg-red-500/10 border border-red-500/30'
+      )}>
+        {result.success ? <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5" /> : <XCircle className="h-4 w-4 text-red-400 mt-0.5" />}
+        <div>
+          <p className={cn('text-sm font-medium', result.success ? 'text-green-400' : 'text-red-400')}>{result.message}</p>
+          {result.details && <p className="text-xs text-muted-foreground">{result.details}</p>}
         </div>
       </div>
     );
   };
+
+  // Reusable webhook input component
+  const WebhookInput = ({ config }: { config: WebhookConfig }) => (
+    <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
+      <div className="flex items-center gap-2">
+        <div className={cn('p-1.5 rounded', config.iconColor)}>{config.icon}</div>
+        <div>
+          <h4 className="font-medium text-sm">{config.label}</h4>
+          <p className="text-xs text-muted-foreground">{config.description}</p>
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor={config.id} className="text-xs">Webhook URL</Label>
+        <Input
+          id={config.id}
+          value={formData[config.settingKey]}
+          onChange={(e) => handleChange(config.settingKey, e.target.value)}
+          placeholder="https://discord.com/api/webhooks/..."
+          className="bg-background text-sm h-9"
+        />
+      </div>
+
+      {config.roleIdKey && (
+        <div className="space-y-2">
+          <Label htmlFor={`${config.id}-role`} className="text-xs">{config.roleIdLabel || 'Role ID'}</Label>
+          <Input
+            id={`${config.id}-role`}
+            value={formData[config.roleIdKey]}
+            onChange={(e) => handleChange(config.roleIdKey!, e.target.value)}
+            placeholder="1234567890123456789"
+            className="bg-background text-sm h-9"
+          />
+        </div>
+      )}
+
+      {config.testable && (
+        <Button
+          onClick={() => {
+            const testFns: Record<string, () => Promise<WebhookTestResult>> = {
+              orders: testOrderWebhook,
+              reviews: testReviewWebhook,
+              promotions: testPromotionsWebhook,
+              community: testCommunityWebhook,
+              roles: testRoleWebhook,
+            };
+            if (testFns[config.id]) testWebhook(config.id, formData[config.settingKey], testFns[config.id]);
+          }}
+          variant="outline"
+          size="sm"
+          disabled={testingWebhook === config.id || !formData[config.settingKey]}
+          className="h-8"
+        >
+          {testingWebhook === config.id ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Send className="h-3 w-3 mr-1.5" />}
+          Test
+        </Button>
+      )}
+      
+      <TestResultBadge result={webhookTestResults[config.id]} />
+    </div>
+  );
+
+  // Section header component
+  const SectionHeader = ({ id, icon, title, description, color }: { id: string; icon: React.ReactNode; title: string; description: string; color: string }) => (
+    <CollapsibleTrigger asChild>
+      <button className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors rounded-lg">
+        <div className="flex items-center gap-3">
+          <div className={cn('p-2 rounded-lg', color)}>{icon}</div>
+          <div className="text-left">
+            <h3 className="font-semibold">{title}</h3>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <ChevronDown className={cn('h-5 w-5 text-muted-foreground transition-transform', expandedSections[id] && 'rotate-180')} />
+      </button>
+    </CollapsibleTrigger>
+  );
 
   if (isLoading) {
     return (
@@ -762,1303 +407,333 @@ export default function DiscordSettings() {
 
   return (
     <AdminLayout requiredPermissions={['manage_settings']}>
-      <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[#5865F2]/20">
-                <MessageSquare className="h-6 w-6 text-[#5865F2]" />
-              </div>
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Discord Settings</CardTitle>
-                <CardDescription className="hidden sm:block">Manage your Discord integrations and webhooks</CardDescription>
-              </div>
+      <div className="space-y-4 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[#5865F2]/20">
+              <MessageSquare className="h-6 w-6 text-[#5865F2]" />
             </div>
-            {/* Mobile dropdown below title */}
-            <div className="sm:hidden pt-3">
-              <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="w-full bg-background">
-                  <SelectValue placeholder="Select section" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border z-50">
-                  <SelectItem value="invite">
-                    <div className="flex items-center gap-2">
-                      <Link2 className="h-4 w-4" />
-                      Invite
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="widget">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Widget
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="orders">
-                    <div className="flex items-center gap-2">
-                      <Webhook className="h-4 w-4" />
-                      Orders
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="reviews">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      Reviews
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="roles">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Roles
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="boosts">
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4" />
-                      Boosts
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="affiliate">
-                    <div className="flex items-center gap-2">
-                      <Gift className="h-4 w-4" />
-                      Affiliate
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="eclipse-plus">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4" />
-                      Eclipse+
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="marketplace">
-                    <div className="flex items-center gap-2">
-                      <Megaphone className="h-4 w-4" />
-                      Marketplace
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="promotions">
-                    <div className="flex items-center gap-2">
-                      <Palette className="h-4 w-4" />
-                      Promotions
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="advertisements">
-                    <div className="flex items-center gap-2">
-                      <BadgeDollarSign className="h-4 w-4" />
-                      Ads
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="community">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Community
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="role-pings">
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="h-4 w-4" />
-                      Role Pings
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Discord Settings</h1>
+              <p className="text-sm text-muted-foreground hidden sm:block">Manage webhooks and integrations</p>
             </div>
-          </CardHeader>
-        </Card>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Desktop tabs navigation */}
-          <div className="hidden sm:block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-max">
-              <TabsTrigger value="invite" className="gap-2">
-                <Link2 className="h-4 w-4 hidden sm:block" />
-                Invite
-              </TabsTrigger>
-              <TabsTrigger value="widget" className="gap-2">
-                <Users className="h-4 w-4 hidden sm:block" />
-                Widget
-              </TabsTrigger>
-              <TabsTrigger value="orders" className="gap-2">
-                <Webhook className="h-4 w-4 hidden sm:block" />
-                Orders
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="gap-2">
-                <Star className="h-4 w-4 hidden sm:block" />
-                Reviews
-              </TabsTrigger>
-              <TabsTrigger value="roles" className="gap-2">
-                <MessageSquare className="h-4 w-4 hidden sm:block" />
-                Roles
-              </TabsTrigger>
-              <TabsTrigger value="affiliate" className="gap-2">
-                <Gift className="h-4 w-4 hidden sm:block" />
-                Affiliate
-              </TabsTrigger>
-              <TabsTrigger value="eclipse-plus" className="gap-2">
-                <Sparkles className="h-4 w-4 hidden sm:block" />
-                Eclipse+
-              </TabsTrigger>
-              <TabsTrigger value="marketplace" className="gap-2">
-                <Megaphone className="h-4 w-4 hidden sm:block" />
-                Marketplace
-              </TabsTrigger>
-              <TabsTrigger value="promotions" className="gap-2">
-                <Palette className="h-4 w-4 hidden sm:block" />
-                Promotions
-              </TabsTrigger>
-              <TabsTrigger value="advertisements" className="gap-2">
-                <BadgeDollarSign className="h-4 w-4 hidden sm:block" />
-                Ads
-              </TabsTrigger>
-              <TabsTrigger value="product-drops" className="gap-2">
-                <Package className="h-4 w-4 hidden sm:block" />
-                Drops
-              </TabsTrigger>
-              <TabsTrigger value="early-drops" className="gap-2">
-                <Shield className="h-4 w-4 hidden sm:block" />
-                Early Drops
-              </TabsTrigger>
-              <TabsTrigger value="community" className="gap-2">
-                <MessageSquare className="h-4 w-4 hidden sm:block" />
-                Community
-              </TabsTrigger>
-              <TabsTrigger value="role-pings" className="gap-2">
-                <UserCheck className="h-4 w-4 hidden sm:block" />
-                Role Pings
-              </TabsTrigger>
-              
-              {/* Announce Dropdown integrated into tabs */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow text-muted-foreground hover:text-foreground gap-1.5"
-                  >
-                    {isSendingAnnouncement ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Megaphone className="h-4 w-4 hidden sm:block" />
-                    )}
-                    Announce
-                    <ChevronDown className="h-3 w-3 opacity-60" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-card border-border z-50">
-                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-                    Send Announcement
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => handleSendAnnouncementFromDropdown('affiliate')}
-                    disabled={isSendingAnnouncement !== null || !formData.affiliate_discord_webhook_url}
-                    className="gap-3 cursor-pointer"
-                  >
-                    <Gift className="h-4 w-4 text-emerald-500" />
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Affiliate Programme</p>
-                      <p className="text-xs text-muted-foreground">Promote affiliate sign-ups</p>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleSendAnnouncementFromDropdown('eclipse_plus')}
-                    disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url}
-                    className="gap-3 cursor-pointer"
-                  >
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Eclipse+ Membership</p>
-                      <p className="text-xs text-muted-foreground">Promote premium membership</p>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleSendAnnouncementFromDropdown('marketplace')}
-                    disabled={isSendingAnnouncement === 'marketplace' || !formData.marketplace_discord_webhook_url}
-                    className="flex items-center gap-3 py-3 cursor-pointer"
-                  >
-                    {isSendingAnnouncement === 'marketplace' ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
-                    ) : (
-                      <Megaphone className="h-5 w-5 text-purple-400" />
-                    )}
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Marketplace</p>
-                      <p className="text-xs text-muted-foreground">Promote the marketplace</p>
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TabsList>
           </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Quick Announce Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  {isSendingAnnouncement ? <Loader2 className="h-4 w-4 animate-spin" /> : <Megaphone className="h-4 w-4" />}
+                  <span className="hidden sm:inline">Announce</span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-card border-border">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Send Announcement</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => sendAnnouncement('affiliate')} disabled={isSendingAnnouncement !== null || !formData.affiliate_discord_webhook_url} className="gap-3">
+                  <Gift className="h-4 w-4 text-emerald-500" />
+                  <span>Affiliate Programme</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => sendAnnouncement('eclipse_plus')} disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url} className="gap-3">
+                  <Sparkles className="h-4 w-4 text-amber-400" />
+                  <span>Eclipse+ Membership</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => sendAnnouncement('marketplace')} disabled={isSendingAnnouncement !== null || !formData.marketplace_discord_webhook_url} className="gap-3">
+                  <Megaphone className="h-4 w-4 text-purple-400" />
+                  <span>Marketplace</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <Button onClick={handleSave} disabled={saveMutation.isPending} size="sm">
+              {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+            </Button>
+          </div>
+        </div>
 
-          {/* Discord Invite Link Tab */}
-          <TabsContent value="invite">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Link2 className="h-5 w-5 text-[#5865F2]" />
-                  <CardTitle>Discord Invite Link</CardTitle>
-                </div>
-                <CardDescription>
-                  The invite link used across your website (Support, Footer, Legal pages, etc.)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="discordInvite">Invite URL</Label>
+        {/* General Section */}
+        <Collapsible open={expandedSections.general} onOpenChange={() => toggleSection('general')}>
+          <Card className="bg-card border-border overflow-hidden">
+            <SectionHeader id="general" icon={<Settings className="h-5 w-5 text-slate-400" />} title="General" description="Invite link and widget settings" color="bg-slate-500/20" />
+            <CollapsibleContent>
+              <CardContent className="pt-0 pb-4 space-y-4">
+                {/* Invite URL */}
+                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-blue-500/20"><Link2 className="h-4 w-4 text-blue-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Discord Invite</h4>
+                      <p className="text-xs text-muted-foreground">Used across website (Support, Footer, Legal)</p>
+                    </div>
+                  </div>
                   <div className="flex gap-2">
                     <Input
-                      id="discordInvite"
                       value={formData.discord_invite_url}
                       onChange={(e) => handleChange('discord_invite_url', e.target.value)}
                       placeholder="https://discord.gg/yourserver"
-                      className="bg-background flex-1"
+                      className="bg-background flex-1 h-9 text-sm"
                     />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleCopy(formData.discord_invite_url, 'invite')}
-                      disabled={!formData.discord_invite_url}
-                    >
-                      {copiedField === 'invite' ? (
-                        <Check className="h-4 w-4 text-green-400" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => handleCopy(formData.discord_invite_url, 'invite')} disabled={!formData.discord_invite_url}>
+                      {copiedField === 'invite' ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      asChild
-                      disabled={!formData.discord_invite_url}
-                    >
-                      <a href={formData.discord_invite_url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
+                    <Button variant="outline" size="icon" className="h-9 w-9" asChild disabled={!formData.discord_invite_url}>
+                      <a href={formData.discord_invite_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Make sure this is a permanent invite link that never expires
-                  </p>
                 </div>
 
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">Where this link is used:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Support page - Discord community link</li>
-                    <li>Bot Installation page - Discord support button</li>
-                    <li>Privacy Policy, Terms of Service, Refund Policy - Contact sections</li>
-                    <li>Header navigation (if applicable)</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Discord Widget Tab */}
-          <TabsContent value="widget">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-[#5865F2]" />
-                  <CardTitle>Discord Widget</CardTitle>
-                </div>
-                <CardDescription>
-                  Display your Discord server's online members on the homepage
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="widgetServerId">Server ID</Label>
+                {/* Widget */}
+                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-indigo-500/20"><Users className="h-4 w-4 text-indigo-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Discord Widget</h4>
+                      <p className="text-xs text-muted-foreground">Display online members on homepage</p>
+                    </div>
+                  </div>
                   <Input
-                    id="widgetServerId"
                     value={formData.discord_widget_server_id}
                     onChange={(e) => handleChange('discord_widget_server_id', e.target.value)}
-                    placeholder="1234567890123456789"
-                    className="bg-background"
+                    placeholder="Server ID (enable widget in Discord settings)"
+                    className="bg-background h-9 text-sm"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Your Discord server ID (right-click server icon → Copy Server ID with Developer Mode enabled)
-                  </p>
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-                  <p className="text-sm font-medium">How to enable the widget:</p>
-                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                    <li>Go to your Discord server settings</li>
-                    <li>Navigate to <span className="font-medium text-foreground">Widget</span> in the left sidebar</li>
-                    <li>Enable <span className="font-medium text-foreground">"Enable Server Widget"</span></li>
-                    <li>Choose which channel to show as the invite channel (optional)</li>
-                    <li>Copy your Server ID and paste it above</li>
-                  </ol>
-                </div>
-
-                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
-                  <p className="text-sm text-amber-400">
-                    <strong>Note:</strong> The server widget must be enabled in Discord settings for the online members to display. If disabled, a fallback "Join Discord" button will be shown instead.
-                  </p>
                 </div>
               </CardContent>
-            </Card>
-          </TabsContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
-          {/* Order Notifications Tab */}
-          <TabsContent value="orders">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Webhook className="h-5 w-5 text-primary" />
-                  <CardTitle>Order Notification Webhook</CardTitle>
-                </div>
-                <CardDescription>
-                  Receive Discord notifications when orders are placed
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="orderWebhook">Webhook URL</Label>
-                  <Input
-                    id="orderWebhook"
-                    value={formData.discord_webhook_url}
-                    onChange={(e) => handleChange('discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a webhook in your Discord server: Server Settings → Integrations → Webhooks
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Test Webhook</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send a sample order notification to verify your webhook is configured correctly.
-                  </p>
-                  <Button
-                    onClick={handleTestOrderWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingOrderWebhook || !formData.discord_webhook_url}
-                  >
-                    {isTestingOrderWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Test Order
-                  </Button>
-                  <TestResultBadge result={orderWebhookTestResult} />
-                </div>
+        {/* Notifications Section */}
+        <Collapsible open={expandedSections.notifications} onOpenChange={() => toggleSection('notifications')}>
+          <Card className="bg-card border-border overflow-hidden">
+            <SectionHeader id="notifications" icon={<Bell className="h-5 w-5 text-amber-400" />} title="Notifications" description="Order, review, and promotion webhooks" color="bg-amber-500/20" />
+            <CollapsibleContent>
+              <CardContent className="pt-0 pb-4 space-y-4">
+                <WebhookInput config={{
+                  id: 'orders',
+                  label: 'Order Notifications',
+                  description: 'Notify when orders are placed',
+                  settingKey: 'discord_webhook_url',
+                  icon: <Webhook className="h-4 w-4 text-purple-400" />,
+                  iconColor: 'bg-purple-500/20',
+                  testable: true,
+                }} />
+                
+                <WebhookInput config={{
+                  id: 'reviews',
+                  label: 'Review Notifications',
+                  description: 'Notify when reviews are approved',
+                  settingKey: 'review_discord_webhook_url',
+                  icon: <Star className="h-4 w-4 text-amber-400" />,
+                  iconColor: 'bg-amber-500/20',
+                  testable: true,
+                }} />
+                
+                <WebhookInput config={{
+                  id: 'promotions',
+                  label: 'Promotions',
+                  description: 'Discount codes and special offers',
+                  settingKey: 'promotions_discord_webhook_url',
+                  icon: <Palette className="h-4 w-4 text-rose-400" />,
+                  iconColor: 'bg-rose-500/20',
+                  testable: true,
+                }} />
               </CardContent>
-            </Card>
-          </TabsContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
-          {/* Review Notifications Tab */}
-          <TabsContent value="reviews">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-amber-400" />
-                  <CardTitle>Review Notification Webhook</CardTitle>
-                </div>
-                <CardDescription>
-                  Receive Discord notifications when reviews are approved
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="reviewWebhook">Webhook URL</Label>
-                  <Input
-                    id="reviewWebhook"
-                    value={formData.review_discord_webhook_url}
-                    onChange={(e) => handleChange('review_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This can be the same or a different channel than order notifications
-                  </p>
-                </div>
+        {/* Announcements Section */}
+        <Collapsible open={expandedSections.announcements} onOpenChange={() => toggleSection('announcements')}>
+          <Card className="bg-card border-border overflow-hidden">
+            <SectionHeader id="announcements" icon={<Megaphone className="h-5 w-5 text-cyan-400" />} title="Announcements" description="Community, product drops, and programme announcements" color="bg-cyan-500/20" />
+            <CollapsibleContent>
+              <CardContent className="pt-0 pb-4 space-y-4">
+                <WebhookInput config={{
+                  id: 'community',
+                  label: 'Community Announcements',
+                  description: 'General community updates',
+                  settingKey: 'community_discord_webhook_url',
+                  icon: <MessageSquare className="h-4 w-4 text-blue-400" />,
+                  iconColor: 'bg-blue-500/20',
+                  roleIdKey: 'community_discord_role_id',
+                  roleIdLabel: 'Role ID to Ping',
+                  testable: true,
+                }} />
 
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Test Webhook</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send a sample review notification to verify your webhook is configured correctly.
-                  </p>
-                  <Button
-                    onClick={handleTestReviewWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingReviewWebhook || !formData.review_discord_webhook_url}
-                  >
-                    {isTestingReviewWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Test Review
-                  </Button>
-                  <TestResultBadge result={reviewWebhookTestResult} />
-                </div>
+                <WebhookInput config={{
+                  id: 'product-drops',
+                  label: 'Product Drops',
+                  description: 'New product announcements',
+                  settingKey: 'product_drops_discord_webhook_url',
+                  icon: <Package className="h-4 w-4 text-cyan-400" />,
+                  iconColor: 'bg-cyan-500/20',
+                }} />
+
+                <WebhookInput config={{
+                  id: 'early-drops',
+                  label: 'Early Product Drops',
+                  description: 'VIP/Eclipse+ early access',
+                  settingKey: 'early_product_drops_discord_webhook_url',
+                  icon: <Shield className="h-4 w-4 text-violet-400" />,
+                  iconColor: 'bg-violet-500/20',
+                }} />
+
+                <WebhookInput config={{
+                  id: 'affiliate',
+                  label: 'Affiliate Programme',
+                  description: 'Affiliate programme announcements',
+                  settingKey: 'affiliate_discord_webhook_url',
+                  icon: <Gift className="h-4 w-4 text-emerald-400" />,
+                  iconColor: 'bg-emerald-500/20',
+                }} />
+
+                <WebhookInput config={{
+                  id: 'eclipse-plus',
+                  label: 'Eclipse+ Membership',
+                  description: 'Membership programme announcements',
+                  settingKey: 'eclipse_plus_discord_webhook_url',
+                  icon: <Sparkles className="h-4 w-4 text-amber-400" />,
+                  iconColor: 'bg-amber-500/20',
+                }} />
+
+                <WebhookInput config={{
+                  id: 'marketplace',
+                  label: 'Marketplace',
+                  description: 'Seller marketplace announcements',
+                  settingKey: 'marketplace_discord_webhook_url',
+                  icon: <Megaphone className="h-4 w-4 text-purple-400" />,
+                  iconColor: 'bg-purple-500/20',
+                }} />
               </CardContent>
-            </Card>
-          </TabsContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
-          {/* Role Integration Tab */}
-          <TabsContent value="roles">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Webhook className="h-5 w-5 text-primary" />
-                  <CardTitle>Discord Role Integration</CardTitle>
-                </div>
-                <CardDescription>
-                  Automatically assign Discord roles to Eclipse+ subscribers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-                  <p className="text-sm font-medium">Configuration</p>
-                  <p className="text-sm text-muted-foreground">
-                    Role integration is configured via environment variables for security:
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li><code className="bg-background px-1 rounded">DISCORD_BOT_TOKEN</code> - Your bot's token</li>
-                    <li><code className="bg-background px-1 rounded">DISCORD_GUILD_ID</code> - Your server ID</li>
-                    <li><code className="bg-background px-1 rounded">DISCORD_ROLE_ID</code> - The Eclipse+ role ID</li>
-                  </ul>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Contact support if you need help configuring these values.
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Test Role Assignment</span>
+        {/* Configuration Section */}
+        <Collapsible open={expandedSections.configuration} onOpenChange={() => toggleSection('configuration')}>
+          <Card className="bg-card border-border overflow-hidden">
+            <SectionHeader id="configuration" icon={<Zap className="h-5 w-5 text-emerald-400" />} title="Configuration" description="Roles, ads, and ping settings" color="bg-emerald-500/20" />
+            <CollapsibleContent>
+              <CardContent className="pt-0 pb-4 space-y-4">
+                {/* Role Integration */}
+                <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-blue-500/20"><UserCheck className="h-4 w-4 text-blue-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Discord Role Integration</h4>
+                      <p className="text-xs text-muted-foreground">Auto-assign roles to Eclipse+ subscribers</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    This will attempt to assign the Eclipse+ role to your linked Discord account.
-                    Make sure you have linked your Discord account in your profile settings first.
-                  </p>
+                  <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground space-y-1">
+                    <p className="font-medium text-foreground">Environment variables:</p>
+                    <p><code className="bg-background px-1 rounded">DISCORD_BOT_TOKEN</code> • <code className="bg-background px-1 rounded">DISCORD_GUILD_ID</code> • <code className="bg-background px-1 rounded">DISCORD_ROLE_ID</code></p>
+                  </div>
                   <Button
-                    onClick={handleTestRoleWebhook}
+                    onClick={() => testWebhook('roles', 'configured', testRoleWebhook)}
                     variant="outline"
                     size="sm"
-                    disabled={isTestingRoleWebhook}
+                    disabled={testingWebhook === 'roles'}
+                    className="h-8"
                   >
-                    {isTestingRoleWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
+                    {testingWebhook === 'roles' ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Send className="h-3 w-3 mr-1.5" />}
                     Test Role Assignment
                   </Button>
-                  <TestResultBadge result={roleWebhookTestResult} />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Affiliate Webhook Tab */}
-          <TabsContent value="affiliate">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Gift className="h-5 w-5 text-green-400" />
-                  <CardTitle>#affiliate-programme</CardTitle>
-                </div>
-                <CardDescription>
-                  Send affiliate programme announcements to Discord
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="affiliateWebhook">Webhook URL</Label>
-                  <Input
-                    id="affiliateWebhook"
-                    value={formData.affiliate_discord_webhook_url}
-                    onChange={(e) => handleChange('affiliate_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for affiliate programme announcements in your Discord server
-                  </p>
+                  <TestResultBadge result={webhookTestResults.roles} />
                 </div>
 
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Send Announcement</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send the affiliate programme advertisement to your Discord channel to attract new affiliates.
-                  </p>
-                  <Button
-                    onClick={handleTestAffiliateWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingAffiliateWebhook || !formData.affiliate_discord_webhook_url}
-                  >
-                    {isTestingAffiliateWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Announcement
-                  </Button>
-                  <TestResultBadge result={affiliateWebhookTestResult} />
-                </div>
+                {/* Advertisements */}
+                <WebhookInput config={{
+                  id: 'ads',
+                  label: 'Paid Promotions',
+                  description: 'User-submitted advertisements',
+                  settingKey: 'advertisements_discord_webhook_url',
+                  icon: <BadgeDollarSign className="h-4 w-4 text-amber-400" />,
+                  iconColor: 'bg-amber-500/20',
+                  roleIdKey: 'advertisements_partnership_ping_role_id',
+                  roleIdLabel: 'Partnership Ping Role ID',
+                }} />
 
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Eye-catching affiliate programme advert</li>
-                    <li>Current commission rate from your settings</li>
-                    <li>Minimum payout threshold</li>
-                    <li>Cookie duration (referral tracking period)</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Eclipse+ Webhook Tab */}
-          <TabsContent value="eclipse-plus">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-amber-400" />
-                  <CardTitle>#eclipse+</CardTitle>
-                </div>
-                <CardDescription>
-                  Send Eclipse+ membership announcements to Discord
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="eclipsePlusWebhook">Webhook URL</Label>
-                  <Input
-                    id="eclipsePlusWebhook"
-                    value={formData.eclipse_plus_discord_webhook_url}
-                    onChange={(e) => handleChange('eclipse_plus_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for Eclipse+ membership announcements in your Discord server
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Send Announcement</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send the Eclipse+ membership advertisement to your Discord channel to attract new subscribers.
-                  </p>
-                  <Button
-                    onClick={handleTestEclipsePlusWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingEclipsePlusWebhook || !formData.eclipse_plus_discord_webhook_url}
-                  >
-                    {isTestingEclipsePlusWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Announcement
-                  </Button>
-                  <TestResultBadge result={eclipsePlusWebhookTestResult} />
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Professional Eclipse+ membership advertisement</li>
-                    <li>30% discount on all products</li>
-                    <li>Monthly free product claim</li>
-                    <li>Discord role assignment feature</li>
-                    <li>Pricing information (£3.99/month)</li>
-                  </ul>
-                </div>
-
-                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-amber-400">Premium Announcement</p>
-                      <p className="text-sm text-muted-foreground">
-                        This announcement showcases the exclusive benefits of Eclipse+ membership 
-                        with a gold-themed design to attract premium subscribers.
-                      </p>
+                {/* QOTD */}
+                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-pink-500/20"><MessageSquare className="h-4 w-4 text-pink-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Question of the Day</h4>
+                      <p className="text-xs text-muted-foreground">Daily engagement posts</p>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Marketplace Marketing Tab */}
-          <TabsContent value="marketplace">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Megaphone className="h-5 w-5 text-purple-400" />
-                  <CardTitle>#eclipse-marketplace</CardTitle>
-                </div>
-                <CardDescription>
-                  Send marketplace announcements to Discord to attract buyers and sellers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="marketplaceWebhook">Webhook URL</Label>
-                  <Input
-                    id="marketplaceWebhook"
-                    value={formData.marketplace_discord_webhook_url}
-                    onChange={(e) => handleChange('marketplace_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for marketplace marketing announcements in your Discord server
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Send Announcement</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send the marketplace advertisement to your Discord channel to attract buyers and sellers.
-                  </p>
-                  <Button
-                    onClick={handleTestMarketplaceWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingMarketplaceWebhook || !formData.marketplace_discord_webhook_url}
-                  >
-                    {isTestingMarketplaceWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Announcement
-                  </Button>
-                  <TestResultBadge result={marketplaceWebhookTestResult} />
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Eye-catching marketplace advertisement</li>
-                    <li>Browse unique products section</li>
-                    <li>Become a seller benefits</li>
-                    <li>Verified quality and secure transactions</li>
-                    <li>Seller commission rates (85%)</li>
-                    <li>Links to marketplace and seller signup</li>
-                  </ul>
-                </div>
-
-                <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Megaphone className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-purple-400">Marketing Announcement</p>
-                      <p className="text-sm text-muted-foreground">
-                        This announcement showcases the marketplace with a purple-themed design 
-                        to attract both buyers and sellers to your community marketplace.
-                      </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Webhook URL</Label>
+                      <Input
+                        value={formData.qotd_discord_webhook_url}
+                        onChange={(e) => handleChange('qotd_discord_webhook_url', e.target.value)}
+                        placeholder="https://discord.com/api/webhooks/..."
+                        className="bg-background h-9 text-sm"
+                      />
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Promotions Webhook Tab */}
-          <TabsContent value="promotions">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-rose-400" />
-                  <CardTitle>#promotions-discounts</CardTitle>
-                </div>
-                <CardDescription>
-                  Receive Discord notifications for discount codes and special offers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="promotionsWebhook">Webhook URL</Label>
-                  <Input
-                    id="promotionsWebhook"
-                    value={formData.promotions_discord_webhook_url}
-                    onChange={(e) => handleChange('promotions_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for promotion announcements in your Discord server
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Test Webhook</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send a sample promotion notification to verify your webhook is configured correctly.
-                  </p>
-                  <Button
-                    onClick={handleTestPromotionsWebhook}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingPromotionsWebhook || !formData.promotions_discord_webhook_url}
-                  >
-                    {isTestingPromotionsWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Test Promotion
-                  </Button>
-                  <TestResultBadge result={promotionsWebhookTestResult} />
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent automatically:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Discount code announcements with code and value</li>
-                    <li>Special offer notifications</li>
-                    <li>Expiration dates and usage limits</li>
-                    <li>Role pings for promotion alerts</li>
-                    <li>Links to browse products</li>
-                  </ul>
-                </div>
-
-                <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Palette className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-rose-400">Promotion Announcements</p>
-                      <p className="text-sm text-muted-foreground">
-                        Discount codes and special offers created in the Promotions admin page 
-                        can be announced to this webhook channel automatically.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Advertisements Webhook Tab */}
-          <TabsContent value="advertisements">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <BadgeDollarSign className="h-5 w-5 text-amber-400" />
-                  <CardTitle>#paid-promotions</CardTitle>
-                </div>
-                <CardDescription>
-                  Configure where Discord advertisement subscriptions post their ads
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="advertisementsWebhook">Webhook URL</Label>
-                  <Input
-                    id="advertisementsWebhook"
-                    value={formData.advertisements_discord_webhook_url}
-                    onChange={(e) => handleChange('advertisements_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook channel for user-submitted advertisements
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="partnershipPingRoleId">Partnership Ping Role ID</Label>
-                  <Input
-                    id="partnershipPingRoleId"
-                    value={formData.advertisements_partnership_ping_role_id}
-                    onChange={(e) => handleChange('advertisements_partnership_ping_role_id', e.target.value)}
-                    placeholder="e.g., 1234567890123456789"
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Discord role ID to ping for ads without purchased pings (defaults to this role for standard ads)
-                  </p>
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">Ping Options:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li><strong>No ping purchased:</strong> Uses the Partnership Ping Role above (if set)</li>
-                    <li><strong>@here (£0.99):</strong> Pings all online members in the channel</li>
-                    <li><strong>@everyone (£1.99):</strong> Pings all server members</li>
-                  </ul>
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent to this channel:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>User-submitted Discord advertisements</li>
-                    <li>Ads from Basic, Pro, and Premium subscription tiers</li>
-                    <li>Embedded ads with images and links</li>
-                    <li>Tier-colored badges (blue, purple, gold)</li>
-                  </ul>
-                </div>
-
-                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <BadgeDollarSign className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-amber-400">Advertisement Subscription System</p>
-                      <p className="text-sm text-muted-foreground">
-                        Users can subscribe to post ads to this channel. Configure the webhook 
-                        before users can start posting advertisements through their subscriptions.
-                      </p>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Role ID to Ping</Label>
+                      <Input
+                        value={formData.qotd_discord_role_id}
+                        onChange={(e) => handleChange('qotd_discord_role_id', e.target.value)}
+                        placeholder="1234567890123456789"
+                        className="bg-background h-9 text-sm"
+                      />
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
-                  <p className="text-sm text-blue-400">
-                    <strong>Tip:</strong> Create a dedicated #ads or #sponsors channel in your Discord server 
-                    and set up the webhook there to keep user advertisements organized and separate from 
-                    official announcements.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Product Drops Webhook Tab */}
-          <TabsContent value="product-drops">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-cyan-400" />
-                  <CardTitle>#product-drops</CardTitle>
-                </div>
-                <CardDescription>
-                  Announce new product releases to your community
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="productDropsWebhook">Webhook URL</Label>
-                  <Input
-                    id="productDropsWebhook"
-                    value={formData.product_drops_discord_webhook_url}
-                    onChange={(e) => handleChange('product_drops_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for product drop announcements in your Discord server
-                  </p>
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent automatically:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>New product release announcements</li>
-                    <li>Product images and descriptions</li>
-                    <li>Pricing and availability</li>
-                    <li>Direct links to purchase</li>
-                  </ul>
-                </div>
-
-                <div className="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Package className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-cyan-400">Product Drop Notifications</p>
-                      <p className="text-sm text-muted-foreground">
-                        When products are published or scheduled releases go live, 
-                        notifications will be sent to this channel.
-                      </p>
+                {/* Polls */}
+                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-teal-500/20"><MessageSquare className="h-4 w-4 text-teal-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Discord Polls</h4>
+                      <p className="text-xs text-muted-foreground">Community polls and voting</p>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Webhook URL</Label>
+                      <Input
+                        value={formData.polls_discord_webhook_url}
+                        onChange={(e) => handleChange('polls_discord_webhook_url', e.target.value)}
+                        placeholder="https://discord.com/api/webhooks/..."
+                        className="bg-background h-9 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Role ID to Ping</Label>
+                      <Input
+                        value={formData.polls_discord_role_id}
+                        onChange={(e) => handleChange('polls_discord_role_id', e.target.value)}
+                        placeholder="1234567890123456789"
+                        className="bg-background h-9 text-sm"
+                      />
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          {/* Early Product Drops Webhook Tab */}
-          <TabsContent value="early-drops">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-violet-400" />
-                  <CardTitle>#early-product-drops</CardTitle>
-                </div>
-                <CardDescription>
-                  Give VIP members early access to product announcements
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="earlyProductDropsWebhook">Webhook URL</Label>
-                  <Input
-                    id="earlyProductDropsWebhook"
-                    value={formData.early_product_drops_discord_webhook_url}
-                    onChange={(e) => handleChange('early_product_drops_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for early product announcements (VIP/Eclipse+ members)
-                  </p>
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What gets sent automatically:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Early access product announcements</li>
-                    <li>Exclusive previews before public release</li>
-                    <li>VIP-only product drops</li>
-                    <li>Priority purchase links</li>
-                  </ul>
-                </div>
-
-                <div className="bg-violet-500/10 border border-violet-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <Shield className="h-4 w-4 text-violet-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-violet-400">Early Access Channel</p>
-                      <p className="text-sm text-muted-foreground">
-                        This channel is for VIP members and Eclipse+ subscribers who get 
-                        early access to product drops before the public announcement.
-                      </p>
+                {/* Role Ping Manager */}
+                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-orange-500/20"><UserCheck className="h-4 w-4 text-orange-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Role Ping Manager</h4>
+                      <p className="text-xs text-muted-foreground">Manage customer Discord roles</p>
                     </div>
                   </div>
+                  <DiscordRoleManager />
                 </div>
               </CardContent>
-            </Card>
-          </TabsContent>
-
-
-          {/* Community Announcements Webhook Tab */}
-          <TabsContent value="community">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-blue-400" />
-                  <CardTitle>Community Announcements Webhook</CardTitle>
-                </div>
-                <CardDescription>
-                  Send community announcements to Discord from the dashboard
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="communityWebhook">Webhook URL</Label>
-                  <Input
-                    id="communityWebhook"
-                    value={formData.community_discord_webhook_url}
-                    onChange={(e) => handleChange('community_discord_webhook_url', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Create a dedicated webhook for community announcements in your Discord server
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="communityRoleId">Role ID to Ping (optional)</Label>
-                  <Input
-                    id="communityRoleId"
-                    value={formData.community_discord_role_id}
-                    onChange={(e) => handleChange('community_discord_role_id', e.target.value)}
-                    placeholder="e.g. 1234567890123456789"
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter a Discord role ID to ping when sending announcements. You can override this per announcement.
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">Test Webhook</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Send a test announcement to verify your webhook is configured correctly.
-                  </p>
-                  <Button
-                    onClick={async () => {
-                      if (!formData.community_discord_webhook_url) {
-                        toast.error('Please enter a Community Webhook URL first');
-                        return;
-                      }
-                      setIsTestingCommunityWebhook(true);
-                      setCommunityWebhookTestResult(null);
-                      try {
-                        const { data, error } = await supabase.functions.invoke('send-community-announcement', {
-                          body: {
-                            type: 'custom',
-                            title: 'Test Announcement',
-                            message: 'This is a test community announcement. The webhook is working correctly!',
-                          },
-                        });
-                        if (error) {
-                          setCommunityWebhookTestResult({
-                            success: false,
-                            message: 'Function invocation failed',
-                            details: error.message,
-                          });
-                          toast.error('Community webhook test failed');
-                        } else if (data?.success) {
-                          setCommunityWebhookTestResult({
-                            success: true,
-                            message: 'Test announcement sent!',
-                            details: 'Check your Discord channel',
-                          });
-                          toast.success('Community webhook test sent successfully!');
-                        } else {
-                          setCommunityWebhookTestResult({
-                            success: false,
-                            message: data?.error || 'Unknown error',
-                            details: data?.details,
-                          });
-                          toast.error('Community webhook test failed');
-                        }
-                      } catch (err: any) {
-                        setCommunityWebhookTestResult({
-                          success: false,
-                          message: 'Request failed',
-                          details: err.message,
-                        });
-                        toast.error('Failed to test community webhook');
-                      } finally {
-                        setIsTestingCommunityWebhook(false);
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTestingCommunityWebhook || !formData.community_discord_webhook_url}
-                  >
-                    {isTestingCommunityWebhook ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Send Test Announcement
-                  </Button>
-                  <TestResultBadge result={communityWebhookTestResult} />
-                </div>
-
-                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm font-medium">What this webhook is for:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Platform updates and feature announcements</li>
-                    <li>Maintenance notices</li>
-                    <li>Community events</li>
-                    <li>Custom announcements</li>
-                  </ul>
-                </div>
-
-                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <MessageSquare className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-blue-400">Community Announcements Page</p>
-                      <p className="text-sm text-muted-foreground">
-                        Once configured, you can send announcements from the{' '}
-                        <a href="/admin/community-announcements" className="text-blue-400 hover:underline">
-                          Community Announcements page
-                        </a>.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Role Pings Tab */}
-          <TabsContent value="role-pings">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5 text-purple-400" />
-                  <CardTitle>Discord Role Pings</CardTitle>
-                </div>
-                <CardDescription>
-                  Configure which Discord roles get pinged for different announcements and features
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Default Role Ping */}
-                <div className="space-y-2">
-                  <Label htmlFor="defaultRoleId" className="flex items-center gap-2">
-                    <span>Default Role ID</span>
-                    <Badge variant="secondary" className="text-xs">Fallback</Badge>
-                  </Label>
-                  <Input
-                    id="defaultRoleId"
-                    value={formData.discord_ping_role_id}
-                    onChange={(e) => handleChange('discord_ping_role_id', e.target.value)}
-                    placeholder="e.g. 1234567890123456789"
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This role is used as a fallback when no specific role is configured for a feature
-                  </p>
-                </div>
-
-                <div className="border-t border-border" />
-
-                {/* Community Announcements Role */}
-                <div className="space-y-2">
-                  <Label htmlFor="communityRoleIdPing" className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-blue-400" />
-                    <span>Community Announcements</span>
-                  </Label>
-                  <Input
-                    id="communityRoleIdPing"
-                    value={formData.community_discord_role_id}
-                    onChange={(e) => handleChange('community_discord_role_id', e.target.value)}
-                    placeholder="e.g. 1234567890123456789"
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Role to ping for community announcements (updates, maintenance, events)
-                  </p>
-                </div>
-
-                {/* QOTD Settings */}
-                <div className="space-y-4 p-4 border border-yellow-500/30 rounded-lg bg-yellow-500/5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare className="h-4 w-4 text-yellow-400" />
-                    <span className="font-medium">Question of the Day (QOTD)</span>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="qotdWebhook">QOTD Webhook URL</Label>
-                    <Input
-                      id="qotdWebhook"
-                      value={formData.qotd_discord_webhook_url}
-                      onChange={(e) => handleChange('qotd_discord_webhook_url', e.target.value)}
-                      placeholder="https://discord.com/api/webhooks/..."
-                      className="bg-background"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Dedicated webhook for QOTD messages. Falls back to Community webhook if empty.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="qotdRoleId">QOTD Role ID</Label>
-                    <Input
-                      id="qotdRoleId"
-                      value={formData.qotd_discord_role_id}
-                      onChange={(e) => handleChange('qotd_discord_role_id', e.target.value)}
-                      placeholder="e.g. 1234567890123456789"
-                      className="bg-background"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Role to ping when posting Question of the Day. Falls back to Default Role if empty.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Polls Settings */}
-                <div className="space-y-4 p-4 border border-green-500/30 rounded-lg bg-green-500/5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare className="h-4 w-4 text-green-400" />
-                    <span className="font-medium">Discord Polls & Surveys</span>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="pollsWebhook">Polls Webhook URL</Label>
-                    <Input
-                      id="pollsWebhook"
-                      value={formData.polls_discord_webhook_url}
-                      onChange={(e) => handleChange('polls_discord_webhook_url', e.target.value)}
-                      placeholder="https://discord.com/api/webhooks/..."
-                      className="bg-background"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Dedicated webhook for polls and surveys. Falls back to Community webhook if empty.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="pollsRoleId">Polls Role ID</Label>
-                    <Input
-                      id="pollsRoleId"
-                      value={formData.polls_discord_role_id}
-                      onChange={(e) => handleChange('polls_discord_role_id', e.target.value)}
-                      placeholder="e.g. 1234567890123456789"
-                      className="bg-background"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Role to ping when posting polls and surveys. Falls back to Community Role if empty.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Advertisements Partnership Role */}
-                <div className="space-y-2">
-                  <Label htmlFor="adsPartnershipRoleId" className="flex items-center gap-2">
-                    <BadgeDollarSign className="h-4 w-4 text-amber-400" />
-                    <span>Advertisement Partnerships</span>
-                  </Label>
-                  <Input
-                    id="adsPartnershipRoleId"
-                    value={formData.advertisements_partnership_ping_role_id}
-                    onChange={(e) => handleChange('advertisements_partnership_ping_role_id', e.target.value)}
-                    placeholder="e.g. 1234567890123456789"
-                    className="bg-background"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Role to ping for advertisement partnership announcements
-                  </p>
-                </div>
-
-                <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
-                  <div className="flex gap-2">
-                    <UserCheck className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-purple-400">How to get a Role ID</p>
-                      <p className="text-sm text-muted-foreground">
-                        Enable Developer Mode in Discord (User Settings → Advanced), then right-click any role and select "Copy Role ID".
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        <Button
-          onClick={handleSave}
-          className="w-fit"
-          disabled={saveMutation.isPending}
-        >
-          {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Save Discord Settings
-        </Button>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </div>
     </AdminLayout>
   );
