@@ -37,8 +37,13 @@ import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
-// Helper component to display affiliate ID if user is an approved affiliate
-const AffiliateIdDisplay = ({ userId }: { userId: string }) => {
+// Unified IDs display component
+const UserIdsSection = ({ userId, customerId, onCopyCustomerId, copiedId }: { 
+  userId: string; 
+  customerId: string | null;
+  onCopyCustomerId: () => void;
+  copiedId: boolean;
+}) => {
   const { data: affiliateApp } = useQuery({
     queryKey: ['affiliate-id', userId],
     queryFn: async () => {
@@ -54,18 +59,6 @@ const AffiliateIdDisplay = ({ userId }: { userId: string }) => {
     staleTime: 1000 * 60 * 10,
   });
 
-  if (!affiliateApp?.affiliate_id) return null;
-
-  return (
-    <span className="flex items-center gap-1.5 text-muted-foreground">
-      <span className="text-muted-foreground/70">Affiliate:</span>
-      <span className="font-mono">{affiliateApp.affiliate_id}</span>
-    </span>
-  );
-};
-
-// Helper component to display seller/store ID if user owns a store
-const SellerIdDisplay = ({ userId }: { userId: string }) => {
   const { data: store } = useQuery({
     queryKey: ['seller-id', userId],
     queryFn: async () => {
@@ -80,13 +73,45 @@ const SellerIdDisplay = ({ userId }: { userId: string }) => {
     staleTime: 1000 * 60 * 10,
   });
 
-  if (!store?.store_id) return null;
+  const hasAnyId = customerId || affiliateApp?.affiliate_id || store?.store_id;
+  if (!hasAnyId) return null;
+
+  const idItems = [
+    customerId && { label: 'Customer ID', value: customerId, copyable: true },
+    affiliateApp?.affiliate_id && { label: 'Affiliate ID', value: affiliateApp.affiliate_id, copyable: false },
+    store?.store_id && { label: 'Seller ID', value: store.store_id, copyable: false },
+  ].filter(Boolean) as { label: string; value: string; copyable: boolean }[];
 
   return (
-    <span className="flex items-center gap-1.5 text-muted-foreground">
-      <span className="text-muted-foreground/70">Seller:</span>
-      <span className="font-mono">{store.store_id}</span>
-    </span>
+    <div className="border-t border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+        {idItems.map((item) => (
+          <div
+            key={item.label}
+            className="px-4 py-3 flex flex-col gap-1"
+          >
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+              {item.label}
+            </span>
+            {item.copyable ? (
+              <button
+                onClick={onCopyCustomerId}
+                className="flex items-center gap-1.5 text-sm font-mono text-foreground/80 hover:text-foreground transition-colors w-fit"
+              >
+                <span>{item.value}</span>
+                {copiedId ? (
+                  <Check className="h-3 w-3 text-green-500" />
+                ) : (
+                  <Copy className="h-3 w-3 text-muted-foreground" />
+                )}
+              </button>
+            ) : (
+              <span className="text-sm font-mono text-foreground/80">{item.value}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -491,24 +516,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </div>
 
             {/* IDs Section */}
-            <div className="border-t border-border px-4 sm:px-6 py-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
-              {profile?.customer_id && (
-                <button
-                  onClick={copyCustomerId}
-                  className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <span className="text-muted-foreground/70">Customer:</span>
-                  <span className="font-mono">{profile.customer_id}</span>
-                  {copiedId ? (
-                    <Check className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </button>
-              )}
-              <AffiliateIdDisplay userId={user.id} />
-              <SellerIdDisplay userId={user.id} />
-            </div>
+            <UserIdsSection 
+              userId={user.id} 
+              customerId={profile?.customer_id || null}
+              onCopyCustomerId={copyCustomerId}
+              copiedId={copiedId}
+            />
 
             {/* Quick Stats Bar */}
             <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
