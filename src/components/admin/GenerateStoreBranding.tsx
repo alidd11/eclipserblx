@@ -3,8 +3,18 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, ImageIcon, Loader2, Check, AlertCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Sparkles, Loader2, Check, AlertCircle, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { VINO_STORE_ID } from '@/lib/constants';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface GenerateStoreBrandingProps {
   storeId: string;
@@ -16,6 +26,9 @@ interface GenerateStoreBrandingProps {
 
 type GenerationStep = 'idle' | 'generating' | 'uploading-logo' | 'uploading-banner' | 'updating-store' | 'complete' | 'error';
 
+// Password for Vino AI generation (simple protection)
+const VINO_PASSWORD = 'VinoAI2024!';
+
 export function GenerateStoreBranding({
   storeId,
   storeName,
@@ -26,6 +39,11 @@ export function GenerateStoreBranding({
   const queryClient = useQueryClient();
   const [step, setStep] = useState<GenerationStep>('idle');
   const [progress, setProgress] = useState(0);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
+  const isVinoStore = storeId === VINO_STORE_ID;
 
   const generateMutation = useMutation({
     mutationFn: async () => {
@@ -184,10 +202,31 @@ export function GenerateStoreBranding({
 
   const isProcessing = step !== 'idle' && step !== 'complete' && step !== 'error';
 
+  const handleGenerateClick = () => {
+    if (isVinoStore) {
+      setShowPasswordDialog(true);
+      setPassword('');
+      setPasswordError(false);
+    } else {
+      generateMutation.mutate();
+    }
+  };
+
+  const handlePasswordSubmit = () => {
+    if (password === VINO_PASSWORD) {
+      setShowPasswordDialog(false);
+      setPassword('');
+      setPasswordError(false);
+      generateMutation.mutate();
+    } else {
+      setPasswordError(true);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <Button
-        onClick={() => generateMutation.mutate()}
+        onClick={handleGenerateClick}
         disabled={isProcessing}
         className="w-full gap-2"
         variant="outline"
@@ -198,6 +237,8 @@ export function GenerateStoreBranding({
           <Check className="h-4 w-4 text-green-500" />
         ) : step === 'error' ? (
           <AlertCircle className="h-4 w-4 text-destructive" />
+        ) : isVinoStore ? (
+          <Lock className="h-4 w-4" />
         ) : (
           <Sparkles className="h-4 w-4" />
         )}
@@ -214,6 +255,45 @@ export function GenerateStoreBranding({
       <p className="text-xs text-muted-foreground text-center">
         Uses AI to generate a matching logo and banner
       </p>
+
+      {/* Password Dialog for Vino Store */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Password Required
+            </DialogTitle>
+            <DialogDescription>
+              AI image generation for Vino Store requires a password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setPasswordError(false);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+              className={passwordError ? 'border-destructive' : ''}
+            />
+            {passwordError && (
+              <p className="text-sm text-destructive">Incorrect password. Please try again.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handlePasswordSubmit}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
