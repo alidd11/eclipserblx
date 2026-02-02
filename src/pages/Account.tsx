@@ -189,20 +189,20 @@ const StatusBadgesSection = ({
         {/* Status Badges (Eclipse+, Affiliate, Seller) */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           {isSubscribed && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30 whitespace-nowrap shrink-0">
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
               <span className="text-xs font-semibold text-primary">Eclipse+ Member</span>
             </div>
           )}
           {hasAffiliate && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
-              <Award className="h-3.5 w-3.5 text-amber-500" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 whitespace-nowrap shrink-0">
+              <Award className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <span className="text-xs font-semibold text-amber-500">Affiliate Partner</span>
             </div>
           )}
           {hasSeller && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
-              <Store className="h-3.5 w-3.5 text-emerald-500" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 whitespace-nowrap shrink-0">
+              <Store className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
               <span className="text-xs font-semibold text-emerald-500">Verified Seller</span>
             </div>
           )}
