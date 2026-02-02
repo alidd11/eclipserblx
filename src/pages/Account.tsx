@@ -469,13 +469,13 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   {editingUsername ? (
-                    <div className="flex items-center gap-2">
-                      <div className="relative">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <div className="relative flex-1 sm:flex-none">
                         <input
                           type="text"
                           value={newUsername}
                           onChange={(e) => setNewUsername(e.target.value)}
-                          className="px-2 py-1 text-xl sm:text-2xl font-bold tracking-tight rounded-md border bg-input w-48 sm:w-64 pr-8"
+                          className="px-2 py-1 text-xl sm:text-2xl font-bold tracking-tight rounded-md border bg-input w-full sm:w-64 pr-8"
                           autoFocus
                           placeholder="Display name"
                         />
@@ -494,7 +494,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 shrink-0"
                         onClick={handleSaveUsername}
                         disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
                       >
@@ -503,7 +503,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 shrink-0"
                         onClick={() => { setEditingUsername(false); setNewUsername(''); }}
                       >
                         <X className="h-4 w-4" />
@@ -517,7 +517,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       {!cooldownInfo.onCooldown ? (
                         <button
                           onClick={startEditingUsername}
-                          className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                          className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -525,7 +525,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-muted-foreground/60 p-1 cursor-help">
+                              <span className="text-muted-foreground/60 p-1 cursor-help shrink-0">
                                 <Clock className="h-3.5 w-3.5" />
                               </span>
                             </TooltipTrigger>
@@ -535,16 +535,16 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                           </Tooltip>
                         </TooltipProvider>
                       )}
+                      {isSubscribed && (
+                        <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5 shrink-0">
+                          <Sparkles className="h-2.5 w-2.5" />
+                          Eclipse+
+                        </Badge>
+                      )}
                     </>
                   )}
-                  {isSubscribed && !editingUsername && (
-                    <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5 shrink-0">
-                      <Sparkles className="h-2.5 w-2.5" />
-                      Eclipse+
-                    </Badge>
-                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">@{profile?.username || fallbackDisplayName}</p>
+                <p className="text-sm text-muted-foreground mt-1">@{profile?.username || fallbackDisplayName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Member since {new Date(user.created_at).toLocaleDateString()}
                 </p>
