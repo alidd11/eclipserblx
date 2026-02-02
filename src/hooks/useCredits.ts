@@ -120,10 +120,46 @@ export function useCredits() {
     return state.balance >= productPrice;
   }, [state.balance]);
 
+  // Purchase products using credits
+  const purchaseWithCredits = useCallback(async (items: Array<{ id: string; name: string; price: number }>): Promise<{ success: boolean; orderId?: string; error?: string }> => {
+    if (!user) {
+      return { success: false, error: 'You must be logged in to use credits' };
+    }
+
+    const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
+    if (state.balance < totalPrice) {
+      return { success: false, error: `Insufficient credit balance. Required: £${totalPrice.toFixed(2)}, Available: £${state.balance.toFixed(2)}` };
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('purchase-with-credits', {
+        body: { items },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`,
+        } : undefined,
+      });
+      
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      
+      // Refresh balance after purchase
+      await fetchBalance();
+      
+      return { success: true, orderId: data.orderId };
+    } catch (error) {
+      console.error('Error purchasing with credits:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to complete credit purchase' 
+      };
+    }
+  }, [user, session, state.balance, fetchBalance]);
+
   return {
     ...state,
     fetchBalance,
     purchaseCredits,
     canPayWithCredits,
+    purchaseWithCredits,
   };
 }
