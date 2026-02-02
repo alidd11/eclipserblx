@@ -72,7 +72,7 @@ export default function Credits() {
 
   return (
     <MainLayout>
-      <div className="container py-6 max-w-2xl space-y-6">
+      <div className="px-4 py-6 mx-auto w-full max-w-2xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
@@ -85,15 +85,13 @@ export default function Credits() {
         </div>
 
         {/* Balance Card - Always visible */}
-        <div className="w-full">
-          <WalletBalanceCard
-            balance={balance}
-            totalPurchased={totalPurchased}
-            totalGifted={totalGifted}
-            totalSpent={totalSpent}
-            isLoading={isLoading}
-          />
-        </div>
+        <WalletBalanceCard
+          balance={balance}
+          totalPurchased={totalPurchased}
+          totalGifted={totalGifted}
+          totalSpent={totalSpent}
+          isLoading={isLoading}
+        />
 
         {/* Eclipse+ Banner */}
         <EclipsePlusBanner show={!eclipsePlusBonusClaimed} />
