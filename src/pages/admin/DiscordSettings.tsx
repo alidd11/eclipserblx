@@ -8,12 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, Calendar, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, ShieldCheck, Shield } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, Zap, UserCheck, AlertCircle, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, ShieldCheck, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,23 +52,6 @@ interface DiscordSettings {
 }
 
 
-interface BoostTrial {
-  id: string;
-  user_id: string;
-  discord_id: string;
-  boost_count: number;
-  trial_start: string;
-  trial_end: string;
-  created_at: string;
-  last_boost_at: string;
-  revoked_at: string | null;
-  profile?: {
-    display_name: string | null;
-    email: string;
-    discord_username: string | null;
-  };
-}
-
 const DEFAULT_SETTINGS: DiscordSettings = {
   discord_invite_url: '',
   discord_webhook_url: '',
@@ -101,9 +82,6 @@ export default function DiscordSettings() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('invite');
   
-  // Boost rewards state
-  const [boostRewardsEnabled, setBoostRewardsEnabled] = useState(true);
-  const [boostTrialDays, setBoostTrialDays] = useState(7);
   
   // Test states
   const [isTestingOrderWebhook, setIsTestingOrderWebhook] = useState(false);
@@ -164,65 +142,6 @@ export default function DiscordSettings() {
 
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<string | null>(null);
 
-
-  // Fetch boost rewards settings
-  const { data: boostSettings } = useQuery({
-    queryKey: ['boost-rewards-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('key, value')
-        .in('key', ['boost_rewards_enabled', 'boost_trial_days']);
-
-      if (error) throw error;
-
-      const result = { enabled: true, trialDays: 7 };
-      data?.forEach((item) => {
-        if (item.key === 'boost_rewards_enabled') {
-          result.enabled = item.value === true || item.value === 'true';
-        } else if (item.key === 'boost_trial_days') {
-          result.trialDays = parseInt(String(item.value || '7'), 10) || 7;
-        }
-      });
-      return result;
-    },
-  });
-
-  // Fetch boost trials
-  const { data: boostTrials, isLoading: isLoadingBoostTrials } = useQuery({
-    queryKey: ['boost-trials'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('discord_boost_trials')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      // Fetch profiles for each trial
-      const userIds = data?.map(t => t.user_id) || [];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, email, discord_username')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]));
-      
-      return data?.map(trial => ({
-        ...trial,
-        profile: profileMap.get(trial.user_id),
-      })) as BoostTrial[];
-    },
-  });
-
-
-  useEffect(() => {
-    if (boostSettings) {
-      setBoostRewardsEnabled(boostSettings.enabled);
-      setBoostTrialDays(boostSettings.trialDays);
-    }
-  }, [boostSettings]);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['discord-settings'],
@@ -322,49 +241,6 @@ export default function DiscordSettings() {
   });
 
 
-  // Save boost settings mutation
-  const saveBoostSettingsMutation = useMutation({
-    mutationFn: async ({ enabled, trialDays }: { enabled: boolean; trialDays: number }) => {
-      const settings = [
-        { key: 'boost_rewards_enabled', value: enabled },
-        { key: 'boost_trial_days', value: trialDays },
-      ];
-
-      for (const setting of settings) {
-        const { data: existing } = await supabase
-          .from('settings')
-          .select('id')
-          .eq('key', setting.key)
-          .maybeSingle();
-
-        if (existing) {
-          const { error } = await supabase
-            .from('settings')
-            .update({ value: setting.value })
-            .eq('key', setting.key);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from('settings')
-            .insert([{ key: setting.key, value: setting.value }]);
-          if (error) throw error;
-        }
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boost-rewards-settings'] });
-      toast.success('Boost rewards settings saved');
-    },
-    onError: (error) => {
-      console.error('Failed to save boost settings:', error);
-      toast.error('Failed to save boost settings');
-    },
-  });
-
-  const handleSaveBoostSettings = () => {
-    saveBoostSettingsMutation.mutate({ enabled: boostRewardsEnabled, trialDays: boostTrialDays });
-  };
-
   const handleSave = () => {
     saveMutation.mutate(formData);
   };
@@ -379,16 +255,6 @@ export default function DiscordSettings() {
     toast.success('Copied to clipboard');
     setTimeout(() => setCopiedField(null), 2000);
   };
-
-  // Get stats for boost trials
-  const activeBoostTrials = boostTrials?.filter(t => !t.revoked_at && new Date(t.trial_end) > new Date()) || [];
-  const totalBoostTrials = boostTrials?.length || 0;
-  const recentGrants = boostTrials?.filter(t => {
-    const createdAt = new Date(t.created_at);
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return createdAt > weekAgo;
-  }).length || 0;
 
   const handleTestOrderWebhook = async () => {
     if (!formData.discord_webhook_url) {
@@ -1023,10 +889,6 @@ export default function DiscordSettings() {
                 <MessageSquare className="h-4 w-4 hidden sm:block" />
                 Roles
               </TabsTrigger>
-              <TabsTrigger value="boosts" className="gap-2">
-                <Zap className="h-4 w-4 hidden sm:block" />
-                Boosts
-              </TabsTrigger>
               <TabsTrigger value="affiliate" className="gap-2">
                 <Gift className="h-4 w-4 hidden sm:block" />
                 Affiliate
@@ -1400,223 +1262,6 @@ export default function DiscordSettings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Boost Rewards Tab */}
-          <TabsContent value="boosts">
-            <div className="space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                <Card className="bg-card border-border">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/20">
-                        <UserCheck className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">{activeBoostTrials.length}</p>
-                        <p className="text-sm text-muted-foreground">Active Trials</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-card border-border">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-amber-500/20">
-                        <Gift className="h-5 w-5 text-amber-500" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">{recentGrants}</p>
-                        <p className="text-sm text-muted-foreground">This Week</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-card border-border">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-[#5865F2]/20">
-                        <Zap className="h-5 w-5 text-[#5865F2]" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">{totalBoostTrials}</p>
-                        <p className="text-sm text-muted-foreground">Total Trials</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Configuration Card */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-[#FF73FA]" />
-                    <CardTitle>Boost Rewards Configuration</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Automatically grant Eclipse+ trials to users who boost your Discord server
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="boost-enabled">Enable Boost Rewards</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Automatically grant Eclipse+ trials when users boost the server
-                      </p>
-                    </div>
-                    <Switch
-                      id="boost-enabled"
-                      checked={boostRewardsEnabled}
-                      onCheckedChange={setBoostRewardsEnabled}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="trial-days">Trial Duration (days per boost)</Label>
-                    <div className="flex items-center gap-4">
-                      <Input
-                        id="trial-days"
-                        type="number"
-                        min={1}
-                        max={14}
-                        value={boostTrialDays}
-                        onChange={(e) => setBoostTrialDays(parseInt(e.target.value) || 7)}
-                        className="bg-background w-24"
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Max {boostTrialDays * 2} days for 2 boosts
-                      </p>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handleSaveBoostSettings}
-                    disabled={saveBoostSettingsMutation.isPending}
-                    size="sm"
-                  >
-                    {saveBoostSettingsMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Save Boost Settings
-                  </Button>
-
-                  <div className="bg-muted/50 p-4 rounded-lg space-y-3 mt-4">
-                    <p className="text-sm font-medium">How it works:</p>
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                      <li>Users must link their Discord account in their profile</li>
-                      <li>When they boost your server, your Discord bot detects it</li>
-                      <li>The bot calls the <code className="bg-background px-1 rounded">discord-boost-webhook</code> function</li>
-                      <li>User receives Eclipse+ trial + Discord role + notifications</li>
-                      <li>Maximum 2 boosts = {boostTrialDays * 2} days per user (anti-abuse)</li>
-                    </ul>
-                  </div>
-
-                  <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
-                    <div className="flex gap-2">
-                      <AlertCircle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-amber-400">Discord Bot Required</p>
-                        <p className="text-sm text-muted-foreground">
-                          Your Discord bot must listen for <code className="bg-background px-1 rounded">GUILD_MEMBER_UPDATE</code> events 
-                          and call the webhook when <code className="bg-background px-1 rounded">premiumSince</code> changes.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Boost Trials Table */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <CardTitle>Recent Boost Trials</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Users who have received Eclipse+ trials for boosting
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingBoostTrials ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : boostTrials && boostTrials.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Discord</TableHead>
-                            <TableHead>Boosts</TableHead>
-                            <TableHead>Trial End</TableHead>
-                            <TableHead>Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {boostTrials.map((trial) => {
-                            const isActive = !trial.revoked_at && new Date(trial.trial_end) > new Date();
-                            const isExpired = !trial.revoked_at && new Date(trial.trial_end) <= new Date();
-                            
-                            return (
-                              <TableRow key={trial.id}>
-                                <TableCell>
-                                  <div>
-                                    <p className="font-medium">{trial.profile?.display_name || 'Unknown'}</p>
-                                    <p className="text-xs text-muted-foreground">{trial.profile?.email}</p>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <p className="text-sm">{trial.profile?.discord_username || trial.discord_id}</p>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className="gap-1">
-                                    <Zap className="h-3 w-3" />
-                                    {trial.boost_count}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <p className="text-sm">{format(new Date(trial.trial_end), 'MMM d, yyyy')}</p>
-                                </TableCell>
-                                <TableCell>
-                                  {isActive && (
-                                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                      Active
-                                    </Badge>
-                                  )}
-                                  {isExpired && (
-                                    <Badge variant="secondary">
-                                      Expired
-                                    </Badge>
-                                  )}
-                                  {trial.revoked_at && (
-                                    <Badge variant="destructive">
-                                      Revoked
-                                    </Badge>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Zap className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                      <p className="text-muted-foreground">No boost trials yet</p>
-                      <p className="text-sm text-muted-foreground">
-                        Trials will appear here when users boost your server
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
 
           {/* Affiliate Webhook Tab */}
