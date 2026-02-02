@@ -72,25 +72,42 @@ export default function StaffDirectory() {
     // Include a version key so changes to exclusion rules immediately refetch (avoids sticky cache during HMR)
     queryKey: ['staff-directory', customRoles.length, 'exclude-eclipse-plus-v1'],
     queryFn: async () => {
-      // Get all user roles
-      const { data: roles, error: rolesError } = await supabase
+      // Get all user roles (we need ALL roles to check which users have staff roles)
+      const { data: allRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('user_id, role')
-        // Exclude subscription-only roles from the staff directory
-        .neq('role', 'eclipse_plus_member');
+        .select('user_id, role');
 
       if (rolesError) throw rolesError;
 
-      // Get unique user IDs
-      const userIds = [...new Set(roles?.map(r => r.user_id) || [])];
+      // Filter to only include users who have at least one non-subscription role
+      // (e.g., admin, support_agent, etc. - not just eclipse_plus_member)
+      const subscriptionOnlyRoles = ['eclipse_plus_member'];
+      
+      // Group roles by user
+      const userRolesMap = new Map<string, string[]>();
+      (allRoles ?? []).forEach(r => {
+        const existing = userRolesMap.get(r.user_id) || [];
+        existing.push(r.role);
+        userRolesMap.set(r.user_id, existing);
+      });
+      
+      // Only include users who have at least one staff role (not just subscription roles)
+      const staffUserIds = Array.from(userRolesMap.entries())
+        .filter(([_, roles]) => roles.some(role => !subscriptionOnlyRoles.includes(role)))
+        .map(([userId]) => userId);
 
-      if (userIds.length === 0) return [];
+      if (staffUserIds.length === 0) return [];
+      
+      // Filter roles to only staff roles for display
+      const roles = (allRoles ?? []).filter(r => 
+        staffUserIds.includes(r.user_id) && !subscriptionOnlyRoles.includes(r.role)
+      );
 
       // Get profiles for these users - exclude email for privacy
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, display_name, username, avatar_url, staff_id, customer_id, created_at')
-        .in('user_id', userIds);
+        .in('user_id', staffUserIds);
 
       if (profilesError) throw profilesError;
 
