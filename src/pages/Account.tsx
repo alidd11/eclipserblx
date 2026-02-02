@@ -468,10 +468,76 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
-                    {profile?.display_name || fallbackDisplayName || 'User'}
-                  </h1>
-                  {isSubscribed && (
+                  {editingUsername ? (
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                          className="px-2 py-1 text-xl sm:text-2xl font-bold tracking-tight rounded-md border bg-input w-48 sm:w-64 pr-8"
+                          autoFocus
+                          placeholder="Display name"
+                        />
+                        {newUsername.trim().length >= 2 && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            {checkingUsername ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            ) : usernameAvailable === true ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : usernameAvailable === false ? (
+                              <X className="h-4 w-4 text-destructive" />
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={handleSaveUsername}
+                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
+                      >
+                        {savingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+                        {profile?.display_name || fallbackDisplayName || 'User'}
+                      </h1>
+                      {!cooldownInfo.onCooldown ? (
+                        <button
+                          onClick={startEditingUsername}
+                          className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      ) : (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-muted-foreground/60 p-1 cursor-help">
+                                <Clock className="h-3.5 w-3.5" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>You can change your name in {cooldownInfo.remainingDays}d</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </>
+                  )}
+                  {isSubscribed && !editingUsername && (
                     <Badge variant="secondary" className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30 gap-1 text-[10px] px-2 py-0 h-5 shrink-0">
                       <Sparkles className="h-2.5 w-2.5" />
                       Eclipse+
@@ -522,6 +588,41 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               onCopyCustomerId={copyCustomerId}
               copiedId={copiedId}
             />
+
+            {/* Badges Row */}
+            {userBadges && userBadges.length > 0 && (
+              <div className="border-t border-border px-4 sm:px-6 py-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium mr-1">Badges</span>
+                  {badges?.filter(badge => userBadges.some(ub => ub.badge_id === badge.id)).slice(0, 6).map((badge) => (
+                    <TooltipProvider key={badge.id}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="h-7 w-7 rounded-full flex items-center justify-center text-sm"
+                            style={{ backgroundColor: `${badge.color}20`, color: badge.color }}
+                          >
+                            {badge.icon}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-medium">{badge.name}</p>
+                          <p className="text-xs text-muted-foreground">{badge.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                  {userBadges.length > 6 && (
+                    <Link 
+                      to="/account#profile" 
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      +{userBadges.length - 6} more
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Quick Stats Bar */}
             <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
@@ -582,88 +683,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
-            {/* Edit Display Name */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Pencil className="h-4 w-4" />
-                  Display Name
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {editingUsername ? (
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        className="w-full px-3 py-2 text-sm rounded-md border bg-input pr-10"
-                        autoFocus
-                        placeholder="Enter new display name"
-                      />
-                      {newUsername.trim().length >= 2 && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {checkingUsername ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          ) : usernameAvailable === true ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : usernameAvailable === false ? (
-                            <X className="h-4 w-4 text-destructive" />
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                    {usernameAvailable === false && newUsername.trim().length >= 2 && (
-                      <p className="text-xs text-destructive">This display name is already taken</p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleSaveUsername}
-                        disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                      >
-                        {savingUsername ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{profile?.display_name || fallbackDisplayName || 'Not set'}</p>
-                      <p className="text-xs text-muted-foreground">Your public display name</p>
-                    </div>
-                    {cooldownInfo.onCooldown ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="outline" className="text-xs text-muted-foreground cursor-help">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {cooldownInfo.remainingDays}d
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>You can change your display name in {cooldownInfo.remainingDays} day{cooldownInfo.remainingDays !== 1 ? 's' : ''}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ) : (
-                      <Button size="sm" variant="outline" onClick={startEditingUsername}>
-                        <Pencil className="h-3 w-3 mr-1.5" />
-                        Edit
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
             {/* Linked Accounts */}
             <LinkedAccountsCard
