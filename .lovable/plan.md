@@ -1,174 +1,102 @@
 
-# Auto-Migrate Users When System Role Name Changes
 
 ## Overview
-Enable automatic migration of users when a system role's `name` is changed. Currently, the role `name` is used as a foreign key reference in `user_roles`, so changing it would orphan users. This plan implements a database trigger that cascades role name changes to all affected users.
 
-## Current Architecture
-- `user_roles.role` → references `custom_roles.name`
-- Role name changes are blocked in UI (only display_name can be edited)
-- Changing `custom_roles.name` directly would break the FK constraint
+Adding a second admin-controlled store called "Vino" alongside the existing "Eclipse Store". Both stores will be managed from the admin dashboard, and all payments will continue to be received by Eclipse (no commission splitting). The key change is replacing the current on/off toggle with a store selector dropdown.
 
-## Implementation Plan
+## What This Achieves
 
-### 1. Modify Foreign Key Constraint
-Update the foreign key on `user_roles.role` to include `ON UPDATE CASCADE`:
-```sql
-ALTER TABLE user_roles 
-  DROP CONSTRAINT user_roles_role_fkey,
-  ADD CONSTRAINT user_roles_role_fkey 
-    FOREIGN KEY (role) 
-    REFERENCES custom_roles(name) 
-    ON UPDATE CASCADE 
-    ON DELETE CASCADE;
-```
-This automatically updates all `user_roles` records when a role name changes.
+- Admins can choose which store (Eclipse Store or Vino) a product appears under
+- Each store has its own branding (logo, name, badges) displayed on product cards
+- Products from both stores remain read-only in the seller dashboard
+- All revenue goes to Eclipse - no changes to payment flow
 
-### 2. Update `role_permissions` Table Similarly
-```sql
-ALTER TABLE role_permissions 
-  DROP CONSTRAINT role_permissions_role_fkey,
-  ADD CONSTRAINT role_permissions_role_fkey 
-    FOREIGN KEY (role) 
-    REFERENCES custom_roles(name) 
-    ON UPDATE CASCADE 
-    ON DELETE CASCADE;
+## Implementation Steps
+
+### Step 1: Create the Vino Store in the Database
+
+Insert a new store record with the same owner as Eclipse Store, marked as verified and trusted:
+
+```text
++------------------+----------------------------------------+
+| Field            | Value                                  |
++------------------+----------------------------------------+
+| name             | Vino                                   |
+| slug             | vino                                   |
+| owner_id         | (same as Eclipse Store owner)          |
+| is_verified      | true                                   |
+| is_trusted       | true                                   |
+| is_active        | true                                   |
+| payout_method    | stripe (required field)                |
++------------------+----------------------------------------+
 ```
 
-### 3. Enable Name Editing for System Roles (Primary Admin Only)
-Update `CreateRoleDialog.tsx` to allow the primary admin to edit the system name:
-- Add a "System Name" field that appears when editing (if primary admin)
-- Show a warning that renaming will automatically migrate all users
-- Include the `name` field in the update mutation
+### Step 2: Add Vino Store Constant
 
-### 4. Add Audit Logging for Role Renames
-Create a trigger that logs role name changes to `audit_logs`:
-```sql
-CREATE OR REPLACE FUNCTION log_role_rename()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF OLD.name != NEW.name THEN
-    INSERT INTO audit_logs (action, resource, details)
-    VALUES (
-      'role_renamed',
-      'custom_roles',
-      jsonb_build_object(
-        'old_name', OLD.name,
-        'new_name', NEW.name,
-        'affected_users', (SELECT COUNT(*) FROM user_roles WHERE role = OLD.name)
-      )
-    );
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+Update `src/lib/constants.ts` to add:
+- `VINO_STORE_ID` constant with the new store's UUID
+- `ADMIN_MANAGED_STORES` array containing both store IDs for easy checking
 
-CREATE TRIGGER on_role_rename
-  BEFORE UPDATE ON custom_roles
-  FOR EACH ROW
-  EXECUTE FUNCTION log_role_rename();
-```
+### Step 3: Update Admin Products Form
 
-## Files to Modify
+Modify `src/pages/admin/Products.tsx`:
 
-| File | Changes |
-|------|---------|
-| Database Migration | Add `ON UPDATE CASCADE` to FK constraints |
-| `CreateRoleDialog.tsx` | Allow primary admin to edit system role names |
+**Form State Changes:**
+- Replace `sync_to_marketplace: boolean` with `marketplace_store: string | null`
+- Store ID values: `null` (no store), Eclipse Store ID, or Vino Store ID
+
+**UI Changes:**
+- Replace the simple toggle with a dropdown selector:
+  - "None" - Product not linked to any marketplace store
+  - "Eclipse Store" - Links to Eclipse Store
+  - "Vino" - Links to Vino store
+- Update the save logic to use the selected store ID
+
+### Step 4: Update Seller Dashboard Protection
+
+Modify `src/pages/seller/SellerProducts.tsx`:
+- Update `isEclipseProduct` function to check against `ADMIN_MANAGED_STORES` array
+- This ensures Vino products are also protected from seller edits
+
+### Step 5: Product Display (No Changes Needed)
+
+The ProductCard already joins to the `stores` table and displays:
+- Store name
+- Store logo  
+- Verified/Trusted badges
+
+This will automatically work for Vino products once they're linked.
+
+---
 
 ## Technical Details
 
-### Database Migration SQL
-```sql
--- Drop existing constraints
-ALTER TABLE user_roles 
-  DROP CONSTRAINT IF EXISTS user_roles_role_fkey;
-ALTER TABLE role_permissions 
-  DROP CONSTRAINT IF EXISTS role_permissions_role_fkey;
+### Files to Modify
 
--- Re-add with ON UPDATE CASCADE
-ALTER TABLE user_roles 
-  ADD CONSTRAINT user_roles_role_fkey 
-    FOREIGN KEY (role) 
-    REFERENCES custom_roles(name) 
-    ON UPDATE CASCADE 
-    ON DELETE CASCADE;
+| File | Changes |
+|------|---------|
+| `src/lib/constants.ts` | Add `VINO_STORE_ID` and `ADMIN_MANAGED_STORES` |
+| `src/pages/admin/Products.tsx` | Replace toggle with store selector dropdown |
+| `src/pages/seller/SellerProducts.tsx` | Update admin-managed store check |
 
-ALTER TABLE role_permissions 
-  ADD CONSTRAINT role_permissions_role_fkey 
-    FOREIGN KEY (role) 
-    REFERENCES custom_roles(name) 
-    ON UPDATE CASCADE 
-    ON DELETE CASCADE;
+### Database Migration
 
--- Audit trigger for role renames
-CREATE OR REPLACE FUNCTION log_role_rename()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF OLD.name IS DISTINCT FROM NEW.name THEN
-    INSERT INTO audit_logs (action, resource, details)
-    VALUES (
-      'role_renamed',
-      'custom_roles',
-      jsonb_build_object(
-        'old_name', OLD.name,
-        'new_name', NEW.name
-      )
-    );
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+One INSERT statement to create the Vino store with required fields.
 
-CREATE TRIGGER on_role_rename
-  BEFORE UPDATE ON custom_roles
-  FOR EACH ROW
-  EXECUTE FUNCTION log_role_rename();
+### Form Field Mapping
+
+```text
+Current:
+  sync_to_marketplace: true  → store_id = ECLIPSE_STORE_ID
+  sync_to_marketplace: false → store_id = null
+
+New:
+  marketplace_store: "eclipse" → store_id = ECLIPSE_STORE_ID
+  marketplace_store: "vino"    → store_id = VINO_STORE_ID  
+  marketplace_store: null      → store_id = null
 ```
 
-### Frontend Changes (CreateRoleDialog.tsx)
-```tsx
-// Add name field for editing (primary admin only)
-{isEditing && isPrimaryAdmin && (
-  <div className="space-y-2">
-    <Label htmlFor="name">System Name</Label>
-    <Input
-      id="name"
-      value={formData.name}
-      onChange={(e) => setFormData(prev => ({ 
-        ...prev, 
-        name: e.target.value.toLowerCase().replace(/\s+/g, '_') 
-      }))}
-    />
-    <p className="text-xs text-muted-foreground">
-      ⚠️ Changing this will automatically migrate all users with this role
-    </p>
-  </div>
-)}
+### Backward Compatibility
 
-// Update mutation to include name
-const updateMutation = useMutation({
-  mutationFn: async (data: typeof formData) => {
-    const { error } = await supabase
-      .from('custom_roles')
-      .update({
-        name: isPrimaryAdmin ? data.name : undefined, // Only primary admin can change name
-        display_name: data.display_name,
-        color: data.color,
-        icon: data.icon,
-        hierarchy_level: data.hierarchy_level,
-        description: data.description || null,
-      })
-      .eq('id', editRole!.id);
-    if (error) throw error;
-  },
-  // ...
-});
-```
+Existing products with `store_id = ECLIPSE_STORE_ID` will continue to work. The edit form will pre-select "Eclipse Store" when loading these products.
 
-## Expected Outcome
-1. Primary admin can rename any role's system name
-2. All users with that role are automatically migrated via `ON UPDATE CASCADE`
-3. All permissions for that role are automatically updated
-4. Changes are logged to `audit_logs` for traceability
-5. No data loss or broken references when roles are renamed
