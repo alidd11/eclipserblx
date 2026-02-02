@@ -1,5 +1,8 @@
 project_id = "qlnbergwjfrmgkjhrbkj"
 
+[functions.grant-eclipse-credits-to-members]
+verify_jwt = false
+
 [functions.purchase-with-credits]
 verify_jwt = false
 
