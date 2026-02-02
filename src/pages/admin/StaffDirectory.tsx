@@ -69,12 +69,15 @@ export default function StaffDirectory() {
   // Fetch staff members with their roles
   // Note: No longer depends on customRoles.length to avoid blocking initial load
   const { data: staffMembers = [], isLoading: staffLoading } = useQuery({
-    queryKey: ['staff-directory', customRoles.length],
+    // Include a version key so changes to exclusion rules immediately refetch (avoids sticky cache during HMR)
+    queryKey: ['staff-directory', customRoles.length, 'exclude-eclipse-plus-v1'],
     queryFn: async () => {
       // Get all user roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('user_id, role');
+        .select('user_id, role')
+        // Exclude subscription-only roles from the staff directory
+        .neq('role', 'eclipse_plus_member');
 
       if (rolesError) throw rolesError;
 
