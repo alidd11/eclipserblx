@@ -69,10 +69,11 @@ import {
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { hapticTap } from '@/lib/haptics';
-import { ECLIPSE_STORE_ID } from '@/lib/constants';
+import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
-// Helper to check if product is managed by Eclipse (admin-only)
-const isEclipseProduct = (product: any) => product.store_id === ECLIPSE_STORE_ID && !product.is_seller_product;
+// Helper to check if product is managed by Eclipse/Vino (admin-only)
+const isAdminManagedProduct = (product: any) => 
+  ADMIN_MANAGED_STORES.includes(product.store_id) && !product.is_seller_product;
 
 interface ProductForm {
   id?: string;
@@ -249,8 +250,8 @@ export default function SellerProducts() {
 
   // Open dialog for editing
   const openEdit = (product: any) => {
-    // Prevent editing Eclipse Store products
-    if (isEclipseProduct(product)) {
+    // Prevent editing admin-managed products (Eclipse/Vino)
+    if (isAdminManagedProduct(product)) {
       toast.info('This product is managed by Eclipse admins and cannot be edited here.');
       return;
     }
@@ -496,7 +497,7 @@ export default function SellerProducts() {
             </div>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product: any) => {
-              const isLocked = isEclipseProduct(product);
+              const isLocked = isAdminManagedProduct(product);
               return (
                 <Card 
                   key={product.id}
@@ -595,7 +596,7 @@ export default function SellerProducts() {
                   </TableHeader>
                   <TableBody>
                     {filteredProducts.map((product: any) => {
-                      const isLocked = isEclipseProduct(product);
+                      const isLocked = isAdminManagedProduct(product);
                       return (
                         <TableRow 
                           key={product.id}
