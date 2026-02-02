@@ -42,6 +42,8 @@ const UserIdsSection = ({ userId, customerId }: {
   userId: string; 
   customerId: string | null;
 }) => {
+  const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
+
   const { data: affiliateApp } = useQuery({
     queryKey: ['affiliate-id', userId],
     queryFn: async () => {
@@ -71,16 +73,14 @@ const UserIdsSection = ({ userId, customerId }: {
     staleTime: 1000 * 60 * 10,
   });
 
-  const hasAnyId = customerId || affiliateApp?.affiliate_id || store?.store_id;
-  if (!hasAnyId) return null;
-
-  const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
-
   const copyToClipboard = async (value: string, key: string) => {
     await navigator.clipboard.writeText(value);
     setCopiedStates(prev => ({ ...prev, [key]: true }));
     setTimeout(() => setCopiedStates(prev => ({ ...prev, [key]: false })), 2000);
   };
+
+  const hasAnyId = customerId || affiliateApp?.affiliate_id || store?.store_id;
+  if (!hasAnyId) return null;
 
   const idItems = [
     customerId && { label: 'Customer', value: customerId, key: 'customer', icon: User },
