@@ -3,7 +3,8 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
-  Sparkles, Download, PanelLeftClose, PanelLeft
+  Sparkles, Download, PanelLeftClose, PanelLeft, Heart, Wallet,
+  MessageSquareText, Megaphone, FileQuestion
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -130,7 +131,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  // Navigation groups - streamlined for clarity
+  // Navigation groups - organized by user intent
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
@@ -148,8 +149,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: 'Profile', icon: User, href: '/account' },
         { title: 'Cart', icon: ShoppingCart, href: '/cart' },
+        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'Purchases', icon: Download, href: '/purchases' },
+        { title: 'Wallet', icon: Wallet, href: '/credits' },
         { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
+        ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
         ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
@@ -161,6 +165,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: 'Featured', icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: 'Marketplace', icon: Store, href: '/marketplace' },
+        { title: 'Advertise', icon: Megaphone, href: '/advertise' },
       ],
     },
     // Note: "Browse" section with All Products + Categories is rendered via renderBrowseSection()
@@ -180,6 +185,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: HelpCircle,
       items: [
         { title: 'Help Center', icon: HelpCircle, href: '/support' },
+        { title: 'FAQ', icon: FileQuestion, href: '/faq' },
         { title: 'Contact', icon: Mail, href: '/contact' },
         { title: 'Status', icon: Activity, href: '/status', showStatusDot: true },
       ],
