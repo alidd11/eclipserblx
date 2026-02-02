@@ -60,7 +60,7 @@ const navGroups: NavGroup[] = [
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', permissions: ['manage_affiliates'] },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', permissions: ['view_affiliates'] },
       { title: 'Affiliate Applications', icon: FileText, href: '/admin/affiliate-applications', permissions: ['review_affiliate_applications'], dividerAfter: true },
-      { title: 'Discord Outreach', icon: Megaphone, href: '/admin/discord-outreach', permissions: ['view_job_channels'] },
+      { title: 'Discord Outreach', icon: Megaphone, href: '/admin/discord-outreach', permissions: ['view_discord_outreach'] },
       { title: 'Bot Servers', icon: Bell, href: '/admin/bot-servers', permissions: ['view_bot_codes'] },
     ],
   },
