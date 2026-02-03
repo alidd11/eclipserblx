@@ -17,47 +17,19 @@ interface MainLayoutProps {
   children: ReactNode;
 }
 
-const COLLAPSED_KEY = 'customer-sidebar-collapsed';
 const EDGE_THRESHOLD = 30; // pixels from left edge to trigger swipe
 const MIN_SWIPE_DISTANCE = 50;
 
 function MainLayoutContent({ children }: MainLayoutProps) {
   const location = useLocation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const stored = safeStorage.getItem(COLLAPSED_KEY);
-    return stored === 'true';
-  });
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
 
   // Check for scheduled product releases periodically
   useScheduledReleaseCheck();
 
-  // Toggle sidebar function
-  const toggleSidebar = useCallback(() => {
-    hapticTap();
-    setSidebarCollapsed(prev => !prev);
-  }, []);
-
-  // Keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        toggleSidebar();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleSidebar]);
-
   // Touch tracking for edge swipe
   const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);
-
-  useEffect(() => {
-    safeStorage.setItem(COLLAPSED_KEY, String(sidebarCollapsed));
-  }, [sidebarCollapsed]);
 
   // Handle edge swipe to open drawer
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -186,8 +158,8 @@ function MainLayoutContent({ children }: MainLayoutProps) {
       <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
         {/* Desktop Sidebar */}
         <CustomerSidebar
-          collapsed={sidebarCollapsed}
-          onToggle={toggleSidebar}
+          collapsed={false}
+          onToggle={() => {}}
           className="hidden md:flex"
         />
         
@@ -211,7 +183,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         
         {/* Main Content - Fixed header with scrollable content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
-          <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} onSidebarToggle={toggleSidebar} />
+          <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} />
           <UniversalBreadcrumb />
           <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
             {children}

@@ -16,8 +16,6 @@ import { hapticTap } from '@/lib/haptics';
 import { safeStorage } from '@/lib/safeStorage';
 import { cn } from '@/lib/utils';
 
-const SIDEBAR_STORAGE_KEY = 'store-sidebar-collapsed';
-
 interface StoreTab {
   id: string;
   name: string;
@@ -67,16 +65,6 @@ function StoreLayoutContent({
   const { recordVisit } = useRecentStores();
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
 
-  // Sidebar collapse state with localStorage persistence
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const stored = safeStorage.getItem(SIDEBAR_STORAGE_KEY);
-    return stored === 'true';
-  });
-
-  // Persist sidebar collapse state
-  useEffect(() => {
-    safeStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
-  }, [sidebarCollapsed]);
 
   // Record store visit when component mounts
   useEffect(() => {
@@ -182,27 +170,9 @@ function StoreLayoutContent({
     };
   }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
-  // Keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        hapticTap();
-        setSidebarCollapsed(prev => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   const handleTabChange = (tabSlug: string | null) => {
     onTabChange?.(tabSlug);
-  };
-
-  const handleSidebarToggle = () => {
-    hapticTap();
-    setSidebarCollapsed(prev => !prev);
   };
 
   return (
@@ -219,8 +189,8 @@ function StoreLayoutContent({
             onTabChange={handleTabChange}
             productCount={productCount}
             averageRating={averageRating}
-            collapsed={sidebarCollapsed}
-            onToggle={handleSidebarToggle}
+            collapsed={false}
+            onToggle={() => {}}
           />
         )}
 
@@ -257,7 +227,6 @@ function StoreLayoutContent({
           <Header 
             showDesktopNav={false} 
             onMenuClick={() => setMobileOpen(true)}
-            onSidebarToggle={handleSidebarToggle}
           />
 
           {/* Breadcrumb Bar */}

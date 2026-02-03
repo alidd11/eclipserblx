@@ -426,32 +426,6 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         )}
       </div>
 
-      {/* Desktop-only Collapse Toggle */}
-      {!isMobileDrawer && (
-        <div className="p-2 border-t border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "w-full text-muted-foreground hover:text-foreground hover:bg-muted",
-              isCollapsed ? "justify-center px-2" : "justify-start"
-            )}
-            onClick={() => {
-              hapticTap();
-              onToggle();
-            }}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Collapse
-              </>
-            )}
-          </Button>
-        </div>
-      )}
 
       <SignOutConfirmDialog
         open={showSignOutDialog}
