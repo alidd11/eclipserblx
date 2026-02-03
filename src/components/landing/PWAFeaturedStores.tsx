@@ -11,6 +11,7 @@ interface FeaturedStore {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
   logo_url: string | null;
   banner_url: string | null;
   is_verified: boolean;
@@ -61,54 +62,79 @@ function StoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link 
       to={`/stores/${store.slug}`}
-      className="relative block rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-all active:scale-[0.98] h-32"
+      className="group relative block rounded-2xl overflow-hidden border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-lg active:scale-[0.98]"
     >
-      {/* Banner Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: store.banner_url 
-            ? `url(${store.banner_url})` 
-            : 'linear-gradient(135deg, hsl(var(--primary)/0.3), hsl(var(--primary)/0.1))'
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+      {/* Banner */}
+      <div className="relative h-24 overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{
+            backgroundImage: store.banner_url 
+              ? `url(${store.banner_url})` 
+              : 'linear-gradient(135deg, hsl(var(--primary)/0.2), hsl(var(--muted)))'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+        
+        {/* Badges */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          {store.is_trusted && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/90 text-white text-[10px] font-medium backdrop-blur-sm">
+              <Award className="h-3 w-3" />
+              Trusted
+            </span>
+          )}
+          {store.is_verified && !store.is_trusted && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/90 text-white text-[10px] font-medium backdrop-blur-sm">
+              <ShieldCheck className="h-3 w-3" />
+              Verified
+            </span>
+          )}
+        </div>
+      </div>
       
       {/* Content */}
-      <div className="relative h-full flex items-end p-4">
-        <div className="flex items-center gap-3 w-full">
-          <div className="w-12 h-12 rounded-lg bg-background/90 overflow-hidden flex-shrink-0 shadow-md">
-            {store.logo_url ? (
-              <img 
-                src={store.logo_url} 
-                alt={store.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-muted-foreground">
-                {store.name.charAt(0)}
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm truncate text-foreground">{store.name}</span>
-              {store.is_verified && (
-                <ShieldCheck className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-              )}
-              {store.is_trusted && (
-                <Award className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-              )}
+      <div className="relative px-4 pb-4 -mt-6">
+        {/* Logo */}
+        <div className="w-14 h-14 rounded-xl bg-card border-2 border-card overflow-hidden shadow-lg mb-3">
+          {store.logo_url ? (
+            <img 
+              src={store.logo_url} 
+              alt={store.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-xl font-bold bg-muted text-muted-foreground">
+              {store.name.charAt(0)}
             </div>
+          )}
+        </div>
+        
+        {/* Store Info */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-base text-foreground truncate pr-2">
+              {store.name}
+            </h3>
             {store.average_rating && (
-              <span className="text-xs text-muted-foreground">
-                ⭐ {store.average_rating.toFixed(1)}
+              <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                <span className="text-amber-500">★</span>
+                {store.average_rating.toFixed(1)}
               </span>
             )}
           </div>
           
-          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          {store.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              {store.description}
+            </p>
+          )}
+        </div>
+        
+        {/* View Store Link */}
+        <div className="flex items-center justify-end mt-3 text-xs text-primary font-medium">
+          <span className="group-hover:underline">View Store</span>
+          <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </div>
       </div>
     </Link>
@@ -117,11 +143,13 @@ function StoreCard({ store }: { store: FeaturedStore }) {
 
 function StoreSkeleton() {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border">
-      <Skeleton className="w-12 h-12 rounded-lg" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-3 w-16" />
+    <div className="rounded-2xl bg-card border border-border overflow-hidden">
+      <Skeleton className="h-24 rounded-none" />
+      <div className="px-4 pb-4 -mt-6 relative">
+        <Skeleton className="w-14 h-14 rounded-xl mb-3" />
+        <Skeleton className="h-5 w-32 mb-2" />
+        <Skeleton className="h-3 w-full mb-1" />
+        <Skeleton className="h-3 w-3/4" />
       </div>
     </div>
   );
