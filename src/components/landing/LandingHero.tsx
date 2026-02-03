@@ -28,10 +28,9 @@ export function LandingHero() {
       <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/20" />
 
       <div className="container mx-auto px-4 py-10 sm:py-12 relative z-10">
-        {/* Two-column grid for desktop */}
-        <div className="grid lg:grid-cols-[55%_45%] gap-6 lg:gap-10 items-start">
-          {/* Left column - Text content */}
-          <div className="max-w-2xl lg:max-w-none text-center lg:text-left">
+        <div className="max-w-4xl mx-auto lg:mx-0">
+          {/* Text content */}
+          <div className="text-center lg:text-left">
             {/* Badge - simpler */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -115,8 +114,8 @@ export function LandingHero() {
             </motion.div>
           </div>
 
-          {/* Right column - Product showcase (desktop only) */}
-          <div className="hidden lg:block">
+          {/* Product showcase below hero text (desktop only) */}
+          <div className="hidden lg:block mt-8">
             <HeroProductShowcase />
           </div>
         </div>
