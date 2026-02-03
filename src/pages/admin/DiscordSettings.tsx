@@ -47,7 +47,9 @@ interface DiscordSettings {
   polls_discord_webhook_url: string;
   polls_discord_role_id: string;
   product_drops_discord_webhook_url: string;
+  product_drops_discord_role_id: string;
   early_product_drops_discord_webhook_url: string;
+  early_product_drops_discord_role_id: string;
 }
 
 const DEFAULT_SETTINGS: DiscordSettings = {
@@ -69,7 +71,9 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   polls_discord_webhook_url: '',
   polls_discord_role_id: '',
   product_drops_discord_webhook_url: '',
+  product_drops_discord_role_id: '',
   early_product_drops_discord_webhook_url: '',
+  early_product_drops_discord_role_id: '',
 };
 
 interface WebhookTestResult {
@@ -571,6 +575,8 @@ export default function DiscordSettings() {
                   settingKey: 'product_drops_discord_webhook_url',
                   icon: <Package className="h-4 w-4 text-cyan-400" />,
                   iconColor: 'bg-cyan-500/20',
+                  roleIdKey: 'product_drops_discord_role_id',
+                  roleIdLabel: 'Role ID to Ping',
                 }} />
 
                 <WebhookInput config={{
@@ -580,6 +586,8 @@ export default function DiscordSettings() {
                   settingKey: 'early_product_drops_discord_webhook_url',
                   icon: <Shield className="h-4 w-4 text-violet-400" />,
                   iconColor: 'bg-violet-500/20',
+                  roleIdKey: 'early_product_drops_discord_role_id',
+                  roleIdLabel: 'Role ID to Ping',
                 }} />
 
                 <WebhookInput config={{
