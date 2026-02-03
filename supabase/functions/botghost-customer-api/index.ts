@@ -396,33 +396,44 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     });
   }
 
-  // Get user's purchased products (only those with valid product_id)
-  const { data: orderItems, error: orderError } = await supabase
+  // Get user's last 10 purchased products with downloadable files
+  const { data: recentPurchases, error: purchaseError } = await supabase
     .from("order_items")
     .select(`
       product_id,
       product_name,
+      created_at,
+      products!inner (
+        id,
+        name,
+        asset_file_url
+      ),
       orders!inner (
         user_id,
-        status
+        status,
+        created_at
       )
     `)
     .eq("orders.user_id", profile.user_id)
     .in("orders.status", ["paid", "completed"])
-    .not("product_id", "is", null);
+    .not("product_id", "is", null)
+    .not("products.asset_file_url", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(10);
 
-  console.log("[botghost-customer-api] Order items found:", orderItems?.length || 0, orderError ? `Error: ${orderError.message}` : "");
+  console.log("[botghost-customer-api] Recent purchases found:", recentPurchases?.length || 0, purchaseError ? `Error: ${purchaseError.message}` : "");
 
-  // Filter out any null product_ids and deduplicate
-  const purchasedProductIds = [...new Set(
-    (orderItems || [])
-      .map((i: any) => i.product_id)
-      .filter((id: string | null) => id !== null && id !== undefined)
-  )];
+  // Deduplicate by product_id (keep most recent)
+  const seenIds = new Set<string>();
+  const uniquePurchases = (recentPurchases || []).filter((p: any) => {
+    if (seenIds.has(p.product_id)) return false;
+    seenIds.add(p.product_id);
+    return true;
+  });
 
-  console.log("[botghost-customer-api] Valid product IDs:", purchasedProductIds);
+  console.log("[botghost-customer-api] Unique downloadable products:", uniquePurchases.length);
 
-  if (purchasedProductIds.length === 0) {
+  if (uniquePurchases.length === 0) {
     return jsonResponse({
       success: true,
       products: [],
@@ -430,35 +441,25 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     });
   }
 
-  // If no product specified, list available products
+  // If no product specified, show selection of recent purchases
   if (!body.product_name) {
-    const { data: products, error: productsError } = await supabase
-      .from("products")
-      .select("id, name, asset_file_url")
-      .in("id", purchasedProductIds)
-      .not("asset_file_url", "is", null);
-
-    console.log("[botghost-customer-api] Products with files:", products?.length || 0, productsError ? `Error: ${productsError.message}` : "");
-    console.log("[botghost-customer-api] Products data:", JSON.stringify(products));
-
-    if (!products || products.length === 0) {
-      return jsonResponse({
-        success: true,
-        products: [],
-        message: "None of your purchased products have downloadable files.",
-      });
-    }
-
-    // Build a nice list of available products
-    const productNames = products.map((p: any) => p.name);
-    const productList = productNames.map((name: string) => `• ${name}`).join("\n");
+    // Build numbered list for easy selection
+    const productList = uniquePurchases
+      .map((p: any, i: number) => `**${i + 1}.** ${p.products.name}`)
+      .join("\n");
 
     return jsonResponse({
       success: true,
-      products: products.map((p: any) => ({ id: p.id, name: p.name })),
-      message: `📦 **Your Downloadable Products:**\n${productList}\n\nUse \`/retrieve [product name]\` to get a download link.`,
+      products: uniquePurchases.map((p: any) => ({ 
+        id: p.product_id, 
+        name: p.products.name 
+      })),
+      message: `📦 **Select a product to download:**\n\n${productList}\n\n*Use* \`/retrieve [product name]\` *to get your download link.*`,
     });
   }
+
+  // Get all purchasedProductIds for the search
+  const purchasedProductIds = uniquePurchases.map((p: any) => p.product_id);
 
   // Search for product by name
   const rawSearch = body.product_name ?? "";
@@ -497,25 +498,14 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
 
   let product = matchedByQuery?.[0] ?? null;
 
-  // 2) Fallback: fetch the user's downloadable products and do a normalized match in JS.
+  // 2) Fallback: use the uniquePurchases we already have and do a normalized match in JS.
   // This handles weird spacing, punctuation, or BotGhost variable formatting.
-  let availableProducts: any[] = [];
   if (!product) {
-    const { data: productsForUser, error: availableError } = await supabase
-      .from("products")
-      .select("id, name, asset_file_url")
-      .in("id", purchasedProductIds)
-      .not("asset_file_url", "is", null)
-      .limit(50);
-
-    if (availableError) {
-      console.error(
-        "[botghost-customer-api] Available products fallback query error:",
-        availableError
-      );
-    }
-
-    availableProducts = productsForUser ?? [];
+    const availableProducts = uniquePurchases.map((p: any) => ({
+      id: p.product_id,
+      name: p.products.name,
+      asset_file_url: p.products.asset_file_url,
+    }));
 
     const normalize = (s: string) =>
       s
@@ -537,32 +527,20 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
       "[botghost-customer-api] Fallback product match:",
       product ? product.name : null
     );
-  }
 
-  if (!product) {
-    // Ensure we can show the user what's available to copy/paste.
-    if (availableProducts.length === 0) {
-      const { data: productsForUser } = await supabase
-        .from("products")
-        .select("id, name, asset_file_url")
-        .in("id", purchasedProductIds)
-        .not("asset_file_url", "is", null)
-        .limit(50);
-      availableProducts = productsForUser ?? [];
+    if (!product) {
+      const availableList = availableProducts
+        .map((p: any, i: number) => `**${i + 1}.** ${p.name}`)
+        .join("\n");
+
+      return jsonResponse({
+        success: false,
+        error:
+          `Couldn't find "${rawSearch}".\n\n` +
+          `**Your products:**\n${availableList}\n\n` +
+          `*Copy the exact name and try again.*`,
+      });
     }
-
-    const availableNames = (availableProducts || []).map((p: any) => p.name);
-    const availableList =
-      availableNames.length > 0
-        ? availableNames.map((n: string) => `• ${n}`).join("\n")
-        : "(none)";
-
-    return jsonResponse({
-      success: false,
-      error:
-        `Couldn't find a downloadable product matching "${rawSearch}". ` +
-        `Try copying the exact product name from this list:\n${availableList}`,
-    });
   }
 
   // Generate signed URL (valid for 1 hour)
