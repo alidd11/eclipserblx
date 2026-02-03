@@ -449,10 +449,14 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
       });
     }
 
+    // Build a nice list of available products
+    const productNames = products.map((p: any) => p.name);
+    const productList = productNames.map((name: string) => `• ${name}`).join("\n");
+
     return jsonResponse({
       success: true,
       products: products.map((p: any) => ({ id: p.id, name: p.name })),
-      message: "Use the download command with a product name to get a download link.",
+      message: `📦 **Your Downloadable Products:**\n${productList}\n\nUse \`/retrieve [product name]\` to get a download link.`,
     });
   }
 
