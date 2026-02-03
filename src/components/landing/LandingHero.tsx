@@ -50,12 +50,12 @@ export function LandingHero() {
               transition={{ duration: 0.3, delay: 0.05 }}
             >
               <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] tracking-tight mb-4">
-                Build Your Business.{' '}
-                <span className="text-primary">Grow Your Community.</span>
+                Level Up Your{' '}
+                <span className="text-primary">Roblox Experience.</span>
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                The marketplace where Roblox creators sell premium assets, scripts, and resources. 
-                Low fees. Instant payouts.
+                Premium scripts, models, UI kits, and game assets built by top Roblox developers. 
+                Power your next experience.
               </p>
             </motion.div>
 
