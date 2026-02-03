@@ -61,40 +61,56 @@ function StoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link 
       to={`/stores/${store.slug}`}
-      className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border hover:border-primary/30 transition-all active:scale-[0.98]"
+      className="relative block rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-all active:scale-[0.98] h-32"
     >
-      <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-        {store.logo_url ? (
-          <img 
-            src={store.logo_url} 
-            alt={store.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-lg font-bold text-muted-foreground">
-            {store.name.charAt(0)}
+      {/* Banner Background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: store.banner_url 
+            ? `url(${store.banner_url})` 
+            : 'linear-gradient(135deg, hsl(var(--primary)/0.3), hsl(var(--primary)/0.1))'
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+      
+      {/* Content */}
+      <div className="relative h-full flex items-end p-4">
+        <div className="flex items-center gap-3 w-full">
+          <div className="w-12 h-12 rounded-lg bg-background/90 overflow-hidden flex-shrink-0 shadow-md">
+            {store.logo_url ? (
+              <img 
+                src={store.logo_url} 
+                alt={store.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-muted-foreground">
+                {store.name.charAt(0)}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-sm truncate">{store.name}</span>
-          {store.is_verified && (
-            <ShieldCheck className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-          )}
-          {store.is_trusted && (
-            <Award className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-          )}
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-sm truncate text-foreground">{store.name}</span>
+              {store.is_verified && (
+                <ShieldCheck className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+              )}
+              {store.is_trusted && (
+                <Award className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+              )}
+            </div>
+            {store.average_rating && (
+              <span className="text-xs text-muted-foreground">
+                ⭐ {store.average_rating.toFixed(1)}
+              </span>
+            )}
+          </div>
+          
+          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         </div>
-        {store.average_rating && (
-          <span className="text-xs text-muted-foreground">
-            ⭐ {store.average_rating.toFixed(1)}
-          </span>
-        )}
       </div>
-      
-      <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
     </Link>
   );
 }
@@ -115,8 +131,7 @@ export function PWAFeaturedStores() {
   const { data: stores, isLoading } = useAlgorithmicStores();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const storesPerSlide = 2;
-  const totalSlides = stores ? Math.ceil(stores.length / storesPerSlide) : 0;
+  const totalSlides = stores?.length || 0;
 
   const goToNext = useCallback(() => {
     if (totalSlides > 1) {
@@ -130,10 +145,7 @@ export function PWAFeaturedStores() {
     return () => clearInterval(interval);
   }, [totalSlides, goToNext]);
 
-  const currentStores = stores?.slice(
-    currentSlide * storesPerSlide,
-    currentSlide * storesPerSlide + storesPerSlide
-  ) || [];
+  const currentStore = stores?.[currentSlide];
 
   return (
     <div className="space-y-3">
@@ -150,16 +162,13 @@ export function PWAFeaturedStores() {
       
       <div className="relative overflow-hidden">
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-2">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <StoreSkeleton key={i} />
-            ))}
-          </div>
-        ) : stores?.length ? (
-          <div className="grid grid-cols-1 gap-2 transition-opacity duration-300">
-            {currentStores.map((store) => (
-              <StoreCard key={store.id} store={store} />
-            ))}
+          <StoreSkeleton />
+        ) : currentStore ? (
+          <div 
+            key={currentStore.id}
+            className="animate-fade-in"
+          >
+            <StoreCard store={currentStore} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
