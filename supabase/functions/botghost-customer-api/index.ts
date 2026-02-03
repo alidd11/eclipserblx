@@ -396,8 +396,8 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     });
   }
 
-  // Get user's purchased products
-  const { data: orderItems } = await supabase
+  // Get user's purchased products (only those with valid product_id)
+  const { data: orderItems, error: orderError } = await supabase
     .from("order_items")
     .select(`
       product_id,
@@ -408,9 +408,19 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
       )
     `)
     .eq("orders.user_id", profile.user_id)
-    .in("orders.status", ["paid", "completed"]);
+    .in("orders.status", ["paid", "completed"])
+    .not("product_id", "is", null);
 
-  const purchasedProductIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
+  console.log("[botghost-customer-api] Order items found:", orderItems?.length || 0, orderError ? `Error: ${orderError.message}` : "");
+
+  // Filter out any null product_ids and deduplicate
+  const purchasedProductIds = [...new Set(
+    (orderItems || [])
+      .map((i: any) => i.product_id)
+      .filter((id: string | null) => id !== null && id !== undefined)
+  )];
+
+  console.log("[botghost-customer-api] Valid product IDs:", purchasedProductIds);
 
   if (purchasedProductIds.length === 0) {
     return jsonResponse({
@@ -422,11 +432,14 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
 
   // If no product specified, list available products
   if (!body.product_name) {
-    const { data: products } = await supabase
+    const { data: products, error: productsError } = await supabase
       .from("products")
       .select("id, name, asset_file_url")
       .in("id", purchasedProductIds)
       .not("asset_file_url", "is", null);
+
+    console.log("[botghost-customer-api] Products with files:", products?.length || 0, productsError ? `Error: ${productsError.message}` : "");
+    console.log("[botghost-customer-api] Products data:", JSON.stringify(products));
 
     if (!products || products.length === 0) {
       return jsonResponse({
