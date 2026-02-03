@@ -11,6 +11,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useDropZone } from '@/hooks/useDropZone';
 import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
 import { markChatAsRead } from '@/hooks/useChatNotifications';
@@ -127,6 +128,10 @@ interface OnlineAdmin {
 function AdminChatContent() {
   const { user } = useAuth();
   const { isAdmin, loading } = useAdminAuth();
+  const { hasPermission } = useUserPermissions();
+  
+  // Check if user can access admin chat (has admin role OR view_admin_chat permission)
+  const canAccessAdminChat = isAdmin || hasPermission('view_admin_chat');
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
@@ -173,7 +178,7 @@ function AdminChatContent() {
       if (error) throw error;
       return (data || []) as unknown as ChatMessage[];
     },
-    enabled: isAdmin,
+    enabled: canAccessAdminChat,
   });
 
   // Fetch user profiles for message authors
@@ -194,7 +199,7 @@ function AdminChatContent() {
         data.map(p => [p.user_id, p])
       ) as Record<string, UserProfile>;
     },
-    enabled: messages.length > 0 && isAdmin,
+    enabled: messages.length > 0 && canAccessAdminChat,
   });
 
   // Fetch current user profile for presence
@@ -214,34 +219,65 @@ function AdminChatContent() {
     enabled: !!user?.id,
   });
 
-  // Fetch all admin members for @mentions
+  // Fetch all users with admin chat access for @mentions
   const {
     data: allAdmins = [],
     isLoading: isAdminsLoading,
     error: adminsError,
     refetch: refetchAdmins,
   } = useQuery({
-    queryKey: ['all-admin-members'],
+    queryKey: ['admin-chat-members'],
     queryFn: async () => {
-      const { data: adminRoles, error: rolesError } = await supabase
+      // Get all users who have admin role
+      const { data: adminRoles, error: adminRolesError } = await supabase
         .from('user_roles')
         .select('user_id')
         .eq('role', 'admin');
 
-      if (rolesError) throw rolesError;
-      if (!adminRoles?.length) return [];
+      if (adminRolesError) throw adminRolesError;
 
-      const adminUserIds = adminRoles.map(r => r.user_id);
+      // Get users who have view_admin_chat permission through role_permissions
+      const { data: permissionData, error: permError } = await supabase
+        .from('permissions')
+        .select('id')
+        .eq('name', 'view_admin_chat')
+        .single();
+
+      let usersWithPermission: string[] = [];
+      if (!permError && permissionData) {
+        const { data: rolePerms } = await supabase
+          .from('role_permissions')
+          .select('role')
+          .eq('permission_id', permissionData.id);
+
+        if (rolePerms?.length) {
+          const roles = rolePerms.map(rp => rp.role);
+          const { data: userRolesData } = await supabase
+            .from('user_roles')
+            .select('user_id')
+            .in('role', roles);
+
+          if (userRolesData) {
+            usersWithPermission = userRolesData.map(ur => ur.user_id);
+          }
+        }
+      }
+
+      // Combine admin users and users with view_admin_chat permission
+      const adminUserIds = adminRoles?.map(r => r.user_id) || [];
+      const allUserIds = [...new Set([...adminUserIds, ...usersWithPermission])];
+
+      if (!allUserIds.length) return [];
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, display_name, email')
-        .in('user_id', adminUserIds);
+        .in('user_id', allUserIds);
 
       if (profilesError) throw profilesError;
       return (profiles || []) as AdminMember[];
     },
-    enabled: isAdmin,
+    enabled: canAccessAdminChat,
   });
 
   // Filtered admins for mentions
@@ -406,7 +442,7 @@ function AdminChatContent() {
       if (error) throw error;
       return (data || []) as unknown as ChatReaction[];
     },
-    enabled: messages.length > 0 && isAdmin,
+    enabled: messages.length > 0 && canAccessAdminChat,
   });
 
   // Add reaction mutation
@@ -552,7 +588,7 @@ function AdminChatContent() {
 
   // Real-time subscription
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!canAccessAdminChat) return;
 
     const channel = supabase
       .channel('admin-chat-realtime')
@@ -573,11 +609,11 @@ function AdminChatContent() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, isAdmin]);
+  }, [queryClient, canAccessAdminChat]);
 
   // Presence for typing indicators and online admins
   useEffect(() => {
-    if (!user?.id || !currentUserProfile || !isAdmin) return;
+    if (!user?.id || !currentUserProfile || !canAccessAdminChat) return;
 
     const presenceChannel = supabase.channel('admin-chat-presence');
     presenceChannelRef.current = presenceChannel;
@@ -626,7 +662,7 @@ function AdminChatContent() {
       presenceChannelRef.current = null;
       supabase.removeChannel(presenceChannel);
     };
-  }, [user?.id, currentUserProfile, isAdmin]);
+  }, [user?.id, currentUserProfile, canAccessAdminChat]);
 
   // Handle typing indicator
   const handleTyping = useCallback(() => {
@@ -835,8 +871,8 @@ function AdminChatContent() {
     );
   }
 
-  // Redirect if not admin
-  if (!isAdmin) {
+  // Redirect if no access to admin chat
+  if (!canAccessAdminChat) {
     return <Navigate to="/admin" replace />;
   }
 
