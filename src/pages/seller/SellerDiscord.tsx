@@ -1,5 +1,6 @@
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { ScheduledAnnouncementCard } from '@/components/seller/ScheduledAnnouncementCard';
+import { DiscordRolePingsCard } from '@/components/seller/DiscordRolePingsCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -18,6 +19,9 @@ export default function SellerDiscord() {
 
         {/* Announcement Card */}
         <ScheduledAnnouncementCard />
+
+        {/* Role Pings Card */}
+        <DiscordRolePingsCard />
 
         {/* Configuration Hint */}
         <Card>
