@@ -36,15 +36,32 @@ Deno.serve(async (req) => {
 
   try {
     // Verify API key (set this in BotGhost's HTTP request headers)
-    const apiKey = req.headers.get("x-api-key");
-    const expectedKey = Deno.env.get("BOTGHOST_API_KEY");
-    
+    const apiKeyRaw = req.headers.get("x-api-key");
+    const expectedKeyRaw = Deno.env.get("BOTGHOST_API_KEY");
+
+    const expectedKey = normalizeApiKey(expectedKeyRaw ?? "");
+
     if (!expectedKey) {
       console.error("[botghost-customer-api] BOTGHOST_API_KEY not configured");
       return jsonResponse({ success: false, error: "API not configured" }, 500);
     }
-    
-    if (apiKey !== expectedKey) {
+
+    if (!apiKeyRaw) {
+      // Distinguish missing header vs wrong key — this is the most common BotGhost misconfiguration.
+      return jsonResponse(
+        {
+          success: false,
+          error:
+            "Missing x-api-key header (BotGhost HTTP Request → Headers must include x-api-key)",
+        },
+        401
+      );
+    }
+
+    const apiKey = normalizeApiKey(apiKeyRaw);
+
+    if (!apiKey || apiKey !== expectedKey) {
+      console.warn("[botghost-customer-api] Invalid API key provided (header present)");
       return jsonResponse({ success: false, error: "Invalid API key" }, 401);
     }
 
@@ -80,6 +97,21 @@ function jsonResponse(data: any, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function normalizeApiKey(value: string) {
+  // BotGhost / dashboard UIs sometimes add quotes, whitespace, or a Bearer prefix.
+  // Normalize both env var and header to prevent subtle mismatches.
+  let v = (value ?? "").trim();
+  if (!v) return "";
+  if (v.toLowerCase().startsWith("bearer ")) v = v.slice(7).trim();
+  if (
+    (v.startsWith('"') && v.endsWith('"') && v.length >= 2) ||
+    (v.startsWith("'") && v.endsWith("'") && v.length >= 2)
+  ) {
+    v = v.slice(1, -1).trim();
+  }
+  return v;
 }
 
 // Get linked Eclipse account from Discord ID
