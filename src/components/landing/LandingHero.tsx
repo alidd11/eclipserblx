@@ -28,28 +28,22 @@ export function LandingHero() {
               </div>
             </motion.div>
 
-            {/* Main Headline */}
-            <motion.h1
+            {/* Main Headline & Description */}
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-6"
             >
-              Build Your Business.
-              <br />
-              <span className="text-primary">Grow Your Community.</span>
-            </motion.h1>
-
-            {/* Description */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed"
-            >
-              Eclipse is the marketplace where Roblox creators sell premium assets, 
-              scripts, and resources. Low fees. Instant payouts. Trusted by thousands.
-            </motion.p>
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
+                Build Your Business.
+                <br />
+                <span className="text-primary">Grow Your Community.</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+                Eclipse is the marketplace where Roblox creators sell premium assets, 
+                scripts, and resources. Low fees. Instant payouts. Trusted by thousands.
+              </p>
+            </motion.div>
 
             {/* CTAs */}
             <motion.div
