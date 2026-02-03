@@ -14,6 +14,15 @@ interface BotGhostRequest {
   discord_username?: string;
   code?: string; // For link verification
   product_name?: string; // For download
+  // BotGhost setups sometimes pass command arguments under different names.
+  // We keep these optional so the function is resilient without requiring BotGhost reconfiguration.
+  product?: string;
+  productName?: string;
+  args?: string;
+  arguments?: string;
+  query?: string;
+  text?: string;
+  content?: string;
 }
 
 Deno.serve(async (req) => {
@@ -444,8 +453,101 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     });
   }
 
-  // If no product specified, show selection of recent purchases
-  if (!body.product_name) {
+  // BotGhost command arguments are sometimes passed under different JSON keys.
+  // Try to derive the intended product name from common fields.
+  const rawProductName =
+    body.product_name ??
+    body.product ??
+    body.productName ??
+    body.args ??
+    body.arguments ??
+    body.query ??
+    body.text ??
+    body.content ??
+    null;
+
+  const derivedProductName =
+    typeof rawProductName === "string" ? rawProductName : undefined;
+
+  // If no product specified:
+  // - If there's only 1 downloadable product, just deliver it (no selection step)
+  // - Otherwise show a short selection list (last 10 unique purchases)
+  if (!derivedProductName || !derivedProductName.trim()) {
+    if (uniquePurchases.length === 1) {
+      const only = uniquePurchases[0];
+      const onlyProduct = {
+        id: only.product_id ?? only.products?.id,
+        name: only.products?.name ?? only.product_name,
+        asset_file_url: only.products?.asset_file_url,
+      };
+
+      if (!onlyProduct.id || !onlyProduct.asset_file_url) {
+        console.error("[botghost-customer-api] Single purchase missing product data", {
+          hasId: !!onlyProduct.id,
+          hasAsset: !!onlyProduct.asset_file_url,
+        });
+
+        return jsonResponse({
+          success: false,
+          error: "Couldn't prepare your download. Please try again via the website.",
+        });
+      }
+
+      // Generate signed URL (valid for 1 hour)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from("product-assets")
+        .createSignedUrl(onlyProduct.asset_file_url, 3600);
+
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        console.error("[botghost-customer-api] Signed URL error (single product):", signedUrlError);
+        return jsonResponse({
+          success: false,
+          error: "Couldn't generate download link. Please try again or use the website.",
+        });
+      }
+
+      // Log the download
+      await supabase.from("download_logs").insert({
+        user_id: profile.user_id,
+        product_id: onlyProduct.id,
+      });
+
+      // Update download count
+      await supabase.rpc("increment_download_count", { product_id: onlyProduct.id }).catch(() => {});
+
+      return jsonResponse({
+        success: true,
+        product_name: onlyProduct.name,
+        download_url: signedUrlData.signedUrl,
+        expires_in: "1 hour",
+        embed: {
+          title: "📥 Your Download is Ready",
+          description:
+            `Hey <@${body.discord_id}>!\n\n` +
+            `Here's your download for **${onlyProduct.name}**.\n\n` +
+            `⏳ This link will expire in **1 hour**.\n\n` +
+            `⚠️ **Please do not share this link** — it is unique to your account.\n\u200B`,
+          color: 0x5865f2,
+          fields: [
+            {
+              name: "🔗 Download Link",
+              value: `[Click here to download](${signedUrlData.signedUrl})`,
+              inline: false,
+            },
+          ],
+          footer: {
+            text: "Eclipse • Your UK:RP Asset Marketplace",
+            icon_url: "https://eclipserblx.com/favicon.ico",
+          },
+          image: {
+            url: ECLIPSE_BANNER,
+          },
+          timestamp: new Date().toISOString(),
+        },
+        message: `Hey <@${body.discord_id}>! Your download for **${onlyProduct.name}** is ready.`,
+      });
+    }
+
     // Build numbered list for easy selection
     const productList = uniquePurchases
       .map((p: any, i: number) => `**${i + 1}.** ${p.products.name}`)
@@ -465,7 +567,7 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
   const purchasedProductIds = uniquePurchases.map((p: any) => p.product_id);
 
   // Search for product by name
-  const rawSearch = body.product_name ?? "";
+  const rawSearch = derivedProductName ?? "";
   const searchTerm = rawSearch.replace(/\s+/g, " ").trim();
 
   console.log(
