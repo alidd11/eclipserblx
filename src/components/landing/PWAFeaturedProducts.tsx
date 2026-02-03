@@ -22,13 +22,16 @@ interface FeaturedProduct {
   } | null;
 }
 
+// Admin-managed store slugs for featured products
+const FEATURED_STORE_SLUGS = ['eclipse-store', 'vino-store'];
+
 function useAlgorithmicProducts() {
   return useQuery({
     queryKey: ['pwa-featured-products'],
     queryFn: async () => {
       const now = new Date().toISOString();
       
-      // Fetch active products from active stores
+      // Fetch active products from Eclipse and Vino stores only
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -37,30 +40,21 @@ function useAlgorithmicProducts() {
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)
-        .eq('stores.is_testing', false)
+        .in('stores.slug', FEATURED_STORE_SLUGS)
         .or(`release_at.is.null,release_at.lte.${now}`)
-        .order('is_featured', { ascending: false })
         .limit(20);
 
       if (error) throw error;
       
       const products = data as unknown as FeaturedProduct[];
       
-      // Score products algorithmically
-      const scored = products.map(product => ({
-        ...product,
-        score: 
-          (product.stores?.is_trusted ? 50 : 0) +
-          (product.stores?.is_verified ? 30 : 0) +
-          (product.average_rating || 0) * 15 +
-          (product.review_count || 0) * 2 +
-          Math.random() * 25 // Rotation factor
-      }));
-      
-      // Sort by score and take top 6
-      return scored
-        .sort((a, b) => b.score - a.score)
+      // Shuffle products randomly for variety
+      const shuffled = products
+        .map(p => ({ ...p, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
         .slice(0, 6);
+      
+      return shuffled;
     },
     staleTime: 1000 * 60 * 2, // 2 min cache
   });
