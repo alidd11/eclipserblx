@@ -1085,7 +1085,10 @@ function AdminChatContent() {
       )}
 
       {/* Input bar - iMessage style */}
-      <div className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative">
+      <div className={cn(
+        "px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card relative",
+        !isKeyboardVisible && isPWA && "pb-[env(safe-area-inset-bottom,0px)]"
+      )}>
         {/* Mention suggestions */}
         {showMentionSuggestions && (
           <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
