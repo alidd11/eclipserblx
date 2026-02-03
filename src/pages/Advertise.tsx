@@ -1042,7 +1042,6 @@ export default function Advertise() {
                           <div className="flex items-center gap-2 text-sm">
                             <span className="text-muted-foreground">or</span>
                             <span className="font-bold text-green-500">{formatRobux(robuxPrices[tier.tier])}</span>
-                            <span className="text-muted-foreground text-xs">(one-time)</span>
                           </div>
                         </div>
                       )}
