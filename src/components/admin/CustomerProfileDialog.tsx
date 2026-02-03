@@ -269,6 +269,13 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                   <span className="text-muted-foreground flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Customer ID
+                  </span>
+                  <span className="font-mono text-sm text-primary">{profile.customer_id || 'N/A'}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <span className="text-muted-foreground flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     Joined
                   </span>
