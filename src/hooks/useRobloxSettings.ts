@@ -11,6 +11,10 @@ interface RobloxSettings {
   roblox_premium_discount_percent: number;
   roblox_badge_rewards_enabled: boolean;
   roblox_required_badges: string[];
+  // Advertisement gamepass settings
+  robux_ad_gamepass_id: string;
+  robux_ad_gamepass_name: string;
+  robux_ad_gamepass_robux_price: number;
 }
 
 const DEFAULT_SETTINGS: RobloxSettings = {
@@ -23,6 +27,10 @@ const DEFAULT_SETTINGS: RobloxSettings = {
   roblox_premium_discount_percent: 5,
   roblox_badge_rewards_enabled: false,
   roblox_required_badges: [],
+  // Advertisement gamepass defaults
+  robux_ad_gamepass_id: '',
+  robux_ad_gamepass_name: 'Single Advertisement',
+  robux_ad_gamepass_robux_price: 100,
 };
 
 const SETTING_KEYS = Object.keys(DEFAULT_SETTINGS) as (keyof RobloxSettings)[];

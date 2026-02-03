@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Gamepad2, Users, Crown, Award, Webhook, Loader2, 
   CheckCircle2, XCircle, ExternalLink, Save, Percent,
-  Shield, Link2, Copy, Check, Settings
+  Shield, Link2, Copy, Check, Settings, Megaphone
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -38,6 +38,11 @@ export default function RobloxSettings() {
   const [premiumDiscountPercent, setPremiumDiscountPercent] = useState(5);
   const [badgeRewardsEnabled, setBadgeRewardsEnabled] = useState(false);
   
+  // Advertisement gamepass settings
+  const [adGamepassId, setAdGamepassId] = useState('');
+  const [adGamepassName, setAdGamepassName] = useState('Single Advertisement');
+  const [adGamepassRobuxPrice, setAdGamepassRobuxPrice] = useState(100);
+  
   // Test states
   const [isTestingGroup, setIsTestingGroup] = useState(false);
   const [groupTestResult, setGroupTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -56,6 +61,10 @@ export default function RobloxSettings() {
       setPremiumDiscountEnabled(settings.roblox_premium_discount_enabled);
       setPremiumDiscountPercent(settings.roblox_premium_discount_percent);
       setBadgeRewardsEnabled(settings.roblox_badge_rewards_enabled);
+      // Advertisement gamepass
+      setAdGamepassId(settings.robux_ad_gamepass_id);
+      setAdGamepassName(settings.robux_ad_gamepass_name);
+      setAdGamepassRobuxPrice(settings.robux_ad_gamepass_robux_price);
     }
   }, [settings, isLoading]);
   
@@ -86,6 +95,10 @@ export default function RobloxSettings() {
         roblox_premium_discount_enabled: premiumDiscountEnabled,
         roblox_premium_discount_percent: premiumDiscountPercent,
         roblox_badge_rewards_enabled: badgeRewardsEnabled,
+        // Advertisement gamepass
+        robux_ad_gamepass_id: adGamepassId,
+        robux_ad_gamepass_name: adGamepassName,
+        robux_ad_gamepass_robux_price: adGamepassRobuxPrice,
       });
       toast.success('Roblox settings saved');
     } catch (error) {
@@ -364,6 +377,105 @@ export default function RobloxSettings() {
                     <li>Configure the WEBHOOK_SECRET in both Roblox and your backend</li>
                     <li>Map your Roblox Product IDs to website products</li>
                   </ol>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Advertisement Gamepass Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-purple-500" />
+                  Advertisement Gamepass
+                </CardTitle>
+                <CardDescription>
+                  Configure the gamepass for Robux advertisement purchases
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="ad-gamepass-id">Gamepass ID</Label>
+                  <Input
+                    id="ad-gamepass-id"
+                    placeholder="123456789"
+                    value={adGamepassId}
+                    onChange={(e) => setAdGamepassId(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The Roblox gamepass ID that users purchase for one-time advertisements
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ad-gamepass-name">Display Name</Label>
+                  <Input
+                    id="ad-gamepass-name"
+                    placeholder="Single Advertisement"
+                    value={adGamepassName}
+                    onChange={(e) => setAdGamepassName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ad-robux-price">Robux Price</Label>
+                  <Input
+                    id="ad-robux-price"
+                    type="number"
+                    min={1}
+                    placeholder="100"
+                    value={adGamepassRobuxPrice}
+                    onChange={(e) => setAdGamepassRobuxPrice(parseInt(e.target.value) || 100)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The price in Robux (must match the gamepass price in Roblox)
+                  </p>
+                </div>
+
+                {adGamepassId && (
+                  <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Robux payment enabled for advertisements</span>
+                    </div>
+                  </div>
+                )}
+
+                {!adGamepassId && (
+                  <div className="p-3 bg-muted/50 border border-border rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Enter a gamepass ID to enable Robux payments for advertisements
+                    </p>
+                  </div>
+                )}
+
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">Advertisement Webhook</p>
+                      <p className="text-xs text-muted-foreground">Use this for advertisement gamepass purchases</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/robux-ad-webhook`}
+                      className="font-mono text-xs"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(
+                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/robux-ad-webhook`,
+                        'ad-webhook'
+                      )}
+                    >
+                      {copiedField === 'ad-webhook' ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
