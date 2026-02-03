@@ -28,21 +28,24 @@ export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          {/* Mask for crescent cutout */}
-          <mask id="eclipse-crescent-mask">
-            <circle cx="50" cy="50" r="45" fill="white" />
-            <circle cx="72" cy="50" r="36" fill="black" />
-          </mask>
-        </defs>
-        
-        {/* Main eclipse shape with crescent cutout */}
-        <circle 
-          cx="50" 
-          cy="50" 
-          r="45" 
+        {/* Isometric cube - 3 visible faces */}
+        {/* Top face - lightest */}
+        <polygon 
+          points="50,15 85,35 50,55 15,35" 
           fill="hsl(var(--primary))"
-          mask="url(#eclipse-crescent-mask)"
+          opacity="1"
+        />
+        {/* Left face - medium */}
+        <polygon 
+          points="15,35 50,55 50,90 15,70" 
+          fill="hsl(var(--primary))"
+          opacity="0.7"
+        />
+        {/* Right face - darkest */}
+        <polygon 
+          points="50,55 85,35 85,70 50,90" 
+          fill="hsl(var(--primary))"
+          opacity="0.5"
         />
       </svg>
     </div>
