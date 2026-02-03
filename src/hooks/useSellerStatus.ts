@@ -85,6 +85,8 @@ export interface StoreCredentials {
   discord_bot_token?: string;
   discord_guild_id?: string;
   discord_role_id?: string;
+  product_drops_role_id?: string;
+  early_product_drops_role_id?: string;
 }
 
 export interface StorePaymentDetails {
@@ -142,7 +144,7 @@ export function useSellerStatus() {
       // Fetch credentials from separate secure table
       const { data: credentialsData } = await supabase
         .from('store_credentials')
-        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id')
+        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id, product_drops_role_id, early_product_drops_role_id')
         .eq('store_id', storeData.id)
         .maybeSingle();
 
