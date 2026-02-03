@@ -11,10 +11,13 @@ interface RobloxSettings {
   roblox_premium_discount_percent: number;
   roblox_badge_rewards_enabled: boolean;
   roblox_required_badges: string[];
-  // Advertisement gamepass settings
-  robux_ad_gamepass_id: string;
-  robux_ad_gamepass_name: string;
-  robux_ad_gamepass_robux_price: number;
+  // Tier-specific advertisement gamepass settings
+  robux_ad_basic_gamepass_id: string;
+  robux_ad_basic_robux_price: number;
+  robux_ad_pro_gamepass_id: string;
+  robux_ad_pro_robux_price: number;
+  robux_ad_premium_gamepass_id: string;
+  robux_ad_premium_robux_price: number;
 }
 
 const DEFAULT_SETTINGS: RobloxSettings = {
@@ -27,10 +30,13 @@ const DEFAULT_SETTINGS: RobloxSettings = {
   roblox_premium_discount_percent: 5,
   roblox_badge_rewards_enabled: false,
   roblox_required_badges: [],
-  // Advertisement gamepass defaults
-  robux_ad_gamepass_id: '',
-  robux_ad_gamepass_name: 'Single Advertisement',
-  robux_ad_gamepass_robux_price: 100,
+  // Tier-specific advertisement gamepass defaults
+  robux_ad_basic_gamepass_id: '',
+  robux_ad_basic_robux_price: 0,
+  robux_ad_pro_gamepass_id: '',
+  robux_ad_pro_robux_price: 0,
+  robux_ad_premium_gamepass_id: '',
+  robux_ad_premium_robux_price: 0,
 };
 
 const SETTING_KEYS = Object.keys(DEFAULT_SETTINGS) as (keyof RobloxSettings)[];
@@ -59,7 +65,9 @@ export function useRobloxSettings() {
           } else if (Array.isArray(DEFAULT_SETTINGS[key])) {
             (result as any)[key] = Array.isArray(item.value) ? item.value : [];
           } else {
-            (result as any)[key] = String(item.value || '');
+            // Handle string values - strip quotes if present
+            const strVal = String(item.value || '');
+            (result as any)[key] = strVal.replace(/^"|"$/g, '');
           }
         }
       });
@@ -80,6 +88,7 @@ export function useRobloxSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roblox-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['robux-ad-tier-settings'] });
     },
   });
 
