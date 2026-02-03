@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Check, X, Sparkles, Trash2, Plus, Globe, Loader2, Bell, Fingerprint, CheckCircle2, XCircle, AlertCircle, Volume2, VolumeX, Vibrate, Key, RefreshCw, Copy, BellRing } from 'lucide-react';
 import { ForceUpdateCard } from '@/components/admin/ForceUpdateCard';
 import { AffiliateSettingsCard } from '@/components/admin/AffiliateSettingsCard';
+import { EarlyAccessSettingsCard } from '@/components/admin/EarlyAccessSettingsCard';
 
 import { MarketplaceControlsCard } from '@/components/admin/MarketplaceControlsCard';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
@@ -874,6 +875,9 @@ export default function AdminSettings() {
 
               {/* PWA Force Update - Admin Only */}
               {isAdmin && <ForceUpdateCard />}
+
+              {/* Eclipse+ Early Access Settings - Admin Only */}
+              {isAdmin && <EarlyAccessSettingsCard />}
 
               {/* Affiliate Program Settings - Admin Only */}
               {isAdmin && <AffiliateSettingsCard />}

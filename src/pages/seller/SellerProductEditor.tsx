@@ -5,6 +5,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,8 @@ interface ProductFormData {
   asset_file_url: string;
   schedule_enabled: boolean;
   release_at: string;
+  early_access_enabled: boolean;
+  early_access_hours: string;
 }
 
 const INITIAL_FORM_DATA: ProductFormData = {
@@ -65,6 +68,8 @@ const INITIAL_FORM_DATA: ProductFormData = {
   asset_file_url: '',
   schedule_enabled: false,
   release_at: '',
+  early_access_enabled: false,
+  early_access_hours: '',
 };
 
 export default function SellerProductEditor() {
@@ -116,7 +121,8 @@ export default function SellerProductEditor() {
         .single();
 
       if (error) throw error;
-      return data;
+      // Cast to include early_access_hours which may not be in types yet
+      return data as typeof data & { early_access_hours?: number | null };
     },
     enabled: !!productId && !!store?.id,
   });
@@ -125,6 +131,7 @@ export default function SellerProductEditor() {
   useEffect(() => {
     if (product) {
       const hasSchedule = !!product.release_at && new Date(product.release_at) > new Date();
+      const hasEarlyAccess = product.early_access_hours !== null && product.early_access_hours !== undefined;
       setFormData({
         name: product.name || '',
         slug: product.slug || '',
@@ -138,6 +145,8 @@ export default function SellerProductEditor() {
         asset_file_url: product.asset_file_url || '',
         schedule_enabled: hasSchedule,
         release_at: product.release_at ? new Date(product.release_at).toISOString().slice(0, 16) : '',
+        early_access_enabled: hasSchedule && hasEarlyAccess,
+        early_access_hours: product.early_access_hours?.toString() || '',
       });
     }
   }, [product]);
@@ -294,6 +303,13 @@ export default function SellerProductEditor() {
         releaseAt = new Date(data.release_at).toISOString();
       }
 
+      // Calculate early access hours
+      let earlyAccessHours: number | null = null;
+      if (data.schedule_enabled && data.early_access_enabled) {
+        earlyAccessHours = data.early_access_hours ? parseInt(data.early_access_hours) : null;
+        // If enabled but no custom hours, we'll use null to indicate "use platform default"
+      }
+
       const productData = {
         name: data.name,
         slug: data.slug,
@@ -309,6 +325,7 @@ export default function SellerProductEditor() {
         is_seller_product: true,
         moderation_status: 'pending', // All new/edited products go to pending
         release_at: releaseAt,
+        early_access_hours: earlyAccessHours,
       };
 
       if (isEditing && productId) {
@@ -555,6 +572,19 @@ export default function SellerProductEditor() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Early Access for Eclipse+ */}
+          <EarlyAccessCard
+            enabled={formData.early_access_enabled}
+            onEnabledChange={(enabled) => setFormData({ 
+              ...formData, 
+              early_access_enabled: enabled,
+              early_access_hours: enabled ? formData.early_access_hours : '',
+            })}
+            customHours={formData.early_access_hours}
+            onCustomHoursChange={(hours) => setFormData({ ...formData, early_access_hours: hours })}
+            scheduleEnabled={formData.schedule_enabled}
+          />
 
           {/* Images */}
           <Card>
