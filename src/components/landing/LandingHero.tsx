@@ -1,28 +1,44 @@
-import { Link } from 'react-router-dom';
-import { ArrowRight, Store, Sparkles, ShoppingBag } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Store, Sparkles, ShoppingBag, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { HeroProductShowcase } from './HeroProductShowcase';
 
-export function LandingHero() {
-  return (
-    <section className="relative min-h-[55vh] flex items-center overflow-hidden">
-      {/* Simplified background - cleaner look */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+const POPULAR_SEARCHES = [
+  'scripts',
+  'maps',
+  'ui',
+  'weapons',
+  'vehicles',
+  'admin',
+  'tools',
+  'free',
+];
 
-      <div className="container mx-auto px-4 py-12 sm:py-16 relative z-10">
+export function LandingHero() {
+  const navigate = useNavigate();
+
+  const handleSearchClick = (term: string) => {
+    navigate(`/marketplace?q=${encodeURIComponent(term)}`);
+  };
+
+  return (
+    <section className="relative overflow-hidden">
+      {/* Simple flat background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/20" />
+
+      <div className="container mx-auto px-4 py-10 sm:py-12 relative z-10">
         {/* Two-column grid for desktop */}
-        <div className="grid lg:grid-cols-[55%_45%] gap-8 lg:gap-12 items-center">
+        <div className="grid lg:grid-cols-[55%_45%] gap-6 lg:gap-10 items-start">
           {/* Left column - Text content */}
           <div className="max-w-2xl lg:max-w-none text-center lg:text-left">
-            {/* Badge */}
+            {/* Badge - simpler */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-sm font-medium mb-4">
                 <Store className="h-4 w-4" />
                 The Roblox Creator Marketplace
               </div>
@@ -30,51 +46,72 @@ export function LandingHero() {
 
             {/* Main Headline & Description */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
             >
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
-                Build Your Business.
-                <br />
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] tracking-tight mb-4">
+                Build Your Business.{' '}
                 <span className="text-primary">Grow Your Community.</span>
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed">
-                Eclipse is the marketplace where Roblox creators sell premium assets, 
-                scripts, and resources. Low fees. Instant payouts. Trusted by thousands.
+              <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
+                The marketplace where Roblox creators sell premium assets, scripts, and resources. 
+                Low fees. Instant payouts.
               </p>
             </motion.div>
 
-            {/* CTAs */}
+            {/* CTAs - more compact */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 mb-6"
             >
               <Link to="/marketplace">
-                <Button size="lg" className="h-12 px-6 text-base">
-                  <Store className="mr-2 h-5 w-5" />
-                  Start Selling Today
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button size="default" className="h-10 px-5">
+                  <Store className="mr-2 h-4 w-4" />
+                  Start Selling
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/marketplace">
-                <Button size="lg" variant="outline" className="h-12 px-6 text-base">
-                  <ShoppingBag className="mr-2 h-5 w-5" />
+                <Button size="default" variant="outline" className="h-10 px-5">
+                  <ShoppingBag className="mr-2 h-4 w-4" />
                   Browse Marketplace
                 </Button>
               </Link>
               <Link to="/eclipse-plus">
                 <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-12 px-6 text-base border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
+                  size="default" 
+                  variant="ghost" 
+                  className="h-10 px-5 text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
                 >
-                  <Sparkles className="mr-2 h-5 w-5" />
+                  <Sparkles className="mr-2 h-4 w-4" />
                   Eclipse+
                 </Button>
               </Link>
+            </motion.div>
+
+            {/* Popular Searches - utility content like BuiltByBit */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.15 }}
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-2"
+            >
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Search className="h-3 w-3" />
+                Popular:
+              </span>
+              {POPULAR_SEARCHES.map((term) => (
+                <button
+                  key={term}
+                  onClick={() => handleSearchClick(term)}
+                  className="text-xs px-2.5 py-1 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {term}
+                </button>
+              ))}
             </motion.div>
           </div>
 
