@@ -38,12 +38,12 @@ export default function RobloxSettings() {
   const [premiumDiscountPercent, setPremiumDiscountPercent] = useState(5);
   const [badgeRewardsEnabled, setBadgeRewardsEnabled] = useState(false);
   
-  // Tier-specific advertisement gamepass settings
-  const [adBasicGamepassId, setAdBasicGamepassId] = useState('');
+  // Tier-specific advertisement subscription settings (Roblox Subscriptions)
+  const [adBasicSubscriptionId, setAdBasicSubscriptionId] = useState('');
   const [adBasicRobuxPrice, setAdBasicRobuxPrice] = useState(0);
-  const [adProGamepassId, setAdProGamepassId] = useState('');
+  const [adProSubscriptionId, setAdProSubscriptionId] = useState('');
   const [adProRobuxPrice, setAdProRobuxPrice] = useState(0);
-  const [adPremiumGamepassId, setAdPremiumGamepassId] = useState('');
+  const [adPremiumSubscriptionId, setAdPremiumSubscriptionId] = useState('');
   const [adPremiumRobuxPrice, setAdPremiumRobuxPrice] = useState(0);
   
   // Test states
@@ -64,12 +64,12 @@ export default function RobloxSettings() {
       setPremiumDiscountEnabled(settings.roblox_premium_discount_enabled);
       setPremiumDiscountPercent(settings.roblox_premium_discount_percent);
       setBadgeRewardsEnabled(settings.roblox_badge_rewards_enabled);
-      // Tier-specific advertisement gamepasses
-      setAdBasicGamepassId(settings.robux_ad_basic_gamepass_id);
+      // Tier-specific advertisement subscriptions
+      setAdBasicSubscriptionId(settings.robux_ad_basic_subscription_id);
       setAdBasicRobuxPrice(settings.robux_ad_basic_robux_price);
-      setAdProGamepassId(settings.robux_ad_pro_gamepass_id);
+      setAdProSubscriptionId(settings.robux_ad_pro_subscription_id);
       setAdProRobuxPrice(settings.robux_ad_pro_robux_price);
-      setAdPremiumGamepassId(settings.robux_ad_premium_gamepass_id);
+      setAdPremiumSubscriptionId(settings.robux_ad_premium_subscription_id);
       setAdPremiumRobuxPrice(settings.robux_ad_premium_robux_price);
     }
   }, [settings, isLoading]);
@@ -101,12 +101,12 @@ export default function RobloxSettings() {
         roblox_premium_discount_enabled: premiumDiscountEnabled,
         roblox_premium_discount_percent: premiumDiscountPercent,
         roblox_badge_rewards_enabled: badgeRewardsEnabled,
-        // Tier-specific advertisement gamepasses
-        robux_ad_basic_gamepass_id: adBasicGamepassId,
+        // Tier-specific advertisement subscriptions
+        robux_ad_basic_subscription_id: adBasicSubscriptionId,
         robux_ad_basic_robux_price: adBasicRobuxPrice,
-        robux_ad_pro_gamepass_id: adProGamepassId,
+        robux_ad_pro_subscription_id: adProSubscriptionId,
         robux_ad_pro_robux_price: adProRobuxPrice,
-        robux_ad_premium_gamepass_id: adPremiumGamepassId,
+        robux_ad_premium_subscription_id: adPremiumSubscriptionId,
         robux_ad_premium_robux_price: adPremiumRobuxPrice,
       });
       toast.success('Roblox settings saved');
@@ -390,15 +390,15 @@ export default function RobloxSettings() {
               </CardContent>
             </Card>
 
-            {/* Advertisement Gamepass Configuration */}
+            {/* Advertisement Subscription Configuration */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-purple-500" />
-                  Advertisement Tier Gamepasses
+                  Advertisement Tier Subscriptions
                 </CardTitle>
                 <CardDescription>
-                  Configure gamepasses for each advertisement tier (Basic, Pro, Premium)
+                  Configure Roblox Subscriptions for each advertisement tier (Basic, Pro, Premium)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -406,7 +406,7 @@ export default function RobloxSettings() {
                 <div className="p-4 border border-border rounded-lg space-y-4">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">Basic</Badge>
-                    {adBasicGamepassId && (
+                    {adBasicSubscriptionId && (
                       <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Enabled
@@ -415,16 +415,16 @@ export default function RobloxSettings() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="ad-basic-gamepass-id">Gamepass ID</Label>
+                      <Label htmlFor="ad-basic-subscription-id">Subscription ID</Label>
                       <Input
-                        id="ad-basic-gamepass-id"
-                        placeholder="89295137987482"
-                        value={adBasicGamepassId}
-                        onChange={(e) => setAdBasicGamepassId(e.target.value)}
+                        id="ad-basic-subscription-id"
+                        placeholder="Enter Roblox Subscription ID"
+                        value={adBasicSubscriptionId}
+                        onChange={(e) => setAdBasicSubscriptionId(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="ad-basic-robux-price">Robux Price</Label>
+                      <Label htmlFor="ad-basic-robux-price">Robux Price (per month)</Label>
                       <Input
                         id="ad-basic-robux-price"
                         type="number"
@@ -441,7 +441,7 @@ export default function RobloxSettings() {
                 <div className="p-4 border border-border rounded-lg space-y-4">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/30">Pro</Badge>
-                    {adProGamepassId && (
+                    {adProSubscriptionId && (
                       <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Enabled
@@ -450,16 +450,16 @@ export default function RobloxSettings() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="ad-pro-gamepass-id">Gamepass ID</Label>
+                      <Label htmlFor="ad-pro-subscription-id">Subscription ID</Label>
                       <Input
-                        id="ad-pro-gamepass-id"
-                        placeholder="78529316701367"
-                        value={adProGamepassId}
-                        onChange={(e) => setAdProGamepassId(e.target.value)}
+                        id="ad-pro-subscription-id"
+                        placeholder="Enter Roblox Subscription ID"
+                        value={adProSubscriptionId}
+                        onChange={(e) => setAdProSubscriptionId(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="ad-pro-robux-price">Robux Price</Label>
+                      <Label htmlFor="ad-pro-robux-price">Robux Price (per month)</Label>
                       <Input
                         id="ad-pro-robux-price"
                         type="number"
@@ -476,7 +476,7 @@ export default function RobloxSettings() {
                 <div className="p-4 border border-border rounded-lg space-y-4">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30">Premium</Badge>
-                    {adPremiumGamepassId && (
+                    {adPremiumSubscriptionId && (
                       <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Enabled
@@ -485,16 +485,16 @@ export default function RobloxSettings() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="ad-premium-gamepass-id">Gamepass ID</Label>
+                      <Label htmlFor="ad-premium-subscription-id">Subscription ID</Label>
                       <Input
-                        id="ad-premium-gamepass-id"
-                        placeholder="100489119319359"
-                        value={adPremiumGamepassId}
-                        onChange={(e) => setAdPremiumGamepassId(e.target.value)}
+                        id="ad-premium-subscription-id"
+                        placeholder="Enter Roblox Subscription ID"
+                        value={adPremiumSubscriptionId}
+                        onChange={(e) => setAdPremiumSubscriptionId(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="ad-premium-robux-price">Robux Price</Label>
+                      <Label htmlFor="ad-premium-robux-price">Robux Price (per month)</Label>
                       <Input
                         id="ad-premium-robux-price"
                         type="number"
@@ -507,11 +507,11 @@ export default function RobloxSettings() {
                   </div>
                 </div>
 
-                {(adBasicGamepassId || adProGamepassId || adPremiumGamepassId) && (
+                {(adBasicSubscriptionId || adProSubscriptionId || adPremiumSubscriptionId) && (
                   <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>Robux payments enabled for configured tiers</span>
+                      <span>Robux subscriptions enabled for configured tiers</span>
                     </div>
                   </div>
                 )}
@@ -519,8 +519,8 @@ export default function RobloxSettings() {
                 <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-sm">Advertisement Webhook</p>
-                      <p className="text-xs text-muted-foreground">Use this for advertisement gamepass purchases</p>
+                      <p className="font-medium text-sm">Advertisement Subscription Webhook</p>
+                      <p className="text-xs text-muted-foreground">Use this for Roblox Subscription events</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -544,6 +544,9 @@ export default function RobloxSettings() {
                       )}
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Configure your Roblox game to send SubscriptionPurchased, SubscriptionRenewed, SubscriptionExpired, and SubscriptionRefunded events to this webhook.
+                  </p>
                 </div>
               </CardContent>
             </Card>

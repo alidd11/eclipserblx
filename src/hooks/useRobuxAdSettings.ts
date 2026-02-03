@@ -3,19 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type AdTierType = 'basic' | 'pro' | 'premium';
 
-interface TierGamepassConfig {
-  gamepassId: string;
+interface TierSubscriptionConfig {
+  subscriptionId: string;
   robuxPrice: number;
   isEnabled: boolean;
 }
 
 interface RobuxAdSettings {
-  tiers: Record<AdTierType, TierGamepassConfig>;
+  tiers: Record<AdTierType, TierSubscriptionConfig>;
   isAnyTierEnabled: boolean;
 }
 
-const DEFAULT_TIER_CONFIG: TierGamepassConfig = {
-  gamepassId: '',
+const DEFAULT_TIER_CONFIG: TierSubscriptionConfig = {
+  subscriptionId: '',
   robuxPrice: 0,
   isEnabled: false,
 };
@@ -28,11 +28,11 @@ export function useRobuxAdSettings() {
         .from('settings')
         .select('key, value')
         .in('key', [
-          'robux_ad_basic_gamepass_id',
+          'robux_ad_basic_subscription_id',
           'robux_ad_basic_robux_price',
-          'robux_ad_pro_gamepass_id',
+          'robux_ad_pro_subscription_id',
           'robux_ad_pro_robux_price',
-          'robux_ad_premium_gamepass_id',
+          'robux_ad_premium_subscription_id',
           'robux_ad_premium_robux_price',
         ]);
 
@@ -52,18 +52,18 @@ export function useRobuxAdSettings() {
           ? item.value.replace(/^"|"$/g, '') 
           : String(item.value || '');
         
-        if (item.key === 'robux_ad_basic_gamepass_id') {
-          result.tiers.basic.gamepassId = value;
+        if (item.key === 'robux_ad_basic_subscription_id') {
+          result.tiers.basic.subscriptionId = value;
           result.tiers.basic.isEnabled = !!value && value.length > 0;
         } else if (item.key === 'robux_ad_basic_robux_price') {
           result.tiers.basic.robuxPrice = parseInt(value, 10) || 0;
-        } else if (item.key === 'robux_ad_pro_gamepass_id') {
-          result.tiers.pro.gamepassId = value;
+        } else if (item.key === 'robux_ad_pro_subscription_id') {
+          result.tiers.pro.subscriptionId = value;
           result.tiers.pro.isEnabled = !!value && value.length > 0;
         } else if (item.key === 'robux_ad_pro_robux_price') {
           result.tiers.pro.robuxPrice = parseInt(value, 10) || 0;
-        } else if (item.key === 'robux_ad_premium_gamepass_id') {
-          result.tiers.premium.gamepassId = value;
+        } else if (item.key === 'robux_ad_premium_subscription_id') {
+          result.tiers.premium.subscriptionId = value;
           result.tiers.premium.isEnabled = !!value && value.length > 0;
         } else if (item.key === 'robux_ad_premium_robux_price') {
           result.tiers.premium.robuxPrice = parseInt(value, 10) || 0;

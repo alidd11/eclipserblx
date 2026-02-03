@@ -11,12 +11,12 @@ interface RobloxSettings {
   roblox_premium_discount_percent: number;
   roblox_badge_rewards_enabled: boolean;
   roblox_required_badges: string[];
-  // Tier-specific advertisement gamepass settings
-  robux_ad_basic_gamepass_id: string;
+  // Tier-specific advertisement subscription settings (Roblox Subscriptions)
+  robux_ad_basic_subscription_id: string;
   robux_ad_basic_robux_price: number;
-  robux_ad_pro_gamepass_id: string;
+  robux_ad_pro_subscription_id: string;
   robux_ad_pro_robux_price: number;
-  robux_ad_premium_gamepass_id: string;
+  robux_ad_premium_subscription_id: string;
   robux_ad_premium_robux_price: number;
 }
 
@@ -30,12 +30,12 @@ const DEFAULT_SETTINGS: RobloxSettings = {
   roblox_premium_discount_percent: 5,
   roblox_badge_rewards_enabled: false,
   roblox_required_badges: [],
-  // Tier-specific advertisement gamepass defaults
-  robux_ad_basic_gamepass_id: '',
+  // Tier-specific advertisement subscription defaults
+  robux_ad_basic_subscription_id: '',
   robux_ad_basic_robux_price: 0,
-  robux_ad_pro_gamepass_id: '',
+  robux_ad_pro_subscription_id: '',
   robux_ad_pro_robux_price: 0,
-  robux_ad_premium_gamepass_id: '',
+  robux_ad_premium_subscription_id: '',
   robux_ad_premium_robux_price: 0,
 };
 
