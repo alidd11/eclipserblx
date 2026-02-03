@@ -23,8 +23,7 @@ export function PWALandingHero() {
 
         {/* Tagline */}
         <p className="text-muted-foreground text-center text-base max-w-md mb-6 leading-relaxed">
-          Buy and sell premium scripts, assets, and resources. 
-          Low fees. Instant payouts.
+          The trusted marketplace where thousands of developers buy and sell premium scripts, models, and game assets. Start earning doing what you love.
         </p>
 
         {/* CTA Buttons */}
