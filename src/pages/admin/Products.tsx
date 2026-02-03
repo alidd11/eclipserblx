@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar, Store } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar, Store, Crown } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -65,6 +65,8 @@ interface ProductForm {
   asset_file_url: string;
   release_at: string;
   schedule_enabled: boolean;
+  early_access_enabled: boolean;
+  early_access_hours: string;
   // Roblox / Robux configuration
   robux_enabled: boolean;
   robux_product_id: string;
@@ -86,6 +88,8 @@ const emptyForm: ProductForm = {
   asset_file_url: '',
   release_at: '',
   schedule_enabled: false,
+  early_access_enabled: false,
+  early_access_hours: '',
   robux_enabled: false,
   robux_product_id: '',
   robux_price: '',
@@ -298,6 +302,13 @@ export default function AdminProducts() {
         ? Number.parseInt(data.robux_price, 10)
         : null;
 
+      // Calculate early access hours
+      let earlyAccessHours: number | null = null;
+      if (data.schedule_enabled && data.early_access_enabled) {
+        earlyAccessHours = data.early_access_hours ? parseInt(data.early_access_hours) : null;
+        // If enabled but no custom hours, we'll use null to indicate "use platform default"
+      }
+
       const payload = {
         name: data.name,
         slug: data.slug,
@@ -310,6 +321,7 @@ export default function AdminProducts() {
         images: data.images ? data.images.split(',').map(s => s.trim()) : [],
         asset_file_url: data.asset_file_url || null,
         release_at: data.schedule_enabled && data.release_at ? new Date(data.release_at).toISOString() : null,
+        early_access_hours: earlyAccessHours,
         robux_enabled: data.robux_enabled,
         robux_product_id: data.robux_product_id?.trim() ? data.robux_product_id.trim() : null,
         robux_price:
@@ -497,6 +509,8 @@ export default function AdminProducts() {
   };
 
   const openEdit = (product: any) => {
+    const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
+    const hasEarlyAccess = product.early_access_hours !== null && product.early_access_hours !== undefined;
     setForm({
       id: product.id,
       name: product.name,
@@ -510,7 +524,9 @@ export default function AdminProducts() {
       images: product.images?.join(', ') || '',
       asset_file_url: product.asset_file_url || '',
       release_at: formatDateTimeForInput(product.release_at),
-      schedule_enabled: !!product.release_at && isScheduledForFuture(product.release_at),
+      schedule_enabled: hasSchedule,
+      early_access_enabled: hasSchedule && hasEarlyAccess,
+      early_access_hours: product.early_access_hours?.toString() || '',
       robux_enabled: !!product.robux_enabled,
       robux_product_id: product.robux_product_id || '',
       robux_price: product.robux_price ? String(product.robux_price) : '',
@@ -1074,22 +1090,82 @@ export default function AdminProducts() {
 
             {/* Schedule Release Date/Time */}
             {form.schedule_enabled && (
-              <div className="space-y-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-500">
-                  <Calendar className="h-4 w-4" />
-                  Release Date & Time
-                </Label>
-                <Input
-                  id="release_at"
-                  type="datetime-local"
-                  value={form.release_at}
-                  onChange={(e) => setForm({ ...form, release_at: e.target.value })}
-                  min={new Date().toISOString().slice(0, 16)}
-                  className="bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Product will be hidden from customers until this date and time
-                </p>
+              <div className="space-y-4">
+                <div className="space-y-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                  <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-500">
+                    <Calendar className="h-4 w-4" />
+                    Release Date & Time
+                  </Label>
+                  <Input
+                    id="release_at"
+                    type="datetime-local"
+                    value={form.release_at}
+                    onChange={(e) => setForm({ ...form, release_at: e.target.value })}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Product will be hidden from customers until this date and time
+                  </p>
+                </div>
+
+                {/* Early Product Drops Section */}
+                <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md bg-amber-500/20">
+                      <Crown className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Early Product Drops</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Give Eclipse+ members early access
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="early_access_enabled" className="text-sm">Enable Early Access</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Eclipse+ members can access before public release
+                      </p>
+                    </div>
+                    <Switch
+                      id="early_access_enabled"
+                      checked={form.early_access_enabled}
+                      onCheckedChange={(checked) => setForm({ 
+                        ...form, 
+                        early_access_enabled: checked,
+                        early_access_hours: checked ? form.early_access_hours : ''
+                      })}
+                    />
+                  </div>
+
+                  {form.early_access_enabled && (
+                    <div className="space-y-2 pt-2 border-t border-amber-500/20">
+                      <Label htmlFor="early_access_hours" className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        Custom Early Access Window (optional)
+                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="early_access_hours"
+                          type="number"
+                          min="1"
+                          max="168"
+                          value={form.early_access_hours}
+                          onChange={(e) => setForm({ ...form, early_access_hours: e.target.value })}
+                          placeholder="24"
+                          className="w-24 bg-background"
+                        />
+                        <span className="text-sm text-muted-foreground">hours before public release</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Leave empty to use the platform default (24 hours)
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
