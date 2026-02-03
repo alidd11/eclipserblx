@@ -27,6 +27,10 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+const formatRobux = (amount: number) => {
+  return new Intl.NumberFormat('en-US').format(amount) + ' R$';
+};
+
 const tierIcons: Record<string, React.ReactNode> = {
   basic: <Zap className="h-5 w-5" />,
   pro: <Star className="h-5 w-5" />,
@@ -129,6 +133,26 @@ export default function Advertise() {
 
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
   const { data: realSubscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
+  
+  // Fetch Robux prices for each tier
+  const { data: robuxPrices } = useQuery({
+    queryKey: ['robux-ad-prices'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', ['robux_ad_basic_robux_price', 'robux_ad_pro_robux_price', 'robux_ad_premium_robux_price']);
+      
+      if (error) throw error;
+      
+      const prices: Record<string, number> = {};
+      data?.forEach((setting) => {
+        const tier = setting.key.replace('robux_ad_', '').replace('_robux_price', '');
+        prices[tier] = parseInt(setting.value as string) || 0;
+      });
+      return prices;
+    },
+  });
   
   // For admin tester, simulate a premium subscription if they don't have one
   const subscription = isAdminTester && !realSubscription?.subscribed 
@@ -1009,6 +1033,17 @@ export default function Advertise() {
                         <div className="flex items-baseline gap-1">
                           <span className="text-3xl font-bold">{formatCurrency(price)}</span>
                           <span className="text-muted-foreground">/month</span>
+                        </div>
+                      )}
+                      
+                      {/* Robux Price Display */}
+                      {robuxPrices?.[tier.tier] && robuxPrices[tier.tier] > 0 && (
+                        <div className="mt-3 pt-3 border-t border-border/50">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">or</span>
+                            <span className="font-bold text-green-500">{formatRobux(robuxPrices[tier.tier])}</span>
+                            <span className="text-muted-foreground text-xs">(one-time)</span>
+                          </div>
                         </div>
                       )}
                     </div>
