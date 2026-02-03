@@ -12,13 +12,14 @@ interface ResponsiveContainerProps {
   padded?: boolean;
 }
 
+// Edge-to-edge layout - no max-width constraints
 const sizeClasses: Record<ContainerSize, string> = {
-  sm: 'max-w-2xl',      // 672px
-  md: 'max-w-4xl',      // 896px
-  lg: 'max-w-5xl',      // 1024px
-  xl: 'max-w-6xl',      // 1152px
-  '2xl': 'max-w-7xl',   // 1280px
-  full: 'max-w-full',
+  sm: 'w-full',
+  md: 'w-full',
+  lg: 'w-full',
+  xl: 'w-full',
+  '2xl': 'w-full',
+  full: 'w-full',
 };
 
 /**
@@ -36,7 +37,6 @@ export const ResponsiveContainer = forwardRef<HTMLElement, ResponsiveContainerPr
         className={cn(
           'mx-auto w-full',
           sizeClasses[size],
-          padded && 'px-4 sm:px-6 lg:px-8',
           className
         )}
       >
