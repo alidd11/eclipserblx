@@ -550,6 +550,13 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
         expires_in: "1 hour",
         button_url: signedUrlData.signedUrl,
         button_label: "Download",
+        // Flattened fields (BotGhost often only supports top-level variables)
+        embed_title: onlyProduct.name,
+        embed_requested_by: `<@${body.discord_id}>`,
+        embed_expires: "1 hour",
+        embed_download_url: signedUrlData.signedUrl,
+        embed_download_markdown: `[Click here](${signedUrlData.signedUrl})`,
+        thumbnail_url: robloxThumbnail,
         embed: {
           title: `${onlyProduct.name}`,
           color: 0x5865F2,
@@ -591,7 +598,12 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
             ],
           },
         ],
-        message: `Your download for **${onlyProduct.name}** is ready.`,
+        // Fallback for flows that only send message content (no embeds/buttons)
+        message:
+          `📦 **${onlyProduct.name}**\n` +
+          `🔗 Download: ${signedUrlData.signedUrl}\n` +
+          `⏳ Expires in 1 hour\n` +
+          `⚠️ Do not share this link.`,
       });
     }
 
@@ -752,6 +764,13 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     expires_in: "1 hour",
     button_url: signedUrlData.signedUrl,
     button_label: "Download",
+    // Flattened fields (BotGhost often only supports top-level variables)
+    embed_title: product.name,
+    embed_requested_by: `<@${body.discord_id}>`,
+    embed_expires: "1 hour",
+    embed_download_url: signedUrlData.signedUrl,
+    embed_download_markdown: `[Click here](${signedUrlData.signedUrl})`,
+    thumbnail_url: robloxThumbnail,
     embed: {
       title: `${product.name}`,
       color: 0x5865F2,
@@ -793,6 +812,11 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
         ],
       },
     ],
-    message: `Your download for **${product.name}** is ready.`,
+    // Fallback for flows that only send message content (no embeds/buttons)
+    message:
+      `📦 **${product.name}**\n` +
+      `🔗 Download: ${signedUrlData.signedUrl}\n` +
+      `⏳ Expires in 1 hour\n` +
+      `⚠️ Do not share this link.`,
   });
 }
