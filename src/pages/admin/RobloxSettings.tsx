@@ -38,10 +38,13 @@ export default function RobloxSettings() {
   const [premiumDiscountPercent, setPremiumDiscountPercent] = useState(5);
   const [badgeRewardsEnabled, setBadgeRewardsEnabled] = useState(false);
   
-  // Advertisement gamepass settings
-  const [adGamepassId, setAdGamepassId] = useState('');
-  const [adGamepassName, setAdGamepassName] = useState('Single Advertisement');
-  const [adGamepassRobuxPrice, setAdGamepassRobuxPrice] = useState(100);
+  // Tier-specific advertisement gamepass settings
+  const [adBasicGamepassId, setAdBasicGamepassId] = useState('');
+  const [adBasicRobuxPrice, setAdBasicRobuxPrice] = useState(0);
+  const [adProGamepassId, setAdProGamepassId] = useState('');
+  const [adProRobuxPrice, setAdProRobuxPrice] = useState(0);
+  const [adPremiumGamepassId, setAdPremiumGamepassId] = useState('');
+  const [adPremiumRobuxPrice, setAdPremiumRobuxPrice] = useState(0);
   
   // Test states
   const [isTestingGroup, setIsTestingGroup] = useState(false);
@@ -61,10 +64,13 @@ export default function RobloxSettings() {
       setPremiumDiscountEnabled(settings.roblox_premium_discount_enabled);
       setPremiumDiscountPercent(settings.roblox_premium_discount_percent);
       setBadgeRewardsEnabled(settings.roblox_badge_rewards_enabled);
-      // Advertisement gamepass
-      setAdGamepassId(settings.robux_ad_gamepass_id);
-      setAdGamepassName(settings.robux_ad_gamepass_name);
-      setAdGamepassRobuxPrice(settings.robux_ad_gamepass_robux_price);
+      // Tier-specific advertisement gamepasses
+      setAdBasicGamepassId(settings.robux_ad_basic_gamepass_id);
+      setAdBasicRobuxPrice(settings.robux_ad_basic_robux_price);
+      setAdProGamepassId(settings.robux_ad_pro_gamepass_id);
+      setAdProRobuxPrice(settings.robux_ad_pro_robux_price);
+      setAdPremiumGamepassId(settings.robux_ad_premium_gamepass_id);
+      setAdPremiumRobuxPrice(settings.robux_ad_premium_robux_price);
     }
   }, [settings, isLoading]);
   
@@ -95,10 +101,13 @@ export default function RobloxSettings() {
         roblox_premium_discount_enabled: premiumDiscountEnabled,
         roblox_premium_discount_percent: premiumDiscountPercent,
         roblox_badge_rewards_enabled: badgeRewardsEnabled,
-        // Advertisement gamepass
-        robux_ad_gamepass_id: adGamepassId,
-        robux_ad_gamepass_name: adGamepassName,
-        robux_ad_gamepass_robux_price: adGamepassRobuxPrice,
+        // Tier-specific advertisement gamepasses
+        robux_ad_basic_gamepass_id: adBasicGamepassId,
+        robux_ad_basic_robux_price: adBasicRobuxPrice,
+        robux_ad_pro_gamepass_id: adProGamepassId,
+        robux_ad_pro_robux_price: adProRobuxPrice,
+        robux_ad_premium_gamepass_id: adPremiumGamepassId,
+        robux_ad_premium_robux_price: adPremiumRobuxPrice,
       });
       toast.success('Roblox settings saved');
     } catch (error) {
@@ -386,65 +395,124 @@ export default function RobloxSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-purple-500" />
-                  Advertisement Gamepass
+                  Advertisement Tier Gamepasses
                 </CardTitle>
                 <CardDescription>
-                  Configure the gamepass for Robux advertisement purchases
+                  Configure gamepasses for each advertisement tier (Basic, Pro, Premium)
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ad-gamepass-id">Gamepass ID</Label>
-                  <Input
-                    id="ad-gamepass-id"
-                    placeholder="123456789"
-                    value={adGamepassId}
-                    onChange={(e) => setAdGamepassId(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    The Roblox gamepass ID that users purchase for one-time advertisements
-                  </p>
+              <CardContent className="space-y-6">
+                {/* Basic Tier */}
+                <div className="p-4 border border-border rounded-lg space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">Basic</Badge>
+                    {adBasicGamepassId && (
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Enabled
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ad-basic-gamepass-id">Gamepass ID</Label>
+                      <Input
+                        id="ad-basic-gamepass-id"
+                        placeholder="89295137987482"
+                        value={adBasicGamepassId}
+                        onChange={(e) => setAdBasicGamepassId(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ad-basic-robux-price">Robux Price</Label>
+                      <Input
+                        id="ad-basic-robux-price"
+                        type="number"
+                        min={0}
+                        placeholder="100"
+                        value={adBasicRobuxPrice}
+                        onChange={(e) => setAdBasicRobuxPrice(parseInt(e.target.value) || 0)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="ad-gamepass-name">Display Name</Label>
-                  <Input
-                    id="ad-gamepass-name"
-                    placeholder="Single Advertisement"
-                    value={adGamepassName}
-                    onChange={(e) => setAdGamepassName(e.target.value)}
-                  />
+                {/* Pro Tier */}
+                <div className="p-4 border border-border rounded-lg space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/30">Pro</Badge>
+                    {adProGamepassId && (
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Enabled
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ad-pro-gamepass-id">Gamepass ID</Label>
+                      <Input
+                        id="ad-pro-gamepass-id"
+                        placeholder="78529316701367"
+                        value={adProGamepassId}
+                        onChange={(e) => setAdProGamepassId(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ad-pro-robux-price">Robux Price</Label>
+                      <Input
+                        id="ad-pro-robux-price"
+                        type="number"
+                        min={0}
+                        placeholder="200"
+                        value={adProRobuxPrice}
+                        onChange={(e) => setAdProRobuxPrice(parseInt(e.target.value) || 0)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="ad-robux-price">Robux Price</Label>
-                  <Input
-                    id="ad-robux-price"
-                    type="number"
-                    min={1}
-                    placeholder="100"
-                    value={adGamepassRobuxPrice}
-                    onChange={(e) => setAdGamepassRobuxPrice(parseInt(e.target.value) || 100)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    The price in Robux (must match the gamepass price in Roblox)
-                  </p>
+                {/* Premium Tier */}
+                <div className="p-4 border border-border rounded-lg space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30">Premium</Badge>
+                    {adPremiumGamepassId && (
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Enabled
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ad-premium-gamepass-id">Gamepass ID</Label>
+                      <Input
+                        id="ad-premium-gamepass-id"
+                        placeholder="100489119319359"
+                        value={adPremiumGamepassId}
+                        onChange={(e) => setAdPremiumGamepassId(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ad-premium-robux-price">Robux Price</Label>
+                      <Input
+                        id="ad-premium-robux-price"
+                        type="number"
+                        min={0}
+                        placeholder="500"
+                        value={adPremiumRobuxPrice}
+                        onChange={(e) => setAdPremiumRobuxPrice(parseInt(e.target.value) || 0)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {adGamepassId && (
+                {(adBasicGamepassId || adProGamepassId || adPremiumGamepassId) && (
                   <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>Robux payment enabled for advertisements</span>
+                      <span>Robux payments enabled for configured tiers</span>
                     </div>
-                  </div>
-                )}
-
-                {!adGamepassId && (
-                  <div className="p-3 bg-muted/50 border border-border rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Enter a gamepass ID to enable Robux payments for advertisements
-                    </p>
                   </div>
                 )}
 

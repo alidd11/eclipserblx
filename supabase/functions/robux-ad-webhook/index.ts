@@ -17,6 +17,8 @@ interface RobuxAdTransaction {
   pending_ad_id?: string;
 }
 
+type AdTier = 'basic' | 'pro' | 'premium';
+
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[ROBUX-AD-WEBHOOK] ${step}${detailsStr}`);
@@ -71,31 +73,50 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get configured gamepass ID from settings
-    const { data: gamepassSetting } = await supabase
+    // Get all tier gamepass IDs from settings
+    const { data: gamepassSettings } = await supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'robux_ad_gamepass_id')
-      .single();
+      .select('key, value')
+      .in('key', [
+        'robux_ad_basic_gamepass_id',
+        'robux_ad_pro_gamepass_id',
+        'robux_ad_premium_gamepass_id',
+      ]);
 
-    const configuredGamepassId = gamepassSetting?.value?.toString().replace(/"/g, '') || '';
-    
-    if (!configuredGamepassId) {
-      logStep('ERROR: Robux ad gamepass not configured');
-      return new Response(
-        JSON.stringify({ error: 'Robux ad gamepass not configured' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const tierGamepasses: Record<AdTier, string> = {
+      basic: '',
+      pro: '',
+      premium: '',
+    };
+
+    gamepassSettings?.forEach((s) => {
+      const val = s.value?.toString().replace(/"/g, '') || '';
+      if (s.key === 'robux_ad_basic_gamepass_id') tierGamepasses.basic = val;
+      if (s.key === 'robux_ad_pro_gamepass_id') tierGamepasses.pro = val;
+      if (s.key === 'robux_ad_premium_gamepass_id') tierGamepasses.premium = val;
+    });
+
+    // Determine which tier was purchased
+    let purchasedTier: AdTier | null = null;
+    for (const [tier, gamepassId] of Object.entries(tierGamepasses)) {
+      if (gamepassId && gamepassId === body.gamepass_id) {
+        purchasedTier = tier as AdTier;
+        break;
+      }
     }
 
-    // Verify this is the correct gamepass
-    if (body.gamepass_id !== configuredGamepassId) {
-      logStep('ERROR: Invalid gamepass ID', { received: body.gamepass_id, expected: configuredGamepassId });
+    if (!purchasedTier) {
+      logStep('ERROR: Gamepass ID does not match any configured tier', { 
+        received: body.gamepass_id, 
+        configured: tierGamepasses 
+      });
       return new Response(
         JSON.stringify({ error: 'Invalid gamepass for advertisement purchase' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    logStep('Matched tier', { tier: purchasedTier, gamepass_id: body.gamepass_id });
 
     // Check for duplicate transaction
     const { data: existingAd } = await supabase
@@ -147,7 +168,7 @@ serve(async (req) => {
         );
       }
 
-      // Update the pending ad to paid
+      // Update the pending ad to paid with tier info
       const { error: updateError } = await supabase
         .from('discord_advertisements')
         .update({
@@ -163,7 +184,7 @@ serve(async (req) => {
         throw updateError;
       }
 
-      logStep('Updated pending ad to paid', { ad_id: body.pending_ad_id });
+      logStep('Updated pending ad to paid', { ad_id: body.pending_ad_id, tier: purchasedTier });
 
       // Trigger Discord webhook to post the ad
       const webhookResponse = await fetch(
@@ -186,14 +207,14 @@ serve(async (req) => {
           success: true, 
           message: 'Advertisement paid and posted',
           ad_id: body.pending_ad_id,
+          tier: purchasedTier,
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // No pending ad - just record the transaction for manual use
-    // The user will need to create an ad and it will be automatically marked as paid
-    logStep('Transaction recorded without pending ad - user has credit for one ad');
+    // No pending ad - record the transaction for manual use
+    logStep('Transaction recorded without pending ad - user has credit for one ad', { tier: purchasedTier });
 
     // Record in robux_transactions table
     const { error: txError } = await supabase
@@ -202,7 +223,7 @@ serve(async (req) => {
         roblox_user_id: body.roblox_user_id,
         roblox_username: body.roblox_username,
         product_id: body.gamepass_id,
-        product_name: 'Advertisement Gamepass',
+        product_name: `Advertisement Gamepass (${purchasedTier.charAt(0).toUpperCase() + purchasedTier.slice(1)})`,
         robux_amount: body.robux_amount,
         robux_after_tax: Math.floor(body.robux_amount * 0.7),
         transaction_id: body.transaction_id,
@@ -218,6 +239,7 @@ serve(async (req) => {
         success: true, 
         message: 'Transaction recorded',
         user_id: profile.user_id,
+        tier: purchasedTier,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
