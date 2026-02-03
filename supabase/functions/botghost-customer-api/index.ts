@@ -461,9 +461,29 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
   }
 
   // Search for product by name
-  const searchTerm = body.product_name.toLowerCase();
+  const rawSearch = body.product_name ?? "";
+  const searchTerm = rawSearch.replace(/\s+/g, " ").trim();
 
-  const { data: products } = await supabase
+  console.log(
+    "[botghost-customer-api] Product search input:",
+    JSON.stringify(rawSearch),
+    "normalized:",
+    JSON.stringify(searchTerm)
+  );
+
+  if (!searchTerm) {
+    return jsonResponse(
+      {
+        success: false,
+        error:
+          "Product name required. Run /retrieve without a product name to see your downloadable products.",
+      },
+      400
+    );
+  }
+
+  // 1) Try a direct PostgREST match first (case-insensitive)
+  const { data: matchedByQuery, error: matchError } = await supabase
     .from("products")
     .select("id, name, asset_file_url")
     .in("id", purchasedProductIds)
@@ -471,14 +491,79 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     .ilike("name", `%${searchTerm}%`)
     .limit(1);
 
-  if (!products || products.length === 0) {
-    return jsonResponse({
-      success: false,
-      error: `Couldn't find a downloadable product matching "${body.product_name}". Use the download command without a product name to see your available products.`,
-    });
+  if (matchError) {
+    console.error("[botghost-customer-api] Product match query error:", matchError);
   }
 
-  const product = products[0];
+  let product = matchedByQuery?.[0] ?? null;
+
+  // 2) Fallback: fetch the user's downloadable products and do a normalized match in JS.
+  // This handles weird spacing, punctuation, or BotGhost variable formatting.
+  let availableProducts: any[] = [];
+  if (!product) {
+    const { data: productsForUser, error: availableError } = await supabase
+      .from("products")
+      .select("id, name, asset_file_url")
+      .in("id", purchasedProductIds)
+      .not("asset_file_url", "is", null)
+      .limit(50);
+
+    if (availableError) {
+      console.error(
+        "[botghost-customer-api] Available products fallback query error:",
+        availableError
+      );
+    }
+
+    availableProducts = productsForUser ?? [];
+
+    const normalize = (s: string) =>
+      s
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nSearch = normalize(searchTerm);
+
+    // Prefer exact-ish matches; then substring matches.
+    product =
+      availableProducts.find((p: any) => normalize(p.name) === nSearch) ||
+      availableProducts.find((p: any) => normalize(p.name).includes(nSearch)) ||
+      availableProducts.find((p: any) => nSearch.includes(normalize(p.name))) ||
+      null;
+
+    console.log(
+      "[botghost-customer-api] Fallback product match:",
+      product ? product.name : null
+    );
+  }
+
+  if (!product) {
+    // Ensure we can show the user what's available to copy/paste.
+    if (availableProducts.length === 0) {
+      const { data: productsForUser } = await supabase
+        .from("products")
+        .select("id, name, asset_file_url")
+        .in("id", purchasedProductIds)
+        .not("asset_file_url", "is", null)
+        .limit(50);
+      availableProducts = productsForUser ?? [];
+    }
+
+    const availableNames = (availableProducts || []).map((p: any) => p.name);
+    const availableList =
+      availableNames.length > 0
+        ? availableNames.map((n: string) => `• ${n}`).join("\n")
+        : "(none)";
+
+    return jsonResponse({
+      success: false,
+      error:
+        `Couldn't find a downloadable product matching "${rawSearch}". ` +
+        `Try copying the exact product name from this list:\n${availableList}`,
+    });
+  }
 
   // Generate signed URL (valid for 1 hour)
   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
