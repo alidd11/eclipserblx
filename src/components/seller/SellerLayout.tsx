@@ -19,7 +19,6 @@ import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 
-const SIDEBAR_COLLAPSED_KEY = 'seller-sidebar-collapsed';
 const EDGE_THRESHOLD = 30;
 const MIN_SWIPE_DISTANCE = 50;
 
@@ -40,32 +39,9 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
   const isChatPage = location.pathname === '/seller/messages' || location.pathname === '/seller/support';
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const saved = safeStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-    return saved === 'true';
-  });
 
   // Touch tracking for edge swipe
   const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);
-
-  // Toggle sidebar with haptic feedback
-  const toggleSidebar = useCallback(() => {
-    hapticTap();
-    setSidebarCollapsed(prev => !prev);
-  }, []);
-
-  // Keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        toggleSidebar();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleSidebar]);
 
   // iOS PWA: Lock document scroll on chat pages to prevent rubber-banding
   useLayoutEffect(() => {
@@ -226,9 +202,6 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
     };
   }, [isMobile, handleTouchStart, handleTouchEnd]);
 
-  useEffect(() => {
-    safeStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
-  }, [sidebarCollapsed]);
 
   const loading = authLoading || sellerLoading || flagLoading || roleLoading;
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
@@ -266,8 +239,8 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
       >
         {/* Desktop Sidebar */}
         <SellerSidebar
-          collapsed={sidebarCollapsed}
-          onToggle={toggleSidebar}
+          collapsed={false}
+          onToggle={() => {}}
           className="hidden md:flex"
         />
 
@@ -295,7 +268,6 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
           <Header 
             showDesktopNav={false} 
             onMenuClick={() => setMobileOpen(true)} 
-            onSidebarToggle={toggleSidebar} 
           />
 
           {/* Scrollable Content */}

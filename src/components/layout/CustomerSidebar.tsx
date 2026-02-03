@@ -752,32 +752,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       )}
 
-      {/* Desktop-only Collapse Toggle */}
-      {!isMobileDrawer && (
-        <div className="p-2 border-t border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "w-full text-muted-foreground hover:text-foreground hover:bg-muted",
-              isCollapsed ? "justify-center px-2" : "justify-start"
-            )}
-            onClick={() => {
-              hapticTap();
-              onToggle();
-            }}
-          >
-            {isCollapsed ? (
-              <ChevronRight className={ICON_SIZE_SMALL} />
-            ) : (
-              <>
-                <ChevronLeft className={cn(ICON_SIZE_SMALL, "mr-2")} />
-                Collapse
-              </>
-            )}
-          </Button>
-        </div>
-      )}
 
       <SignOutConfirmDialog
         open={showSignOutDialog}
