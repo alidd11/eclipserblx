@@ -513,7 +513,11 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
       });
 
       // Update download count
-      await supabase.rpc("increment_download_count", { product_id: onlyProduct.id }).catch(() => {});
+      try {
+        await supabase.rpc("increment_download_count", { product_id: onlyProduct.id });
+      } catch (_e) {
+        // Ignore if RPC doesn't exist or fails
+      }
 
       return jsonResponse({
         success: true,
@@ -668,7 +672,11 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
   });
 
   // Update download count
-  await supabase.rpc("increment_download_count", { product_id: product.id }).catch(() => {});
+  try {
+    await supabase.rpc("increment_download_count", { product_id: product.id });
+  } catch (_e) {
+    // Ignore if RPC doesn't exist or fails
+  }
 
   return jsonResponse({
     success: true,
