@@ -61,7 +61,7 @@ function useAlgorithmicStores() {
 function StoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link 
-      to={`/stores/${store.slug}`}
+      to={`/store/${store.slug}`}
       className="group relative block rounded-2xl overflow-hidden border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-lg active:scale-[0.98]"
     >
       {/* Banner */}
