@@ -1226,10 +1226,12 @@ export type Database = {
           last_clicked_at: string | null
           link_url: string | null
           payment_id: string | null
+          payment_method: string | null
           ping_price_paid: number | null
           ping_type: string | null
           posted_at: string | null
           price_paid: number | null
+          robux_transaction_id: string | null
           scheduled_for: string | null
           status: string
           title: string
@@ -1248,10 +1250,12 @@ export type Database = {
           last_clicked_at?: string | null
           link_url?: string | null
           payment_id?: string | null
+          payment_method?: string | null
           ping_price_paid?: number | null
           ping_type?: string | null
           posted_at?: string | null
           price_paid?: number | null
+          robux_transaction_id?: string | null
           scheduled_for?: string | null
           status?: string
           title: string
@@ -1270,10 +1274,12 @@ export type Database = {
           last_clicked_at?: string | null
           link_url?: string | null
           payment_id?: string | null
+          payment_method?: string | null
           ping_price_paid?: number | null
           ping_type?: string | null
           posted_at?: string | null
           price_paid?: number | null
+          robux_transaction_id?: string | null
           scheduled_for?: string | null
           status?: string
           title?: string
