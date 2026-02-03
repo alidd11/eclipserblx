@@ -1,62 +1,45 @@
 
-# Desktop Landing Page Enhancement - Fill Empty Space
+# Combine Hero Text and Description into One Section
 
 ## Overview
 
-Transform the desktop hero section to eliminate empty black space by adding a featured products showcase, similar to ClearlyDev's content-rich approach.
+Group the headline and description into a single animated section to create a more unified visual appearance.
 
-## Changes
+## Current Structure
 
-### 1. Two-Column Hero Layout
-
-Restructure `src/components/landing/LandingHero.tsx` from centered text-only to a split layout:
+Currently, the badge, headline, and description are each wrapped in separate `motion.div` elements with individual animations:
 
 ```text
-+------------------------------------------+
-|  LEFT SIDE (55%)    |   RIGHT SIDE (45%) |
-|                     |                    |
-|  Badge              |   Featured         |
-|  Headline           |   Products         |
-|  Description        |   Showcase         |
-|  CTA Buttons        |   (3-4 Cards)      |
-|                     |                    |
-+------------------------------------------+
+├── motion.div (Badge)
+├── motion.h1 (Headline)
+├── motion.p (Description)
+├── motion.div (CTAs)
 ```
 
-### 2. New Component: HeroProductShowcase
+## Proposed Change
 
-Create `src/components/landing/HeroProductShowcase.tsx`:
-- Vertical stack of 3-4 featured products
-- Compact card design with thumbnail, product name, store info
-- "FEATURED" badge on cards
-- Staggered fade-in animation
-- Links to product pages
+Wrap the headline and description together in a single `motion.div` container:
 
-### 3. Layout Adjustments
+```text
+├── motion.div (Badge)
+├── motion.div (Text Section - NEW wrapper)
+│   ├── h1 (Headline)
+│   └── p (Description)
+├── motion.div (CTAs)
+```
 
-- Reduce hero height from `min-h-[70vh]` to `min-h-[55vh]`
-- Use CSS Grid for the two-column layout
-- Right column only visible on `lg` screens and above
-- Mobile remains single-column centered layout
+## What Changes
 
-### 4. Data Source
+| Element | Before | After |
+|---------|--------|-------|
+| Headline | Separate `motion.h1` with own animation | Inside shared `motion.div` container |
+| Description | Separate `motion.p` with own animation | Inside shared `motion.div` container |
+| Animation | Staggered (0.1s and 0.2s delays) | Single animation for both together |
 
-Reuse existing featured products query pattern:
-- Filter by `is_featured = true`
-- Active stores only, non-testing
-- Limit to 4 products
-- Include store logo and verification badges
+## File to Modify
 
-## Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `src/components/landing/LandingHero.tsx` | Modify to two-column grid layout |
-| `src/components/landing/HeroProductShowcase.tsx` | Create new component |
-
-## Responsive Behavior
-
-| Viewport | Layout |
-|----------|--------|
-| Desktop (lg+) | Two columns with product showcase |
-| Tablet/Mobile | Single column, showcase hidden |
+**`src/components/landing/LandingHero.tsx`**
+- Remove individual motion wrappers from `h1` and `p`
+- Create one `motion.div` containing both headline and description
+- Keep the same styling for each element
+- Apply a single shared animation to the container
