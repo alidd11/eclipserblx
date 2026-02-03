@@ -13,16 +13,10 @@ export default {
     container: {
       center: true,
       padding: {
-        DEFAULT: '1rem',
-        sm: '1.5rem',
-        lg: '2rem',
+        DEFAULT: '0',
       },
       screens: {
-        sm: '640px',
-        md: '768px',
-        lg: '1024px',
-        xl: '1280px',
-        "2xl": "1400px",
+        // No max-width constraints - content spans full viewport
       },
     },
     screens: {

@@ -64,7 +64,7 @@ const trustSignals = [
 export function LandingTrustSignals() {
   return (
     <section className="py-16 sm:py-20">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

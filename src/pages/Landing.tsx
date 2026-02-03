@@ -35,7 +35,7 @@ export default function Landing() {
     <MainLayout>
       <LandingHero />
       {/* Active Offers / Promotions */}
-      <section className="container mx-auto px-4 -mt-8 relative z-20 space-y-4">
+      <section className="container mx-auto -mt-8 relative z-20 space-y-4">
         <ActiveOffersCard />
         <PromotionCarousel />
       </section>
