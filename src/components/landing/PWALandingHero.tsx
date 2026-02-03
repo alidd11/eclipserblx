@@ -53,11 +53,11 @@ export function PWALandingHero() {
 
       {/* Content Sections */}
       <div className="px-4 space-y-6 pb-6">
-        {/* Active Offers */}
-        <ActiveOffersCard />
-        
         {/* Featured Stores */}
         <PWAFeaturedStores />
+        
+        {/* Active Offers */}
+        <ActiveOffersCard />
         
         {/* Featured Products */}
         <PWAFeaturedProducts />
