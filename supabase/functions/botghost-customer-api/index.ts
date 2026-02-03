@@ -397,13 +397,14 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
   }
 
   // Get user's last 10 purchased products with downloadable files
+  // Use left join (products instead of products!inner) to avoid failing on deleted products
   const { data: recentPurchases, error: purchaseError } = await supabase
     .from("order_items")
     .select(`
       product_id,
       product_name,
       created_at,
-      products!inner (
+      products (
         id,
         name,
         asset_file_url
@@ -417,19 +418,21 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     .eq("orders.user_id", profile.user_id)
     .in("orders.status", ["paid", "completed"])
     .not("product_id", "is", null)
-    .not("products.asset_file_url", "is", null)
     .order("created_at", { ascending: false })
-    .limit(10);
+    .limit(20);
 
   console.log("[botghost-customer-api] Recent purchases found:", recentPurchases?.length || 0, purchaseError ? `Error: ${purchaseError.message}` : "");
 
-  // Deduplicate by product_id (keep most recent)
+  // Filter to only products that exist AND have an asset file, then deduplicate
   const seenIds = new Set<string>();
-  const uniquePurchases = (recentPurchases || []).filter((p: any) => {
-    if (seenIds.has(p.product_id)) return false;
-    seenIds.add(p.product_id);
-    return true;
-  });
+  const uniquePurchases = (recentPurchases || [])
+    .filter((p: any) => p.products && p.products.asset_file_url)
+    .filter((p: any) => {
+      if (seenIds.has(p.product_id)) return false;
+      seenIds.add(p.product_id);
+      return true;
+    })
+    .slice(0, 10);
 
   console.log("[botghost-customer-api] Unique downloadable products:", uniquePurchases.length);
 
