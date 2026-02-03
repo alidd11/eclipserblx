@@ -519,23 +519,55 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
         // Ignore if RPC doesn't exist or fails
       }
 
+      // Fetch Roblox thumbnail for embed
+      let robloxThumbnail: string | null = null;
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("roblox_user_id")
+        .eq("user_id", profile.user_id)
+        .maybeSingle();
+      
+      if (userProfile?.roblox_user_id) {
+        try {
+          const thumbnailResponse = await fetch(
+            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userProfile.roblox_user_id}&size=150x150&format=Png&isCircular=false`
+          );
+          if (thumbnailResponse.ok) {
+            const thumbnailData = await thumbnailResponse.json();
+            if (thumbnailData.data?.[0]?.imageUrl) {
+              robloxThumbnail = thumbnailData.data[0].imageUrl;
+            }
+          }
+        } catch (_e) {
+          // Ignore thumbnail fetch errors
+        }
+      }
+
       return jsonResponse({
         success: true,
         product_name: onlyProduct.name,
         download_url: signedUrlData.signedUrl,
         expires_in: "1 hour",
+        button_url: signedUrlData.signedUrl,
+        button_label: "Download",
         embed: {
-          title: "📥 Your Download is Ready",
-          description:
-            `Hey <@${body.discord_id}>!\n\n` +
-            `Here's your download for **${onlyProduct.name}**.\n\n` +
-            `⏳ This link will expire in **1 hour**.\n\n` +
-            `⚠️ **Please do not share this link** — it is unique to your account.\n\u200B`,
-          color: 0x5865f2,
+          title: `${onlyProduct.name}`,
+          color: 0x5865F2,
+          thumbnail: robloxThumbnail ? { url: robloxThumbnail } : null,
           fields: [
             {
-              name: "🔗 Download Link",
-              value: `[Click here to download](${signedUrlData.signedUrl})`,
+              name: "Requested by",
+              value: `<@${body.discord_id}>`,
+              inline: true,
+            },
+            {
+              name: "Expires",
+              value: "1 hour",
+              inline: true,
+            },
+            {
+              name: "Download",
+              value: `[Click here](${signedUrlData.signedUrl})`,
               inline: false,
             },
           ],
@@ -543,12 +575,23 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
             text: "Eclipse • Your UK:RP Asset Marketplace",
             icon_url: "https://eclipserblx.com/favicon.ico",
           },
-          image: {
-            url: ECLIPSE_BANNER,
-          },
           timestamp: new Date().toISOString(),
         },
-        message: `Hey <@${body.discord_id}>! Your download for **${onlyProduct.name}** is ready.`,
+        components: [
+          {
+            type: 1,
+            components: [
+              {
+                type: 2,
+                style: 5,
+                label: "Download",
+                url: signedUrlData.signedUrl,
+                emoji: { name: "📥" },
+              },
+            ],
+          },
+        ],
+        message: `Your download for **${onlyProduct.name}** is ready.`,
       });
     }
 
@@ -678,22 +721,55 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
     // Ignore if RPC doesn't exist or fails
   }
 
+  // Fetch Roblox thumbnail for embed
+  let robloxThumbnail: string | null = null;
+  const { data: userProfile } = await supabase
+    .from("profiles")
+    .select("roblox_user_id")
+    .eq("user_id", profile.user_id)
+    .maybeSingle();
+  
+  if (userProfile?.roblox_user_id) {
+    try {
+      const thumbnailResponse = await fetch(
+        `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userProfile.roblox_user_id}&size=150x150&format=Png&isCircular=false`
+      );
+      if (thumbnailResponse.ok) {
+        const thumbnailData = await thumbnailResponse.json();
+        if (thumbnailData.data?.[0]?.imageUrl) {
+          robloxThumbnail = thumbnailData.data[0].imageUrl;
+        }
+      }
+    } catch (_e) {
+      // Ignore thumbnail fetch errors
+    }
+  }
+
   return jsonResponse({
     success: true,
     product_name: product.name,
     download_url: signedUrlData.signedUrl,
     expires_in: "1 hour",
+    button_url: signedUrlData.signedUrl,
+    button_label: "Download",
     embed: {
-      title: "📥 Your Download is Ready",
-      description: `Hey <@${body.discord_id}>!\n\n` +
-        `You've requested the download for **${product.name}**.\n\n` +
-        `⏳ This link will expire in **1 hour**.\n\n` +
-        `⚠️ **Please do not share this link** — it is unique to your account.\n\u200B`,
-      color: 0x5865F2, // Discord Blurple
+      title: `${product.name}`,
+      color: 0x5865F2,
+      thumbnail: robloxThumbnail ? { url: robloxThumbnail } : null,
       fields: [
         {
-          name: "🔗 Download Link",
-          value: `[Click here to download](${signedUrlData.signedUrl})`,
+          name: "Requested by",
+          value: `<@${body.discord_id}>`,
+          inline: true,
+        },
+        {
+          name: "Expires",
+          value: "1 hour",
+          inline: true,
+        },
+        {
+          name: "Download",
+          value: `[Click here](${signedUrlData.signedUrl})`,
           inline: false,
         },
       ],
@@ -701,11 +777,22 @@ async function handleDownload(supabase: any, body: BotGhostRequest) {
         text: "Eclipse • Your UK:RP Asset Marketplace",
         icon_url: "https://eclipserblx.com/favicon.ico",
       },
-      image: {
-        url: ECLIPSE_BANNER,
-      },
       timestamp: new Date().toISOString(),
     },
-    message: `Hey <@${body.discord_id}>! Your download for **${product.name}** is ready. Check the embed above for your link.`,
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            style: 5,
+            label: "Download",
+            url: signedUrlData.signedUrl,
+            emoji: { name: "📥" },
+          },
+        ],
+      },
+    ],
+    message: `Your download for **${product.name}** is ready.`,
   });
 }
