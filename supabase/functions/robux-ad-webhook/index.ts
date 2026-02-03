@@ -6,15 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface RobuxAdTransaction {
+// Roblox Subscription event types
+type SubscriptionEventType = 
+  | 'SubscriptionPurchased' 
+  | 'SubscriptionRenewed' 
+  | 'SubscriptionExpired' 
+  | 'SubscriptionRefunded';
+
+interface RobloxSubscriptionEvent {
   secret: string;
+  event_type: SubscriptionEventType;
   roblox_user_id: string;
   roblox_username: string;
-  gamepass_id: string;
-  robux_amount: number;
-  transaction_id: string;
-  // Ad details passed from pending ad
-  pending_ad_id?: string;
+  subscription_id: string;
+  robux_amount?: number;
+  transaction_id?: string;
+  expires_at?: string; // ISO date string for when subscription expires
 }
 
 type AdTier = 'basic' | 'pro' | 'premium';
@@ -22,6 +29,13 @@ type AdTier = 'basic' | 'pro' | 'premium';
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[ROBUX-AD-WEBHOOK] ${step}${detailsStr}`);
+};
+
+// Map tiers to their ads_per_month allowance (should match advertisement_tiers table)
+const TIER_ADS_PER_MONTH: Record<AdTier, number> = {
+  basic: 5,
+  pro: 15,
+  premium: 30,
 };
 
 serve(async (req) => {
@@ -39,13 +53,12 @@ serve(async (req) => {
       );
     }
 
-    const body: RobuxAdTransaction = await req.json();
+    const body: RobloxSubscriptionEvent = await req.json();
     logStep('Received webhook', { 
+      event_type: body.event_type,
       roblox_user_id: body.roblox_user_id,
-      gamepass_id: body.gamepass_id,
+      subscription_id: body.subscription_id,
       robux_amount: body.robux_amount,
-      transaction_id: body.transaction_id,
-      pending_ad_id: body.pending_ad_id,
     });
 
     // Verify secret
@@ -58,9 +71,9 @@ serve(async (req) => {
     }
 
     // Validate required fields
-    const requiredFields = ['roblox_user_id', 'roblox_username', 'gamepass_id', 'robux_amount', 'transaction_id'];
+    const requiredFields = ['event_type', 'roblox_user_id', 'roblox_username', 'subscription_id'];
     for (const field of requiredFields) {
-      if (!body[field as keyof RobuxAdTransaction]) {
+      if (!body[field as keyof RobloxSubscriptionEvent]) {
         logStep(`ERROR: Missing required field: ${field}`);
         return new Response(
           JSON.stringify({ error: `Missing required field: ${field}` }),
@@ -73,65 +86,50 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get all tier gamepass IDs from settings
-    const { data: gamepassSettings } = await supabase
+    // Get all tier subscription IDs from settings
+    const { data: subscriptionSettings } = await supabase
       .from('settings')
       .select('key, value')
       .in('key', [
-        'robux_ad_basic_gamepass_id',
-        'robux_ad_pro_gamepass_id',
-        'robux_ad_premium_gamepass_id',
+        'robux_ad_basic_subscription_id',
+        'robux_ad_pro_subscription_id',
+        'robux_ad_premium_subscription_id',
       ]);
 
-    const tierGamepasses: Record<AdTier, string> = {
+    const tierSubscriptions: Record<AdTier, string> = {
       basic: '',
       pro: '',
       premium: '',
     };
 
-    gamepassSettings?.forEach((s) => {
+    subscriptionSettings?.forEach((s) => {
       const val = s.value?.toString().replace(/"/g, '') || '';
-      if (s.key === 'robux_ad_basic_gamepass_id') tierGamepasses.basic = val;
-      if (s.key === 'robux_ad_pro_gamepass_id') tierGamepasses.pro = val;
-      if (s.key === 'robux_ad_premium_gamepass_id') tierGamepasses.premium = val;
+      if (s.key === 'robux_ad_basic_subscription_id') tierSubscriptions.basic = val;
+      if (s.key === 'robux_ad_pro_subscription_id') tierSubscriptions.pro = val;
+      if (s.key === 'robux_ad_premium_subscription_id') tierSubscriptions.premium = val;
     });
 
-    // Determine which tier was purchased
+    // Determine which tier this subscription belongs to
     let purchasedTier: AdTier | null = null;
-    for (const [tier, gamepassId] of Object.entries(tierGamepasses)) {
-      if (gamepassId && gamepassId === body.gamepass_id) {
+    for (const [tier, subscriptionId] of Object.entries(tierSubscriptions)) {
+      if (subscriptionId && subscriptionId === body.subscription_id) {
         purchasedTier = tier as AdTier;
         break;
       }
     }
 
     if (!purchasedTier) {
-      logStep('ERROR: Gamepass ID does not match any configured tier', { 
-        received: body.gamepass_id, 
-        configured: tierGamepasses 
+      logStep('ERROR: Subscription ID does not match any configured tier', { 
+        received: body.subscription_id, 
+        configured: tierSubscriptions 
       });
       return new Response(
-        JSON.stringify({ error: 'Invalid gamepass for advertisement purchase' }),
+        JSON.stringify({ error: 'Invalid subscription for advertisement' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    logStep('Matched tier', { tier: purchasedTier, gamepass_id: body.gamepass_id });
-
-    // Check for duplicate transaction
-    const { data: existingAd } = await supabase
-      .from('discord_advertisements')
-      .select('id')
-      .eq('robux_transaction_id', body.transaction_id)
-      .single();
-
-    if (existingAd) {
-      logStep('Duplicate transaction detected', { transaction_id: body.transaction_id });
-      return new Response(
-        JSON.stringify({ error: 'Transaction already processed', duplicate: true }),
-        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    logStep('Matched tier', { tier: purchasedTier, subscription_id: body.subscription_id });
 
     // Find user by linked Roblox account
     const { data: profile } = await supabase
@@ -150,99 +148,168 @@ serve(async (req) => {
 
     logStep('Found linked user', { user_id: profile.user_id });
 
-    // If pending_ad_id is provided, update that ad as paid
-    if (body.pending_ad_id) {
-      const { data: pendingAd, error: pendingError } = await supabase
-        .from('discord_advertisements')
-        .select('*')
-        .eq('id', body.pending_ad_id)
-        .eq('user_id', profile.user_id)
-        .eq('status', 'pending_robux')
-        .single();
+    // Calculate subscription period (default 30 days if not provided)
+    const now = new Date();
+    const periodEnd = body.expires_at 
+      ? new Date(body.expires_at) 
+      : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-      if (pendingError || !pendingAd) {
-        logStep('ERROR: Pending ad not found', { pending_ad_id: body.pending_ad_id });
+    // Handle different subscription events
+    switch (body.event_type) {
+      case 'SubscriptionPurchased':
+      case 'SubscriptionRenewed': {
+        // Check for existing subscription
+        const { data: existingSub } = await supabase
+          .from('advertisement_subscriptions')
+          .select('id, status')
+          .eq('user_id', profile.user_id)
+          .eq('payment_method', 'robux')
+          .maybeSingle();
+
+        if (existingSub) {
+          // Update existing subscription
+          const { error: updateError } = await supabase
+            .from('advertisement_subscriptions')
+            .update({
+              tier: purchasedTier,
+              status: 'active',
+              current_period_start: now.toISOString(),
+              current_period_end: periodEnd.toISOString(),
+              roblox_subscription_id: body.subscription_id,
+              roblox_user_id: body.roblox_user_id,
+              ads_used_this_month: body.event_type === 'SubscriptionRenewed' ? 0 : undefined,
+              ads_reset_at: body.event_type === 'SubscriptionRenewed' ? now.toISOString() : undefined,
+              updated_at: now.toISOString(),
+            })
+            .eq('id', existingSub.id);
+
+          if (updateError) {
+            logStep('ERROR: Failed to update subscription', updateError);
+            throw updateError;
+          }
+
+          logStep('Updated existing subscription', { 
+            subscription_id: existingSub.id, 
+            tier: purchasedTier,
+            event: body.event_type,
+          });
+        } else {
+          // Create new subscription
+          const { data: newSub, error: insertError } = await supabase
+            .from('advertisement_subscriptions')
+            .insert({
+              user_id: profile.user_id,
+              tier: purchasedTier,
+              status: 'active',
+              payment_method: 'robux',
+              billing_period: 'monthly',
+              current_period_start: now.toISOString(),
+              current_period_end: periodEnd.toISOString(),
+              roblox_subscription_id: body.subscription_id,
+              roblox_user_id: body.roblox_user_id,
+              ads_used_this_month: 0,
+              ads_reset_at: now.toISOString(),
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            logStep('ERROR: Failed to create subscription', insertError);
+            throw insertError;
+          }
+
+          logStep('Created new subscription', { 
+            subscription_id: newSub.id, 
+            tier: purchasedTier,
+          });
+        }
+
+        // Record transaction
+        if (body.transaction_id && body.robux_amount) {
+          await supabase
+            .from('robux_transactions')
+            .insert({
+              roblox_user_id: body.roblox_user_id,
+              roblox_username: body.roblox_username,
+              product_id: body.subscription_id,
+              product_name: `Advertisement Subscription (${purchasedTier.charAt(0).toUpperCase() + purchasedTier.slice(1)})`,
+              robux_amount: body.robux_amount,
+              robux_after_tax: Math.floor(body.robux_amount * 0.7),
+              transaction_id: body.transaction_id,
+              transaction_type: 'subscription',
+            });
+        }
+
         return new Response(
-          JSON.stringify({ error: 'Pending advertisement not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ 
+            success: true, 
+            message: `Subscription ${body.event_type === 'SubscriptionRenewed' ? 'renewed' : 'activated'}`,
+            tier: purchasedTier,
+            ads_per_month: TIER_ADS_PER_MONTH[purchasedTier],
+            expires_at: periodEnd.toISOString(),
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Update the pending ad to paid with tier info
-      const { error: updateError } = await supabase
-        .from('discord_advertisements')
-        .update({
-          status: 'paid',
-          robux_transaction_id: body.transaction_id,
-          payment_method: 'robux',
-          price_paid: body.robux_amount,
-        })
-        .eq('id', body.pending_ad_id);
+      case 'SubscriptionExpired':
+      case 'SubscriptionRefunded': {
+        // Find and deactivate the subscription
+        const { data: existingSub, error: findError } = await supabase
+          .from('advertisement_subscriptions')
+          .select('id')
+          .eq('user_id', profile.user_id)
+          .eq('roblox_subscription_id', body.subscription_id)
+          .maybeSingle();
 
-      if (updateError) {
-        logStep('ERROR: Failed to update ad', updateError);
-        throw updateError;
+        if (findError) {
+          logStep('ERROR: Failed to find subscription', findError);
+          throw findError;
+        }
+
+        if (existingSub) {
+          const newStatus = body.event_type === 'SubscriptionRefunded' ? 'canceled' : 'expired';
+          
+          const { error: updateError } = await supabase
+            .from('advertisement_subscriptions')
+            .update({
+              status: newStatus,
+              updated_at: now.toISOString(),
+            })
+            .eq('id', existingSub.id);
+
+          if (updateError) {
+            logStep('ERROR: Failed to update subscription status', updateError);
+            throw updateError;
+          }
+
+          logStep('Subscription deactivated', { 
+            subscription_id: existingSub.id, 
+            new_status: newStatus,
+            event: body.event_type,
+          });
+        } else {
+          logStep('No matching subscription found to deactivate', { 
+            roblox_subscription_id: body.subscription_id 
+          });
+        }
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Subscription ${body.event_type === 'SubscriptionRefunded' ? 'canceled' : 'expired'}`,
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      logStep('Updated pending ad to paid', { ad_id: body.pending_ad_id, tier: purchasedTier });
-
-      // Trigger Discord webhook to post the ad
-      const webhookResponse = await fetch(
-        `${supabaseUrl}/functions/v1/send-advertisement-discord-webhook`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({ advertisementId: body.pending_ad_id }),
-        }
-      );
-
-      const webhookResult = await webhookResponse.json();
-      logStep('Discord webhook result', webhookResult);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Advertisement paid and posted',
-          ad_id: body.pending_ad_id,
-          tier: purchasedTier,
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      default:
+        logStep('Unknown event type', { event_type: body.event_type });
+        return new Response(
+          JSON.stringify({ error: 'Unknown event type' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
     }
-
-    // No pending ad - record the transaction for manual use
-    logStep('Transaction recorded without pending ad - user has credit for one ad', { tier: purchasedTier });
-
-    // Record in robux_transactions table
-    const { error: txError } = await supabase
-      .from('robux_transactions')
-      .insert({
-        roblox_user_id: body.roblox_user_id,
-        roblox_username: body.roblox_username,
-        product_id: body.gamepass_id,
-        product_name: `Advertisement Gamepass (${purchasedTier.charAt(0).toUpperCase() + purchasedTier.slice(1)})`,
-        robux_amount: body.robux_amount,
-        robux_after_tax: Math.floor(body.robux_amount * 0.7),
-        transaction_id: body.transaction_id,
-        transaction_type: 'gamepass',
-      });
-
-    if (txError) {
-      logStep('Warning: Failed to record transaction', txError);
-    }
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Transaction recorded',
-        user_id: profile.user_id,
-        tier: purchasedTier,
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
