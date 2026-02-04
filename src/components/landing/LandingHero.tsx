@@ -30,7 +30,7 @@ export function LandingHero() {
       <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 relative z-10">
         <div className="w-full">
           {/* Text content */}
-          <div className="text-center lg:text-left">
+          <div className="text-center">
             {/* Badge - simpler */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -53,8 +53,8 @@ export function LandingHero() {
                 Level Up Your{' '}
                 <span className="text-primary">Roblox Experience.</span>
               </h1>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                Premium scripts, models, UI kits, and game assets built by top Roblox developers. 
+              <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 leading-relaxed">
+                Premium scripts, models, UI kits, and game assets built by top Roblox developers.
                 Power your next experience.
               </p>
             </motion.div>
@@ -64,7 +64,7 @@ export function LandingHero() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 mb-6"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6"
             >
               <Link to="/marketplace">
                 <Button size="default" className="h-10 px-5">
@@ -96,7 +96,7 @@ export function LandingHero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.15 }}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-2"
+              className="flex flex-wrap items-center justify-center gap-2"
             >
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Search className="h-3 w-3" />
