@@ -108,7 +108,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               {!onMenuClick && mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
             <Link to="/" className="flex items-center">
-              <EclipseLogo size="sm" />
+               <EclipseLogo size="sm" removeWhiteBackground />
             </Link>
           </div>
 
@@ -157,7 +157,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           {/* Center: Branding + Search Bar */}
           <div className="flex items-center gap-4 flex-1">
             <Link to="/" className="flex items-center gap-3 shrink-0">
-              <EclipseLogo size="sm" />
+              <EclipseLogo size="sm" removeWhiteBackground />
               <span className="brand-text text-lg gradient-text whitespace-nowrap tracking-[0.25em]">
                 {SITE_NAME}
               </span>
