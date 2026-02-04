@@ -30,14 +30,10 @@ export function AddToServerButton({
   const handleAddToServer = async () => {
     setIsLoading(true);
     try {
-      // Get the current origin for the redirect URI
-      const redirectUri = `${window.location.origin}/bot-activation-callback`;
-
       const { data, error } = await supabase.functions.invoke('activate-bot-license', {
         body: {
           installationCodeId,
           userId,
-          redirectUri: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/activate-bot-license`,
         },
       });
 
