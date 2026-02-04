@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import eclipseLogo from '@/assets/eclipse-logo.png';
+import eclipseLogo from '@/assets/eclipse-logo-clean.png';
 
 interface EclipseLogoProps {
   className?: string;
