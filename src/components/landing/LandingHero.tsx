@@ -3,7 +3,7 @@ import { ArrowRight, Store, Sparkles, ShoppingBag, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { HeroProductShowcase } from './HeroProductShowcase';
-
+import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 const POPULAR_SEARCHES = [
   'scripts',
   'maps',
@@ -57,6 +57,16 @@ export function LandingHero() {
                 Premium scripts, models, UI kits, and game assets built by top Roblox developers.
                 Power your next experience.
               </p>
+            </motion.div>
+
+            {/* Active Offers - prominent position below hero text */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.08 }}
+              className="max-w-2xl mx-auto mb-6"
+            >
+              <ActiveOffersCard />
             </motion.div>
 
             {/* CTAs - more compact */}
