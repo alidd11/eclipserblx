@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import eclipseLogo from '@/assets/eclipse-logo.png';
+import eclipseLogo from '@/assets/eclipse-store-logo-transparent.png';
 
 interface EclipseLogoProps {
   className?: string;
