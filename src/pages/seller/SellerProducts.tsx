@@ -71,9 +71,9 @@ import { performSecurityScan } from '@/lib/secureFileUpload';
 import { hapticTap } from '@/lib/haptics';
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
-// Helper to check if product is managed by Eclipse/Vino (admin-only)
+// Helper to check if product is managed by Eclipse/Vino (admin-only) - locked & read-only
 const isAdminManagedProduct = (product: any) => 
-  ADMIN_MANAGED_STORES.includes(product.store_id) && !product.is_seller_product;
+  (ADMIN_MANAGED_STORES as readonly string[]).includes(product.store_id) && product.is_seller_product === false;
 
 interface ProductForm {
   id?: string;
