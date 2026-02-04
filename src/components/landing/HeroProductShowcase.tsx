@@ -138,7 +138,7 @@ export function HeroProductShowcase() {
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('created_at', { ascending: false })
-        .limit(4);
+        .limit(9);
 
       if (error) throw error;
       return data as unknown as HeroProduct[];
@@ -176,7 +176,7 @@ export function HeroProductShowcase() {
       </div>
       
       <div className="grid grid-cols-3 gap-4">
-        {products.slice(0, 3).map((product, index) => (
+        {products.map((product, index) => (
           <CompactProductCard key={product.id} product={product} index={index} />
         ))}
       </div>
