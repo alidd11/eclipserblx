@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import eclipseLogo from '@/assets/eclipse-logo-clean.png';
+import marketplaceLogo from '@/assets/marketplace-logo-icon.png';
 
 interface EclipseLogoProps {
   className?: string;
@@ -42,7 +42,7 @@ export function EclipseLogo({ className, size = 'md', removeWhiteBackground }: E
     xl: 56,
   };
 
-  const rawSrc = useMemo(() => withCacheBust(eclipseLogo, LOGO_CACHE_BUST), []);
+  const rawSrc = useMemo(() => withCacheBust(marketplaceLogo, LOGO_CACHE_BUST), []);
   const [processedSrc, setProcessedSrc] = useState<string | null>(null);
 
   useEffect(() => {
