@@ -265,23 +265,35 @@ export default function DiscordSettings() {
   };
 
   const testProductDropsWebhook = async (): Promise<WebhookTestResult> => {
+    const productLink = 'roleplay-hub-shop.lovable.app/products/test-product';
     const response = await fetch(formData.product_drops_discord_webhook_url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content: formData.product_drops_discord_role_id ? `<@&${formData.product_drops_discord_role_id}>` : undefined,
-        embeds: [{
-          title: '🎉 New Product Drop!',
-          description: '**Test Product**\nThis is a test notification for the product drops webhook.',
-          color: 0x00CED1, // Cyan
-          fields: [
-            { name: '💰 Price', value: '£9.99', inline: true },
-            { name: '📦 Category', value: 'Test Category', inline: true },
-          ],
-          thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
-          footer: { text: 'Eclipse Marketplace • Product Drop' },
-          timestamp: new Date().toISOString(),
-        }],
+        embeds: [
+          {
+            title: '🎉 New Product Drop!',
+            description: '**Test Product**\nThis is a test notification for the product drops webhook.',
+            color: 0x00CED1, // Cyan
+            fields: [
+              { name: '🏪 Store', value: 'Eclipse Store', inline: true },
+              { name: '💰 Price', value: '£9.99', inline: true },
+              { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false },
+            ],
+            thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
+            footer: { text: 'Eclipse Marketplace • Product Drop' },
+            timestamp: new Date().toISOString(),
+          },
+          {
+            color: 0x00CED1,
+            image: { url: 'https://tr.rbxcdn.com/180DAY-5d89c926bd1c2d32e8d7ca56d9fdc91e/420/420/Hat/Webp/noFilter' },
+          },
+          {
+            color: 0x00CED1,
+            image: { url: 'https://tr.rbxcdn.com/180DAY-d1f62c87adc09c73edbe15b0e6a9f5a1/420/420/Hat/Webp/noFilter' },
+          },
+        ],
       }),
     });
     return response.ok 
@@ -290,23 +302,36 @@ export default function DiscordSettings() {
   };
 
   const testEarlyProductDropsWebhook = async (): Promise<WebhookTestResult> => {
+    const productLink = 'roleplay-hub-shop.lovable.app/products/test-product';
     const response = await fetch(formData.early_product_drops_discord_webhook_url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content: formData.early_product_drops_discord_role_id ? `<@&${formData.early_product_drops_discord_role_id}>` : undefined,
-        embeds: [{
-          title: '👑 Early Access Drop!',
-          description: '**Test Product**\nThis is a test notification for the early product drops webhook.\n\n*Eclipse+ members get early access!*',
-          color: 0x8B5CF6, // Violet
-          fields: [
-            { name: '💰 Price', value: '£9.99', inline: true },
-            { name: '⏰ Early Access', value: '24 hours', inline: true },
-          ],
-          thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
-          footer: { text: 'Eclipse Marketplace • Eclipse+ Early Access' },
-          timestamp: new Date().toISOString(),
-        }],
+        embeds: [
+          {
+            title: '👑 Early Access Drop!',
+            description: '**Test Product**\nThis is a test notification for the early product drops webhook.\n\n*Eclipse+ members get early access!*',
+            color: 0x8B5CF6, // Violet
+            fields: [
+              { name: '🏪 Store', value: 'Eclipse Store', inline: true },
+              { name: '💰 Price', value: '£9.99', inline: true },
+              { name: '⏰ Early Access', value: '24 hours', inline: true },
+              { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false },
+            ],
+            thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
+            footer: { text: 'Eclipse Marketplace • Eclipse+ Early Access' },
+            timestamp: new Date().toISOString(),
+          },
+          {
+            color: 0x8B5CF6,
+            image: { url: 'https://tr.rbxcdn.com/180DAY-5d89c926bd1c2d32e8d7ca56d9fdc91e/420/420/Hat/Webp/noFilter' },
+          },
+          {
+            color: 0x8B5CF6,
+            image: { url: 'https://tr.rbxcdn.com/180DAY-d1f62c87adc09c73edbe15b0e6a9f5a1/420/420/Hat/Webp/noFilter' },
+          },
+        ],
       }),
     });
     return response.ok 
