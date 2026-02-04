@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Settings, LogOut, 
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users, Gamepad2,
-  Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star
+  Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -45,6 +45,7 @@ const navGroups: NavGroup[] = [
     icon: Package,
     items: [
       { title: 'Products', icon: Package, href: '/seller/products' },
+      { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
       { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
       { title: 'Store Tabs', icon: LayoutGrid, href: '/seller/tabs' },
       { title: 'Discounts', icon: Tag, href: '/seller/discounts' },
