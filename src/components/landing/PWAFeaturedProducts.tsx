@@ -11,8 +11,6 @@ interface FeaturedProduct {
   slug: string;
   price: number;
   images: string[] | null;
-  average_rating: number | null;
-  review_count: number | null;
   stores: {
     name: string;
     slug: string;
@@ -35,7 +33,7 @@ function useAlgorithmicProducts() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, average_rating, review_count,
+          id, name, slug, price, images,
           stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
@@ -108,16 +106,9 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
         <h4 className="font-medium text-sm text-foreground line-clamp-1 mb-1">
           {product.name}
         </h4>
-        <div className="flex items-center justify-between">
-          <span className="text-primary font-bold text-sm">
-            {formatPrice(product.price)}
-          </span>
-          {product.average_rating && (
-            <span className="text-xs text-muted-foreground">
-              ⭐ {product.average_rating.toFixed(1)}
-            </span>
-          )}
-        </div>
+        <span className="text-primary font-bold text-sm">
+          {formatPrice(product.price)}
+        </span>
       </div>
     </Link>
   );
