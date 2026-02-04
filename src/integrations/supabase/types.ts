@@ -2199,6 +2199,74 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_violation_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          evidence_urls: string[] | null
+          id: string
+          is_rights_holder: boolean
+          original_work_url: string | null
+          product_id: string
+          reporter_email: string
+          reporter_id: string | null
+          reporter_name: string
+          resolved_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          violation_type: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          evidence_urls?: string[] | null
+          id?: string
+          is_rights_holder?: boolean
+          original_work_url?: string | null
+          product_id: string
+          reporter_email: string
+          reporter_id?: string | null
+          reporter_name: string
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          violation_type: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          evidence_urls?: string[] | null
+          id?: string
+          is_rights_holder?: boolean
+          original_work_url?: string | null
+          product_id?: string
+          reporter_email?: string
+          reporter_id?: string | null
+          reporter_name?: string
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_violation_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_applications: {
         Row: {
           applicant_email: string
@@ -2591,6 +2659,7 @@ export type Database = {
           eclipse_free_eligible: boolean
           id: string
           images: string[] | null
+          ip_ownership_confirmed: boolean
           is_active: boolean | null
           is_featured: boolean | null
           is_resellable: boolean
@@ -2621,6 +2690,7 @@ export type Database = {
           eclipse_free_eligible?: boolean
           id?: string
           images?: string[] | null
+          ip_ownership_confirmed?: boolean
           is_active?: boolean | null
           is_featured?: boolean | null
           is_resellable?: boolean
@@ -2651,6 +2721,7 @@ export type Database = {
           eclipse_free_eligible?: boolean
           id?: string
           images?: string[] | null
+          ip_ownership_confirmed?: boolean
           is_active?: boolean | null
           is_featured?: boolean | null
           is_resellable?: boolean
