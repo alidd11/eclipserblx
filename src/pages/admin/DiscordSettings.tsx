@@ -264,6 +264,56 @@ export default function DiscordSettings() {
     return { success: false, message: data?.error || 'Unknown error', details: data?.details };
   };
 
+  const testProductDropsWebhook = async (): Promise<WebhookTestResult> => {
+    const response = await fetch(formData.product_drops_discord_webhook_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: formData.product_drops_discord_role_id ? `<@&${formData.product_drops_discord_role_id}>` : undefined,
+        embeds: [{
+          title: '🎉 New Product Drop!',
+          description: '**Test Product**\nThis is a test notification for the product drops webhook.',
+          color: 0x00CED1, // Cyan
+          fields: [
+            { name: '💰 Price', value: '£9.99', inline: true },
+            { name: '📦 Category', value: 'Test Category', inline: true },
+          ],
+          thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
+          footer: { text: 'Eclipse Marketplace • Product Drop' },
+          timestamp: new Date().toISOString(),
+        }],
+      }),
+    });
+    return response.ok 
+      ? { success: true, message: 'Test sent!', details: 'Check Discord' }
+      : { success: false, message: 'Webhook failed', details: `Status: ${response.status}` };
+  };
+
+  const testEarlyProductDropsWebhook = async (): Promise<WebhookTestResult> => {
+    const response = await fetch(formData.early_product_drops_discord_webhook_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: formData.early_product_drops_discord_role_id ? `<@&${formData.early_product_drops_discord_role_id}>` : undefined,
+        embeds: [{
+          title: '👑 Early Access Drop!',
+          description: '**Test Product**\nThis is a test notification for the early product drops webhook.\n\n*Eclipse+ members get early access!*',
+          color: 0x8B5CF6, // Violet
+          fields: [
+            { name: '💰 Price', value: '£9.99', inline: true },
+            { name: '⏰ Early Access', value: '24 hours', inline: true },
+          ],
+          thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
+          footer: { text: 'Eclipse Marketplace • Eclipse+ Early Access' },
+          timestamp: new Date().toISOString(),
+        }],
+      }),
+    });
+    return response.ok 
+      ? { success: true, message: 'Test sent!', details: 'Check Discord' }
+      : { success: false, message: 'Webhook failed', details: `Status: ${response.status}` };
+  };
+
   const testRoleWebhook = async (): Promise<WebhookTestResult> => {
     const { data, error } = await supabase.functions.invoke('send-discord-webhook', {
       body: { user_id: user?.id, event: 'subscription_activated', granted_by_admin: true },
@@ -366,6 +416,8 @@ export default function DiscordSettings() {
               promotions: testPromotionsWebhook,
               community: testCommunityWebhook,
               roles: testRoleWebhook,
+              'product-drops': testProductDropsWebhook,
+              'early-drops': testEarlyProductDropsWebhook,
             };
             if (testFns[config.id]) testWebhook(config.id, formData[config.settingKey], testFns[config.id]);
           }}
@@ -577,6 +629,7 @@ export default function DiscordSettings() {
                   iconColor: 'bg-cyan-500/20',
                   roleIdKey: 'product_drops_discord_role_id',
                   roleIdLabel: 'Role ID to Ping',
+                  testable: true,
                 }} />
 
                 <WebhookInput config={{
@@ -588,6 +641,7 @@ export default function DiscordSettings() {
                   iconColor: 'bg-violet-500/20',
                   roleIdKey: 'early_product_drops_discord_role_id',
                   roleIdLabel: 'Role ID to Ping',
+                  testable: true,
                 }} />
 
                 <WebhookInput config={{
