@@ -167,6 +167,24 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Assign eclipse_plus_member role if not already assigned
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .upsert({
+          user_id: user.id,
+          role: "eclipse_plus_member",
+        }, {
+          onConflict: "user_id,role",
+          ignoreDuplicates: true,
+        });
+
+      if (roleError) {
+        console.error("Error assigning eclipse_plus_member role:", roleError);
+        // Don't fail - subscription was granted, role is secondary
+      } else {
+        console.log(`Assigned eclipse_plus_member role to user: ${user.id}`);
+      }
+
       // Record the claim
       const { error: claimError } = await supabase
         .from("promotion_claims")
