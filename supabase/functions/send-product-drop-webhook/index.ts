@@ -75,10 +75,13 @@ serve(async (req) => {
 
     const footerText = isEarlyAccess ? 'Eclipse Marketplace • Eclipse+ Early Access' : 'Eclipse Marketplace • Product Drop';
     
-    // Truncate description if too long
-    const description = product.description 
-      ? (product.description.length > 200 ? product.description.substring(0, 197) + '...' : product.description)
+    // Strip HTML tags and truncate description
+    let description = product.description 
+      ? product.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
       : null;
+    if (description && description.length > 200) {
+      description = description.substring(0, 197) + '...';
+    }
     
     const embeds: any[] = [
       {
