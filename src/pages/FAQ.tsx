@@ -1,237 +1,257 @@
 import { MainLayout } from '@/components/layout/MainLayout';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { SITE_NAME } from '@/lib/constants';
-import { HelpCircle, MessageCircle, Headphones } from 'lucide-react';
+import { 
+  Search, 
+  ShoppingBag, 
+  Download, 
+  CreditCard, 
+  RefreshCw,
+  Shield,
+  Users,
+  MessageCircle,
+  HelpCircle,
+  Store,
+  Bot,
+  ChevronRight,
+  ExternalLink,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { useState } from 'react';
 
-const faqItems = [
+const helpTopics = [
   {
-    category: 'Products & Downloads',
-    questions: [
-      {
-        question: 'What types of Roblox assets do you sell?',
-        answer: `We specialise in premium Roblox roleplay assets — vehicle liveries for emergency services, custom UI kits, scripts & systems, and Discord bots tailored for roleplay communities. Everything's made by experienced Roblox developers who understand what roleplay servers need.`,
-      },
-      {
-        question: 'How do I use vehicle liveries in my Roblox game?',
-        answer: 'After purchasing, download the livery files from your Account page. You\'ll get high-resolution texture files that can be applied to compatible vehicle models in Roblox Studio. Each product includes setup instructions specific to that livery pack.',
-      },
-      {
-        question: 'Are your scripts compatible with my existing game?',
-        answer: 'Most of our scripts are designed to work standalone or integrate with popular roleplay frameworks. Check the product description for compatibility info. If you\'re unsure, drop us a message before purchasing — we\'re happy to help.',
-      },
-      {
-        question: 'Is there a download limit?',
-        answer: 'There\'s a 48-hour cooldown between downloads to keep things fair for everyone. After grabbing one product, just wait a couple of days before downloading the next. You can always re-download your purchases anytime.',
-      },
-      {
-        question: 'Do you offer updates for purchased products?',
-        answer: 'Yes! When we update a product (new liveries, bug fixes, improvements), you\'ll have access to the updated version for free. Just re-download from your account to get the latest files.',
-      },
-    ],
+    icon: ShoppingBag,
+    title: 'Orders',
+    description: 'View order status, access purchases, and order history.',
+    href: '/account',
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10',
   },
   {
-    category: 'Roblox Integration',
-    questions: [
-      {
-        question: 'How do I verify my Roblox account?',
-        answer: 'Head to your Account page and click "Link Roblox Account". You\'ll get a verification code to add to your Roblox profile description. Once verified, you\'ll unlock features like game pass verification and group membership perks.',
-      },
-      {
-        question: 'Do I need Roblox Premium to use your products?',
-        answer: 'Nope! Our products work whether you have Roblox Premium or not. Some products may have enhanced features for Premium users, but the core functionality is always available to everyone.',
-      },
-      {
-        question: 'Can I use these assets in my group\'s roleplay server?',
-        answer: 'Absolutely! Our products are licensed for use in your Roblox experiences. Just don\'t redistribute the files themselves. One purchase covers your group\'s server — no need to buy multiple copies.',
-      },
-      {
-        question: 'Do you support Roblox Studio plugins?',
-        answer: 'Some of our products include Studio plugins for easier setup. Check the product description to see if a plugin is included. We\'re always working on making installation as smooth as possible.',
-      },
-    ],
+    icon: Download,
+    title: 'Downloads',
+    description: 'Access your purchased files and download history.',
+    href: '/account/downloads',
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10',
   },
   {
-    category: 'Payments & Pricing',
-    questions: [
-      {
-        question: 'What payment methods do you accept?',
-        answer: 'We accept all major cards (Visa, Mastercard, Amex) through Stripe, plus PayPal. All transactions are secure and we never store your card details.',
-      },
-      {
-        question: 'Are prices inclusive of VAT?',
-        answer: 'Yep! What you see is what you pay. All prices include UK VAT where applicable.',
-      },
-      {
-        question: 'What is Eclipse+ and how does it help Roblox developers?',
-        answer: 'Eclipse+ is our membership for serious Roblox creators — £3.99/month gets you 30% off standard products, 35% off Bots, early access to new releases, and one free product each month. Perfect if you\'re regularly updating your roleplay server.',
-      },
-      {
-        question: 'Do you offer group discounts for roleplay communities?',
-        answer: 'We do! If you\'re running a large roleplay community and need multiple products or custom work, reach out to us. We offer bulk pricing and can discuss custom packages for established groups.',
-      },
-      {
-        question: 'Can I use Robux to purchase products?',
-        answer: 'Currently we accept GBP payments through Stripe and PayPal. We\'re exploring Robux payment options for the future — join our Discord to stay updated!',
-      },
-    ],
+    icon: RefreshCw,
+    title: 'Refunds & Disputes',
+    description: 'Request a refund or resolve issues with purchases.',
+    href: '/refunds',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
   },
   {
-    category: 'Discord Bots',
-    questions: [
-      {
-        question: 'How do I set up a purchased Discord bot?',
-        answer: 'After purchase, you\'ll receive an installation code in your account. Use this code with our bot setup guide to add the bot to your Discord server. The process takes about 5 minutes and we\'ve got step-by-step instructions.',
-      },
-      {
-        question: 'Can I customise the bot for my roleplay server?',
-        answer: 'Yes! Our bots come with extensive configuration options through the web dashboard. Customise commands, permissions, role integrations, and more to fit your server\'s needs.',
-      },
-      {
-        question: 'Do bots work with Roblox verification systems?',
-        answer: 'Our bots integrate with popular Roblox verification systems like Bloxlink and RoVer. Some bots also have built-in Roblox verification features for seamless member management.',
-      },
-      {
-        question: 'What happens if the bot goes offline?',
-        answer: 'Our bots are hosted on reliable infrastructure with 99.9% uptime. If there\'s ever an issue, our team monitors 24/7 and you can always reach out via live chat or Discord for support.',
-      },
-    ],
+    icon: CreditCard,
+    title: 'Payments',
+    description: 'Payment methods, billing, and transaction queries.',
+    href: '/support',
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500/10',
   },
   {
-    category: 'Accounts & Security',
-    questions: [
-      {
-        question: 'Do I need an account to purchase?',
-        answer: 'Yes, you\'ll need one. It only takes a minute to sign up, and it means you\'ll always have access to your purchases, downloads, and any linked Roblox accounts.',
-      },
-      {
-        question: 'How do I reset my password?',
-        answer: 'No worries, happens to everyone. Hit "Sign In", click "Forgot Password", and check your email. You\'ll get a reset link within a few minutes.',
-      },
-      {
-        question: 'Is my Roblox account information secure?',
-        answer: 'We only store your public Roblox user ID and username for verification purposes. We never have access to your Roblox password or private account details. All data is encrypted and stored securely.',
-      },
-    ],
+    icon: Store,
+    title: 'Selling on Eclipse',
+    description: 'Become a creator and start selling your products.',
+    href: '/sell',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
   },
   {
-    category: 'Refunds & Support',
-    questions: [
-      {
-        question: 'What is your refund policy for digital Roblox assets?',
-        answer: 'Since all products are digital downloads, we handle refunds case-by-case following UK Consumer Rights. If a product doesn\'t work as described or you\'re having technical issues we can\'t resolve, we\'ll sort it out. Reach out within 14 days of purchase.',
-      },
-      {
-        question: 'A script isn\'t working in my game — what do I do?',
-        answer: 'First, check the product\'s setup guide and compatibility requirements. If you\'re still stuck, open a live chat or Discord ticket with details about the error. Our team can usually help troubleshoot within a few hours.',
-      },
-      {
-        question: 'How can I get support?',
-        answer: 'A few options: live chat on this site (Mon-Sat, 9AM-7PM UK), our Discord community where other Roblox developers can help too, or the Support Centre for guides and setup articles.',
-      },
-      {
-        question: 'Do you offer custom development for roleplay servers?',
-        answer: 'We occasionally take on custom projects for established roleplay communities. If you need bespoke liveries, scripts, or systems, reach out through our contact form with details about your project.',
-      },
-    ],
+    icon: Bot,
+    title: 'Discord Bots',
+    description: 'Bot setup, installation codes, and configuration.',
+    href: '/support',
+    color: 'text-indigo-500',
+    bgColor: 'bg-indigo-500/10',
   },
   {
-    category: 'Community & Forum',
-    questions: [
-      {
-        question: 'How do I join the community forum?',
-        answer: 'Just sign in and head to the Forum section — that\'s it! Share your roleplay server, get feedback on setups, or discuss Roblox development with other creators.',
-      },
-      {
-        question: 'Can I showcase my roleplay server using your assets?',
-        answer: 'We\'d love to see it! Share in our Discord or forum. We regularly feature impressive servers that use our products — great way to get exposure for your community.',
-      },
-      {
-        question: 'Do you have a Discord server?',
-        answer: 'Absolutely! Our Discord is the best place to hang out, get quick support, see sneak peeks of new products, and connect with other Roblox roleplay developers. Link\'s in the nav bar.',
-      },
-    ],
+    icon: Shield,
+    title: 'Account & Security',
+    description: 'Manage your account settings and security options.',
+    href: '/account/settings',
+    color: 'text-red-500',
+    bgColor: 'bg-red-500/10',
+  },
+  {
+    icon: Users,
+    title: 'Community',
+    description: 'Forums, Discord server, and community guidelines.',
+    href: '/forum',
+    color: 'text-teal-500',
+    bgColor: 'bg-teal-500/10',
+  },
+];
+
+const quickAnswers = [
+  {
+    question: 'How do I download my purchased products?',
+    answer: 'Go to Account → Downloads to access all your purchased files. Each product can be downloaded directly from there.',
+  },
+  {
+    question: 'What payment methods are accepted?',
+    answer: 'We accept Visa, Mastercard, American Express via Stripe, and PayPal. All transactions are secure.',
+  },
+  {
+    question: 'Can I get a refund?',
+    answer: 'Refunds are handled case-by-case for digital products. Contact support within 14 days if there\'s an issue with your purchase.',
+  },
+  {
+    question: 'How do I set up a Discord bot?',
+    answer: 'After purchase, you\'ll receive an installation code in your account. Follow the setup guide provided with the bot.',
+  },
+  {
+    question: 'Is there a download cooldown?',
+    answer: 'Yes, there\'s a 48-hour cooldown between product downloads to ensure fair usage.',
+  },
+  {
+    question: 'How do I become a seller?',
+    answer: 'Visit the Sell page to apply as a creator. Once approved, you can list and sell your own products.',
   },
 ];
 
 export default function FAQ() {
   usePageTracking({ pagePath: '/faq' });
+  const { discordUrl } = useDiscordUrl();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredAnswers = quickAnswers.filter(
+    (item) =>
+      item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="container mx-auto px-4 py-12 max-w-5xl">
+        {/* Header with Search */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-            <HelpCircle className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-4xl font-display font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="text-muted-foreground text-lg">
-            Find answers to common questions about {SITE_NAME} and our Roblox assets
+          <h1 className="text-4xl font-display font-bold mb-4">Help Centre</h1>
+          <p className="text-muted-foreground text-lg mb-8">
+            Hi, how can we help you today?
           </p>
+          
+          <div className="relative max-w-xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search for help..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 h-12 text-base bg-muted/50 border-border"
+            />
+          </div>
         </div>
 
-        <div className="space-y-8">
-          {faqItems.map((category, categoryIndex) => (
-            <Card key={categoryIndex} className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl">{category.category}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="space-y-2">
-                  {category.questions.map((item, itemIndex) => (
-                    <AccordionItem
-                      key={itemIndex}
-                      value={`${categoryIndex}-${itemIndex}`}
-                      className="bg-muted/30 border border-border rounded-lg px-4"
-                    >
-                      <AccordionTrigger className="text-left hover:no-underline">
-                        {item.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground">
-                        {item.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Help Topics Grid */}
+        <div className="mb-12">
+          <h2 className="text-xl font-display font-semibold mb-6">Browse Topics</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {helpTopics.map((topic, index) => (
+              <Link key={index} to={topic.href}>
+                <Card className="bg-card border-border hover:border-primary/50 transition-all hover:shadow-lg group h-full">
+                  <CardContent className="p-5">
+                    <div className={`inline-flex p-3 rounded-lg ${topic.bgColor} mb-3`}>
+                      <topic.icon className={`h-5 w-5 ${topic.color}`} />
+                    </div>
+                    <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
+                      {topic.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {topic.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Still have questions card */}
-        <Card className="bg-card border-border mt-12">
-          <CardContent className="pt-6 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
-              <Headphones className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="font-display font-semibold text-lg mb-2">Still have questions?</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Our support team is here to help with any Roblox development questions. Use the live chat or visit our Support Centre.
+        {/* Quick Answers */}
+        <div className="mb-12">
+          <h2 className="text-xl font-display font-semibold mb-6">Quick Answers</h2>
+          <div className="space-y-3">
+            {filteredAnswers.map((item, index) => (
+              <Card key={index} className="bg-card border-border">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                      <HelpCircle className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium mb-1">{item.question}</h3>
+                      <p className="text-sm text-muted-foreground">{item.answer}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {searchQuery && filteredAnswers.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No results found for "{searchQuery}"</p>
+                <p className="text-sm mt-1">Try a different search or contact support</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Contact Options */}
+        <div className="bg-muted/30 rounded-xl p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-display font-semibold mb-2">Still need help?</h2>
+            <p className="text-muted-foreground">
+              Our support team is ready to assist you
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  const chatButton = document.querySelector('[data-chat-widget]');
-                  if (chatButton instanceof HTMLElement) chatButton.click();
-                }}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Open Live Chat
-              </Button>
-              <Button asChild className="gradient-button border-0">
-                <Link to="/support">Visit Support Centre</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2"
+              onClick={() => {
+                const chatButton = document.querySelector('[data-chat-widget]');
+                if (chatButton instanceof HTMLElement) chatButton.click();
+              }}
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="font-medium">Live Chat</span>
+              <span className="text-xs text-muted-foreground">Mon-Sat, 9AM-7PM</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2"
+              asChild
+            >
+              <a href={discordUrl} target="_blank" rel="noopener noreferrer">
+                <Users className="h-5 w-5" />
+                <span className="font-medium">Discord</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  Community support <ExternalLink className="h-3 w-3" />
+                </span>
+              </a>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2"
+              asChild
+            >
+              <Link to="/contact">
+                <ChevronRight className="h-5 w-5" />
+                <span className="font-medium">Contact Us</span>
+                <span className="text-xs text-muted-foreground">Email support</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
     </MainLayout>
   );
