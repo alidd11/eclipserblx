@@ -50,11 +50,12 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
     queryFn: async () => {
       const now = new Date().toISOString();
       
-      // Get staff user IDs to exclude (users with non-subscription roles)
+      // Get staff user IDs to exclude (users with actual staff roles, not status roles)
+      const statusRoles = ['eclipse_plus_member', 'seller'];
       const { data: staffRoles } = await supabase
         .from('user_roles')
         .select('user_id')
-        .neq('role', 'eclipse_plus_member');
+        .not('role', 'in', `(${statusRoles.join(',')})`);
       
       const staffUserIds = [...new Set((staffRoles ?? []).map(r => r.user_id))];
       
