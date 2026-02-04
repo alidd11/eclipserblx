@@ -138,7 +138,7 @@ export function HeroProductShowcase() {
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('created_at', { ascending: false })
-        .limit(9);
+        .limit(15);
 
       if (error) throw error;
       return data as unknown as HeroProduct[];
