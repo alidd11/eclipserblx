@@ -165,6 +165,37 @@ const faqCategories: FAQCategory[] = [
       },
     ],
   },
+  {
+    icon: ShoppingBag,
+    title: 'Selling on Eclipse',
+    color: 'text-primary',
+    items: [
+      {
+        question: 'How do I become a seller?',
+        answer: 'Visit your Account page and look for the "Become a Seller" option. You\'ll need to apply with your Discord server details and agree to our Seller Terms of Service.',
+      },
+      {
+        question: 'What are the commission rates?',
+        answer: 'Eclipse offers competitive rates with only 10-15% net commission, meaning you keep 85-90% of each sale. This is one of the lowest rates in the marketplace.',
+      },
+      {
+        question: 'Do I retain ownership of my products?',
+        answer: 'Yes! You retain 100% intellectual property ownership of all products you create and sell on Eclipse. We never claim rights to your work.',
+      },
+      {
+        question: 'What is Eclipse+ Early Access?',
+        answer: 'Eclipse+ subscribers get early access to new products from participating sellers. This helps drive initial sales and build momentum for your launches.',
+      },
+      {
+        question: 'How do I get paid?',
+        answer: 'Seller payouts are processed regularly. You can set up your preferred payout method in your seller dashboard under payment settings.',
+      },
+      {
+        question: 'What products can I sell?',
+        answer: 'You can sell digital products like Discord bots, scripts, graphics, templates, and more. All products must comply with our terms of service and community guidelines.',
+      },
+    ],
+  },
 ];
 
 function FAQAccordionItem({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boolean; onToggle: () => void }) {
@@ -222,9 +253,6 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
           <Icon className="h-5 w-5" />
         </div>
         <h2 className="text-lg font-semibold">{category.title}</h2>
-        <span className="ml-auto text-sm text-muted-foreground">
-          {filteredItems.length} {filteredItems.length === 1 ? 'question' : 'questions'}
-        </span>
       </div>
       <div className="px-5">
         {filteredItems.map((item, index) => (
