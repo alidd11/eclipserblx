@@ -27,7 +27,7 @@ export function LandingHero() {
       {/* Simple flat background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/20" />
 
-      <div className="container mx-auto py-10 sm:py-12 relative z-10">
+      <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 relative z-10">
         <div className="w-full">
           {/* Text content */}
           <div className="text-center lg:text-left">
