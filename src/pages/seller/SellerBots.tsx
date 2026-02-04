@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { toast } from 'sonner';
-import { Bot, Plus, Settings, Copy, Check, ExternalLink, Code, Trash2, AlertCircle, Info } from 'lucide-react';
+import { Bot, Plus, Settings, Copy, Check, Trash2, AlertCircle, ExternalLink } from 'lucide-react';
+import { BotIntegrationGuide } from '@/components/seller/BotIntegrationGuide';
 import { cn } from '@/lib/utils';
 
 interface BotProduct {
@@ -228,59 +229,11 @@ export default function SellerBots() {
           </Button>
         </div>
 
-        {/* API Documentation Card */}
-        <Card className="bg-muted/30 border-primary/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              License Validation API
-            </CardTitle>
-            <CardDescription>
-              Use this endpoint in your Discord bot to validate installation codes
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Endpoint URL</Label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-background rounded px-3 py-2 text-sm font-mono border overflow-x-auto">
-                  {apiEndpoint}
-                </code>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => copyToClipboard(apiEndpoint, 'endpoint')}
-                >
-                  {copiedField === 'endpoint' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                <strong>How it works:</strong> When a customer purchases your bot, they receive an installation code. 
-                Your bot calls this API with the code to validate it and get the activation details.
-              </AlertDescription>
-            </Alert>
-
-            <div className="bg-background rounded-lg border p-4 space-y-3">
-              <p className="text-sm font-medium">Example Request (from your bot)</p>
-              <pre className="text-xs bg-muted rounded p-3 overflow-x-auto">
-{`POST ${apiEndpoint}
-Content-Type: application/json
-x-seller-id: ${store?.store_id || 'YOUR_STORE_ID'}
-
-{
-  "action": "validate",
-  "installation_code": "BOT-XXXX-XXXX-XXXX",
-  "guild_id": "123456789012345678",
-  "guild_name": "My Server"
-}`}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Integration Guide */}
+        <BotIntegrationGuide 
+          storeId={store?.store_id} 
+          apiEndpoint={apiEndpoint} 
+        />
 
         {/* Bot Products List */}
         {isLoading ? (
