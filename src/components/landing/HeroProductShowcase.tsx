@@ -169,16 +169,17 @@ export function HeroProductShowcase() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="space-y-3"
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center justify-center gap-2 mb-4">
         <Sparkles className="h-4 w-4 text-primary" />
         <span className="text-sm font-medium text-muted-foreground">Featured Products</span>
       </div>
       
-      {products.map((product, index) => (
-        <CompactProductCard key={product.id} product={product} index={index} />
-      ))}
+      <div className="grid grid-cols-3 gap-4">
+        {products.slice(0, 3).map((product, index) => (
+          <CompactProductCard key={product.id} product={product} index={index} />
+        ))}
+      </div>
     </motion.div>
   );
 }
