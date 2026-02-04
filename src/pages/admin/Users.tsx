@@ -412,15 +412,15 @@ export default function AdminUsers() {
     return true;
   };
 
-  // Subscription-only roles that don't make someone "staff"
-  const subscriptionOnlyRoles = ['eclipse_plus_member'];
+  // Roles that don't make someone "staff" - includes subscription roles and customer role
+  const nonStaffRoles = ['eclipse_plus_member', 'seller', 'customer'];
 
   // Filter profiles to only show customers (users without any staff roles)
   const filteredProfiles = useMemo(() => {
     return profiles?.filter((profile) => {
       const roles = getUserRoles(profile.user_id);
-      // Show users who have no roles OR only have subscription roles (like Eclipse+)
-      const hasStaffRole = roles.some(r => !subscriptionOnlyRoles.includes(r.role));
+      // Show users who have no roles OR only have non-staff roles (like Eclipse+, seller, customer)
+      const hasStaffRole = roles.some(r => !nonStaffRoles.includes(r.role));
       return !hasStaffRole;
     }) || [];
   }, [profiles, userRoles]);
