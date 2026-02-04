@@ -30,7 +30,7 @@ serve(async (req) => {
     const { data: product, error: productError } = await supabaseClient
       .from('products')
       .select(`
-        id, name, slug, price, images,
+        id, name, slug, price, images, description,
         stores!inner(name, slug)
       `)
       .eq('id', productId)
@@ -75,12 +75,17 @@ serve(async (req) => {
 
     const footerText = isEarlyAccess ? 'Eclipse Marketplace • Eclipse+ Early Access' : 'Eclipse Marketplace • Product Drop';
     
+    // Truncate description if too long
+    const description = product.description 
+      ? (product.description.length > 200 ? product.description.substring(0, 197) + '...' : product.description)
+      : null;
+    
     const embeds: any[] = [
       {
         title: isEarlyAccess ? '👑 Early Access Drop!' : '🎉 New Product Drop!',
         description: isEarlyAccess 
-          ? `**${product.name}**\n\n*Eclipse+ members get early access!*`
-          : `**${product.name}**`,
+          ? `**${product.name}**\n\n*Eclipse+ members get early access!*${description ? `\n\n${description}` : ''}`
+          : `**${product.name}**${description ? `\n\n${description}` : ''}`,
         color,
         fields: [
           { name: '🏪 Store', value: storeName, inline: true },
