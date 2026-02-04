@@ -101,6 +101,7 @@ const navGroups: NavGroup[] = [
       { title: 'Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', permissions: ['view_seller_payouts'] },
       { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', permissions: ['view_seller_tickets'] },
+      { title: 'IP Reports', icon: Shield, href: '/admin/ip-reports', permissions: ['manage_seller_stores'] },
       { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', permissions: ['view_store_applications'], dividerAfter: true },
       { title: 'Seller Documents', icon: FolderOpen, href: '/admin/seller-documents', permissions: ['manage_seller_stores'] },
       { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', permissions: ['manage_seller_stores'] },

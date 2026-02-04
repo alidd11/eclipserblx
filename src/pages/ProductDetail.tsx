@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Store as StoreIcon } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Store as StoreIcon, Flag } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
+import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
 import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
 import { useCart, CartItem } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -44,6 +45,7 @@ export default function ProductDetail() {
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [showIPReportDialog, setShowIPReportDialog] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState<{
     id: string;
     quantity: number;
@@ -718,6 +720,17 @@ export default function ProductDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Report IP Violation */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-muted-foreground hover:text-foreground"
+              onClick={() => setShowIPReportDialog(true)}
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              Report IP Violation
+            </Button>
             
           </div>
         </div>
@@ -918,6 +931,14 @@ export default function ProductDetail() {
         )}
         </div>
       </PullToRefresh>
+
+      {/* IP Violation Report Dialog */}
+      <ReportIPViolationDialog
+        open={showIPReportDialog}
+        onOpenChange={setShowIPReportDialog}
+        productId={product.id}
+        productName={product.name}
+      />
     </MainLayout>
   );
 }

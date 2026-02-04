@@ -17,6 +17,7 @@ const footerLinks = {
     { href: '/terms', label: 'Terms of Service' },
     { href: '/refunds', label: 'Refund Policy' },
     { href: '/privacy', label: 'Privacy Policy' },
+    { href: '/dmca', label: 'DMCA / IP Policy' },
   ],
 };
 

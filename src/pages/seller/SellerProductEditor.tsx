@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Save, 
   ArrowLeft, 
@@ -32,7 +33,8 @@ import {
   Loader2,
   ImagePlus,
   Calendar,
-  Clock
+  Clock,
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
@@ -53,6 +55,7 @@ interface ProductFormData {
   release_at: string;
   early_access_enabled: boolean;
   early_access_hours: string;
+  ip_ownership_confirmed: boolean;
 }
 
 const INITIAL_FORM_DATA: ProductFormData = {
@@ -70,6 +73,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
   release_at: '',
   early_access_enabled: false,
   early_access_hours: '',
+  ip_ownership_confirmed: false,
 };
 
 export default function SellerProductEditor() {
@@ -147,6 +151,7 @@ export default function SellerProductEditor() {
         release_at: product.release_at ? new Date(product.release_at).toISOString().slice(0, 16) : '',
         early_access_enabled: hasSchedule && hasEarlyAccess,
         early_access_hours: product.early_access_hours?.toString() || '',
+        ip_ownership_confirmed: (product as any).ip_ownership_confirmed ?? false,
       });
     }
   }, [product]);
@@ -326,6 +331,7 @@ export default function SellerProductEditor() {
         moderation_status: 'pending', // All new/edited products go to pending
         release_at: releaseAt,
         early_access_hours: earlyAccessHours,
+        ip_ownership_confirmed: data.ip_ownership_confirmed,
       };
 
       if (isEditing && productId) {
@@ -364,6 +370,10 @@ export default function SellerProductEditor() {
     }
     if (!formData.price || parseFloat(formData.price) <= 0) {
       toast.error('Please enter a valid price');
+      return;
+    }
+    if (!formData.ip_ownership_confirmed) {
+      toast.error('You must confirm you have the rights to sell this product');
       return;
     }
 
@@ -518,6 +528,30 @@ export default function SellerProductEditor() {
                   checked={formData.eclipse_free_eligible}
                   onCheckedChange={(checked) => setFormData({ ...formData, eclipse_free_eligible: checked })}
                 />
+              </div>
+
+              {/* IP Ownership Confirmation */}
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5">
+                  <Checkbox
+                    id="ip_ownership"
+                    checked={formData.ip_ownership_confirmed}
+                    onCheckedChange={(checked) => setFormData({ ...formData, ip_ownership_confirmed: checked as boolean })}
+                    className="mt-0.5"
+                  />
+                  <div className="space-y-1">
+                    <label htmlFor="ip_ownership" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                      <Shield className="h-4 w-4 text-primary" />
+                      IP Ownership Confirmation *
+                    </label>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      I confirm that I am the original creator of this product, or I have obtained proper 
+                      licensing/permission to sell this product. I understand that selling stolen or 
+                      unauthorized assets violates the <a href="/dmca" target="_blank" className="text-primary hover:underline">DMCA Policy</a> and 
+                      may result in account termination.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Scheduled Release */}
