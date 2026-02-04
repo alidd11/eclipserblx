@@ -49,16 +49,34 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
     queryKey: ['homepage-stats'],
     queryFn: async () => {
       const now = new Date().toISOString();
-      const [products, downloads, users] = await Promise.all([
+      
+      // Get staff user IDs to exclude (users with non-subscription roles)
+      const { data: staffRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .neq('role', 'eclipse_plus_member');
+      
+      const staffUserIds = [...new Set((staffRoles ?? []).map(r => r.user_id))];
+      
+      // Build customers query - exclude staff members
+      let customersQuery = supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true });
+      
+      if (staffUserIds.length > 0) {
+        customersQuery = customersQuery.not('user_id', 'in', `(${staffUserIds.join(',')})`);
+      }
+      
+      const [products, downloads, customers] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true).or(`release_at.is.null,release_at.lte.${now}`),
         supabase.from('download_logs').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        customersQuery,
       ]);
 
       return {
         products: products.count ?? 0,
         downloads: BASE_STATS.downloads + (downloads.count ?? 0),
-        users: BASE_STATS.users + (users.count ?? 0),
+        users: BASE_STATS.users + (customers.count ?? 0),
       };
     },
     staleTime: 1000 * 60 * 5,
