@@ -57,15 +57,28 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all staff user IDs (exclude subscription-only roles like eclipse_plus_member)
-    const { data: staffRoles, error: staffRolesError } = await service
+    // Fetch all user roles
+    const { data: allRoles, error: allRolesError } = await service
       .from("user_roles")
-      .select("user_id, role")
-      .neq('role', 'eclipse_plus_member');
+      .select("user_id, role");
 
-    if (staffRolesError) throw staffRolesError;
+    if (allRolesError) throw allRolesError;
 
-    const staffIds = Array.from(new Set((staffRoles ?? []).map((r) => r.user_id)));
+    // Status-based roles that don't qualify as "staff"
+    const statusOnlyRoles = ['eclipse_plus_member', 'seller', 'customer'];
+    
+    // Group roles by user
+    const userRolesMap = new Map<string, string[]>();
+    (allRoles ?? []).forEach(r => {
+      const existing = userRolesMap.get(r.user_id) || [];
+      existing.push(r.role);
+      userRolesMap.set(r.user_id, existing);
+    });
+    
+    // Only include users who have at least one actual staff role
+    const staffIds = Array.from(userRolesMap.entries())
+      .filter(([_, roles]) => roles.some(role => !statusOnlyRoles.includes(role)))
+      .map(([userId]) => userId);
 
     if (staffIds.length === 0) {
       return new Response(JSON.stringify({ staff: [] }), {
