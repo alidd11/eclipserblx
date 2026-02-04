@@ -1151,25 +1151,6 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 </div>
               )}
 
-              <Button
-                type="submit"
-                className="w-full gradient-button border-0"
-                disabled={loading}
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'login' ? 'Sign In' : 'Create Account'}
-              </Button>
-
-              {/* Social Login Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-
               {/* Google Sign-In Button */}
               <Button
                 type="button"
@@ -1212,6 +1193,25 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               {errors.social && (
                 <p className="text-sm text-destructive text-center">{errors.social}</p>
               )}
+
+              {/* Social Login Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gradient-button border-0"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
+              </Button>
             </form>
           )}
 
