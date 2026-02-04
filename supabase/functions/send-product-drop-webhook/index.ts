@@ -68,7 +68,7 @@ serve(async (req) => {
     }
 
     // Build the webhook payload
-    const productLink = `roleplay-hub-shop.lovable.app/products/${product.slug}`;
+    const productLink = `https://eclipserblx.com/products/${product.slug}`;
     const images = product.images || [];
     const storeName = (product as any).stores?.name || 'Unknown Store';
     const color = isEarlyAccess ? 0x8B5CF6 : 0x00CED1; // Violet for early, Cyan for regular
@@ -84,7 +84,7 @@ serve(async (req) => {
           { name: '🏪 Store', value: storeName, inline: true },
           { name: '💰 Price', value: `£${Number(product.price).toFixed(2)}`, inline: true },
           ...(isEarlyAccess ? [{ name: '⏰ Early Access', value: '24 hours', inline: true }] : []),
-          { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false },
+          { name: '🔗 Link', value: `[${product.name}](${productLink})`, inline: false },
         ],
         thumbnail: images[0] ? { url: images[0] } : undefined,
         footer: { text: isEarlyAccess ? 'Eclipse Marketplace • Eclipse+ Early Access' : 'Eclipse Marketplace • Product Drop' },
