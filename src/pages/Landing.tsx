@@ -33,10 +33,13 @@ export default function Landing() {
   // Browser mode: full landing page
   return (
     <MainLayout>
-      <LandingHero />
-      {/* Active Offers / Promotions */}
-      <section className="px-4 sm:px-6 lg:px-8 -mt-8 relative z-20 space-y-4">
+      {/* Active Offers - Prominent position at top on desktop */}
+      <section className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         <ActiveOffersCard />
+      </section>
+      <LandingHero />
+      {/* Promotions below hero */}
+      <section className="px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
         <PromotionCarousel />
       </section>
       <LandingCategories />
