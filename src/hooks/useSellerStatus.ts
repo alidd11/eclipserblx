@@ -131,11 +131,14 @@ export function useSellerStatus() {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      // Fetch store data (without sensitive credential columns)
+      // Fetch store data - user may have multiple stores, get the first approved one
       const { data: storeData, error: storeError } = await supabase
         .from('stores')
         .select(SAFE_STORE_COLUMNS)
         .eq('owner_id', user.id)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: true })
+        .limit(1)
         .maybeSingle();
 
       if (storeError) throw storeError;
