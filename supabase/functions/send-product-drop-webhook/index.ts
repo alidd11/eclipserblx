@@ -73,6 +73,8 @@ serve(async (req) => {
     const storeName = (product as any).stores?.name || 'Unknown Store';
     const color = isEarlyAccess ? 0x8B5CF6 : 0x00CED1; // Violet for early, Cyan for regular
 
+    const footerText = isEarlyAccess ? 'Eclipse Marketplace • Eclipse+ Early Access' : 'Eclipse Marketplace • Product Drop';
+    
     const embeds: any[] = [
       {
         title: isEarlyAccess ? '👑 Early Access Drop!' : '🎉 New Product Drop!',
@@ -86,18 +88,15 @@ serve(async (req) => {
           ...(isEarlyAccess ? [{ name: '⏰ Early Access', value: '24 hours', inline: true }] : []),
           { name: '🔗 Link', value: `[${product.name}](${productLink})`, inline: false },
         ],
-        thumbnail: images[0] ? { url: images[0] } : undefined,
-        footer: { text: isEarlyAccess ? 'Eclipse Marketplace • Eclipse+ Early Access' : 'Eclipse Marketplace • Product Drop' },
-        timestamp: new Date().toISOString(),
       },
     ];
 
-    // Add first 2 images as separate embeds
-    if (images[0]) {
+    // Add first 2 images as separate embeds, footer on the last one
+    if (images[0] && images[1]) {
       embeds.push({ color, image: { url: images[0] } });
-    }
-    if (images[1]) {
-      embeds.push({ color, image: { url: images[1] } });
+      embeds.push({ color, image: { url: images[1] }, footer: { text: footerText }, timestamp: new Date().toISOString() });
+    } else if (images[0]) {
+      embeds.push({ color, image: { url: images[0] }, footer: { text: footerText }, timestamp: new Date().toISOString() });
     }
 
     // Send to Discord
