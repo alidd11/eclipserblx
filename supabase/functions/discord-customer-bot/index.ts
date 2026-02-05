@@ -707,17 +707,22 @@ async function handlePurchasesCommand(
   }
 
   // Filter to store products if in store server
-  let productList = orders.flatMap((order: any) =>
-    order.order_items
-      .filter((item: any) => !serverContext.store || item.store_id === serverContext.store.id)
-      .map((item: any) => ({
-        name: item.product_name,
-        productId: item.product_id,
-        date: new Date(order.created_at).toLocaleDateString("en-GB"),
-        price: item.price,
-      }))
-  ).slice(0, 15);
+  let productList = orders
+    .flatMap((order: any) =>
+      order.order_items
+        .filter((item: any) => !serverContext.store || item.store_id === serverContext.store.id)
+        .map((item: any) => ({
+          name: item.product_name,
+          productId: item.product_id,
+          date: new Date(order.created_at).toLocaleDateString("en-GB"),
+          price: item.price,
+        }))
+    )
+    .slice(0, 15);
 
+  // If the user is running the command inside a creator's store server,
+  // they may have purchases elsewhere but none for this specific store.
+  if (serverContext.store && productList.length === 0) {
     const channelEmbed = {
       color: 0x3b82f6,
       title: "📦 No Purchases Found",
@@ -732,6 +737,7 @@ async function handlePurchasesCommand(
       timestamp: new Date().toISOString(),
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [dmEmbed]);
+  }
 
   const embed = {
     color: 0x22c55e,
