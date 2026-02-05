@@ -175,16 +175,52 @@ async function handleLinkStatusCommand(
   const existingProfile = await getLinkedAccount(supabase, discordUserId);
 
   if (existingProfile) {
-    return interactionResponse(
-      `✅ **Already Linked**\n\nYour Discord is linked to **@${existingProfile.username}** (${existingProfile.customer_id}).\n\nUse \`/profile\`, \`/purchases\`, or \`/retrieve\` to access your account.`,
-      true
-    );
+    const embed = {
+      color: 0x22c55e, // Green
+      title: "✅ Account Linked",
+      description: `Your Discord is connected to **@${existingProfile.username}**`,
+      fields: [
+        {
+          name: "🆔 Customer ID",
+          value: existingProfile.customer_id || "N/A",
+          inline: true,
+        },
+      ],
+      footer: {
+        text: "Eclipse Marketplace • Use /profile, /purchases, or /retrieve",
+      },
+      timestamp: new Date().toISOString(),
+    };
+    return interactionResponse("", true, [embed]);
   }
 
-  return interactionResponse(
-    "🔗 **Link Your Eclipse Account**\n\n1. Go to your Eclipse account settings\n2. Find the **Link Discord** section\n3. Click **Generate Link Code**\n4. Come back here and run `/verify code:YOUR_CODE`\n\n🔗 **Account Settings:** https://eclipserblx.com/account",
-    true
-  );
+  const embed = {
+    color: 0x8b5cf6, // Eclipse purple
+    title: "🔗 Link Your Eclipse Account",
+    description: "Connect your Discord to access your purchases and downloads.",
+    fields: [
+      {
+        name: "Step 1",
+        value: "Go to your [Eclipse account settings](https://eclipserblx.com/account)",
+        inline: false,
+      },
+      {
+        name: "Step 2",
+        value: "Find the **Link Discord** section and click **Generate Link Code**",
+        inline: false,
+      },
+      {
+        name: "Step 3",
+        value: "Come back here and run `/verify code:YOUR_CODE`",
+        inline: false,
+      },
+    ],
+    footer: {
+      text: "Eclipse Marketplace",
+    },
+    timestamp: new Date().toISOString(),
+  };
+  return interactionResponse("", true, [embed]);
 }
 
 // /verify command - Link account with code
@@ -198,10 +234,27 @@ async function handleVerifyCommand(
   const codeOption = options.find((o) => o.name === "code");
 
   if (!codeOption) {
-    return interactionResponse(
-      "❌ **Code Required**\n\nPlease provide your link code: `/verify code:YOUR_CODE`\n\nGet a code from your Eclipse account settings.",
-      true
-    );
+    const embed = {
+      color: 0xef4444, // Red
+      title: "❌ Code Required",
+      description: "Please provide your link code.",
+      fields: [
+        {
+          name: "Usage",
+          value: "`/verify code:YOUR_CODE`",
+          inline: false,
+        },
+        {
+          name: "Get a Code",
+          value: "Generate one from your [Eclipse account settings](https://eclipserblx.com/account)",
+          inline: false,
+        },
+      ],
+      footer: {
+        text: "Eclipse Marketplace",
+      },
+    };
+    return interactionResponse("", true, [embed]);
   }
 
   const code = codeOption.value.toUpperCase().trim();
@@ -216,10 +269,22 @@ async function handleVerifyCommand(
     .maybeSingle();
 
   if (codeError || !linkCode) {
-    return interactionResponse(
-      "❌ **Invalid or Expired Code**\nThis code doesn't exist or has expired. Please generate a new one from your Eclipse account.",
-      true
-    );
+    const embed = {
+      color: 0xef4444, // Red
+      title: "❌ Invalid or Expired Code",
+      description: "This code doesn't exist or has expired.",
+      fields: [
+        {
+          name: "What to do",
+          value: "Generate a new code from your [Eclipse account settings](https://eclipserblx.com/account)",
+          inline: false,
+        },
+      ],
+      footer: {
+        text: "Eclipse Marketplace",
+      },
+    };
+    return interactionResponse("", true, [embed]);
   }
 
   // Mark code as verified and link Discord account
@@ -241,10 +306,23 @@ async function handleVerifyCommand(
     })
     .eq("user_id", linkCode.user_id);
 
-  return interactionResponse(
-    "✅ **Account Linked Successfully!**\n\nYour Discord account is now linked to Eclipse. You can now use:\n• `/profile` - View your account\n• `/purchases` - See your orders\n• `/retrieve` - Get your files",
-    true
-  );
+  const embed = {
+    color: 0x22c55e, // Green
+    title: "✅ Account Linked Successfully!",
+    description: "Your Discord account is now connected to Eclipse.",
+    fields: [
+      {
+        name: "Available Commands",
+        value: "• `/profile` - View your account\n• `/purchases` - See your orders\n• `/retrieve` - Get your files",
+        inline: false,
+      },
+    ],
+    footer: {
+      text: "Eclipse Marketplace",
+    },
+    timestamp: new Date().toISOString(),
+  };
+  return interactionResponse("", true, [embed]);
 }
 
 // /profile command - View account info
