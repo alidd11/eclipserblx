@@ -9,13 +9,17 @@ const corsHeaders = {
 const commands = [
   {
     name: "link",
-    description: "Link your Discord account to Eclipse",
+    description: "Check if your Discord is linked to Eclipse",
+  },
+  {
+    name: "verify",
+    description: "Link your Discord using a code from Eclipse",
     options: [
       {
         name: "code",
         description: "Your 6-character link code from Eclipse",
         type: 3, // STRING
-        required: false,
+        required: true,
       },
     ],
   },
@@ -28,7 +32,7 @@ const commands = [
     description: "View your recent purchases",
   },
   {
-    name: "download",
+    name: "retrieve",
     description: "Get a download link for a purchased product",
     options: [
       {
@@ -50,32 +54,41 @@ Deno.serve(async (req) => {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   
-  // Verify staff auth
+  // Allow service key auth OR user auth with admin role
   const authHeader = req.headers.get("Authorization");
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader || "" } },
-  });
+  const apiKey = req.headers.get("x-api-key");
+  const botghostKey = Deno.env.get("BOTGHOST_API_KEY");
+  
+  // Option 1: Service key via x-api-key header (for automated calls)
+  if (apiKey && botghostKey && apiKey.trim() === botghostKey.trim()) {
+    // Authorized via API key - proceed
+  } else {
+    // Option 2: User auth with admin role
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader || "" } },
+    });
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-  // Check admin role
-  const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-  const { data: isAdmin } = await adminClient.rpc("has_role", {
-    _user_id: user.id,
-    _role: "admin",
-  });
+    // Check admin role
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: isAdmin } = await adminClient.rpc("has_role", {
+      _user_id: user.id,
+      _role: "admin",
+    });
 
-  if (!isAdmin) {
-    return new Response(
-      JSON.stringify({ error: "Admin access required" }),
-      { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    if (!isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
   }
 
   // Use separate Customer Bot credentials
