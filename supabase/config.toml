@@ -298,3 +298,6 @@ verify_jwt = false
 
 [functions.create-robux-ad-pending]
 verify_jwt = false
+
+[functions.quarantine-file]
+verify_jwt = false

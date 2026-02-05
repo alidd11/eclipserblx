@@ -2007,6 +2007,48 @@ export type Database = {
         }
         Relationships: []
       }
+      file_hash_registry: {
+        Row: {
+          blocked_at: string | null
+          blocked_by: string | null
+          file_hash: string
+          first_seen_at: string
+          hash_algorithm: string
+          id: string
+          is_blocked: boolean | null
+          last_seen_at: string
+          seen_count: number
+          threat_details: string | null
+          threat_type: string | null
+        }
+        Insert: {
+          blocked_at?: string | null
+          blocked_by?: string | null
+          file_hash: string
+          first_seen_at?: string
+          hash_algorithm?: string
+          id?: string
+          is_blocked?: boolean | null
+          last_seen_at?: string
+          seen_count?: number
+          threat_details?: string | null
+          threat_type?: string | null
+        }
+        Update: {
+          blocked_at?: string | null
+          blocked_by?: string | null
+          file_hash?: string
+          first_seen_at?: string
+          hash_algorithm?: string
+          id?: string
+          is_blocked?: boolean | null
+          last_seen_at?: string
+          seen_count?: number
+          threat_details?: string | null
+          threat_type?: string | null
+        }
+        Relationships: []
+      }
       forum_categories: {
         Row: {
           color: string | null
@@ -3135,6 +3177,88 @@ export type Database = {
         }
         Relationships: []
       }
+      quarantined_files: {
+        Row: {
+          created_at: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          original_file_name: string
+          original_file_path: string
+          product_id: string | null
+          quarantine_path: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scan_results: Json | null
+          status: string
+          store_id: string
+          threat_details: Json | null
+          threat_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          original_file_name: string
+          original_file_path: string
+          product_id?: string | null
+          quarantine_path: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scan_results?: Json | null
+          status?: string
+          store_id: string
+          threat_details?: Json | null
+          threat_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          original_file_name?: string
+          original_file_path?: string
+          product_id?: string | null
+          quarantine_path?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scan_results?: Json | null
+          status?: string
+          store_id?: string
+          threat_details?: Json | null
+          threat_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quarantined_files_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quarantined_files_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quarantined_files_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limits: {
         Row: {
           action_type: string
@@ -3951,6 +4075,69 @@ export type Database = {
             foreignKeyName: "seller_payouts_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_security_scores: {
+        Row: {
+          blocked_uploads: number
+          created_at: string
+          flagged_uploads: number
+          id: string
+          is_restricted: boolean | null
+          last_violation_at: string | null
+          restricted_at: string | null
+          restricted_reason: string | null
+          store_id: string
+          total_uploads: number
+          trust_score: number
+          updated_at: string
+          violation_types: Json | null
+        }
+        Insert: {
+          blocked_uploads?: number
+          created_at?: string
+          flagged_uploads?: number
+          id?: string
+          is_restricted?: boolean | null
+          last_violation_at?: string | null
+          restricted_at?: string | null
+          restricted_reason?: string | null
+          store_id: string
+          total_uploads?: number
+          trust_score?: number
+          updated_at?: string
+          violation_types?: Json | null
+        }
+        Update: {
+          blocked_uploads?: number
+          created_at?: string
+          flagged_uploads?: number
+          id?: string
+          is_restricted?: boolean | null
+          last_violation_at?: string | null
+          restricted_at?: string | null
+          restricted_reason?: string | null
+          store_id?: string
+          total_uploads?: number
+          trust_score?: number
+          updated_at?: string
+          violation_types?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_security_scores_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_security_scores_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
             referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
@@ -5886,6 +6073,7 @@ export type Database = {
         Args: { _assigner_id: string; _target_user_id: string }
         Returns: boolean
       }
+      can_seller_upload: { Args: { p_store_id: string }; Returns: boolean }
       can_user_download: { Args: { _user_id: string }; Returns: boolean }
       check_and_award_badges: {
         Args: { _user_id: string }
@@ -5977,6 +6165,35 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      update_seller_trust_score: {
+        Args: {
+          p_is_blocked: boolean
+          p_is_flagged: boolean
+          p_store_id: string
+          p_violation_type?: string
+        }
+        Returns: {
+          blocked_uploads: number
+          created_at: string
+          flagged_uploads: number
+          id: string
+          is_restricted: boolean | null
+          last_violation_at: string | null
+          restricted_at: string | null
+          restricted_reason: string | null
+          store_id: string
+          total_uploads: number
+          trust_score: number
+          updated_at: string
+          violation_types: Json | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seller_security_scores"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

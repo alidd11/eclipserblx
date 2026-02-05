@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { verifyMagicBytes, calculateFileHash, isBlockedExtension, type MagicByteResult } from "./magicBytes";
 
 export interface FileValidationOptions {
   maxSize?: number; // in bytes
@@ -13,6 +14,9 @@ export interface SecurityScanResult {
   luaRiskLevel?: "low" | "medium" | "high";
   luaConcerns?: string[];
   isNsfw?: boolean;
+  magicByteResult?: MagicByteResult;
+  fileHash?: string;
+  threatType?: string;
 }
 
 interface VirusScanResponse {
@@ -206,18 +210,78 @@ export async function performSecurityScan(
     skipVirusScan?: boolean;
     skipLuaAnalysis?: boolean;
     skipNsfwCheck?: boolean;
+    skipMagicByteCheck?: boolean;
     blockMediumRiskLua?: boolean; // Whether to block medium-risk Lua files
+    storeId?: string; // For trust scoring
   } = {}
 ): Promise<SecurityScanResult> {
   const { 
     skipVirusScan = false, 
     skipLuaAnalysis = false, 
     skipNsfwCheck = false,
+    skipMagicByteCheck = false,
     blockMediumRiskLua = false 
   } = options;
 
   const fileName = file.name;
   console.log(`Starting security scan for: ${fileName}`);
+
+  // Step 0: Check for blocked extensions
+  if (isBlockedExtension(fileName)) {
+    console.warn(`Blocked file extension: ${fileName}`);
+    return {
+      isAllowed: false,
+      reason: `File type not allowed: executable or script files are blocked`,
+      threatType: 'blocked_extension'
+    };
+  }
+
+  // Step 0.5: Magic byte verification
+  if (!skipMagicByteCheck) {
+    try {
+      const magicResult = await verifyMagicBytes(file);
+      
+      if (!magicResult.isValid || magicResult.isSuspicious) {
+        console.warn(`Magic byte verification failed: ${fileName} - ${magicResult.reason}`);
+        return {
+          isAllowed: false,
+          reason: magicResult.reason || 'File type verification failed',
+          magicByteResult: magicResult,
+          threatType: 'magic_mismatch'
+        };
+      }
+    } catch (err) {
+      console.error("Magic byte check failed:", err);
+      // Continue - fail open for this check
+    }
+  }
+
+  // Step 0.75: Calculate file hash for registry check
+  let fileHash: string | undefined;
+  try {
+    fileHash = await calculateFileHash(file);
+    
+    // Check hash against blocked registry
+    const { data: blockedHash } = await supabase
+      .from('file_hash_registry')
+      .select('threat_type, threat_details')
+      .eq('file_hash', fileHash)
+      .eq('is_blocked', true)
+      .maybeSingle();
+    
+    if (blockedHash) {
+      console.warn(`Blocked file hash detected: ${fileName}`);
+      return {
+        isAllowed: false,
+        reason: `This file has been previously identified as malicious: ${blockedHash.threat_type}`,
+        fileHash,
+        threatType: 'known_malicious'
+      };
+    }
+  } catch (err) {
+    console.error("Hash check failed:", err);
+    // Continue - fail open
+  }
 
   // Step 1: Virus scan (for all files)
   if (!skipVirusScan) {
@@ -323,8 +387,10 @@ export async function secureUpload(
     skipVirusScan?: boolean;
     skipLuaAnalysis?: boolean;
     skipNsfwCheck?: boolean;
+    skipMagicByteCheck?: boolean;
     blockMediumRiskLua?: boolean;
     upsert?: boolean;
+    storeId?: string;
   } = {}
 ): Promise<{ 
   success: boolean; 
@@ -346,12 +412,38 @@ export async function secureUpload(
     skipVirusScan: options.skipVirusScan,
     skipLuaAnalysis: options.skipLuaAnalysis,
     skipNsfwCheck: options.skipNsfwCheck,
-    blockMediumRiskLua: options.blockMediumRiskLua
+    skipMagicByteCheck: options.skipMagicByteCheck,
+    blockMediumRiskLua: options.blockMediumRiskLua,
+    storeId: options.storeId
   });
 
   if (!scanResult.isAllowed) {
+    // Quarantine the file if blocked
+    if (options.storeId && scanResult.threatType) {
+      try {
+        await supabase.functions.invoke('quarantine-file', {
+          body: {
+            storeId: options.storeId,
+            fileName: file.name,
+            fileSize: file.size,
+            threatType: scanResult.threatType,
+            threatDetails: {
+              reason: scanResult.reason,
+              virusName: scanResult.virusName,
+              luaConcerns: scanResult.luaConcerns,
+              luaRiskLevel: scanResult.luaRiskLevel,
+              magicByteResult: scanResult.magicByteResult,
+              fileHash: scanResult.fileHash
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Failed to quarantine file:", err);
+      }
+    }
+    
     return { 
-      success: false, 
+      success: false,
       error: scanResult.reason || "File blocked by security scan",
       securityResult: scanResult
     };

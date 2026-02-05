@@ -53,25 +53,55 @@ serve(async (req) => {
 
     const systemPrompt = `You are a Roblox Lua script security analyzer. Analyze the provided script for malicious patterns.
 
-Look for these security concerns:
-1. **Obfuscation**: Heavy string encoding (loadstring, string.char abuse), unreadable variable names, base64-like patterns
-2. **Network requests**: HttpService calls, especially to unknown domains, Discord webhooks, paste sites
-3. **Data exfiltration**: Sending player data (UserIds, usernames, chat) to external servers
-4. **Backdoors**: Remote code execution, eval-like patterns, getfenv/setfenv abuse
-5. **Credential theft**: Attempting to access or steal user information
-6. **Exploit loaders**: Loading external scripts from paste bins or unknown URLs
-7. **Elevated privileges**: Attempts to access DataStoreService unusually, teleport players maliciously
+## CRITICAL DANGEROUS PATTERNS (HIGH RISK - BLOCK):
+1. **loadstring()** - Dynamic code execution, often used for obfuscation
+2. **getfenv/setfenv** - Environment manipulation, sandbox escape attempts
+3. **rawget/rawset on _G** - Global table manipulation for persistence
+4. **string.dump** - Bytecode dumping for obfuscation
+5. **debug library abuse** - debug.getinfo, debug.setmetatable for exploits
+6. **require() with URLs** - Loading external malicious modules
+7. **RunService.Heartbeat with heavy loops** - Lag exploits
+
+## OBFUSCATION INDICATORS (HIGH RISK):
+- Excessive string.char() chains (>10 calls)
+- Base64-like long strings (50+ alphanumeric chars)
+- Variable names that are random characters (a1b2c3, _0x prefix)
+- String concatenation building URLs character by character
+- XOR/bit operations on strings for encoding
+- Nested function calls to decode strings
+
+## NETWORK CONCERNS (MEDIUM-HIGH RISK):
+- HttpService:RequestAsync, HttpService:GetAsync, HttpService:PostAsync
+- Discord webhook URLs (discord.com/api/webhooks)
+- Pastebin, hastebin, rentry URLs
+- Unknown external domains
+- Sending player.UserId, player.Name to external servers
+
+## DATA EXFILTRATION (HIGH RISK):
+- Collecting player chat messages
+- Accessing player position/movement patterns
+- Reading DataStore keys without authorization
+- Gathering server information (game.PlaceId, game.JobId)
+
+## PRIVILEGE ESCALATION (HIGH RISK):
+- TeleportService without proper validation
+- Kick/ban functions without permission checks
+- MarketplaceService purchase prompts to unauthorized items
 
 Respond ONLY with a JSON object (no markdown, no extra text):
 {
   "isSafe": boolean,
   "riskLevel": "low" | "medium" | "high",
-  "concerns": string[]
+  "concerns": string[],
+  "dangerousAPIs": string[],
+  "obfuscationScore": number
 }
 
 - isSafe: false if any medium/high risk patterns found
-- riskLevel: "high" for clear malware, "medium" for suspicious patterns, "low" for safe scripts
-- concerns: Array of specific security concerns found (max 5, be concise)`;
+- riskLevel: "high" for loadstring/getfenv/obfuscation, "medium" for suspicious network/data patterns, "low" for safe scripts
+- concerns: Array of specific security concerns found (max 5, be concise)
+- dangerousAPIs: Array of dangerous API calls found (loadstring, getfenv, etc)
+- obfuscationScore: 0-100 score where 0=clear code, 100=heavily obfuscated`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -127,14 +157,46 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       }
       cleanedContent = cleanedContent.trim();
 
-      const analysis: AnalyzeResponse = JSON.parse(cleanedContent);
+      const analysis = JSON.parse(cleanedContent);
       
       // Validate the response structure
       if (typeof analysis.isSafe !== "boolean" || !["low", "medium", "high"].includes(analysis.riskLevel)) {
         throw new Error("Invalid response structure");
       }
 
-      console.log(`Script analysis complete: ${fileName} - Risk: ${analysis.riskLevel}, Safe: ${analysis.isSafe}`);
+      // Enhanced response with dangerous APIs and obfuscation score
+      const response: AnalyzeResponse = {
+        isSafe: analysis.isSafe,
+        riskLevel: analysis.riskLevel,
+        concerns: analysis.concerns || [],
+      };
+
+      // Add enhanced fields if present
+      if (analysis.dangerousAPIs && analysis.dangerousAPIs.length > 0) {
+        response.concerns = [
+          ...response.concerns,
+          `Dangerous APIs detected: ${analysis.dangerousAPIs.join(', ')}`
+        ];
+        // Force high risk if dangerous APIs found
+        if (analysis.dangerousAPIs.some((api: string) => 
+          ['loadstring', 'getfenv', 'setfenv', 'string.dump'].includes(api.toLowerCase())
+        )) {
+          response.riskLevel = 'high';
+          response.isSafe = false;
+        }
+      }
+
+      if (analysis.obfuscationScore && analysis.obfuscationScore > 70) {
+        response.concerns = [
+          ...response.concerns,
+          `High obfuscation detected (score: ${analysis.obfuscationScore}/100)`
+        ];
+        if (response.riskLevel === 'low') {
+          response.riskLevel = 'medium';
+        }
+      }
+
+      console.log(`Script analysis complete: ${fileName} - Risk: ${response.riskLevel}, Safe: ${response.isSafe}, Concerns: ${response.concerns.length}`);
 
       return new Response(
         JSON.stringify(analysis),
@@ -164,38 +226,88 @@ function performBasicAnalysis(scriptContent: string, fileName: string): Response
   
   const lowerContent = scriptContent.toLowerCase();
   
-  // Check for obfuscation patterns
-  if (lowerContent.includes("loadstring") && (lowerContent.includes("string.char") || lowerContent.includes("\\x"))) {
-    concerns.push("Potential obfuscated code detected (loadstring + encoding)");
-    riskLevel = "high";
-  }
-  
-  // Check for common malicious URLs
-  const suspiciousPatterns = [
-    /discord\.com\/api\/webhooks/i,
-    /pastebin\.com\/raw/i,
-    /roblox-api\./i,
-    /getfenv|setfenv/i,
+  // === HIGH RISK DANGEROUS APIs ===
+  const dangerousAPIs = [
+    { pattern: /\bloadstring\s*\(/gi, name: 'loadstring', risk: 'high' },
+    { pattern: /\bgetfenv\s*\(/gi, name: 'getfenv', risk: 'high' },
+    { pattern: /\bsetfenv\s*\(/gi, name: 'setfenv', risk: 'high' },
+    { pattern: /\bstring\.dump\s*\(/gi, name: 'string.dump', risk: 'high' },
+    { pattern: /\bdebug\.(getinfo|setmetatable|getmetatable|setupvalue)\s*\(/gi, name: 'debug library', risk: 'high' },
+    { pattern: /\brawset\s*\(\s*_G/gi, name: 'rawset _G', risk: 'high' },
+    { pattern: /\brawget\s*\(\s*_G/gi, name: 'rawget _G', risk: 'medium' },
   ];
-  
-  for (const pattern of suspiciousPatterns) {
-    if (pattern.test(scriptContent)) {
-      concerns.push(`Suspicious pattern detected: ${pattern.source.substring(0, 30)}...`);
-      if (riskLevel === "low") riskLevel = "medium";
+
+  for (const api of dangerousAPIs) {
+    if (api.pattern.test(scriptContent)) {
+      concerns.push(`Dangerous API: ${api.name} detected`);
+      if (api.risk === 'high') {
+        riskLevel = 'high';
+      } else if (riskLevel === 'low') {
+        riskLevel = 'medium';
+      }
     }
   }
-  
-  // Check for HttpService calls to unknown domains
-  if (/httpservice/i.test(scriptContent) && /\:request|\:get|\:post/i.test(scriptContent)) {
-    concerns.push("External HTTP requests detected - verify destination URLs");
+
+  // === OBFUSCATION DETECTION ===
+  // Check for loadstring with encoding
+  if (lowerContent.includes("loadstring") && (lowerContent.includes("string.char") || /\\x[0-9a-f]{2}/i.test(scriptContent))) {
+    concerns.push("Obfuscated code detected (loadstring + encoding)");
+    riskLevel = "high";
+  }
+
+  // Check for string.char chains
+  const stringCharMatches = scriptContent.match(/string\.char\s*\(/gi);
+  if (stringCharMatches && stringCharMatches.length > 10) {
+    concerns.push(`Heavy string.char usage (${stringCharMatches.length} calls) - obfuscation indicator`);
     if (riskLevel === "low") riskLevel = "medium";
   }
-  
+
+  // Check for random variable names (obfuscation indicator)
+  const randomVarPattern = /\b(_0x[a-f0-9]+|[a-z]{1,2}\d{2,}|_[A-Z]{5,})\s*=/g;
+  const randomVarMatches = scriptContent.match(randomVarPattern);
+  if (randomVarMatches && randomVarMatches.length > 5) {
+    concerns.push("Obfuscated variable names detected");
+    if (riskLevel === "low") riskLevel = "medium";
+  }
+
   // Excessive base64-like patterns
   const base64Matches = scriptContent.match(/[A-Za-z0-9+/=]{50,}/g);
   if (base64Matches && base64Matches.length > 3) {
-    concerns.push("Multiple encoded strings detected - potential obfuscation");
+    concerns.push(`Multiple encoded strings detected (${base64Matches.length} instances)`);
     if (riskLevel === "low") riskLevel = "medium";
+  }
+
+  // === NETWORK PATTERNS ===
+  const networkPatterns = [
+    { pattern: /discord\.com\/api\/webhooks/i, name: 'Discord webhook' },
+    { pattern: /pastebin\.com\/raw/i, name: 'Pastebin' },
+    { pattern: /hastebin\.com/i, name: 'Hastebin' },
+    { pattern: /rentry\.co/i, name: 'Rentry' },
+  ];
+
+  for (const np of networkPatterns) {
+    if (np.pattern.test(scriptContent)) {
+      concerns.push(`External service detected: ${np.name}`);
+      if (riskLevel === "low") riskLevel = "medium";
+    }
+  }
+
+  // Check for HttpService calls
+  if (/httpservice/i.test(scriptContent) && /:(request|get|post)async/i.test(scriptContent)) {
+    concerns.push("External HTTP requests detected - verify destination URLs");
+    if (riskLevel === "low") riskLevel = "medium";
+  }
+
+  // === DATA EXFILTRATION PATTERNS ===
+  if (/player\.(userid|name)/i.test(scriptContent) && /httpservice/i.test(scriptContent)) {
+    concerns.push("Potential data exfiltration: Player data with HTTP requests");
+    if (riskLevel === "low") riskLevel = "medium";
+  }
+
+  // Check for chat message access
+  if (/\.chatted|textchatservice|chat\.chatted/i.test(scriptContent) && /httpservice/i.test(scriptContent)) {
+    concerns.push("Potential chat logging: Chat events with HTTP requests");
+    riskLevel = "high";
   }
 
   const isSafe = riskLevel === "low";
