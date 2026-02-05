@@ -115,6 +115,17 @@ Deno.serve(async (req) => {
 
       const discordUserId = discordUser.id;
       const discordUsername = discordUser.global_name || discordUser.username;
+      
+      // Build Discord avatar URL
+      let discordAvatarUrl: string | undefined;
+      if (discordUser.avatar) {
+        const ext = discordUser.avatar.startsWith('a_') ? 'gif' : 'png';
+        discordAvatarUrl = `https://cdn.discordapp.com/avatars/${discordUserId}/${discordUser.avatar}.${ext}?size=128`;
+      } else {
+        // Default avatar
+        const defaultIndex = (BigInt(discordUserId) >> BigInt(22)) % BigInt(6);
+        discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+      }
       const guildId = interaction.guild_id;
 
       // Determine server context (main Eclipse server or store server)
@@ -123,23 +134,23 @@ Deno.serve(async (req) => {
 
       switch (commandName) {
         case "link":
-          return await handleLinkStatusCommand(supabase, discordUserId, discordUsername, serverContext);
+          return await handleLinkStatusCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         case "verify":
-          return await handleVerifyCommand(supabase, interaction, discordUserId, discordUsername, serverContext);
+          return await handleVerifyCommand(supabase, interaction, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         case "profile":
-          return await handleProfileCommand(supabase, discordUserId, discordUsername, serverContext);
+          return await handleProfileCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         case "purchases":
-          return await handlePurchasesCommand(supabase, discordUserId, discordUsername, serverContext);
+          return await handlePurchasesCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         case "retrieve":
-          return await handleRetrieveCommand(supabase, interaction, discordUserId, discordUsername, serverContext);
+          return await handleRetrieveCommand(supabase, interaction, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         case "getrole":
         case "roles":
-          return await handleGetRoleCommand(supabase, discordUserId, discordUsername, serverContext);
+          return await handleGetRoleCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
@@ -313,7 +324,8 @@ async function handleLinkStatusCommand(
   supabase: any,
   discordUserId: string,
   discordUsername: string,
-  serverContext: ServerContext
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
 ) {
   const branding = getBranding(serverContext);
   const existingProfile = await getLinkedAccount(supabase, discordUserId);
@@ -323,6 +335,7 @@ async function handleLinkStatusCommand(
       color: 0x22c55e,
       title: "✅ Account Linked",
       description: `Your Discord is connected to **@${existingProfile.username}**`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       fields: [
         {
           name: "🆔 Customer ID",
@@ -347,6 +360,7 @@ async function handleLinkStatusCommand(
     color: branding.color,
     title: "🔗 Link Your Eclipse Account",
     description: "Connect your Discord to access your purchases and downloads.",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields: [
       {
         name: "Step 1",
@@ -383,7 +397,8 @@ async function handleVerifyCommand(
   interaction: DiscordInteraction,
   discordUserId: string,
   discordUsername: string,
-  serverContext: ServerContext
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
 ) {
   const branding = getBranding(serverContext);
   const options = interaction.data?.options || [];
@@ -476,6 +491,7 @@ async function handleVerifyCommand(
     color: 0x22c55e,
     title: "✅ Account Linked Successfully!",
     description: "Your Discord account is now connected to Eclipse.",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields: [
       {
         name: "Available Commands",
@@ -501,7 +517,8 @@ async function handleProfileCommand(
   supabase: any,
   discordUserId: string,
   discordUsername: string,
-  serverContext: ServerContext
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
 ) {
   const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
@@ -640,6 +657,7 @@ async function handleProfileCommand(
       icon_url: profile.avatar_url || undefined,
     },
     title: serverContext.store ? `${serverContext.store.name} Profile` : "Eclipse Profile",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields,
     footer: {
       text: branding.footer,
@@ -660,7 +678,8 @@ async function handlePurchasesCommand(
   supabase: any,
   discordUserId: string,
   discordUsername: string,
-  serverContext: ServerContext
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
 ) {
   const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
@@ -798,6 +817,7 @@ async function handlePurchasesCommand(
     color: 0x22c55e,
     title: serverContext.store ? `📦 Your ${serverContext.store.name} Purchases` : "📦 Your Purchases",
     description: "Here are your most recent purchases:",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields: productList.map((p: any, i: number) => ({
       name: `${i + 1}. ${p.name}`,
       value: `£${p.price.toFixed(2)}${p.date ? ` • ${p.date}` : ""}`,
@@ -824,7 +844,8 @@ async function handleRetrieveCommand(
   interaction: DiscordInteraction,
   discordUserId: string,
   discordUsername: string,
-  serverContext: ServerContext
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
 ) {
   const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
@@ -956,6 +977,7 @@ async function handleRetrieveCommand(
       color: 0x3b82f6,
       title: serverContext.store ? `📁 Your ${serverContext.store.name} Downloads` : "📁 Your Downloadable Products",
       description: productList,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: {
         text: `${branding.footer} • Use /retrieve product:NAME to download`,
       },
@@ -1044,6 +1066,7 @@ async function handleRetrieveCommand(
     color: 0x3b82f6,
     title: `📥 ${product.name}`,
     description: "Your download link is ready! Click the button below to download.\n\n⚠️ This link expires in **1 hour**.",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: {
       text: `${branding.footer} • Do not share this link`,
     },
@@ -1092,7 +1115,8 @@ async function handleGetRoleCommand(
   supabase: any,
   discordUserId: string,
   discordUsername: string,
-  serverContext: ServerContext
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
 ) {
   const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
@@ -1376,6 +1400,7 @@ async function handleGetRoleCommand(
     description: rolesAssigned.length > 0
       ? `Your Discord roles have been updated!`
       : `Here's what you need to earn roles:`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields,
     footer: { text: branding.footer },
     timestamp: new Date().toISOString(),
