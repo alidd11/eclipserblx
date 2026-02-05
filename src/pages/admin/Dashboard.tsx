@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { toast } from 'sonner';
 import { format, differenceInMinutes, formatDistanceToNow } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +34,7 @@ interface Announcement {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
+  const { hasPermission, hasAnyPermission } = useUserPermissions();
   const queryClient = useQueryClient();
   const [clockOutNotes, setClockOutNotes] = useState('');
   const [elapsedTime, setElapsedTime] = useState<string>('00:00:00');
@@ -325,14 +327,19 @@ export default function AdminDashboard() {
     },
   });
 
-  const quickLinks = [
-    { title: 'View Analytics', href: '/admin/analytics', icon: BarChart3, description: 'Detailed metrics & charts' },
-    { title: 'Manage Products', href: '/admin/products', icon: Package, description: 'Add or edit products' },
-    { title: 'View Orders', href: '/admin/orders', icon: ShoppingCart, description: 'Manage orders' },
-    { title: 'Live Chat', href: '/admin/live-chat', icon: MessageCircle, description: 'Support customers' },
-    { title: 'Applications', href: '/admin/applications', icon: FileText, description: 'Review applications' },
-    { title: 'Manage Customers', href: '/admin/users', icon: Users, description: 'Customer management' },
+  const allQuickLinks = [
+    { title: 'View Analytics', href: '/admin/analytics', icon: BarChart3, description: 'Detailed metrics & charts', permissions: ['view_analytics'] },
+    { title: 'Manage Products', href: '/admin/products', icon: Package, description: 'Add or edit products', permissions: ['view_products', 'manage_products'] },
+    { title: 'View Orders', href: '/admin/orders', icon: ShoppingCart, description: 'Manage orders', permissions: ['view_orders', 'manage_orders'] },
+    { title: 'Live Chat', href: '/admin/live-chat', icon: MessageCircle, description: 'Support customers', permissions: ['view_live_chat', 'manage_live_chat'] },
+    { title: 'Applications', href: '/admin/applications', icon: FileText, description: 'Review applications', permissions: ['view_applications', 'manage_applications'] },
+    { title: 'Manage Customers', href: '/admin/users', icon: Users, description: 'Customer management', permissions: ['view_users', 'manage_users'] },
   ];
+
+  // Filter quick links based on user permissions (admin sees all)
+  const quickLinks = isAdmin 
+    ? allQuickLinks 
+    : allQuickLinks.filter(link => hasAnyPermission(link.permissions));
 
   const formatDuration = (minutes: number | null) => {
     if (minutes === null || minutes === undefined) return '-';
