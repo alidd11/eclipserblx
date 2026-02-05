@@ -50,6 +50,19 @@ interface DiscordSettings {
   product_drops_discord_role_id: string;
   early_product_drops_discord_webhook_url: string;
   early_product_drops_discord_role_id: string;
+  // Bot-based channel IDs (preferred over webhooks)
+  orders_discord_channel_id: string;
+  reviews_discord_channel_id: string;
+  promotions_discord_channel_id: string;
+  community_discord_channel_id: string;
+  qotd_discord_channel_id: string;
+  polls_discord_channel_id: string;
+  product_drops_discord_channel_id: string;
+  early_product_drops_discord_channel_id: string;
+  affiliate_discord_channel_id: string;
+  eclipse_plus_discord_channel_id: string;
+  marketplace_discord_channel_id: string;
+  advertisements_discord_channel_id: string;
 }
 
 const DEFAULT_SETTINGS: DiscordSettings = {
@@ -74,6 +87,19 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   product_drops_discord_role_id: '',
   early_product_drops_discord_webhook_url: '',
   early_product_drops_discord_role_id: '',
+  // Bot-based channel IDs
+  orders_discord_channel_id: '',
+  reviews_discord_channel_id: '',
+  promotions_discord_channel_id: '',
+  community_discord_channel_id: '',
+  qotd_discord_channel_id: '',
+  polls_discord_channel_id: '',
+  product_drops_discord_channel_id: '',
+  early_product_drops_discord_channel_id: '',
+  affiliate_discord_channel_id: '',
+  eclipse_plus_discord_channel_id: '',
+  marketplace_discord_channel_id: '',
+  advertisements_discord_channel_id: '',
 };
 
 interface WebhookTestResult {
@@ -95,6 +121,7 @@ interface WebhookConfig {
   roleIdLabel?: string;
   infoItems?: string[];
   alertInfo?: { title: string; description: string; color: string };
+  channelIdKey?: keyof DiscordSettings;
 }
 
 export default function DiscordSettings() {
@@ -397,68 +424,114 @@ export default function DiscordSettings() {
     );
   };
 
-  // Reusable webhook input component
-  const WebhookInput = ({ config }: { config: WebhookConfig }) => (
-    <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
-      <div className="flex items-center gap-2">
-        <div className={cn('p-1.5 rounded', config.iconColor)}>{config.icon}</div>
-        <div>
-          <h4 className="font-medium text-sm">{config.label}</h4>
-          <p className="text-xs text-muted-foreground">{config.description}</p>
+  // Reusable webhook input component with channel ID support
+  const WebhookInput = ({ config }: { config: WebhookConfig }) => {
+    const hasChannelId = config.channelIdKey && formData[config.channelIdKey];
+    const hasWebhook = formData[config.settingKey];
+    const usingBot = hasChannelId;
+    
+    return (
+      <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={cn('p-1.5 rounded', config.iconColor)}>{config.icon}</div>
+            <div>
+              <h4 className="font-medium text-sm">{config.label}</h4>
+              <p className="text-xs text-muted-foreground">{config.description}</p>
+            </div>
+          </div>
+          {config.channelIdKey && (
+            <div className={cn(
+              'px-2 py-0.5 rounded-full text-xs font-medium',
+              usingBot ? 'bg-emerald-500/20 text-emerald-400' : hasWebhook ? 'bg-amber-500/20 text-amber-400' : 'bg-muted text-muted-foreground'
+            )}>
+              {usingBot ? '🤖 Bot' : hasWebhook ? 'Webhook' : 'Not configured'}
+            </div>
+          )}
         </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor={config.id} className="text-xs">Webhook URL</Label>
-        <Input
-          id={config.id}
-          value={formData[config.settingKey]}
-          onChange={(e) => handleChange(config.settingKey, e.target.value)}
-          placeholder="https://discord.com/api/webhooks/..."
-          className="bg-background text-sm h-9"
-        />
-      </div>
+        
+        {/* Channel ID (Bot) - Preferred */}
+        {config.channelIdKey && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor={`${config.id}-channel`} className="text-xs">Channel ID (Bot)</Label>
+              <span className="text-xs text-emerald-400 font-medium">Preferred</span>
+            </div>
+            <Input
+              id={`${config.id}-channel`}
+              value={formData[config.channelIdKey]}
+              onChange={(e) => handleChange(config.channelIdKey!, e.target.value)}
+              placeholder="1234567890123456789"
+              className="bg-background text-sm h-9"
+            />
+            <p className="text-xs text-muted-foreground">Right-click channel in Discord → Copy Channel ID</p>
+          </div>
+        )}
 
-      {config.roleIdKey && (
+        {/* Divider when both options available */}
+        {config.channelIdKey && (
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-border" />
+            <span className="text-xs text-muted-foreground">or use legacy webhook</span>
+            <div className="flex-1 border-t border-border" />
+          </div>
+        )}
+        
         <div className="space-y-2">
-          <Label htmlFor={`${config.id}-role`} className="text-xs">{config.roleIdLabel || 'Role ID'}</Label>
+          <Label htmlFor={config.id} className="text-xs">
+            Webhook URL {config.channelIdKey && <span className="text-muted-foreground">(Legacy)</span>}
+          </Label>
           <Input
-            id={`${config.id}-role`}
-            value={formData[config.roleIdKey]}
-            onChange={(e) => handleChange(config.roleIdKey!, e.target.value)}
-            placeholder="1234567890123456789"
+            id={config.id}
+            value={formData[config.settingKey]}
+            onChange={(e) => handleChange(config.settingKey, e.target.value)}
+            placeholder="https://discord.com/api/webhooks/..."
             className="bg-background text-sm h-9"
           />
         </div>
-      )}
 
-      {config.testable && (
-        <Button
-          onClick={() => {
-            const testFns: Record<string, () => Promise<WebhookTestResult>> = {
-              orders: testOrderWebhook,
-              reviews: testReviewWebhook,
-              promotions: testPromotionsWebhook,
-              community: testCommunityWebhook,
-              roles: testRoleWebhook,
-              'product-drops': testProductDropsWebhook,
-              'early-drops': testEarlyProductDropsWebhook,
-            };
-            if (testFns[config.id]) testWebhook(config.id, formData[config.settingKey], testFns[config.id]);
-          }}
-          variant="outline"
-          size="sm"
-          disabled={testingWebhook === config.id || !formData[config.settingKey]}
-          className="h-8"
-        >
-          {testingWebhook === config.id ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Send className="h-3 w-3 mr-1.5" />}
-          Test
-        </Button>
-      )}
-      
-      <TestResultBadge result={webhookTestResults[config.id]} />
-    </div>
-  );
+        {config.roleIdKey && (
+          <div className="space-y-2">
+            <Label htmlFor={`${config.id}-role`} className="text-xs">{config.roleIdLabel || 'Role ID'}</Label>
+            <Input
+              id={`${config.id}-role`}
+              value={formData[config.roleIdKey]}
+              onChange={(e) => handleChange(config.roleIdKey!, e.target.value)}
+              placeholder="1234567890123456789"
+              className="bg-background text-sm h-9"
+            />
+          </div>
+        )}
+
+        {config.testable && (
+          <Button
+            onClick={() => {
+              const testFns: Record<string, () => Promise<WebhookTestResult>> = {
+                orders: testOrderWebhook,
+                reviews: testReviewWebhook,
+                promotions: testPromotionsWebhook,
+                community: testCommunityWebhook,
+                roles: testRoleWebhook,
+                'product-drops': testProductDropsWebhook,
+                'early-drops': testEarlyProductDropsWebhook,
+              };
+              const configured = config.channelIdKey ? (formData[config.channelIdKey] || formData[config.settingKey]) : formData[config.settingKey];
+              if (testFns[config.id]) testWebhook(config.id, configured, testFns[config.id]);
+            }}
+            variant="outline"
+            size="sm"
+            disabled={testingWebhook === config.id || !(config.channelIdKey ? (formData[config.channelIdKey] || formData[config.settingKey]) : formData[config.settingKey])}
+            className="h-8"
+          >
+            {testingWebhook === config.id ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Send className="h-3 w-3 mr-1.5" />}
+            Test
+          </Button>
+        )}
+        
+        <TestResultBadge result={webhookTestResults[config.id]} />
+      </div>
+    );
+  };
 
   // Section header component
   const SectionHeader = ({ id, icon, title, description, color }: { id: string; icon: React.ReactNode; title: string; description: string; color: string }) => (
@@ -598,6 +671,7 @@ export default function DiscordSettings() {
                   label: 'Order Notifications',
                   description: 'Notify when orders are placed',
                   settingKey: 'discord_webhook_url',
+                  channelIdKey: 'orders_discord_channel_id',
                   icon: <Webhook className="h-4 w-4 text-purple-400" />,
                   iconColor: 'bg-purple-500/20',
                   testable: true,
@@ -608,6 +682,7 @@ export default function DiscordSettings() {
                   label: 'Review Notifications',
                   description: 'Notify when reviews are approved',
                   settingKey: 'review_discord_webhook_url',
+                  channelIdKey: 'reviews_discord_channel_id',
                   icon: <Star className="h-4 w-4 text-amber-400" />,
                   iconColor: 'bg-amber-500/20',
                   testable: true,
@@ -618,6 +693,7 @@ export default function DiscordSettings() {
                   label: 'Promotions',
                   description: 'Discount codes and special offers',
                   settingKey: 'promotions_discord_webhook_url',
+                  channelIdKey: 'promotions_discord_channel_id',
                   icon: <Palette className="h-4 w-4 text-rose-400" />,
                   iconColor: 'bg-rose-500/20',
                   testable: true,
@@ -638,6 +714,7 @@ export default function DiscordSettings() {
                   label: 'Community Announcements',
                   description: 'General community updates',
                   settingKey: 'community_discord_webhook_url',
+                  channelIdKey: 'community_discord_channel_id',
                   icon: <MessageSquare className="h-4 w-4 text-blue-400" />,
                   iconColor: 'bg-blue-500/20',
                   roleIdKey: 'community_discord_role_id',
@@ -650,6 +727,7 @@ export default function DiscordSettings() {
                   label: 'Product Drops',
                   description: 'New product announcements',
                   settingKey: 'product_drops_discord_webhook_url',
+                  channelIdKey: 'product_drops_discord_channel_id',
                   icon: <Package className="h-4 w-4 text-cyan-400" />,
                   iconColor: 'bg-cyan-500/20',
                   roleIdKey: 'product_drops_discord_role_id',
@@ -662,6 +740,7 @@ export default function DiscordSettings() {
                   label: 'Early Product Drops',
                   description: 'VIP/Eclipse+ early access',
                   settingKey: 'early_product_drops_discord_webhook_url',
+                  channelIdKey: 'early_product_drops_discord_channel_id',
                   icon: <Shield className="h-4 w-4 text-violet-400" />,
                   iconColor: 'bg-violet-500/20',
                   roleIdKey: 'early_product_drops_discord_role_id',
@@ -674,6 +753,7 @@ export default function DiscordSettings() {
                   label: 'Affiliate Programme',
                   description: 'Affiliate programme announcements',
                   settingKey: 'affiliate_discord_webhook_url',
+                  channelIdKey: 'affiliate_discord_channel_id',
                   icon: <Gift className="h-4 w-4 text-emerald-400" />,
                   iconColor: 'bg-emerald-500/20',
                 }} />
@@ -683,6 +763,7 @@ export default function DiscordSettings() {
                   label: 'Eclipse+ Membership',
                   description: 'Membership programme announcements',
                   settingKey: 'eclipse_plus_discord_webhook_url',
+                  channelIdKey: 'eclipse_plus_discord_channel_id',
                   icon: <Sparkles className="h-4 w-4 text-amber-400" />,
                   iconColor: 'bg-amber-500/20',
                 }} />
@@ -692,6 +773,7 @@ export default function DiscordSettings() {
                   label: 'Marketplace',
                   description: 'Seller marketplace announcements',
                   settingKey: 'marketplace_discord_webhook_url',
+                  channelIdKey: 'marketplace_discord_channel_id',
                   icon: <Megaphone className="h-4 w-4 text-purple-400" />,
                   iconColor: 'bg-purple-500/20',
                 }} />
@@ -738,6 +820,7 @@ export default function DiscordSettings() {
                   label: 'Paid Promotions',
                   description: 'User-submitted advertisements',
                   settingKey: 'advertisements_discord_webhook_url',
+                  channelIdKey: 'advertisements_discord_channel_id',
                   icon: <BadgeDollarSign className="h-4 w-4 text-amber-400" />,
                   iconColor: 'bg-amber-500/20',
                   roleIdKey: 'advertisements_partnership_ping_role_id',
@@ -745,66 +828,30 @@ export default function DiscordSettings() {
                 }} />
 
                 {/* QOTD */}
-                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-pink-500/20"><MessageSquare className="h-4 w-4 text-pink-400" /></div>
-                    <div>
-                      <h4 className="font-medium text-sm">Question of the Day</h4>
-                      <p className="text-xs text-muted-foreground">Daily engagement posts</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Webhook URL</Label>
-                      <Input
-                        value={formData.qotd_discord_webhook_url}
-                        onChange={(e) => handleChange('qotd_discord_webhook_url', e.target.value)}
-                        placeholder="https://discord.com/api/webhooks/..."
-                        className="bg-background h-9 text-sm"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Role ID to Ping</Label>
-                      <Input
-                        value={formData.qotd_discord_role_id}
-                        onChange={(e) => handleChange('qotd_discord_role_id', e.target.value)}
-                        placeholder="1234567890123456789"
-                        className="bg-background h-9 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <WebhookInput config={{
+                  id: 'qotd',
+                  label: 'Question of the Day',
+                  description: 'Daily engagement posts',
+                  settingKey: 'qotd_discord_webhook_url',
+                  channelIdKey: 'qotd_discord_channel_id',
+                  icon: <MessageSquare className="h-4 w-4 text-pink-400" />,
+                  iconColor: 'bg-pink-500/20',
+                  roleIdKey: 'qotd_discord_role_id',
+                  roleIdLabel: 'Role ID to Ping',
+                }} />
 
                 {/* Polls */}
-                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-teal-500/20"><MessageSquare className="h-4 w-4 text-teal-400" /></div>
-                    <div>
-                      <h4 className="font-medium text-sm">Discord Polls</h4>
-                      <p className="text-xs text-muted-foreground">Community polls and voting</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Webhook URL</Label>
-                      <Input
-                        value={formData.polls_discord_webhook_url}
-                        onChange={(e) => handleChange('polls_discord_webhook_url', e.target.value)}
-                        placeholder="https://discord.com/api/webhooks/..."
-                        className="bg-background h-9 text-sm"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Role ID to Ping</Label>
-                      <Input
-                        value={formData.polls_discord_role_id}
-                        onChange={(e) => handleChange('polls_discord_role_id', e.target.value)}
-                        placeholder="1234567890123456789"
-                        className="bg-background h-9 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <WebhookInput config={{
+                  id: 'polls',
+                  label: 'Discord Polls',
+                  description: 'Community polls and voting',
+                  settingKey: 'polls_discord_webhook_url',
+                  channelIdKey: 'polls_discord_channel_id',
+                  icon: <MessageSquare className="h-4 w-4 text-teal-400" />,
+                  iconColor: 'bg-teal-500/20',
+                  roleIdKey: 'polls_discord_role_id',
+                  roleIdLabel: 'Role ID to Ping',
+                }} />
 
                 {/* Role Ping Manager */}
                 <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
