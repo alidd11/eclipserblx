@@ -212,7 +212,7 @@ serve(async (req) => {
     logStep("Successfully linked Discord account", { userId: user_id, discordId: discordUser.id });
 
     // Check for role assignments
-    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     const guildId = Deno.env.get("DISCORD_GUILD_ID");
     const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
     const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");

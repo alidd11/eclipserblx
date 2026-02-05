@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
     const staffName = payload.staff_name || profile?.display_name || profile?.username || "Staff";
 
     // Send DM via Discord API
-    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     if (!botToken) {
-      console.error("DISCORD_BOT_TOKEN not configured");
+      console.error("DISCORD_CUSTOMER_BOT_TOKEN not configured");
       return new Response(
         JSON.stringify({ error: "Discord bot token not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

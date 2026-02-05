@@ -72,7 +72,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     const guildId = Deno.env.get("DISCORD_GUILD_ID");
     const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
     const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");

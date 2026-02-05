@@ -20,7 +20,7 @@ serve(async (req) => {
       );
     }
 
-    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     
     if (!botToken) {
       console.log("[get-discord-avatar] No bot token configured");
