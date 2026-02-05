@@ -204,11 +204,14 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
     if (isEditing) {
       updateMutation.mutate(formData);
     } else {
-      if (!formData.name.trim()) {
-        // Auto-generate name from display_name
-        formData.name = formData.display_name.toLowerCase().replace(/\s+/g, '_');
-      }
-      createMutation.mutate(formData);
+      // Auto-generate name from display_name if not provided
+      const dataToSubmit = {
+        ...formData,
+        name: formData.name.trim() 
+          ? formData.name 
+          : formData.display_name.toLowerCase().replace(/\s+/g, '_'),
+      };
+      createMutation.mutate(dataToSubmit);
     }
   };
 
