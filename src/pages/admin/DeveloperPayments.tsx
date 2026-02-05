@@ -1,4 +1,5 @@
  import { useState } from 'react';
+ import { useNavigate } from 'react-router-dom';
  import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
  import { AdminLayout } from '@/components/admin/AdminLayout';
  import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,7 @@
  import { toast } from '@/hooks/use-toast';
  import { useAuth } from '@/hooks/useAuth';
  import { format } from 'date-fns';
- import { Wallet, Clock, CheckCircle, XCircle, AlertCircle, Plus, CreditCard, Banknote } from 'lucide-react';
+ import { Wallet, Clock, CheckCircle, XCircle, AlertCircle, Plus, CreditCard, Banknote, ChevronRight } from 'lucide-react';
  import { Skeleton } from '@/components/ui/skeleton';
  
  interface Payment {
@@ -59,6 +60,7 @@
  
  export default function DeveloperPayments() {
    const { user } = useAuth();
+   const navigate = useNavigate();
    const queryClient = useQueryClient();
    const [activeTab, setActiveTab] = useState('pending');
    const [isAddOpen, setIsAddOpen] = useState(false);
@@ -290,37 +292,34 @@
          </div>
  
          {/* Summary Cards */}
-         <div className="grid gap-4 md:grid-cols-3">
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between pb-2">
-               <CardTitle className="text-sm font-medium">Total Owed</CardTitle>
-               <Wallet className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold">£{stats.totalOwed.toFixed(2)}</div>
-               <p className="text-xs text-muted-foreground">Pending + Processing</p>
-             </CardContent>
-           </Card>
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between pb-2">
-               <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-               <Clock className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold">{stats.pendingCount}</div>
-               <p className="text-xs text-muted-foreground">Awaiting payment</p>
-             </CardContent>
-           </Card>
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between pb-2">
-               <CardTitle className="text-sm font-medium">Paid This Month</CardTitle>
-               <Banknote className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold">£{stats.paidThisMonth.toFixed(2)}</div>
-               <p className="text-xs text-muted-foreground">Completed payments</p>
-             </CardContent>
-           </Card>
+          <div className="flex gap-3">
+            <Card className="flex-1 min-w-0">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+                <CardTitle className="text-xs font-medium truncate">Total Owed</CardTitle>
+                <Wallet className="h-4 w-4 text-muted-foreground shrink-0" />
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <div className="text-lg font-bold truncate">£{stats.totalOwed.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+            <Card className="flex-1 min-w-0">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+                <CardTitle className="text-xs font-medium truncate">Pending</CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <div className="text-lg font-bold">{stats.pendingCount}</div>
+              </CardContent>
+            </Card>
+            <Card className="flex-1 min-w-0">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+                <CardTitle className="text-xs font-medium truncate">This Month</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground shrink-0" />
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <div className="text-lg font-bold truncate">£{stats.paidThisMonth.toFixed(2)}</div>
+              </CardContent>
+            </Card>
          </div>
  
          <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -368,7 +367,11 @@
                        const StatusIcon = config?.icon || Clock;
                        
                        return (
-                         <TableRow key={payment.id}>
+                          <TableRow 
+                            key={payment.id} 
+                            className="cursor-pointer active:bg-muted/50 touch-manipulation"
+                            onClick={() => navigate(`/admin/developer-payments/${payment.id}`)}
+                          >
                            <TableCell>
                              <div>
                                <div className="font-medium">
@@ -395,16 +398,8 @@
                            <TableCell className="text-sm text-muted-foreground">
                              {payment.payment_reference || '-'}
                            </TableCell>
-                           <TableCell className="text-right">
-                             {(payment.status === 'pending' || payment.status === 'processing') && (
-                               <Button
-                                 size="sm"
-                                 variant="outline"
-                                 onClick={() => handleMarkPaid(payment)}
-                               >
-                                 Mark Paid
-                               </Button>
-                             )}
+                            <TableCell className="text-right pr-2">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground inline-block" />
                            </TableCell>
                          </TableRow>
                        );
