@@ -63,24 +63,25 @@
    const [search, setSearch] = useState('');
    const [statusFilter, setStatusFilter] = useState<string>('all');
  
-   // Fetch all tickets
-   const { data: tickets, isLoading } = useQuery({
-     queryKey: ['admin-customer-tickets', statusFilter],
-     queryFn: async () => {
-       let query = supabase
-         .from('support_tickets')
-         .select('*')
-         .order('created_at', { ascending: false });
- 
-       if (statusFilter !== 'all') {
-         query = query.eq('status', statusFilter);
-       }
- 
-       const { data, error } = await query;
-       if (error) throw error;
-       return data as SupportTicket[];
-     },
-   });
+  // Fetch active tickets only (exclude resolved/closed - they go to transcripts)
+  const { data: tickets, isLoading } = useQuery({
+    queryKey: ['admin-customer-tickets', statusFilter],
+    queryFn: async () => {
+      let query = supabase
+        .from('support_tickets')
+        .select('*')
+        .not('status', 'in', '("resolved","closed")')
+        .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as SupportTicket[];
+    },
+  });
  
    // Fetch customer profiles
    const { data: profiles } = useQuery({
@@ -211,14 +212,12 @@
                <Filter className="h-4 w-4 mr-2" />
                <SelectValue placeholder="Filter by status" />
              </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="all">All Tickets</SelectItem>
-               <SelectItem value="open">Open</SelectItem>
-               <SelectItem value="in_progress">In Progress</SelectItem>
-               <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
-               <SelectItem value="resolved">Resolved</SelectItem>
-               <SelectItem value="closed">Closed</SelectItem>
-             </SelectContent>
+              <SelectContent>
+                <SelectItem value="all">All Active</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
+              </SelectContent>
            </Select>
          </div>
  
