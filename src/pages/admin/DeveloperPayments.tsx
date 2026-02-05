@@ -94,10 +94,22 @@
    const { data: developers } = useQuery({
      queryKey: ['staff-developers'],
      queryFn: async () => {
+      // First get user_ids with developer role
+      const { data: developerRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'developer');
+      
+      if (rolesError) throw rolesError;
+      if (!developerRoles?.length) return [];
+      
+      const developerUserIds = developerRoles.map(r => r.user_id);
+      
+      // Then fetch their profiles
        const { data, error } = await supabase
          .from('profiles')
          .select('user_id, display_name, username, staff_id')
-         .not('staff_id', 'is', null)
+        .in('user_id', developerUserIds)
          .order('display_name');
        if (error) throw error;
        return data as Developer[];
