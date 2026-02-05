@@ -1,70 +1,24 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function logStep(step: string, details?: Record<string, unknown>) {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[sync-discord-roles] ${step}${detailsStr}`);
-}
+const log = (step: string, details?: Record<string, unknown>) => 
+  console.log(`[sync-discord-roles] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 
-async function assignDiscordRole(
-  botToken: string,
-  guildId: string,
-  roleId: string,
-  discordUserId: string,
-  roleName: string
-): Promise<{ success: boolean; error?: string }> {
-  const discordApiUrl = `https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`;
-  
-  const response = await fetch(discordApiUrl, {
-    method: "PUT",
-    headers: {
-      'Authorization': `Bot ${botToken}`,
-      'Content-Type': 'application/json',
-    },
+async function modifyRole(botToken: string, guildId: string, roleId: string, discordUserId: string, method: "PUT" | "DELETE"): Promise<{ success: boolean; error?: string }> {
+  const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`, {
+    method,
+    headers: { 'Authorization': `Bot ${botToken}`, 'Content-Type': 'application/json' },
   });
-
-  if (response.status === 204) {
-    return { success: true };
-  }
-
-  if (response.status === 404) {
-    return { success: false, error: "User not in server" };
-  }
-
-  const errorText = await response.text();
-  return { success: false, error: errorText };
+  if (res.status === 204 || (method === "DELETE" && res.status === 404)) return { success: true };
+  if (res.status === 404) return { success: false, error: "User not in server" };
+  return { success: false, error: await res.text() };
 }
 
-async function removeDiscordRole(
-  botToken: string,
-  guildId: string,
-  roleId: string,
-  discordUserId: string
-): Promise<{ success: boolean; error?: string }> {
-  const discordApiUrl = `https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`;
-  
-  const response = await fetch(discordApiUrl, {
-    method: "DELETE",
-    headers: {
-      'Authorization': `Bot ${botToken}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (response.status === 204 || response.status === 404) {
-    return { success: true };
-  }
-
-  const errorText = await response.text();
-  return { success: false, error: errorText };
-}
-
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -80,17 +34,12 @@ serve(async (req) => {
     const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
 
     if (!botToken) {
-      logStep("Missing Discord bot token");
-      return new Response(
-        JSON.stringify({ error: "Discord bot not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      log("Missing Discord bot token");
+      return new Response(JSON.stringify({ error: "Discord bot not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    logStep("Starting comprehensive Discord role sync (main + store servers)");
-
+    log("Starting role sync");
     // Get all profiles with linked Discord accounts
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
@@ -98,23 +47,15 @@ serve(async (req) => {
       .not('discord_id', 'is', null);
 
     if (profileError) {
-      logStep("Error querying profiles", { error: profileError.message });
-      return new Response(
-        JSON.stringify({ error: "Failed to query profiles", details: profileError.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      log("Error querying profiles", { error: profileError.message });
+      return new Response(JSON.stringify({ error: "Failed to query profiles" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    if (!profiles || profiles.length === 0) {
-      logStep("No users with linked Discord accounts found");
-      return new Response(
-        JSON.stringify({ success: true, message: "No users with linked Discord accounts", processed: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!profiles?.length) {
+      return new Response(JSON.stringify({ success: true, message: "No users with linked Discord", processed: 0 }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    logStep("Found users with Discord linked", { count: profiles.length });
-
+    log("Found users", { count: profiles.length });
     // Fetch all relevant data in parallel
     const [subscriptionsResult, storesResult, ordersResult, storeServersResult, roleConfigsResult] = await Promise.all([
       supabase.from('subscriptions').select('user_id').eq('status', 'active'),
@@ -171,127 +112,51 @@ serve(async (req) => {
     for (const profile of profiles) {
       const { user_id, discord_id, discord_username } = profile;
       
-      logStep("Processing user", { user_id, discord_id: discord_id.substring(0, 8) + "..." });
-
       // === MAIN SERVER ROLES ===
       if (mainGuildId) {
-        // Eclipse+ Role
-        if (eclipsePlusRoleId && activeSubscribers.has(user_id)) {
-          const result = await assignDiscordRole(botToken, mainGuildId, eclipsePlusRoleId, discord_id, "Eclipse+");
-          if (result.success) {
-            results.mainServer.eclipsePlus.assigned++;
-          } else {
-            results.mainServer.eclipsePlus.failed++;
-            results.errors.push({ user_id, discord_id, role: "Eclipse+", server: "main", error: result.error || "Unknown" });
-          }
-        }
+        const assign = async (roleId: string | undefined, key: keyof typeof results.mainServer, roleName: string) => {
+          if (!roleId) return;
+          const r = await modifyRole(botToken, mainGuildId, roleId, discord_id, "PUT");
+          r.success ? results.mainServer[key].assigned++ : (results.mainServer[key].failed++, results.errors.push({ user_id, discord_id, role: roleName, server: "main", error: r.error || "Unknown" }));
+        };
 
-        // Store Creator Role
-        if (storeCreatorRoleId && storeOwners.has(user_id)) {
-          const result = await assignDiscordRole(botToken, mainGuildId, storeCreatorRoleId, discord_id, "Store Creator");
-          if (result.success) {
-            results.mainServer.storeCreator.assigned++;
-          } else {
-            results.mainServer.storeCreator.failed++;
-            results.errors.push({ user_id, discord_id, role: "Store Creator", server: "main", error: result.error || "Unknown" });
-          }
-        }
+        if (activeSubscribers.has(user_id)) await assign(eclipsePlusRoleId, "eclipsePlus", "Eclipse+");
+        if (storeOwners.has(user_id)) await assign(storeCreatorRoleId, "storeCreator", "Store Creator");
 
-        // Customer/Loyal Customer Roles
         const orderCount = orderCounts.get(user_id) || 0;
-        
-        if (orderCount >= 5 && loyalCustomerRoleId) {
-          const result = await assignDiscordRole(botToken, mainGuildId, loyalCustomerRoleId, discord_id, "Loyal Customer");
-          if (result.success) {
-            results.mainServer.loyalCustomer.assigned++;
-          } else {
-            results.mainServer.loyalCustomer.failed++;
-            results.errors.push({ user_id, discord_id, role: "Loyal Customer", server: "main", error: result.error || "Unknown" });
-          }
-          
-          if (customerRoleId) {
-            await removeDiscordRole(botToken, mainGuildId, customerRoleId, discord_id);
-          }
-        } else if (orderCount > 0 && customerRoleId) {
-          const result = await assignDiscordRole(botToken, mainGuildId, customerRoleId, discord_id, "Customer");
-          if (result.success) {
-            results.mainServer.customer.assigned++;
-          } else {
-            results.mainServer.customer.failed++;
-            results.errors.push({ user_id, discord_id, role: "Customer", server: "main", error: result.error || "Unknown" });
-          }
+        if (orderCount >= 5) {
+          await assign(loyalCustomerRoleId, "loyalCustomer", "Loyal Customer");
+          if (customerRoleId) await modifyRole(botToken, mainGuildId, customerRoleId, discord_id, "DELETE");
+        } else if (orderCount > 0) {
+          await assign(customerRoleId, "customer", "Customer");
         }
       }
 
       // === STORE SERVER ROLES ===
       for (const store of storeServers) {
         if (!store.discord_guild_id) continue;
-        
-        // Get role configs for this store
-        const storeRoleConfigs = roleConfigs.filter((rc: any) => rc.store_id === store.id);
-        if (storeRoleConfigs.length === 0) continue;
-
-        // Get user's order count for this store
-        const userStoreOrders = storeOrderCounts.get(user_id)?.get(store.id) || 0;
-        if (userStoreOrders === 0) continue; // Skip if user hasn't ordered from this store
+        const configs = roleConfigs.filter((rc: any) => rc.store_id === store.id);
+        if (!configs.length) continue;
+        const userOrders = storeOrderCounts.get(user_id)?.get(store.id) || 0;
+        if (!userOrders) continue;
 
         results.storeServers.processed++;
-
-        for (const config of storeRoleConfigs) {
-          let eligible = true;
-
-          if (config.min_order_count && userStoreOrders < config.min_order_count) {
-            eligible = false;
-          }
-
-          if (config.requires_subscription && !activeSubscribers.has(user_id)) {
-            eligible = false;
-          }
-
+        for (const cfg of configs) {
+          const eligible = (!cfg.min_order_count || userOrders >= cfg.min_order_count) && (!cfg.requires_subscription || activeSubscribers.has(user_id));
           if (eligible) {
-            const result = await assignDiscordRole(botToken, store.discord_guild_id, config.role_id, discord_id, config.role_name);
-            if (result.success) {
-              results.storeServers.rolesAssigned++;
-            } else {
-              results.storeServers.rolesFailed++;
-              results.errors.push({ 
-                user_id, 
-                discord_id, 
-                role: config.role_name, 
-                server: store.name, 
-                error: result.error || "Unknown" 
-              });
-            }
+            const r = await modifyRole(botToken, store.discord_guild_id, cfg.role_id, discord_id, "PUT");
+            r.success ? results.storeServers.rolesAssigned++ : (results.storeServers.rolesFailed++, results.errors.push({ user_id, discord_id, role: cfg.role_name, server: store.name, error: r.error || "Unknown" }));
           }
         }
       }
 
-      // Rate limit protection (300ms between users)
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(r => setTimeout(r, 300)); // Rate limit
     }
 
-    logStep("Sync completed", {
-      total: results.total,
-      mainServer: results.mainServer,
-      storeServers: results.storeServers,
-      errorCount: results.errors.length
-    });
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Processed ${results.total} users across main server and ${storeServers.length} store servers`,
-        results 
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
+    log("Sync completed", { total: results.total, errors: results.errors.length });
+    return new Response(JSON.stringify({ success: true, results }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("Unexpected error", { error: errorMessage });
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    log("Error", { error: error instanceof Error ? error.message : String(error) });
+    return new Response(JSON.stringify({ error: String(error) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
