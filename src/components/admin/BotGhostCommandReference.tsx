@@ -16,7 +16,7 @@ interface CommandConfig {
 const commands: CommandConfig[] = [
   {
     name: "/link",
-    description: "Link Discord account to Eclipse",
+    description: "Check if Discord is linked to Eclipse",
     action: "link",
     jsonBody: `{
   "action": "link",
@@ -24,10 +24,11 @@ const commands: CommandConfig[] = [
   "discord_username": "{User.username}"
 }`,
     responseVariable: "{link.response.message}",
+    notes: "Shows link status and instructions if not linked",
   },
   {
     name: "/verify",
-    description: "Verify a link code",
+    description: "Link Discord using a code from Eclipse",
     action: "verify_code",
     jsonBody: `{
   "action": "verify_code",
@@ -48,7 +49,7 @@ const commands: CommandConfig[] = [
   "discord_username": "{User.username}"
 }`,
     responseVariable: "{profile.response.message}",
-    notes: "Add a Link Button action after the embed. Set URL to: {profile.response.button_url} and Label to: Manage my Account",
+    notes: "Add a Link Button after the embed. Set URL to: {profile.response.button_url} and Label to: Manage my Account",
   },
   {
     name: "/purchases",
@@ -71,8 +72,8 @@ const commands: CommandConfig[] = [
   "discord_username": "{User.username}",
   "product_name": "{option_product}"
 }`,
-    responseVariable: "{link.response.message}",
-    notes: "Add a 'product' option (string, optional). In BotGhost, set the response to 'Send as DM' so the download link is private. If no product specified, lists available products.",
+    responseVariable: "{retrieve.response.message}",
+    notes: "Add a 'product' option (string, optional). Set response to 'Send as DM'. Add Link Button with URL: {retrieve.response.button_url}",
   },
 ];
 

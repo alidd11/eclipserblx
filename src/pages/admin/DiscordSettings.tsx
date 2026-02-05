@@ -853,6 +853,44 @@ export default function DiscordSettings() {
                   roleIdLabel: 'Role ID to Ping',
                 }} />
 
+                {/* Customer Bot Commands */}
+                <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-purple-500/20"><Zap className="h-4 w-4 text-purple-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Customer Bot Commands</h4>
+                      <p className="text-xs text-muted-foreground">Register Discord slash commands for customers</p>
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground space-y-1">
+                    <p className="font-medium text-foreground">Available commands:</p>
+                    <p><code className="bg-background px-1 rounded">/link</code> • <code className="bg-background px-1 rounded">/verify</code> • <code className="bg-background px-1 rounded">/profile</code> • <code className="bg-background px-1 rounded">/purchases</code> • <code className="bg-background px-1 rounded">/retrieve</code></p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setTestingWebhook('commands');
+                          const { data, error } = await supabase.functions.invoke('register-discord-commands');
+                          if (error) throw error;
+                          toast.success('Discord commands registered successfully!');
+                        } catch (err: any) {
+                          toast.error(err.message || 'Failed to register commands');
+                        } finally {
+                          setTestingWebhook(null);
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      disabled={testingWebhook === 'commands'}
+                      className="h-8"
+                    >
+                      {testingWebhook === 'commands' ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Zap className="h-3 w-3 mr-1.5" />}
+                      Register Commands
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Role Ping Manager */}
                 <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
                   <div className="flex items-center gap-2">
