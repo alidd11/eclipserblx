@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { verify } from "https://esm.sh/discord-verify@1.2.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { verify } from "npm:discord-verify@1.2.0";
 
 // Customer Bot - separate from Eclipse Marketplace app
 // Secrets needed: DISCORD_CUSTOMER_BOT_PUBLIC_KEY, DISCORD_CUSTOMER_BOT_TOKEN
@@ -108,7 +108,10 @@ Deno.serve(async (req) => {
 
       switch (commandName) {
         case "link":
-          return await handleLinkCommand(supabase, interaction, discordUserId, discordUsername);
+          return await handleLinkStatusCommand(supabase, discordUserId, discordUsername);
+
+        case "verify":
+          return await handleVerifyCommand(supabase, interaction, discordUserId, discordUsername);
 
         case "profile":
           return await handleProfileCommand(supabase, discordUserId, discordUsername);
@@ -116,8 +119,8 @@ Deno.serve(async (req) => {
         case "purchases":
           return await handlePurchasesCommand(supabase, discordUserId, discordUsername);
 
-        case "download":
-          return await handleDownloadCommand(supabase, interaction, discordUserId, discordUsername);
+        case "retrieve":
+          return await handleRetrieveCommand(supabase, interaction, discordUserId, discordUsername);
 
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
@@ -163,8 +166,29 @@ async function getLinkedAccount(supabase: any, discordUserId: string) {
   return profile;
 }
 
-// /link command - Generate or verify a link code
-async function handleLinkCommand(
+// /link command - Check link status
+async function handleLinkStatusCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string
+) {
+  const existingProfile = await getLinkedAccount(supabase, discordUserId);
+
+  if (existingProfile) {
+    return interactionResponse(
+      `✅ **Already Linked**\n\nYour Discord is linked to **@${existingProfile.username}** (${existingProfile.customer_id}).\n\nUse \`/profile\`, \`/purchases\`, or \`/retrieve\` to access your account.`,
+      true
+    );
+  }
+
+  return interactionResponse(
+    "🔗 **Link Your Eclipse Account**\n\n1. Go to your Eclipse account settings\n2. Find the **Link Discord** section\n3. Click **Generate Link Code**\n4. Come back here and run `/verify code:YOUR_CODE`\n\n🔗 **Account Settings:** https://eclipserblx.com/account",
+    true
+  );
+}
+
+// /verify command - Link account with code
+async function handleVerifyCommand(
   supabase: any,
   interaction: DiscordInteraction,
   discordUserId: string,
@@ -173,63 +197,52 @@ async function handleLinkCommand(
   const options = interaction.data?.options || [];
   const codeOption = options.find((o) => o.name === "code");
 
-  // If code provided, verify it
-  if (codeOption) {
-    const code = codeOption.value.toUpperCase().trim();
-
-    // Find valid code
-    const { data: linkCode, error: codeError } = await supabase
-      .from("discord_link_codes")
-      .select("id, user_id, expires_at, verified_at")
-      .eq("code", code)
-      .gt("expires_at", new Date().toISOString())
-      .is("verified_at", null)
-      .maybeSingle();
-
-    if (codeError || !linkCode) {
-      return interactionResponse(
-        "❌ **Invalid or Expired Code**\nThis code doesn't exist or has expired. Please generate a new one from your Eclipse account.",
-        true
-      );
-    }
-
-    // Mark code as verified and link Discord account
-    await supabase
-      .from("discord_link_codes")
-      .update({
-        discord_user_id: discordUserId,
-        discord_username: discordUsername,
-        verified_at: new Date().toISOString(),
-      })
-      .eq("id", linkCode.id);
-
-    // Update profile with Discord info
-    await supabase
-      .from("profiles")
-      .update({
-        discord_id: discordUserId,
-        discord_username: discordUsername,
-      })
-      .eq("user_id", linkCode.user_id);
-
+  if (!codeOption) {
     return interactionResponse(
-      "✅ **Account Linked Successfully!**\n\nYour Discord account is now linked to Eclipse. You can now use:\n• `/profile` - View your account\n• `/purchases` - See your orders\n• `/download` - Get your files",
+      "❌ **Code Required**\n\nPlease provide your link code: `/verify code:YOUR_CODE`\n\nGet a code from your Eclipse account settings.",
       true
     );
   }
 
-  // No code provided - check if already linked
-  const existingProfile = await getLinkedAccount(supabase, discordUserId);
+  const code = codeOption.value.toUpperCase().trim();
 
-  if (existingProfile) {
+  // Find valid code
+  const { data: linkCode, error: codeError } = await supabase
+    .from("discord_link_codes")
+    .select("id, user_id, expires_at, verified_at")
+    .eq("code", code)
+    .gt("expires_at", new Date().toISOString())
+    .is("verified_at", null)
+    .maybeSingle();
+
+  if (codeError || !linkCode) {
     return interactionResponse(
-      `✅ **Already Linked**\n\nYour Discord is linked to **@${existingProfile.username}** (${existingProfile.customer_id}).\n\nUse \`/profile\`, \`/purchases\`, or \`/download\` to access your account.`,
+      "❌ **Invalid or Expired Code**\nThis code doesn't exist or has expired. Please generate a new one from your Eclipse account.",
       true
     );
   }
+
+  // Mark code as verified and link Discord account
+  await supabase
+    .from("discord_link_codes")
+    .update({
+      discord_user_id: discordUserId,
+      discord_username: discordUsername,
+      verified_at: new Date().toISOString(),
+    })
+    .eq("id", linkCode.id);
+
+  // Update profile with Discord info
+  await supabase
+    .from("profiles")
+    .update({
+      discord_id: discordUserId,
+      discord_username: discordUsername,
+    })
+    .eq("user_id", linkCode.user_id);
 
   return interactionResponse(
-    "🔗 **Link Your Eclipse Account**\n\n1. Go to your Eclipse account settings\n2. Find the **Link Discord** section\n3. Click **Generate Link Code**\n4. Come back here and run `/link code:YOUR_CODE`\n\n🔗 **Account Settings:** https://eclipserblx.com/account",
+    "✅ **Account Linked Successfully!**\n\nYour Discord account is now linked to Eclipse. You can now use:\n• `/profile` - View your account\n• `/purchases` - See your orders\n• `/retrieve` - Get your files",
     true
   );
 }
@@ -379,8 +392,8 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
   return interactionResponse("", true, [embed]);
 }
 
-// /download command - Get download link
-async function handleDownloadCommand(
+// /retrieve command - Get download link
+async function handleRetrieveCommand(
   supabase: any,
   interaction: DiscordInteraction,
   discordUserId: string,
