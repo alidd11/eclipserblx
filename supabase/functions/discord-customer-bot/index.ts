@@ -252,22 +252,21 @@ async function sendDMToUser(discordUserId: string, content?: string, embeds?: an
   }
 }
 
-// Public response with DM follow-up
+// Public response with DM follow-up - now supports channel embeds
 function publicResponseWithDM(
-  channelMessage: string,
+  channelEmbed: any,
   discordUserId: string,
-  dmContent?: string,
   dmEmbeds?: any[],
   dmComponents?: any[]
 ) {
   // Fire and forget the DM - don't await to avoid timeout
-  sendDMToUser(discordUserId, dmContent, dmEmbeds, dmComponents).catch(console.error);
+  sendDMToUser(discordUserId, undefined, dmEmbeds, dmComponents).catch(console.error);
 
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
       data: {
-        content: channelMessage,
+        embeds: [channelEmbed],
         flags: 0, // Public message
       },
     }),
@@ -336,12 +335,13 @@ async function handleLinkStatusCommand(
       },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `✅ <@${discordUserId}> Your account is already linked! Check your DMs for details.`,
-      discordUserId,
-      undefined,
-      [embed]
-    );
+    const channelEmbed = {
+      color: 0x22c55e,
+      title: "✅ Account Already Linked",
+      description: `<@${discordUserId}> Your account is already linked! Check your DMs for details.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
   const embed = {
@@ -370,12 +370,13 @@ async function handleLinkStatusCommand(
     },
     timestamp: new Date().toISOString(),
   };
-  return publicResponseWithDM(
-    `🔗 <@${discordUserId}> Check your DMs for instructions on how to link your Eclipse account!`,
-    discordUserId,
-    undefined,
-    [embed]
-  );
+  const channelEmbed = {
+    color: branding.color,
+    title: "🔗 Link Your Account",
+    description: `<@${discordUserId}> Check your DMs for instructions on how to link your Eclipse account!`,
+    footer: { text: branding.footer },
+  };
+  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
 
 // /verify command - Link account with code
@@ -411,12 +412,13 @@ async function handleVerifyCommand(
         text: branding.footer,
       },
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Please provide a verification code. Check your DMs for help.`,
-      discordUserId,
-      undefined,
-      [embed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Code Required",
+      description: `<@${discordUserId}> Please provide a verification code. Check your DMs for help.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
   const code = codeOption.value.toUpperCase().trim();
@@ -446,12 +448,13 @@ async function handleVerifyCommand(
         text: branding.footer,
       },
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> That code is invalid or expired. Check your DMs for help.`,
-      discordUserId,
-      undefined,
-      [embed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Invalid Code",
+      description: `<@${discordUserId}> That code is invalid or expired. Check your DMs for help.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
   // Update code and profile in parallel
@@ -489,12 +492,13 @@ async function handleVerifyCommand(
     },
     timestamp: new Date().toISOString(),
   };
-  return publicResponseWithDM(
-    `🎉 <@${discordUserId}> Your account has been linked successfully! Check your DMs for details.`,
-    discordUserId,
-    undefined,
-    [embed]
-  );
+  const channelEmbed = {
+    color: 0x22c55e,
+    title: "🎉 Account Linked!",
+    description: `<@${discordUserId}> Your account has been linked successfully! Check your DMs for details.`,
+    footer: { text: branding.footer },
+  };
+  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
 
 // /profile command - View account info
@@ -508,11 +512,21 @@ async function handleProfileCommand(
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
-      discordUserId,
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
-    );
+    const notLinkedEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: `<@${discordUserId}> Your Discord isn't linked yet. Run \`/link\` to get started!`,
+      footer: { text: branding.footer },
+    };
+    const dmEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: "Your Discord isn't linked to an Eclipse account yet.",
+      fields: [{ name: "How to Link", value: "Run `/link` to get started!", inline: false }],
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
+    return publicResponseWithDM(notLinkedEmbed, discordUserId, [dmEmbed]);
   }
 
   // Build query based on context
@@ -612,12 +626,13 @@ async function handleProfileCommand(
     timestamp: new Date().toISOString(),
   };
 
-  return publicResponseWithDM(
-    `👤 <@${discordUserId}> Here's your profile! Check your DMs for full details.`,
-    discordUserId,
-    undefined,
-    [embed]
-  );
+  const channelEmbed = {
+    color: branding.color,
+    title: "👤 Profile Retrieved",
+    description: `<@${discordUserId}> Here's your profile! Check your DMs for full details.`,
+    footer: { text: branding.footer },
+  };
+  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
 
 // /purchases command - List purchases
@@ -631,11 +646,21 @@ async function handlePurchasesCommand(
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
-      discordUserId,
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
-    );
+    const notLinkedEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: `<@${discordUserId}> Your Discord isn't linked yet. Run \`/link\` to get started!`,
+      footer: { text: branding.footer },
+    };
+    const dmEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: "Your Discord isn't linked to an Eclipse account yet.",
+      fields: [{ name: "How to Link", value: "Run `/link` to get started!", inline: false }],
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
+    return publicResponseWithDM(notLinkedEmbed, discordUserId, [dmEmbed]);
   }
 
   // Build query - if in store server, filter by store products
@@ -665,11 +690,20 @@ async function handlePurchasesCommand(
     const msg = serverContext.store 
       ? `You haven't purchased anything from ${serverContext.store.name} yet.`
       : "You haven't made any purchases yet.";
-    return publicResponseWithDM(
-      `📦 <@${discordUserId}> ${msg}`,
-      discordUserId,
-      `📦 **No Purchases Found**\n\n${msg}`
-    );
+    const channelEmbed = {
+      color: 0x3b82f6,
+      title: "📦 No Purchases Found",
+      description: `<@${discordUserId}> ${msg}`,
+      footer: { text: branding.footer },
+    };
+    const dmEmbed = {
+      color: 0x3b82f6,
+      title: "📦 No Purchases Found",
+      description: msg,
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [dmEmbed]);
   }
 
   // Filter to store products if in store server
@@ -684,13 +718,20 @@ async function handlePurchasesCommand(
       }))
   ).slice(0, 15);
 
-  if (productList.length === 0 && serverContext.store) {
-    return publicResponseWithDM(
-      `📦 <@${discordUserId}> You haven't purchased anything from ${serverContext.store.name} yet.`,
-      discordUserId,
-      `📦 **No Purchases Found**\n\nYou haven't purchased anything from ${serverContext.store.name} yet.`
-    );
-  }
+    const channelEmbed = {
+      color: 0x3b82f6,
+      title: "📦 No Purchases Found",
+      description: `<@${discordUserId}> You haven't purchased anything from ${serverContext.store.name} yet.`,
+      footer: { text: branding.footer },
+    };
+    const dmEmbed = {
+      color: 0x3b82f6,
+      title: "📦 No Purchases Found",
+      description: `You haven't purchased anything from ${serverContext.store.name} yet.`,
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [dmEmbed]);
 
   const embed = {
     color: 0x22c55e,
@@ -707,12 +748,13 @@ async function handlePurchasesCommand(
     timestamp: new Date().toISOString(),
   };
 
-  return publicResponseWithDM(
-    `📦 <@${discordUserId}> Found ${productList.length} purchases! Check your DMs for details.`,
-    discordUserId,
-    undefined,
-    [embed]
-  );
+  const channelEmbed = {
+    color: 0x22c55e,
+    title: `📦 Found ${productList.length} Purchases`,
+    description: `<@${discordUserId}> Check your DMs for details!`,
+    footer: { text: branding.footer },
+  };
+  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
 
 // /retrieve command - Get download link
@@ -741,12 +783,13 @@ async function handleRetrieveCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
-      discordUserId,
-      undefined,
-      [notLinkedEmbed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: `<@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [notLinkedEmbed]);
   }
 
   const options = interaction.data?.options || [];
@@ -776,12 +819,13 @@ async function handleRetrieveCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `📁 <@${discordUserId}> You haven't purchased any downloadable products yet.`,
-      discordUserId,
-      undefined,
-      [noOrdersEmbed]
-    );
+    const channelEmbed = {
+      color: 0x3b82f6,
+      title: "📁 No Downloads",
+      description: `<@${discordUserId}> You haven't purchased any downloadable products yet.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [noOrdersEmbed]);
   }
 
   // Get order items - filter by store if in store server
@@ -809,12 +853,13 @@ async function handleRetrieveCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `📁 <@${discordUserId}> ${msg}`,
-      discordUserId,
-      undefined,
-      [noProductsEmbed]
-    );
+    const channelEmbed = {
+      color: 0x3b82f6,
+      title: "📁 No Downloads",
+      description: `<@${discordUserId}> ${msg}`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [noProductsEmbed]);
   }
 
   // Get products with download files
@@ -832,12 +877,13 @@ async function handleRetrieveCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `📁 <@${discordUserId}> None of your purchased products have downloadable files.`,
-      discordUserId,
-      undefined,
-      [noFilesEmbed]
-    );
+    const channelEmbed = {
+      color: 0x3b82f6,
+      title: "📁 No Downloads",
+      description: `<@${discordUserId}> None of your purchased products have downloadable files.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [noFilesEmbed]);
   }
 
   if (!productOption) {
@@ -853,12 +899,13 @@ async function handleRetrieveCommand(
       },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `📁 <@${discordUserId}> You have ${products.length} downloadable products. Check your DMs for the list!`,
-      discordUserId,
-      undefined,
-      [embed]
-    );
+    const channelEmbed = {
+      color: 0x3b82f6,
+      title: `📁 ${products.length} Downloads Available`,
+      description: `<@${discordUserId}> Check your DMs for the list!`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
   // Search for product by name
@@ -888,12 +935,13 @@ async function handleRetrieveCommand(
         text: `${branding.footer} • Try typing the exact product name`,
       },
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Couldn't find that product. Check your DMs for available products.`,
-      discordUserId,
-      undefined,
-      [embed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Product Not Found",
+      description: `<@${discordUserId}> Couldn't find that product. Check your DMs for available products.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
   const product = matchedProduct;
@@ -924,12 +972,13 @@ async function handleRetrieveCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Couldn't generate download link. Please try again or use the website.`,
-      discordUserId,
-      undefined,
-      [downloadFailedEmbed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Download Failed",
+      description: `<@${discordUserId}> Couldn't generate download link. Please try again or use the website.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [downloadFailedEmbed]);
   }
 
   const embed = {
@@ -960,13 +1009,20 @@ async function handleRetrieveCommand(
   // Send DM with download link
   sendDMToUser(discordUserId, undefined, [embed], components).catch(console.error);
 
-  // Public acknowledgement
+  // Public acknowledgement as embed
+  const channelEmbed = {
+    color: 0x22c55e,
+    title: `📥 Download Ready`,
+    description: `<@${discordUserId}> Your download for **${product.name}** is ready! Check your DMs for the link.`,
+    footer: { text: branding.footer },
+  };
+
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
       data: {
-        content: `📥 <@${discordUserId}> Your download for **${product.name}** is ready! Check your DMs for the link.`,
-        flags: 0, // Public message
+        embeds: [channelEmbed],
+        flags: 0,
       },
     }),
     { headers: { "Content-Type": "application/json" } }
@@ -998,12 +1054,13 @@ async function handleGetRoleCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
-      discordUserId,
-      undefined,
-      [notLinkedEmbed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: `<@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [notLinkedEmbed]);
   }
 
   const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
@@ -1017,12 +1074,13 @@ async function handleGetRoleCommand(
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> Bot configuration error. Please contact support.`,
-      discordUserId,
-      undefined,
-      [configErrorEmbed]
-    );
+    const channelEmbed = {
+      color: 0xef4444,
+      title: "❌ Configuration Error",
+      description: `<@${discordUserId}> Bot configuration error. Please contact support.`,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [configErrorEmbed]);
   }
 
   const rolesToAssign: { id: string; name: string }[] = [];
@@ -1127,11 +1185,20 @@ async function handleGetRoleCommand(
     }
   } else {
     // Unknown server - no roles to assign
-    return publicResponseWithDM(
-      `❌ <@${discordUserId}> This server isn't configured for automatic roles.`,
-      discordUserId,
-      "❌ **Server Not Configured**\n\nThis Discord server isn't linked to the main Eclipse server or a creator store."
-    );
+    const unknownServerChannelEmbed = {
+      color: 0xef4444,
+      title: "❌ Server Not Configured",
+      description: `<@${discordUserId}> This server isn't configured for automatic roles.`,
+      footer: { text: branding.footer },
+    };
+    const unknownServerDmEmbed = {
+      color: 0xef4444,
+      title: "❌ Server Not Configured",
+      description: "This Discord server isn't linked to the main Eclipse server or a creator store.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
+    return publicResponseWithDM(unknownServerChannelEmbed, discordUserId, [unknownServerDmEmbed]);
   }
 
   // Execute all role operations in parallel
@@ -1224,14 +1291,14 @@ async function handleGetRoleCommand(
     timestamp: new Date().toISOString(),
   };
 
-  const channelMessage = rolesAssigned.length > 0
-    ? `🎉 <@${discordUserId}> Your roles have been synced: ${rolesAssigned.join(", ")}. Check your DMs for details!`
-    : `📋 <@${discordUserId}> Check your DMs for information on how to earn roles!`;
+  const channelEmbed = {
+    color: rolesAssigned.length > 0 ? 0x22c55e : 0xf59e0b,
+    title: rolesAssigned.length > 0 ? "🎉 Roles Synced!" : "📋 Role Status",
+    description: rolesAssigned.length > 0
+      ? `<@${discordUserId}> Your roles have been synced: ${rolesAssigned.join(", ")}. Check your DMs for details!`
+      : `<@${discordUserId}> Check your DMs for information on how to earn roles!`,
+    footer: { text: branding.footer },
+  };
 
-  return publicResponseWithDM(
-    channelMessage,
-    discordUserId,
-    undefined,
-    [embed]
-  );
+  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
