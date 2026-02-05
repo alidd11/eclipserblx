@@ -44,6 +44,40 @@ async function assignDiscordRole(
   return { success: false, error: errorText };
 }
 
+async function removeDiscordRole(
+  botToken: string,
+  guildId: string,
+  roleId: string,
+  discordUserId: string,
+  roleName: string
+): Promise<{ success: boolean; error?: string }> {
+  const discordApiUrl = `https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`;
+  
+  logStep(`Removing ${roleName} role`, { discordUserId, roleId });
+  
+  const response = await fetch(discordApiUrl, {
+    method: "DELETE",
+    headers: {
+      'Authorization': `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (response.status === 204) {
+    logStep(`${roleName} role removed successfully`, { discordUserId });
+    return { success: true };
+  }
+
+  if (response.status === 404) {
+    logStep(`User not in guild or doesn't have ${roleName} role`, { discordUserId });
+    return { success: false, error: "User not in server or role not found" };
+  }
+
+  const errorText = await response.text();
+  logStep(`Failed to remove ${roleName} role`, { status: response.status, error: errorText });
+  return { success: false, error: errorText };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -222,21 +256,38 @@ serve(async (req) => {
         }
       }
 
-      // Check if user has made any purchases (Customer role)
+      // Check purchase count for Customer/Loyal Customer roles
       const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
-      if (customerRoleId) {
-        const { data: orders, error: ordersError } = await supabase
+      const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
+      
+      if (customerRoleId || loyalCustomerRoleId) {
+        const { count, error: ordersError } = await supabase
           .from("orders")
-          .select("id")
+          .select("id", { count: "exact", head: true })
           .eq("user_id", user_id)
-          .in("status", ["paid", "completed"])
-          .limit(1);
+          .in("status", ["paid", "completed"]);
 
-        if (!ordersError && orders && orders.length > 0) {
-          logStep("User has made purchases", { orderCount: orders.length });
-          const result = await assignDiscordRole(botToken, guildId, customerRoleId, discordUser.id, "Customer");
-          if (result.success) {
-            rolesAssigned.push("Customer");
+        const orderCount = count || 0;
+        logStep("User order count", { orderCount });
+
+        if (!ordersError && orderCount > 0) {
+          if (orderCount >= 5 && loyalCustomerRoleId) {
+            // Assign Loyal Customer role
+            const result = await assignDiscordRole(botToken, guildId, loyalCustomerRoleId, discordUser.id, "Loyal Customer");
+            if (result.success) {
+              rolesAssigned.push("Loyal Customer");
+            }
+            
+            // Remove regular Customer role if they have it
+            if (customerRoleId) {
+              await removeDiscordRole(botToken, guildId, customerRoleId, discordUser.id, "Customer");
+            }
+          } else if (customerRoleId) {
+            // Assign regular Customer role (1-4 purchases)
+            const result = await assignDiscordRole(botToken, guildId, customerRoleId, discordUser.id, "Customer");
+            if (result.success) {
+              rolesAssigned.push("Customer");
+            }
           }
         }
       }
