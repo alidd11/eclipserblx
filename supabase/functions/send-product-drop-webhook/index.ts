@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,25 +45,24 @@ serve(async (req) => {
     }
 
     // Fetch webhook settings
+    const channelKey = isEarlyAccess ? 'early_product_drops_discord_channel_id' : 'product_drops_discord_channel_id';
     const webhookKey = isEarlyAccess ? 'early_product_drops_discord_webhook_url' : 'product_drops_discord_webhook_url';
     const roleIdKey = isEarlyAccess ? 'early_product_drops_discord_role_id' : 'product_drops_discord_role_id';
 
     const { data: settings } = await supabaseClient
       .from('settings')
       .select('key, value')
-      .in('key', [webhookKey, roleIdKey]);
+      .in('key', [channelKey, webhookKey, roleIdKey]);
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: any) => {
-      settingsMap[s.key] = String(s.value).replace(/^"|"$/g, '');
-    });
+    const settingsMap = buildSettingsMap(settings);
 
+    const channelId = settingsMap[channelKey];
     const webhookUrl = settingsMap[webhookKey];
     const roleId = settingsMap[roleIdKey];
 
-    if (!webhookUrl) {
+    if (!channelId && !webhookUrl) {
       return new Response(
-        JSON.stringify({ success: false, error: `No ${isEarlyAccess ? 'early access' : 'product drops'} webhook configured` }),
+        JSON.stringify({ success: false, error: `No ${isEarlyAccess ? 'early access' : 'product drops'} channel ID or webhook configured` }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
@@ -107,25 +107,43 @@ serve(async (req) => {
       embeds.push({ color, image: { url: images[0] }, footer: { text: footerText }, timestamp: new Date().toISOString() });
     }
 
-    // Send to Discord
-    const discordResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const result = await sendBotMessage(channelId, {
         content: roleId ? `<@&${roleId}>` : undefined,
         embeds,
-      }),
-    });
+        allowed_mentions: roleId ? { roles: [roleId] } : undefined,
+      });
 
-    if (!discordResponse.ok) {
-      const errorText = await discordResponse.text();
-      return new Response(
-        JSON.stringify({ success: false, error: 'Discord webhook failed', details: errorText }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      if (!result.success) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Discord bot message failed', details: result.error }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        );
+      }
+
+      console.log(`[send-product-drop-webhook] Sent ${isEarlyAccess ? 'early access' : 'product'} drop via bot for: ${product.name}`);
+    } else {
+      // Legacy webhook method
+      const discordResponse = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: roleId ? `<@&${roleId}>` : undefined,
+          embeds,
+        }),
+      });
+
+      if (!discordResponse.ok) {
+        const errorText = await discordResponse.text();
+        return new Response(
+          JSON.stringify({ success: false, error: 'Discord webhook failed', details: errorText }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        );
+      }
+
+      console.log(`[send-product-drop-webhook] Sent ${isEarlyAccess ? 'early access' : 'product'} drop via webhook for: ${product.name}`);
     }
-
-    console.log(`[send-product-drop-webhook] Sent ${isEarlyAccess ? 'early access' : 'product'} drop for: ${product.name}`);
 
     return new Response(
       JSON.stringify({ success: true, message: `${isEarlyAccess ? 'Early access' : 'Product'} drop sent for ${product.name}` }),

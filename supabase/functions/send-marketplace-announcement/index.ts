@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,25 +16,22 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch Marketplace webhook URL from settings
+    // Fetch Marketplace channel ID and webhook URL from settings
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["marketplace_discord_webhook_url"])
+      .in("key", ["marketplace_discord_channel_id", "marketplace_discord_webhook_url"])
       .order("key");
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key: string; value: string }) => {
-      const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
-      settingsMap[s.key] = val;
-    });
+    const settingsMap = buildSettingsMap(settings);
 
+    const channelId = settingsMap["marketplace_discord_channel_id"];
     const webhookUrl = settingsMap["marketplace_discord_webhook_url"];
     
-    if (!webhookUrl) {
-      console.error("Marketplace Discord webhook URL not configured in settings");
+    if (!channelId && !webhookUrl) {
+      console.error("Marketplace Discord channel ID or webhook URL not configured in settings");
       return new Response(
-        JSON.stringify({ error: "Marketplace Discord webhook not configured. Please set it in Admin → Discord Settings → Marketplace tab." }),
+        JSON.stringify({ error: "Marketplace Discord not configured. Please set channel ID or webhook URL in Admin → Discord Settings → Marketplace tab." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -80,22 +78,37 @@ Deno.serve(async (req) => {
       },
     };
 
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed] }),
-    });
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const result = await sendBotMessage(channelId, { embeds: [embed] });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Discord webhook error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (!result.success) {
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: result.error }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Marketplace announcement sent successfully via bot", { messageId: result.messageId });
+    } else {
+      // Legacy webhook method
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [embed] }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Discord webhook error:", errorText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Marketplace announcement sent successfully via webhook");
     }
-
-    console.log("Marketplace announcement sent successfully");
 
     return new Response(
       JSON.stringify({ success: true, message: "Marketplace announcement sent to Discord" }),

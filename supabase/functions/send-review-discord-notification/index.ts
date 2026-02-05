@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, addReaction, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,22 +32,15 @@ serve(async (req) => {
 
     console.log("Received review notification request:", { reviewId, rating, userId, productId });
 
-    // Get the main Eclipse review webhook URL from settings
-    const { data: webhookSetting } = await supabase
+    // Get the main Eclipse review channel ID and webhook URL from settings
+    const { data: settings } = await supabase
       .from("settings")
-      .select("value")
-      .eq("key", "review_discord_webhook_url")
-      .maybeSingle();
+      .select("key, value")
+      .in("key", ["reviews_discord_channel_id", "review_discord_webhook_url"]);
 
-    // Parse the webhook URL (it may be JSON-encoded)
-    let mainWebhookUrl = webhookSetting?.value;
-    if (typeof mainWebhookUrl === "string") {
-      try {
-        mainWebhookUrl = JSON.parse(mainWebhookUrl);
-      } catch {
-        // It's already a plain string
-      }
-    }
+    const settingsMap = buildSettingsMap(settings);
+    const mainChannelId = settingsMap["reviews_discord_channel_id"];
+    const mainWebhookUrl = settingsMap["review_discord_webhook_url"];
 
     // Fetch reviewer display name from profiles
     const { data: profile } = await supabase
@@ -136,47 +130,33 @@ serve(async (req) => {
       timestamp: new Date().toISOString(),
     });
 
-    // Helper function to add heart reaction to a message
-    const addHeartReaction = async (webhookUrl: string, messageId: string, channelId: string) => {
-      const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
-      if (!botToken) {
-        console.log("No DISCORD_BOT_TOKEN configured, skipping reaction");
-        return;
-      }
-      
-      try {
-        // Add heart reaction (❤️ = %E2%9D%A4%EF%B8%8F URL encoded)
-        const reactionUrl = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/%E2%9D%A4%EF%B8%8F/@me`;
-        const reactionResponse = await fetch(reactionUrl, {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bot ${botToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        
-        if (reactionResponse.ok || reactionResponse.status === 204) {
-          console.log("Heart reaction added successfully", { messageId });
-        } else {
-          console.log("Failed to add heart reaction (non-fatal)", { 
-            status: reactionResponse.status,
-            messageId 
-          });
-        }
-      } catch (error) {
-        console.log("Failed to add reaction (non-fatal)", { error: String(error) });
-      }
-    };
-
     const results = {
       mainWebhook: { sent: false, skipped: false, error: null as string | null },
       sellerWebhook: { sent: false, skipped: false, error: null as string | null },
     };
 
-    // Send to main Eclipse webhook
-    if (mainWebhookUrl) {
+    // Send to main Eclipse channel/webhook
+    if (mainChannelId) {
+      // Use bot API
+      const result = await sendBotMessage(mainChannelId, {
+        embeds: [buildEmbed("Eclipse Store • Reviews")],
+      });
+
+      if (result.success) {
+        console.log("Main review notification sent successfully via bot");
+        results.mainWebhook.sent = true;
+        
+        // Add heart reaction
+        if (result.messageId && result.channelId) {
+          await addReaction(result.channelId, result.messageId, "❤️");
+        }
+      } else {
+        console.error("Bot message failed:", result.error);
+        results.mainWebhook.error = result.error || "Unknown error";
+      }
+    } else if (mainWebhookUrl) {
+      // Legacy webhook method
       try {
-        // Add ?wait=true to get message ID back
         const webhookUrlWithWait = mainWebhookUrl.includes('?') 
           ? `${mainWebhookUrl}&wait=true` 
           : `${mainWebhookUrl}?wait=true`;
@@ -184,20 +164,17 @@ serve(async (req) => {
         const discordResponse = await fetch(webhookUrlWithWait, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            embeds: [buildEmbed("Eclipse Store • Reviews")],
-          }),
+          body: JSON.stringify({ embeds: [buildEmbed("Eclipse Store • Reviews")] }),
         });
 
         if (discordResponse.ok) {
-          console.log("Main review notification sent successfully");
+          console.log("Main review notification sent successfully via webhook");
           results.mainWebhook.sent = true;
           
-          // Add heart reaction
           try {
             const messageData = await discordResponse.json();
             if (messageData.id && messageData.channel_id) {
-              await addHeartReaction(mainWebhookUrl, messageData.id, messageData.channel_id);
+              await addReaction(messageData.channel_id, messageData.id, "❤️");
             }
           } catch (parseError) {
             console.log("Could not parse response for reaction (non-fatal)");
@@ -219,7 +196,6 @@ serve(async (req) => {
     // Send to seller webhook if configured
     if (sellerWebhookUrl) {
       try {
-        // Add ?wait=true to get message ID back
         const sellerWebhookWithWait = sellerWebhookUrl.includes('?') 
           ? `${sellerWebhookUrl}&wait=true` 
           : `${sellerWebhookUrl}?wait=true`;
@@ -227,20 +203,17 @@ serve(async (req) => {
         const sellerResponse = await fetch(sellerWebhookWithWait, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            embeds: [buildEmbed(`${storeName || 'Your Store'} • Eclipse Store`)],
-          }),
+          body: JSON.stringify({ embeds: [buildEmbed(`${storeName || 'Your Store'} • Eclipse Store`)] }),
         });
 
         if (sellerResponse.ok) {
           console.log("Seller review notification sent successfully");
           results.sellerWebhook.sent = true;
           
-          // Add heart reaction
           try {
             const messageData = await sellerResponse.json();
             if (messageData.id && messageData.channel_id) {
-              await addHeartReaction(sellerWebhookUrl, messageData.id, messageData.channel_id);
+              await addReaction(messageData.channel_id, messageData.id, "❤️");
             }
           } catch (parseError) {
             console.log("Could not parse seller response for reaction (non-fatal)");

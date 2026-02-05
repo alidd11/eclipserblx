@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+ import { sendBotMessage, createThread, buildSettingsMap } from '../_shared/discord-bot.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,22 +27,20 @@ serve(async (req) => {
       throw new Error('Staff Discord ID is required - please link your Discord account first');
     }
 
-    // Get the QOTD webhook URL (or fall back to community webhook) and role IDs
+    // Get the QOTD channel ID, webhook URL and role IDs
     const { data: settings } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['qotd_discord_webhook_url', 'community_discord_webhook_url', 'qotd_discord_role_id', 'discord_ping_role_id']);
+      .in('key', ['qotd_discord_channel_id', 'qotd_discord_webhook_url', 'community_discord_webhook_url', 'community_discord_channel_id', 'qotd_discord_role_id', 'discord_ping_role_id']);
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key: string; value: string }) => {
-      settingsMap[s.key] = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
-    });
+    const settingsMap = buildSettingsMap(settings);
 
-    // Use QOTD-specific webhook, fall back to community webhook
+    // Check for channel ID first (bot method), then webhook URL (legacy)
+    const channelId = settingsMap.qotd_discord_channel_id || settingsMap.community_discord_channel_id;
     const webhookUrl = settingsMap.qotd_discord_webhook_url || settingsMap.community_discord_webhook_url;
     
-    if (!webhookUrl) {
-      throw new Error('QOTD Discord webhook not configured - please set it in Admin → Discord Settings → QOTD tab');
+    if (!channelId && !webhookUrl) {
+      throw new Error('QOTD Discord not configured - please set channel ID or webhook URL in Admin → Discord Settings → QOTD tab');
     }
 
     // Use QOTD-specific role, fall back to default role
@@ -81,67 +80,60 @@ serve(async (req) => {
       content = `<@&${roleId}>`;
     }
 
-    // Use ?wait=true to get the message ID back for thread creation
-    const webhookWithWait = webhookUrl.includes('?') 
-      ? `${webhookUrl}&wait=true`
-      : `${webhookUrl}?wait=true`;
+    let discordMessageId: string | null = null;
+    let messageChannelId: string | null = null;
+    let threadId: string | null = null;
 
-    // Send to Discord
-    const webhookResponse = await fetch(webhookWithWait, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const result = await sendBotMessage(channelId, {
         content,
-        embeds: [embed]
-      })
-    });
+        embeds: [embed],
+        allowed_mentions: roleId ? { roles: [roleId] } : undefined,
+      });
 
-    if (!webhookResponse.ok) {
-      const errorText = await webhookResponse.text();
-      throw new Error(`Discord webhook failed: ${errorText}`);
-    }
-
-    // Get the message response to create a thread
-    const messageData = await webhookResponse.json();
-    const discordMessageId = messageData.id;
-    const channelId = messageData.channel_id;
-
-    // Create a thread on the message
-    let threadId = null;
-    if (discordMessageId && channelId) {
-      const botToken = Deno.env.get('DISCORD_BOT_TOKEN');
-      if (botToken) {
-        try {
-          // Create a public thread from the message
-          const threadResponse = await fetch(
-            `https://discord.com/api/v10/channels/${channelId}/messages/${discordMessageId}/threads`,
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bot ${botToken}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                name: `💬 QOTD Discussion`,
-                auto_archive_duration: 1440 // Archive after 24 hours of inactivity
-              })
-            }
-          );
-
-          if (threadResponse.ok) {
-            const threadData = await threadResponse.json();
-            threadId = threadData.id;
-            console.log('Thread created successfully:', threadId);
-          } else {
-            const threadError = await threadResponse.text();
-            console.log('Failed to create thread (non-critical):', threadError);
-          }
-        } catch (threadErr) {
-          console.log('Thread creation error (non-critical):', threadErr);
-        }
-      } else {
-        console.log('DISCORD_BOT_TOKEN not set - skipping thread creation');
+      if (!result.success) {
+        throw new Error(`Discord bot message failed: ${result.error}`);
       }
+
+      discordMessageId = result.messageId || null;
+      messageChannelId = result.channelId || null;
+
+      // Create thread on the message
+      if (discordMessageId && messageChannelId) {
+        const threadResult = await createThread(messageChannelId, discordMessageId, '💬 QOTD Discussion', 1440);
+        threadId = threadResult?.threadId || null;
+      }
+
+      console.log('QOTD posted successfully via bot:', question);
+    } else {
+      // Legacy webhook method
+      const webhookWithWait = webhookUrl.includes('?') 
+        ? `${webhookUrl}&wait=true`
+        : `${webhookUrl}?wait=true`;
+
+      const webhookResponse = await fetch(webhookWithWait, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, embeds: [embed] })
+      });
+
+      if (!webhookResponse.ok) {
+        const errorText = await webhookResponse.text();
+        throw new Error(`Discord webhook failed: ${errorText}`);
+      }
+
+      const messageData = await webhookResponse.json();
+      discordMessageId = messageData.id;
+      messageChannelId = messageData.channel_id;
+
+      // Create thread on the message
+      if (discordMessageId && messageChannelId) {
+        const threadResult = await createThread(messageChannelId, discordMessageId, '💬 QOTD Discussion', 1440);
+        threadId = threadResult?.threadId || null;
+      }
+
+      console.log('QOTD posted successfully via webhook:', question);
     }
     
     // Update the QOTD record with discord message ID
@@ -155,9 +147,6 @@ serve(async (req) => {
         })
         .eq('id', qotdId);
     }
-
-    console.log('QOTD posted successfully:', question);
-
     return new Response(
       JSON.stringify({ success: true, message: 'QOTD posted to Discord', threadId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

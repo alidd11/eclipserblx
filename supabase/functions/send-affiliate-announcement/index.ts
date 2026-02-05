@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,22 +20,18 @@ Deno.serve(async (req) => {
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["affiliate_commission_rate", "affiliate_minimum_payout", "affiliate_cookie_days", "affiliate_discord_webhook_url"])
+      .in("key", ["affiliate_commission_rate", "affiliate_minimum_payout", "affiliate_cookie_days", "affiliate_discord_channel_id", "affiliate_discord_webhook_url"])
       .order("key");
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key: string; value: string }) => {
-      // Remove quotes from JSON-stringified values
-      const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
-      settingsMap[s.key] = val;
-    });
+    const settingsMap = buildSettingsMap(settings);
 
+    const channelId = settingsMap["affiliate_discord_channel_id"];
     const webhookUrl = settingsMap["affiliate_discord_webhook_url"];
     
-    if (!webhookUrl) {
-      console.error("Affiliate Discord webhook URL not configured in settings");
+    if (!channelId && !webhookUrl) {
+      console.error("Affiliate Discord channel ID or webhook URL not configured in settings");
       return new Response(
-        JSON.stringify({ error: "Affiliate Discord webhook not configured. Please set it in Admin → Discord Settings → Affiliate tab." }),
+        JSON.stringify({ error: "Affiliate Discord not configured. Please set channel ID or webhook URL in Admin → Discord Settings → Affiliate tab." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -87,22 +84,37 @@ Deno.serve(async (req) => {
       image: { url: brandingBannerUrl },
     };
 
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed] }),
-    });
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const result = await sendBotMessage(channelId, { embeds: [embed] });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Discord webhook error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (!result.success) {
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: result.error }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Affiliate announcement sent successfully via bot", { messageId: result.messageId });
+    } else {
+      // Legacy webhook method
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [embed] }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Discord webhook error:", errorText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Affiliate announcement sent successfully via webhook");
     }
-
-    console.log("Affiliate announcement sent successfully");
 
     return new Response(
       JSON.stringify({ success: true, message: "Affiliate programme announcement sent to Discord" }),

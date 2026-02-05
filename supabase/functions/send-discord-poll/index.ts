@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, addMultipleReactions, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,28 +36,24 @@ serve(async (req) => {
       userId = claimsData?.user?.id || null;
     }
 
-    // Fetch polls webhook URL (or fall back to community webhook) and role IDs
+    // Fetch polls channel ID, webhook URL and role IDs
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["polls_discord_webhook_url", "community_discord_webhook_url", "polls_discord_role_id", "community_discord_role_id"])
+      .in("key", ["polls_discord_channel_id", "polls_discord_webhook_url", "community_discord_webhook_url", "community_discord_channel_id", "polls_discord_role_id", "community_discord_role_id"])
       .order("key");
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key: string; value: string }) => {
-      const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
-      settingsMap[s.key] = val;
-    });
+    const settingsMap = buildSettingsMap(settings);
 
-    // Use polls-specific webhook, fall back to community webhook
+    // Check for channel ID first (bot method), then webhook URL (legacy)
+    const channelId = settingsMap["polls_discord_channel_id"] || settingsMap["community_discord_channel_id"];
     const webhookUrl = settingsMap["polls_discord_webhook_url"] || settingsMap["community_discord_webhook_url"];
-    // Use polls-specific role, fall back to community role
     const roleId = settingsMap["polls_discord_role_id"] || settingsMap["community_discord_role_id"] || "";
     
-    if (!webhookUrl) {
-      console.error("Community Discord webhook URL not configured");
+    if (!channelId && !webhookUrl) {
+      console.error("Discord channel ID or webhook URL not configured");
       return new Response(
-        JSON.stringify({ error: "Discord webhook not configured. Please set community_discord_webhook_url in Admin → Discord Settings." }),
+        JSON.stringify({ error: "Discord not configured. Please set polls_discord_channel_id or webhook URL in Admin → Discord Settings." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -118,52 +115,63 @@ serve(async (req) => {
 
     console.log("Sending Discord poll...", { title, optionsCount: options.length, durationHours });
 
-    const response = await fetch(webhookUrl + "?wait=true", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    let messageId: string | null = null;
+    let messageChannelId: string | null = null;
+
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const result = await sendBotMessage(channelId, {
         content,
         embeds: [embed],
-      }),
-    });
+        allowed_mentions: roleId ? { roles: [roleId] } : undefined,
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Discord webhook error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const discordMessage = await response.json();
-    const messageId = discordMessage.id;
-
-    // Add reaction emojis for voting
-    if (messageId) {
-      const webhookParts = webhookUrl.split('/');
-      const webhookId = webhookParts[webhookParts.length - 2];
-      const webhookToken = webhookParts[webhookParts.length - 1];
-      
-      // Add reactions for each option
-      for (let i = 0; i < options.length; i++) {
-        const emoji = encodeURIComponent(numberEmojis[i]);
-        try {
-          await fetch(
-            `https://discord.com/api/v10/channels/${discordMessage.channel_id}/messages/${messageId}/reactions/${emoji}/@me`,
-            {
-              method: "PUT",
-              headers: {
-                "Authorization": `Bot ${Deno.env.get("DISCORD_BOT_TOKEN")}`,
-              },
-            }
-          );
-          // Small delay to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 300));
-        } catch (err) {
-          console.warn("Failed to add reaction:", emoji, err);
-        }
+      if (!result.success) {
+        console.error("Discord bot message error:", result.error);
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: result.error }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
+
+      messageId = result.messageId || null;
+      messageChannelId = result.channelId || null;
+
+      // Add reactions for voting
+      if (messageId && messageChannelId) {
+        const emojisToAdd = numberEmojis.slice(0, options.length);
+        await addMultipleReactions(messageChannelId, messageId, emojisToAdd, 300);
+      }
+
+      console.log("Poll sent successfully via bot", { messageId });
+    } else {
+      // Legacy webhook method
+      const response = await fetch(webhookUrl + "?wait=true", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, embeds: [embed] }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Discord webhook error:", errorText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const discordMessage = await response.json();
+      messageId = discordMessage.id;
+      messageChannelId = discordMessage.channel_id;
+
+      // Add reactions for voting
+      if (messageId && messageChannelId) {
+        const emojisToAdd = numberEmojis.slice(0, options.length);
+        await addMultipleReactions(messageChannelId, messageId, emojisToAdd, 300);
+      }
+
+      console.log("Poll sent successfully via webhook", { messageId });
     }
 
     // Save poll to database
