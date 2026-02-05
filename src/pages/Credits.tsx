@@ -14,6 +14,7 @@ import { WalletBalanceCard } from '@/components/wallet/WalletBalanceCard';
 import { AddCreditsCard } from '@/components/wallet/AddCreditsCard';
 import { TransactionHistoryCard } from '@/components/wallet/TransactionHistoryCard';
 import { EclipsePlusBanner } from '@/components/wallet/EclipsePlusBanner';
+import { MyPaymentsCard } from '@/components/wallet/MyPaymentsCard';
 
 export default function Credits() {
   usePageTracking({ pagePath: '/credits' });
@@ -115,6 +116,9 @@ export default function Credits() {
             isLoading={isLoading}
           />
         </div>
+
+        {/* Developer Payments - only shows if user has payments */}
+        <MyPaymentsCard />
       </div>
     </MainLayout>
   );
