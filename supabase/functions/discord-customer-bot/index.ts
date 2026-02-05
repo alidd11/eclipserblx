@@ -153,6 +153,83 @@ function interactionResponse(content: string, ephemeral = false, embeds?: any[])
   );
 }
 
+// Send DM to user via Discord API
+async function sendDMToUser(discordUserId: string, content?: string, embeds?: any[], components?: any[]) {
+  const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+  if (!botToken) {
+    console.error("[discord-customer-bot] No bot token for DM");
+    return false;
+  }
+
+  try {
+    // Create DM channel
+    const dmChannelResponse = await fetch("https://discord.com/api/v10/users/@me/channels", {
+      method: "POST",
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ recipient_id: discordUserId }),
+    });
+
+    if (!dmChannelResponse.ok) {
+      console.error("[discord-customer-bot] Failed to create DM channel:", await dmChannelResponse.text());
+      return false;
+    }
+
+    const dmChannel = await dmChannelResponse.json();
+
+    // Send message to DM channel
+    const messagePayload: any = {};
+    if (content) messagePayload.content = content;
+    if (embeds) messagePayload.embeds = embeds;
+    if (components) messagePayload.components = components;
+
+    const messageResponse = await fetch(`https://discord.com/api/v10/channels/${dmChannel.id}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messagePayload),
+    });
+
+    if (!messageResponse.ok) {
+      console.error("[discord-customer-bot] Failed to send DM:", await messageResponse.text());
+      return false;
+    }
+
+    console.log(`[discord-customer-bot] DM sent to ${discordUserId}`);
+    return true;
+  } catch (error) {
+    console.error("[discord-customer-bot] DM error:", error);
+    return false;
+  }
+}
+
+// Public response with DM follow-up
+function publicResponseWithDM(
+  channelMessage: string,
+  discordUserId: string,
+  dmContent?: string,
+  dmEmbeds?: any[],
+  dmComponents?: any[]
+) {
+  // Fire and forget the DM - don't await to avoid timeout
+  sendDMToUser(discordUserId, dmContent, dmEmbeds, dmComponents).catch(console.error);
+
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: {
+        content: channelMessage,
+        flags: 0, // Public message
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
 // Get linked Eclipse account from Discord ID
 async function getLinkedAccount(supabase: any, discordUserId: string) {
   const { data: profile, error } = await supabase
@@ -194,7 +271,12 @@ async function handleLinkStatusCommand(
       },
       timestamp: new Date().toISOString(),
     };
-    return interactionResponse("", true, [embed]);
+    return publicResponseWithDM(
+      `✅ <@${discordUserId}> Your account is already linked! Check your DMs for details.`,
+      discordUserId,
+      undefined,
+      [embed]
+    );
   }
 
   const embed = {
@@ -223,7 +305,12 @@ async function handleLinkStatusCommand(
     },
     timestamp: new Date().toISOString(),
   };
-  return interactionResponse("", true, [embed]);
+  return publicResponseWithDM(
+    `🔗 <@${discordUserId}> Check your DMs for instructions on how to link your Eclipse account!`,
+    discordUserId,
+    undefined,
+    [embed]
+  );
 }
 
 // /verify command - Link account with code (optimized)
@@ -257,7 +344,12 @@ async function handleVerifyCommand(
         text: "Eclipse Marketplace",
       },
     };
-    return interactionResponse("", true, [embed]);
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Please provide a verification code. Check your DMs for help.`,
+      discordUserId,
+      undefined,
+      [embed]
+    );
   }
 
   const code = codeOption.value.toUpperCase().trim();
@@ -287,7 +379,12 @@ async function handleVerifyCommand(
         text: "Eclipse Marketplace",
       },
     };
-    return interactionResponse("", true, [embed]);
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> That code is invalid or expired. Check your DMs for help.`,
+      discordUserId,
+      undefined,
+      [embed]
+    );
   }
 
   // Update code and profile in parallel
@@ -325,7 +422,12 @@ async function handleVerifyCommand(
     },
     timestamp: new Date().toISOString(),
   };
-  return interactionResponse("", true, [embed]);
+  return publicResponseWithDM(
+    `🎉 <@${discordUserId}> Your account has been linked successfully! Check your DMs for details.`,
+    discordUserId,
+    undefined,
+    [embed]
+  );
 }
 
 // /profile command - View account info (optimized with parallel queries)
@@ -333,9 +435,10 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
-    return interactionResponse(
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!",
-      true
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
+      discordUserId,
+      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
     );
   }
 
@@ -403,7 +506,12 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
     timestamp: new Date().toISOString(),
   };
 
-  return interactionResponse("", true, [embed]);
+  return publicResponseWithDM(
+    `👤 <@${discordUserId}> Here's your profile! Check your DMs for full details.`,
+    discordUserId,
+    undefined,
+    [embed]
+  );
 }
 
 // /purchases command - List purchases (optimized)
@@ -411,9 +519,10 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
-    return interactionResponse(
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!",
-      true
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
+      discordUserId,
+      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
     );
   }
 
@@ -438,9 +547,10 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
     .limit(10);
 
   if (error || !orders || orders.length === 0) {
-    return interactionResponse(
-      "📦 **No Purchases Found**\n\nYou haven't made any purchases yet.\nVisit https://eclipserblx.com to browse products!",
-      true
+    return publicResponseWithDM(
+      `📦 <@${discordUserId}> You haven't made any purchases yet. Visit https://eclipserblx.com to browse products!`,
+      discordUserId,
+      "📦 **No Purchases Found**\n\nYou haven't made any purchases yet.\nVisit https://eclipserblx.com to browse products!"
     );
   }
 
@@ -470,7 +580,12 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
     timestamp: new Date().toISOString(),
   };
 
-  return interactionResponse("", true, [embed]);
+  return publicResponseWithDM(
+    `📦 <@${discordUserId}> Found ${productList.length} purchases! Check your DMs for details.`,
+    discordUserId,
+    undefined,
+    [embed]
+  );
 }
 
 // /retrieve command - Get download link (optimized with parallel queries)
@@ -483,9 +598,10 @@ async function handleRetrieveCommand(
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
-    return interactionResponse(
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!",
-      true
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
+      discordUserId,
+      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
     );
   }
 
@@ -502,9 +618,10 @@ async function handleRetrieveCommand(
   const orderIds = userOrders?.map((o: any) => o.id) || [];
 
   if (orderIds.length === 0) {
-    return interactionResponse(
-      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
-      true
+    return publicResponseWithDM(
+      `📁 <@${discordUserId}> You haven't purchased any downloadable products yet.`,
+      discordUserId,
+      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet."
     );
   }
 
@@ -517,9 +634,10 @@ async function handleRetrieveCommand(
   const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
 
   if (productIds.length === 0) {
-    return interactionResponse(
-      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
-      true
+    return publicResponseWithDM(
+      `📁 <@${discordUserId}> You haven't purchased any downloadable products yet.`,
+      discordUserId,
+      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet."
     );
   }
 
@@ -531,9 +649,10 @@ async function handleRetrieveCommand(
     .not("asset_file_url", "is", null);
 
   if (!products || products.length === 0) {
-    return interactionResponse(
-      "📁 **No Downloads Available**\n\nNone of your purchased products have downloadable files.",
-      true
+    return publicResponseWithDM(
+      `📁 <@${discordUserId}> None of your purchased products have downloadable files.`,
+      discordUserId,
+      "📁 **No Downloads Available**\n\nNone of your purchased products have downloadable files."
     );
   }
 
@@ -550,7 +669,12 @@ async function handleRetrieveCommand(
       },
       timestamp: new Date().toISOString(),
     };
-    return interactionResponse("", true, [embed]);
+    return publicResponseWithDM(
+      `📁 <@${discordUserId}> You have ${products.length} downloadable products. Check your DMs for the list!`,
+      discordUserId,
+      undefined,
+      [embed]
+    );
   }
 
   // Search for product by name
@@ -580,7 +704,12 @@ async function handleRetrieveCommand(
         text: "Eclipse Marketplace • Try typing the exact product name",
       },
     };
-    return interactionResponse("", true, [embed]);
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Couldn't find that product. Check your DMs for available products.`,
+      discordUserId,
+      undefined,
+      [embed]
+    );
   }
 
   const product = matchedProduct;
@@ -597,9 +726,10 @@ async function handleRetrieveCommand(
 
   if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
     console.error("[discord-customer-bot] Signed URL error:", signedUrlResult.error);
-    return interactionResponse(
-      "❌ **Download Failed**\n\nCouldn't generate download link. Please try again or use the website.",
-      true
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Couldn't generate download link. Please try again or use the website.`,
+      discordUserId,
+      "❌ **Download Failed**\n\nCouldn't generate download link. Please try again or use the website."
     );
   }
 
@@ -613,26 +743,31 @@ async function handleRetrieveCommand(
     timestamp: new Date().toISOString(),
   };
 
+  const components = [
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          style: 5,
+          label: "Download File",
+          url: signedUrlResult.data.signedUrl,
+          emoji: { name: "📥" },
+        },
+      ],
+    },
+  ];
+
+  // Send DM with download link
+  sendDMToUser(discordUserId, undefined, [embed], components).catch(console.error);
+
+  // Public acknowledgement
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
       data: {
-        embeds: [embed],
-        components: [
-          {
-            type: 1,
-            components: [
-              {
-                type: 2,
-                style: 5,
-                label: "Download File",
-                url: signedUrlResult.data.signedUrl,
-                emoji: { name: "📥" },
-              },
-            ],
-          },
-        ],
-        flags: 64,
+        content: `📥 <@${discordUserId}> Your download for **${product.name}** is ready! Check your DMs for the link.`,
+        flags: 0, // Public message
       },
     }),
     { headers: { "Content-Type": "application/json" } }
@@ -649,9 +784,10 @@ async function handleGetRoleCommand(
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
-    return interactionResponse(
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!",
-      true
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
+      discordUserId,
+      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
     );
   }
 
@@ -660,7 +796,11 @@ async function handleGetRoleCommand(
 
   if (!botToken || !targetGuildId) {
     console.error("[discord-customer-bot] Missing bot token or guild ID");
-    return interactionResponse("❌ Bot configuration error. Please contact support.", true);
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> Bot configuration error. Please contact support.`,
+      discordUserId,
+      "❌ Bot configuration error. Please contact support."
+    );
   }
 
   // Role IDs
@@ -793,5 +933,14 @@ async function handleGetRoleCommand(
     timestamp: new Date().toISOString(),
   };
 
-  return interactionResponse("", true, [embed]);
+  const channelMessage = rolesAssigned.length > 0
+    ? `🎉 <@${discordUserId}> Your roles have been synced: ${rolesAssigned.join(", ")}. Check your DMs for details!`
+    : `📋 <@${discordUserId}> Check your DMs for information on how to earn roles!`;
+
+  return publicResponseWithDM(
+    channelMessage,
+    discordUserId,
+    undefined,
+    [embed]
+  );
 }
