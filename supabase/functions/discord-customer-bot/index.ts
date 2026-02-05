@@ -45,7 +45,6 @@ const APPLICATION_COMMAND = 2;
 // Response types
 const PONG = 1;
 const CHANNEL_MESSAGE = 4;
-const DEFERRED_CHANNEL_MESSAGE = 5;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -170,7 +169,7 @@ async function getLinkedAccount(supabase: any, discordUserId: string) {
   return profile;
 }
 
-// /link command - Check link status
+// /link command - Check link status (optimized)
 async function handleLinkStatusCommand(
   supabase: any,
   discordUserId: string,
@@ -180,7 +179,7 @@ async function handleLinkStatusCommand(
 
   if (existingProfile) {
     const embed = {
-      color: 0x22c55e, // Green
+      color: 0x22c55e,
       title: "✅ Account Linked",
       description: `Your Discord is connected to **@${existingProfile.username}**`,
       fields: [
@@ -199,7 +198,7 @@ async function handleLinkStatusCommand(
   }
 
   const embed = {
-    color: 0x8b5cf6, // Eclipse purple
+    color: 0x8b5cf6,
     title: "🔗 Link Your Eclipse Account",
     description: "Connect your Discord to access your purchases and downloads.",
     fields: [
@@ -227,7 +226,7 @@ async function handleLinkStatusCommand(
   return interactionResponse("", true, [embed]);
 }
 
-// /verify command - Link account with code
+// /verify command - Link account with code (optimized)
 async function handleVerifyCommand(
   supabase: any,
   interaction: DiscordInteraction,
@@ -239,7 +238,7 @@ async function handleVerifyCommand(
 
   if (!codeOption) {
     const embed = {
-      color: 0xef4444, // Red
+      color: 0xef4444,
       title: "❌ Code Required",
       description: "Please provide your link code.",
       fields: [
@@ -274,7 +273,7 @@ async function handleVerifyCommand(
 
   if (codeError || !linkCode) {
     const embed = {
-      color: 0xef4444, // Red
+      color: 0xef4444,
       title: "❌ Invalid or Expired Code",
       description: "This code doesn't exist or has expired.",
       fields: [
@@ -291,27 +290,27 @@ async function handleVerifyCommand(
     return interactionResponse("", true, [embed]);
   }
 
-  // Mark code as verified and link Discord account
-  await supabase
-    .from("discord_link_codes")
-    .update({
-      discord_user_id: discordUserId,
-      discord_username: discordUsername,
-      verified_at: new Date().toISOString(),
-    })
-    .eq("id", linkCode.id);
-
-  // Update profile with Discord info
-  await supabase
-    .from("profiles")
-    .update({
-      discord_id: discordUserId,
-      discord_username: discordUsername,
-    })
-    .eq("user_id", linkCode.user_id);
+  // Update code and profile in parallel
+  await Promise.all([
+    supabase
+      .from("discord_link_codes")
+      .update({
+        discord_user_id: discordUserId,
+        discord_username: discordUsername,
+        verified_at: new Date().toISOString(),
+      })
+      .eq("id", linkCode.id),
+    supabase
+      .from("profiles")
+      .update({
+        discord_id: discordUserId,
+        discord_username: discordUsername,
+      })
+      .eq("user_id", linkCode.user_id),
+  ]);
 
   const embed = {
-    color: 0x22c55e, // Green
+    color: 0x22c55e,
     title: "✅ Account Linked Successfully!",
     description: "Your Discord account is now connected to Eclipse.",
     fields: [
@@ -329,7 +328,7 @@ async function handleVerifyCommand(
   return interactionResponse("", true, [embed]);
 }
 
-// /profile command - View account info
+// /profile command - View account info (optimized with parallel queries)
 async function handleProfileCommand(supabase: any, discordUserId: string, discordUsername: string) {
   const profile = await getLinkedAccount(supabase, discordUserId);
 
@@ -340,32 +339,32 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
     );
   }
 
-  // Get membership status
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("tier, current_period_end, status")
-    .eq("user_id", profile.user_id)
-    .eq("status", "active")
-    .maybeSingle();
+  // Run ALL queries in parallel for speed
+  const [subscriptionResult, orderCountResult, spentResult] = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .select("tier, current_period_end, status")
+      .eq("user_id", profile.user_id)
+      .eq("status", "active")
+      .maybeSingle(),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", profile.user_id)
+      .in("status", ["paid", "completed"]),
+    supabase
+      .from("orders")
+      .select("total")
+      .eq("user_id", profile.user_id)
+      .in("status", ["paid", "completed"]),
+  ]);
 
-  // Get order stats
-  const { count: orderCount } = await supabase
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", profile.user_id)
-    .in("status", ["paid", "completed"]);
-
-  // Get total spent
-  const { data: spentData } = await supabase
-    .from("orders")
-    .select("total")
-    .eq("user_id", profile.user_id)
-    .in("status", ["paid", "completed"]);
-
-  const totalSpent = spentData?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
+  const subscription = subscriptionResult.data;
+  const orderCount = orderCountResult.count || 0;
+  const totalSpent = spentResult.data?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
 
   const embed = {
-    color: 0x8b5cf6, // Eclipse purple
+    color: 0x8b5cf6,
     author: {
       name: profile.display_name || profile.username,
       icon_url: profile.avatar_url || undefined,
@@ -389,7 +388,7 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
       },
       {
         name: "🛒 Orders",
-        value: `${orderCount || 0} purchases`,
+        value: `${orderCount} purchases`,
         inline: true,
       },
       {
@@ -407,7 +406,7 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
   return interactionResponse("", true, [embed]);
 }
 
-// /purchases command - List purchases
+// /purchases command - List purchases (optimized)
 async function handlePurchasesCommand(supabase: any, discordUserId: string, discordUsername: string) {
   const profile = await getLinkedAccount(supabase, discordUserId);
 
@@ -418,7 +417,7 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
     );
   }
 
-  // Get recent orders with items
+  // Single optimized query with join
   const { data: orders, error } = await supabase
     .from("orders")
     .select(`
@@ -454,7 +453,7 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
         price: item.price,
       }))
     )
-    .slice(0, 15); // Limit to 15 items
+    .slice(0, 15);
 
   const embed = {
     color: 0x22c55e,
@@ -466,7 +465,7 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
       )
       .join("\n\n"),
     footer: {
-      text: `Showing ${productList.length} of ${orders.reduce((c: number, o: any) => c + o.order_items.length, 0)} items • Use /download to get files`,
+      text: `Showing ${productList.length} of ${orders.reduce((c: number, o: any) => c + o.order_items.length, 0)} items • Use /retrieve to get files`,
     },
     timestamp: new Date().toISOString(),
   };
@@ -474,7 +473,7 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
   return interactionResponse("", true, [embed]);
 }
 
-// /retrieve command - Get download link
+// /retrieve command - Get download link (optimized with parallel queries)
 async function handleRetrieveCommand(
   supabase: any,
   interaction: DiscordInteraction,
@@ -493,51 +492,53 @@ async function handleRetrieveCommand(
   const options = interaction.data?.options || [];
   const productOption = options.find((o) => o.name === "product");
 
+  // Get user's order IDs first
+  const { data: userOrders } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("user_id", profile.user_id)
+    .in("status", ["paid", "completed"]);
+
+  const orderIds = userOrders?.map((o: any) => o.id) || [];
+
+  if (orderIds.length === 0) {
+    return interactionResponse(
+      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
+      true
+    );
+  }
+
+  // Get order items
+  const { data: orderItems } = await supabase
+    .from("order_items")
+    .select("product_id, product_name")
+    .in("order_id", orderIds);
+
+  const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
+
+  if (productIds.length === 0) {
+    return interactionResponse(
+      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
+      true
+    );
+  }
+
+  // Get products with download files
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, asset_file_url")
+    .in("id", productIds)
+    .not("asset_file_url", "is", null);
+
+  if (!products || products.length === 0) {
+    return interactionResponse(
+      "📁 **No Downloads Available**\n\nNone of your purchased products have downloadable files.",
+      true
+    );
+  }
+
   if (!productOption) {
-    // List downloadable products - use separate queries to avoid nested join issues
-    const { data: userOrders } = await supabase
-      .from("orders")
-      .select("id")
-      .eq("user_id", profile.user_id)
-      .in("status", ["paid", "completed"]);
-
-    const orderIds = userOrders?.map((o: any) => o.id) || [];
-
-    if (orderIds.length === 0) {
-      return interactionResponse(
-        "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
-        true
-      );
-    }
-
-    const { data: orderItems } = await supabase
-      .from("order_items")
-      .select("product_id, product_name")
-      .in("order_id", orderIds);
-
-    // Get products with download files
-    const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
-
-    if (productIds.length === 0) {
-      return interactionResponse(
-        "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
-        true
-      );
-    }
-
-    const { data: products } = await supabase
-      .from("products")
-      .select("id, name, asset_file_url")
-      .in("id", productIds)
-      .not("asset_file_url", "is", null);
-
-    if (!products || products.length === 0) {
-      return interactionResponse(
-        "📁 **No Downloads Available**\n\nNone of your purchased products have downloadable files.",
-        true
-      );
-    }
-
+    // List downloadable products
     const productList = products.map((p: any, i: number) => `**${i + 1}.** ${p.name}`).join("\n");
 
     const embed = {
@@ -554,61 +555,7 @@ async function handleRetrieveCommand(
 
   // Search for product by name
   const searchTerm = productOption.value.toLowerCase().trim();
-  console.log(`[discord-customer-bot] Retrieve search: "${searchTerm}" for user ${profile.user_id}`);
-
-  // Get user's purchased products - use separate query for orders first
-  const { data: userOrders, error: ordersError } = await supabase
-    .from("orders")
-    .select("id")
-    .eq("user_id", profile.user_id)
-    .in("status", ["paid", "completed"]);
-
-  if (ordersError) {
-    console.error("[discord-customer-bot] Orders query error:", ordersError);
-  }
-
-  const orderIds = userOrders?.map((o: any) => o.id) || [];
-  console.log(`[discord-customer-bot] Found ${orderIds.length} orders for user`);
-
-  if (orderIds.length === 0) {
-    return interactionResponse(
-      "📁 **No Purchases Found**\n\nYou don't have any completed orders yet.",
-      true
-    );
-  }
-
-  // Get order items for those orders
-  const { data: orderItems, error: itemsError } = await supabase
-    .from("order_items")
-    .select("product_id, product_name")
-    .in("order_id", orderIds);
-
-  if (itemsError) {
-    console.error("[discord-customer-bot] Order items query error:", itemsError);
-  }
-
-  const purchasedProductIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
-  console.log(`[discord-customer-bot] Purchased product IDs: ${purchasedProductIds.length}`);
-
-  if (purchasedProductIds.length === 0) {
-    return interactionResponse(
-      "📁 **No Downloads Available**\n\nNo purchased products found.",
-      true
-    );
-  }
-
-  // Find matching product with flexible search
-  const { data: products, error: productsError } = await supabase
-    .from("products")
-    .select("id, name, asset_file_url")
-    .in("id", purchasedProductIds)
-    .not("asset_file_url", "is", null);
-
-  if (productsError) {
-    console.error("[discord-customer-bot] Products query error:", productsError);
-  }
-
-  console.log(`[discord-customer-bot] Products with files: ${products?.length || 0}`);
+  console.log(`[discord-customer-bot] Retrieve search: "${searchTerm}"`);
 
   // Fuzzy match the product name
   const matchedProduct = products?.find((p: any) => 
@@ -618,9 +565,6 @@ async function handleRetrieveCommand(
   );
 
   if (!matchedProduct) {
-    const availableProducts = products?.map((p: any) => p.name).join(", ") || "None";
-    console.log(`[discord-customer-bot] No match found. Available: ${availableProducts}`);
-    
     const embed = {
       color: 0xef4444,
       title: "❌ Product Not Found",
@@ -641,27 +585,23 @@ async function handleRetrieveCommand(
 
   const product = matchedProduct;
 
-  // Generate signed URL (valid for 1 hour)
-  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-    .from("product-assets")
-    .createSignedUrl(product.asset_file_url, 3600);
+  // Generate signed URL and log download in parallel
+  const [signedUrlResult] = await Promise.all([
+    supabase.storage.from("product-assets").createSignedUrl(product.asset_file_url, 3600),
+    supabase.from("download_logs").insert({
+      user_id: profile.user_id,
+      product_id: product.id,
+    }),
+    supabase.rpc("increment_download_count", { product_id: product.id }).catch(() => {}),
+  ]);
 
-  if (signedUrlError || !signedUrlData?.signedUrl) {
-    console.error("[discord-customer-bot] Signed URL error:", signedUrlError);
+  if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
+    console.error("[discord-customer-bot] Signed URL error:", signedUrlResult.error);
     return interactionResponse(
       "❌ **Download Failed**\n\nCouldn't generate download link. Please try again or use the website.",
       true
     );
   }
-
-  // Log the download
-  await supabase.from("download_logs").insert({
-    user_id: profile.user_id,
-    product_id: product.id,
-  });
-
-  // Update download count
-  await supabase.rpc("increment_download_count", { product_id: product.id }).catch(() => {});
 
   const embed = {
     color: 0x3b82f6,
@@ -680,26 +620,26 @@ async function handleRetrieveCommand(
         embeds: [embed],
         components: [
           {
-            type: 1, // Action row
+            type: 1,
             components: [
               {
-                type: 2, // Button
-                style: 5, // Link button
+                type: 2,
+                style: 5,
                 label: "Download File",
-                url: signedUrlData.signedUrl,
+                url: signedUrlResult.data.signedUrl,
                 emoji: { name: "📥" },
               },
             ],
           },
         ],
-        flags: 64, // Ephemeral
+        flags: 64,
       },
     }),
     { headers: { "Content-Type": "application/json" } }
   );
 }
 
-// /getrole command - Assign Discord roles based on Eclipse account
+// /getrole command - Assign Discord roles (already optimized with parallel queries)
 async function handleGetRoleCommand(
   supabase: any,
   discordUserId: string,
@@ -719,17 +659,17 @@ async function handleGetRoleCommand(
   const targetGuildId = guildId || Deno.env.get("DISCORD_GUILD_ID");
 
   if (!botToken || !targetGuildId) {
-    console.error("[discord-customer-bot] Missing bot token or guild ID for role assignment");
+    console.error("[discord-customer-bot] Missing bot token or guild ID");
     return interactionResponse("❌ Bot configuration error. Please contact support.", true);
   }
 
-  // Role IDs from secrets
+  // Role IDs
   const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
   const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
   const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
   const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
 
-  // Run all database queries in parallel for speed
+  // Run all database queries in parallel
   const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
     supabase
       .from("orders")
@@ -756,26 +696,21 @@ async function handleGetRoleCommand(
 
   console.log(`[discord-customer-bot] User ${profile.username}: ${purchaseCount} purchases, Eclipse+: ${hasSubscription}, Store: ${hasStore}`);
 
-  // Determine which roles to assign
+  // Determine roles
   const rolesToAssign: { id: string; name: string }[] = [];
   const rolesToRemove: { id: string; name: string }[] = [];
 
-  // Customer/Loyal Customer logic
   if (purchaseCount >= 5 && loyalCustomerRoleId) {
     rolesToAssign.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
-    if (customerRoleId) {
-      rolesToRemove.push({ id: customerRoleId, name: "Customer" });
-    }
+    if (customerRoleId) rolesToRemove.push({ id: customerRoleId, name: "Customer" });
   } else if (purchaseCount >= 1 && customerRoleId) {
     rolesToAssign.push({ id: customerRoleId, name: "Customer" });
   }
 
-  // Eclipse+
   if (hasSubscription && eclipsePlusRoleId) {
     rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
   }
 
-  // Store Creator
   if (hasStore && storeCreatorRoleId) {
     rolesToAssign.push({ id: storeCreatorRoleId, name: "Store Creator" });
   }
@@ -784,15 +719,12 @@ async function handleGetRoleCommand(
   const rolesAssigned: string[] = [];
   const rolesFailed: string[] = [];
 
-  const rolePromises = [
+  await Promise.all([
     ...rolesToAssign.map(async (role) => {
       try {
         const response = await fetch(
           `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${role.id}`,
-          {
-            method: "PUT",
-            headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" },
-          }
+          { method: "PUT", headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" } }
         );
         if (response.status === 204 || response.ok) {
           rolesAssigned.push(role.name);
@@ -815,9 +747,7 @@ async function handleGetRoleCommand(
         console.log(`[discord-customer-bot] Could not remove ${role.name}:`, e);
       }
     }),
-  ];
-
-  await Promise.all(rolePromises);
+  ]);
 
   // Build response
   const fields: any[] = [];
@@ -838,7 +768,6 @@ async function handleGetRoleCommand(
     });
   }
 
-  // Eligibility hints
   const eligibility: string[] = [];
   if (purchaseCount === 0) eligibility.push("• Make a purchase → **Customer**");
   if (purchaseCount > 0 && purchaseCount < 5) eligibility.push(`• ${5 - purchaseCount} more purchases → **Loyal Customer**`);
