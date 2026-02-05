@@ -42,11 +42,12 @@
  
  const DISCORD_API_BASE = 'https://discord.com/api/v10';
  
- /**
-  * Get the bot token from environment
-  */
- function getBotToken(): string | null {
-   return Deno.env.get('DISCORD_BOT_TOKEN') || null;
+/**
+ * Get the bot token from environment
+ * Uses DISCORD_CUSTOMER_BOT_TOKEN (Eclipse Portal Bot) for all notifications
+ */
+function getBotToken(): string | null {
+  return Deno.env.get('DISCORD_CUSTOMER_BOT_TOKEN') || null;
  }
  
  /**
