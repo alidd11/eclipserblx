@@ -343,7 +343,7 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
   // Get membership status
   const { data: subscription } = await supabase
     .from("subscriptions")
-    .select("plan_name, current_period_end, status")
+    .select("tier, current_period_end, status")
     .eq("user_id", profile.user_id)
     .eq("status", "active")
     .maybeSingle();
@@ -384,7 +384,7 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
       },
       {
         name: "⭐ Membership",
-        value: subscription ? `${subscription.plan_name} (Active)` : "Free",
+        value: subscription ? `Eclipse+ (Active)` : "Free",
         inline: true,
       },
       {
