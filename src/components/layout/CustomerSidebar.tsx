@@ -172,23 +172,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     // Note: "Browse" section with All Products + Categories is rendered via renderBrowseSection()
     {
       id: 'community',
-      title: 'Community',
-      icon: MessageSquare,
+     title: 'Support',
+     icon: HelpCircle,
       items: [
-        { title: 'Forum', icon: MessageSquare, href: '/forum' },
+       { title: 'My Tickets', icon: MessageSquareText, href: '/support/tickets' },
+       { title: 'Help Center', icon: HelpCircle, href: '/support' },
+       { title: 'FAQ', icon: FileQuestion, href: '/faq' },
         { title: 'Jobs', icon: Briefcase, href: '/jobs' },
         { title: 'Discord', icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
-      ],
-    },
-    {
-      id: 'support',
-      title: 'Support',
-      icon: HelpCircle,
-      items: [
-        { title: 'Help Center', icon: HelpCircle, href: '/support' },
-        { title: 'FAQ', icon: FileQuestion, href: '/faq' },
-        { title: 'Contact', icon: Mail, href: '/contact' },
-        { title: 'Status', icon: Activity, href: '/status', showStatusDot: true },
       ],
     },
   ];

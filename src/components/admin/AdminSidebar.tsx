@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
-  ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
-  TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent, Ticket, Bot, RotateCcw
-} from 'lucide-react';
- import { Upload, Wallet } from 'lucide-react';
+ import { useState, useEffect } from 'react';
+ import { 
+   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
+   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
+   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
+   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet
+ } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -74,7 +73,7 @@ const navGroups: NavGroup[] = [
       { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', permissions: ['view_live_chat'] },
       { title: 'Discord Modmail', icon: Mail, href: '/admin/discord-modmail', permissions: ['view_live_chat'] },
       { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', permissions: ['view_contact_messages'] },
-      { title: 'Forum Reports', icon: Flag, href: '/admin/forum-reports', permissions: ['view_forum_reports'] },
+       { title: 'Customer Tickets', icon: Ticket, href: '/admin/customer-tickets', permissions: ['view_live_chat'] },
       { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', permissions: ['view_live_chat'], dividerAfter: true },
       { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', permissions: [] },
       { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', permissions: ['view_admin_chat'] },

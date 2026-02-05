@@ -1,19 +1,21 @@
-import { Link } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { SITE_NAME } from '@/lib/constants';
-import { useDiscordUrl } from '@/hooks/useDiscordUrl';
-import {
-  MessageCircle,
-  FileQuestion,
-  Download,
-  CreditCard,
-  ShieldCheck,
-  Users,
-  ExternalLink,
-  Headphones,
-} from 'lucide-react';
+ import { Link, useNavigate } from 'react-router-dom';
+ import { useState } from 'react';
+ import { MainLayout } from '@/components/layout/MainLayout';
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+ import { Button } from '@/components/ui/button';
+ import { SITE_NAME } from '@/lib/constants';
+ import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+ import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
+ import { useAuth } from '@/hooks/useAuth';
+ import {
+   Ticket,
+   FileQuestion,
+   Download,
+   CreditCard,
+   ShieldCheck,
+   MessageCircle,
+   Headphones,
+ } from 'lucide-react';
 
 const supportCategories = [
   {
@@ -64,11 +66,14 @@ const supportCategories = [
 
 export default function Support() {
   const { discordUrl } = useDiscordUrl();
+   const { user } = useAuth();
+   const navigate = useNavigate();
+   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const quickLinks = [
-    { icon: MessageCircle, label: 'Live Chat', description: 'Chat with our support team', action: 'chat' },
+     { icon: Ticket, label: 'Submit a Ticket', description: 'Get help from our team', action: 'ticket' },
+     { icon: MessageCircle, label: 'Live Chat', description: 'Real-time support', action: 'chat' },
     { icon: FileQuestion, label: 'FAQ', description: 'Browse common questions', href: '/faq' },
-    { icon: Users, label: 'Discord', description: 'Join our community', href: discordUrl, external: true },
   ];
 
   return (
@@ -108,24 +113,27 @@ export default function Support() {
                       </div>
                     </div>
                   </button>
-                ) : link.external ? (
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4"
-                  >
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <link.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold flex items-center gap-1">
-                        {link.label}
-                        <ExternalLink className="w-3 h-3" />
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{link.description}</p>
-                    </div>
-                  </a>
+                 ) : link.action === 'ticket' ? (
+                   <button
+                     onClick={() => {
+                       if (user) {
+                         setCreateDialogOpen(true);
+                       } else {
+                         navigate('/auth');
+                       }
+                     }}
+                     className="w-full text-left"
+                   >
+                     <div className="flex items-center gap-4">
+                       <div className="p-3 rounded-lg bg-primary/10">
+                         <link.icon className="w-6 h-6 text-primary" />
+                       </div>
+                       <div>
+                         <h3 className="font-semibold">{link.label}</h3>
+                         <p className="text-sm text-muted-foreground">{link.description}</p>
+                       </div>
+                     </div>
+                   </button>
                 ) : (
                   <Link to={link.href!} className="flex items-center gap-4">
                     <div className="p-3 rounded-lg bg-primary/10">
@@ -192,8 +200,19 @@ export default function Support() {
             <Link to="/faq">
               <Button variant="outline">Browse FAQ</Button>
             </Link>
+           {user && (
+             <Link to="/support/tickets">
+               <Button variant="outline">My Tickets</Button>
+             </Link>
+           )}
           </div>
         </div>
+       
+       {/* Create Ticket Dialog */}
+       <CreateTicketDialog 
+         open={createDialogOpen} 
+         onOpenChange={setCreateDialogOpen} 
+       />
       </div>
     </MainLayout>
   );
