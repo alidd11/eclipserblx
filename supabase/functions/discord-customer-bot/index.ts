@@ -727,10 +727,25 @@ async function handleRetrieveCommand(
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
+    const notLinkedEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: "Your Discord isn't linked to an Eclipse account yet.",
+      fields: [
+        {
+          name: "How to Link",
+          value: "Run `/link` to get started with linking your account!",
+          inline: false,
+        },
+      ],
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
       discordUserId,
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
+      undefined,
+      [notLinkedEmbed]
     );
   }
 
@@ -747,10 +762,25 @@ async function handleRetrieveCommand(
   const orderIds = userOrders?.map((o: any) => o.id) || [];
 
   if (orderIds.length === 0) {
+    const noOrdersEmbed = {
+      color: 0x3b82f6,
+      title: "📁 No Downloads Available",
+      description: "You haven't purchased any downloadable products yet.",
+      fields: [
+        {
+          name: "Browse Products",
+          value: "Visit [Eclipse Marketplace](https://eclipserblx.com) to find products!",
+          inline: false,
+        },
+      ],
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `📁 <@${discordUserId}> You haven't purchased any downloadable products yet.`,
       discordUserId,
-      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet."
+      undefined,
+      [noOrdersEmbed]
     );
   }
 
@@ -772,10 +802,18 @@ async function handleRetrieveCommand(
     const msg = serverContext.store 
       ? `You haven't purchased any products from ${serverContext.store.name} yet.`
       : "You haven't purchased any downloadable products yet.";
+    const noProductsEmbed = {
+      color: 0x3b82f6,
+      title: "📁 No Downloads Available",
+      description: msg,
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `📁 <@${discordUserId}> ${msg}`,
       discordUserId,
-      `📁 **No Downloads Available**\n\n${msg}`
+      undefined,
+      [noProductsEmbed]
     );
   }
 
@@ -787,10 +825,18 @@ async function handleRetrieveCommand(
     .not("asset_file_url", "is", null);
 
   if (!products || products.length === 0) {
+    const noFilesEmbed = {
+      color: 0x3b82f6,
+      title: "📁 No Downloads Available",
+      description: "None of your purchased products have downloadable files.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `📁 <@${discordUserId}> None of your purchased products have downloadable files.`,
       discordUserId,
-      "📁 **No Downloads Available**\n\nNone of your purchased products have downloadable files."
+      undefined,
+      [noFilesEmbed]
     );
   }
 
@@ -864,10 +910,25 @@ async function handleRetrieveCommand(
 
   if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
     console.error("[discord-customer-bot] Signed URL error:", signedUrlResult.error);
+    const downloadFailedEmbed = {
+      color: 0xef4444,
+      title: "❌ Download Failed",
+      description: "Couldn't generate download link. Please try again or use the website.",
+      fields: [
+        {
+          name: "Alternative",
+          value: "Visit [Eclipse Marketplace](https://eclipserblx.com) to download your products.",
+          inline: false,
+        },
+      ],
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `❌ <@${discordUserId}> Couldn't generate download link. Please try again or use the website.`,
       discordUserId,
-      "❌ **Download Failed**\n\nCouldn't generate download link. Please try again or use the website."
+      undefined,
+      [downloadFailedEmbed]
     );
   }
 
@@ -923,10 +984,25 @@ async function handleGetRoleCommand(
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
+    const notLinkedEmbed = {
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: "Your Discord isn't linked to an Eclipse account yet.",
+      fields: [
+        {
+          name: "How to Link",
+          value: "Run `/link` to get started with linking your account!",
+          inline: false,
+        },
+      ],
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `❌ <@${discordUserId}> Your account isn't linked yet. Run \`/link\` to get started!`,
       discordUserId,
-      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!"
+      undefined,
+      [notLinkedEmbed]
     );
   }
 
@@ -934,10 +1010,18 @@ async function handleGetRoleCommand(
   
   if (!botToken || !serverContext.guildId) {
     console.error("[discord-customer-bot] Missing bot token or guild ID");
+    const configErrorEmbed = {
+      color: 0xef4444,
+      title: "❌ Configuration Error",
+      description: "Bot configuration error. Please contact support.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
     return publicResponseWithDM(
       `❌ <@${discordUserId}> Bot configuration error. Please contact support.`,
       discordUserId,
-      "❌ Bot configuration error. Please contact support."
+      undefined,
+      [configErrorEmbed]
     );
   }
 
