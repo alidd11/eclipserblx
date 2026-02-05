@@ -59,7 +59,7 @@
            subject: subject.trim(),
            category,
            status: 'open',
-           priority: 'normal',
+          priority: 'medium',
          })
          .select()
          .single();
