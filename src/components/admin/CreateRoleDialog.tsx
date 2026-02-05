@@ -38,6 +38,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 
+const normalizeRoleKey = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    // Replace any non-alphanumeric run with underscores
+    .replace(/[^a-z0-9]+/g, '_')
+    // Trim underscores from edges
+    .replace(/^_+|_+$/g, '')
+    // Collapse multiple underscores
+    .replace(/_+/g, '_');
+
 interface CreateRoleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -126,7 +137,7 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
       const { error } = await supabase
         .from('custom_roles')
         .insert({
-          name: data.name.toLowerCase().replace(/\s+/g, '_'),
+          name: normalizeRoleKey(data.name),
           display_name: data.display_name,
           color: data.color,
           icon: data.icon,
@@ -158,7 +169,7 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
       
       // Only primary admin can change the system name
       if (isPrimaryAdmin && data.name) {
-        updateData.name = data.name.toLowerCase().replace(/\s+/g, '_');
+        updateData.name = normalizeRoleKey(data.name);
       }
       
       const { error } = await supabase
@@ -194,6 +205,16 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
       toast.error('Role name is required');
       return;
     }
+
+    const generatedName = normalizeRoleKey(formData.display_name);
+    const finalName = formData.name.trim()
+      ? normalizeRoleKey(formData.name)
+      : generatedName;
+
+    if (!finalName) {
+      toast.error('System name could not be generated. Please enter a system name with letters/numbers.');
+      return;
+    }
     
     // Enforce hierarchy constraint
     if (formData.hierarchy_level > maxAllowedHierarchy) {
@@ -207,9 +228,7 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
       // Auto-generate name from display_name if not provided
       const dataToSubmit = {
         ...formData,
-        name: formData.name.trim() 
-          ? formData.name 
-          : formData.display_name.toLowerCase().replace(/\s+/g, '_'),
+        name: finalName,
       };
       createMutation.mutate(dataToSubmit);
     }
@@ -237,7 +256,20 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
             <Input
               id="display_name"
               value={formData.display_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+              onChange={(e) => {
+                const nextDisplayName = e.target.value;
+                setFormData(prev => {
+                  // In create mode, keep system name in sync *only* while it's empty
+                  if (!isEditing && !prev.name.trim()) {
+                    return {
+                      ...prev,
+                      display_name: nextDisplayName,
+                      name: normalizeRoleKey(nextDisplayName),
+                    };
+                  }
+                  return { ...prev, display_name: nextDisplayName };
+                });
+              }}
               placeholder="e.g. Content Moderator"
               disabled={editRole?.is_system && !isPrimaryAdmin}
             />
@@ -249,7 +281,12 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData(prev => ({
+                    ...prev,
+                    name: normalizeRoleKey(e.target.value),
+                  }))
+                }
                 placeholder="Auto-generated from display name"
               />
               <p className="text-xs text-muted-foreground">
@@ -266,7 +303,7 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ 
                   ...prev, 
-                  name: e.target.value.toLowerCase().replace(/\s+/g, '_') 
+                  name: normalizeRoleKey(e.target.value),
                 }))}
                 placeholder="e.g. content_moderator"
               />
