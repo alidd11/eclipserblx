@@ -73,14 +73,14 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
-    const guildId = Deno.env.get("DISCORD_GUILD_ID");
+    const mainGuildId = Deno.env.get("DISCORD_GUILD_ID");
     const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
     const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
     const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
     const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
 
-    if (!botToken || !guildId) {
-      logStep("Missing Discord bot configuration");
+    if (!botToken) {
+      logStep("Missing Discord bot token");
       return new Response(
         JSON.stringify({ error: "Discord bot not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -89,7 +89,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    logStep("Starting comprehensive Discord role sync");
+    logStep("Starting comprehensive Discord role sync (main + store servers)");
 
     // Get all profiles with linked Discord accounts
     const { data: profiles, error: profileError } = await supabase
@@ -116,31 +116,55 @@ serve(async (req) => {
     logStep("Found users with Discord linked", { count: profiles.length });
 
     // Fetch all relevant data in parallel
-    const userIds = profiles.map(p => p.user_id);
-
-    const [subscriptionsResult, storesResult, ordersResult] = await Promise.all([
+    const [subscriptionsResult, storesResult, ordersResult, storeServersResult, roleConfigsResult] = await Promise.all([
       supabase.from('subscriptions').select('user_id').eq('status', 'active'),
-      supabase.from('stores').select('owner_id').eq('is_active', true),
-      supabase.from('orders').select('user_id').in('status', ['paid', 'completed']),
+      supabase.from('stores').select('id, owner_id, discord_guild_id').eq('is_active', true),
+      supabase.from('orders').select('user_id, order_items(store_id)').in('status', ['paid', 'completed']),
+      supabase.from('stores').select('id, name, discord_guild_id').eq('is_active', true).not('discord_guild_id', 'is', null),
+      supabase.from('discord_role_configs').select('*').eq('auto_assign_on_purchase', true),
     ]);
 
     // Create lookup sets/maps
     const activeSubscribers = new Set(subscriptionsResult.data?.map(s => s.user_id) || []);
     const storeOwners = new Set(storesResult.data?.map(s => s.owner_id) || []);
     
-    // Count orders per user
+    // Count orders per user (total and per store)
     const orderCounts = new Map<string, number>();
-    ordersResult.data?.forEach(order => {
+    const storeOrderCounts = new Map<string, Map<string, number>>(); // userId -> storeId -> count
+    
+    ordersResult.data?.forEach((order: any) => {
       orderCounts.set(order.user_id, (orderCounts.get(order.user_id) || 0) + 1);
+      
+      // Track per-store orders
+      order.order_items?.forEach((item: any) => {
+        if (item.store_id) {
+          if (!storeOrderCounts.has(order.user_id)) {
+            storeOrderCounts.set(order.user_id, new Map());
+          }
+          const userStoreMap = storeOrderCounts.get(order.user_id)!;
+          userStoreMap.set(item.store_id, (userStoreMap.get(item.store_id) || 0) + 1);
+        }
+      });
     });
+
+    // Store servers with role configs
+    const storeServers = storeServersResult.data || [];
+    const roleConfigs = roleConfigsResult.data || [];
 
     const results = {
       total: profiles.length,
-      eclipsePlus: { assigned: 0, failed: 0 },
-      storeCreator: { assigned: 0, failed: 0 },
-      loyalCustomer: { assigned: 0, failed: 0 },
-      customer: { assigned: 0, failed: 0 },
-      errors: [] as { user_id: string; discord_id: string; role: string; error: string }[],
+      mainServer: {
+        eclipsePlus: { assigned: 0, failed: 0 },
+        storeCreator: { assigned: 0, failed: 0 },
+        loyalCustomer: { assigned: 0, failed: 0 },
+        customer: { assigned: 0, failed: 0 },
+      },
+      storeServers: {
+        processed: 0,
+        rolesAssigned: 0,
+        rolesFailed: 0,
+      },
+      errors: [] as { user_id: string; discord_id: string; role: string; server: string; error: string }[],
     };
 
     // Process each user
@@ -149,73 +173,114 @@ serve(async (req) => {
       
       logStep("Processing user", { user_id, discord_id: discord_id.substring(0, 8) + "..." });
 
-      // Eclipse+ Role
-      if (eclipsePlusRoleId && activeSubscribers.has(user_id)) {
-        const result = await assignDiscordRole(botToken, guildId, eclipsePlusRoleId, discord_id, "Eclipse+");
-        if (result.success) {
-          results.eclipsePlus.assigned++;
-        } else {
-          results.eclipsePlus.failed++;
-          results.errors.push({ user_id, discord_id, role: "Eclipse+", error: result.error || "Unknown" });
+      // === MAIN SERVER ROLES ===
+      if (mainGuildId) {
+        // Eclipse+ Role
+        if (eclipsePlusRoleId && activeSubscribers.has(user_id)) {
+          const result = await assignDiscordRole(botToken, mainGuildId, eclipsePlusRoleId, discord_id, "Eclipse+");
+          if (result.success) {
+            results.mainServer.eclipsePlus.assigned++;
+          } else {
+            results.mainServer.eclipsePlus.failed++;
+            results.errors.push({ user_id, discord_id, role: "Eclipse+", server: "main", error: result.error || "Unknown" });
+          }
         }
-      }
 
-      // Store Creator Role
-      if (storeCreatorRoleId && storeOwners.has(user_id)) {
-        const result = await assignDiscordRole(botToken, guildId, storeCreatorRoleId, discord_id, "Store Creator");
-        if (result.success) {
-          results.storeCreator.assigned++;
-        } else {
-          results.storeCreator.failed++;
-          results.errors.push({ user_id, discord_id, role: "Store Creator", error: result.error || "Unknown" });
+        // Store Creator Role
+        if (storeCreatorRoleId && storeOwners.has(user_id)) {
+          const result = await assignDiscordRole(botToken, mainGuildId, storeCreatorRoleId, discord_id, "Store Creator");
+          if (result.success) {
+            results.mainServer.storeCreator.assigned++;
+          } else {
+            results.mainServer.storeCreator.failed++;
+            results.errors.push({ user_id, discord_id, role: "Store Creator", server: "main", error: result.error || "Unknown" });
+          }
         }
-      }
 
-      // Customer/Loyal Customer Roles
-      const orderCount = orderCounts.get(user_id) || 0;
-      
-      if (orderCount >= 5 && loyalCustomerRoleId) {
-        // Assign Loyal Customer
-        const result = await assignDiscordRole(botToken, guildId, loyalCustomerRoleId, discord_id, "Loyal Customer");
-        if (result.success) {
-          results.loyalCustomer.assigned++;
-        } else {
-          results.loyalCustomer.failed++;
-          results.errors.push({ user_id, discord_id, role: "Loyal Customer", error: result.error || "Unknown" });
-        }
+        // Customer/Loyal Customer Roles
+        const orderCount = orderCounts.get(user_id) || 0;
         
-        // Remove regular Customer role
-        if (customerRoleId) {
-          await removeDiscordRole(botToken, guildId, customerRoleId, discord_id);
-        }
-      } else if (orderCount > 0 && customerRoleId) {
-        // Assign Customer role (1-4 orders)
-        const result = await assignDiscordRole(botToken, guildId, customerRoleId, discord_id, "Customer");
-        if (result.success) {
-          results.customer.assigned++;
-        } else {
-          results.customer.failed++;
-          results.errors.push({ user_id, discord_id, role: "Customer", error: result.error || "Unknown" });
+        if (orderCount >= 5 && loyalCustomerRoleId) {
+          const result = await assignDiscordRole(botToken, mainGuildId, loyalCustomerRoleId, discord_id, "Loyal Customer");
+          if (result.success) {
+            results.mainServer.loyalCustomer.assigned++;
+          } else {
+            results.mainServer.loyalCustomer.failed++;
+            results.errors.push({ user_id, discord_id, role: "Loyal Customer", server: "main", error: result.error || "Unknown" });
+          }
+          
+          if (customerRoleId) {
+            await removeDiscordRole(botToken, mainGuildId, customerRoleId, discord_id);
+          }
+        } else if (orderCount > 0 && customerRoleId) {
+          const result = await assignDiscordRole(botToken, mainGuildId, customerRoleId, discord_id, "Customer");
+          if (result.success) {
+            results.mainServer.customer.assigned++;
+          } else {
+            results.mainServer.customer.failed++;
+            results.errors.push({ user_id, discord_id, role: "Customer", server: "main", error: result.error || "Unknown" });
+          }
         }
       }
 
-      // Rate limit protection (500ms between users)
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // === STORE SERVER ROLES ===
+      for (const store of storeServers) {
+        if (!store.discord_guild_id) continue;
+        
+        // Get role configs for this store
+        const storeRoleConfigs = roleConfigs.filter((rc: any) => rc.store_id === store.id);
+        if (storeRoleConfigs.length === 0) continue;
+
+        // Get user's order count for this store
+        const userStoreOrders = storeOrderCounts.get(user_id)?.get(store.id) || 0;
+        if (userStoreOrders === 0) continue; // Skip if user hasn't ordered from this store
+
+        results.storeServers.processed++;
+
+        for (const config of storeRoleConfigs) {
+          let eligible = true;
+
+          if (config.min_order_count && userStoreOrders < config.min_order_count) {
+            eligible = false;
+          }
+
+          if (config.requires_subscription && !activeSubscribers.has(user_id)) {
+            eligible = false;
+          }
+
+          if (eligible) {
+            const result = await assignDiscordRole(botToken, store.discord_guild_id, config.role_id, discord_id, config.role_name);
+            if (result.success) {
+              results.storeServers.rolesAssigned++;
+            } else {
+              results.storeServers.rolesFailed++;
+              results.errors.push({ 
+                user_id, 
+                discord_id, 
+                role: config.role_name, 
+                server: store.name, 
+                error: result.error || "Unknown" 
+              });
+            }
+          }
+        }
+      }
+
+      // Rate limit protection (300ms between users)
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
 
     logStep("Sync completed", {
       total: results.total,
-      eclipsePlus: results.eclipsePlus,
-      storeCreator: results.storeCreator,
-      loyalCustomer: results.loyalCustomer,
-      customer: results.customer,
+      mainServer: results.mainServer,
+      storeServers: results.storeServers,
       errorCount: results.errors.length
     });
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Processed ${results.total} users`,
+        message: `Processed ${results.total} users across main server and ${storeServers.length} store servers`,
         results 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
