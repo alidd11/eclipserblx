@@ -137,6 +137,31 @@ export default function Transcripts() {
     },
   });
 
+  // Fetch closed/resolved customer support tickets
+  const { data: customerTicketTranscripts = [], isLoading: customerTicketsLoading } = useQuery({
+    queryKey: ['transcripts-customer-tickets'],
+    queryFn: async () => {
+      const { data: tickets, error } = await supabase
+        .from('support_tickets')
+        .select('*, profiles:user_id(display_name, username)')
+        .in('status', ['closed', 'resolved'])
+        .order('updated_at', { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+      
+      return (tickets || []).map(ticket => ({
+        id: ticket.id,
+        title: (ticket as any).profiles?.display_name || (ticket as any).profiles?.username || ticket.customer_email || 'Unknown Customer',
+        subtitle: `${ticket.ticket_number || 'No ID'} - ${ticket.subject}`,
+        created_at: ticket.created_at,
+        closed_at: ticket.updated_at,
+        customer_name: (ticket as any).profiles?.display_name || ticket.customer_email,
+        customer_id: ticket.user_id,
+      })) as Transcript[];
+    },
+  });
+
   // Fetch resolved forum reports
   const { data: forumReportTranscripts = [], isLoading: forumReportsLoading } = useQuery({
     queryKey: ['transcripts-forum-reports'],
@@ -237,6 +262,20 @@ export default function Transcripts() {
             sender_name: r.sender_type === 'staff' ? 'Staff' : 'Customer',
           });
         });
+      } else if (activeTab === 'customer-tickets') {
+        const { data } = await supabase
+          .from('ticket_messages')
+          .select('id, message, sender_type, created_at')
+          .eq('ticket_id', expandedTranscript)
+          .eq('is_internal_note', false)
+          .order('created_at', { ascending: true });
+        messages = (data || []).map(m => ({
+          id: m.id,
+          message: m.message,
+          sender_type: m.sender_type === 'staff' ? 'staff' : 'customer',
+          created_at: m.created_at,
+          sender_name: m.sender_type === 'staff' ? 'Staff' : 'Customer',
+        }));
       } else if (activeTab === 'forum-reports') {
         // Forum reports show the report details as a single "message"
         const { data: report } = await supabase
@@ -285,7 +324,8 @@ export default function Transcripts() {
     { id: 'live-chat', label: 'Live Chat', icon: Inbox, count: liveChatTranscripts.length, loading: liveChatLoading },
     { id: 'modmail', label: 'Discord Modmail', icon: Mail, count: modmailTranscripts.length, loading: modmailLoading },
     { id: 'seller-tickets', label: 'Seller Tickets', icon: Ticket, count: sellerTicketTranscripts.length, loading: sellerTicketsLoading },
-    { id: 'contact', label: 'Contact Messages', icon: MessageSquare, count: contactTranscripts.length, loading: contactLoading },
+    { id: 'customer-tickets', label: 'Customer Tickets', icon: MessageSquare, count: customerTicketTranscripts.length, loading: customerTicketsLoading },
+    { id: 'contact', label: 'Contact Messages', icon: Mail, count: contactTranscripts.length, loading: contactLoading },
     { id: 'forum-reports', label: 'Forum Reports', icon: Flag, count: forumReportTranscripts.length, loading: forumReportsLoading },
   ];
 
@@ -294,6 +334,7 @@ export default function Transcripts() {
       case 'live-chat': return filterTranscripts(liveChatTranscripts);
       case 'modmail': return filterTranscripts(modmailTranscripts);
       case 'seller-tickets': return filterTranscripts(sellerTicketTranscripts);
+      case 'customer-tickets': return filterTranscripts(customerTicketTranscripts);
       case 'contact': return filterTranscripts(contactTranscripts);
       case 'forum-reports': return filterTranscripts(forumReportTranscripts);
       default: return [];
@@ -305,6 +346,7 @@ export default function Transcripts() {
       case 'live-chat': return liveChatLoading;
       case 'modmail': return modmailLoading;
       case 'seller-tickets': return sellerTicketsLoading;
+      case 'customer-tickets': return customerTicketsLoading;
       case 'contact': return contactLoading;
       case 'forum-reports': return forumReportsLoading;
       default: return false;
