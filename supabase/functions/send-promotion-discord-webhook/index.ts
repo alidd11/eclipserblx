@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,32 +31,31 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch promotions webhook URL from settings
+    // Fetch promotions channel ID and webhook URL from settings
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["promotions_discord_webhook_url", "discord_webhook_url"])
+      .in("key", ["promotions_discord_channel_id", "promotions_discord_webhook_url", "discord_webhook_url", "promotions_discord_role_id"])
       .order("key");
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key: string; value: string }) => {
-      const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
-      settingsMap[s.key] = val;
-    });
+    const settingsMap = buildSettingsMap(settings);
 
-    // Use dedicated promotions webhook, fallback to main webhook
+    // Check for channel ID first, then webhook URLs
+    const channelId = settingsMap["promotions_discord_channel_id"];
     const webhookUrl = settingsMap["promotions_discord_webhook_url"] || settingsMap["discord_webhook_url"];
+    const roleId = settingsMap["promotions_discord_role_id"];
     
-    if (!webhookUrl) {
-      console.error("Discord webhook URL not configured");
+    if (!channelId && !webhookUrl) {
+      console.error("Discord channel ID or webhook URL not configured");
       return new Response(
-        JSON.stringify({ error: "Discord webhook not configured. Please set promotions_discord_webhook_url in settings." }),
+        JSON.stringify({ error: "Discord not configured. Please set promotions_discord_channel_id or webhook URL in settings." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const body: PromotionRequest = await req.json();
-    const ROLE_PING = "<@&1465322212319039639>";
+    // Use configured role ID or fallback to hardcoded one
+    const ROLE_PING = roleId ? `<@&${roleId}>` : "<@&1465322212319039639>";
 
     let embed: Record<string, unknown>;
     
@@ -241,25 +241,45 @@ serve(async (req) => {
 
     console.log("Sending promotion webhook to Discord...");
 
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const effectiveRoleId = roleId || "1465322212319039639";
+      const result = await sendBotMessage(channelId, {
         content: ROLE_PING,
         embeds: [embed],
-      }),
-    });
+        allowed_mentions: { roles: [effectiveRoleId] },
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Discord webhook error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (!result.success) {
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: result.error }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Promotion sent successfully via bot", { messageId: result.messageId });
+    } else {
+      // Legacy webhook method
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: ROLE_PING,
+          embeds: [embed],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Discord webhook error:", errorText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Promotion webhook sent successfully");
     }
-
-    console.log("Promotion webhook sent successfully");
 
     return new Response(
       JSON.stringify({ success: true, message: "Promotion announcement sent to Discord" }),

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, addReaction, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,12 +36,11 @@ serve(async (req) => {
 
     logStep("Received order notification request", { orderId, userId, productCount: productNames.length });
 
-    // Get the order webhook URL from settings
-    const { data: webhookSetting, error: settingsError } = await supabase
+    // Get the order channel ID and webhook URL from settings
+    const { data: settings, error: settingsError } = await supabase
       .from("settings")
-      .select("value")
-      .eq("key", "discord_webhook_url")
-      .maybeSingle();
+      .select("key, value")
+      .in("key", ["orders_discord_channel_id", "discord_webhook_url"]);
 
     if (settingsError) {
       console.error("Error fetching webhook setting:", settingsError);
@@ -50,20 +50,14 @@ serve(async (req) => {
       );
     }
 
-    // Parse the webhook URL (it may be JSON-encoded)
-    let webhookUrl = webhookSetting?.value;
-    if (typeof webhookUrl === "string") {
-      try {
-        webhookUrl = JSON.parse(webhookUrl);
-      } catch {
-        // It's already a plain string
-      }
-    }
+    const settingsMap = buildSettingsMap(settings);
+    const channelId = settingsMap["orders_discord_channel_id"];
+    const webhookUrl = settingsMap["discord_webhook_url"];
 
-    if (!webhookUrl) {
-      logStep("No order webhook URL configured, skipping notification");
+    if (!channelId && !webhookUrl) {
+      logStep("No order channel ID or webhook URL configured, skipping notification");
       return new Response(
-        JSON.stringify({ skipped: true, message: "No webhook URL configured" }),
+        JSON.stringify({ skipped: true, message: "No channel ID or webhook URL configured" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -180,61 +174,61 @@ serve(async (req) => {
       embed.thumbnail = { url: thumbnailUrl };
     }
 
-    // Send to Discord with ?wait=true to get message ID back
-    const webhookUrlWithWait = webhookUrl.includes('?') 
-      ? `${webhookUrl}&wait=true` 
-      : `${webhookUrl}?wait=true`;
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    let messageId: string | undefined;
+    let messageChannelId: string | undefined;
 
-    const discordResponse = await fetch(webhookUrlWithWait, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        embeds: [embed],
-      }),
-    });
+    if (channelId) {
+      const result = await sendBotMessage(channelId, { embeds: [embed] });
 
-    if (!discordResponse.ok) {
-      const errorText = await discordResponse.text();
-      console.error("Discord webhook failed:", discordResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Discord webhook failed", details: errorText }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Try to add heart reaction to the message
-    try {
-      const messageData = await discordResponse.json();
-      const messageId = messageData.id;
-      const channelId = messageData.channel_id;
-      
-      if (messageId && channelId) {
-        const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
-        if (botToken) {
-          // Add heart reaction (❤️ = %E2%9D%A4%EF%B8%8F URL encoded)
-          const reactionUrl = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/%E2%9D%A4%EF%B8%8F/@me`;
-          const reactionResponse = await fetch(reactionUrl, {
-            method: "PUT",
-            headers: {
-              "Authorization": `Bot ${botToken}`,
-              "Content-Type": "application/json",
-            },
-          });
-          
-          if (reactionResponse.ok || reactionResponse.status === 204) {
-            logStep("Heart reaction added successfully", { messageId });
-          } else {
-            logStep("Failed to add heart reaction (non-fatal)", { 
-              status: reactionResponse.status,
-              messageId 
-            });
-          }
-        } else {
-          logStep("No DISCORD_BOT_TOKEN configured, skipping reaction");
-        }
+      if (!result.success) {
+        return new Response(
+          JSON.stringify({ error: "Discord bot message failed", details: result.error }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
-    } catch (reactionError) {
-      logStep("Failed to add reaction (non-fatal)", { error: String(reactionError) });
+
+      messageId = result.messageId;
+      messageChannelId = result.channelId;
+      logStep("Order notification sent via bot", { messageId });
+
+      // Add heart reaction
+      if (messageId && messageChannelId) {
+        await addReaction(messageChannelId, messageId, "❤️");
+      }
+    } else {
+      // Legacy webhook method
+      const webhookUrlWithWait = webhookUrl.includes('?') 
+        ? `${webhookUrl}&wait=true` 
+        : `${webhookUrl}?wait=true`;
+
+      const discordResponse = await fetch(webhookUrlWithWait, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [embed] }),
+      });
+
+      if (!discordResponse.ok) {
+        const errorText = await discordResponse.text();
+        console.error("Discord webhook failed:", discordResponse.status, errorText);
+        return new Response(
+          JSON.stringify({ error: "Discord webhook failed", details: errorText }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Try to add heart reaction to the message
+      try {
+        const messageData = await discordResponse.json();
+        messageId = messageData.id;
+        messageChannelId = messageData.channel_id;
+        
+        if (messageId && messageChannelId) {
+          await addReaction(messageChannelId, messageId, "❤️");
+        }
+      } catch (reactionError) {
+        logStep("Failed to add reaction (non-fatal)", { error: String(reactionError) });
+      }
     }
 
     logStep("Order notification sent successfully", { orderId });

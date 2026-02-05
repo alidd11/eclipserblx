@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,25 +16,22 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch Eclipse+ webhook URL from settings
+    // Fetch Eclipse+ channel ID and webhook URL from settings
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["eclipse_plus_discord_webhook_url"])
+      .in("key", ["eclipse_plus_discord_channel_id", "eclipse_plus_discord_webhook_url"])
       .order("key");
 
-    const settingsMap: Record<string, string> = {};
-    settings?.forEach((s: { key: string; value: string }) => {
-      const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
-      settingsMap[s.key] = val;
-    });
+    const settingsMap = buildSettingsMap(settings);
 
+    const channelId = settingsMap["eclipse_plus_discord_channel_id"];
     const webhookUrl = settingsMap["eclipse_plus_discord_webhook_url"];
     
-    if (!webhookUrl) {
-      console.error("Eclipse+ Discord webhook URL not configured in settings");
+    if (!channelId && !webhookUrl) {
+      console.error("Eclipse+ Discord channel ID or webhook URL not configured in settings");
       return new Response(
-        JSON.stringify({ error: "Eclipse+ Discord webhook not configured. Please set it in Admin → Discord Settings → Eclipse+ tab." }),
+        JSON.stringify({ error: "Eclipse+ Discord not configured. Please set channel ID or webhook URL in Admin → Discord Settings → Eclipse+ tab." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -92,22 +90,37 @@ Deno.serve(async (req) => {
       },
     };
 
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [mainEmbed] }),
-    });
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
+    if (channelId) {
+      const result = await sendBotMessage(channelId, { embeds: [mainEmbed] });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Discord webhook error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (!result.success) {
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: result.error }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Eclipse+ announcement sent successfully via bot", { messageId: result.messageId });
+    } else {
+      // Legacy webhook method
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [mainEmbed] }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Discord webhook error:", errorText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send Discord message", details: errorText }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Eclipse+ announcement sent successfully via webhook");
     }
-
-    console.log("Eclipse+ announcement sent successfully");
 
     return new Response(
       JSON.stringify({ success: true, message: "Eclipse+ announcement sent to Discord" }),

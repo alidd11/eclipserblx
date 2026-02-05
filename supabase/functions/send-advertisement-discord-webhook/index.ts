@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+ import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,27 +90,26 @@ serve(async (req) => {
 
     logStep("Advertisement found", { title: advertisement.title, status: advertisement.status });
 
-    // Get webhook URL from settings
-    const { data: webhookSetting } = await supabaseClient
+    // Get channel ID and webhook URL from settings
+    const { data: settings } = await supabaseClient
       .from("settings")
-      .select("value")
-      .eq("key", "advertisements_discord_webhook_url")
-      .maybeSingle();
+      .select("key, value")
+      .in("key", ["advertisements_discord_channel_id", "advertisements_discord_webhook_url"]);
 
-    if (!webhookSetting?.value) {
-      logStep("No webhook URL configured");
+    const settingsMap = buildSettingsMap(settings);
+    const channelId = settingsMap["advertisements_discord_channel_id"];
+    const webhookUrl = settingsMap["advertisements_discord_webhook_url"];
+
+    if (!channelId && !webhookUrl) {
+      logStep("No channel ID or webhook URL configured");
       throw new Error("Advertisement webhook not configured");
     }
 
-    const webhookUrl = typeof webhookSetting.value === 'string'
-      ? webhookSetting.value.replace(/^"|"$/g, '')
-      : String(webhookSetting.value);
-
-    if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+    if (!channelId && webhookUrl && !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
       throw new Error("Invalid webhook URL");
     }
 
-    logStep("Webhook URL retrieved");
+    logStep("Discord settings retrieved", { hasChannelId: !!channelId, hasWebhookUrl: !!webhookUrl });
 
     // Build Discord embed with sanitized content
     const sanitizedTitle = sanitizeForDiscord(advertisement.title);
@@ -152,33 +152,53 @@ serve(async (req) => {
 
     logStep("Sending to Discord", { title: advertisement.title });
 
-    // Send to Discord
-    const discordResponse = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(webhookPayload),
-    });
-
-    if (!discordResponse.ok) {
-      const errorText = await discordResponse.text();
-      logStep("Discord webhook failed", { status: discordResponse.status, error: errorText });
-      
-      // Update status to failed
-      await supabaseClient
-        .from("discord_advertisements")
-        .update({ status: "failed" })
-        .eq("id", advertisementId);
-
-      throw new Error(`Discord webhook failed: ${discordResponse.status}`);
-    }
-
-    // Try to get message ID from response
+    // Use bot API if channel ID is configured, otherwise fall back to webhook
     let discordMessageId: string | null = null;
-    try {
-      const discordResult = await discordResponse.json();
-      discordMessageId = discordResult.id || null;
-    } catch {
-      // Some webhook configurations don't return JSON
+
+    if (channelId) {
+      const result = await sendBotMessage(channelId, webhookPayload);
+
+      if (!result.success) {
+        logStep("Discord bot message failed", { error: result.error });
+        
+        await supabaseClient
+          .from("discord_advertisements")
+          .update({ status: "failed" })
+          .eq("id", advertisementId);
+
+        throw new Error(`Discord bot message failed: ${result.error}`);
+      }
+
+      discordMessageId = result.messageId || null;
+      logStep("Advertisement sent via bot", { messageId: discordMessageId });
+    } else {
+      // Legacy webhook method
+      const discordResponse = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      if (!discordResponse.ok) {
+        const errorText = await discordResponse.text();
+        logStep("Discord webhook failed", { status: discordResponse.status, error: errorText });
+        
+        await supabaseClient
+          .from("discord_advertisements")
+          .update({ status: "failed" })
+          .eq("id", advertisementId);
+
+        throw new Error(`Discord webhook failed: ${discordResponse.status}`);
+      }
+
+      try {
+        const discordResult = await discordResponse.json();
+        discordMessageId = discordResult.id || null;
+      } catch {
+        // Some webhook configurations don't return JSON
+      }
+
+      logStep("Advertisement sent via webhook", { messageId: discordMessageId });
     }
 
     // Update advertisement status
