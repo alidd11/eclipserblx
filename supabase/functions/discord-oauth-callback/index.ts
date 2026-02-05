@@ -221,6 +221,25 @@ serve(async (req) => {
           }
         }
       }
+
+      // Check if user has made any purchases (Customer role)
+      const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
+      if (customerRoleId) {
+        const { data: orders, error: ordersError } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("user_id", user_id)
+          .in("status", ["paid", "completed"])
+          .limit(1);
+
+        if (!ordersError && orders && orders.length > 0) {
+          logStep("User has made purchases", { orderCount: orders.length });
+          const result = await assignDiscordRole(botToken, guildId, customerRoleId, discordUser.id, "Customer");
+          if (result.success) {
+            rolesAssigned.push("Customer");
+          }
+        }
+      }
     }
 
     return new Response(
