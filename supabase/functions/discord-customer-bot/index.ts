@@ -490,20 +490,26 @@ async function handleRetrieveCommand(
   const productOption = options.find((o) => o.name === "product");
 
   if (!productOption) {
-    // List downloadable products
+    // List downloadable products - use separate queries to avoid nested join issues
+    const { data: userOrders } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("user_id", profile.user_id)
+      .in("status", ["paid", "completed"]);
+
+    const orderIds = userOrders?.map((o: any) => o.id) || [];
+
+    if (orderIds.length === 0) {
+      return interactionResponse(
+        "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet.",
+        true
+      );
+    }
+
     const { data: orderItems } = await supabase
       .from("order_items")
-      .select(`
-        id,
-        product_id,
-        product_name,
-        orders!inner (
-          user_id,
-          status
-        )
-      `)
-      .eq("orders.user_id", profile.user_id)
-      .in("orders.status", ["paid", "completed"]);
+      .select("product_id, product_name")
+      .in("order_id", orderIds);
 
     // Get products with download files
     const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
@@ -530,46 +536,106 @@ async function handleRetrieveCommand(
 
     const productList = products.map((p: any, i: number) => `**${i + 1}.** ${p.name}`).join("\n");
 
-    return interactionResponse(
-      `📁 **Your Downloadable Products**\n\n${productList}\n\n💡 Use \`/download product:NAME\` to get a download link.`,
-      true
-    );
+    const embed = {
+      color: 0x3b82f6,
+      title: "📁 Your Downloadable Products",
+      description: productList,
+      footer: {
+        text: "Eclipse Marketplace • Use /retrieve product:NAME to download",
+      },
+      timestamp: new Date().toISOString(),
+    };
+    return interactionResponse("", true, [embed]);
   }
 
   // Search for product by name
-  const searchTerm = productOption.value.toLowerCase();
+  const searchTerm = productOption.value.toLowerCase().trim();
+  console.log(`[discord-customer-bot] Retrieve search: "${searchTerm}" for user ${profile.user_id}`);
 
-  // Get user's purchased products
-  const { data: orderItems } = await supabase
-    .from("order_items")
-    .select(`
-      product_id,
-      product_name,
-      orders!inner (
-        user_id,
-        status
-      )
-    `)
-    .eq("orders.user_id", profile.user_id)
-    .in("orders.status", ["paid", "completed"]);
+  // Get user's purchased products - use separate query for orders first
+  const { data: userOrders, error: ordersError } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("user_id", profile.user_id)
+    .in("status", ["paid", "completed"]);
 
-  const purchasedProductIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
+  if (ordersError) {
+    console.error("[discord-customer-bot] Orders query error:", ordersError);
+  }
 
-  // Find matching product
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, asset_file_url")
-    .in("id", purchasedProductIds)
-    .not("asset_file_url", "is", null)
-    .ilike("name", `%${searchTerm}%`)
-    .limit(1);
+  const orderIds = userOrders?.map((o: any) => o.id) || [];
+  console.log(`[discord-customer-bot] Found ${orderIds.length} orders for user`);
 
-  if (!products || products.length === 0) {
+  if (orderIds.length === 0) {
     return interactionResponse(
-      `❌ **Product Not Found**\n\nCouldn't find a downloadable product matching "${productOption.value}".\n\nRun \`/download\` without arguments to see your available products.`,
+      "📁 **No Purchases Found**\n\nYou don't have any completed orders yet.",
       true
     );
   }
+
+  // Get order items for those orders
+  const { data: orderItems, error: itemsError } = await supabase
+    .from("order_items")
+    .select("product_id, product_name")
+    .in("order_id", orderIds);
+
+  if (itemsError) {
+    console.error("[discord-customer-bot] Order items query error:", itemsError);
+  }
+
+  const purchasedProductIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
+  console.log(`[discord-customer-bot] Purchased product IDs: ${purchasedProductIds.length}`);
+
+  if (purchasedProductIds.length === 0) {
+    return interactionResponse(
+      "📁 **No Downloads Available**\n\nNo purchased products found.",
+      true
+    );
+  }
+
+  // Find matching product with flexible search
+  const { data: products, error: productsError } = await supabase
+    .from("products")
+    .select("id, name, asset_file_url")
+    .in("id", purchasedProductIds)
+    .not("asset_file_url", "is", null);
+
+  if (productsError) {
+    console.error("[discord-customer-bot] Products query error:", productsError);
+  }
+
+  console.log(`[discord-customer-bot] Products with files: ${products?.length || 0}`);
+
+  // Fuzzy match the product name
+  const matchedProduct = products?.find((p: any) => 
+    p.name.toLowerCase().includes(searchTerm) || 
+    searchTerm.includes(p.name.toLowerCase()) ||
+    p.name.toLowerCase().split(' ').some((word: string) => searchTerm.includes(word) && word.length > 3)
+  );
+
+  if (!matchedProduct) {
+    const availableProducts = products?.map((p: any) => p.name).join(", ") || "None";
+    console.log(`[discord-customer-bot] No match found. Available: ${availableProducts}`);
+    
+    const embed = {
+      color: 0xef4444,
+      title: "❌ Product Not Found",
+      description: `Couldn't find a downloadable product matching "${productOption.value}".`,
+      fields: [
+        {
+          name: "Available Products",
+          value: products?.length ? products.map((p: any) => `• ${p.name}`).join("\n").slice(0, 1000) : "No downloadable products found",
+          inline: false,
+        },
+      ],
+      footer: {
+        text: "Eclipse Marketplace • Try typing the exact product name",
+      },
+    };
+    return interactionResponse("", true, [embed]);
+  }
+
+  const product = matchedProduct;
 
   const product = products[0];
 
