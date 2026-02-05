@@ -10,6 +10,40 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[DISCORD-OAUTH] ${step}`, details ? JSON.stringify(details) : "");
 };
 
+async function assignDiscordRole(
+  botToken: string,
+  guildId: string,
+  roleId: string,
+  discordUserId: string,
+  roleName: string
+): Promise<{ success: boolean; error?: string }> {
+  const discordApiUrl = `https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`;
+  
+  logStep(`Assigning ${roleName} role`, { discordUserId, roleId });
+  
+  const response = await fetch(discordApiUrl, {
+    method: "PUT",
+    headers: {
+      'Authorization': `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (response.status === 204) {
+    logStep(`${roleName} role assigned successfully`, { discordUserId });
+    return { success: true };
+  }
+
+  if (response.status === 404) {
+    logStep(`User not in guild for ${roleName}`, { discordUserId });
+    return { success: false, error: "User not in server" };
+  }
+
+  const errorText = await response.text();
+  logStep(`Failed to assign ${roleName} role`, { status: response.status, error: errorText });
+  return { success: false, error: errorText };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -143,6 +177,52 @@ serve(async (req) => {
 
     logStep("Successfully linked Discord account", { userId: user_id, discordId: discordUser.id });
 
+    // Check for role assignments
+    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const guildId = Deno.env.get("DISCORD_GUILD_ID");
+    const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
+    const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
+
+    const rolesAssigned: string[] = [];
+
+    if (botToken && guildId) {
+      // Check if user is a store owner
+      if (storeCreatorRoleId) {
+        const { data: store } = await supabase
+          .from("stores")
+          .select("id, name")
+          .eq("owner_id", user_id)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (store) {
+          logStep("User is a store owner", { storeId: store.id, storeName: store.name });
+          const result = await assignDiscordRole(botToken, guildId, storeCreatorRoleId, discordUser.id, "Store Creator");
+          if (result.success) {
+            rolesAssigned.push("Store Creator");
+          }
+        }
+      }
+
+      // Check if user has active Eclipse+ subscription
+      if (eclipsePlusRoleId) {
+        const { data: subscription } = await supabase
+          .from("subscriptions")
+          .select("id, status")
+          .eq("user_id", user_id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (subscription) {
+          logStep("User has active Eclipse+ subscription", { subscriptionId: subscription.id });
+          const result = await assignDiscordRole(botToken, guildId, eclipsePlusRoleId, discordUser.id, "Eclipse+");
+          if (result.success) {
+            rolesAssigned.push("Eclipse+");
+          }
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -150,6 +230,7 @@ serve(async (req) => {
         discord_username: discordUsername,
         discord_avatar: discordUser.avatar,
         discord_global_name: discordUser.global_name,
+        roles_assigned: rolesAssigned,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
