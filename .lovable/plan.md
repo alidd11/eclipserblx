@@ -1,140 +1,249 @@
 
 
-# Developer Product Submissions & Payment Records Dashboard
+# Support System Overhaul: Human-First Ticket System
 
 ## Overview
-
-This plan creates two new admin pages:
-1. **Developer Product Submissions** - Where internal developers can upload products requiring admin approval
-2. **Developer Payments** - Admin-only ledger to track payments owed and paid to developers
+Transform the support infrastructure to a **ticket-based system with human support as the primary focus**. AI will assist but not lead. The existing live chat remains as a real-time option, while community forums will be removed to simplify the support experience.
 
 ---
 
-## Security Model
+## Key Principle: Human-First Support
 
-### Developer Submissions
-- Viewable by staff with `manage_developer_submissions` permission
-- Admins can approve/reject submissions
-
-### Developer Payments (Admin-Only)
-- **Strictly restricted to admin role only** - no separate permission
-- Uses `requiredRoles={['admin']}` in AdminLayout
-- Similar security model to the Income page
-- RLS policies restrict all operations to admin role
+The ticket system will prioritize **human response** over AI automation:
+- Staff receive instant notifications for new tickets
+- AI assists by suggesting responses (not auto-responding)
+- Human agents are the primary responders
+- AI handles FAQ suggestions and context gathering only
 
 ---
 
-## Database Changes
+## Current State
 
-Two new tables will be created:
+### Existing Infrastructure
+1. **Live Chat** - AI-first chat with human escalation (`ChatSidePanel.tsx`, `ChatWidget.tsx`)
+2. **Forum System** - Full community forums (`Forum.tsx`, `ThreadDetail.tsx`, `GeneralChatChannel.tsx`)
+3. **Seller Ticket System** - Dedicated seller-only support (`SellerSupport.tsx`, `seller_support_tickets`)
+4. **Customer Tickets** - Existing tables: `support_tickets`, `ticket_messages` (partially used in `ChatHistory.tsx`)
+5. **Support Hub** - Help center page (`Support.tsx`)
 
-### 1. `developer_product_submissions`
-```text
-┌─────────────────────────────────────────────────────────┐
-│ developer_product_submissions                            │
-├─────────────────────────────────────────────────────────┤
-│ id (uuid, PK)                                           │
-│ developer_id (uuid, FK → profiles.user_id)              │
-│ product_name (text)                                      │
-│ product_description (text)                               │
-│ category_id (uuid, FK → categories.id)                  │
-│ price (numeric)                                          │
-│ files (jsonb) - uploaded file references                │
-│ status (pending/approved/rejected/revision_requested)   │
-│ reviewer_id (uuid, FK → profiles.user_id, nullable)     │
-│ reviewer_notes (text, nullable)                          │
-│ approved_product_id (uuid, FK → products.id, nullable)  │
-│ created_at, updated_at                                   │
-└─────────────────────────────────────────────────────────┘
-```
+### Database Tables
+**To Remove:**
+- `forum_categories`, `forum_threads`, `forum_posts`
+- `forum_chat_messages`, `forum_chat_reactions`, `forum_reports`
 
-### 2. `developer_payments` (Admin-Only Access)
-```text
-┌─────────────────────────────────────────────────────────┐
-│ developer_payments                                       │
-├─────────────────────────────────────────────────────────┤
-│ id (uuid, PK)                                           │
-│ developer_id (uuid, FK → profiles.user_id)              │
-│ amount (numeric)                                         │
-│ currency (text, default 'GBP')                          │
-│ payment_type (salary/commission/bonus/freelance/other)  │
-│ status (pending/processing/completed/failed/cancelled)  │
-│ due_date (date, nullable)                                │
-│ paid_date (date, nullable)                               │
-│ payment_method (text, nullable)                          │
-│ payment_reference (text, nullable)                       │
-│ notes (text, nullable)                                   │
-│ created_by (uuid, FK → profiles.user_id)                │
-│ created_at, updated_at                                   │
-└─────────────────────────────────────────────────────────┘
-```
-
-### RLS Policies
-
-**developer_product_submissions:**
-- Staff can SELECT all submissions
-- Staff can INSERT their own submissions
-- Admins can UPDATE (for approval/rejection)
-
-**developer_payments (Admin-Only):**
-- Only users with `admin` role can SELECT, INSERT, UPDATE, DELETE
-- No other roles can access this table
+**To Keep/Enhance:**
+- `support_tickets`, `ticket_messages` (customer tickets)
+- `chat_conversations`, `chat_messages` (live chat)
+- `seller_support_tickets` (seller-specific)
 
 ---
 
-## New Permissions
+## Implementation Plan
 
-Only one new permission needed:
-- `manage_developer_submissions` (category: team)
+### Phase 1: Customer Ticket System UI
 
-Developer payments does NOT get a permission - it's hardcoded to admin-only for maximum security.
+**New Customer Pages:**
+- `src/pages/SupportTickets.tsx` - List customer's tickets with status indicators
+- `src/pages/SupportTicketDetail.tsx` - View ticket conversation, send replies
 
----
-
-## New Admin Pages
-
-### 1. Developer Submissions (`/admin/developer-submissions`)
+**New Components:**
+- `src/components/support/CreateTicketDialog.tsx` - Submit new ticket form
+- `src/components/support/TicketCard.tsx` - Reusable ticket list card
 
 **Features:**
-- Grid of submission cards showing status, developer, date
-- "Submit New Product" form for developers
-- Review workflow for admins (approve/reject/request revision)
-- Status filtering tabs: All, Pending, Approved, Rejected
+- Ticket categories: Order Issue, Product Question, Technical, Billing, Refund, Other
+- Priority levels: normal, high
+- Status tracking: open → in_progress → awaiting_customer → resolved → closed
+- Real-time message updates via Supabase subscriptions
+- Ticket ID format: TKT-XXXXXX (auto-generated)
 
-### 2. Developer Payments (`/admin/developer-payments`)
+### Phase 2: Admin Ticket Management
+
+**New Admin Page:**
+- `src/pages/admin/CustomerTickets.tsx` - Manage all customer support tickets
 
 **Features:**
-- Summary cards: Total Owed, Pending Count, Paid This Month
-- Tabbed table: Due, Processing, Completed, All
-- "Add Payment" form dialog
-- "Mark as Paid" workflow with reference input
-- Filter by developer and date range
+- Priority queue with newest/urgent tickets at top
+- One-click claim ticket (assigns to staff member)
+- Threaded messaging with internal notes
+- Status management workflow
+- Staff gets push notifications for new tickets
+- Filter by status, priority, category
+- Integration with existing Transcripts page for closed tickets
 
-**Access Control:**
-```tsx
-<AdminLayout requiredRoles={['admin']}>
-  {/* Only admins can see this page */}
-</AdminLayout>
+### Phase 3: Update Support Hub
+
+**Modify `src/pages/Support.tsx`:**
+- Replace forum links with ticket system access
+- Prominent "Submit a Ticket" button
+- Show user's active ticket count
+- Quick access to ticket history
+- Keep FAQ and Live Chat as secondary options
+
+**Updated Quick Links:**
+1. Submit a Ticket (primary action)
+2. View My Tickets (history)
+3. Browse FAQ (self-service)
+4. Live Chat (urgent/real-time)
+
+### Phase 4: Update Chat Widget
+
+**Modify `src/components/chat/ChatWidget.tsx`:**
+- Replace Forum link with "Submit Ticket" option
+- Update info panel to show ticket submission
+- Keep live chat as primary real-time action
+
+**Current:**
+```
+FAQ | Forum
 ```
 
+**Updated:**
+```
+FAQ | Submit Ticket
+```
+
+### Phase 5: Remove Forum System
+
+**Files to Delete:**
+1. `src/pages/Forum.tsx`
+2. `src/pages/ThreadDetail.tsx`
+3. `src/components/forum/CreateThreadDialog.tsx`
+4. `src/components/forum/GeneralChatChannel.tsx`
+5. `src/components/home/ForumShowcase.tsx`
+6. `src/pages/admin/ForumReports.tsx`
+
+**Files to Modify:**
+1. `src/components/layout/Header.tsx` - Remove forum nav item
+2. `src/components/layout/CustomerSidebar.tsx` - Remove forum link
+3. `src/components/layout/MainLayout.tsx` - Remove forum keyboard handling
+4. `src/components/layout/UniversalBreadcrumb.tsx` - Remove forum breadcrumb
+5. `src/components/admin/AdminSidebar.tsx` - Remove Forum Reports
+6. `src/App.tsx` - Remove forum routes
+7. `src/pages/NotificationPreferences.tsx` - Remove forum toggle (or repurpose)
+
+**Database Migration:**
+- Soft-delete forum tables (preserve data temporarily)
+- Remove forum RLS policies
+
+### Phase 6: Navigation Updates
+
+**AdminSidebar.tsx Updates:**
+- Add "Customer Tickets" under Support section
+- Remove "Forum Reports"
+
+**CustomerSidebar.tsx Updates:**
+- Replace "Forum" with "My Tickets"
+- Add "Submit Ticket" quick action
+
 ---
 
-## Navigation Updates
+## Technical Details
 
-**AdminSidebar.tsx:**
-- "Developer Submissions" under Store section (visible to staff with permission)
-- "Developer Payments" under Daily Operations (visible to admins only)
+### Support Flow (Human-First)
+
+```text
+Customer submits ticket
+        ↓
+Staff notified (push + in-app)
+        ↓
+Staff claims & responds
+        ↓
+Customer receives notification
+        ↓
+Conversation continues
+        ↓
+Staff resolves ticket
+```
+
+### Database Schema (Existing)
+
+The `support_tickets` table already exists with:
+- id, subject, status, priority
+- user_id, assigned_to
+- customer_email
+- created_at, updated_at
+
+The `ticket_messages` table already exists with:
+- id, ticket_id, sender_id
+- sender_type, message
+- is_internal_note
+- created_at
+
+### RLS Policy Updates
+
+Add policies for customer ticket access:
+- Customers can read/insert their own tickets
+- Customers can read messages on their tickets
+- Staff can read all tickets
+- Staff can update ticket status and send replies
+
+### Real-time Notifications
+
+Extend `useSupportTicketNotifications.ts`:
+- Already listens for new `support_tickets`
+- Add listener for new `ticket_messages` (staff replies)
+- Notify customers when staff responds
 
 ---
 
-## File Changes Summary
+## Files Summary
 
-### New Files
-1. `src/pages/admin/DeveloperSubmissions.tsx`
-2. `src/pages/admin/DeveloperPayments.tsx`
+### New Files (5)
+1. `src/pages/SupportTickets.tsx`
+2. `src/pages/SupportTicketDetail.tsx`
+3. `src/pages/admin/CustomerTickets.tsx`
+4. `src/components/support/CreateTicketDialog.tsx`
+5. `src/components/support/TicketCard.tsx`
 
-### Modified Files
-1. `src/components/admin/AdminSidebar.tsx` - Add navigation links
-2. `src/App.tsx` - Add routes
-3. Database migration for tables + RLS + permission
+### Files to Modify (10)
+1. `src/pages/Support.tsx` - Redesign hub
+2. `src/components/chat/ChatWidget.tsx` - Replace forum with ticket
+3. `src/components/layout/Header.tsx` - Remove forum nav
+4. `src/components/layout/CustomerSidebar.tsx` - Update links
+5. `src/components/layout/MainLayout.tsx` - Remove forum handling
+6. `src/components/admin/AdminSidebar.tsx` - Add Customer Tickets, remove Forum Reports
+7. `src/App.tsx` - Update routes
+8. `src/hooks/useSupportTicketNotifications.ts` - Add customer notifications
+9. `src/pages/NotificationPreferences.tsx` - Update forum toggle
+10. `src/components/layout/UniversalBreadcrumb.tsx` - Update paths
+
+### Files to Delete (6)
+1. `src/pages/Forum.tsx`
+2. `src/pages/ThreadDetail.tsx`
+3. `src/components/forum/CreateThreadDialog.tsx`
+4. `src/components/forum/GeneralChatChannel.tsx`
+5. `src/components/home/ForumShowcase.tsx`
+6. `src/pages/admin/ForumReports.tsx`
+
+### Database Migration
+1. Add customer ticket RLS policies
+2. Soft-delete forum tables
+
+---
+
+## User Experience Summary
+
+**Before:**
+- Forums for community discussion
+- Live chat with AI + human
+- Separate seller ticket system
+- Customer tickets partially implemented
+
+**After:**
+- **Ticket System** (Primary) - Human-first support with staff notifications
+- **Live Chat** (Secondary) - Kept for urgent real-time issues
+- **FAQ** (Self-Service) - Enhanced visibility
+- **No Forums** - Simplified support experience
+
+---
+
+## Benefits
+
+1. **Human-Centered** - Staff are primary responders, not AI
+2. **Better Tracking** - All issues tracked with ticket IDs
+3. **Clear History** - Customers can view all past tickets
+4. **Staff Efficiency** - Centralized ticket management
+5. **Simpler UX** - One clear path for support
+6. **Maintainability** - Less code without forum system
 
