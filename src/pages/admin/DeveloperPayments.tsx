@@ -348,65 +348,49 @@
                  </CardContent>
                </Card>
              ) : (
-               <Card>
-                 <Table>
-                   <TableHeader>
-                     <TableRow>
-                       <TableHead>Developer</TableHead>
-                       <TableHead>Amount</TableHead>
-                       <TableHead>Type</TableHead>
-                       <TableHead>Due Date</TableHead>
-                       <TableHead>Status</TableHead>
-                       <TableHead>Reference</TableHead>
-                       <TableHead className="text-right">Actions</TableHead>
-                     </TableRow>
-                   </TableHeader>
-                   <TableBody>
-                     {filteredPayments.map((payment) => {
-                       const config = statusConfig[payment.status as keyof typeof statusConfig];
-                       const StatusIcon = config?.icon || Clock;
-                       
-                       return (
-                          <TableRow 
-                            key={payment.id} 
-                            className="cursor-pointer active:bg-muted/50 touch-manipulation"
-                            onClick={() => navigate(`/admin/developer-payments/${payment.id}`)}
-                          >
-                           <TableCell>
-                             <div>
-                               <div className="font-medium">
-                                 {payment.developer?.display_name || payment.developer?.username || 'Unknown'}
-                               </div>
-                               {payment.developer?.staff_id && (
-                                 <div className="text-xs text-muted-foreground">{payment.developer.staff_id}</div>
-                               )}
-                             </div>
-                           </TableCell>
-                           <TableCell className="font-medium">
-                             £{payment.amount.toFixed(2)}
-                           </TableCell>
-                           <TableCell className="capitalize">{payment.payment_type}</TableCell>
-                           <TableCell>
-                             {payment.due_date ? format(new Date(payment.due_date), 'MMM d, yyyy') : '-'}
-                           </TableCell>
-                           <TableCell>
-                             <Badge className={config?.color}>
-                               <StatusIcon className="h-3 w-3 mr-1" />
-                               {config?.label}
-                             </Badge>
-                           </TableCell>
-                           <TableCell className="text-sm text-muted-foreground">
-                             {payment.payment_reference || '-'}
-                           </TableCell>
-                            <TableCell className="text-right pr-2">
-                              <ChevronRight className="h-4 w-4 text-muted-foreground inline-block" />
-                           </TableCell>
-                         </TableRow>
-                       );
-                     })}
-                   </TableBody>
-                 </Table>
-               </Card>
+                <div className="space-y-3">
+                  {filteredPayments.map((payment) => {
+                    const config = statusConfig[payment.status as keyof typeof statusConfig];
+                    const StatusIcon = config?.icon || Clock;
+                    
+                    return (
+                      <Card 
+                        key={payment.id}
+                        className="cursor-pointer active:bg-muted/50 touch-manipulation transition-colors"
+                        onClick={() => navigate(`/admin/developer-payments/${payment.id}`)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold truncate">
+                                  {payment.developer?.display_name || payment.developer?.username || 'Unknown'}
+                                </span>
+                                <Badge className={`${config?.color} shrink-0`}>
+                                  <StatusIcon className="h-3 w-3 mr-1" />
+                                  {config?.label}
+                                </Badge>
+                              </div>
+                              {payment.developer?.staff_id && (
+                                <p className="text-xs text-muted-foreground">{payment.developer.staff_id}</p>
+                              )}
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm">
+                                <span className="font-bold text-base">£{payment.amount.toFixed(2)}</span>
+                                <span className="text-muted-foreground capitalize">{payment.payment_type}</span>
+                                {payment.due_date && (
+                                  <span className="text-muted-foreground">
+                                    Due: {format(new Date(payment.due_date), 'MMM d, yyyy')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
              )}
            </TabsContent>
          </Tabs>
