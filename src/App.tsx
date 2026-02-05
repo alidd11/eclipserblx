@@ -38,8 +38,8 @@ const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
-const Forum = lazy(() => import("./pages/Forum"));
-const ThreadDetail = lazy(() => import("./pages/ThreadDetail"));
+ const SupportTickets = lazy(() => import("./pages/SupportTickets"));
+ const SupportTicketDetail = lazy(() => import("./pages/SupportTicketDetail"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -93,7 +93,8 @@ const AdminBotCodes = lazy(() => import("./pages/admin/BotCodes"));
 const AdminBotRequests = lazy(() => import("./pages/admin/BotRequests"));
 const AdminBotServers = lazy(() => import("./pages/admin/BotServers"));
 const AdminContactMessages = lazy(() => import("./pages/admin/ContactMessages"));
-const AdminForumReports = lazy(() => import("./pages/admin/ForumReports"));
+ const AdminCustomerTickets = lazy(() => import("./pages/admin/CustomerTickets"));
+ const AdminCustomerTicketDetail = lazy(() => import("./pages/admin/CustomerTicketDetail"));
 const AdminArchivedApplications = lazy(() => import("./pages/admin/ArchivedApplications"));
 const AdminJobChannels = lazy(() => import("./pages/admin/JobChannels"));
 const AdminStaffDirectory = lazy(() => import("./pages/admin/StaffDirectory"));
@@ -222,9 +223,8 @@ const App = () => (
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/order-success" element={<OrderSuccess />} />
                   <Route path="/chat-history" element={<ChatHistory />} />
-                  <Route path="/forum" element={<Forum />} />
-                  <Route path="/forum/:categorySlug" element={<Forum />} />
-                  <Route path="/forum/:categorySlug/:threadSlug" element={<ThreadDetail />} />
+                   <Route path="/support/tickets" element={<SupportTickets />} />
+                   <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
                   <Route path="/jobs" element={<Jobs />} />
                   <Route path="/refunds" element={<RefundPolicy />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -307,7 +307,8 @@ const App = () => (
                   <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
                   <Route path="/admin/bot-servers" element={<AdminBotServers />} />
                   <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
-                  <Route path="/admin/forum-reports" element={<AdminForumReports />} />
+                   <Route path="/admin/customer-tickets" element={<AdminCustomerTickets />} />
+                   <Route path="/admin/customer-tickets/:ticketId" element={<AdminCustomerTicketDetail />} />
                   <Route path="/admin/archived-applications" element={<AdminArchivedApplications />} />
                   <Route path="/admin/job-channels" element={<AdminJobChannels />} />
                   <Route path="/admin/staff-directory" element={<AdminStaffDirectory />} />

@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
-import { MessageCircle, HelpCircle, Users, X } from 'lucide-react';
+ import { MessageCircle, HelpCircle, Ticket, X } from 'lucide-react';
 import { useChatPanel } from '@/hooks/useChatPanel';
 import { useState, forwardRef } from 'react';
 
@@ -173,12 +173,12 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
                 <span>FAQ</span>
               </Link>
               <Link
-                to="/forum"
+               to="/support/tickets"
                 onClick={() => setShowInfo(false)}
                 className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
               >
-                <Users className="h-3.5 w-3.5" />
-                <span>Forum</span>
+               <Ticket className="h-3.5 w-3.5" />
+               <span>My Tickets</span>
               </Link>
             </div>
           </div>

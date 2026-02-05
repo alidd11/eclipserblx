@@ -5469,34 +5469,40 @@ export type Database = {
       support_tickets: {
         Row: {
           assigned_to: string | null
+          category: string | null
           created_at: string
           customer_email: string
           id: string
           priority: string | null
           status: string
           subject: string
+          ticket_number: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           assigned_to?: string | null
+          category?: string | null
           created_at?: string
           customer_email: string
           id?: string
           priority?: string | null
           status?: string
           subject: string
+          ticket_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           assigned_to?: string | null
+          category?: string | null
           created_at?: string
           customer_email?: string
           id?: string
           priority?: string | null
           status?: string
           subject?: string
+          ticket_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -5910,6 +5916,7 @@ export type Database = {
       escalate_unanswered_tickets: { Args: never; Returns: number }
       generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
+      generate_customer_ticket_number: { Args: never; Returns: string }
       generate_discord_link_code: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
