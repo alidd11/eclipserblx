@@ -637,8 +637,6 @@ async function handleRetrieveCommand(
 
   const product = matchedProduct;
 
-  const product = products[0];
-
   // Generate signed URL (valid for 1 hour)
   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
     .from("product-assets")
