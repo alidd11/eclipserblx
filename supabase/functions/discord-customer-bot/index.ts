@@ -529,55 +529,81 @@ async function handleProfileCommand(
     return publicResponseWithDM(notLinkedEmbed, discordUserId, [dmEmbed]);
   }
 
-  // Build query based on context
-  const queries: Promise<any>[] = [
-    supabase
-      .from("subscriptions")
-      .select("tier, current_period_end, status")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .maybeSingle(),
-  ];
-
-  // If in a store server, get store-specific stats
-  if (serverContext.store) {
-    queries.push(
-      supabase
-        .from("order_items")
-        .select("id, orders!inner(user_id, status)")
-        .eq("orders.user_id", profile.user_id)
-        .in("orders.status", ["paid", "completed"])
-        .not("store_id", "is", null)
-        .eq("store_id", serverContext.store.id)
-    );
-  } else {
-    queries.push(
-      supabase
-        .from("orders")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", profile.user_id)
-        .in("status", ["paid", "completed"])
-    );
-    queries.push(
-      supabase
-        .from("orders")
-        .select("total")
-        .eq("user_id", profile.user_id)
-        .in("status", ["paid", "completed"])
-    );
-  }
-
-  const results = await Promise.all(queries);
-  const subscription = results[0].data;
-
+  // Fetch stats based on context (avoid embedded joins; order_items has no store_id)
+  let subscription: any = null;
   let orderCount = 0;
   let totalSpent = 0;
 
   if (serverContext.store) {
-    orderCount = results[1].data?.length || 0;
+    // Store server: only count purchases for this specific store
+    const { data: orders, error: ordersError } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("user_id", profile.user_id)
+      .in("status", ["paid", "completed"]) 
+      .limit(200);
+
+    if (ordersError) {
+      console.error("[discord-customer-bot] Store profile orders lookup error:", ordersError);
+    }
+
+    const orderIds = (orders || []).map((o: any) => o.id);
+
+    if (orderIds.length > 0) {
+      const { data: orderItems, error: orderItemsError } = await supabase
+        .from("order_items")
+        .select("product_id")
+        .in("order_id", orderIds);
+
+      if (orderItemsError) {
+        console.error("[discord-customer-bot] Store profile order_items lookup error:", orderItemsError);
+      } else {
+        const productIds = [...new Set((orderItems || []).map((i: any) => i.product_id).filter(Boolean))];
+
+        if (productIds.length > 0) {
+          const { data: products, error: productsError } = await supabase
+            .from("products")
+            .select("id, store_id")
+            .in("id", productIds);
+
+          if (productsError) {
+            console.error("[discord-customer-bot] Store profile products lookup error:", productsError);
+          } else {
+            const storeProductSet = new Set(
+              (products || [])
+                .filter((p: any) => p.store_id === serverContext.store!.id)
+                .map((p: any) => p.id)
+            );
+
+            orderCount = (orderItems || []).filter((i: any) => storeProductSet.has(i.product_id)).length;
+          }
+        }
+      }
+    }
   } else {
-    orderCount = results[1].count || 0;
-    totalSpent = results[2].data?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
+    const [subscriptionResult, orderCountResult, ordersTotalsResult] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select("tier, current_period_end, status")
+        .eq("user_id", profile.user_id)
+        .eq("status", "active")
+        .maybeSingle(),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", profile.user_id)
+        .in("status", ["paid", "completed"]),
+      supabase
+        .from("orders")
+        .select("total")
+        .eq("user_id", profile.user_id)
+        .in("status", ["paid", "completed"]),
+    ]);
+
+    subscription = subscriptionResult.data;
+    orderCount = orderCountResult.count || 0;
+    totalSpent =
+      ordersTotalsResult.data?.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0) || 0;
   }
 
   const fields = [
@@ -601,7 +627,7 @@ async function handleProfileCommand(
     });
     fields.push({
       name: "💷 Total Spent",
-      value: `£${(totalSpent / 100).toFixed(2)}`,
+      value: `£${totalSpent.toFixed(2)}`,
       inline: true,
     });
   }
@@ -663,31 +689,17 @@ async function handlePurchasesCommand(
     return publicResponseWithDM(notLinkedEmbed, discordUserId, [dmEmbed]);
   }
 
-  // Build query - if in store server, filter by store products
-  let query = supabase
+  // Fetch recent orders
+  const { data: orders, error: ordersError } = await supabase
     .from("orders")
-    .select(`
-      id,
-      created_at,
-      status,
-      total,
-      order_items (
-        id,
-        product_id,
-        product_name,
-        price,
-        store_id
-      )
-    `)
+    .select("id, created_at, status, total")
     .eq("user_id", profile.user_id)
     .in("status", ["paid", "completed"])
     .order("created_at", { ascending: false })
     .limit(20);
 
-  const { data: orders, error } = await query;
-
-  if (error || !orders || orders.length === 0) {
-    const msg = serverContext.store 
+  if (ordersError || !orders || orders.length === 0) {
+    const msg = serverContext.store
       ? `You haven't purchased anything from ${serverContext.store.name} yet.`
       : "You haven't made any purchases yet.";
     const channelEmbed = {
@@ -706,48 +718,99 @@ async function handlePurchasesCommand(
     return publicResponseWithDM(channelEmbed, discordUserId, [dmEmbed]);
   }
 
-  // Filter to store products if in store server
-  let productList = orders
-    .flatMap((order: any) =>
-      order.order_items
-        .filter((item: any) => !serverContext.store || item.store_id === serverContext.store.id)
-        .map((item: any) => ({
-          name: item.product_name,
-          productId: item.product_id,
-          date: new Date(order.created_at).toLocaleDateString("en-GB"),
-          price: item.price,
-        }))
-    )
-    .slice(0, 15);
+  const orderIds = orders.map((o: any) => o.id);
+  const orderCreatedAt = new Map(orderIds.map((id: string) => [id, orders.find((o: any) => o.id === id)?.created_at]));
 
-  // If the user is running the command inside a creator's store server,
-  // they may have purchases elsewhere but none for this specific store.
-  if (serverContext.store && productList.length === 0) {
+  // Pull items separately (avoids embedded relationship issues)
+  const { data: orderItems, error: orderItemsError } = await supabase
+    .from("order_items")
+    .select("order_id, product_id, product_name, price")
+    .in("order_id", orderIds);
+
+  if (orderItemsError || !orderItems || orderItems.length === 0) {
+    console.error("[discord-customer-bot] Purchases order_items error:", orderItemsError);
     const channelEmbed = {
       color: 0x3b82f6,
       title: "📦 No Purchases Found",
-      description: `<@${discordUserId}> You haven't purchased anything from ${serverContext.store.name} yet.`,
+      description: `<@${discordUserId}> I couldn't find any purchasable items for your orders.`,
       footer: { text: branding.footer },
     };
     const dmEmbed = {
       color: 0x3b82f6,
       title: "📦 No Purchases Found",
-      description: `You haven't purchased anything from ${serverContext.store.name} yet.`,
+      description: "I couldn't find any purchasable items for your recent orders.",
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [dmEmbed]);
   }
 
+  let filteredItems = orderItems;
+
+  // If command is run inside a creator's store server, only show purchases for that store
+  if (serverContext.store) {
+    const productIds = [...new Set(filteredItems.map((i: any) => i.product_id).filter(Boolean))];
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("id, store_id")
+      .in("id", productIds);
+
+    if (productsError) {
+      console.error("[discord-customer-bot] Purchases product store lookup error:", productsError);
+    } else {
+      const storeProductSet = new Set(
+        (products || [])
+          .filter((p: any) => p.store_id === serverContext.store!.id)
+          .map((p: any) => p.id)
+      );
+      filteredItems = filteredItems.filter((i: any) => storeProductSet.has(i.product_id));
+    }
+
+    if (!filteredItems.length) {
+      const channelEmbed = {
+        color: 0x3b82f6,
+        title: "📦 No Purchases Found",
+        description: `<@${discordUserId}> You haven't purchased anything from ${serverContext.store.name} yet.`,
+        footer: { text: branding.footer },
+      };
+      const dmEmbed = {
+        color: 0x3b82f6,
+        title: "📦 No Purchases Found",
+        description: `You haven't purchased anything from ${serverContext.store.name} yet.`,
+        footer: { text: branding.footer },
+        timestamp: new Date().toISOString(),
+      };
+      return publicResponseWithDM(channelEmbed, discordUserId, [dmEmbed]);
+    }
+  }
+
+  const productList = filteredItems
+    .map((item: any) => {
+      const createdAt = orderCreatedAt.get(item.order_id);
+      return {
+        name: item.product_name,
+        productId: item.product_id,
+        date: createdAt ? new Date(createdAt).toLocaleDateString("en-GB") : "",
+        price: Number(item.price || 0),
+        orderId: item.order_id,
+      };
+    })
+    .sort((a: any, b: any) => {
+      const aTime = orderCreatedAt.get(a.orderId) ? new Date(orderCreatedAt.get(a.orderId)).getTime() : 0;
+      const bTime = orderCreatedAt.get(b.orderId) ? new Date(orderCreatedAt.get(b.orderId)).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 15);
+
   const embed = {
     color: 0x22c55e,
     title: serverContext.store ? `📦 Your ${serverContext.store.name} Purchases` : "📦 Your Purchases",
-    description: productList
-      .map(
-        (p: any, i: number) =>
-          `**${i + 1}.** ${p.name}\n   └ £${(p.price / 100).toFixed(2)} • ${p.date}`
-      )
-      .join("\n\n"),
+    description: "Here are your most recent purchases:",
+    fields: productList.map((p: any, i: number) => ({
+      name: `${i + 1}. ${p.name}`,
+      value: `£${p.price.toFixed(2)}${p.date ? ` • ${p.date}` : ""}`,
+      inline: false,
+    })),
     footer: {
       text: `${branding.footer} • Use /retrieve to get files`,
     },
@@ -756,10 +819,11 @@ async function handlePurchasesCommand(
 
   const channelEmbed = {
     color: 0x22c55e,
-    title: `📦 Found ${productList.length} Purchases`,
-    description: `<@${discordUserId}> Check your DMs for details!`,
+    title: "📦 Purchases Sent",
+    description: `<@${discordUserId}> Check your DMs for your purchase list.`,
     footer: { text: branding.footer },
   };
+
   return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
 
@@ -834,22 +898,20 @@ async function handleRetrieveCommand(
     return publicResponseWithDM(channelEmbed, discordUserId, [noOrdersEmbed]);
   }
 
-  // Get order items - filter by store if in store server
-  let orderItemsQuery = supabase
+  // Get order items for these orders
+  const { data: orderItems, error: orderItemsError } = await supabase
     .from("order_items")
-    .select("product_id, product_name, store_id")
+    .select("product_id")
     .in("order_id", orderIds);
 
-  if (serverContext.store) {
-    orderItemsQuery = orderItemsQuery.eq("store_id", serverContext.store.id);
+  if (orderItemsError) {
+    console.error("[discord-customer-bot] order_items lookup error:", orderItemsError);
   }
-
-  const { data: orderItems } = await orderItemsQuery;
 
   const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
 
   if (productIds.length === 0) {
-    const msg = serverContext.store 
+    const msg = serverContext.store
       ? `You haven't purchased any products from ${serverContext.store.name} yet.`
       : "You haven't purchased any downloadable products yet.";
     const noProductsEmbed = {
@@ -868,12 +930,19 @@ async function handleRetrieveCommand(
     return publicResponseWithDM(channelEmbed, discordUserId, [noProductsEmbed]);
   }
 
-  // Get products with download files
-  const { data: products } = await supabase
+  // Get products with download files (store-filtered when applicable)
+  let productsQuery = supabase
     .from("products")
-    .select("id, name, asset_file_url")
+    .select("id, name, asset_file_url, store_id")
     .in("id", productIds)
     .not("asset_file_url", "is", null);
+
+  if (serverContext.store) {
+    productsQuery = productsQuery.eq("store_id", serverContext.store.id);
+  }
+
+  const { data: products } = await productsQuery;
+
 
   if (!products || products.length === 0) {
     const noFilesEmbed = {
@@ -1142,26 +1211,61 @@ async function handleGetRoleCommand(
     }
   } else if (serverContext.store) {
     // Store server: Use store-specific role configs
-    const [roleConfigsResult, storeOrdersResult] = await Promise.all([
+    const [roleConfigsResult, ordersResult] = await Promise.all([
       supabase
         .from("discord_role_configs")
         .select("*")
         .eq("store_id", serverContext.store.id)
         .eq("auto_assign_on_purchase", true),
       supabase
-        .from("order_items")
-        .select("id, price, orders!inner(user_id, status)")
-        .eq("orders.user_id", profile.user_id)
-        .in("orders.status", ["paid", "completed"])
-        .eq("store_id", serverContext.store.id),
+        .from("orders")
+        .select("id")
+        .eq("user_id", profile.user_id)
+        .in("status", ["paid", "completed"]) 
+        .limit(200),
     ]);
 
     const roleConfigs = roleConfigsResult.data || [];
-    const storeOrders = storeOrdersResult.data || [];
-    const orderCount = storeOrders.length;
-    const totalSpent = storeOrders.reduce((sum: number, item: any) => sum + (item.price || 0), 0);
+    const orderIds = (ordersResult.data || []).map((o: any) => o.id);
 
-    console.log(`[discord-customer-bot] Store server ${serverContext.store.name} - User ${profile.username}: ${orderCount} purchases, £${(totalSpent/100).toFixed(2)} spent`);
+    let orderCount = 0;
+    let totalSpent = 0;
+
+    if (orderIds.length > 0) {
+      const { data: orderItems, error: orderItemsError } = await supabase
+        .from("order_items")
+        .select("product_id, price, order_id")
+        .in("order_id", orderIds);
+
+      if (orderItemsError) {
+        console.error("[discord-customer-bot] Store order_items lookup error:", orderItemsError);
+      } else if (orderItems?.length) {
+        const productIds = [...new Set(orderItems.map((i: any) => i.product_id).filter(Boolean))];
+
+        const { data: products, error: productsError } = await supabase
+          .from("products")
+          .select("id, store_id")
+          .in("id", productIds);
+
+        if (productsError) {
+          console.error("[discord-customer-bot] Product store lookup error:", productsError);
+        } else {
+          const storeProductSet = new Set(
+            (products || [])
+              .filter((p: any) => p.store_id === serverContext.store!.id)
+              .map((p: any) => p.id)
+          );
+
+          const storeItems = (orderItems || []).filter((i: any) => storeProductSet.has(i.product_id));
+          orderCount = storeItems.length;
+          totalSpent = storeItems.reduce((sum: number, item: any) => sum + Number(item.price || 0), 0);
+        }
+      }
+    }
+
+    console.log(
+      `[discord-customer-bot] Store server ${serverContext.store.name} - User ${profile.username}: ${orderCount} purchases, £${totalSpent.toFixed(2)} spent`
+    );
 
     // Check each role config
     for (const config of roleConfigs) {
