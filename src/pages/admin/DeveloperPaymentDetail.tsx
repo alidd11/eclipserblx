@@ -1,18 +1,20 @@
- import { useParams, useNavigate } from 'react-router-dom';
- import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
- import { AdminLayout } from '@/components/admin/AdminLayout';
- import { supabase } from '@/integrations/supabase/client';
- import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
- import { Button } from '@/components/ui/button';
- import { Badge } from '@/components/ui/badge';
- import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
- import { Input } from '@/components/ui/input';
- import { Label } from '@/components/ui/label';
- import { toast } from '@/hooks/use-toast';
- import { format } from 'date-fns';
- import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, User, Calendar, CreditCard, FileText } from 'lucide-react';
- import { Skeleton } from '@/components/ui/skeleton';
- import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { format } from 'date-fns';
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, User, Calendar, CreditCard, FileText } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useState } from 'react';
  
  const statusConfig = {
    pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500', icon: Clock },
@@ -22,13 +24,15 @@
    cancelled: { label: 'Cancelled', color: 'bg-muted text-muted-foreground', icon: XCircle },
  };
  
- export default function DeveloperPaymentDetail() {
-   const { id } = useParams<{ id: string }>();
-   const navigate = useNavigate();
-   const queryClient = useQueryClient();
-   const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
-   const [paymentReference, setPaymentReference] = useState('');
-   const [paymentMethod, setPaymentMethod] = useState('');
+export default function DeveloperPaymentDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
+  const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
  
    const { data: payment, isLoading } = useQuery({
      queryKey: ['developer-payment', id],
@@ -74,35 +78,50 @@
      },
    });
  
-   if (isLoading) {
-     return (
-       <AdminLayout requiredRoles={['admin']}>
-         <div className="space-y-6">
-           <Skeleton className="h-8 w-48" />
-           <Skeleton className="h-64 w-full" />
-         </div>
-       </AdminLayout>
-     );
-   }
+  if (isLoading) {
+    return (
+      <AdminLayout requiredRoles={['admin', 'developer']}>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </AdminLayout>
+    );
+  }
  
-   if (!payment) {
-     return (
-       <AdminLayout requiredRoles={['admin']}>
-         <div className="text-center py-12">
-           <p className="text-muted-foreground">Payment not found</p>
-           <Button variant="outline" onClick={() => navigate('/admin/developer-payments')} className="mt-4">
-             Back to Payments
-           </Button>
-         </div>
-       </AdminLayout>
-     );
-   }
+  if (!payment) {
+    return (
+      <AdminLayout requiredRoles={['admin', 'developer']}>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Payment not found</p>
+          <Button variant="outline" onClick={() => navigate('/admin/developer-payments')} className="mt-4">
+            Back to Payments
+          </Button>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Check if developer is trying to access someone else's payment
+  const isOwnPayment = payment.developer_id === user?.id;
+  if (!isAdmin && !isOwnPayment) {
+    return (
+      <AdminLayout requiredRoles={['admin', 'developer']}>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">You don't have permission to view this payment</p>
+          <Button variant="outline" onClick={() => navigate('/admin/developer-payments')} className="mt-4">
+            Back to Payments
+          </Button>
+        </div>
+      </AdminLayout>
+    );
+  }
  
    const config = statusConfig[payment.status as keyof typeof statusConfig];
    const StatusIcon = config?.icon || Clock;
  
    return (
-     <AdminLayout requiredRoles={['admin']}>
+     <AdminLayout requiredRoles={['admin', 'developer']}>
        <div className="space-y-6">
          <div className="flex items-center gap-4">
            <Button
@@ -204,13 +223,13 @@
                Created: {format(new Date(payment.created_at), 'MMM d, yyyy HH:mm')}
              </div>
  
-             {(payment.status === 'pending' || payment.status === 'processing') && (
-               <div className="pt-4 border-t">
-                 <Button onClick={() => setIsMarkPaidOpen(true)} className="w-full sm:w-auto">
-                   Mark as Paid
-                 </Button>
-               </div>
-             )}
+              {isAdmin && (payment.status === 'pending' || payment.status === 'processing') && (
+                <div className="pt-4 border-t">
+                  <Button onClick={() => setIsMarkPaidOpen(true)} className="w-full sm:w-auto">
+                    Mark as Paid
+                  </Button>
+                </div>
+              )}
            </CardContent>
          </Card>
  
