@@ -727,120 +727,105 @@ async function handleGetRoleCommand(
   const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
   const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
   const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
-  const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID"); // Eclipse+ role
+  const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
 
-  const rolesAssigned: string[] = [];
-  const rolesFailed: string[] = [];
-  const rolesAlreadyHad: string[] = [];
+  // Run all database queries in parallel for speed
+  const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", profile.user_id)
+      .in("status", ["paid", "completed"]),
+    supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", profile.user_id)
+      .eq("status", "active")
+      .maybeSingle(),
+    supabase
+      .from("stores")
+      .select("id")
+      .eq("owner_id", profile.user_id)
+      .eq("is_active", true)
+      .maybeSingle(),
+  ]);
 
-  // Helper to assign a role
-  async function assignRole(roleId: string, roleName: string) {
-    if (!roleId) {
-      console.log(`[discord-customer-bot] ${roleName} role ID not configured`);
-      return;
-    }
+  const purchaseCount = ordersResult.count || 0;
+  const hasSubscription = !!subscriptionResult.data;
+  const hasStore = !!storeResult.data;
 
-    try {
-      const response = await fetch(
-        `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${roleId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bot ${botToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  console.log(`[discord-customer-bot] User ${profile.username}: ${purchaseCount} purchases, Eclipse+: ${hasSubscription}, Store: ${hasStore}`);
 
-      if (response.status === 204) {
-        rolesAssigned.push(roleName);
-      } else if (response.status === 304) {
-        rolesAlreadyHad.push(roleName);
-      } else {
-        const errorText = await response.text();
-        console.error(`[discord-customer-bot] Failed to assign ${roleName}:`, response.status, errorText);
-        rolesFailed.push(roleName);
-      }
-    } catch (error) {
-      console.error(`[discord-customer-bot] Error assigning ${roleName}:`, error);
-      rolesFailed.push(roleName);
-    }
-  }
+  // Determine which roles to assign
+  const rolesToAssign: { id: string; name: string }[] = [];
+  const rolesToRemove: { id: string; name: string }[] = [];
 
-  // Check purchase count for Customer/Loyal Customer roles
-  const { count: orderCount } = await supabase
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", profile.user_id)
-    .in("status", ["paid", "completed"]);
-
-  const purchaseCount = orderCount || 0;
-  console.log(`[discord-customer-bot] User ${profile.username} has ${purchaseCount} purchases`);
-
+  // Customer/Loyal Customer logic
   if (purchaseCount >= 5 && loyalCustomerRoleId) {
-    // Loyal Customer (5+ purchases) - also remove regular Customer role
-    await assignRole(loyalCustomerRoleId, "Loyal Customer");
-    
-    // Remove Customer role if they have Loyal Customer
+    rolesToAssign.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
     if (customerRoleId) {
-      try {
-        await fetch(
-          `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${customerRoleId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bot ${botToken}`,
-            },
-          }
-        );
-      } catch (e) {
-        console.log("[discord-customer-bot] Could not remove Customer role:", e);
-      }
+      rolesToRemove.push({ id: customerRoleId, name: "Customer" });
     }
   } else if (purchaseCount >= 1 && customerRoleId) {
-    // Customer (1-4 purchases)
-    await assignRole(customerRoleId, "Customer");
+    rolesToAssign.push({ id: customerRoleId, name: "Customer" });
   }
 
-  // Check for Eclipse+ subscription
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("id, status")
-    .eq("user_id", profile.user_id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (subscription && eclipsePlusRoleId) {
-    await assignRole(eclipsePlusRoleId, "Eclipse+");
+  // Eclipse+
+  if (hasSubscription && eclipsePlusRoleId) {
+    rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
   }
 
-  // Check for Store Creator
-  const { data: store } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("owner_id", profile.user_id)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (store && storeCreatorRoleId) {
-    await assignRole(storeCreatorRoleId, "Store Creator");
+  // Store Creator
+  if (hasStore && storeCreatorRoleId) {
+    rolesToAssign.push({ id: storeCreatorRoleId, name: "Store Creator" });
   }
+
+  // Execute all role operations in parallel
+  const rolesAssigned: string[] = [];
+  const rolesFailed: string[] = [];
+
+  const rolePromises = [
+    ...rolesToAssign.map(async (role) => {
+      try {
+        const response = await fetch(
+          `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${role.id}`,
+          {
+            method: "PUT",
+            headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" },
+          }
+        );
+        if (response.status === 204 || response.ok) {
+          rolesAssigned.push(role.name);
+        } else {
+          console.error(`[discord-customer-bot] Failed ${role.name}: ${response.status}`);
+          rolesFailed.push(role.name);
+        }
+      } catch (e) {
+        console.error(`[discord-customer-bot] Error ${role.name}:`, e);
+        rolesFailed.push(role.name);
+      }
+    }),
+    ...rolesToRemove.map(async (role) => {
+      try {
+        await fetch(
+          `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${role.id}`,
+          { method: "DELETE", headers: { Authorization: `Bot ${botToken}` } }
+        );
+      } catch (e) {
+        console.log(`[discord-customer-bot] Could not remove ${role.name}:`, e);
+      }
+    }),
+  ];
+
+  await Promise.all(rolePromises);
 
   // Build response
   const fields: any[] = [];
 
   if (rolesAssigned.length > 0) {
     fields.push({
-      name: "✅ Roles Assigned",
+      name: "✅ Roles Synced",
       value: rolesAssigned.map(r => `• ${r}`).join("\n"),
-      inline: true,
-    });
-  }
-
-  if (rolesAlreadyHad.length > 0) {
-    fields.push({
-      name: "ℹ️ Already Had",
-      value: rolesAlreadyHad.map(r => `• ${r}`).join("\n"),
       inline: true,
     });
   }
@@ -853,14 +838,14 @@ async function handleGetRoleCommand(
     });
   }
 
-  // Summary of eligibility
+  // Eligibility hints
   const eligibility: string[] = [];
-  if (purchaseCount === 0) eligibility.push("• Make a purchase to earn **Customer** role");
-  if (purchaseCount > 0 && purchaseCount < 5) eligibility.push(`• ${5 - purchaseCount} more purchases for **Loyal Customer**`);
-  if (!subscription) eligibility.push("• Subscribe to **Eclipse+** for the member role");
-  if (!store) eligibility.push("• Create a store for **Store Creator** role");
+  if (purchaseCount === 0) eligibility.push("• Make a purchase → **Customer**");
+  if (purchaseCount > 0 && purchaseCount < 5) eligibility.push(`• ${5 - purchaseCount} more purchases → **Loyal Customer**`);
+  if (!hasSubscription) eligibility.push("• Subscribe to Eclipse+ → **Eclipse+**");
+  if (!hasStore) eligibility.push("• Create a store → **Store Creator**");
 
-  if (eligibility.length > 0 && rolesAssigned.length === 0 && rolesAlreadyHad.length === 0) {
+  if (eligibility.length > 0 && rolesAssigned.length === 0) {
     fields.push({
       name: "📋 How to Earn Roles",
       value: eligibility.join("\n"),
@@ -869,17 +854,13 @@ async function handleGetRoleCommand(
   }
 
   const embed = {
-    color: rolesAssigned.length > 0 ? 0x22c55e : (rolesAlreadyHad.length > 0 ? 0x3b82f6 : 0xf59e0b),
+    color: rolesAssigned.length > 0 ? 0x22c55e : 0xf59e0b,
     title: rolesAssigned.length > 0 ? "🎉 Roles Synced!" : "📋 Role Status",
     description: rolesAssigned.length > 0
-      ? `Your Discord roles have been updated based on your Eclipse account.`
-      : rolesAlreadyHad.length > 0
-        ? `You already have all the roles you're eligible for!`
-        : `Based on your Eclipse account, here's what you need to earn roles:`,
+      ? `Your Discord roles have been updated!`
+      : `Here's what you need to earn roles:`,
     fields,
-    footer: {
-      text: "Eclipse Marketplace • Roles sync automatically on login",
-    },
+    footer: { text: "Eclipse Marketplace" },
     timestamp: new Date().toISOString(),
   };
 
