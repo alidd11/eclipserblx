@@ -14,7 +14,8 @@
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
  import { toast } from '@/hooks/use-toast';
- import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
  import { format } from 'date-fns';
  import { Wallet, Clock, CheckCircle, XCircle, AlertCircle, Plus, CreditCard, Banknote, ChevronRight } from 'lucide-react';
  import { Skeleton } from '@/components/ui/skeleton';
@@ -58,40 +59,50 @@
  
  const paymentTypes = ['salary', 'commission', 'bonus', 'freelance', 'other'];
  
- export default function DeveloperPayments() {
-   const { user } = useAuth();
-   const navigate = useNavigate();
-   const queryClient = useQueryClient();
-   const [activeTab, setActiveTab] = useState('pending');
-   const [isAddOpen, setIsAddOpen] = useState(false);
-   const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
-   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-   const [paymentReference, setPaymentReference] = useState('');
-   const [paymentMethod, setPaymentMethod] = useState('');
-   
-   const [newPayment, setNewPayment] = useState({
-     developer_id: '',
-     amount: '',
-     payment_type: 'salary',
-     due_date: '',
-     notes: '',
-   });
- 
-   const { data: payments, isLoading } = useQuery({
-     queryKey: ['developer-payments'],
-     queryFn: async () => {
-       const { data, error } = await supabase
-         .from('developer_payments')
-         .select(`
-           *,
-           developer:profiles!developer_payments_developer_id_fkey(display_name, username, staff_id)
-         `)
-         .order('created_at', { ascending: false });
-       
-       if (error) throw error;
-       return data as Payment[];
-     },
-   });
+export default function DeveloperPayments() {
+  const { user } = useAuth();
+  const { isAdmin, hasRole } = useAdminAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('pending');
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  
+  // Developers can only see their own payments
+  const isDeveloperOnly = hasRole('developer') && !isAdmin;
+  
+  const [newPayment, setNewPayment] = useState({
+    developer_id: '',
+    amount: '',
+    payment_type: 'salary',
+    due_date: '',
+    notes: '',
+  });
+
+  const { data: payments, isLoading } = useQuery({
+    queryKey: ['developer-payments', isDeveloperOnly ? user?.id : 'all'],
+    queryFn: async () => {
+      let query = supabase
+        .from('developer_payments')
+        .select(`
+          *,
+          developer:profiles!developer_payments_developer_id_fkey(display_name, username, staff_id)
+        `)
+        .order('created_at', { ascending: false });
+      
+      // Developers only see their own payments
+      if (isDeveloperOnly && user?.id) {
+        query = query.eq('developer_id', user.id);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Payment[];
+    },
+  });
  
    const { data: developers } = useQuery({
      queryKey: ['staff-developers'],
@@ -193,103 +204,108 @@
    };
  
    return (
-     <AdminLayout requiredRoles={['admin']}>
+     <AdminLayout requiredRoles={['admin', 'developer']}>
        <div className="space-y-6">
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-           <div>
-             <h1 className="text-2xl font-bold">Developer Payments</h1>
-             <p className="text-muted-foreground">Track payments owed and paid to developers</p>
-           </div>
-           
-           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-             <DialogTrigger asChild>
-               <Button>
-                 <Plus className="h-4 w-4 mr-2" />
-                 Add Payment
-               </Button>
-             </DialogTrigger>
-             <DialogContent>
-               <DialogHeader>
-                 <DialogTitle>Add Payment Record</DialogTitle>
-                 <DialogDescription>Record a new payment due to a developer</DialogDescription>
-               </DialogHeader>
-               <div className="space-y-4">
-                 <div className="space-y-2">
-                   <Label>Developer</Label>
-                   <Select
-                     value={newPayment.developer_id}
-                     onValueChange={(v) => setNewPayment(p => ({ ...p, developer_id: v }))}
-                   >
-                     <SelectTrigger>
-                       <SelectValue placeholder="Select developer" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       {developers?.map((dev) => (
-                         <SelectItem key={dev.user_id} value={dev.user_id}>
-                           {dev.display_name || dev.username} ({dev.staff_id})
-                         </SelectItem>
-                       ))}
-                     </SelectContent>
-                   </Select>
-                 </div>
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label>Amount (GBP)</Label>
-                     <Input
-                       type="number"
-                       step="0.01"
-                       min="0"
-                       value={newPayment.amount}
-                       onChange={(e) => setNewPayment(p => ({ ...p, amount: e.target.value }))}
-                       placeholder="0.00"
-                     />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Type</Label>
-                     <Select
-                       value={newPayment.payment_type}
-                       onValueChange={(v) => setNewPayment(p => ({ ...p, payment_type: v }))}
-                     >
-                       <SelectTrigger>
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {paymentTypes.map((type) => (
-                           <SelectItem key={type} value={type} className="capitalize">{type}</SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                   </div>
-                 </div>
-                 <div className="space-y-2">
-                   <Label>Due Date (optional)</Label>
-                   <Input
-                     type="date"
-                     value={newPayment.due_date}
-                     onChange={(e) => setNewPayment(p => ({ ...p, due_date: e.target.value }))}
-                   />
-                 </div>
-                 <div className="space-y-2">
-                   <Label>Notes</Label>
-                   <Textarea
-                     value={newPayment.notes}
-                     onChange={(e) => setNewPayment(p => ({ ...p, notes: e.target.value }))}
-                     placeholder="Additional details..."
-                   />
-                 </div>
-               </div>
-               <DialogFooter>
-                 <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                 <Button
-                   onClick={() => createPayment.mutate(newPayment)}
-                   disabled={!newPayment.developer_id || !newPayment.amount || createPayment.isPending}
-                 >
-                   Add Payment
-                 </Button>
-               </DialogFooter>
-             </DialogContent>
-           </Dialog>
-         </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold">{isDeveloperOnly ? 'My Payments' : 'Developer Payments'}</h1>
+              <p className="text-muted-foreground">
+                {isDeveloperOnly ? 'View your payment history' : 'Track payments owed and paid to developers'}
+              </p>
+            </div>
+            
+            {/* Only admins can add payments */}
+            {isAdmin && (
+              <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Payment
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Payment Record</DialogTitle>
+                    <DialogDescription>Record a new payment due to a developer</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Developer</Label>
+                      <Select
+                        value={newPayment.developer_id}
+                        onValueChange={(v) => setNewPayment(p => ({ ...p, developer_id: v }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select developer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {developers?.map((dev) => (
+                            <SelectItem key={dev.user_id} value={dev.user_id}>
+                              {dev.display_name || dev.username} ({dev.staff_id})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Amount (GBP)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={newPayment.amount}
+                          onChange={(e) => setNewPayment(p => ({ ...p, amount: e.target.value }))}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Type</Label>
+                        <Select
+                          value={newPayment.payment_type}
+                          onValueChange={(v) => setNewPayment(p => ({ ...p, payment_type: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {paymentTypes.map((type) => (
+                              <SelectItem key={type} value={type} className="capitalize">{type}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Due Date (optional)</Label>
+                      <Input
+                        type="date"
+                        value={newPayment.due_date}
+                        onChange={(e) => setNewPayment(p => ({ ...p, due_date: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Notes</Label>
+                      <Textarea
+                        value={newPayment.notes}
+                        onChange={(e) => setNewPayment(p => ({ ...p, notes: e.target.value }))}
+                        placeholder="Additional details..."
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                    <Button
+                      onClick={() => createPayment.mutate(newPayment)}
+                      disabled={!newPayment.developer_id || !newPayment.amount || createPayment.isPending}
+                    >
+                      Add Payment
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
  
          {/* Summary Cards */}
           <div className="flex gap-3">

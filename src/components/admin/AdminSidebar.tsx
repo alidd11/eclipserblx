@@ -24,6 +24,7 @@ interface NavItem {
   icon: LucideIcon;
   href: string;
   permissions?: string[]; // Required permissions (any of these)
+  roles?: string[]; // Required roles (any of these) - for role-based access without permissions
   dividerAfter?: boolean;
 }
 
@@ -52,7 +53,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', permissions: ['view_analytics'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', permissions: ['view_income'] },
-      { title: 'Developer Payments', icon: Wallet, href: '/admin/developer-payments', permissions: [] },
+      { title: 'Developer Payments', icon: Wallet, href: '/admin/developer-payments', permissions: [], roles: ['admin', 'developer'] },
       { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', permissions: ['view_analytics'], dividerAfter: true },
       { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', permissions: ['manage_discord_engagement'] },
       { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', permissions: ['manage_discord_engagement'] },
@@ -160,7 +161,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false }: AdminSidebarProps) {
   const { signOut } = useAuth();
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, hasRole } = useAdminAuth();
   const { hasAnyPermission } = useUserPermissions();
   const navigate = useNavigate();
   const location = useLocation();
@@ -220,10 +221,23 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
   // Permission-based access control
   const canAccessItem = (item: NavItem) => {
-    // No permissions required = accessible to all staff
-    if (!item.permissions || item.permissions.length === 0) return true;
     // Admin has full access
     if (isAdmin) return true;
+    
+    // Check if item requires specific roles
+    if (item.roles && item.roles.length > 0) {
+      const hasRequiredRole = item.roles.some(role => hasRole(role));
+      if (hasRequiredRole) return true;
+    }
+    
+    // No permissions required = accessible to all staff (unless roles are specified)
+    if (!item.permissions || item.permissions.length === 0) {
+      // If no roles specified either, accessible to all
+      if (!item.roles || item.roles.length === 0) return true;
+      // If roles were specified but user doesn't have them, deny
+      return false;
+    }
+    
     // Check if user has any of the required permissions
     return hasAnyPermission(item.permissions);
   };
