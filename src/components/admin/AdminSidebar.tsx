@@ -5,6 +5,7 @@ import {
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Flag, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Percent, Ticket, Bot, RotateCcw
 } from 'lucide-react';
+ import { Upload, Wallet } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', permissions: ['view_analytics'] },
       { title: 'Income', icon: TrendingUp, href: '/admin/income', permissions: ['view_income'] },
+      { title: 'Developer Payments', icon: Wallet, href: '/admin/developer-payments', permissions: [] },
       { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', permissions: ['view_analytics'], dividerAfter: true },
       { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', permissions: ['manage_discord_engagement'] },
       { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', permissions: ['manage_discord_engagement'] },
@@ -103,6 +105,7 @@ const navGroups: NavGroup[] = [
       { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', permissions: ['view_seller_tickets'] },
       { title: 'IP Reports', icon: Shield, href: '/admin/ip-reports', permissions: ['manage_seller_stores'] },
       { title: 'Interest List', icon: Bell, href: '/admin/marketplace-interest', permissions: ['view_store_applications'], dividerAfter: true },
+      { title: 'Developer Submissions', icon: Upload, href: '/admin/developer-submissions', permissions: ['manage_developer_submissions'], dividerAfter: true },
       { title: 'Seller Documents', icon: FolderOpen, href: '/admin/seller-documents', permissions: ['manage_seller_stores'] },
       { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', permissions: ['manage_seller_stores'] },
       { title: 'Seller Agreements', icon: ClipboardList, href: '/admin/seller-agreements', permissions: ['view_seller_stores'] },
