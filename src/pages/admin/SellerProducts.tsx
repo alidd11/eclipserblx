@@ -80,12 +80,27 @@ export default function SellerProducts() {
         .eq("id", productId);
 
       if (error) throw error;
+      
+      return { productId, status };
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["seller-products-moderation"] });
       toast.success(`Product ${variables.status === "approved" ? "approved" : "rejected"}`);
       setSelectedProduct(null);
       setModerationNotes("");
+      
+      // Automatically send Discord product drop announcement when approved
+      if (result.status === "approved") {
+        try {
+          await supabase.functions.invoke('send-product-drop-webhook', {
+            body: { productId: result.productId, isEarlyAccess: false },
+          });
+          toast.success("Product drop announced to Discord!");
+        } catch (error) {
+          console.error("Failed to send Discord announcement:", error);
+          // Don't show error toast - the approval was successful, just the announcement failed
+        }
+      }
     },
     onError: () => {
       toast.error("Failed to update product status");
