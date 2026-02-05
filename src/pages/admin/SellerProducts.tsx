@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, Eye, Package, Trash2 } from "lucide-react";
+import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -156,6 +156,34 @@ export default function SellerProducts() {
     }
   };
 
+  // Render moderation flags if present
+  const renderModerationFlags = (flags: any) => {
+    if (!flags) return null;
+    
+    const hasNsfw = flags.nsfw_flags?.length > 0;
+    const hasLuaConcerns = flags.lua_concerns?.length > 0;
+    const luaRisk = flags.lua_risk_level;
+    
+    if (!hasNsfw && !hasLuaConcerns) return null;
+    
+    return (
+      <div className="mt-2 space-y-1">
+        {hasNsfw && (
+          <div className="flex items-center gap-1 text-xs text-destructive">
+            <ShieldAlert className="h-3 w-3" />
+            <span>NSFW flagged</span>
+          </div>
+        )}
+        {hasLuaConcerns && (
+          <div className="flex items-center gap-1 text-xs text-amber-500">
+            <AlertTriangle className="h-3 w-3" />
+            <span>Lua {luaRisk} risk: {flags.lua_concerns.slice(0, 2).join(', ')}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <AdminLayout requiredPermissions={['view_seller_stores']}>
       <div className="space-y-6">
@@ -231,6 +259,8 @@ export default function SellerProducts() {
                     <span className="text-muted-foreground">Category</span>
                     <span>{product.categories?.name || "Uncategorized"}</span>
                   </div>
+                  {/* Show moderation flags for pending products */}
+                  {product.moderation_status === "pending" && renderModerationFlags(product.moderation_flags)}
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -323,6 +353,42 @@ export default function SellerProducts() {
                 <span className="text-muted-foreground text-sm">Description:</span>
                 <p className="mt-1 text-sm">{selectedProduct?.description || "No description"}</p>
               </div>
+              {/* Show moderation flags in detail */}
+              {selectedProduct?.moderation_flags && (
+                <div className="p-3 border border-amber-500/30 bg-amber-500/10 rounded-lg space-y-2">
+                  <span className="text-sm font-medium flex items-center gap-2 text-amber-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    Security Scan Flags
+                  </span>
+                  {selectedProduct.moderation_flags.nsfw_flags?.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-destructive font-medium">NSFW Detected:</span>
+                      <ul className="list-disc list-inside ml-2 text-muted-foreground">
+                        {selectedProduct.moderation_flags.nsfw_flags.map((flag: string, i: number) => (
+                          <li key={i}>{flag}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {selectedProduct.moderation_flags.lua_concerns?.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-amber-600 font-medium">
+                        Lua Analysis ({selectedProduct.moderation_flags.lua_risk_level} risk):
+                      </span>
+                      <ul className="list-disc list-inside ml-2 text-muted-foreground">
+                        {selectedProduct.moderation_flags.lua_concerns.map((concern: string, i: number) => (
+                          <li key={i}>{concern}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {selectedProduct.moderation_flags.scan_timestamp && (
+                    <p className="text-xs text-muted-foreground">
+                      Scanned: {new Date(selectedProduct.moderation_flags.scan_timestamp).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              )}
               {selectedProduct?.moderation_status === "pending" && (
                 <div>
                   <label className="text-sm text-muted-foreground">Moderation Notes (optional)</label>

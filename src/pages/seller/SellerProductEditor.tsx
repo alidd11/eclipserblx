@@ -5,6 +5,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -39,6 +40,13 @@ import {
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+
+interface ModerationFlags {
+  nsfw_flags?: string[];
+  lua_risk_level?: 'low' | 'medium' | 'high';
+  lua_concerns?: string[];
+  scan_timestamp?: string;
+}
 
 interface ProductFormData {
   name: string;
@@ -97,6 +105,9 @@ export default function SellerProductEditor() {
 
   const [uploading, setUploading] = useState(false);
   const [uploadingAsset, setUploadingAsset] = useState(false);
+  
+  // Track security scan flags for auto-approval logic
+  const [moderationFlags, setModerationFlags] = useState<ModerationFlags>({});
 
   // Fetch categories
   const { data: categories } = useQuery({
@@ -202,6 +213,15 @@ export default function SellerProductEditor() {
         if (!scanResult.isAllowed) {
           toast.dismiss('img-scan');
           toast.error(scanResult.reason || 'Image blocked');
+          
+          // Track NSFW flags for moderation
+          if (scanResult.isNsfw) {
+            setModerationFlags(prev => ({
+              ...prev,
+              nsfw_flags: [...(prev.nsfw_flags || []), scanResult.reason || 'NSFW content detected'],
+              scan_timestamp: new Date().toISOString(),
+            }));
+          }
           continue;
         }
         toast.dismiss('img-scan');
@@ -257,8 +277,18 @@ export default function SellerProductEditor() {
         return;
       }
       
-      if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
-        toast.warning(`File has concerns: ${scanResult.luaConcerns.join(', ')}`, { duration: 8000 });
+      // Track Lua concerns for moderation flags
+      if (scanResult.luaRiskLevel && scanResult.luaRiskLevel !== 'low') {
+        setModerationFlags(prev => ({
+          ...prev,
+          lua_risk_level: scanResult.luaRiskLevel,
+          lua_concerns: scanResult.luaConcerns || [],
+          scan_timestamp: new Date().toISOString(),
+        }));
+        
+        if (scanResult.luaRiskLevel === 'medium' && scanResult.luaConcerns?.length) {
+          toast.warning(`File has concerns: ${scanResult.luaConcerns.join(', ')}`, { duration: 8000 });
+        }
       }
       
       toast.dismiss('asset-scan');
@@ -297,9 +327,18 @@ export default function SellerProductEditor() {
     }));
   };
 
+  // Determine if product should be auto-approved
+  const hasSecurityFlags = (): boolean => {
+    return !!(
+      moderationFlags.nsfw_flags?.length ||
+      (moderationFlags.lua_risk_level && moderationFlags.lua_risk_level !== 'low') ||
+      moderationFlags.lua_concerns?.length
+    );
+  };
+
   // Save product mutation
   const saveProduct = useMutation({
-    mutationFn: async (data: ProductFormData) => {
+    mutationFn: async (data: ProductFormData): Promise<{ productId: string; isAutoApproved: boolean }> => {
       if (!store?.id || !user?.id) throw new Error('Missing store or user');
 
       // Calculate release_at value
@@ -312,8 +351,11 @@ export default function SellerProductEditor() {
       let earlyAccessHours: number | null = null;
       if (data.schedule_enabled && data.early_access_enabled) {
         earlyAccessHours = data.early_access_hours ? parseInt(data.early_access_hours) : null;
-        // If enabled but no custom hours, we'll use null to indicate "use platform default"
       }
+
+      // Determine moderation status: auto-approve if no flags
+      const shouldAutoApprove = !hasSecurityFlags();
+      const moderationStatus = shouldAutoApprove ? 'approved' : 'pending';
 
       const productData = {
         name: data.name,
@@ -322,13 +364,14 @@ export default function SellerProductEditor() {
         seller_price: parseFloat(data.seller_price) || parseFloat(data.price) || 0,
         description: data.description,
         category_id: data.category_id || null,
-        is_active: data.is_active,
+        is_active: shouldAutoApprove ? data.is_active : false, // Only active if approved
         eclipse_free_eligible: data.eclipse_free_eligible,
         images: data.images,
         asset_file_url: data.asset_file_url || null,
         store_id: store.id,
         is_seller_product: true,
-        moderation_status: 'pending', // All new/edited products go to pending
+        moderation_status: moderationStatus,
+        moderation_flags: hasSecurityFlags() ? (moderationFlags as Json) : null,
         release_at: releaseAt,
         early_access_hours: earlyAccessHours,
         ip_ownership_confirmed: data.ip_ownership_confirmed,
@@ -342,16 +385,36 @@ export default function SellerProductEditor() {
           .eq('store_id', store.id);
 
         if (error) throw error;
+        return { productId, isAutoApproved: shouldAutoApprove };
       } else {
-        const { error } = await supabase
+        const { data: insertedProduct, error } = await supabase
           .from('products')
-          .insert(productData);
+          .insert(productData)
+          .select('id')
+          .single();
 
         if (error) throw error;
+        return { productId: insertedProduct.id, isAutoApproved: shouldAutoApprove };
       }
     },
-    onSuccess: () => {
-      toast.success(isEditing ? 'Product updated successfully' : 'Product created successfully');
+    onSuccess: async (result) => {
+      // Send Discord announcement for auto-approved new products
+      if (result.isAutoApproved && !isEditing) {
+        try {
+          await supabase.functions.invoke('send-product-drop-webhook', {
+            body: { productId: result.productId, isEarlyAccess: false },
+          });
+          toast.success('Product approved and announced to Discord!');
+        } catch (error) {
+          console.error('Failed to send Discord announcement:', error);
+          toast.success('Product auto-approved!');
+        }
+      } else if (result.isAutoApproved) {
+        toast.success('Product updated successfully');
+      } else {
+        toast.success('Product submitted for review - our team will approve it shortly');
+      }
+      
       clearFormData();
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
       navigate('/seller/products');

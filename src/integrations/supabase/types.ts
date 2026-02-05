@@ -2807,6 +2807,7 @@ export type Database = {
           is_featured: boolean | null
           is_resellable: boolean
           is_seller_product: boolean | null
+          moderation_flags: Json | null
           moderation_notes: string | null
           moderation_status: string | null
           name: string
@@ -2838,6 +2839,7 @@ export type Database = {
           is_featured?: boolean | null
           is_resellable?: boolean
           is_seller_product?: boolean | null
+          moderation_flags?: Json | null
           moderation_notes?: string | null
           moderation_status?: string | null
           name: string
@@ -2869,6 +2871,7 @@ export type Database = {
           is_featured?: boolean | null
           is_resellable?: boolean
           is_seller_product?: boolean | null
+          moderation_flags?: Json | null
           moderation_notes?: string | null
           moderation_status?: string | null
           name?: string
