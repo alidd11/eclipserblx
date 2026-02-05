@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     const guildId = Deno.env.get("DISCORD_GUILD_ID");
     const roleId = Deno.env.get("DISCORD_ROLE_ID");
 
