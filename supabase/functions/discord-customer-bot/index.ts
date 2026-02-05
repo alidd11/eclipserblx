@@ -122,6 +122,10 @@ Deno.serve(async (req) => {
         case "retrieve":
           return await handleRetrieveCommand(supabase, interaction, discordUserId, discordUsername);
 
+        case "getrole":
+        case "roles":
+          return await handleGetRoleCommand(supabase, discordUserId, discordUsername, interaction.guild_id);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -693,4 +697,191 @@ async function handleRetrieveCommand(
     }),
     { headers: { "Content-Type": "application/json" } }
   );
+}
+
+// /getrole command - Assign Discord roles based on Eclipse account
+async function handleGetRoleCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  guildId?: string
+) {
+  const profile = await getLinkedAccount(supabase, discordUserId);
+
+  if (!profile) {
+    return interactionResponse(
+      "❌ **Account Not Linked**\n\nYour Discord isn't linked to an Eclipse account yet.\nRun `/link` to get started!",
+      true
+    );
+  }
+
+  const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+  const targetGuildId = guildId || Deno.env.get("DISCORD_GUILD_ID");
+
+  if (!botToken || !targetGuildId) {
+    console.error("[discord-customer-bot] Missing bot token or guild ID for role assignment");
+    return interactionResponse("❌ Bot configuration error. Please contact support.", true);
+  }
+
+  // Role IDs from secrets
+  const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
+  const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
+  const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
+  const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID"); // Eclipse+ role
+
+  const rolesAssigned: string[] = [];
+  const rolesFailed: string[] = [];
+  const rolesAlreadyHad: string[] = [];
+
+  // Helper to assign a role
+  async function assignRole(roleId: string, roleName: string) {
+    if (!roleId) {
+      console.log(`[discord-customer-bot] ${roleName} role ID not configured`);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${roleId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bot ${botToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 204) {
+        rolesAssigned.push(roleName);
+      } else if (response.status === 304) {
+        rolesAlreadyHad.push(roleName);
+      } else {
+        const errorText = await response.text();
+        console.error(`[discord-customer-bot] Failed to assign ${roleName}:`, response.status, errorText);
+        rolesFailed.push(roleName);
+      }
+    } catch (error) {
+      console.error(`[discord-customer-bot] Error assigning ${roleName}:`, error);
+      rolesFailed.push(roleName);
+    }
+  }
+
+  // Check purchase count for Customer/Loyal Customer roles
+  const { count: orderCount } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", profile.user_id)
+    .in("status", ["paid", "completed"]);
+
+  const purchaseCount = orderCount || 0;
+  console.log(`[discord-customer-bot] User ${profile.username} has ${purchaseCount} purchases`);
+
+  if (purchaseCount >= 5 && loyalCustomerRoleId) {
+    // Loyal Customer (5+ purchases) - also remove regular Customer role
+    await assignRole(loyalCustomerRoleId, "Loyal Customer");
+    
+    // Remove Customer role if they have Loyal Customer
+    if (customerRoleId) {
+      try {
+        await fetch(
+          `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${customerRoleId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bot ${botToken}`,
+            },
+          }
+        );
+      } catch (e) {
+        console.log("[discord-customer-bot] Could not remove Customer role:", e);
+      }
+    }
+  } else if (purchaseCount >= 1 && customerRoleId) {
+    // Customer (1-4 purchases)
+    await assignRole(customerRoleId, "Customer");
+  }
+
+  // Check for Eclipse+ subscription
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("id, status")
+    .eq("user_id", profile.user_id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (subscription && eclipsePlusRoleId) {
+    await assignRole(eclipsePlusRoleId, "Eclipse+");
+  }
+
+  // Check for Store Creator
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id")
+    .eq("owner_id", profile.user_id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (store && storeCreatorRoleId) {
+    await assignRole(storeCreatorRoleId, "Store Creator");
+  }
+
+  // Build response
+  const fields: any[] = [];
+
+  if (rolesAssigned.length > 0) {
+    fields.push({
+      name: "✅ Roles Assigned",
+      value: rolesAssigned.map(r => `• ${r}`).join("\n"),
+      inline: true,
+    });
+  }
+
+  if (rolesAlreadyHad.length > 0) {
+    fields.push({
+      name: "ℹ️ Already Had",
+      value: rolesAlreadyHad.map(r => `• ${r}`).join("\n"),
+      inline: true,
+    });
+  }
+
+  if (rolesFailed.length > 0) {
+    fields.push({
+      name: "❌ Failed",
+      value: rolesFailed.map(r => `• ${r}`).join("\n"),
+      inline: true,
+    });
+  }
+
+  // Summary of eligibility
+  const eligibility: string[] = [];
+  if (purchaseCount === 0) eligibility.push("• Make a purchase to earn **Customer** role");
+  if (purchaseCount > 0 && purchaseCount < 5) eligibility.push(`• ${5 - purchaseCount} more purchases for **Loyal Customer**`);
+  if (!subscription) eligibility.push("• Subscribe to **Eclipse+** for the member role");
+  if (!store) eligibility.push("• Create a store for **Store Creator** role");
+
+  if (eligibility.length > 0 && rolesAssigned.length === 0 && rolesAlreadyHad.length === 0) {
+    fields.push({
+      name: "📋 How to Earn Roles",
+      value: eligibility.join("\n"),
+      inline: false,
+    });
+  }
+
+  const embed = {
+    color: rolesAssigned.length > 0 ? 0x22c55e : (rolesAlreadyHad.length > 0 ? 0x3b82f6 : 0xf59e0b),
+    title: rolesAssigned.length > 0 ? "🎉 Roles Synced!" : "📋 Role Status",
+    description: rolesAssigned.length > 0
+      ? `Your Discord roles have been updated based on your Eclipse account.`
+      : rolesAlreadyHad.length > 0
+        ? `You already have all the roles you're eligible for!`
+        : `Based on your Eclipse account, here's what you need to earn roles:`,
+    fields,
+    footer: {
+      text: "Eclipse Marketplace • Roles sync automatically on login",
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  return interactionResponse("", true, [embed]);
 }
