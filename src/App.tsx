@@ -126,6 +126,8 @@ const AdminRefunds = lazy(() => import("./pages/admin/Refunds"));
 const AdminAdvertisementAnalytics = lazy(() => import("./pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazy(() => import("./pages/admin/GiftCredits"));
 const AdminIPReports = lazy(() => import("./pages/admin/IPReports"));
+ const AdminDeveloperSubmissions = lazy(() => import("./pages/admin/DeveloperSubmissions"));
+ const AdminDeveloperPayments = lazy(() => import("./pages/admin/DeveloperPayments"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -336,6 +338,8 @@ const App = () => (
                   <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
                   <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />
                   <Route path="/admin/ip-reports" element={<AdminIPReports />} />
+                  <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
+                  <Route path="/admin/developer-payments" element={<AdminDeveloperPayments />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>

@@ -1224,6 +1224,149 @@ export type Database = {
         }
         Relationships: []
       }
+      developer_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          developer_id: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          developer_id: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          developer_id?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "developer_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "developer_payments_developer_id_fkey"
+            columns: ["developer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      developer_product_submissions: {
+        Row: {
+          approved_product_id: string | null
+          category_id: string | null
+          created_at: string
+          developer_id: string
+          files: Json | null
+          id: string
+          price: number
+          product_description: string | null
+          product_name: string
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_product_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          developer_id: string
+          files?: Json | null
+          id?: string
+          price?: number
+          product_description?: string | null
+          product_name: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_product_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          developer_id?: string
+          files?: Json | null
+          id?: string
+          price?: number
+          product_description?: string | null
+          product_name?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "developer_product_submissions_approved_product_id_fkey"
+            columns: ["approved_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "developer_product_submissions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "developer_product_submissions_developer_id_fkey"
+            columns: ["developer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "developer_product_submissions_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       discord_advertisements: {
         Row: {
           created_at: string
