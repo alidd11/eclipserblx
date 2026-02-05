@@ -5318,6 +5318,7 @@ export type Database = {
           custom_rate_set_by: string | null
           deleted_at: string | null
           description: string | null
+          discord_guild_id: string | null
           discord_url: string | null
           featured_product_ids: string[] | null
           follower_count: number | null
@@ -5382,6 +5383,7 @@ export type Database = {
           custom_rate_set_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          discord_guild_id?: string | null
           discord_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
@@ -5446,6 +5448,7 @@ export type Database = {
           custom_rate_set_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          discord_guild_id?: string | null
           discord_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null

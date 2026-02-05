@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { verify } from "npm:discord-verify@1.2.0";
 
-// Customer Bot - separate from Eclipse Marketplace app
+// Customer Bot - works in main Eclipse server AND creator store servers
 // Secrets needed: DISCORD_CUSTOMER_BOT_PUBLIC_KEY, DISCORD_CUSTOMER_BOT_TOKEN
 
 const corsHeaders = {
@@ -36,6 +36,17 @@ interface DiscordInteraction {
     avatar?: string;
   };
   guild_id?: string;
+}
+
+interface ServerContext {
+  guildId: string;
+  isMainServer: boolean;
+  store?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url?: string;
+  };
 }
 
 // Interaction types
@@ -84,7 +95,7 @@ Deno.serve(async (req) => {
     }
 
     const interaction: DiscordInteraction = JSON.parse(body);
-    console.log(`[discord-customer-bot] Received interaction type ${interaction.type}:`, interaction.data?.name);
+    console.log(`[discord-customer-bot] Received interaction type ${interaction.type}:`, interaction.data?.name, `guild: ${interaction.guild_id}`);
 
     // Handle Discord's verification ping
     if (interaction.type === PING) {
@@ -104,26 +115,31 @@ Deno.serve(async (req) => {
 
       const discordUserId = discordUser.id;
       const discordUsername = discordUser.global_name || discordUser.username;
+      const guildId = interaction.guild_id;
+
+      // Determine server context (main Eclipse server or store server)
+      const serverContext = await getServerContext(supabase, guildId);
+      console.log(`[discord-customer-bot] Server context:`, serverContext);
 
       switch (commandName) {
         case "link":
-          return await handleLinkStatusCommand(supabase, discordUserId, discordUsername);
+          return await handleLinkStatusCommand(supabase, discordUserId, discordUsername, serverContext);
 
         case "verify":
-          return await handleVerifyCommand(supabase, interaction, discordUserId, discordUsername);
+          return await handleVerifyCommand(supabase, interaction, discordUserId, discordUsername, serverContext);
 
         case "profile":
-          return await handleProfileCommand(supabase, discordUserId, discordUsername);
+          return await handleProfileCommand(supabase, discordUserId, discordUsername, serverContext);
 
         case "purchases":
-          return await handlePurchasesCommand(supabase, discordUserId, discordUsername);
+          return await handlePurchasesCommand(supabase, discordUserId, discordUsername, serverContext);
 
         case "retrieve":
-          return await handleRetrieveCommand(supabase, interaction, discordUserId, discordUsername);
+          return await handleRetrieveCommand(supabase, interaction, discordUserId, discordUsername, serverContext);
 
         case "getrole":
         case "roles":
-          return await handleGetRoleCommand(supabase, discordUserId, discordUsername, interaction.guild_id);
+          return await handleGetRoleCommand(supabase, discordUserId, discordUsername, serverContext);
 
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
@@ -138,6 +154,35 @@ Deno.serve(async (req) => {
     return interactionResponse("An error occurred. Please try again later.", true);
   }
 });
+
+// Get server context - determine if main server or store server
+async function getServerContext(supabase: any, guildId?: string): Promise<ServerContext> {
+  const mainGuildId = Deno.env.get("DISCORD_GUILD_ID");
+  
+  if (!guildId) {
+    return { guildId: mainGuildId || "", isMainServer: true };
+  }
+
+  // Check if this is the main Eclipse server
+  if (guildId === mainGuildId) {
+    return { guildId, isMainServer: true };
+  }
+
+  // Check if this guild is associated with a store
+  const { data: store, error } = await supabase
+    .from("stores")
+    .select("id, name, slug, logo_url")
+    .eq("discord_guild_id", guildId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (store && !error) {
+    return { guildId, isMainServer: false, store };
+  }
+
+  // Not a recognized server, but allow basic commands
+  return { guildId, isMainServer: false };
+}
 
 function interactionResponse(content: string, ephemeral = false, embeds?: any[]) {
   return new Response(
@@ -230,6 +275,24 @@ function publicResponseWithDM(
   );
 }
 
+// Get branding based on context
+function getBranding(serverContext: ServerContext) {
+  if (serverContext.store) {
+    return {
+      name: serverContext.store.name,
+      footer: `${serverContext.store.name} • Powered by Eclipse`,
+      color: 0x8b5cf6,
+      icon: serverContext.store.logo_url,
+    };
+  }
+  return {
+    name: "Eclipse Marketplace",
+    footer: "Eclipse Marketplace",
+    color: 0x8b5cf6,
+    icon: undefined,
+  };
+}
+
 // Get linked Eclipse account from Discord ID
 async function getLinkedAccount(supabase: any, discordUserId: string) {
   const { data: profile, error } = await supabase
@@ -246,12 +309,14 @@ async function getLinkedAccount(supabase: any, discordUserId: string) {
   return profile;
 }
 
-// /link command - Check link status (optimized)
+// /link command - Check link status
 async function handleLinkStatusCommand(
   supabase: any,
   discordUserId: string,
-  discordUsername: string
+  discordUsername: string,
+  serverContext: ServerContext
 ) {
+  const branding = getBranding(serverContext);
   const existingProfile = await getLinkedAccount(supabase, discordUserId);
 
   if (existingProfile) {
@@ -267,7 +332,7 @@ async function handleLinkStatusCommand(
         },
       ],
       footer: {
-        text: "Eclipse Marketplace • Use /profile, /purchases, or /retrieve",
+        text: `${branding.footer} • Use /profile, /purchases, or /retrieve`,
       },
       timestamp: new Date().toISOString(),
     };
@@ -280,7 +345,7 @@ async function handleLinkStatusCommand(
   }
 
   const embed = {
-    color: 0x8b5cf6,
+    color: branding.color,
     title: "🔗 Link Your Eclipse Account",
     description: "Connect your Discord to access your purchases and downloads.",
     fields: [
@@ -301,7 +366,7 @@ async function handleLinkStatusCommand(
       },
     ],
     footer: {
-      text: "Eclipse Marketplace",
+      text: branding.footer,
     },
     timestamp: new Date().toISOString(),
   };
@@ -313,13 +378,15 @@ async function handleLinkStatusCommand(
   );
 }
 
-// /verify command - Link account with code (optimized)
+// /verify command - Link account with code
 async function handleVerifyCommand(
   supabase: any,
   interaction: DiscordInteraction,
   discordUserId: string,
-  discordUsername: string
+  discordUsername: string,
+  serverContext: ServerContext
 ) {
+  const branding = getBranding(serverContext);
   const options = interaction.data?.options || [];
   const codeOption = options.find((o) => o.name === "code");
 
@@ -341,7 +408,7 @@ async function handleVerifyCommand(
         },
       ],
       footer: {
-        text: "Eclipse Marketplace",
+        text: branding.footer,
       },
     };
     return publicResponseWithDM(
@@ -376,7 +443,7 @@ async function handleVerifyCommand(
         },
       ],
       footer: {
-        text: "Eclipse Marketplace",
+        text: branding.footer,
       },
     };
     return publicResponseWithDM(
@@ -413,12 +480,12 @@ async function handleVerifyCommand(
     fields: [
       {
         name: "Available Commands",
-        value: "• `/profile` - View your account\n• `/purchases` - See your orders\n• `/retrieve` - Get your files",
+        value: "• `/profile` - View your account\n• `/purchases` - See your orders\n• `/retrieve` - Get your files\n• `/getrole` - Sync your roles",
         inline: false,
       },
     ],
     footer: {
-      text: "Eclipse Marketplace",
+      text: branding.footer,
     },
     timestamp: new Date().toISOString(),
   };
@@ -430,8 +497,14 @@ async function handleVerifyCommand(
   );
 }
 
-// /profile command - View account info (optimized with parallel queries)
-async function handleProfileCommand(supabase: any, discordUserId: string, discordUsername: string) {
+// /profile command - View account info
+async function handleProfileCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  serverContext: ServerContext
+) {
+  const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
@@ -442,66 +515,99 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
     );
   }
 
-  // Run ALL queries in parallel for speed
-  const [subscriptionResult, orderCountResult, spentResult] = await Promise.all([
+  // Build query based on context
+  const queries: Promise<any>[] = [
     supabase
       .from("subscriptions")
       .select("tier, current_period_end, status")
       .eq("user_id", profile.user_id)
       .eq("status", "active")
       .maybeSingle(),
-    supabase
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", profile.user_id)
-      .in("status", ["paid", "completed"]),
-    supabase
-      .from("orders")
-      .select("total")
-      .eq("user_id", profile.user_id)
-      .in("status", ["paid", "completed"]),
-  ]);
+  ];
 
-  const subscription = subscriptionResult.data;
-  const orderCount = orderCountResult.count || 0;
-  const totalSpent = spentResult.data?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
+  // If in a store server, get store-specific stats
+  if (serverContext.store) {
+    queries.push(
+      supabase
+        .from("order_items")
+        .select("id, orders!inner(user_id, status)")
+        .eq("orders.user_id", profile.user_id)
+        .in("orders.status", ["paid", "completed"])
+        .not("store_id", "is", null)
+        .eq("store_id", serverContext.store.id)
+    );
+  } else {
+    queries.push(
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", profile.user_id)
+        .in("status", ["paid", "completed"])
+    );
+    queries.push(
+      supabase
+        .from("orders")
+        .select("total")
+        .eq("user_id", profile.user_id)
+        .in("status", ["paid", "completed"])
+    );
+  }
+
+  const results = await Promise.all(queries);
+  const subscription = results[0].data;
+
+  let orderCount = 0;
+  let totalSpent = 0;
+
+  if (serverContext.store) {
+    orderCount = results[1].data?.length || 0;
+  } else {
+    orderCount = results[1].count || 0;
+    totalSpent = results[2].data?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0;
+  }
+
+  const fields = [
+    {
+      name: "👤 Username",
+      value: `@${profile.username}`,
+      inline: true,
+    },
+    {
+      name: "🆔 Customer ID",
+      value: profile.customer_id || "N/A",
+      inline: true,
+    },
+  ];
+
+  if (!serverContext.store) {
+    fields.push({
+      name: "⭐ Membership",
+      value: subscription ? `Eclipse+ (Active)` : "Free",
+      inline: true,
+    });
+    fields.push({
+      name: "💷 Total Spent",
+      value: `£${(totalSpent / 100).toFixed(2)}`,
+      inline: true,
+    });
+  }
+
+  fields.push({
+    name: serverContext.store ? `🛒 Orders from ${serverContext.store.name}` : "🛒 Total Orders",
+    value: `${orderCount} purchases`,
+    inline: true,
+  });
 
   const embed = {
-    color: 0x8b5cf6,
+    color: branding.color,
     author: {
       name: profile.display_name || profile.username,
       icon_url: profile.avatar_url || undefined,
     },
-    title: "Eclipse Profile",
-    fields: [
-      {
-        name: "👤 Username",
-        value: `@${profile.username}`,
-        inline: true,
-      },
-      {
-        name: "🆔 Customer ID",
-        value: profile.customer_id || "N/A",
-        inline: true,
-      },
-      {
-        name: "⭐ Membership",
-        value: subscription ? `Eclipse+ (Active)` : "Free",
-        inline: true,
-      },
-      {
-        name: "🛒 Orders",
-        value: `${orderCount} purchases`,
-        inline: true,
-      },
-      {
-        name: "💷 Total Spent",
-        value: `£${(totalSpent / 100).toFixed(2)}`,
-        inline: true,
-      },
-    ],
+    title: serverContext.store ? `${serverContext.store.name} Profile` : "Eclipse Profile",
+    fields,
     footer: {
-      text: "Eclipse Marketplace",
+      text: branding.footer,
     },
     timestamp: new Date().toISOString(),
   };
@@ -514,8 +620,14 @@ async function handleProfileCommand(supabase: any, discordUserId: string, discor
   );
 }
 
-// /purchases command - List purchases (optimized)
-async function handlePurchasesCommand(supabase: any, discordUserId: string, discordUsername: string) {
+// /purchases command - List purchases
+async function handlePurchasesCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  serverContext: ServerContext
+) {
+  const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
@@ -526,8 +638,8 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
     );
   }
 
-  // Single optimized query with join
-  const { data: orders, error } = await supabase
+  // Build query - if in store server, filter by store products
+  let query = supabase
     .from("orders")
     .select(`
       id,
@@ -538,36 +650,51 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
         id,
         product_id,
         product_name,
-        price
+        price,
+        store_id
       )
     `)
     .eq("user_id", profile.user_id)
     .in("status", ["paid", "completed"])
     .order("created_at", { ascending: false })
-    .limit(10);
+    .limit(20);
+
+  const { data: orders, error } = await query;
 
   if (error || !orders || orders.length === 0) {
+    const msg = serverContext.store 
+      ? `You haven't purchased anything from ${serverContext.store.name} yet.`
+      : "You haven't made any purchases yet.";
     return publicResponseWithDM(
-      `📦 <@${discordUserId}> You haven't made any purchases yet. Visit https://eclipserblx.com to browse products!`,
+      `📦 <@${discordUserId}> ${msg}`,
       discordUserId,
-      "📦 **No Purchases Found**\n\nYou haven't made any purchases yet.\nVisit https://eclipserblx.com to browse products!"
+      `📦 **No Purchases Found**\n\n${msg}`
     );
   }
 
-  const productList = orders
-    .flatMap((order: any) =>
-      order.order_items.map((item: any) => ({
+  // Filter to store products if in store server
+  let productList = orders.flatMap((order: any) =>
+    order.order_items
+      .filter((item: any) => !serverContext.store || item.store_id === serverContext.store.id)
+      .map((item: any) => ({
         name: item.product_name,
         productId: item.product_id,
         date: new Date(order.created_at).toLocaleDateString("en-GB"),
         price: item.price,
       }))
-    )
-    .slice(0, 15);
+  ).slice(0, 15);
+
+  if (productList.length === 0 && serverContext.store) {
+    return publicResponseWithDM(
+      `📦 <@${discordUserId}> You haven't purchased anything from ${serverContext.store.name} yet.`,
+      discordUserId,
+      `📦 **No Purchases Found**\n\nYou haven't purchased anything from ${serverContext.store.name} yet.`
+    );
+  }
 
   const embed = {
     color: 0x22c55e,
-    title: "📦 Your Purchases",
+    title: serverContext.store ? `📦 Your ${serverContext.store.name} Purchases` : "📦 Your Purchases",
     description: productList
       .map(
         (p: any, i: number) =>
@@ -575,7 +702,7 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
       )
       .join("\n\n"),
     footer: {
-      text: `Showing ${productList.length} of ${orders.reduce((c: number, o: any) => c + o.order_items.length, 0)} items • Use /retrieve to get files`,
+      text: `${branding.footer} • Use /retrieve to get files`,
     },
     timestamp: new Date().toISOString(),
   };
@@ -588,13 +715,15 @@ async function handlePurchasesCommand(supabase: any, discordUserId: string, disc
   );
 }
 
-// /retrieve command - Get download link (optimized with parallel queries)
+// /retrieve command - Get download link
 async function handleRetrieveCommand(
   supabase: any,
   interaction: DiscordInteraction,
   discordUserId: string,
-  discordUsername: string
+  discordUsername: string,
+  serverContext: ServerContext
 ) {
+  const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
@@ -608,7 +737,7 @@ async function handleRetrieveCommand(
   const options = interaction.data?.options || [];
   const productOption = options.find((o) => o.name === "product");
 
-  // Get user's order IDs first
+  // Get user's order IDs
   const { data: userOrders } = await supabase
     .from("orders")
     .select("id")
@@ -625,19 +754,28 @@ async function handleRetrieveCommand(
     );
   }
 
-  // Get order items
-  const { data: orderItems } = await supabase
+  // Get order items - filter by store if in store server
+  let orderItemsQuery = supabase
     .from("order_items")
-    .select("product_id, product_name")
+    .select("product_id, product_name, store_id")
     .in("order_id", orderIds);
+
+  if (serverContext.store) {
+    orderItemsQuery = orderItemsQuery.eq("store_id", serverContext.store.id);
+  }
+
+  const { data: orderItems } = await orderItemsQuery;
 
   const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
 
   if (productIds.length === 0) {
+    const msg = serverContext.store 
+      ? `You haven't purchased any products from ${serverContext.store.name} yet.`
+      : "You haven't purchased any downloadable products yet.";
     return publicResponseWithDM(
-      `📁 <@${discordUserId}> You haven't purchased any downloadable products yet.`,
+      `📁 <@${discordUserId}> ${msg}`,
       discordUserId,
-      "📁 **No Downloads Available**\n\nYou haven't purchased any downloadable products yet."
+      `📁 **No Downloads Available**\n\n${msg}`
     );
   }
 
@@ -662,10 +800,10 @@ async function handleRetrieveCommand(
 
     const embed = {
       color: 0x3b82f6,
-      title: "📁 Your Downloadable Products",
+      title: serverContext.store ? `📁 Your ${serverContext.store.name} Downloads` : "📁 Your Downloadable Products",
       description: productList,
       footer: {
-        text: "Eclipse Marketplace • Use /retrieve product:NAME to download",
+        text: `${branding.footer} • Use /retrieve product:NAME to download`,
       },
       timestamp: new Date().toISOString(),
     };
@@ -701,7 +839,7 @@ async function handleRetrieveCommand(
         },
       ],
       footer: {
-        text: "Eclipse Marketplace • Try typing the exact product name",
+        text: `${branding.footer} • Try typing the exact product name`,
       },
     };
     return publicResponseWithDM(
@@ -738,7 +876,7 @@ async function handleRetrieveCommand(
     title: `📥 ${product.name}`,
     description: "Your download link is ready! Click the button below to download.\n\n⚠️ This link expires in **1 hour**.",
     footer: {
-      text: "Eclipse Marketplace • Do not share this link",
+      text: `${branding.footer} • Do not share this link`,
     },
     timestamp: new Date().toISOString(),
   };
@@ -774,13 +912,14 @@ async function handleRetrieveCommand(
   );
 }
 
-// /getrole command - Assign Discord roles (already optimized with parallel queries)
+// /getrole command - Assign Discord roles based on context
 async function handleGetRoleCommand(
   supabase: any,
   discordUserId: string,
   discordUsername: string,
-  guildId?: string
+  serverContext: ServerContext
 ) {
+  const branding = getBranding(serverContext);
   const profile = await getLinkedAccount(supabase, discordUserId);
 
   if (!profile) {
@@ -792,9 +931,8 @@ async function handleGetRoleCommand(
   }
 
   const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
-  const targetGuildId = guildId || Deno.env.get("DISCORD_GUILD_ID");
-
-  if (!botToken || !targetGuildId) {
+  
+  if (!botToken || !serverContext.guildId) {
     console.error("[discord-customer-bot] Missing bot token or guild ID");
     return publicResponseWithDM(
       `❌ <@${discordUserId}> Bot configuration error. Please contact support.`,
@@ -803,56 +941,113 @@ async function handleGetRoleCommand(
     );
   }
 
-  // Role IDs
-  const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
-  const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
-  const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
-  const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
-
-  // Run all database queries in parallel
-  const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
-    supabase
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", profile.user_id)
-      .in("status", ["paid", "completed"]),
-    supabase
-      .from("subscriptions")
-      .select("id")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .maybeSingle(),
-    supabase
-      .from("stores")
-      .select("id")
-      .eq("owner_id", profile.user_id)
-      .eq("is_active", true)
-      .maybeSingle(),
-  ]);
-
-  const purchaseCount = ordersResult.count || 0;
-  const hasSubscription = !!subscriptionResult.data;
-  const hasStore = !!storeResult.data;
-
-  console.log(`[discord-customer-bot] User ${profile.username}: ${purchaseCount} purchases, Eclipse+: ${hasSubscription}, Store: ${hasStore}`);
-
-  // Determine roles
   const rolesToAssign: { id: string; name: string }[] = [];
   const rolesToRemove: { id: string; name: string }[] = [];
 
-  if (purchaseCount >= 5 && loyalCustomerRoleId) {
-    rolesToAssign.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
-    if (customerRoleId) rolesToRemove.push({ id: customerRoleId, name: "Customer" });
-  } else if (purchaseCount >= 1 && customerRoleId) {
-    rolesToAssign.push({ id: customerRoleId, name: "Customer" });
-  }
+  if (serverContext.isMainServer) {
+    // Main server: Use environment variable role IDs
+    const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
+    const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
+    const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
+    const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
 
-  if (hasSubscription && eclipsePlusRoleId) {
-    rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
-  }
+    // Run all database queries in parallel
+    const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", profile.user_id)
+        .in("status", ["paid", "completed"]),
+      supabase
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", profile.user_id)
+        .eq("status", "active")
+        .maybeSingle(),
+      supabase
+        .from("stores")
+        .select("id")
+        .eq("owner_id", profile.user_id)
+        .eq("is_active", true)
+        .maybeSingle(),
+    ]);
 
-  if (hasStore && storeCreatorRoleId) {
-    rolesToAssign.push({ id: storeCreatorRoleId, name: "Store Creator" });
+    const purchaseCount = ordersResult.count || 0;
+    const hasSubscription = !!subscriptionResult.data;
+    const hasStore = !!storeResult.data;
+
+    console.log(`[discord-customer-bot] Main server - User ${profile.username}: ${purchaseCount} purchases, Eclipse+: ${hasSubscription}, Store: ${hasStore}`);
+
+    if (purchaseCount >= 5 && loyalCustomerRoleId) {
+      rolesToAssign.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
+      if (customerRoleId) rolesToRemove.push({ id: customerRoleId, name: "Customer" });
+    } else if (purchaseCount >= 1 && customerRoleId) {
+      rolesToAssign.push({ id: customerRoleId, name: "Customer" });
+    }
+
+    if (hasSubscription && eclipsePlusRoleId) {
+      rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
+    }
+
+    if (hasStore && storeCreatorRoleId) {
+      rolesToAssign.push({ id: storeCreatorRoleId, name: "Store Creator" });
+    }
+  } else if (serverContext.store) {
+    // Store server: Use store-specific role configs
+    const [roleConfigsResult, storeOrdersResult] = await Promise.all([
+      supabase
+        .from("discord_role_configs")
+        .select("*")
+        .eq("store_id", serverContext.store.id)
+        .eq("auto_assign_on_purchase", true),
+      supabase
+        .from("order_items")
+        .select("id, price, orders!inner(user_id, status)")
+        .eq("orders.user_id", profile.user_id)
+        .in("orders.status", ["paid", "completed"])
+        .eq("store_id", serverContext.store.id),
+    ]);
+
+    const roleConfigs = roleConfigsResult.data || [];
+    const storeOrders = storeOrdersResult.data || [];
+    const orderCount = storeOrders.length;
+    const totalSpent = storeOrders.reduce((sum: number, item: any) => sum + (item.price || 0), 0);
+
+    console.log(`[discord-customer-bot] Store server ${serverContext.store.name} - User ${profile.username}: ${orderCount} purchases, £${(totalSpent/100).toFixed(2)} spent`);
+
+    // Check each role config
+    for (const config of roleConfigs) {
+      let eligible = true;
+
+      if (config.min_order_count && orderCount < config.min_order_count) {
+        eligible = false;
+      }
+
+      if (config.min_order_amount && totalSpent < config.min_order_amount) {
+        eligible = false;
+      }
+
+      if (config.requires_subscription) {
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("id")
+          .eq("user_id", profile.user_id)
+          .eq("status", "active")
+          .maybeSingle();
+        if (!sub) eligible = false;
+      }
+
+      if (eligible) {
+        rolesToAssign.push({ id: config.role_id, name: config.role_name });
+      }
+    }
+  } else {
+    // Unknown server - no roles to assign
+    return publicResponseWithDM(
+      `❌ <@${discordUserId}> This server isn't configured for automatic roles.`,
+      discordUserId,
+      "❌ **Server Not Configured**\n\nThis Discord server isn't linked to the main Eclipse server or a creator store."
+    );
   }
 
   // Execute all role operations in parallel
@@ -863,7 +1058,7 @@ async function handleGetRoleCommand(
     ...rolesToAssign.map(async (role) => {
       try {
         const response = await fetch(
-          `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${role.id}`,
+          `https://discord.com/api/v10/guilds/${serverContext.guildId}/members/${discordUserId}/roles/${role.id}`,
           { method: "PUT", headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" } }
         );
         if (response.status === 204 || response.ok) {
@@ -880,7 +1075,7 @@ async function handleGetRoleCommand(
     ...rolesToRemove.map(async (role) => {
       try {
         await fetch(
-          `https://discord.com/api/v10/guilds/${targetGuildId}/members/${discordUserId}/roles/${role.id}`,
+          `https://discord.com/api/v10/guilds/${serverContext.guildId}/members/${discordUserId}/roles/${role.id}`,
           { method: "DELETE", headers: { Authorization: `Bot ${botToken}` } }
         );
       } catch (e) {
@@ -908,11 +1103,23 @@ async function handleGetRoleCommand(
     });
   }
 
+  // Build eligibility hints based on context
   const eligibility: string[] = [];
-  if (purchaseCount === 0) eligibility.push("• Make a purchase → **Customer**");
-  if (purchaseCount > 0 && purchaseCount < 5) eligibility.push(`• ${5 - purchaseCount} more purchases → **Loyal Customer**`);
-  if (!hasSubscription) eligibility.push("• Subscribe to Eclipse+ → **Eclipse+**");
-  if (!hasStore) eligibility.push("• Create a store → **Store Creator**");
+  if (serverContext.isMainServer) {
+    // Get current stats for hints
+    const [ordersRes, subRes, storeRes] = await Promise.all([
+      supabase.from("orders").select("id", { count: "exact", head: true }).eq("user_id", profile.user_id).in("status", ["paid", "completed"]),
+      supabase.from("subscriptions").select("id").eq("user_id", profile.user_id).eq("status", "active").maybeSingle(),
+      supabase.from("stores").select("id").eq("owner_id", profile.user_id).eq("is_active", true).maybeSingle(),
+    ]);
+    const count = ordersRes.count || 0;
+    if (count === 0) eligibility.push("• Make a purchase → **Customer**");
+    if (count > 0 && count < 5) eligibility.push(`• ${5 - count} more purchases → **Loyal Customer**`);
+    if (!subRes.data) eligibility.push("• Subscribe to Eclipse+ → **Eclipse+**");
+    if (!storeRes.data) eligibility.push("• Create a store → **Store Creator**");
+  } else if (serverContext.store && rolesAssigned.length === 0) {
+    eligibility.push(`• Make purchases from ${serverContext.store.name} to earn roles!`);
+  }
 
   if (eligibility.length > 0 && rolesAssigned.length === 0) {
     fields.push({
@@ -929,7 +1136,7 @@ async function handleGetRoleCommand(
       ? `Your Discord roles have been updated!`
       : `Here's what you need to earn roles:`,
     fields,
-    footer: { text: "Eclipse Marketplace" },
+    footer: { text: branding.footer },
     timestamp: new Date().toISOString(),
   };
 
