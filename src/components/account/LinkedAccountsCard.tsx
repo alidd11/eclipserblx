@@ -91,18 +91,36 @@ export function LinkedAccountsCard({
   const getRobloxAvatarUrl = (id: string) => 
     `https://www.roblox.com/headshot-thumbnail/image?userId=${id}&width=150&height=150&format=png`;
 
-  // Handle Discord OAuth callback
+  // Handle Discord OAuth callback and auto-link action from Discord /link command
   useEffect(() => {
     const handleOAuthCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("code");
       const error = urlParams.get("error");
+      const action = urlParams.get("action");
+
+      // Handle auto-link action from Discord /link command
+      if (action === "link-discord" && !discordId && !code) {
+        // Clean URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete("action");
+        window.history.replaceState({}, "", url.toString());
+        
+        // Auto-trigger Discord OAuth
+        const clientId = getDiscordClientId();
+        if (clientId) {
+          setIsLinkingDiscord(true);
+          window.location.href = getDiscordOAuthUrl();
+        }
+        return;
+      }
 
       if (code || error) {
         const url = new URL(window.location.href);
         url.searchParams.delete("code");
         url.searchParams.delete("error");
         url.searchParams.delete("error_description");
+        url.searchParams.delete("action");
         window.history.replaceState({}, "", url.toString());
       }
 

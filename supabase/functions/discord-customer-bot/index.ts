@@ -360,25 +360,16 @@ async function handleLinkStatusCommand(
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
+  // Provide a simple one-click link to the account page where they can OAuth
   const embed = {
     color: branding.color,
     title: "🔗 Link Your Eclipse Account",
-    description: "Connect your Discord to access your purchases and downloads.",
+    description: "Connect your Discord to access your purchases and downloads.\n\nClick the button below to link your account instantly!",
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields: [
       {
-        name: "Step 1",
-        value: "Go to your [Eclipse account settings](https://eclipserblx.com/account)",
-        inline: false,
-      },
-      {
-        name: "Step 2",
-        value: "Find the **Link Discord** section and click **Generate Link Code**",
-        inline: false,
-      },
-      {
-        name: "Step 3",
-        value: "Come back here and run `/verify code:YOUR_CODE`",
+        name: "💡 How it works",
+        value: "1. Click **Link Account** below\n2. Log in to Eclipse (if needed)\n3. Authorize Discord - that's it!",
         inline: false,
       },
     ],
@@ -387,13 +378,42 @@ async function handleLinkStatusCommand(
     },
     timestamp: new Date().toISOString(),
   };
+
+  // Send DM with button
+  const dmComponents = [
+    {
+      type: 1, // Action Row
+      components: [
+        {
+          type: 2, // Button
+          style: 5, // Link style
+          label: "🔗 Link Account",
+          url: "https://eclipserblx.com/account?action=link-discord",
+        },
+      ],
+    },
+  ];
+
+  // Fire and forget the DM with button
+  sendDMToUser(discordUserId, undefined, [embed], dmComponents).catch(console.error);
+
   const channelEmbed = {
     color: branding.color,
-    description: `<@${discordUserId}>\n🔗 Check your DMs for instructions on how to link your Eclipse account!`,
+    description: `<@${discordUserId}>\n🔗 Check your DMs for a quick link to connect your Eclipse account!`,
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
-  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: {
+        embeds: [channelEmbed],
+        flags: 0,
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 }
 
 // /verify command - Link account with code
