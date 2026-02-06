@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
           return await handleUnlinkCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         case "support":
-          return await handleSupportCommand(discordUserId, discordUsername, discordAvatarUrl);
+          return await handleSupportCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
 
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
@@ -199,8 +199,9 @@ Deno.serve(async (req) => {
         discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
       }
 
-      if (customId === "support_modal") {
-        return await handleSupportModalSubmit(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl);
+      if (customId === "support_modal" || customId === "support_modal_reply") {
+        const isReply = customId === "support_modal_reply";
+        return await handleSupportModalSubmit(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl, isReply);
       }
     }
 
@@ -1843,12 +1844,55 @@ async function handleStoreCommand(
 }
 
 // /support command - Opens a modal for support message
+// If user has an existing open ticket, show a simplified "add message" modal
 async function handleSupportCommand(
+  supabase: any,
   discordUserId: string,
   discordUsername: string,
   discordAvatarUrl?: string
 ) {
-  // Return a modal for the user to fill out
+  // Check for existing open ticket
+  const { data: existingTicket } = await supabase
+    .from("discord_modmail_tickets")
+    .select("id, subject")
+    .eq("discord_user_id", discordUserId)
+    .neq("status", "closed")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existingTicket) {
+    // User has an existing ticket - show simplified "add message" modal
+    return new Response(
+      JSON.stringify({
+        type: MODAL,
+        data: {
+          custom_id: "support_modal_reply",
+          title: "Add to Your Ticket",
+          components: [
+            {
+              type: 1, // Action Row
+              components: [
+                {
+                  type: 4, // Text Input
+                  custom_id: "message",
+                  label: "Your Message",
+                  style: 2, // Paragraph
+                  placeholder: "Type your follow-up message here...",
+                  required: true,
+                  min_length: 1,
+                  max_length: 2000,
+                },
+              ],
+            },
+          ],
+        },
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  // No existing ticket - show full "new ticket" modal with subject
   return new Response(
     JSON.stringify({
       type: MODAL,
@@ -1898,7 +1942,8 @@ async function handleSupportModalSubmit(
   interaction: DiscordInteraction,
   discordUserId: string,
   discordUsername: string,
-  discordAvatarUrl?: string
+  discordAvatarUrl?: string,
+  isReply: boolean = false
 ) {
   // Extract values from modal
   const components = interaction.data?.components || [];
@@ -1923,17 +1968,21 @@ async function handleSupportModalSubmit(
     // Check for existing open ticket
     const { data: existingTicket } = await supabase
       .from("discord_modmail_tickets")
-      .select("id")
+      .select("id, subject")
       .eq("discord_user_id", discordUserId)
       .neq("status", "closed")
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     let ticketId: string;
     let isNewTicket = false;
+    let ticketSubject = subject;
 
     if (existingTicket) {
       // Add message to existing ticket
       ticketId = existingTicket.id;
+      ticketSubject = existingTicket.subject || "General Support";
     } else {
       // Create new ticket
       isNewTicket = true;
@@ -1958,12 +2007,16 @@ async function handleSupportModalSubmit(
       ticketId = newTicket.id;
     }
 
-    // Insert the message
+    // Insert the message (for replies, just the message; for new tickets, include subject if provided)
+    const messageContent = isNewTicket && subject 
+      ? `**Subject:** ${subject}\n\n${message}` 
+      : message;
+
     const { error: msgError } = await supabase
       .from("discord_modmail_messages")
       .insert({
         ticket_id: ticketId,
-        content: subject ? `**Subject:** ${subject}\n\n${message}` : message,
+        content: messageContent,
         is_staff_reply: false,
         discord_message_id: null,
       });
@@ -1979,25 +2032,38 @@ async function handleSupportModalSubmit(
       .update({ updated_at: new Date().toISOString() })
       .eq("id", ticketId);
 
-    // Send confirmation embed
+    // Send confirmation embed - different for new vs follow-up
     const confirmEmbed = {
       color: 0x22c55e,
-      title: isNewTicket ? "✅ Support Ticket Created" : "✅ Message Received",
+      title: isNewTicket ? "✅ Support Ticket Created" : "✅ Message Sent",
       description: isNewTicket 
         ? "Your support ticket has been created. Our team will respond via DM soon."
-        : "Your message has been added to your existing ticket.",
-      fields: [
-        {
-          name: "📋 Subject",
-          value: subject || "General Support",
-          inline: true,
-        },
-        {
-          name: "🔖 Ticket ID",
-          value: `\`${ticketId.substring(0, 8)}\``,
-          inline: true,
-        },
-      ],
+        : "Your follow-up message has been added to your open ticket.",
+      fields: isNewTicket 
+        ? [
+            {
+              name: "📋 Subject",
+              value: subject || "General Support",
+              inline: true,
+            },
+            {
+              name: "🔖 Ticket ID",
+              value: `\`${ticketId.substring(0, 8)}\``,
+              inline: true,
+            },
+          ]
+        : [
+            {
+              name: "🔖 Ticket",
+              value: ticketSubject,
+              inline: true,
+            },
+            {
+              name: "💬 Status",
+              value: "Message added",
+              inline: true,
+            },
+          ],
       footer: { text: "Eclipse Support • We typically respond within 24 hours" },
       timestamp: new Date().toISOString(),
     };
