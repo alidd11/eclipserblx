@@ -457,20 +457,52 @@ async function handleUnlinkCommand(
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
-  // Check if account is locked (seller accounts)
-  const { data: store } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("owner_id", existingProfile.user_id)
-    .eq("is_active", true)
-    .maybeSingle();
+  // Check if account is locked (seller accounts or store creator role)
+  const [storeResult, roleResult] = await Promise.all([
+    supabase
+      .from("stores")
+      .select("id, name")
+      .eq("owner_id", existingProfile.user_id)
+      .eq("is_active", true)
+      .maybeSingle(),
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", existingProfile.user_id)
+  ]);
 
-  if (store) {
+  const store = storeResult.data;
+  const userRoles = roleResult.data || [];
+  const hasStoreCreatorRole = userRoles.some((r: any) => 
+    r.role?.toLowerCase().includes('store') || r.role?.toLowerCase().includes('seller')
+  );
+
+  if (store || hasStoreCreatorRole) {
+    const reasons: string[] = [];
+    if (store) {
+      reasons.push(`• You own an active store (**${store.name || 'Unknown'}**)`);
+    }
+    if (hasStoreCreatorRole) {
+      reasons.push(`• You have the **Store Creator** role`);
+    }
+
     const embed = {
       color: 0xef4444,
       title: "🔒 Account Locked",
-      description: "Your account is locked because you're a store owner.\n\nContact support to request changes to your linked accounts.",
+      description: "Your Discord account cannot be unlinked for the following reasons:",
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      fields: [
+        {
+          name: "Reasons",
+          value: reasons.join("\n"),
+          inline: false,
+        },
+        {
+          name: "Need Help?",
+          value: "Contact support if you need to make changes to your linked accounts.",
+          inline: false,
+        },
+      ],
       footer: {
         text: branding.footer,
       },
