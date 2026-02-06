@@ -116,113 +116,117 @@ Deno.serve(async (req) => {
       .update({ updated_at: new Date().toISOString() })
       .eq("id", ticketId);
 
-    // Post notification to Discord channel if configured
-    try {
-      // Fetch modmail settings
-      const { data: settingsData } = await supabase
-        .from("settings")
-        .select("key, value")
-        .in("key", ["modmail_discord_channel_id", "modmail_discord_role_id"]);
+    // Post notification to Discord channel ONLY for new tickets
+    if (isNewTicket) {
+      try {
+        // Fetch modmail settings
+        const { data: settingsData } = await supabase
+          .from("settings")
+          .select("key, value")
+          .in("key", ["modmail_discord_channel_id", "modmail_discord_role_id"]);
 
-      const settings: Record<string, string> = {};
-      settingsData?.forEach((s) => {
-        const val = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : String(s.value || "");
-        settings[s.key] = val;
-      });
+        const settings: Record<string, string> = {};
+        settingsData?.forEach((s) => {
+          const val = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : String(s.value || "");
+          settings[s.key] = val;
+        });
 
-      const channelId = settings.modmail_discord_channel_id;
-      const roleId = settings.modmail_discord_role_id;
-      const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+        const channelId = settings.modmail_discord_channel_id;
+        const roleId = settings.modmail_discord_role_id;
+        const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
 
-      if (channelId && botToken) {
-        // Build the embed
-        const embed = {
-          color: isNewTicket ? 0x22c55e : 0x3b82f6, // Green for new, blue for follow-up
-          author: {
-            name: payload.discord_username,
-            icon_url: payload.discord_avatar_url || `https://cdn.discordapp.com/embed/avatars/0.png`,
-          },
-          title: isNewTicket ? "📩 New Support Ticket" : "💬 New Message",
-          description: payload.content.length > 500 
-            ? payload.content.substring(0, 500) + "..." 
-            : payload.content,
-          fields: [
-            {
-              name: "🔖 Ticket ID",
-              value: `\`${ticketId.substring(0, 8)}\``,
-              inline: true,
+        if (channelId && botToken) {
+          // Build the embed for new ticket only
+          const embed = {
+            color: 0x22c55e, // Green for new ticket
+            author: {
+              name: payload.discord_username,
+              icon_url: payload.discord_avatar_url || `https://cdn.discordapp.com/embed/avatars/0.png`,
             },
-            {
-              name: "📊 Status",
-              value: isNewTicket ? "Open" : "Updated",
-              inline: true,
+            title: "📩 New Support Ticket",
+            description: payload.content.length > 500 
+              ? payload.content.substring(0, 500) + "..." 
+              : payload.content,
+            fields: [
+              {
+                name: "🔖 Ticket ID",
+                value: `\`${ticketId.substring(0, 8)}\``,
+                inline: true,
+              },
+              {
+                name: "📊 Status",
+                value: "Open",
+                inline: true,
+              },
+            ],
+            footer: {
+              text: "Eclipse Support • Click below to view",
+              icon_url: "https://eclipserblx.com/favicon.ico",
             },
-          ],
-          footer: {
-            text: "Eclipse Support • Click below to view",
-            icon_url: "https://eclipserblx.com/favicon.ico",
-          },
-          timestamp: new Date().toISOString(),
-        };
+            timestamp: new Date().toISOString(),
+          };
 
-        // Build message payload with role ping and button
-        const messagePayload: {
-          content?: string;
-          embeds: typeof embed[];
-          components: Array<{
-            type: number;
+          // Build message payload with role ping and button
+          const messagePayload: {
+            content?: string;
+            embeds: typeof embed[];
             components: Array<{
               type: number;
-              style: number;
-              label: string;
-              url: string;
+              components: Array<{
+                type: number;
+                style: number;
+                label: string;
+                url: string;
+              }>;
             }>;
-          }>;
-        } = {
-          embeds: [embed],
-          components: [
-            {
-              type: 1, // Action Row
-              components: [
-                {
-                  type: 2, // Button
-                  style: 5, // Link style
-                  label: "📋 View Ticket",
-                  url: "https://eclipserblx.com/admin/discord-modmail",
-                },
-              ],
-            },
-          ],
-        };
+          } = {
+            embeds: [embed],
+            components: [
+              {
+                type: 1, // Action Row
+                components: [
+                  {
+                    type: 2, // Button
+                    style: 5, // Link style
+                    label: "📋 View Ticket",
+                    url: "https://eclipserblx.com/admin/discord-modmail",
+                  },
+                ],
+              },
+            ],
+          };
 
-        // Add role ping if configured
-        if (roleId) {
-          messagePayload.content = `<@&${roleId}>`;
-        }
-
-        // Send to Discord channel
-        const discordResponse = await fetch(
-          `https://discord.com/api/v10/channels/${channelId}/messages`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bot ${botToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(messagePayload),
+          // Add role ping if configured
+          if (roleId) {
+            messagePayload.content = `<@&${roleId}>`;
           }
-        );
 
-        if (discordResponse.ok) {
-          console.log("Posted modmail notification to Discord channel:", channelId);
-        } else {
-          const errorText = await discordResponse.text();
-          console.error("Failed to post to Discord channel:", discordResponse.status, errorText);
+          // Send to Discord channel
+          const discordResponse = await fetch(
+            `https://discord.com/api/v10/channels/${channelId}/messages`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bot ${botToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(messagePayload),
+            }
+          );
+
+          if (discordResponse.ok) {
+            console.log("Posted new ticket notification to Discord channel:", channelId);
+          } else {
+            const errorText = await discordResponse.text();
+            console.error("Failed to post to Discord channel:", discordResponse.status, errorText);
+          }
         }
+      } catch (discordError) {
+        // Don't fail the webhook if Discord notification fails
+        console.error("Error posting Discord notification:", discordError);
       }
-    } catch (discordError) {
-      // Don't fail the webhook if Discord notification fails
-      console.error("Error posting Discord notification:", discordError);
+    } else {
+      console.log("Skipping Discord channel notification for follow-up message on ticket:", ticketId);
     }
 
     // Send push notification to staff (admin and support_agent roles)
