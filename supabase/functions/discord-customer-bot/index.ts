@@ -1515,24 +1515,27 @@ async function handleStoreCommand(
     );
   }
 
-  // Fetch full store details
-  const { data: store, error } = await supabase
-    .from("stores")
-    .select("id, name, slug, description, logo_url, banner_url, follower_count, is_verified")
-    .eq("id", serverContext.store.id)
-    .single();
+  // Fetch store details and product count in parallel
+  const [storeResult, productResult] = await Promise.all([
+    supabase
+      .from("stores")
+      .select("id, name, slug, description, logo_url, banner_url, follower_count, is_verified")
+      .eq("id", serverContext.store.id)
+      .single(),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", serverContext.store.id)
+      .eq("is_active", true),
+  ]);
+
+  const { data: store, error } = storeResult;
+  const { count: productCount } = productResult;
 
   if (error || !store) {
     console.error("[discord-customer-bot] Store fetch error:", error);
     return interactionResponse("Failed to fetch store information.", true);
   }
-
-  // Get product count
-  const { count: productCount } = await supabase
-    .from("products")
-    .select("id", { count: "exact", head: true })
-    .eq("store_id", store.id)
-    .eq("is_active", true);
 
   // Build store URL
   const storeUrl = `https://eclipserblx.com/store/${store.slug}`;
