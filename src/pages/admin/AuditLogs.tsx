@@ -32,27 +32,36 @@ export default function AdminAuditLogs() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('roles');
 
-  // Fetch all audit logs
+  // Fetch audit logs with pagination (limit 200 for performance)
   const { data: allLogs, isLoading } = useQuery({
     queryKey: ['audit-logs-all'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('audit_logs')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
       if (error) throw error;
       return data as AuditLog[];
     },
+    staleTime: 30000,
   });
 
-  // Get profiles to show who made the changes
+  // Get profiles only for users in the current logs (optimized)
+  const logUserIds = [...new Set(allLogs?.map(log => log.user_id) || [])];
   const { data: profiles } = useQuery({
-    queryKey: ['admin-profiles-for-logs'],
+    queryKey: ['admin-profiles-for-logs', logUserIds.join(',')],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('user_id, display_name, email');
+      if (logUserIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .in('user_id', logUserIds);
       if (error) throw error;
       return data;
     },
+    enabled: logUserIds.length > 0,
+    staleTime: 60000,
   });
 
   const getAdminName = (userId: string) => {

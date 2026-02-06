@@ -43,23 +43,47 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { ORDER_STATUSES } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 
+const ORDERS_PER_PAGE = 20;
+
 export default function AdminOrders() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Check if current user is the primary admin
   const isPrimaryAdmin = user?.email === 'alicanimir1@gmail.com';
   const queryClient = useQueryClient();
 
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ['admin-orders', search, statusFilter],
+  // Get total count for pagination
+  const { data: totalCount } = useQuery({
+    queryKey: ['admin-orders-count', statusFilter],
     queryFn: async () => {
       let query = supabase
         .from('orders')
+        .select('*', { count: 'exact', head: true });
+
+      if (statusFilter !== 'all') query = query.eq('status', statusFilter);
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    },
+    staleTime: 30000,
+  });
+
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ['admin-orders', search, statusFilter, currentPage],
+    queryFn: async () => {
+      const from = (currentPage - 1) * ORDERS_PER_PAGE;
+      const to = from + ORDERS_PER_PAGE - 1;
+
+      let query = supabase
+        .from('orders')
         .select(`*, order_items(*, products(name))`)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (statusFilter !== 'all') query = query.eq('status', statusFilter);
 
@@ -68,7 +92,6 @@ export default function AdminOrders() {
       
       // If searching, filter by user's customer_id from profiles
       if (search && data) {
-        // Get all user_ids from orders
         const userIds = data.filter(o => o.user_id).map(o => o.user_id);
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
@@ -88,7 +111,10 @@ export default function AdminOrders() {
       
       return data;
     },
+    staleTime: 10000,
   });
+
+  const totalPages = Math.ceil((totalCount || 0) / ORDERS_PER_PAGE);
   
   // Fetch customer IDs for orders
   const orderUserIds = orders?.filter(o => o.user_id).map(o => o.user_id) || [];
@@ -279,6 +305,33 @@ export default function AdminOrders() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages} ({totalCount} orders)
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

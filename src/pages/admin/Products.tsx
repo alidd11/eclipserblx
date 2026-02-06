@@ -161,6 +161,7 @@ export default function AdminProducts() {
       if (error) throw error;
       return data;
     },
+    staleTime: 30000,
   });
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
