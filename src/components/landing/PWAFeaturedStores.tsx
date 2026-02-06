@@ -62,7 +62,7 @@ function StoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link 
       to={`/store/${store.slug}`}
-      className="group relative block rounded-2xl overflow-hidden border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-lg active:scale-[0.98]"
+      className="group relative block rounded-2xl overflow-hidden border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg active:scale-[0.98]"
     >
       {/* Banner */}
       <div className="relative h-24 overflow-hidden">
@@ -143,7 +143,7 @@ function StoreCard({ store }: { store: FeaturedStore }) {
 
 function StoreSkeleton() {
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden">
+    <div className="rounded-2xl border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden">
       <Skeleton className="h-24 rounded-none" />
       <div className="px-4 pb-4 -mt-6 relative">
         <Skeleton className="w-14 h-14 rounded-xl mb-3" />

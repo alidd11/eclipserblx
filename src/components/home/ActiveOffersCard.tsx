@@ -173,7 +173,7 @@ export function ActiveOffersCard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.4 }}
     >
-        <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
+        <div className="rounded-2xl border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 p-4 md:p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Gift className="h-3 w-3 md:h-4 md:w-4 text-primary" />
@@ -190,10 +190,10 @@ export function ActiveOffersCard() {
                 return (
                   <div
                     key={promo.id}
-                    className={`flex flex-col p-3 rounded-lg bg-card/50 border transition-colors ${
+                    className={`flex flex-col p-3 rounded-lg backdrop-blur-sm transition-colors ${
                       isClaimed 
-                        ? 'border-green-500/30 bg-green-500/5' 
-                        : 'border-border hover:border-primary/30'
+                        ? 'border border-green-500/30 bg-green-500/5' 
+                        : 'bg-muted/30 border border-border/50 hover:border-primary/20'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -295,7 +295,7 @@ export function ActiveOffersCard() {
               {discountCodes.map((code) => (
                 <div
                   key={code.id}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-card/50 border border-border hover:border-primary/30 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 backdrop-blur-sm transition-colors"
                 >
                   <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
                     <Tag className="h-4 w-4 text-primary" />
