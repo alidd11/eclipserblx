@@ -7,14 +7,20 @@ const corsHeaders = {
 };
 
 // Discord slash command definitions
+// contexts: 0 = Guild, 1 = Bot DM, 2 = Private Channel (Group DM)
+// integration_types: 0 = Guild Install, 1 = User Install
 const commands = [
   {
     name: "link",
     description: "Check if your Discord is linked to Eclipse",
+    contexts: [0], // Guild only
+    integration_types: [0],
   },
   {
     name: "verify",
     description: "Link your Discord using a code from Eclipse",
+    contexts: [0], // Guild only
+    integration_types: [0],
     options: [
       {
         name: "code",
@@ -27,14 +33,20 @@ const commands = [
   {
     name: "profile",
     description: "View your Eclipse profile and stats",
+    contexts: [0], // Guild only
+    integration_types: [0],
   },
   {
     name: "purchases",
     description: "View your recent purchases",
+    contexts: [0], // Guild only
+    integration_types: [0],
   },
   {
     name: "retrieve",
     description: "Get a download link for a purchased product",
+    contexts: [0], // Guild only
+    integration_types: [0],
     options: [
       {
         name: "product",
@@ -47,18 +59,33 @@ const commands = [
   {
     name: "getrole",
     description: "Sync your Discord roles based on your Eclipse account status",
+    contexts: [0], // Guild only
+    integration_types: [0],
   },
   {
     name: "store",
     description: "View this server's store information",
+    contexts: [0], // Guild only
+    integration_types: [0],
   },
   {
     name: "unlink",
     description: "Disconnect your Discord from your Eclipse account",
+    contexts: [0], // Guild only
+    integration_types: [0],
   },
   {
     name: "support",
     description: "Contact Eclipse support - opens a ticket",
+    contexts: [0], // Guild only
+    integration_types: [0],
+  },
+  {
+    name: "reply",
+    description: "Reply to your active support ticket",
+    contexts: [1], // DM only
+    integration_types: [0, 1], // Works with both guild and user installs
+    dm_permission: true,
   },
 ];
 

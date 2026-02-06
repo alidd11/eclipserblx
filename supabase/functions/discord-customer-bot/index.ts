@@ -172,6 +172,10 @@ Deno.serve(async (req) => {
         case "support":
           return await handleSupportCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
 
+        case "reply":
+          // DM-only command for replying to active tickets
+          return await handleReplyCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -2066,7 +2070,7 @@ async function handleSupportModalSubmit(
         },
       ],
       footer: {
-        text: "Reply using /support to add more information • We typically respond within 24 hours",
+        text: "Use /reply in DMs to add more information • We typically respond within 24 hours",
         icon_url: "https://eclipserblx.com/favicon.ico",
       },
       timestamp: new Date().toISOString(),
@@ -2125,4 +2129,82 @@ async function handleSupportModalSubmit(
     console.error("[discord-customer-bot] Support modal error:", error);
     return interactionResponse("An error occurred. Please try again later.", true);
   }
+}
+
+// /reply command - DM-only command to reply to active ticket
+async function handleReplyCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string
+) {
+  // Check for existing open ticket
+  const { data: existingTicket, error } = await supabase
+    .from("discord_modmail_tickets")
+    .select("id, subject, status")
+    .eq("discord_user_id", discordUserId)
+    .neq("status", "closed")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[discord-customer-bot] Reply command ticket check error:", error);
+    return interactionResponse("Failed to check your tickets. Please try again.", true);
+  }
+
+  if (!existingTicket) {
+    // No active ticket - inform user
+    const noTicketEmbed = {
+      color: 0xef4444,
+      title: "❌ No Active Ticket",
+      description: "You don't have an active support ticket.\n\nTo create a new ticket, use the `/support` command in the Eclipse Discord server.",
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: {
+        text: "Eclipse Support",
+        icon_url: "https://eclipserblx.com/favicon.ico",
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    return new Response(
+      JSON.stringify({
+        type: CHANNEL_MESSAGE,
+        data: {
+          embeds: [noTicketEmbed],
+          flags: 64, // Ephemeral in DM context
+        },
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  // User has an active ticket - show the reply modal
+  return new Response(
+    JSON.stringify({
+      type: MODAL,
+      data: {
+        custom_id: "support_modal_reply",
+        title: "Reply to Your Ticket",
+        components: [
+          {
+            type: 1, // Action Row
+            components: [
+              {
+                type: 4, // Text Input
+                custom_id: "message",
+                label: `Ticket: ${existingTicket.subject || `#${existingTicket.id.substring(0, 8)}`}`,
+                style: 2, // Paragraph
+                placeholder: "Type your reply here...",
+                required: true,
+                min_length: 1,
+                max_length: 2000,
+              },
+            ],
+          },
+        ],
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 }
