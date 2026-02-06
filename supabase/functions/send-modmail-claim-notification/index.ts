@@ -157,13 +157,15 @@ Deno.serve(async (req) => {
         if (userIds.length > 0) {
           const notificationPayload = {
             user_ids: userIds,
-            title: "Ticket Claimed",
-            body: `${staffName} claimed ticket from ${payload.discord_username || "a user"}`,
-            tag: `modmail-claim-${payload.ticket_id}`,
-            url: "/admin/discord-modmail",
-            data: {
-              ticket_id: payload.ticket_id,
-              type: "modmail_claim",
+            payload: {
+              title: "Ticket Claimed",
+              body: `${staffName} claimed ticket from ${payload.discord_username || "a user"}`,
+              tag: `modmail-claim-${payload.ticket_id}`,
+              url: "/admin/discord-modmail",
+              data: {
+                ticket_id: payload.ticket_id,
+                type: "modmail_claim",
+              },
             },
           };
 
