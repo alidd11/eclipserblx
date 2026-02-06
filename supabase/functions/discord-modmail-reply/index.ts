@@ -129,17 +129,12 @@ Deno.serve(async (req) => {
     const embed = {
       color: 0x7C3AED, // Purple to match Eclipse theme
       author: {
-        name: "Eclipse Support",
+        name: staffName,
         icon_url: "https://eclipserblx.com/favicon.ico",
       },
       title: "📩 New Reply to Your Ticket",
       description: payload.content,
       fields: [
-        {
-          name: "Staff Member",
-          value: staffName,
-          inline: true,
-        },
         {
           name: "Ticket",
           value: ticket.subject || `#${ticket.id.substring(0, 8)}`,
