@@ -764,15 +764,22 @@ export default function DiscordModmail() {
                           ref={textareaRef}
                           placeholder="Type your reply..."
                           value={replyContent}
-                          onChange={(e) => setReplyContent(e.target.value)}
+                          onChange={(e) => {
+                            setReplyContent(e.target.value);
+                            // Auto-expand textarea
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = `${Math.min(target.scrollHeight, 160)}px`;
+                          }}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                               e.preventDefault();
                               handleSendReply();
                             }
                           }}
-                          className="min-h-[44px] max-h-[120px] resize-none text-base"
+                          className="min-h-[44px] max-h-[160px] resize-none text-base"
                           rows={1}
+                          style={{ overflow: 'hidden' }}
                         />
                         <QuickResponses
                           onSelect={(content) => setReplyContent(content)}
