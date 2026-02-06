@@ -535,13 +535,13 @@ export default function DiscordModmail() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-background border shadow-sm"
+                                  className="absolute -top-1 -right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 border shadow-sm"
                                   onClick={() => {
                                     navigator.clipboard.writeText(message.content);
                                     toast.success("Message copied to clipboard");
                                   }}
                                 >
-                                  <Copy className="h-3 w-3" />
+                                  <Copy className="h-2.5 w-2.5" />
                                 </Button>
                               )}
                               {message.is_staff_reply && (
@@ -705,13 +705,13 @@ export default function DiscordModmail() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="absolute -top-2 -right-2 h-6 w-6 bg-background border shadow-sm"
+                                  className="absolute -top-1 -right-1 h-5 w-5 bg-background/80 border shadow-sm"
                                   onClick={() => {
                                     navigator.clipboard.writeText(message.content);
                                     toast.success("Copied!");
                                   }}
                                 >
-                                  <Copy className="h-3 w-3" />
+                                  <Copy className="h-2.5 w-2.5" />
                                 </Button>
                               )}
                               {message.is_staff_reply && (
