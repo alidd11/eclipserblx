@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { Star } from 'lucide-react';
 
 interface StoreRecommendationsProps {
@@ -90,7 +90,7 @@ export const StoreRecommendations = ({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: limit }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-lg" />
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       </div>

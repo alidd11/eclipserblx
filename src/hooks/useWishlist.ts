@@ -36,14 +36,22 @@ export function useWishlist(productId?: string) {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
-      queryClient.invalidateQueries({ queryKey: ['wishlist-check'] });
-      toast.success('Added to wishlist');
+    // Optimistic update
+    onMutate: async (prodId) => {
+      await queryClient.cancelQueries({ queryKey: ['wishlist-check', prodId, user?.id] });
+      const previousValue = queryClient.getQueryData(['wishlist-check', prodId, user?.id]);
+      queryClient.setQueryData(['wishlist-check', prodId, user?.id], true);
+      return { previousValue, prodId };
     },
-    onError: (error) => {
+    onError: (error, prodId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['wishlist-check', prodId, user?.id], context?.previousValue);
       console.error('Failed to add to wishlist:', error);
       toast.error('Failed to add to wishlist');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+      toast.success('Added to wishlist');
     },
   });
 
@@ -59,14 +67,22 @@ export function useWishlist(productId?: string) {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
-      queryClient.invalidateQueries({ queryKey: ['wishlist-check'] });
-      toast.success('Removed from wishlist');
+    // Optimistic update
+    onMutate: async (prodId) => {
+      await queryClient.cancelQueries({ queryKey: ['wishlist-check', prodId, user?.id] });
+      const previousValue = queryClient.getQueryData(['wishlist-check', prodId, user?.id]);
+      queryClient.setQueryData(['wishlist-check', prodId, user?.id], false);
+      return { previousValue, prodId };
     },
-    onError: (error) => {
+    onError: (error, prodId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['wishlist-check', prodId, user?.id], context?.previousValue);
       console.error('Failed to remove from wishlist:', error);
       toast.error('Failed to remove from wishlist');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+      toast.success('Removed from wishlist');
     },
   });
 

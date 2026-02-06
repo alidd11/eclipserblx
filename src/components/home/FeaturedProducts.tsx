@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { cn } from '@/lib/utils';
 
 export const FeaturedProducts = memo(function FeaturedProducts() {
@@ -18,10 +18,11 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
   const { data: products, isLoading } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
+      // Optimized: Select only needed columns
       const { data, error } = await supabase
         .from('products')
         .select(`
-          *,
+          id, name, slug, price, images, is_featured, category_id, is_resellable, created_at,
           categories (name, slug),
           stores (is_active)
         `)
@@ -120,17 +121,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
 
         {isLoading ? (
           <div className="max-w-md mx-auto">
-            <div className="gaming-card overflow-hidden">
-              <Skeleton className="aspect-[4/3]" />
-              <div className="p-4 space-y-3">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-5 w-full" />
-                <div className="flex justify-between">
-                  <Skeleton className="h-6 w-16" />
-                  <Skeleton className="h-9 w-20" />
-                </div>
-              </div>
-            </div>
+            <ProductCardSkeleton />
           </div>
         ) : products && products.length > 0 ? (
           <div 

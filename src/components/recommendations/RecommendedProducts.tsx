@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect, useCallback, useRef, useMemo, forwardRef } from 'react';
 import { useAIRecommendations } from '@/hooks/useAIRecommendations';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SectionWrapper } from '@/components/home/SectionWrapper';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -112,7 +112,7 @@ export const RecommendedProducts = forwardRef<HTMLElement, RecommendedProductsPr
               : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
           )}>
             {Array.from({ length: isMobile ? 4 : 6 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
+              <ProductCardSkeleton key={i} />
             ))}
           </div>
         </div>
