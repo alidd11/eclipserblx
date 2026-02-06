@@ -1657,13 +1657,13 @@ async function handleStoreCommand(
                 {
                   type: 2, // Button
                   style: 5, // Link style
-                  label: "🌐 Website",
+                  label: "Website",
                   url: "https://eclipserblx.com",
                 },
                 {
                   type: 2, // Button
                   style: 5, // Link style
-                  label: "🏪 Browse Marketplace",
+                  label: "Browse Marketplace",
                   url: "https://eclipserblx.com/marketplace",
                 },
               ],
@@ -1768,7 +1768,7 @@ async function handleStoreCommand(
     {
       type: 2, // Button
       style: 5, // Link style
-      label: "🛒 Browse Store",
+      label: "Browse Store",
       url: storeUrl,
     },
   ];
@@ -1778,7 +1778,7 @@ async function handleStoreCommand(
     buttons.push({
       type: 2, // Button
       style: 5, // Link style
-      label: "🌐 Website",
+      label: "Website",
       url: serverContext.store.website_url,
     });
   }
