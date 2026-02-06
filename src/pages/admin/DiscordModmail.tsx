@@ -20,6 +20,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import {
   MessageSquare,
   Send,
   User,
@@ -31,7 +37,9 @@ import {
   AlertCircle,
   ExternalLink,
   Copy,
+  ArrowLeft,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,11 +80,14 @@ interface StaffProfile {
 export default function DiscordModmail() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Fetch tickets
   const { data: tickets = [], isLoading: ticketsLoading, refetch: refetchTickets } = useQuery({
@@ -170,6 +181,25 @@ export default function DiscordModmail() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Handle ticket selection for mobile
+  const handleSelectTicket = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    if (isMobile) {
+      setMobileDrawerOpen(true);
+    }
+  };
+
+  // Handle closing mobile drawer
+  const handleCloseMobileDrawer = () => {
+    setMobileDrawerOpen(false);
+    // Keep the ticket selected for a moment for animation
+    setTimeout(() => {
+      if (!mobileDrawerOpen) {
+        setSelectedTicket(null);
+      }
+    }, 300);
+  };
 
   // Claim ticket mutation
   const claimMutation = useMutation({
@@ -301,79 +331,80 @@ export default function DiscordModmail() {
 
   return (
     <AdminLayout requiredPermissions={['view_live_chat']}>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-              <MessageSquare className="h-6 w-6" />
+            <h1 className="text-xl sm:text-2xl font-display font-bold flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
               Discord Modmail
             </h1>
-            <p className="text-muted-foreground">
-              Manage customer support tickets from Discord DMs
+            <p className="text-sm text-muted-foreground">
+              Manage customer support tickets from Discord
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetchTickets()}>
+          <Button variant="outline" size="sm" onClick={() => refetchTickets()} className="w-full sm:w-auto">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <AdminStatCard label="Open" value={openTickets.length} valueColor="green" />
           <AdminStatCard label="In Progress" value={claimedTickets.length} valueColor="blue" />
           <AdminStatCard label="Total Active" value={tickets.length} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Mobile: Full-width ticket list, Desktop: Side-by-side layout */}
+        <div className={`grid gap-4 sm:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
           {/* Ticket List */}
-          <Card className="lg:col-span-1">
-            <div className="p-3 border-b border-border">
+          <Card className={isMobile ? '' : 'lg:col-span-1'}>
+            <div className="p-2 sm:p-3 border-b border-border">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search tickets..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9"
+                  className="pl-9 h-9 text-base"
                 />
               </div>
             </div>
             <CardContent className="p-0">
               <Tabs defaultValue="open" className="w-full">
-                <TabsList className="w-full grid grid-cols-2 rounded-none">
-                  <TabsTrigger value="open">Open ({openTickets.length})</TabsTrigger>
-                  <TabsTrigger value="claimed">Active ({claimedTickets.length})</TabsTrigger>
+                <TabsList className="w-full grid grid-cols-2 rounded-none h-10">
+                  <TabsTrigger value="open" className="text-sm">Open ({openTickets.length})</TabsTrigger>
+                  <TabsTrigger value="claimed" className="text-sm">Active ({claimedTickets.length})</TabsTrigger>
                 </TabsList>
 
                 {["open", "claimed"].map((status) => (
                   <TabsContent key={status} value={status} className="m-0">
-                    <ScrollArea className="h-[500px]">
+                    <ScrollArea className="h-[400px] lg:h-[500px]">
                       {(status === "open" ? openTickets : claimedTickets).map(
                         (ticket) => (
                           <div
                             key={ticket.id}
-                            className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${
+                            className={`p-3 sm:p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors active:bg-muted ${
                               selectedTicket?.id === ticket.id ? "bg-muted" : ""
                             }`}
-                            onClick={() => setSelectedTicket(ticket)}
+                            onClick={() => handleSelectTicket(ticket)}
                           >
-                            <div className="flex items-start gap-3">
-                              <Avatar className="h-10 w-10">
+                            <div className="flex items-start gap-2 sm:gap-3">
+                              <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
                                 <AvatarImage src={ticket.discord_avatar_url || undefined} />
                                 <AvatarFallback>
-                                  <User className="h-5 w-5" />
+                                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-medium truncate">{ticket.discord_username}</span>
+                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                  <span className="font-medium truncate text-sm sm:text-base">{ticket.discord_username}</span>
                                   {getPriorityBadge(ticket.priority)}
                                 </div>
-                                <p className="text-sm text-muted-foreground truncate">
+                                <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                   {ticket.subject || "No subject"}
                                 </p>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                                   {format(new Date(ticket.updated_at), "MMM d, h:mm a")}
                                 </p>
                               </div>
@@ -382,7 +413,7 @@ export default function DiscordModmail() {
                         )
                       )}
                       {(status === "open" ? openTickets : claimedTickets).length === 0 && (
-                        <div className="p-8 text-center text-muted-foreground">
+                        <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
                           No {status} tickets
                         </div>
                       )}
@@ -393,30 +424,31 @@ export default function DiscordModmail() {
             </CardContent>
           </Card>
 
-          {/* Chat Area */}
+          {/* Chat Area - Desktop Only */}
+          {!isMobile && (
           <Card className="lg:col-span-2">
             {selectedTicket ? (
               <>
-                <CardHeader className="border-b">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
+                <CardHeader className="border-b py-3 px-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
                         <AvatarImage src={selectedTicket.discord_avatar_url || undefined} />
                         <AvatarFallback>
-                          <User className="h-6 w-6" />
+                          <User className="h-5 w-5 sm:h-6 sm:w-6" />
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          {selectedTicket.discord_username}
+                      <div className="min-w-0">
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                          <span className="truncate">{selectedTicket.discord_username}</span>
                           {getStatusBadge(selectedTicket.status)}
                         </CardTitle>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>ID: {selectedTicket.discord_user_id}</span>
+                        <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <span className="truncate">ID: {selectedTicket.discord_user_id}</span>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-5 w-5"
+                            className="h-5 w-5 shrink-0"
                             onClick={() => copyDiscordId(selectedTicket.discord_user_id)}
                           >
                             <Copy className="h-3 w-3" />
@@ -424,15 +456,16 @@ export default function DiscordModmail() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5 sm:gap-2 shrink-0">
                       {selectedTicket.status === "open" && (
                         <Button
                           size="sm"
                           onClick={() => claimMutation.mutate(selectedTicket.id)}
                           disabled={claimMutation.isPending}
+                          className="text-xs sm:text-sm px-2 sm:px-3"
                         >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Claim
+                          <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Claim</span>
                         </Button>
                       )}
                       {selectedTicket.status !== "closed" && (
@@ -440,9 +473,10 @@ export default function DiscordModmail() {
                           variant="outline"
                           size="sm"
                           onClick={() => setShowCloseDialog(true)}
+                          className="text-xs sm:text-sm px-2 sm:px-3"
                         >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Close
+                          <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Close</span>
                         </Button>
                       )}
                     </div>
@@ -540,11 +574,160 @@ export default function DiscordModmail() {
               </CardContent>
             )}
           </Card>
+          )}
         </div>
+
+        {/* Mobile Chat Drawer */}
+        {isMobile && (
+          <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
+            <DrawerContent className="h-[90vh] max-h-[90vh]">
+              {selectedTicket && (
+                <div className="flex flex-col h-full">
+                  {/* Mobile Header */}
+                  <DrawerHeader className="border-b px-3 py-2 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={handleCloseMobileDrawer}
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </Button>
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={selectedTicket.discord_avatar_url || undefined} />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <DrawerTitle className="text-sm font-medium truncate">
+                          {selectedTicket.discord_username}
+                        </DrawerTitle>
+                        <div className="flex items-center gap-1.5">
+                          {getStatusBadge(selectedTicket.status)}
+                          {getPriorityBadge(selectedTicket.priority)}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        {selectedTicket.status === "open" && (
+                          <Button
+                            size="sm"
+                            onClick={() => claimMutation.mutate(selectedTicket.id)}
+                            disabled={claimMutation.isPending}
+                            className="h-7 px-2 text-xs"
+                          >
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        {selectedTicket.status !== "closed" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowCloseDialog(true)}
+                            className="h-7 px-2 text-xs"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </DrawerHeader>
+
+                  {/* Messages Area */}
+                  <ScrollArea className="flex-1 px-3 py-2">
+                    <div className="space-y-3">
+                      {messagesLoading ? (
+                        <div className="text-center text-muted-foreground text-sm py-8">Loading messages...</div>
+                      ) : messages.length === 0 ? (
+                        <div className="text-center text-muted-foreground text-sm py-8">No messages yet</div>
+                      ) : (
+                        messages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${message.is_staff_reply ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`max-w-[85%] rounded-lg px-3 py-2 ${
+                                message.is_staff_reply
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted"
+                              }`}
+                            >
+                              {message.is_staff_reply && (
+                                <p className="text-[10px] opacity-70 mb-0.5">
+                                  {getStaffName(message.staff_user_id)}
+                                </p>
+                              )}
+                              <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                              {message.attachments && message.attachments.length > 0 && (
+                                <div className="mt-1.5 space-y-0.5">
+                                  {message.attachments.map((att, i) => (
+                                    <a
+                                      key={i}
+                                      href={att.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1 text-[10px] underline"
+                                    >
+                                      <ExternalLink className="h-2.5 w-2.5" />
+                                      {att.filename}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                              <p className="text-[10px] opacity-50 mt-0.5">
+                                {format(new Date(message.created_at), "h:mm a")}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </ScrollArea>
+
+                  {/* Mobile Reply Input */}
+                  {selectedTicket.status !== "closed" && (
+                    <div 
+                      className="border-t px-3 py-2 shrink-0"
+                      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+                    >
+                      <div className="flex gap-2 items-end">
+                        <Textarea
+                          ref={textareaRef}
+                          placeholder="Type your reply..."
+                          value={replyContent}
+                          onChange={(e) => setReplyContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendReply();
+                            }
+                          }}
+                          className="min-h-[44px] max-h-[120px] resize-none text-base"
+                          rows={1}
+                        />
+                        <Button
+                          onClick={handleSendReply}
+                          disabled={!replyContent.trim() || replyMutation.isPending}
+                          size="icon"
+                          className="h-11 w-11 shrink-0"
+                        >
+                          <Send className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </DrawerContent>
+          </Drawer>
+        )}
 
         {/* Close Dialog */}
         <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
-          <DialogContent>
+          <DialogContent className="max-w-[90vw] sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Close Ticket</DialogTitle>
               <DialogDescription>
@@ -552,7 +735,7 @@ export default function DiscordModmail() {
                 conversation.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
               <Button variant="outline" onClick={() => setShowCloseDialog(false)}>
                 Cancel
               </Button>
