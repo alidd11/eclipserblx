@@ -63,6 +63,9 @@ interface DiscordSettings {
   eclipse_plus_discord_channel_id: string;
   marketplace_discord_channel_id: string;
   advertisements_discord_channel_id: string;
+  // Modmail settings
+  modmail_discord_channel_id: string;
+  modmail_discord_role_id: string;
 }
 
 const DEFAULT_SETTINGS: DiscordSettings = {
@@ -100,6 +103,9 @@ const DEFAULT_SETTINGS: DiscordSettings = {
   eclipse_plus_discord_channel_id: '',
   marketplace_discord_channel_id: '',
   advertisements_discord_channel_id: '',
+  // Modmail settings
+  modmail_discord_channel_id: '',
+  modmail_discord_role_id: '',
 };
 
 interface WebhookTestResult {
@@ -852,6 +858,40 @@ export default function DiscordSettings() {
                   roleIdKey: 'polls_discord_role_id',
                   roleIdLabel: 'Role ID to Ping',
                 }} />
+
+                {/* Modmail Notifications */}
+                <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-rose-500/20"><MessageSquare className="h-4 w-4 text-rose-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Modmail Notifications</h4>
+                      <p className="text-xs text-muted-foreground">Notify staff when new support tickets arrive</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Channel ID</Label>
+                      <Input
+                        value={formData.modmail_discord_channel_id}
+                        onChange={(e) => handleChange('modmail_discord_channel_id', e.target.value)}
+                        placeholder="Channel ID for modmail notifications"
+                        className="bg-background h-9 text-sm mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Staff Role ID to Ping</Label>
+                      <Input
+                        value={formData.modmail_discord_role_id}
+                        onChange={(e) => handleChange('modmail_discord_role_id', e.target.value)}
+                        placeholder="Role ID to ping for new tickets"
+                        className="bg-background h-9 text-sm mt-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground">
+                    <p>When a customer submits a ticket via <code className="bg-background px-1 rounded">/support</code>, a notification will be posted to the channel with a link to the admin dashboard.</p>
+                  </div>
+                </div>
 
                 {/* Customer Bot Commands */}
                 <div className="space-y-4 p-4 rounded-lg border border-border bg-card/50">
