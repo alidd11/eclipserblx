@@ -152,6 +152,9 @@ Deno.serve(async (req) => {
         case "roles":
           return await handleGetRoleCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
+        case "store":
+          return await handleStoreCommand(supabase, discordUserId, serverContext, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -1440,6 +1443,153 @@ async function handleGetRoleCommand(
       data: {
         embeds: [publicEmbed],
         flags: 0, // Public message
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// /store command - Display store information publicly
+async function handleStoreCommand(
+  supabase: any,
+  discordUserId: string,
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
+) {
+  const branding = getBranding(serverContext);
+
+  // Check if this is the main Eclipse server
+  if (serverContext.isMainServer) {
+    // For main server, show Eclipse Marketplace info
+    const publicEmbed = {
+      color: 0x8b5cf6,
+      title: "🛒 Eclipse Marketplace",
+      description: "The premier Roblox asset marketplace featuring scripts, UI kits, games, and more from verified creators.",
+      thumbnail: { url: "https://eclipserblx.com/logo.png" },
+      fields: [
+        {
+          name: "🌐 Website",
+          value: "[eclipserblx.com](https://eclipserblx.com)",
+          inline: true,
+        },
+        {
+          name: "🏪 Browse Stores",
+          value: "[View All Stores](https://eclipserblx.com/stores)",
+          inline: true,
+        },
+      ],
+      footer: { text: "Eclipse Marketplace" },
+      timestamp: new Date().toISOString(),
+    };
+
+    return new Response(
+      JSON.stringify({
+        type: CHANNEL_MESSAGE,
+        data: {
+          embeds: [publicEmbed],
+          flags: 0,
+        },
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  // Check if this server has a linked store
+  if (!serverContext.store) {
+    const noStoreEmbed = {
+      color: 0xef4444,
+      description: `<@${discordUserId}>\n\n❌ This server isn't linked to a store.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: { text: branding.footer },
+    };
+
+    return new Response(
+      JSON.stringify({
+        type: CHANNEL_MESSAGE,
+        data: {
+          embeds: [noStoreEmbed],
+          flags: 0,
+        },
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  // Fetch full store details
+  const { data: store, error } = await supabase
+    .from("stores")
+    .select("id, name, slug, description, logo_url, banner_url, follower_count, is_verified")
+    .eq("id", serverContext.store.id)
+    .single();
+
+  if (error || !store) {
+    console.error("[discord-customer-bot] Store fetch error:", error);
+    return interactionResponse("Failed to fetch store information.", true);
+  }
+
+  // Get product count
+  const { count: productCount } = await supabase
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .eq("store_id", store.id)
+    .eq("is_active", true);
+
+  // Build store URL
+  const storeUrl = `https://eclipserblx.com/store/${store.slug}`;
+
+  const fields: any[] = [];
+
+  if (store.description) {
+    fields.push({
+      name: "📝 About",
+      value: store.description.length > 200 ? store.description.substring(0, 200) + "..." : store.description,
+      inline: false,
+    });
+  }
+
+  fields.push(
+    {
+      name: "📦 Products",
+      value: `${productCount || 0}`,
+      inline: true,
+    },
+    {
+      name: "👥 Followers",
+      value: `${store.follower_count || 0}`,
+      inline: true,
+    }
+  );
+
+  if (store.is_verified) {
+    fields.push({
+      name: "✅ Status",
+      value: "Verified Store",
+      inline: true,
+    });
+  }
+
+  fields.push({
+    name: "🔗 Visit Store",
+    value: `[${store.name} on Eclipse](${storeUrl})`,
+    inline: false,
+  });
+
+  const publicEmbed = {
+    color: 0x8b5cf6,
+    title: `🏪 ${store.name}`,
+    thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
+    image: store.banner_url ? { url: store.banner_url } : undefined,
+    fields,
+    footer: { text: `${store.name} • Powered by Eclipse` },
+    timestamp: new Date().toISOString(),
+  };
+
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: {
+        embeds: [publicEmbed],
+        flags: 0,
       },
     }),
     { headers: { "Content-Type": "application/json" } }
