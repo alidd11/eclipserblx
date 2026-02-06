@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useWishlistItems, useWishlist } from '@/hooks/useWishlist';
@@ -6,9 +7,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ShoppingBag, Trash2, Store, ArrowRight } from 'lucide-react';
+import { Heart, ShoppingBag, Trash2, Store, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrency } from '@/hooks/useCurrency';
+
+const WISHLIST_ITEMS_PER_PAGE = 10;
 
 export default function Wishlist() {
   const { user } = useAuth();
@@ -16,6 +19,15 @@ export default function Wishlist() {
   const { data: wishlistItems, isLoading } = useWishlistItems();
   const { removeFromWishlist } = useWishlist();
   const { formatPrice } = useCurrency();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Client-side pagination (the hook already has caching via React Query)
+  const totalCount = wishlistItems?.length || 0;
+  const totalPages = Math.ceil(totalCount / WISHLIST_ITEMS_PER_PAGE);
+  const paginatedItems = wishlistItems?.slice(
+    (currentPage - 1) * WISHLIST_ITEMS_PER_PAGE,
+    currentPage * WISHLIST_ITEMS_PER_PAGE
+  ) || [];
 
   if (!user) {
     return (
@@ -47,7 +59,7 @@ export default function Wishlist() {
           <div>
             <h1 className="text-3xl font-bold">My Wishlist</h1>
             <p className="text-muted-foreground">
-              {wishlistItems?.length || 0} saved products
+              {totalCount} saved product{totalCount !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
@@ -76,7 +88,7 @@ export default function Wishlist() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {wishlistItems.map((item) => {
+            {paginatedItems.map((item) => {
               const product = item.products;
               if (!product) return null;
 
@@ -171,6 +183,35 @@ export default function Wishlist() {
                 </Card>
               );
             })}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

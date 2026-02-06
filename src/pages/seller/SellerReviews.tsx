@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,68 +21,106 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+const REVIEWS_PER_PAGE = 15;
+
 export default function SellerReviews() {
   const { store } = useSellerStatus();
   const [filterRating, setFilterRating] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch reviews for store's products
-  const { data: reviews, isLoading: reviewsLoading } = useQuery({
-    queryKey: ['seller-reviews', store?.id],
+  // Fetch product IDs and names for this store (cached separately)
+  const { data: productMap } = useQuery({
+    queryKey: ['seller-product-map', store?.id],
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!store?.id) return {};
       
-      // First get product IDs for this store
-      const { data: products, error: productsError } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select('id, name')
         .eq('store_id', store.id);
 
-      if (productsError) throw productsError;
-      if (!products?.length) return [];
+      if (error) throw error;
+      return Object.fromEntries((data || []).map(p => [p.id, p.name]));
+    },
+    enabled: !!store?.id,
+    staleTime: 60000,
+  });
 
-      const productIds = products.map(p => p.id);
-      const productMap = Object.fromEntries(products.map(p => [p.id, p.name]));
-
-      const { data: reviewsData, error: reviewsError } = await supabase
-        .from('reviews')
-        .select('*, profiles(display_name, avatar_url)')
-        .in('product_id', productIds)
-        .eq('is_approved', true)
-        .order('created_at', { ascending: false });
-
-      if (reviewsError) throw reviewsError;
+  // Fetch reviews with pagination
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
+    queryKey: ['seller-reviews', store?.id, currentPage, filterRating, sortBy],
+    queryFn: async () => {
+      if (!store?.id || !productMap) return { reviews: [], totalCount: 0 };
       
-      return (reviewsData || []).map((r: any) => ({
+      const productIds = Object.keys(productMap);
+      if (productIds.length === 0) return { reviews: [], totalCount: 0 };
+
+      const from = (currentPage - 1) * REVIEWS_PER_PAGE;
+      const to = from + REVIEWS_PER_PAGE - 1;
+
+      let query = supabase
+        .from('reviews')
+        .select('*, profiles(display_name, avatar_url)', { count: 'exact' })
+        .in('product_id', productIds)
+        .eq('is_approved', true);
+
+      // Apply rating filter at DB level
+      if (filterRating !== 'all') {
+        query = query.eq('rating', parseInt(filterRating));
+      }
+
+      // Apply sort
+      if (sortBy === 'oldest') {
+        query = query.order('created_at', { ascending: true });
+      } else if (sortBy === 'highest') {
+        query = query.order('rating', { ascending: false }).order('created_at', { ascending: false });
+      } else if (sortBy === 'lowest') {
+        query = query.order('rating', { ascending: true }).order('created_at', { ascending: false });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+
+      const { data, count, error } = await query.range(from, to);
+
+      if (error) throw error;
+      
+      const reviews = (data || []).map((r: any) => ({
         ...r,
         product_name: productMap[r.product_id] || 'Unknown Product',
       }));
+
+      return { reviews, totalCount: count || 0 };
     },
-    enabled: !!store?.id,
+    enabled: !!store?.id && !!productMap,
+    staleTime: 30000,
   });
 
-  // Calculate stats
-  const stats = reviews?.length ? {
-    total: reviews.length,
+  const reviews = reviewsData?.reviews || [];
+  const totalCount = reviewsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / REVIEWS_PER_PAGE);
+
+  // Reset page when filters change
+  const handleFilterChange = (value: string) => {
+    setFilterRating(value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
+
+  // Calculate stats (note: for accurate overall stats with pagination, would need separate aggregation query)
+  const stats = reviews.length ? {
+    total: totalCount,
     average: reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length,
     distribution: [5, 4, 3, 2, 1].map(rating => ({
       rating,
       count: reviews.filter((r: any) => r.rating === rating).length,
-      percent: (reviews.filter((r: any) => r.rating === rating).length / reviews.length) * 100,
+      percent: reviews.length > 0 ? (reviews.filter((r: any) => r.rating === rating).length / reviews.length) * 100 : 0,
     })),
   } : null;
-
-  // Filter and sort reviews
-  const filteredReviews = reviews?.filter((r: any) => {
-    if (filterRating === 'all') return true;
-    return r.rating === parseInt(filterRating);
-  }).sort((a: any, b: any) => {
-    if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-    if (sortBy === 'highest') return b.rating - a.rating;
-    if (sortBy === 'lowest') return a.rating - b.rating;
-    return 0;
-  }) || [];
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -184,7 +223,7 @@ export default function SellerReviews() {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Select value={filterRating} onValueChange={setFilterRating}>
+          <Select value={filterRating} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Filter by rating" />
@@ -199,7 +238,7 @@ export default function SellerReviews() {
             </SelectContent>
           </Select>
 
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <ArrowUpDown className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Sort by" />
@@ -213,7 +252,7 @@ export default function SellerReviews() {
           </Select>
 
           {filterRating !== 'all' && (
-            <Button variant="ghost" size="sm" onClick={() => setFilterRating('all')}>
+            <Button variant="ghost" size="sm" onClick={() => handleFilterChange('all')}>
               Clear Filter
             </Button>
           )}
@@ -224,7 +263,7 @@ export default function SellerReviews() {
           <CardHeader>
             <CardTitle>Customer Reviews</CardTitle>
             <CardDescription>
-              {filteredReviews.length} review{filteredReviews.length !== 1 ? 's' : ''}
+              {totalCount} review{totalCount !== 1 ? 's' : ''}
               {filterRating !== 'all' && ` with ${filterRating} stars`}
             </CardDescription>
           </CardHeader>
@@ -235,9 +274,9 @@ export default function SellerReviews() {
                   <Skeleton key={i} className="h-24" />
                 ))}
               </div>
-            ) : filteredReviews.length > 0 ? (
+            ) : reviews.length > 0 ? (
               <div className="space-y-4">
-                {filteredReviews.map((review: any) => (
+                {reviews.map((review: any) => (
                   <div key={review.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
@@ -281,6 +320,35 @@ export default function SellerReviews() {
                     </p>
                   </div>
                 ))}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
