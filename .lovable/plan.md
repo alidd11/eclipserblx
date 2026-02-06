@@ -1,109 +1,112 @@
 
 
-# Add Hero Banner to Landing Page
+# Apply Global Animated Gradient Background
 
 ## Overview
-Add a visually impactful banner section behind the hero content on the landing page, similar to how Vino and other stores display their branding. This will make the homepage look more polished and less plain.
+Apply a subtle, slow-moving animated gradient as the global page background across the entire website. This will create a premium, immersive aesthetic while maintaining readability by using reduced opacity and glass-effect overlays on content areas.
 
-## Current State
-The `LandingHero` component currently has a simple flat gradient background:
-```tsx
-<div className="absolute inset-0 bg-gradient-to-b from-background to-muted/20" />
-```
+## Design Approach
 
-This creates a minimal, plain appearance without any visual interest.
-
-## Proposed Design
-
-### Option A: Dynamic Gradient Banner (Recommended)
-A gaming-inspired animated gradient banner with subtle patterns:
-- Animated gradient using the platform's primary purple/blue colors
-- Subtle grid or geometric pattern overlay for gaming aesthetic
-- Smooth color transitions for visual appeal
-- Dark overlay for text readability
-
-### Option B: Uploadable Image Banner
-Allow admins to set a custom banner image from settings:
-- Store banner URL in settings table
-- Fetch and display the image as background
-- Fallback to gradient if no image is set
-
-## Implementation Plan
-
-### 1. Create HeroBanner Component
-Create a new `src/components/landing/HeroBanner.tsx` component that renders:
-- Full-width banner container with appropriate height (~300-400px on desktop, ~200px on mobile)
-- Animated gradient background using CSS keyframes
-- Optional geometric pattern overlay (subtle grid/lines)
-- Dark gradient overlay for text contrast
-- Responsive sizing
-
-### 2. Update LandingHero Component
-Modify `src/components/landing/LandingHero.tsx` to:
-- Import and use the new `HeroBanner` component
-- Position hero text content over the banner
-- Adjust text colors/shadows for visibility on the banner
-
-### 3. Add CSS Animations (Optional Enhancement)
-Add subtle animations to `src/index.css`:
-- Slow-moving gradient animation
-- Subtle shimmer effect
-
-## Visual Reference
+The gradient will be rendered as a fixed background layer behind all content. UI elements like the header, sidebar, and content cards will use semi-transparent backgrounds with backdrop-blur to create a "floating" effect over the moving gradient.
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
-│  ░░░░░░░░░░░░░░░░ ANIMATED GRADIENT ░░░░░░░░░░░░░░░░░░░░░░  │
-│  ░░░░░░░░░░░░░░░░ WITH PATTERN ░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │         🏪 The Roblox Creator Marketplace             │  │
-│  │                                                       │  │
-│  │         Level Up Your Roblox Experience.              │  │
-│  │                                                       │  │
-│  │     Premium scripts, models, UI kits, and game...     │  │
-│  │                                                       │  │
-│  │        [Active Offers Card]                           │  │
-│  │                                                       │  │
-│  │     [Start Selling]  [Browse]  [Eclipse+]             │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|  FIXED ANIMATED GRADIENT LAYER (opacity: 15-20%)                 |
+|  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    |
+|  ~~~~~~~~~~~~ Moving gradient colors ~~~~~~~~~~~~~~~~~~~~~~~~    |
+|  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    |
+|                                                                  |
+|  +------------------+  +--------------------------------------+  |
+|  |  SIDEBAR         |  |  HEADER (glass-effect)               |  |
+|  |  (glass-effect)  |  +--------------------------------------+  |
+|  |                  |  |                                      |  |
+|  |                  |  |  CONTENT AREA                        |  |
+|  |                  |  |  (cards with glass-effect)           |  |
+|  |                  |  |                                      |  |
+|  +------------------+  +--------------------------------------+  |
++------------------------------------------------------------------+
 ```
 
----
+## Technical Implementation
 
-## Technical Details
+### 1. Create GlobalBackground Component
+Create a new reusable component that renders the animated gradient as a fixed, full-screen background layer:
+- Fixed positioning with `inset-0` and `z-[-1]`
+- Slower animation (45s instead of 15s) for subtlety
+- Reduced opacity (15-20%) so content remains readable
+- Grid pattern overlay at very low opacity (2-4%)
+- Works across all pages without modifying individual layouts
 
-### New Component: HeroBanner.tsx
-```tsx
-// Key features:
-// - Animated gradient using CSS custom properties
-// - Geometric pattern overlay (optional)
-// - Responsive height (h-[350px] md:h-[450px] lg:h-[500px])
-// - Dark overlay gradient for text readability
-```
+### 2. Add GlobalBackground to App Root
+Mount the `GlobalBackground` component at the app root level (in `App.tsx` or `main.tsx`) so it persists across all routes and layouts.
 
-### CSS Animation (in index.css)
-```css
-@keyframes hero-gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-```
+### 3. Update Tailwind Animation
+Modify the `hero-gradient` animation duration from 15s to 45s for a slower, more ambient effect that won't distract users.
 
-### Files to Create
-- `src/components/landing/HeroBanner.tsx` - New banner component
+### 4. Apply Glass Effects to UI Layers
+Update key layout components with semi-transparent backgrounds and backdrop-blur:
+- **Header**: `bg-background/80 backdrop-blur-xl`
+- **CustomerSidebar**: `bg-sidebar/90 backdrop-blur-xl`
+- **StoreSidebar**: `bg-sidebar/90 backdrop-blur-xl`
+- **Cards/Content**: Already use `bg-card` which will naturally contrast
 
-### Files to Modify  
-- `src/components/landing/LandingHero.tsx` - Integrate banner, adjust layout
-- `src/index.css` - Add gradient animation keyframes
+### 5. Ensure PWA Safe-Area Compatibility
+The global background must work correctly with:
+- Safe area insets on iOS devices
+- The existing `recalculatePWAViewport` logic
+- Both light and dark themes
+
+## Files to Create
+
+### `src/components/layout/GlobalBackground.tsx`
+New component that renders the fixed animated gradient layer:
+- Animated gradient (same colors as HeroBanner but lower opacity)
+- Optional subtle grid pattern
+- Fixed positioning to stay behind all content
+- Uses the slower 45s animation
+
+## Files to Modify
+
+### `tailwind.config.ts`
+- Add a new `hero-gradient-slow` animation variant (45s duration)
+- Keep original `hero-gradient` for landing page hero section
+
+### `src/App.tsx`
+- Import and render `GlobalBackground` component at the top level
+
+### `src/components/layout/MainLayout.tsx`
+- Update the main wrapper div to use transparent/glass background
+- Ensure content floats visually over the gradient
+
+### `src/components/layout/Header.tsx`
+- Add glass-effect styling: `bg-background/80 backdrop-blur-xl`
+
+### `src/components/layout/CustomerSidebar.tsx`
+- Add glass-effect styling: `bg-sidebar/90 backdrop-blur-xl`
+
+### `src/components/store/StoreLayout.tsx`
+- Update wrapper to work with global background
+- Apply glass effects to sidebar/header areas
+
+### `src/components/store/StoreSidebar.tsx`
+- Add glass-effect styling similar to CustomerSidebar
+
+## Visual Specifications
+
+| Property | Value |
+|----------|-------|
+| Animation Duration | 45 seconds (infinite loop) |
+| Gradient Opacity | 15-20% |
+| Grid Pattern Opacity | 2-4% |
+| Header Blur | `backdrop-blur-xl` |
+| Sidebar Blur | `backdrop-blur-xl` |
+| Background Alpha | 80-90% transparency |
 
 ## Benefits
-- More visually engaging homepage
-- Gaming aesthetic that matches the Roblox creator theme
-- Consistent with how stores (like Vino) display their branding
-- Maintains text readability with proper overlay
-- Responsive across all device sizes
+- Creates a cohesive, premium visual experience across all pages
+- Subtle enough to not distract from content
+- Glass-effect overlays add depth and modern aesthetics
+- Works seamlessly with existing light/dark themes
+- Matches the gaming aesthetic already established
+- No performance concerns with CSS-only animations
 
