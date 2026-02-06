@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -62,6 +63,7 @@ const CUSTOMERS_PER_PAGE = 10;
 
 export default function AdminUsers() {
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<string>('');
@@ -155,11 +157,14 @@ export default function AdminUsers() {
   });
 
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['admin-profiles', search],
+    queryKey: ['admin-profiles', debouncedSearch],
     queryFn: async () => {
-      let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      if (search) {
-        query = query.ilike('customer_id', `%${search}%`);
+      // Optimized: Select only needed columns
+      let query = supabase.from('profiles')
+        .select('user_id, display_name, username, avatar_url, email, customer_id, staff_id, discord_id, discord_username, created_at')
+        .order('created_at', { ascending: false });
+      if (debouncedSearch) {
+        query = query.ilike('customer_id', `%${debouncedSearch}%`);
       }
       const { data, error } = await query;
       if (error) throw error;
@@ -172,10 +177,12 @@ export default function AdminUsers() {
   const { data: userRoles } = useQuery({
     queryKey: ['admin-user-roles'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_roles').select('*');
+      // Optimized: Select only needed columns
+      const { data, error } = await supabase.from('user_roles').select('user_id, role');
       if (error) throw error;
       return data;
     },
+    staleTime: 30000,
   });
 
   // Check if current user has admin role
@@ -539,7 +546,7 @@ export default function AdminUsers() {
                     paginatedProfiles.map((profile) => {
                       const roles = getUserRoles(profile.user_id);
                       return (
-                        <TableRow key={profile.id}>
+                        <TableRow key={profile.user_id}>
                           <TableCell>
                             <div className="space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -630,7 +637,7 @@ export default function AdminUsers() {
                   const roles = getUserRoles(profile.user_id);
                   return (
                     <div 
-                      key={profile.id} 
+                      key={profile.user_id} 
                       className={`rounded-lg border border-border bg-card p-4 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`}
                       onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}
                     >
@@ -809,7 +816,7 @@ export default function AdminUsers() {
                     getUserRoles(selectedUser.user_id).map((r) => {
                       const roleInfo = customRoles.find(role => role.name === r.role);
                       return (
-                        <Badge key={r.id} variant="outline" className={`gap-1 py-1.5 px-2 ${roleInfo?.color || ''} text-white border-transparent`}>
+                        <Badge key={`${r.user_id}-${r.role}`} variant="outline" className={`gap-1 py-1.5 px-2 ${roleInfo?.color || ''} text-white border-transparent`}>
                           {roleInfo?.display_name || r.role}
                           {/* Only show remove button if user has permission based on hierarchy */}
                           {canRemoveRole(r.role) && (

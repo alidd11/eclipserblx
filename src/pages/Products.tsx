@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Filter, Search, ChevronDown, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { useDebounce } from '@/hooks/useDebounce';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
@@ -33,6 +35,7 @@ export default function Products() {
   const sourceFilter = searchParams.get('source');
   const pageParam = searchParams.get('page');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300); // Debounce search for 300ms
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('smart');
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
@@ -56,21 +59,29 @@ export default function Products() {
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
+      // Optimized: Select only needed columns
       const { data, error } = await supabase
         .from('categories')
-        .select('*')
+        .select('id, name, slug, description, display_order')
         .order('display_order');
       if (error) throw error;
       return data;
     },
+    staleTime: 60000, // Cache categories for 1 minute
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products', categorySlug, search, featuredOnly, sortBy, sourceFilter, isStaff],
+    queryKey: ['products', categorySlug, debouncedSearch, featuredOnly, sortBy, sourceFilter, isStaff],
     queryFn: async () => {
+      // Optimized: Select only needed columns instead of *
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug), stores(name, slug, logo_url, is_verified, is_trusted, is_active)`);
+        .select(`
+          id, name, slug, price, images, is_active, is_featured,
+          category_id, store_id, created_at, is_resellable, download_count,
+          categories (name, slug),
+          stores (name, slug, logo_url, is_verified, is_trusted, is_active)
+        `);
 
       // Customers should only see active + released products.
       // Staff can preview scheduled and inactive products.
@@ -96,8 +107,8 @@ export default function Products() {
         query = query.not('store_id', 'is', null);
       }
 
-      if (search) {
-        query = query.ilike('name', `%${search}%`);
+      if (debouncedSearch) {
+        query = query.ilike('name', `%${debouncedSearch}%`);
       }
 
       const { data, error } = await query;
@@ -326,20 +337,7 @@ function ProductsGrid({
   };
 
   if (isLoading) {
-    return (
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-        {[...Array(productsPerPage)].map((_, i) => (
-          <div key={i} className="gaming-card animate-pulse">
-            <div className="aspect-video bg-muted" />
-            <div className="p-4 space-y-3">
-              <div className="h-4 bg-muted rounded w-1/4" />
-              <div className="h-5 bg-muted rounded w-3/4" />
-              <div className="h-8 bg-muted rounded w-1/2" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <ProductGridSkeleton count={productsPerPage} />;
   }
 
   if (products?.length === 0) {

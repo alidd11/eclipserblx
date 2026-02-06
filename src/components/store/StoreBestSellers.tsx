@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { TrendingUp } from 'lucide-react';
 
 interface StoreBestSellersProps {
@@ -20,9 +20,10 @@ export function StoreBestSellers({
   const { data: bestSellers, isLoading } = useQuery({
     queryKey: ['store-best-sellers', storeId, limit],
     queryFn: async () => {
+      // Optimized: Select only needed columns (note: average_rating is not stored on products table)
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('id, name, slug, price, images, is_resellable, download_count, categories(name)')
         .eq('store_id', storeId)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
@@ -35,6 +36,7 @@ export function StoreBestSellers({
       return (data || []).filter(p => (p.download_count || 0) > 0);
     },
     enabled: !!storeId,
+    staleTime: 30000, // 30 seconds cache
   });
 
   // Don't render if no best sellers
@@ -62,7 +64,7 @@ export function StoreBestSellers({
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} className="h-64" />
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       ) : (
@@ -78,7 +80,6 @@ export function StoreBestSellers({
               category={(product.categories as any)?.name}
               isResellable={product.is_resellable}
               showBestSellerBadge
-              averageRating={product.average_rating}
             />
           ))}
         </div>
