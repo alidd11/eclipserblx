@@ -38,12 +38,14 @@ import {
   ExternalLink,
   Copy,
   ArrowLeft,
+  Zap,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIOSKeyboardFix } from "@/hooks/useIOSKeyboardFix";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { QuickResponses } from "@/components/admin/modmail/QuickResponses";
 
 interface Ticket {
   id: string;
@@ -206,6 +208,13 @@ export default function DiscordModmail() {
   // Claim ticket mutation
   const claimMutation = useMutation({
     mutationFn: async (ticketId: string) => {
+      // Get ticket info first for notification
+      const { data: ticketInfo } = await supabase
+        .from("discord_modmail_tickets" as any)
+        .select("discord_username, subject")
+        .eq("id", ticketId)
+        .single() as { data: { discord_username: string; subject: string | null } | null; error: any };
+
       const { error } = await supabase
         .from("discord_modmail_tickets" as any)
         .update({
@@ -216,6 +225,21 @@ export default function DiscordModmail() {
         .eq("id", ticketId);
 
       if (error) throw error;
+
+      // Send notification to staff about the claim
+      try {
+        await supabase.functions.invoke("send-modmail-claim-notification", {
+          body: {
+            ticket_id: ticketId,
+            staff_user_id: user?.id,
+            discord_username: ticketInfo?.discord_username,
+            subject: ticketInfo?.subject,
+          },
+        });
+      } catch (notifyError) {
+        console.error("Failed to send claim notification:", notifyError);
+        // Don't fail the claim if notification fails
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["discord-modmail-tickets"] });
@@ -569,13 +593,19 @@ export default function DiscordModmail() {
                           }}
                           className="min-h-[60px] resize-none"
                         />
-                        <Button
-                          onClick={handleSendReply}
-                          disabled={!replyContent.trim() || replyMutation.isPending}
-                          className="shrink-0"
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <QuickResponses
+                            onSelect={(content) => setReplyContent(content)}
+                            disabled={replyMutation.isPending}
+                          />
+                          <Button
+                            onClick={handleSendReply}
+                            disabled={!replyContent.trim() || replyMutation.isPending}
+                            className="shrink-0"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -737,6 +767,10 @@ export default function DiscordModmail() {
                           }}
                           className="min-h-[44px] max-h-[120px] resize-none text-base"
                           rows={1}
+                        />
+                        <QuickResponses
+                          onSelect={(content) => setReplyContent(content)}
+                          disabled={replyMutation.isPending}
                         />
                         <Button
                           onClick={handleSendReply}
