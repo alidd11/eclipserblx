@@ -1855,13 +1855,13 @@ async function handleSupportCommand(
   discordUsername: string,
   discordAvatarUrl?: string
 ) {
-  // Check for existing open ticket
+  // Optimized: Check for existing open ticket with simpler query
+  // Use in() for status to avoid neq which can be slower
   const { data: existingTicket } = await supabase
     .from("discord_modmail_tickets")
-    .select("id, subject")
+    .select("id")
     .eq("discord_user_id", discordUserId)
-    .neq("status", "closed")
-    .order("created_at", { ascending: false })
+    .in("status", ["open", "pending", "in_progress"])
     .limit(1)
     .maybeSingle();
 
