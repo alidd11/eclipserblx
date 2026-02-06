@@ -15,10 +15,19 @@ interface DiscordInteraction {
   token: string;
   data?: {
     name: string;
+    custom_id?: string;
     options?: Array<{
       name: string;
       value: string;
       type: number;
+    }>;
+    components?: Array<{
+      type: number;
+      components: Array<{
+        type: number;
+        custom_id: string;
+        value: string;
+      }>;
     }>;
   };
   member?: {
@@ -52,10 +61,12 @@ interface ServerContext {
 // Interaction types
 const PING = 1;
 const APPLICATION_COMMAND = 2;
+const MODAL_SUBMIT = 5;
 
 // Response types
 const PONG = 1;
 const CHANNEL_MESSAGE = 4;
+const MODAL = 9;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -158,8 +169,38 @@ Deno.serve(async (req) => {
         case "unlink":
           return await handleUnlinkCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
+        case "support":
+          return await handleSupportCommand(discordUserId, discordUsername, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
+      }
+    }
+
+    // Handle modal submissions
+    if (interaction.type === MODAL_SUBMIT && interaction.data?.custom_id) {
+      const customId = interaction.data.custom_id;
+      const discordUser = interaction.member?.user || interaction.user;
+      
+      if (!discordUser) {
+        return interactionResponse("Unable to identify Discord user.", true);
+      }
+
+      const discordUserId = discordUser.id;
+      const discordUsername = discordUser.global_name || discordUser.username;
+      
+      // Build Discord avatar URL
+      let discordAvatarUrl: string | undefined;
+      if (discordUser.avatar) {
+        const ext = discordUser.avatar.startsWith('a_') ? 'gif' : 'png';
+        discordAvatarUrl = `https://cdn.discordapp.com/avatars/${discordUserId}/${discordUser.avatar}.${ext}?size=128`;
+      } else {
+        const defaultIndex = (BigInt(discordUserId) >> BigInt(22)) % BigInt(6);
+        discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+      }
+
+      if (customId === "support_modal") {
+        return await handleSupportModalSubmit(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl);
       }
     }
 
@@ -1799,4 +1840,180 @@ async function handleStoreCommand(
     }),
     { headers: { "Content-Type": "application/json" } }
   );
+}
+
+// /support command - Opens a modal for support message
+async function handleSupportCommand(
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string
+) {
+  // Return a modal for the user to fill out
+  return new Response(
+    JSON.stringify({
+      type: MODAL,
+      data: {
+        custom_id: "support_modal",
+        title: "Contact Eclipse Support",
+        components: [
+          {
+            type: 1, // Action Row
+            components: [
+              {
+                type: 4, // Text Input
+                custom_id: "subject",
+                label: "Subject",
+                style: 1, // Short
+                placeholder: "Brief summary of your issue",
+                required: true,
+                max_length: 100,
+              },
+            ],
+          },
+          {
+            type: 1, // Action Row
+            components: [
+              {
+                type: 4, // Text Input
+                custom_id: "message",
+                label: "Message",
+                style: 2, // Paragraph
+                placeholder: "Describe your issue in detail...",
+                required: true,
+                min_length: 10,
+                max_length: 2000,
+              },
+            ],
+          },
+        ],
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// Handle support modal submission
+async function handleSupportModalSubmit(
+  supabase: any,
+  interaction: DiscordInteraction,
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string
+) {
+  // Extract values from modal
+  const components = interaction.data?.components || [];
+  let subject = "";
+  let message = "";
+
+  for (const row of components) {
+    for (const component of row.components) {
+      if (component.custom_id === "subject") {
+        subject = component.value;
+      } else if (component.custom_id === "message") {
+        message = component.value;
+      }
+    }
+  }
+
+  if (!message) {
+    return interactionResponse("Please provide a message.", true);
+  }
+
+  try {
+    // Check for existing open ticket
+    const { data: existingTicket } = await supabase
+      .from("discord_modmail_tickets")
+      .select("id")
+      .eq("discord_user_id", discordUserId)
+      .neq("status", "closed")
+      .maybeSingle();
+
+    let ticketId: string;
+    let isNewTicket = false;
+
+    if (existingTicket) {
+      // Add message to existing ticket
+      ticketId = existingTicket.id;
+    } else {
+      // Create new ticket
+      isNewTicket = true;
+      const { data: newTicket, error: ticketError } = await supabase
+        .from("discord_modmail_tickets")
+        .insert({
+          discord_user_id: discordUserId,
+          discord_username: discordUsername,
+          discord_avatar_url: discordAvatarUrl,
+          subject: subject || null,
+          status: "open",
+          priority: "normal",
+        })
+        .select("id")
+        .single();
+
+      if (ticketError) {
+        console.error("[discord-customer-bot] Failed to create ticket:", ticketError);
+        return interactionResponse("Failed to create support ticket. Please try again.", true);
+      }
+
+      ticketId = newTicket.id;
+    }
+
+    // Insert the message
+    const { error: msgError } = await supabase
+      .from("discord_modmail_messages")
+      .insert({
+        ticket_id: ticketId,
+        content: subject ? `**Subject:** ${subject}\n\n${message}` : message,
+        is_staff_reply: false,
+        discord_message_id: null,
+      });
+
+    if (msgError) {
+      console.error("[discord-customer-bot] Failed to save message:", msgError);
+      return interactionResponse("Failed to save your message. Please try again.", true);
+    }
+
+    // Update ticket timestamp
+    await supabase
+      .from("discord_modmail_tickets")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", ticketId);
+
+    // Send confirmation embed
+    const confirmEmbed = {
+      color: 0x22c55e,
+      title: isNewTicket ? "✅ Support Ticket Created" : "✅ Message Received",
+      description: isNewTicket 
+        ? "Your support ticket has been created. Our team will respond via DM soon."
+        : "Your message has been added to your existing ticket.",
+      fields: [
+        {
+          name: "📋 Subject",
+          value: subject || "General Support",
+          inline: true,
+        },
+        {
+          name: "🔖 Ticket ID",
+          value: `\`${ticketId.substring(0, 8)}\``,
+          inline: true,
+        },
+      ],
+      footer: { text: "Eclipse Support • We typically respond within 24 hours" },
+      timestamp: new Date().toISOString(),
+    };
+
+    return new Response(
+      JSON.stringify({
+        type: CHANNEL_MESSAGE,
+        data: {
+          embeds: [confirmEmbed],
+          flags: 64, // Ephemeral
+        },
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("[discord-customer-bot] Support modal error:", error);
+    return interactionResponse("An error occurred. Please try again later.", true);
+  }
 }
