@@ -1488,8 +1488,8 @@ async function handleStoreCommand(
                 {
                   type: 2, // Button
                   style: 5, // Link style
-                  label: "🏪 Browse Stores",
-                  url: "https://eclipserblx.com/stores",
+                  label: "🏪 Browse Marketplace",
+                  url: "https://eclipserblx.com/marketplace",
                 },
               ],
             },
