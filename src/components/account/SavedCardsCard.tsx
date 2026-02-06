@@ -88,7 +88,7 @@ export function SavedCardsCard() {
 
   return (
     <>
-      <Card className="bg-card border-border">
+      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
@@ -112,7 +112,7 @@ export function SavedCardsCard() {
               {paymentMethods.map((method) => (
                 <div
                   key={method.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border"
+                  className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <CardBrandIcon brand={method.brand} />

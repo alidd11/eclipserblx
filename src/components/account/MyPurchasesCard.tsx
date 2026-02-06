@@ -134,7 +134,7 @@ export function MyPurchasesCard() {
 
   if (isLoading) {
     return (
-      <Card className="bg-card border-border">
+      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function MyPurchasesCard() {
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Package className="h-5 w-5" />
@@ -186,7 +186,7 @@ export function MyPurchasesCard() {
             {purchasedProducts.map((product) => (
               <div
                 key={product.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 hover:bg-muted/40 transition-all group"
               >
                 {/* Product Image */}
                 <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">

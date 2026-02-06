@@ -124,7 +124,7 @@ export function ReferralCard() {
 
   if (!referralCode) {
     return (
-      <Card className="bg-card border-border">
+      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
         <CardContent className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
@@ -133,7 +133,7 @@ export function ReferralCard() {
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Gift className="h-5 w-5 text-primary" />
@@ -143,15 +143,15 @@ export function ReferralCard() {
       <CardContent className="space-y-6">
         {/* Referral Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 rounded-lg bg-muted/50">
+          <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
             <p className="text-2xl font-bold">{referrals?.total || 0}</p>
             <p className="text-xs text-muted-foreground">Total Referrals</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
+          <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
             <p className="text-2xl font-bold text-primary">{referrals?.completed || 0}</p>
             <p className="text-xs text-muted-foreground">Completed</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
+          <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
             <p className="text-2xl font-bold text-yellow-500">{referrals?.pending || 0}</p>
             <p className="text-xs text-muted-foreground">Pending</p>
           </div>
@@ -181,7 +181,7 @@ export function ReferralCard() {
         </Button>
 
         {/* How it works */}
-        <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+        <div className="p-4 bg-muted/30 rounded-lg border border-border/50 space-y-2">
           <p className="text-sm font-medium">How it works:</p>
           <ol className="text-xs text-muted-foreground space-y-1">
             <li className="flex items-start gap-2">

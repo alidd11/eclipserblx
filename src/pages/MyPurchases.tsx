@@ -402,9 +402,9 @@ export default function MyPurchases() {
             {isLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : downloadableItems.length === 0 ? (
-              <Card>
+              <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
                 <CardContent className="py-12 text-center space-y-4">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
                     <FileDown className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div>
@@ -420,7 +420,7 @@ export default function MyPurchases() {
               <>
                 {/* Batch Download Header */}
                 {selectableItems.length > 0 && (
-                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 border border-border">
+                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-card/60 border border-primary/10 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <Checkbox id="select-all" checked={allSelectableSelected} onCheckedChange={toggleSelectAll} disabled={isBatchDownloading} />
                       <label htmlFor="select-all" className="text-sm cursor-pointer">
@@ -442,7 +442,7 @@ export default function MyPurchases() {
                     const botCode = isBot ? getBotCode(item.id) : null;
 
                     return (
-                      <div key={`${item.orderId}-${item.id}`} className="p-4 rounded-xl bg-card border border-border">
+                      <div key={`${item.orderId}-${item.id}`} className="p-4 rounded-xl bg-card/80 border border-primary/10 hover:border-primary/20 backdrop-blur-sm transition-all">
                         <div className="flex items-start gap-4">
                           {!isBot && hasAsset && (
                             <div className="flex-shrink-0 pt-1">
@@ -590,9 +590,9 @@ export default function MyPurchases() {
             {isLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : filteredOrders.length === 0 ? (
-              <Card>
+              <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
                 <CardContent className="py-12 text-center space-y-4">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
                     <Package className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div>
@@ -614,7 +614,7 @@ export default function MyPurchases() {
                     const displayStatus = order.status === 'paid' ? 'Completed' : order.status.charAt(0).toUpperCase() + order.status.slice(1).replace('_', ' ');
 
                     return (
-                      <div key={order.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                      <div key={order.id} className="rounded-xl border border-primary/10 bg-gradient-to-br from-card to-muted/30 overflow-hidden hover:border-primary/20 transition-colors">
                         <div className="p-4 space-y-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
@@ -630,7 +630,7 @@ export default function MyPurchases() {
                             <Link to={`/order-success?order_id=${order.id}`}>View order</Link>
                           </Button>
                         </div>
-                        <div className="border-t border-border p-4 space-y-2 bg-muted/30">
+                        <div className="border-t border-border/50 p-4 space-y-2 bg-muted/20">
                           <div className="flex justify-between text-sm">
                             <span className="text-primary font-medium">Order Date:</span>
                             <span className="text-muted-foreground">{format(new Date(order.created_at), 'MMM d, yyyy')}</span>

@@ -289,7 +289,7 @@ export function LinkedAccountsCard({
 
   if (isProcessingOAuth) {
     return (
-      <Card className="bg-card border-border">
+      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-3">
             <Loader2 className="w-6 h-6 animate-spin text-[#5865F2] mx-auto" />
@@ -301,7 +301,7 @@ export function LinkedAccountsCard({
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Link2 className="h-4 w-4" />
@@ -323,7 +323,7 @@ export function LinkedAccountsCard({
           </div>
           
           {isDiscordLinked ? (
-            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
+            <div className="flex items-center justify-between p-2.5 bg-muted/30 rounded-lg border border-border/50 hover:border-primary/20 transition-colors">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-[#5865F2]/20 flex items-center justify-center">
                   <DiscordIcon className="w-4 h-4 text-[#5865F2]" />
@@ -386,7 +386,7 @@ export function LinkedAccountsCard({
           </div>
           
           {isRobloxLinked ? (
-            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
+            <div className="flex items-center justify-between p-2.5 bg-muted/30 rounded-lg border border-border/50 hover:border-primary/20 transition-colors">
               <div className="flex items-center gap-2.5">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={getRobloxAvatarUrl(robloxUserId!)} alt={robloxUsername!} />

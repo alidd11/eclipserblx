@@ -79,7 +79,7 @@ export function NotificationSettingsCard() {
   const showIOSInstallMessage = isiOSDevice && !isPWAMode;
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bell className="h-5 w-5" />

@@ -116,7 +116,7 @@ export function EmailSubscriptionCard() {
 
   if (isLoading) {
     return (
-      <Card className="bg-card border-border">
+      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
         <CardContent className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
@@ -125,7 +125,7 @@ export function EmailSubscriptionCard() {
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
@@ -137,7 +137,7 @@ export function EmailSubscriptionCard() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 transition-colors">
             <div className="flex items-center gap-3">
               <Bell className="h-5 w-5 text-primary" />
               <div>
@@ -152,7 +152,7 @@ export function EmailSubscriptionCard() {
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 transition-colors">
             <div className="flex items-center gap-3">
               <Tag className="h-5 w-5 text-primary" />
               <div>
@@ -167,7 +167,7 @@ export function EmailSubscriptionCard() {
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 transition-colors">
             <div className="flex items-center gap-3">
               <Newspaper className="h-5 w-5 text-primary" />
               <div>
