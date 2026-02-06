@@ -20,11 +20,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   MessageSquare,
   Send,
@@ -623,20 +623,21 @@ export default function DiscordModmail() {
           )}
         </div>
 
-        {/* Mobile Chat Drawer */}
+        {/* Mobile Chat Sheet */}
         {isMobile && (
-          <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-            <DrawerContent 
-              className="h-[85dvh] max-h-[85dvh]"
+          <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
+            <SheetContent 
+              side="bottom"
+              className="h-[85dvh] max-h-[85dvh] p-0 rounded-t-xl"
               style={{ 
                 backgroundColor: 'hsl(var(--background))',
-                paddingBottom: 'env(safe-area-inset-bottom)'
+                paddingBottom: isKeyboardVisible ? '8px' : 'env(safe-area-inset-bottom)'
               }}
             >
               {selectedTicket && (
                 <div className="flex flex-col h-full bg-background">
                   {/* Mobile Header */}
-                  <DrawerHeader className="border-b px-3 py-2 shrink-0">
+                  <SheetHeader className="border-b px-3 py-2 shrink-0">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
@@ -653,9 +654,9 @@ export default function DiscordModmail() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <DrawerTitle className="text-sm font-medium truncate">
+                        <SheetTitle className="text-sm font-medium truncate text-left">
                           {selectedTicket.discord_username}
-                        </DrawerTitle>
+                        </SheetTitle>
                         <div className="flex items-center gap-1.5">
                           {getStatusBadge(selectedTicket.status)}
                           {getPriorityBadge(selectedTicket.priority)}
@@ -684,7 +685,7 @@ export default function DiscordModmail() {
                         )}
                       </div>
                     </div>
-                  </DrawerHeader>
+                  </SheetHeader>
 
                   {/* Messages Area */}
                   <ScrollArea className="flex-1 px-3 py-2">
@@ -790,8 +791,8 @@ export default function DiscordModmail() {
                   )}
                 </div>
               )}
-            </DrawerContent>
-          </Drawer>
+            </SheetContent>
+          </Sheet>
         )}
 
         {/* Close Dialog */}
