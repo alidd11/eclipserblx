@@ -1372,13 +1372,16 @@ async function handleGetRoleCommand(
     }),
   ]);
 
-  // Build response
+  // Build response - now fully public with role pings
   const fields: any[] = [];
+
+  // Build role pings for assigned roles
+  const rolePings = rolesToAssign.map(r => `<@&${r.id}>`).join(" ");
 
   if (rolesAssigned.length > 0) {
     fields.push({
       name: "✅ Roles Synced",
-      value: rolesAssigned.map(r => `• ${r}`).join("\n"),
+      value: rolesToAssign.filter(r => rolesAssigned.includes(r.name)).map(r => `<@&${r.id}>`).join("\n"),
       inline: true,
     });
   }
@@ -1417,26 +1420,28 @@ async function handleGetRoleCommand(
     });
   }
 
-  const embed = {
+  // Build public embed with role pings
+  const publicEmbed = {
     color: rolesAssigned.length > 0 ? 0x22c55e : 0xf59e0b,
     title: rolesAssigned.length > 0 ? "🎉 Roles Synced!" : "📋 Role Status",
     description: rolesAssigned.length > 0
-      ? `Your Discord roles have been updated!`
-      : `Here's what you need to earn roles:`,
+      ? `<@${discordUserId}>\n\nYour roles have been updated!`
+      : `<@${discordUserId}>\n\nHere's what you need to earn roles:`,
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     fields,
     footer: { text: branding.footer },
     timestamp: new Date().toISOString(),
   };
 
-  const channelEmbed = {
-    color: rolesAssigned.length > 0 ? 0x22c55e : 0xf59e0b,
-    description: rolesAssigned.length > 0
-      ? `<@${discordUserId}>\n🎉 Roles synced! Check your DMs.`
-      : `<@${discordUserId}>\n📋 Check your DMs for how to earn roles.`,
-    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
-    footer: { text: branding.footer },
-  };
-
-  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+  // Return public response (no DM)
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: {
+        embeds: [publicEmbed],
+        flags: 0, // Public message
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 }
