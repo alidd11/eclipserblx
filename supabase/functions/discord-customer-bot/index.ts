@@ -1571,12 +1571,6 @@ async function handleStoreCommand(
     });
   }
 
-  fields.push({
-    name: "🔗 Visit Store",
-    value: `[${store.name} on Eclipse](${storeUrl})`,
-    inline: false,
-  });
-
   const publicEmbed = {
     color: 0x8b5cf6,
     title: `🏪 ${store.name}`,
@@ -1587,11 +1581,37 @@ async function handleStoreCommand(
     timestamp: new Date().toISOString(),
   };
 
+  // Build button components
+  const buttons: any[] = [
+    {
+      type: 2, // Button
+      style: 5, // Link style
+      label: "🛒 Browse Store",
+      url: storeUrl,
+    },
+  ];
+
+  // Add website button if store has one
+  if (serverContext.store.website_url) {
+    buttons.push({
+      type: 2, // Button
+      style: 5, // Link style
+      label: "🌐 Website",
+      url: serverContext.store.website_url,
+    });
+  }
+
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
       data: {
         embeds: [publicEmbed],
+        components: [
+          {
+            type: 1, // Action Row
+            components: buttons,
+          },
+        ],
         flags: 0,
       },
     }),
