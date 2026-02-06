@@ -84,11 +84,11 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
           </div>
         ) : (
           <ScrollArea className="h-[300px]">
-            <div className="space-y-2">
+            <div className="space-y-2 pr-1">
               {transactions.map((tx) => (
                 <div 
                   key={tx.id}
-                  className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors overflow-hidden"
                 >
                   <div className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
@@ -99,12 +99,12 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
                     </span>
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium truncate flex-1 min-w-0">
                         {tx.description || getTransactionLabel(tx.type)}
                       </span>
-                      <Badge variant="secondary" className="text-[10px] shrink-0">
+                      <Badge variant="secondary" className="text-[10px] shrink-0 hidden xs:inline-flex">
                         {getTransactionLabel(tx.type)}
                       </Badge>
                     </div>
@@ -114,7 +114,7 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
                   </div>
                   
                   <div className={cn(
-                    "font-semibold shrink-0",
+                    "font-semibold shrink-0 text-sm whitespace-nowrap",
                     getTransactionColor(tx.type)
                   )}>
                     {tx.type === 'spend' ? '-' : '+'}£{Math.abs(tx.amount).toFixed(2)}
