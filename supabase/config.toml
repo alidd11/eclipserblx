@@ -304,3 +304,6 @@ verify_jwt = false
 
 [functions.send-modmail-claim-notification]
 verify_jwt = false
+
+[functions.modmail-response-reminder]
+verify_jwt = false
