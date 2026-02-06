@@ -47,6 +47,10 @@ const commands = [
     name: "getrole",
     description: "Sync your Discord roles based on your Eclipse account status",
   },
+  {
+    name: "store",
+    description: "View this server's store information",
+  },
 ];
 
 Deno.serve(async (req) => {
