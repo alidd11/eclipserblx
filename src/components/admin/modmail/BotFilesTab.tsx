@@ -4,8 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Download, FileCode, FileJson, FileText, Check, ExternalLink } from "lucide-react";
+import { Copy, Download, FileCode, FileJson, FileText, FileType, Check, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+
+const FLY_TOML = `app = "eclipse-support-bot"
+primary_region = "lhr"
+
+[build]
+  builder = "heroku/buildpacks:20"
+
+[env]
+  NODE_ENV = "production"`;
 
 const INDEX_JS = `import { Client, GatewayIntentBits, EmbedBuilder, ChannelType } from 'discord.js';
 import { createClient } from '@supabase/supabase-js';
@@ -400,6 +409,7 @@ interface FileTab {
 const FILES: FileTab[] = [
   { id: "index", name: "index.js", icon: FileCode, content: INDEX_JS, language: "javascript" },
   { id: "package", name: "package.json", icon: FileJson, content: PACKAGE_JSON, language: "json" },
+  { id: "fly", name: "fly.toml", icon: FileType, content: FLY_TOML, language: "toml" },
   { id: "readme", name: "README.md", icon: FileText, content: README, language: "markdown" },
 ];
 
