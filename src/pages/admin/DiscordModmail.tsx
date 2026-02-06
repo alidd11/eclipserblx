@@ -626,9 +626,15 @@ export default function DiscordModmail() {
         {/* Mobile Chat Drawer */}
         {isMobile && (
           <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-            <DrawerContent className="h-[85dvh] max-h-[85dvh]">
+            <DrawerContent 
+              className="h-[85dvh] max-h-[85dvh]"
+              style={{ 
+                backgroundColor: 'hsl(var(--background))',
+                paddingBottom: 'env(safe-area-inset-bottom)'
+              }}
+            >
               {selectedTicket && (
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full bg-background">
                   {/* Mobile Header */}
                   <DrawerHeader className="border-b px-3 py-2 shrink-0">
                     <div className="flex items-center gap-2">
@@ -750,8 +756,7 @@ export default function DiscordModmail() {
                   {/* Mobile Reply Input */}
                   {selectedTicket.status !== "closed" && (
                     <div 
-                      className="border-t px-3 py-2 shrink-0"
-                      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+                      className="border-t px-3 py-2 shrink-0 bg-background"
                     >
                       <div className="flex gap-2 items-end">
                         <Textarea
