@@ -1466,18 +1466,6 @@ async function handleStoreCommand(
       title: "🛒 Eclipse Marketplace",
       description: "The premier Roblox asset marketplace featuring scripts, UI kits, games, and more from verified creators.",
       thumbnail: { url: "https://eclipserblx.com/logo.png" },
-      fields: [
-        {
-          name: "🌐 Website",
-          value: "[eclipserblx.com](https://eclipserblx.com)",
-          inline: true,
-        },
-        {
-          name: "🏪 Browse Stores",
-          value: "[View All Stores](https://eclipserblx.com/stores)",
-          inline: true,
-        },
-      ],
       footer: { text: "Eclipse Marketplace" },
       timestamp: new Date().toISOString(),
     };
@@ -1487,6 +1475,25 @@ async function handleStoreCommand(
         type: CHANNEL_MESSAGE,
         data: {
           embeds: [publicEmbed],
+          components: [
+            {
+              type: 1, // Action Row
+              components: [
+                {
+                  type: 2, // Button
+                  style: 5, // Link style
+                  label: "🌐 Website",
+                  url: "https://eclipserblx.com",
+                },
+                {
+                  type: 2, // Button
+                  style: 5, // Link style
+                  label: "🏪 Browse Stores",
+                  url: "https://eclipserblx.com/stores",
+                },
+              ],
+            },
+          ],
           flags: 0,
         },
       }),
