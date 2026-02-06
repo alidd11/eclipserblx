@@ -2036,6 +2036,114 @@ async function handleSupportModalSubmit(
       .update({ updated_at: new Date().toISOString() })
       .eq("id", ticketId);
 
+    // Send notification to Discord staff channel
+    try {
+      const { data: settingsData } = await supabase
+        .from("settings")
+        .select("key, value")
+        .in("key", ["modmail_discord_channel_id", "modmail_discord_role_id"]);
+
+      const settings: Record<string, string> = {};
+      settingsData?.forEach((s: { key: string; value: unknown }) => {
+        const val = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : String(s.value || "");
+        settings[s.key] = val;
+      });
+
+      const channelId = settings.modmail_discord_channel_id;
+      const roleId = settings.modmail_discord_role_id;
+      const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+
+      if (channelId && botToken) {
+        const staffEmbed = {
+          color: isNewTicket ? 0x22c55e : 0x3b82f6, // Green for new, blue for follow-up
+          author: {
+            name: discordUsername,
+            icon_url: discordAvatarUrl || `https://cdn.discordapp.com/embed/avatars/0.png`,
+          },
+          title: isNewTicket ? "📩 New Support Ticket" : "💬 New Message",
+          description: message.length > 500 ? message.substring(0, 500) + "..." : message,
+          fields: [
+            ...(isNewTicket && subject ? [{
+              name: "📋 Subject",
+              value: subject,
+              inline: true,
+            }] : []),
+            {
+              name: "🔖 Ticket ID",
+              value: `\`${ticketId.substring(0, 8)}\``,
+              inline: true,
+            },
+            {
+              name: "📊 Status",
+              value: isNewTicket ? "Open" : "Updated",
+              inline: true,
+            },
+          ],
+          footer: {
+            text: "Eclipse Support • Click below to view",
+            icon_url: "https://eclipserblx.com/favicon.ico",
+          },
+          timestamp: new Date().toISOString(),
+        };
+
+        const messagePayload: {
+          content?: string;
+          embeds: typeof staffEmbed[];
+          components: Array<{
+            type: number;
+            components: Array<{
+              type: number;
+              style: number;
+              label: string;
+              url: string;
+            }>;
+          }>;
+        } = {
+          embeds: [staffEmbed],
+          components: [
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  style: 5,
+                  label: "📋 View Ticket",
+                  url: "https://eclipserblx.com/admin/discord-modmail",
+                },
+              ],
+            },
+          ],
+        };
+
+        if (roleId) {
+          messagePayload.content = `<@&${roleId}>`;
+        }
+
+        const discordResponse = await fetch(
+          `https://discord.com/api/v10/channels/${channelId}/messages`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bot ${botToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(messagePayload),
+          }
+        );
+
+        if (discordResponse.ok) {
+          console.log("[discord-customer-bot] Posted modmail notification to Discord channel:", channelId);
+        } else {
+          const errorText = await discordResponse.text();
+          console.error("[discord-customer-bot] Failed to post to Discord channel:", discordResponse.status, errorText);
+        }
+      } else {
+        console.log("[discord-customer-bot] Discord notification skipped - missing channelId or botToken");
+      }
+    } catch (discordError) {
+      console.error("[discord-customer-bot] Error posting Discord notification:", discordError);
+    }
+
     // Send DM confirmation with the customer's message details
     const dmEmbed = {
       color: 0x7C3AED, // Purple Eclipse theme
