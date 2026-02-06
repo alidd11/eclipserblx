@@ -56,6 +56,10 @@ const commands = [
     name: "unlink",
     description: "Disconnect your Discord from your Eclipse account",
   },
+  {
+    name: "support",
+    description: "Contact Eclipse support - opens a ticket",
+  },
 ];
 
 Deno.serve(async (req) => {
