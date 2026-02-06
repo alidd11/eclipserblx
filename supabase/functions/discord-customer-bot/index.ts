@@ -155,6 +155,9 @@ Deno.serve(async (req) => {
         case "store":
           return await handleStoreCommand(supabase, discordUserId, serverContext, discordAvatarUrl);
 
+        case "unlink":
+          return await handleUnlinkCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -414,6 +417,126 @@ async function handleLinkStatusCommand(
     }),
     { headers: { "Content-Type": "application/json" } }
   );
+}
+
+// /unlink command - Disconnect Discord from Eclipse account
+async function handleUnlinkCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
+) {
+  const branding = getBranding(serverContext);
+  const existingProfile = await getLinkedAccount(supabase, discordUserId);
+
+  if (!existingProfile) {
+    const embed = {
+      color: 0xef4444,
+      title: "❌ No Linked Account",
+      description: "Your Discord isn't linked to any Eclipse account.",
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      fields: [
+        {
+          name: "Want to link?",
+          value: "Use `/link` to connect your Discord to your Eclipse account.",
+          inline: false,
+        },
+      ],
+      footer: {
+        text: branding.footer,
+      },
+      timestamp: new Date().toISOString(),
+    };
+    const channelEmbed = {
+      color: 0xef4444,
+      description: `<@${discordUserId}>\n❌ Your Discord isn't linked to any account.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+  }
+
+  // Check if account is locked (seller accounts)
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id")
+    .eq("owner_id", existingProfile.user_id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (store) {
+    const embed = {
+      color: 0xef4444,
+      title: "🔒 Account Locked",
+      description: "Your account is locked because you're a store owner.\n\nContact support to request changes to your linked accounts.",
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: {
+        text: branding.footer,
+      },
+      timestamp: new Date().toISOString(),
+    };
+    const channelEmbed = {
+      color: 0xef4444,
+      description: `<@${discordUserId}>\n🔒 Your account is locked. Check your DMs for details.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+  }
+
+  // Unlink the Discord account
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ discord_id: null, discord_username: null })
+    .eq("user_id", existingProfile.user_id);
+
+  if (updateError) {
+    console.error("[discord-customer-bot] Unlink error:", updateError);
+    const embed = {
+      color: 0xef4444,
+      title: "❌ Error",
+      description: "Failed to unlink your account. Please try again later.",
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: {
+        text: branding.footer,
+      },
+      timestamp: new Date().toISOString(),
+    };
+    const channelEmbed = {
+      color: 0xef4444,
+      description: `<@${discordUserId}>\n❌ Something went wrong. Please try again.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+      footer: { text: branding.footer },
+    };
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+  }
+
+  // Success
+  const embed = {
+    color: 0x22c55e,
+    title: "✅ Account Unlinked",
+    description: `Your Discord has been disconnected from **@${existingProfile.username}**.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    fields: [
+      {
+        name: "Want to re-link?",
+        value: "Use `/link` anytime to reconnect your Discord.",
+        inline: false,
+      },
+    ],
+    footer: {
+      text: branding.footer,
+    },
+    timestamp: new Date().toISOString(),
+  };
+  const channelEmbed = {
+    color: 0x22c55e,
+    description: `<@${discordUserId}>\n✅ Your Discord has been unlinked from your Eclipse account.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    footer: { text: branding.footer },
+  };
+  return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
 }
 
 // /verify command - Link account with code
