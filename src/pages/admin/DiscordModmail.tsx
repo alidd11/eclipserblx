@@ -500,12 +500,26 @@ export default function DiscordModmail() {
                             className={`flex ${message.is_staff_reply ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[80%] rounded-lg p-3 ${
+                              className={`group relative max-w-[80%] rounded-lg p-3 ${
                                 message.is_staff_reply
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted"
                               }`}
                             >
+                              {/* Copy button for customer messages */}
+                              {!message.is_staff_reply && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-background border shadow-sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(message.content);
+                                    toast.success("Message copied to clipboard");
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              )}
                               {message.is_staff_reply && (
                                 <p className="text-xs opacity-70 mb-1">
                                   {getStaffName(message.staff_user_id)}
@@ -650,12 +664,26 @@ export default function DiscordModmail() {
                             className={`flex ${message.is_staff_reply ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[85%] rounded-lg px-3 py-2 ${
+                              className={`relative max-w-[85%] rounded-lg px-3 py-2 ${
                                 message.is_staff_reply
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted"
                               }`}
                             >
+                              {/* Copy button for customer messages - always visible on mobile */}
+                              {!message.is_staff_reply && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute -top-2 -right-2 h-6 w-6 bg-background border shadow-sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(message.content);
+                                    toast.success("Copied!");
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              )}
                               {message.is_staff_reply && (
                                 <p className="text-[10px] opacity-70 mb-0.5">
                                   {getStaffName(message.staff_user_id)}
