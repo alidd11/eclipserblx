@@ -144,7 +144,7 @@ export default function MyPurchases() {
     enabled: !!user?.id,
   });
 
-  // Fetch orders with full product data
+  // Fetch orders with full product data (with caching)
   const { data: orders, isLoading } = useQuery({
     queryKey: ['user-purchases', user?.id, user?.email],
     queryFn: async () => {
@@ -190,6 +190,7 @@ export default function MyPurchases() {
       );
     },
     enabled: !!(user?.id || user?.email),
+    staleTime: 30000,
   });
 
   // Paid orders for products tab

@@ -225,7 +225,7 @@ export default function StorePage() {
              !enabledGlobalCategories?.some(c => c.slug === activeTab),
   });
 
-  // Fetch store products
+  // Fetch store products with caching
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ['store-products', store?.id],
     queryFn: async () => {
@@ -243,6 +243,7 @@ export default function StorePage() {
       return data || [];
     },
     enabled: !!store?.id,
+    staleTime: 30000,
   });
 
   // Check if activeTab is a global category

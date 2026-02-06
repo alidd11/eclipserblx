@@ -130,7 +130,7 @@ export default function SellerProducts() {
     },
   });
 
-  // Fetch seller's products
+  // Fetch seller's products with caching
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ['seller-products', store?.id],
     queryFn: async () => {
@@ -146,6 +146,7 @@ export default function SellerProducts() {
       return data || [];
     },
     enabled: !!store?.id,
+    staleTime: 30000,
   });
 
   // Save product mutation

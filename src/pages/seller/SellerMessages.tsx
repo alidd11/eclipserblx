@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, User, MessageCircle, Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Send, User, MessageCircle, Loader2, ArrowLeft, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,8 @@ interface StoreMessage {
   created_at: string;
 }
 
+const CONVERSATIONS_PER_PAGE = 10;
+
 export default function SellerMessages() {
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
@@ -56,6 +58,7 @@ export default function SellerMessages() {
   );
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!user) {
@@ -65,50 +68,65 @@ export default function SellerMessages() {
     }
   }, [user, isSeller, navigate]);
 
-  // Fetch conversations for this store
-  const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
-    queryKey: ['seller-store-conversations', storeId],
+  // Fetch conversations for this store with pagination and batched profile fetching
+  const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
+    queryKey: ['seller-store-conversations', storeId, currentPage],
     queryFn: async () => {
-      if (!storeId) return [];
+      if (!storeId) return { conversations: [], totalCount: 0 };
       
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * CONVERSATIONS_PER_PAGE;
+      const to = from + CONVERSATIONS_PER_PAGE - 1;
+      
+      const { data, count, error } = await supabase
         .from('store_conversations')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('store_id', storeId)
-        .order('last_message_at', { ascending: false });
+        .order('last_message_at', { ascending: false })
+        .range(from, to);
       
       if (error) throw error;
+      if (!data || data.length === 0) return { conversations: [], totalCount: count || 0 };
       
-      // Get customer profiles and unread counts
-      const conversationsWithData = await Promise.all(
-        (data || []).map(async (conv) => {
-          // Get customer profile (only customer_id, display_name, username)
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('customer_id, display_name, username')
-            .eq('user_id', conv.customer_id)
-            .single();
-          
-          // Get unread count
-          const { count } = await supabase
-            .from('store_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('sender_type', 'customer')
-            .eq('is_read', false);
-          
-          return { 
-            ...conv, 
-            customer_profile: profile || { customer_id: null, display_name: null, username: 'Unknown' },
-            unread_count: count || 0 
-          };
-        })
+      // Batch fetch customer profiles using .in() instead of individual queries
+      const customerIds = [...new Set(data.map(conv => conv.customer_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, customer_id, display_name, username')
+        .in('user_id', customerIds);
+      
+      const profileMap = new Map(
+        (profiles || []).map(p => [p.user_id, { customer_id: p.customer_id, display_name: p.display_name, username: p.username }])
       );
       
-      return conversationsWithData as StoreConversation[];
+      // Batch fetch unread counts
+      const conversationIds = data.map(conv => conv.id);
+      const { data: unreadData } = await supabase
+        .from('store_messages')
+        .select('conversation_id')
+        .in('conversation_id', conversationIds)
+        .eq('sender_type', 'customer')
+        .eq('is_read', false);
+      
+      const unreadCounts = new Map<string, number>();
+      (unreadData || []).forEach(msg => {
+        unreadCounts.set(msg.conversation_id, (unreadCounts.get(msg.conversation_id) || 0) + 1);
+      });
+      
+      const conversationsWithData = data.map(conv => ({
+        ...conv,
+        customer_profile: profileMap.get(conv.customer_id) || { customer_id: null, display_name: null, username: 'Unknown' },
+        unread_count: unreadCounts.get(conv.id) || 0,
+      }));
+      
+      return { conversations: conversationsWithData as StoreConversation[], totalCount: count || 0 };
     },
     enabled: !!storeId,
+    staleTime: 30000,
   });
+
+  const conversations = conversationsData?.conversations || [];
+  const totalCount = conversationsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / CONVERSATIONS_PER_PAGE);
 
   // Fetch messages for selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
@@ -377,45 +395,76 @@ export default function SellerMessages() {
                 <p className="text-sm mt-1">Customer inquiries will appear here.</p>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {conversations.map((conv) => (
-                  <button
-                    key={conv.id}
-                    onClick={() => {
-                      setSelectedConversation(conv.id);
-                      setSearchParams({ conversation: conv.id });
-                    }}
-                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                      <User className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <p className="font-medium truncate">{getCustomerDisplayName(conv)}</p>
-                          {conv.customer_profile?.customer_id && (
-                            <Badge variant="outline" className="text-[10px] flex-shrink-0">
-                              {conv.customer_profile.customer_id}
-                            </Badge>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}
-                        </span>
+              <>
+                <div className="divide-y divide-border">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      onClick={() => {
+                        setSelectedConversation(conv.id);
+                        setSearchParams({ conversation: conv.id });
+                      }}
+                      className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                        <User className="h-6 w-6 text-muted-foreground" />
                       </div>
-                      {conv.subject && (
-                        <p className="text-sm text-muted-foreground truncate">{conv.subject}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <p className="font-medium truncate">{getCustomerDisplayName(conv)}</p>
+                            {conv.customer_profile?.customer_id && (
+                              <Badge variant="outline" className="text-[10px] flex-shrink-0">
+                                {conv.customer_profile.customer_id}
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        {conv.subject && (
+                          <p className="text-sm text-muted-foreground truncate">{conv.subject}</p>
+                        )}
+                      </div>
+                      {(conv.unread_count || 0) > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1.5">
+                          {conv.unread_count}
+                        </span>
                       )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between p-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
-                    {(conv.unread_count || 0) > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1.5">
-                        {conv.unread_count}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

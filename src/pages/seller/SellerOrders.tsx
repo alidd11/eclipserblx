@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -29,28 +31,40 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+const TRANSACTIONS_PER_PAGE = 20;
+
 export default function SellerOrders() {
   const { store } = useSellerStatus();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch seller's transactions
-  const { data: transactions, isLoading: transactionsLoading } = useQuery({
-    queryKey: ['seller-transactions', store?.id],
+  // Fetch seller's transactions with pagination
+  const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
+    queryKey: ['seller-transactions', store?.id, currentPage],
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!store?.id) return { transactions: [], totalCount: 0 };
       
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
+      const to = from + TRANSACTIONS_PER_PAGE - 1;
+      
+      const { data, count, error } = await supabase
         .from('seller_transactions')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('store_id', store.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
-      return data || [];
+      return { transactions: data || [], totalCount: count || 0 };
     },
     enabled: !!store?.id,
+    staleTime: 30000,
   });
+
+  const transactions = transactionsData?.transactions || [];
+  const totalCount = transactionsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / TRANSACTIONS_PER_PAGE);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
@@ -59,20 +73,20 @@ export default function SellerOrders() {
     }).format(amount);
   };
 
-  const filteredTransactions = transactions?.filter((tx: any) => {
+  const filteredTransactions = transactions.filter((tx: any) => {
     const matchesSearch = tx.description?.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           tx.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || tx.status === statusFilter;
     return matchesSearch && matchesStatus;
-  }) || [];
+  });
 
-  // Calculate stats
+  // Calculate stats from filtered page data (note: for accurate totals, stats would need separate queries)
   const stats = {
-    totalSales: transactions?.filter((tx: any) => tx.type === 'sale').length || 0,
-    totalRevenue: transactions?.reduce((sum: number, tx: any) => 
-      tx.type === 'sale' ? sum + (tx.net_amount || 0) : sum, 0) || 0,
-    pendingAmount: transactions?.reduce((sum: number, tx: any) => 
-      tx.status === 'pending' ? sum + (tx.net_amount || 0) : sum, 0) || 0,
+    totalSales: transactions.filter((tx: any) => tx.type === 'sale').length,
+    totalRevenue: transactions.reduce((sum: number, tx: any) => 
+      tx.type === 'sale' ? sum + (tx.net_amount || 0) : sum, 0),
+    pendingAmount: transactions.reduce((sum: number, tx: any) => 
+      tx.status === 'pending' ? sum + (tx.net_amount || 0) : sum, 0),
   };
 
   const getStatusBadge = (status: string) => {
@@ -246,6 +260,35 @@ export default function SellerOrders() {
                 <p className="text-muted-foreground">
                   Your sales and transactions will appear here once you start selling.
                 </p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages} ({totalCount} total)
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
