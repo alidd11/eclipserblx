@@ -1,0 +1,17 @@
+{
+  "name": "eclipse-support-bot",
+  "version": "1.0.0",
+  "description": "Persistent Discord bot for modmail DM handling",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
