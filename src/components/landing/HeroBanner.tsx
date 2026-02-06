@@ -9,17 +9,6 @@ export function HeroBanner() {
         }}
       />
       
-      {/* Very subtle grid pattern for texture */}
-      <div 
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-        }}
-      />
       
       {/* Soft bottom fade to content - very subtle */}
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/50 to-transparent" />

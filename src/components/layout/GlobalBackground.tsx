@@ -20,17 +20,6 @@ export function GlobalBackground() {
         }}
       />
       
-      {/* Subtle geometric grid pattern overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
-      />
       
       {/* Base background color underneath for proper theming */}
       <div className="absolute inset-0 -z-10 bg-background" />
