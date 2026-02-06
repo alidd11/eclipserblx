@@ -64,7 +64,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
   return (
     <Link 
       to={`/products/${product.slug}`}
-      className="block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all active:scale-[0.98]"
+      className="block rounded-xl overflow-hidden border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 hover:border-primary/30 transition-all active:scale-[0.98]"
     >
       {/* Image */}
       <div className="aspect-[4/3] relative overflow-hidden bg-muted">
@@ -116,7 +116,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 
 function ProductSkeleton() {
   return (
-    <div className="rounded-xl overflow-hidden bg-card border border-border">
+    <div className="rounded-xl overflow-hidden border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
       <Skeleton className="aspect-[4/3]" />
       <div className="p-3 space-y-2">
         <Skeleton className="h-4 w-3/4" />
