@@ -13,7 +13,7 @@ interface ReplyPayload {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
 
     if (!dmChannelResponse.ok) {
       const errorText = await dmChannelResponse.text();
-      console.error("Failed to create DM channel:", errorText);
+      console.error("Failed to create DM channel:", dmChannelResponse.status, errorText);
       
       // Still save the message locally even if Discord fails
       await supabase.from("discord_modmail_messages").insert({
@@ -114,12 +114,15 @@ Deno.serve(async (req) => {
         staff_user_id: user.id,
       });
 
+      // IMPORTANT: Return 200 so the client can show a friendly warning instead of a hard failure.
       return new Response(
-        JSON.stringify({ 
-          error: "Failed to send to Discord (user may have DMs disabled)", 
-          saved_locally: true 
+        JSON.stringify({
+          success: false,
+          saved_locally: true,
+          dm_sent: false,
+          error: "Failed to send to Discord (user may have DMs disabled or blocked the bot)",
         }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -158,7 +161,7 @@ Deno.serve(async (req) => {
 
     if (!messageResponse.ok) {
       const errorText = await messageResponse.text();
-      console.error("Failed to send message:", errorText);
+      console.error("Failed to send message:", messageResponse.status, errorText);
       
       // Save locally anyway
       await supabase.from("discord_modmail_messages").insert({
@@ -168,9 +171,15 @@ Deno.serve(async (req) => {
         staff_user_id: user.id,
       });
 
+      // IMPORTANT: Return 200 so the client can show a warning (and not surface a generic non-2xx error)
       return new Response(
-        JSON.stringify({ error: "Failed to send message to Discord", saved_locally: true }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          saved_locally: true,
+          dm_sent: false,
+          error: "Failed to deliver DM to the customer (message was saved)",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
