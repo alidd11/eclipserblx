@@ -5,7 +5,7 @@ import { Shield, Mail, AlertTriangle, FileText, Clock, CheckCircle, XCircle } fr
 import { Link } from 'react-router-dom';
 
 const SITE_NAME = 'Eclipse';
-const CONTACT_EMAIL = 'legal@roleplay-hub-shop.lovable.app';
+const CONTACT_EMAIL = 'legal@eclipserblx.com';
 
 export default function DMCA() {
   return (
