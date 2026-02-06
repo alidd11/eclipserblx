@@ -40,6 +40,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useIOSKeyboardFix } from "@/hooks/useIOSKeyboardFix";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -81,6 +82,7 @@ export default function DiscordModmail() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
+  const { isKeyboardVisible } = useIOSKeyboardFix();
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -177,10 +179,10 @@ export default function DiscordModmail() {
     };
   }, [selectedTicket, queryClient]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or keyboard opens
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isKeyboardVisible]);
 
   // Handle ticket selection for mobile
   const handleSelectTicket = (ticket: Ticket) => {
@@ -580,7 +582,7 @@ export default function DiscordModmail() {
         {/* Mobile Chat Drawer */}
         {isMobile && (
           <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-            <DrawerContent className="h-[90vh] max-h-[90vh]">
+            <DrawerContent className="h-[85dvh] max-h-[85dvh]">
               {selectedTicket && (
                 <div className="flex flex-col h-full">
                   {/* Mobile Header */}
