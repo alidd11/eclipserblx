@@ -20,6 +20,7 @@ import { AdminPWAHandler } from "@/components/pwa/AdminPWAHandler";
 import { AdminManifestHandler } from "@/components/pwa/AdminManifestHandler";
 import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
+import { GlobalBackground } from "@/components/layout/GlobalBackground";
 
 // Eagerly loaded - critical path
 import Index from "./pages/Index";
@@ -200,6 +201,7 @@ const App = () => (
                   <Toaster />
                   <Sonner />
                 <BrowserRouter>
+                  <GlobalBackground />
                   <IpBanCheck>
                     <PWAWrapper>
                 <AdminManifestHandler />

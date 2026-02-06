@@ -513,10 +513,10 @@ export function StoreSidebar({
   return (
     <aside 
       className={cn(
-        "bg-card flex flex-col transition-all duration-300 shrink-0",
+        "bg-sidebar/90 backdrop-blur-xl flex flex-col transition-all duration-300 shrink-0",
         isMobileDrawer 
           ? "h-[100dvh] w-64 overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" 
-          : "h-[100dvh] sticky top-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
+          : "h-[100dvh] sticky top-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] border-r border-border/50",
         !isMobileDrawer && (isCollapsed ? "w-14" : "w-52")
       )}
       data-gesture-exempt="true"
