@@ -301,3 +301,6 @@ verify_jwt = false
 
 [functions.quarantine-file]
 verify_jwt = false
+
+[functions.send-modmail-claim-notification]
+verify_jwt = false
