@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,8 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import {
   Mail,
   MessageCircle,
-  Clock,
+  Ticket,
+  FileQuestion,
   ExternalLink,
 } from 'lucide-react';
 import { contactFormSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
@@ -20,12 +21,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
 
 export default function Contact() {
   usePageTracking({ pagePath: '/contact' });
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { discordUrl } = useDiscordUrl();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   
   const [formData, setFormData, clearFormData] = useFormPersistence('contact-form', {
     name: '',
@@ -115,6 +119,19 @@ export default function Contact() {
 
   const contactMethods = [
     {
+      icon: Ticket,
+      title: 'Submit a Ticket',
+      description: 'Get help from our team',
+      detail: 'Tracked support requests',
+      action: () => {
+        if (user) {
+          setCreateDialogOpen(true);
+        } else {
+          navigate('/auth');
+        }
+      },
+    },
+    {
       icon: MessageCircle,
       title: 'Live Chat',
       description: 'Chat with us in real-time',
@@ -125,17 +142,11 @@ export default function Contact() {
       },
     },
     {
-      icon: Mail,
-      title: 'Email',
-      description: 'Send us an email',
-      detail: 'support@ukdrip.store',
-      href: 'mailto:support@ukdrip.store',
-    },
-    {
-      icon: Clock,
-      title: 'Response Time',
-      description: 'We aim to respond within',
-      detail: '24-48 hours',
+      icon: FileQuestion,
+      title: 'FAQ',
+      description: 'Browse common questions',
+      detail: 'Quick answers',
+      href: '/faq',
     },
   ];
 
@@ -311,6 +322,12 @@ export default function Contact() {
             <Link to="/refunds" className="text-primary hover:underline">Refund Policy</Link>.
           </p>
         </div>
+        
+        {/* Create Ticket Dialog */}
+        <CreateTicketDialog 
+          open={createDialogOpen} 
+          onOpenChange={setCreateDialogOpen} 
+        />
       </div>
     </MainLayout>
   );
