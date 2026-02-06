@@ -355,17 +355,25 @@ function getBranding(serverContext: ServerContext) {
   };
 }
 
-// Get linked Eclipse account from Discord ID
+// Get linked Eclipse account from Discord ID (includes email for order matching)
 async function getLinkedAccount(supabase: any, discordUserId: string) {
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("user_id, display_name, username, customer_id, avatar_url, discord_id")
+    .select("user_id, display_name, username, customer_id, avatar_url, discord_id, email")
     .eq("discord_id", discordUserId)
     .maybeSingle();
 
   if (error) {
     console.error("[discord-customer-bot] Profile lookup error:", error);
     return null;
+  }
+
+  // If profile found but no email in profiles table, try to get from auth.users
+  if (profile && !profile.email) {
+    const { data: authUser } = await supabase.auth.admin.getUserById(profile.user_id);
+    if (authUser?.user?.email) {
+      profile.email = authUser.user.email;
+    }
   }
 
   return profile;
@@ -1113,16 +1121,40 @@ async function handleRetrieveCommand(
   const options = interaction.data?.options || [];
   const productOption = options.find((o) => o.name === "product");
 
-  // Get user's order IDs
-  const { data: userOrders } = await supabase
+  // Get user's order IDs - check BOTH user_id AND customer_email (for guest purchases)
+  const userEmail = profile.email;
+  let allOrderIds: string[] = [];
+
+  // Query by user_id
+  const { data: userIdOrders } = await supabase
     .from("orders")
     .select("id")
     .eq("user_id", profile.user_id)
     .in("status", ["paid", "completed"]);
 
-  const orderIds = userOrders?.map((o: any) => o.id) || [];
+  if (userIdOrders) {
+    allOrderIds = userIdOrders.map((o: any) => o.id);
+  }
 
-  if (orderIds.length === 0) {
+  // Also query by email for orders without user_id (guest purchases later linked)
+  if (userEmail) {
+    const { data: emailOrders } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("customer_email", userEmail)
+      .is("user_id", null)
+      .in("status", ["paid", "completed"]);
+
+    if (emailOrders) {
+      // Merge and deduplicate
+      const emailOrderIds = emailOrders.map((o: any) => o.id);
+      allOrderIds = [...new Set([...allOrderIds, ...emailOrderIds])];
+    }
+  }
+
+  console.log(`[discord-customer-bot] Found ${allOrderIds.length} orders for user ${profile.user_id} (email: ${userEmail || 'none'})`);
+
+  if (allOrderIds.length === 0) {
     const noOrdersEmbed = {
       color: 0x3b82f6,
       title: "📁 No Downloads Available",
@@ -1145,6 +1177,8 @@ async function handleRetrieveCommand(
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [noOrdersEmbed]);
   }
+
+  const orderIds = allOrderIds;
 
   // Get order items for these orders
   const { data: orderItems, error: orderItemsError } = await supabase
