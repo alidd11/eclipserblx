@@ -164,10 +164,9 @@ export default function AdminUsers() {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Return all profiles - auth_user_exists check was causing performance issues
-      // Profile cleanup for orphaned records should be handled by a scheduled job instead
       return data || [];
     },
+    staleTime: 30000,
   });
 
   const { data: userRoles } = useQuery({
