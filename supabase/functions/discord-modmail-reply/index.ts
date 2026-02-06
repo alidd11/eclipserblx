@@ -126,23 +126,22 @@ Deno.serve(async (req) => {
     const dmChannel = await dmChannelResponse.json();
 
     // Send the embed message
+    // Discord uses embed title + description for push notification previews
+    // Keep description concise for clean mobile notifications
+    const ticketRef = ticket.subject 
+      ? ticket.subject.substring(0, 30) + (ticket.subject.length > 30 ? "..." : "")
+      : `#${ticket.id.substring(0, 8)}`;
+    
     const embed = {
       color: 0x7C3AED, // Purple to match Eclipse theme
       author: {
-        name: staffName,
+        name: `${staffName} replied`,
         icon_url: "https://eclipserblx.com/favicon.ico",
       },
-      title: "📩 New Reply to Your Ticket",
+      title: `📩 ${ticketRef}`,
       description: payload.content,
-      fields: [
-        {
-          name: "Ticket",
-          value: ticket.subject || `#${ticket.id.substring(0, 8)}`,
-          inline: true,
-        },
-      ],
       footer: {
-        text: "Reply using /reply in your DMs to continue this conversation",
+        text: "Reply using /reply in your DMs to continue",
         icon_url: "https://eclipserblx.com/favicon.ico",
       },
       timestamp: new Date().toISOString(),
