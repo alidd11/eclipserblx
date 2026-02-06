@@ -864,18 +864,34 @@ export default function DiscordSettings() {
                   </div>
                   <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground space-y-1">
                     <p className="font-medium text-foreground">Available commands:</p>
-                    <p><code className="bg-background px-1 rounded">/link</code> • <code className="bg-background px-1 rounded">/verify</code> • <code className="bg-background px-1 rounded">/profile</code> • <code className="bg-background px-1 rounded">/purchases</code> • <code className="bg-background px-1 rounded">/retrieve</code></p>
+                    <p>
+                      <code className="bg-background px-1 rounded">/link</code> •{' '}
+                      <code className="bg-background px-1 rounded">/verify</code> •{' '}
+                      <code className="bg-background px-1 rounded">/profile</code> •{' '}
+                      <code className="bg-background px-1 rounded">/purchases</code> •{' '}
+                      <code className="bg-background px-1 rounded">/retrieve</code> •{' '}
+                      <code className="bg-background px-1 rounded">/getrole</code> •{' '}
+                      <code className="bg-background px-1 rounded">/store</code> •{' '}
+                      <code className="bg-background px-1 rounded">/unlink</code>
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     <Button
                       onClick={async () => {
                         try {
                           setTestingWebhook('commands');
-                          const { data, error } = await supabase.functions.invoke('register-discord-commands');
+                          const { error } = await supabase.functions.invoke('register-discord-commands');
                           if (error) throw error;
                           toast.success('Discord commands registered successfully!');
                         } catch (err: any) {
-                          toast.error(err.message || 'Failed to register commands');
+                          const msg =
+                            err?.context?.details ||
+                            err?.context?.error ||
+                            err?.context?.body?.details ||
+                            err?.context?.body?.error ||
+                            err?.message ||
+                            'Failed to register commands';
+                          toast.error(String(msg));
                         } finally {
                           setTestingWebhook(null);
                         }
