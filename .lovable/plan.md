@@ -1,81 +1,109 @@
-# Performance Optimizations - COMPLETED
 
-## Phase 1: Pagination and Query Caching ✅
-- Server-side pagination for seller/customer pages
-- 30s staleTime caching on all queries
-- Batched profile fetching with `.in()`
 
-## Phase 2: Advanced Optimizations ✅
+# Add Hero Banner to Landing Page
 
-### New Utilities Created
-- `src/hooks/useDebounce.ts` - Debounced values and callbacks
-- `src/hooks/usePrefetch.ts` - Prefetching and background refetch
-- `src/components/ui/OptimizedImage.tsx` - Lazy loading images with blur placeholder
-- `src/components/ui/ProductCardSkeleton.tsx` - Consistent skeleton loaders
-- `src/lib/queryColumns.ts` - Centralized column definitions
+## Overview
+Add a visually impactful banner section behind the hero content on the landing page, similar to how Vino and other stores display their branding. This will make the homepage look more polished and less plain.
 
-### Column Selection Optimization ✅
-- Products page: select specific columns instead of `*`
-- Featured products: optimized column selection
-- Admin Users: specific profile columns
-- Store best sellers: minimal columns
+## Current State
+The `LandingHero` component currently has a simple flat gradient background:
+```tsx
+<div className="absolute inset-0 bg-gradient-to-b from-background to-muted/20" />
+```
 
-### Debounced Search ✅
-- Products page: 300ms debounce on search input
-- Admin Users page: 300ms debounce on search input
-- SearchCommandPalette: already had debounce
+This creates a minimal, plain appearance without any visual interest.
 
-### Skeleton Loaders ✅
-- ProductCardSkeleton for consistent loading states
-- ProductGridSkeleton for grid layouts
-- Updated: FeaturedProducts, RecommendedProducts, StoreBestSellers, StoreRecommendations
+## Proposed Design
 
-### Optimistic Updates ✅
-- Wishlist add/remove: instant UI feedback with rollback on error
+### Option A: Dynamic Gradient Banner (Recommended)
+A gaming-inspired animated gradient banner with subtle patterns:
+- Animated gradient using the platform's primary purple/blue colors
+- Subtle grid or geometric pattern overlay for gaming aesthetic
+- Smooth color transitions for visual appeal
+- Dark overlay for text readability
 
-### Image Lazy Loading ✅
-- ProductCard already uses `loading="lazy"` and `decoding="async"`
-- OptimizedImage component with Intersection Observer for advanced cases
+### Option B: Uploadable Image Banner
+Allow admins to set a custom banner image from settings:
+- Store banner URL in settings table
+- Fetch and display the image as background
+- Fallback to gradient if no image is set
 
-## Phase 3: Database & Advanced Optimizations ✅
+## Implementation Plan
 
-### Database Indexes Added ✅
-Created indexes for frequently filtered/sorted columns:
-- `orders`: status, created_at, user_id+created_at, status+created_at
-- `products`: store_id+is_active, category_id+is_active, created_at, is_featured
-- `seller_transactions`: store_id+created_at, type, status
-- `reviews`: product_id+is_approved, created_at
-- `wishlist`: user_id
-- `order_items`: order_id, product_id
-- `forum_threads`: category_id
-- `forum_posts`: thread_id, user_id
-- `profiles`: created_at
-- `notifications`: user_id+is_read (partial index)
-- `stores`: is_active, owner_id
+### 1. Create HeroBanner Component
+Create a new `src/components/landing/HeroBanner.tsx` component that renders:
+- Full-width banner container with appropriate height (~300-400px on desktop, ~200px on mobile)
+- Animated gradient background using CSS keyframes
+- Optional geometric pattern overlay (subtle grid/lines)
+- Dark gradient overlay for text contrast
+- Responsive sizing
 
-### Virtual Scrolling ✅
-- `src/components/ui/VirtualList.tsx` - VirtualList, VirtualTable, VirtualGrid
-- `src/hooks/useResponsiveColumns.ts` - Responsive column detection
-- Uses @tanstack/react-virtual for 60fps scrolling with 10k+ items
+### 2. Update LandingHero Component
+Modify `src/components/landing/LandingHero.tsx` to:
+- Import and use the new `HeroBanner` component
+- Position hero text content over the banner
+- Adjust text colors/shadows for visibility on the banner
 
-## Impact Summary
-| Optimization | Benefit |
-|-------------|---------|
-| Column selection | 30-50% smaller payloads |
-| Debounced search | 80% fewer API calls while typing |
-| Skeleton loaders | Better perceived performance |
-| Optimistic updates | Instant UI feedback |
-| Query caching | 10x fewer repeat requests |
-| Database indexes | 5-20x faster filtered queries |
-| Virtual scrolling | Smooth scrolling with massive lists |
+### 3. Add CSS Animations (Optional Enhancement)
+Add subtle animations to `src/index.css`:
+- Slow-moving gradient animation
+- Subtle shimmer effect
 
-## Phase 4: Accessibility & Polish ✅
+## Visual Reference
 
-### ARIA Labels Added
-- Header icon buttons: cart, account, Discord, sign in
-- SVG icons: aria-hidden="true" for decorative icons
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│  ░░░░░░░░░░░░░░░░ ANIMATED GRADIENT ░░░░░░░░░░░░░░░░░░░░░░  │
+│  ░░░░░░░░░░░░░░░░ WITH PATTERN ░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │         🏪 The Roblox Creator Marketplace             │  │
+│  │                                                       │  │
+│  │         Level Up Your Roblox Experience.              │  │
+│  │                                                       │  │
+│  │     Premium scripts, models, UI kits, and game...     │  │
+│  │                                                       │  │
+│  │        [Active Offers Card]                           │  │
+│  │                                                       │  │
+│  │     [Start Selling]  [Browse]  [Eclipse+]             │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Already Implemented (Verified)
-- Preconnect hints for Supabase, Google Fonts
-- rel="noopener noreferrer" on all external links
-- Console.logs are debug/platform-specific (appropriate)
+---
+
+## Technical Details
+
+### New Component: HeroBanner.tsx
+```tsx
+// Key features:
+// - Animated gradient using CSS custom properties
+// - Geometric pattern overlay (optional)
+// - Responsive height (h-[350px] md:h-[450px] lg:h-[500px])
+// - Dark overlay gradient for text readability
+```
+
+### CSS Animation (in index.css)
+```css
+@keyframes hero-gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+```
+
+### Files to Create
+- `src/components/landing/HeroBanner.tsx` - New banner component
+
+### Files to Modify  
+- `src/components/landing/LandingHero.tsx` - Integrate banner, adjust layout
+- `src/index.css` - Add gradient animation keyframes
+
+## Benefits
+- More visually engaging homepage
+- Gaming aesthetic that matches the Roblox creator theme
+- Consistent with how stores (like Vino) display their branding
+- Maintains text readability with proper overlay
+- Responsive across all device sizes
+
