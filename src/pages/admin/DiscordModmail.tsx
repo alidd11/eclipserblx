@@ -39,6 +39,7 @@ import {
   Copy,
   ArrowLeft,
   Zap,
+  FileCode,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIOSKeyboardFix } from "@/hooks/useIOSKeyboardFix";
@@ -46,6 +47,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { QuickResponses } from "@/components/admin/modmail/QuickResponses";
+import { BotFilesTab } from "@/components/admin/modmail/BotFilesTab";
 
 interface Ticket {
   id: string;
@@ -90,6 +92,7 @@ export default function DiscordModmail() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCloseDialog, setShowCloseDialog] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mainTab, setMainTab] = useState<"tickets" | "bot-files">("tickets");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -369,18 +372,38 @@ export default function DiscordModmail() {
               Manage customer support tickets from Discord
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetchTickets()} className="w-full sm:w-auto">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
+          {mainTab === "tickets" && (
+            <Button variant="outline" size="sm" onClick={() => refetchTickets()} className="w-full sm:w-auto">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <AdminStatCard label="Open" value={openTickets.length} valueColor="green" />
-          <AdminStatCard label="In Progress" value={claimedTickets.length} valueColor="blue" />
-          <AdminStatCard label="Total Active" value={tickets.length} />
-        </div>
+        {/* Main Tabs */}
+        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "tickets" | "bot-files")}>
+          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+            <TabsTrigger value="tickets" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              <span>Tickets</span>
+            </TabsTrigger>
+            <TabsTrigger value="bot-files" className="gap-2">
+              <FileCode className="h-4 w-4" />
+              <span>Bot Files</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="bot-files" className="mt-4">
+            <BotFilesTab />
+          </TabsContent>
+
+          <TabsContent value="tickets" className="mt-4 space-y-4">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <AdminStatCard label="Open" value={openTickets.length} valueColor="green" />
+              <AdminStatCard label="In Progress" value={claimedTickets.length} valueColor="blue" />
+              <AdminStatCard label="Total Active" value={tickets.length} />
+            </div>
 
         {/* Mobile: Full-width ticket list, Desktop: Side-by-side layout */}
         <div className={`grid gap-4 sm:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
@@ -623,8 +646,8 @@ export default function DiscordModmail() {
           </Card>
           )}
         </div>
-
-        {/* Mobile Chat Sheet */}
+          </TabsContent>
+        </Tabs>
         {isMobile && (
           <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
             <SheetContent 
