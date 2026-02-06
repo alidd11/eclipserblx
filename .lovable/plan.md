@@ -68,3 +68,14 @@ Created indexes for frequently filtered/sorted columns:
 | Query caching | 10x fewer repeat requests |
 | Database indexes | 5-20x faster filtered queries |
 | Virtual scrolling | Smooth scrolling with massive lists |
+
+## Phase 4: Accessibility & Polish ✅
+
+### ARIA Labels Added
+- Header icon buttons: cart, account, Discord, sign in
+- SVG icons: aria-hidden="true" for decorative icons
+
+### Already Implemented (Verified)
+- Preconnect hints for Supabase, Google Fonts
+- rel="noopener noreferrer" on all external links
+- Console.logs are debug/platform-specific (appropriate)
