@@ -250,25 +250,26 @@ export default function DiscordModmail() {
     },
   });
 
-  // Close ticket mutation
+  // Close ticket mutation - now calls edge function to send DM notification
   const closeMutation = useMutation({
     mutationFn: async (ticketId: string) => {
-      const { error } = await supabase
-        .from("discord_modmail_tickets" as any)
-        .update({
-          status: "closed",
-          closed_by: user?.id,
-          closed_at: new Date().toISOString(),
-        })
-        .eq("id", ticketId);
+      const { data, error } = await supabase.functions.invoke("send-modmail-resolution", {
+        body: { ticket_id: ticketId },
+      });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["discord-modmail-tickets"] });
       setShowCloseDialog(false);
       setSelectedTicket(null);
-      toast.success("Ticket closed");
+      if (data?.dm_sent) {
+        toast.success("Ticket closed and customer notified");
+      } else {
+        toast.success("Ticket closed (customer notification could not be sent)");
+      }
     },
     onError: (error) => {
       toast.error("Failed to close ticket: " + error.message);
