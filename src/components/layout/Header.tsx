@@ -88,7 +88,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full glass-effect pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50 pt-[env(safe-area-inset-top)]">
       <div className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">

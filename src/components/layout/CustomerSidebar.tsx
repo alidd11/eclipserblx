@@ -653,10 +653,10 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-card text-foreground flex flex-col transition-all duration-300 shrink-0",
+        "bg-sidebar/90 backdrop-blur-xl text-foreground flex flex-col transition-all duration-300 shrink-0",
         isMobileDrawer 
           ? "h-full w-full border-0 max-h-[100dvh]" 
-          : "h-screen sticky top-0 border-r border-border",
+          : "h-screen sticky top-0 border-r border-border/50",
         !isMobileDrawer && (isCollapsed ? "w-14" : "w-52"),
         className
       )}

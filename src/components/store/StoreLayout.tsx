@@ -178,7 +178,7 @@ function StoreLayoutContent({
   return (
     <>
       <ScrollProgressIndicator />
-      <div className="min-h-[100dvh] flex w-full bg-background overflow-x-hidden relative">
+      <div className="min-h-[100dvh] flex w-full overflow-x-hidden relative">
         {/* Desktop Sidebar */}
         {!isMobile && (
           <StoreSidebar
