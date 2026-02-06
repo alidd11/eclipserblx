@@ -2032,13 +2032,56 @@ async function handleSupportModalSubmit(
       .update({ updated_at: new Date().toISOString() })
       .eq("id", ticketId);
 
-    // Send confirmation embed - different for new vs follow-up
+    // Send DM confirmation with the customer's message details
+    const dmEmbed = {
+      color: 0x7C3AED, // Purple Eclipse theme
+      author: {
+        name: "Eclipse Support",
+        icon_url: "https://eclipserblx.com/favicon.ico",
+      },
+      title: isNewTicket ? "📩 Ticket Received" : "📩 Message Received",
+      description: isNewTicket 
+        ? "Thank you for contacting Eclipse Support! We've received your ticket and will respond as soon as possible."
+        : "Your follow-up message has been added to your ticket.",
+      fields: [
+        ...(isNewTicket && subject ? [{
+          name: "📋 Subject",
+          value: subject,
+          inline: false,
+        }] : []),
+        {
+          name: "💬 Your Message",
+          value: message.length > 500 ? message.substring(0, 500) + "..." : message,
+          inline: false,
+        },
+        {
+          name: "🔖 Ticket ID",
+          value: `\`${ticketId.substring(0, 8)}\``,
+          inline: true,
+        },
+        {
+          name: "📊 Status",
+          value: isNewTicket ? "Open" : "Updated",
+          inline: true,
+        },
+      ],
+      footer: {
+        text: "Reply using /support to add more information • We typically respond within 24 hours",
+        icon_url: "https://eclipserblx.com/favicon.ico",
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    // Send DM to customer (fire and forget)
+    sendDMToUser(discordUserId, undefined, [dmEmbed]).catch(console.error);
+
+    // Send ephemeral confirmation in channel
     const confirmEmbed = {
       color: 0x22c55e,
       title: isNewTicket ? "✅ Support Ticket Created" : "✅ Message Sent",
       description: isNewTicket 
-        ? "Your support ticket has been created. Our team will respond via DM soon."
-        : "Your follow-up message has been added to your open ticket.",
+        ? "Your support ticket has been created. Check your DMs for a confirmation!"
+        : "Your follow-up message has been added. Check your DMs for confirmation!",
       fields: isNewTicket 
         ? [
             {
@@ -2064,7 +2107,7 @@ async function handleSupportModalSubmit(
               inline: true,
             },
           ],
-      footer: { text: "Eclipse Support • We typically respond within 24 hours" },
+      footer: { text: "Eclipse Support • Check your DMs!" },
       timestamp: new Date().toISOString(),
     };
 
