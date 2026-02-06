@@ -14,7 +14,7 @@ export function PWALandingHero() {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {/* Hero Section with Banner */}
+      {/* Hero Section with Banner - includes Featured Stores for seamless blend */}
       <div className="relative overflow-hidden">
         <HeroBanner />
         
@@ -53,14 +53,16 @@ export function PWALandingHero() {
               </Button>
             </Link>
           </div>
+
+          {/* Featured Stores - Blended into hero */}
+          <div className="w-full max-w-sm">
+            <PWAFeaturedStores />
+          </div>
         </div>
       </div>
 
       {/* Content Sections */}
       <div className="px-4 space-y-6 pb-6">
-        {/* Featured Stores */}
-        <PWAFeaturedStores />
-        
         {/* Active Offers */}
         <ActiveOffersCard />
         
