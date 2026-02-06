@@ -351,6 +351,7 @@ async function handleLinkStatusCommand(
     const channelEmbed = {
       color: 0x22c55e,
       description: `<@${discordUserId}>\n✅ Your account is already linked! Check your DMs for details.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -386,6 +387,7 @@ async function handleLinkStatusCommand(
   const channelEmbed = {
     color: branding.color,
     description: `<@${discordUserId}>\n🔗 Check your DMs for instructions on how to link your Eclipse account!`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
   return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -428,6 +430,7 @@ async function handleVerifyCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Please provide a verification code. Check your DMs for help.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -463,6 +466,7 @@ async function handleVerifyCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ That code is invalid or expired. Check your DMs for help.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -507,6 +511,7 @@ async function handleVerifyCommand(
   const channelEmbed = {
     color: 0x22c55e,
     description: `<@${discordUserId}>\n🎉 Your account has been linked! Check your DMs for details.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
   return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -528,6 +533,7 @@ async function handleProfileCommand(
       color: 0xef4444,
       title: "❌ Account Not Linked",
       description: `<@${discordUserId}>\nYour Discord isn't linked yet. Run \`/link\` to get started!`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     const dmEmbed = {
@@ -668,6 +674,7 @@ async function handleProfileCommand(
   const channelEmbed = {
     color: branding.color,
     description: `<@${discordUserId}>\n👤 Profile sent! Check your DMs.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
   return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -688,6 +695,7 @@ async function handlePurchasesCommand(
     const notLinkedEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Your Discord isn't linked yet. Run \`/link\` to get started!`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     const dmEmbed = {
@@ -717,6 +725,7 @@ async function handlePurchasesCommand(
     const channelEmbed = {
       color: 0x3b82f6,
       description: `<@${discordUserId}>\n📦 ${msg}`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     const dmEmbed = {
@@ -744,6 +753,7 @@ async function handlePurchasesCommand(
       color: 0x3b82f6,
       title: "📦 No Purchases Found",
       description: `<@${discordUserId}>\nI couldn't find any purchasable items for your orders.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     const dmEmbed = {
@@ -782,6 +792,7 @@ async function handlePurchasesCommand(
         color: 0x3b82f6,
         title: "📦 No Purchases Found",
         description: `<@${discordUserId}>\nYou haven't purchased anything from ${serverContext.store.name} yet.`,
+        thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
         footer: { text: branding.footer },
       };
       const dmEmbed = {
@@ -832,6 +843,7 @@ async function handlePurchasesCommand(
   const channelEmbed = {
     color: 0x22c55e,
     description: `<@${discordUserId}>\n📦 Check your DMs for your purchase list.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
 
@@ -868,6 +880,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Your account isn't linked yet. Run \`/link\` to get started!`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [notLinkedEmbed]);
@@ -903,6 +916,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0x3b82f6,
       description: `<@${discordUserId}>\n📁 You haven't purchased any downloadable products yet.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [noOrdersEmbed]);
@@ -934,6 +948,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0x3b82f6,
       description: `<@${discordUserId}>\n📁 ${msg}`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [noProductsEmbed]);
@@ -964,6 +979,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0x3b82f6,
       description: `<@${discordUserId}>\n📁 None of your purchased products have downloadable files.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [noFilesEmbed]);
@@ -986,6 +1002,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0x3b82f6,
       description: `<@${discordUserId}>\n📁 Check your DMs for your download list!`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -1021,6 +1038,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Couldn't find that product. Check your DMs for available products.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
@@ -1057,6 +1075,7 @@ async function handleRetrieveCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Couldn't generate download link. Please try again or use the website.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [downloadFailedEmbed]);
@@ -1095,6 +1114,7 @@ async function handleRetrieveCommand(
   const channelEmbed = {
     color: 0x22c55e,
     description: `<@${discordUserId}>\n📥 Your download for **${product.name}** is ready! Check your DMs.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
 
@@ -1139,6 +1159,7 @@ async function handleGetRoleCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Your account isn't linked yet. Run \`/link\` to get started!`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [notLinkedEmbed]);
@@ -1158,6 +1179,7 @@ async function handleGetRoleCommand(
     const channelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ Bot configuration error. Please contact support.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     return publicResponseWithDM(channelEmbed, discordUserId, [configErrorEmbed]);
@@ -1303,6 +1325,7 @@ async function handleGetRoleCommand(
     const unknownServerChannelEmbed = {
       color: 0xef4444,
       description: `<@${discordUserId}>\n❌ This server isn't configured for automatic roles.`,
+      thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
     const unknownServerDmEmbed = {
@@ -1411,6 +1434,7 @@ async function handleGetRoleCommand(
     description: rolesAssigned.length > 0
       ? `<@${discordUserId}>\n🎉 Roles synced! Check your DMs.`
       : `<@${discordUserId}>\n📋 Check your DMs for how to earn roles.`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: branding.footer },
   };
 
