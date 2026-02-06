@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { HeroProductShowcase } from './HeroProductShowcase';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
+import { HeroBanner } from './HeroBanner';
+
 const POPULAR_SEARCHES = [
   'scripts',
   'maps',
@@ -23,9 +25,9 @@ export function LandingHero() {
   };
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Simple flat background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/20" />
+    <section className="relative overflow-hidden min-h-[500px] md:min-h-[550px] lg:min-h-[600px]">
+      {/* Animated gradient banner */}
+      <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 relative z-10">
         <div className="w-full">
