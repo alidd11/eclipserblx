@@ -54,8 +54,8 @@ export function PWALandingHero() {
             </Link>
           </div>
 
-          {/* All content sections - seamlessly integrated */}
-          <div className="w-full max-w-sm space-y-6 pb-6">
+          {/* All content sections - seamlessly integrated, full width */}
+          <div className="w-full px-0 space-y-6 pb-6">
             {/* Featured Stores */}
             <PWAFeaturedStores />
 
