@@ -314,36 +314,83 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Register global commands
-    const response = await fetch(
-      `https://discord.com/api/v10/applications/${discordClientId}/commands`,
-      {
+    // Prefer registering guild commands (they appear instantly), while also updating global commands.
+    // Global command propagation can take up to ~1 hour in Discord.
+    let payload: any = {};
+    try {
+      payload = await req.json();
+    } catch {
+      payload = {};
+    }
+
+    const guildId: string | undefined =
+      (typeof payload?.guild_id === "string" && payload.guild_id.trim() ? payload.guild_id.trim() : undefined) ||
+      (Deno.env.get("DISCORD_GUILD_ID") ? Deno.env.get("DISCORD_GUILD_ID")! : undefined);
+
+    const putCommands = async (url: string) => {
+      const resp = await fetch(url, {
         method: "PUT",
         headers: {
           Authorization: `Bot ${discordBotToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(commands),
-      }
-    );
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[register-fun-bot-commands] Discord API error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to register commands", details: errorText }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      const text = await resp.text();
+      if (!resp.ok) {
+        throw new Error(text || `Discord API error (status ${resp.status})`);
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text;
+      }
+    };
+
+    // 1) Guild commands (instant)
+    let guildResult: any[] | null = null;
+    if (guildId) {
+      const guildUrl = `https://discord.com/api/v10/applications/${discordClientId}/guilds/${guildId}/commands`;
+      guildResult = await putCommands(guildUrl);
+      console.log("[register-fun-bot-commands] Guild commands registered:", guildResult?.length);
+    } else {
+      console.log("[register-fun-bot-commands] No DISCORD_GUILD_ID configured; skipping guild commands.");
     }
 
-    const result = await response.json();
-    console.log("[register-fun-bot-commands] Commands registered:", result);
+    // 2) Global commands (slow propagation) — do not fail overall if guild succeeded
+    const globalUrl = `https://discord.com/api/v10/applications/${discordClientId}/commands`;
+    let globalResult: any[] | null = null;
+    let globalError: string | null = null;
+
+    try {
+      globalResult = await putCommands(globalUrl);
+      console.log("[register-fun-bot-commands] Global commands registered:", globalResult?.length);
+    } catch (err) {
+      globalError = err instanceof Error ? err.message : String(err);
+      console.error("[register-fun-bot-commands] Global registration error:", globalError);
+
+      // If we couldn't register guild commands either, fail.
+      if (!guildResult) {
+        return new Response(
+          JSON.stringify({ error: "Failed to register commands", details: globalError }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    const primary = guildResult ?? globalResult ?? [];
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Fun Bot commands registered successfully",
-        commands: result.map((c: any) => ({ name: c.name, id: c.id })),
+      JSON.stringify({
+        success: true,
+        message: guildResult
+          ? "Fun Bot commands registered for this server (instant). Global commands also updated (may take up to ~1 hour to appear)."
+          : "Fun Bot global commands updated (may take up to ~1 hour to appear).",
+        guild_id: guildId ?? null,
+        global_error: globalError,
+        commands: Array.isArray(primary) ? primary.map((c: any) => ({ name: c.name, id: c.id })) : [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
