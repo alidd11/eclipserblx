@@ -94,6 +94,12 @@ const commands = [
     contexts: [0], // Guild only
     integration_types: [0],
   },
+  {
+    name: "help",
+    description: "View all available Eclipse Portal Bot commands",
+    contexts: [0], // Guild only
+    integration_types: [0],
+  },
 ];
 
 Deno.serve(async (req) => {
