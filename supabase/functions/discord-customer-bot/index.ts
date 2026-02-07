@@ -176,6 +176,9 @@ Deno.serve(async (req) => {
           // DM-only command for replying to active tickets
           return await handleReplyCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
 
+        case "showcase":
+          return await handleShowcaseCommand(supabase, serverContext);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -2349,4 +2352,88 @@ async function handleReplyCommand(
     }),
     { headers: { "Content-Type": "application/json" } }
   );
+}
+
+// /showcase command - Display a random featured product
+async function handleShowcaseCommand(supabase: any, serverContext: ServerContext) {
+  const branding = getBranding(serverContext);
+
+  try {
+    // Fetch a random featured product with store info
+    const { data: products, error } = await supabase
+      .from("products")
+      .select(`
+        id, name, slug, price, images, description,
+        stores!inner (name, slug, logo_url, is_verified, is_trusted)
+      `)
+      .eq("is_active", true)
+      .eq("is_featured", true)
+      .eq("moderation_status", "approved")
+      .eq("stores.is_active", true)
+      .limit(10);
+
+    if (error || !products || products.length === 0) {
+      return interactionResponse("No featured products available at the moment.", true);
+    }
+
+    // Pick a random product from the featured list
+    const product = products[Math.floor(Math.random() * products.length)];
+    const store = product.stores;
+    const productUrl = `https://eclipserblx.com/products/${product.slug}`;
+    const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
+    
+    // Build verification badges
+    const badges: string[] = [];
+    if (store.is_trusted) badges.push("⭐ Trusted");
+    if (store.is_verified) badges.push("✅ Verified");
+    const badgeText = badges.length > 0 ? badges.join(" • ") : "";
+
+    // Truncate description
+    const maxDescLength = 200;
+    let description = product.description || "A premium product from the Eclipse marketplace.";
+    if (description.length > maxDescLength) {
+      description = description.substring(0, maxDescLength).trim() + "...";
+    }
+
+    const embed = {
+      color: branding.color,
+      title: `🌟 ${product.name}`,
+      url: productUrl,
+      description: `${description}\n\n**[View Product](${productUrl})**`,
+      thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
+      image: product.images?.[0] ? { url: product.images[0] } : undefined,
+      fields: [
+        {
+          name: "💰 Price",
+          value: product.price === 0 ? "**FREE**" : `**£${product.price.toFixed(2)}**`,
+          inline: true,
+        },
+        {
+          name: "🏪 Store",
+          value: `[${store.name}](${storeUrl})${badgeText ? `\n${badgeText}` : ""}`,
+          inline: true,
+        },
+      ],
+      footer: {
+        text: `${branding.footer} • Featured Product`,
+        icon_url: branding.icon,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    // Return public embed (not ephemeral)
+    return new Response(
+      JSON.stringify({
+        type: CHANNEL_MESSAGE,
+        data: {
+          embeds: [embed],
+          flags: 0, // Public message
+        },
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("[discord-customer-bot] Showcase error:", err);
+    return interactionResponse("Failed to fetch featured products. Try again later.", true);
+  }
 }
