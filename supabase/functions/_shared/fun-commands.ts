@@ -233,6 +233,41 @@ export function handleRubberDuck(): { advice: string; emoji: string } {
   return getRandomElement(RUBBER_DUCK_WISDOM);
 }
 
+// ==================== MEMES ====================
+const MEMES = [
+  // Development-related memes (majority)
+  { title: "When the code works on the first try", gif: "https://media1.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", category: "dev" },
+  { title: "Debugging at 3am be like", gif: "https://media1.giphy.com/media/unQ3IJU2RG7DO/giphy.gif", category: "dev" },
+  { title: "When you finally fix that bug", gif: "https://media1.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif", category: "dev" },
+  { title: "Me explaining my code to the rubber duck", gif: "https://media1.giphy.com/media/QMHoU66sBXqqLqYvGO/giphy.gif", category: "dev" },
+  { title: "When someone asks if my code has tests", gif: "https://media1.giphy.com/media/kGdXSdl6EoQec/giphy.gif", category: "dev" },
+  { title: "Deploying to production on Friday", gif: "https://media1.giphy.com/media/HUkOv6BNWc1HO/giphy.gif", category: "dev" },
+  { title: "When the client changes requirements again", gif: "https://media1.giphy.com/media/NTur7XlVDUdqM/giphy.gif", category: "dev" },
+  { title: "npm install be like", gif: "https://media1.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif", category: "dev" },
+  { title: "When the intern pushes to main", gif: "https://media1.giphy.com/media/3oKIPwoeGErMmaI43S/giphy.gif", category: "dev" },
+  { title: "Reading my own code from 6 months ago", gif: "https://media1.giphy.com/media/WRQBXSCnEFJIuxktnw/giphy.gif", category: "dev" },
+  { title: "When Stack Overflow is down", gif: "https://media1.giphy.com/media/l1J9EdzfOSgfyueLm/giphy.gif", category: "dev" },
+  { title: "CSS: I'm working! Also CSS:", gif: "https://media1.giphy.com/media/yYSSBtDgbbRzq/giphy.gif", category: "dev" },
+  { title: "When someone says 'it's just a small change'", gif: "https://media1.giphy.com/media/ceeN6U57leAhi/giphy.gif", category: "dev" },
+  { title: "Me vs the production database", gif: "https://media1.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif", category: "dev" },
+  { title: "When the code review has 47 comments", gif: "https://media1.giphy.com/media/3o7TKTDn976rzVgky4/giphy.gif", category: "dev" },
+  { title: "Trying to center a div", gif: "https://media1.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif", category: "dev" },
+  { title: "When git says there's a merge conflict", gif: "https://media1.giphy.com/media/3oEjI67Egb8G9jqs3m/giphy.gif", category: "dev" },
+  { title: "The API response format", gif: "https://media1.giphy.com/media/WpaVhEcp3Qo2TjwyI1/giphy.gif", category: "dev" },
+  { title: "When the meeting could've been an email", gif: "https://media1.giphy.com/media/lkO1VbjLZIlEI/giphy.gif", category: "dev" },
+  { title: "Documentation? What documentation?", gif: "https://media1.giphy.com/media/l0IylOPCNkiqOgMyA/giphy.gif", category: "dev" },
+  // General funny memes
+  { title: "When you're pretending to work", gif: "https://media1.giphy.com/media/LRVnPYqM8DLag/giphy.gif", category: "general" },
+  { title: "It's fine, everything is fine", gif: "https://media1.giphy.com/media/QMHoU66sBXqqLqYvGO/giphy.gif", category: "general" },
+  { title: "Confused math lady", gif: "https://media1.giphy.com/media/WRQBXSCnEFJIuxktnw/giphy.gif", category: "general" },
+  { title: "My brain during important moments", gif: "https://media1.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif", category: "general" },
+  { title: "When they say the deadline moved up", gif: "https://media1.giphy.com/media/l4FGuhL4U2WyjdkaY/giphy.gif", category: "general" },
+];
+
+export function handleMeme(): { title: string; gif: string; category: string } {
+  return getRandomElement(MEMES);
+}
+
 // Fishing outcomes for /fish command
 const FISHING_OUTCOMES = [
   { catch: "🐟 Common Fish", description: "You caught a regular fish. Nothing special, but it's honest work!", rarity: "common", gif: "https://media1.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif" },
