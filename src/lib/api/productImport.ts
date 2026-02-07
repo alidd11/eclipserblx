@@ -8,6 +8,8 @@ export interface ExternalProduct {
   sourceUrl: string;
   platform: string;
   sellerName?: string;
+  suggestedCategoryId?: string;
+  alreadyImported?: boolean;
 }
 
 export interface ImportListResponse {
@@ -20,6 +22,42 @@ export interface ImportListResponse {
 export interface ImportDetailsResponse {
   success: boolean;
   product?: ExternalProduct;
+  error?: string;
+}
+
+export interface BulkImportResult {
+  url: string;
+  success: boolean;
+  product?: ExternalProduct;
+  error?: string;
+}
+
+export interface BulkImportResponse {
+  success: boolean;
+  results?: BulkImportResult[];
+  imported?: number;
+  failed?: number;
+  error?: string;
+}
+
+export interface ImportHistoryItem {
+  id: string;
+  store_id: string;
+  product_id: string | null;
+  source_url: string;
+  source_platform: string;
+  source_name: string;
+  source_price: number | null;
+  imported_at: string;
+  imported_by: string;
+  status: 'completed' | 'failed' | 'skipped';
+  error_message: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface ImportHistoryResponse {
+  success: boolean;
+  imports?: ImportHistoryItem[];
   error?: string;
 }
 
@@ -43,13 +81,45 @@ export const productImportApi = {
   /**
    * Get full details for a single product
    */
-  async getProductDetails(productUrl: string): Promise<ImportDetailsResponse> {
+  async getProductDetails(productUrl: string, downloadImages = false): Promise<ImportDetailsResponse> {
     const { data, error } = await supabase.functions.invoke('import-external-products', {
-      body: { action: 'details', productUrl },
+      body: { action: 'details', productUrl, downloadImages },
     });
 
     if (error) {
       console.error('Import details error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return data;
+  },
+
+  /**
+   * Bulk import multiple products at once
+   */
+  async bulkImport(productUrls: string[], downloadImages = false): Promise<BulkImportResponse> {
+    const { data, error } = await supabase.functions.invoke('import-external-products', {
+      body: { action: 'bulk-details', productUrls, downloadImages },
+    });
+
+    if (error) {
+      console.error('Bulk import error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return data;
+  },
+
+  /**
+   * Get import history for the current store
+   */
+  async getHistory(): Promise<ImportHistoryResponse> {
+    const { data, error } = await supabase.functions.invoke('import-external-products', {
+      body: { action: 'history' },
+    });
+
+    if (error) {
+      console.error('Import history error:', error);
       return { success: false, error: error.message };
     }
 

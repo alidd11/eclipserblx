@@ -3018,6 +3018,73 @@ export type Database = {
         }
         Relationships: []
       }
+      product_imports: {
+        Row: {
+          error_message: string | null
+          id: string
+          imported_at: string
+          imported_by: string
+          metadata: Json | null
+          product_id: string | null
+          source_name: string
+          source_platform: string
+          source_price: number | null
+          source_url: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          imported_at?: string
+          imported_by: string
+          metadata?: Json | null
+          product_id?: string | null
+          source_name: string
+          source_platform: string
+          source_price?: number | null
+          source_url: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          imported_at?: string
+          imported_by?: string
+          metadata?: Json | null
+          product_id?: string | null
+          source_name?: string
+          source_platform?: string
+          source_price?: number | null
+          source_url?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_imports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_imports_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_imports_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_views: {
         Row: {
           created_at: string
