@@ -179,6 +179,9 @@ Deno.serve(async (req) => {
         case "showcase":
           return await handleShowcaseCommand(supabase, serverContext);
 
+        case "help":
+          return handleHelpCommand(serverContext);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -2438,4 +2441,57 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
     console.error("[discord-customer-bot] Showcase error:", err);
     return interactionResponse("Failed to fetch featured products. Try again later.", true);
   }
+}
+
+// /help command - Display all available commands
+function handleHelpCommand(serverContext: ServerContext) {
+  const branding = getBranding(serverContext);
+
+  const commands = [
+    { name: "/link", desc: "Check if your Discord is linked to Eclipse" },
+    { name: "/verify", desc: "Link your Discord using a code from Eclipse" },
+    { name: "/profile", desc: "View your Eclipse profile and stats" },
+    { name: "/purchases", desc: "View your recent purchases" },
+    { name: "/retrieve", desc: "Get a download link for a purchased product" },
+    { name: "/getrole", desc: "Sync your Discord roles based on your account" },
+    { name: "/store", desc: "View this server's store information" },
+    { name: "/unlink", desc: "Disconnect your Discord from Eclipse" },
+    { name: "/support", desc: "Contact Eclipse support - opens a ticket" },
+    { name: "/reply", desc: "Reply to your active support ticket (DM only)" },
+    { name: "/showcase", desc: "View a featured product from the marketplace" },
+    { name: "/help", desc: "View this help message" },
+  ];
+
+  const commandList = commands
+    .map((cmd) => `**${cmd.name}** — ${cmd.desc}`)
+    .join("\n");
+
+  const embed = {
+    color: branding.color,
+    title: "📖 Eclipse Portal Bot Commands",
+    description: `Here are all the available commands:\n\n${commandList}`,
+    fields: [
+      {
+        name: "💡 Getting Started",
+        value: "Use `/verify` with your code from the Eclipse website to link your account, then use `/getrole` to sync your roles!",
+        inline: false,
+      },
+    ],
+    footer: {
+      text: branding.footer,
+      icon_url: branding.icon,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: {
+        embeds: [embed],
+        flags: 64, // Ephemeral
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 }
