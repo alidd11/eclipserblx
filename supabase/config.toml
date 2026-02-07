@@ -313,3 +313,9 @@ verify_jwt = false
 
 [functions.check-wise-funding]
 verify_jwt = false
+
+[functions.discord-fun-bot]
+verify_jwt = false
+
+[functions.register-fun-bot-commands]
+verify_jwt = false
