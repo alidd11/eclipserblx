@@ -1508,6 +1508,63 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_games: {
+        Row: {
+          channel_id: string
+          created_at: string
+          creator_discord_id: string
+          creator_username: string
+          expires_at: string
+          game_state: Json
+          game_type: string
+          guild_id: string | null
+          id: string
+          message_id: string | null
+          opponent_discord_id: string | null
+          opponent_username: string | null
+          status: string
+          updated_at: string
+          winner_discord_id: string | null
+          xp_reward: number | null
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          creator_discord_id: string
+          creator_username: string
+          expires_at?: string
+          game_state?: Json
+          game_type: string
+          guild_id?: string | null
+          id?: string
+          message_id?: string | null
+          opponent_discord_id?: string | null
+          opponent_username?: string | null
+          status?: string
+          updated_at?: string
+          winner_discord_id?: string | null
+          xp_reward?: number | null
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          creator_discord_id?: string
+          creator_username?: string
+          expires_at?: string
+          game_state?: Json
+          game_type?: string
+          guild_id?: string | null
+          id?: string
+          message_id?: string | null
+          opponent_discord_id?: string | null
+          opponent_username?: string | null
+          status?: string
+          updated_at?: string
+          winner_discord_id?: string | null
+          xp_reward?: number | null
+        }
+        Relationships: []
+      }
       discord_link_codes: {
         Row: {
           code: string
@@ -1886,6 +1943,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      discord_trivia_questions: {
+        Row: {
+          category: string
+          correct_answer: string
+          created_at: string
+          difficulty: string
+          id: string
+          question: string
+          wrong_answers: string[]
+        }
+        Insert: {
+          category: string
+          correct_answer: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          question: string
+          wrong_answers: string[]
+        }
+        Update: {
+          category?: string
+          correct_answer?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          question?: string
+          wrong_answers?: string[]
+        }
+        Relationships: []
       }
       discord_xp: {
         Row: {
