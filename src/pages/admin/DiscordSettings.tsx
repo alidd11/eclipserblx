@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, UserCheck, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Shield, Settings, Bell, Zap } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, UserCheck, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Shield, Settings, Bell, Zap, Gamepad2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
@@ -943,6 +943,67 @@ export default function DiscordSettings() {
                     >
                       {testingWebhook === 'commands' ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Zap className="h-3 w-3 mr-1.5" />}
                       Register Commands
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Fun Bot Commands */}
+                <div className="space-y-3 p-4 rounded-lg border border-border bg-card/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-pink-500/20"><Gamepad2 className="h-4 w-4 text-pink-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Fun Bot Commands</h4>
+                      <p className="text-xs text-muted-foreground">Register slash commands for games & XP</p>
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground space-y-1">
+                    <p className="font-medium text-foreground">Available commands:</p>
+                    <p>
+                      <code className="bg-background px-1 rounded">/8ball</code> •{' '}
+                      <code className="bg-background px-1 rounded">/coinflip</code> •{' '}
+                      <code className="bg-background px-1 rounded">/roll</code> •{' '}
+                      <code className="bg-background px-1 rounded">/rps</code> •{' '}
+                      <code className="bg-background px-1 rounded">/daily</code> •{' '}
+                      <code className="bg-background px-1 rounded">/level</code> •{' '}
+                      <code className="bg-background px-1 rounded">/leaderboard</code> •{' '}
+                      <code className="bg-background px-1 rounded">/streak</code>
+                    </p>
+                    <p>
+                      <code className="bg-background px-1 rounded">/joke</code> •{' '}
+                      <code className="bg-background px-1 rounded">/quote</code> •{' '}
+                      <code className="bg-background px-1 rounded">/funfact</code> •{' '}
+                      <code className="bg-background px-1 rounded">/compliment</code> •{' '}
+                      <code className="bg-background px-1 rounded">/roast</code>
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setTestingWebhook('fun-commands');
+                          const { error } = await supabase.functions.invoke('register-fun-bot-commands');
+                          if (error) throw error;
+                          toast.success('Fun Bot commands registered successfully!');
+                        } catch (err: any) {
+                          const msg =
+                            err?.context?.details ||
+                            err?.context?.error ||
+                            err?.context?.body?.details ||
+                            err?.context?.body?.error ||
+                            err?.message ||
+                            'Failed to register commands';
+                          toast.error(String(msg));
+                        } finally {
+                          setTestingWebhook(null);
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      disabled={testingWebhook === 'fun-commands'}
+                      className="h-8"
+                    >
+                      {testingWebhook === 'fun-commands' ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Zap className="h-3 w-3 mr-1.5" />}
+                      Register Fun Commands
                     </Button>
                   </div>
                 </div>

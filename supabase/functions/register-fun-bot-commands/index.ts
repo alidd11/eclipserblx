@@ -165,22 +165,26 @@ Deno.serve(async (req) => {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   
-  // Allow service key auth OR user auth with admin role
   const authHeader = req.headers.get("Authorization");
   const apiKey = req.headers.get("x-api-key");
   const botghostKey = Deno.env.get("BOTGHOST_API_KEY");
+  const internalKey = req.headers.get("x-internal-key");
   
-  // Option 1: Service key via x-api-key header (for automated calls)
-  if (apiKey && botghostKey && apiKey.trim() === botghostKey.trim()) {
-    // Authorized via API key - proceed
-  } else {
-    // Option 2: User auth with admin role
+  // Option 1: Service key via x-api-key header
+  const isApiKeyAuth = apiKey && botghostKey && apiKey.trim() === botghostKey.trim();
+  
+  // Option 2: Internal registration key (matches service role)
+  const isInternalAuth = internalKey && internalKey === supabaseServiceKey;
+  
+  if (!isApiKeyAuth && !isInternalAuth) {
+    // Option 3: User auth with admin role
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader || "" } },
     });
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
+      console.log("[register-fun-bot-commands] Auth failed:", authError?.message);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
