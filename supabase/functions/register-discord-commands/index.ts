@@ -88,6 +88,12 @@ const commands = [
     integration_types: [0, 1], // Works with both guild and user installs
     dm_permission: true,
   },
+  {
+    name: "showcase",
+    description: "View a featured product from the marketplace",
+    contexts: [0], // Guild only
+    integration_types: [0],
+  },
 ];
 
 Deno.serve(async (req) => {
