@@ -1361,13 +1361,24 @@ async function handleRetrieveCommand(
   const product = matchedProduct;
 
   // Generate signed URL and log download in parallel
+  // NOTE: Postgrest builders are thenables (await-able) but are not real Promises, so avoid `.catch()`.
   const [signedUrlResult] = await Promise.all([
     supabase.storage.from("product-assets").createSignedUrl(product.asset_file_url, 3600),
     supabase.from("download_logs").insert({
       user_id: profile.user_id,
       product_id: product.id,
     }),
-    supabase.rpc("increment_download_count", { product_id: product.id }).catch(() => {}),
+    (async () => {
+      const { error } = await supabase.rpc("increment_download_count", { product_id: product.id });
+      if (error) {
+        console.log("[discord-customer-bot] increment_download_count error (non-fatal):", {
+          message: error.message,
+          code: (error as any).code,
+          details: (error as any).details,
+          hint: (error as any).hint,
+        });
+      }
+    })(),
   ]);
 
   if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
