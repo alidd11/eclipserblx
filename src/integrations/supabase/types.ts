@@ -1478,6 +1478,36 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_daily_claims: {
+        Row: {
+          bonus_earned: number
+          claimed_at: string
+          created_at: string
+          discord_id: string
+          id: string
+          streak_day: number
+          xp_earned: number
+        }
+        Insert: {
+          bonus_earned?: number
+          claimed_at?: string
+          created_at?: string
+          discord_id: string
+          id?: string
+          streak_day?: number
+          xp_earned?: number
+        }
+        Update: {
+          bonus_earned?: number
+          claimed_at?: string
+          created_at?: string
+          discord_id?: string
+          id?: string
+          streak_day?: number
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       discord_link_codes: {
         Row: {
           code: string
@@ -1856,6 +1886,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      discord_xp: {
+        Row: {
+          commands_used: number
+          created_at: string
+          current_streak: number
+          discord_id: string
+          discord_username: string | null
+          games_played: number
+          games_won: number
+          id: string
+          last_message_xp_at: string | null
+          level: number
+          longest_streak: number
+          messages_count: number
+          total_xp: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          commands_used?: number
+          created_at?: string
+          current_streak?: number
+          discord_id: string
+          discord_username?: string | null
+          games_played?: number
+          games_won?: number
+          id?: string
+          last_message_xp_at?: string | null
+          level?: number
+          longest_streak?: number
+          messages_count?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          commands_used?: number
+          created_at?: string
+          current_streak?: number
+          discord_id?: string
+          discord_username?: string | null
+          games_played?: number
+          games_won?: number
+          id?: string
+          last_message_xp_at?: string | null
+          level?: number
+          longest_streak?: number
+          messages_count?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       discount_codes: {
         Row: {
@@ -6133,7 +6217,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      add_discord_xp: {
+        Args: {
+          p_discord_id: string
+          p_discord_username: string
+          p_user_id?: string
+          p_xp_amount: number
+        }
+        Returns: {
+          leveled_up: boolean
+          new_level: number
+          new_xp: number
+          old_level: number
+        }[]
+      }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
+      calculate_level_from_xp: { Args: { xp: number }; Returns: number }
       can_assign_role: {
         Args: { _assigner_id: string; _target_role: string }
         Returns: boolean

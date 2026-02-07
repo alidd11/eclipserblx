@@ -155,6 +155,26 @@ export const BotGhostCommandReference = () => {
               ⚠️ Enable "Replace variables in body" and "Replace variables in HTTP Headers" in BotGhost
             </div>
           </div>
+
+          {/* Fun Commands Notice */}
+          <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4">
+            <h4 className="font-medium text-sm text-green-600 dark:text-green-400 mb-2">
+              🎮 New Fun Commands Available!
+            </h4>
+            <p className="text-xs text-muted-foreground mb-2">
+              The following fun commands are now handled natively by the Eclipse Portal Bot (no BotGhost config needed):
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["/8ball", "/coinflip", "/roll", "/rps", "/daily", "/level", "/leaderboard", "/streak", "/joke", "/quote", "/funfact", "/compliment", "/roast"].map((cmd) => (
+                <span key={cmd} className="text-xs px-2 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400">
+                  {cmd}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Run the "Register Discord Commands" action in Admin → Discord settings to enable these commands.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
