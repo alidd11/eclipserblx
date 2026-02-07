@@ -270,13 +270,19 @@ async function getServerContext(supabase: any, guildId?: string): Promise<Server
   return { guildId, isMainServer: false };
 }
 
-function interactionResponse(content: string, ephemeral = false, embeds?: any[]) {
+function interactionResponse(
+  content: string,
+  ephemeral = false,
+  embeds?: any[],
+  components?: any[]
+) {
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
       data: {
         content: embeds ? undefined : content,
         embeds,
+        components,
         flags: ephemeral ? 64 : 0, // 64 = ephemeral
       },
     }),
@@ -1138,7 +1144,7 @@ async function handleRetrieveCommand(
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [notLinkedEmbed]);
+    return interactionResponse("", true, [notLinkedEmbed]);
   }
 
   const options = interaction.data?.options || [];
@@ -1201,7 +1207,7 @@ async function handleRetrieveCommand(
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [noOrdersEmbed]);
+    return interactionResponse("", true, [noOrdersEmbed]);
   }
 
   const orderIds = allOrderIds;
@@ -1252,7 +1258,7 @@ async function handleRetrieveCommand(
       footer: { text: branding.footer },
     };
 
-    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+    return interactionResponse("", true, [embed]);
   }
 
   // Get products with download files (store-filtered when applicable)
@@ -1296,7 +1302,7 @@ async function handleRetrieveCommand(
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [noFilesEmbed]);
+    return interactionResponse("", true, [noFilesEmbed]);
   }
 
   if (!productOption) {
@@ -1319,7 +1325,7 @@ async function handleRetrieveCommand(
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+    return interactionResponse("", true, [embed]);
   }
 
   // Search for product by name
@@ -1355,7 +1361,7 @@ async function handleRetrieveCommand(
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
+    return interactionResponse("", true, [embed]);
   }
 
   const product = matchedProduct;
@@ -1403,7 +1409,7 @@ async function handleRetrieveCommand(
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [downloadFailedEmbed]);
+    return interactionResponse("", true, [downloadFailedEmbed]);
   }
 
   const embed = {
@@ -1432,27 +1438,11 @@ async function handleRetrieveCommand(
     },
   ];
 
-  // Send DM with download link
+  // Send DM with download link (best-effort)
   sendDMToUser(discordUserId, undefined, [embed], components).catch(console.error);
 
-  // Public acknowledgement as embed
-  const channelEmbed = {
-    color: 0x22c55e,
-    description: `<@${discordUserId}>\n📥 Your download for **${product.name}** is ready! Check your DMs.`,
-    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
-    footer: { text: branding.footer },
-  };
-
-  return new Response(
-    JSON.stringify({
-      type: CHANNEL_MESSAGE,
-      data: {
-        embeds: [channelEmbed],
-        flags: 0,
-      },
-    }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  // Also return the download button ephemerally so it works even if DMs are blocked
+  return interactionResponse("", true, [embed], components);
 }
 
 // /getrole command - Assign Discord roles based on context
