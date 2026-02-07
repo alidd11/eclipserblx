@@ -355,41 +355,50 @@ Deno.serve(async (req) => {
       const guildUrl = `https://discord.com/api/v10/applications/${discordClientId}/guilds/${guildId}/commands`;
       guildResult = await putCommands(guildUrl);
       console.log("[register-fun-bot-commands] Guild commands registered:", guildResult?.length);
+      
+      // Clear global commands to prevent duplicates (PUT empty array)
+      const globalUrl = `https://discord.com/api/v10/applications/${discordClientId}/commands`;
+      try {
+        const clearResp = await fetch(globalUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bot ${discordBotToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify([]), // Empty array clears all global commands
+        });
+        if (clearResp.ok) {
+          console.log("[register-fun-bot-commands] Global commands cleared to prevent duplicates");
+        }
+      } catch (err) {
+        console.warn("[register-fun-bot-commands] Could not clear global commands:", err);
+      }
     } else {
-      console.log("[register-fun-bot-commands] No DISCORD_GUILD_ID configured; skipping guild commands.");
-    }
-
-    // 2) Global commands (slow propagation) — do not fail overall if guild succeeded
-    const globalUrl = `https://discord.com/api/v10/applications/${discordClientId}/commands`;
-    let globalResult: any[] | null = null;
-    let globalError: string | null = null;
-
-    try {
-      globalResult = await putCommands(globalUrl);
-      console.log("[register-fun-bot-commands] Global commands registered:", globalResult?.length);
-    } catch (err) {
-      globalError = err instanceof Error ? err.message : String(err);
-      console.error("[register-fun-bot-commands] Global registration error:", globalError);
-
-      // If we couldn't register guild commands either, fail.
-      if (!guildResult) {
+      // No guild ID - register globally only
+      console.log("[register-fun-bot-commands] No DISCORD_GUILD_ID configured; registering global commands.");
+      const globalUrl = `https://discord.com/api/v10/applications/${discordClientId}/commands`;
+      try {
+        guildResult = await putCommands(globalUrl);
+        console.log("[register-fun-bot-commands] Global commands registered:", guildResult?.length);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error("[register-fun-bot-commands] Global registration error:", errorMsg);
         return new Response(
-          JSON.stringify({ error: "Failed to register commands", details: globalError }),
+          JSON.stringify({ error: "Failed to register commands", details: errorMsg }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
 
-    const primary = guildResult ?? globalResult ?? [];
+    const primary = guildResult ?? [];
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: guildResult
-          ? "Fun Bot commands registered for this server (instant). Global commands also updated (may take up to ~1 hour to appear)."
-          : "Fun Bot global commands updated (may take up to ~1 hour to appear).",
+        message: guildId
+          ? "Fun Bot commands registered for this server. Global duplicates cleared."
+          : "Fun Bot global commands registered.",
         guild_id: guildId ?? null,
-        global_error: globalError,
         commands: Array.isArray(primary) ? primary.map((c: any) => ({ name: c.name, id: c.id })) : [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
