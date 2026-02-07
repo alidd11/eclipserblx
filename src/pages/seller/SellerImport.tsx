@@ -34,6 +34,7 @@ export default function SellerImport() {
   const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null);
   const [history, setHistory] = useState<ImportHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
 
   const supportedPlatforms = productImportApi.getSupportedPlatforms();
 
@@ -254,6 +255,26 @@ export default function SellerImport() {
               </AlertDescription>
             </Alert>
 
+            {/* Ownership Confirmation */}
+            <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
+              <Checkbox
+                id="ownership-confirm"
+                checked={ownershipConfirmed}
+                onCheckedChange={(checked) => setOwnershipConfirmed(checked === true)}
+                className="mt-0.5"
+              />
+              <div className="space-y-1">
+                <Label htmlFor="ownership-confirm" className="text-sm font-medium leading-none cursor-pointer">
+                  I confirm ownership of this content
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  By checking this box, I confirm that I am the rightful owner of the products I am importing 
+                  and have the legal right to use all associated names, descriptions, and images. I understand 
+                  that importing content I do not own may violate intellectual property laws and platform terms of service.
+                </p>
+              </div>
+            </div>
+
             {/* Supported Platforms */}
             <Card>
               <CardHeader>
@@ -291,10 +312,10 @@ export default function SellerImport() {
                       placeholder="https://clearlydev.com/store/your-store"
                       value={storeUrl}
                       onChange={(e) => setStoreUrl(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                      disabled={isLoading}
+                      onKeyDown={(e) => e.key === 'Enter' && ownershipConfirmed && handleSearch()}
+                      disabled={isLoading || !ownershipConfirmed}
                     />
-                    <Button onClick={handleSearch} disabled={isLoading}>
+                    <Button onClick={handleSearch} disabled={isLoading || !ownershipConfirmed}>
                       {isLoading ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
