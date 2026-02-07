@@ -1143,6 +1143,9 @@ async function handleRetrieveCommand(
 
   const options = interaction.data?.options || [];
   const productOption = options.find((o) => o.name === "product");
+  
+  console.log(`[discord-customer-bot] Retrieve command options:`, JSON.stringify(options));
+  console.log(`[discord-customer-bot] Product option:`, productOption ? JSON.stringify(productOption) : "none");
 
   // Get user's order IDs - check BOTH user_id AND customer_email (for guest purchases)
   const userEmail = profile.email;
