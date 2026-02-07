@@ -102,9 +102,20 @@ const commands = [
   },
 ];
 
+// IMPORTANT: In a guild, Discord surfaces BOTH guild-scoped commands AND global commands.
+// If we register the same command names both globally and per-guild, users will see duplicates.
+// To avoid that, we only keep DM-capable commands global (e.g. /reply), and register guild commands per guild.
+const globalCommands = commands.filter((cmd: any) =>
+  Array.isArray(cmd.contexts) && (cmd.contexts.includes(1) || cmd.contexts.includes(2))
+);
+
+const guildOnlyCommands = commands.filter((cmd: any) =>
+  Array.isArray(cmd.contexts) && cmd.contexts.includes(0)
+);
+
 // Guild-specific commands (without contexts/integration_types for better compatibility)
-const guildCommands = commands.map(cmd => {
-  const { contexts, integration_types, ...rest } = cmd as any;
+const guildCommands = guildOnlyCommands.map((cmd: any) => {
+  const { contexts, integration_types, ...rest } = cmd;
   return rest;
 });
 
@@ -198,8 +209,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Register GLOBAL commands (for store servers - takes up to 1 hour to propagate)
-    console.log("[register-discord-commands] Registering global commands...");
+    // 2. Register GLOBAL commands (DM-only) (can take up to 1 hour to propagate)
+    console.log("[register-discord-commands] Registering global DM commands...");
     const globalResponse = await fetch(
       `https://discord.com/api/v10/applications/${discordClientId}/commands`,
       {
@@ -208,7 +219,8 @@ Deno.serve(async (req) => {
           Authorization: `Bot ${discordBotToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(commands),
+        // Only keep DM-capable commands global to prevent duplicates in guilds
+        body: JSON.stringify(globalCommands),
       }
     );
 
@@ -277,7 +289,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Portal Bot commands registered successfully. Main guild: instant, Global: up to 1 hour, Store guilds: ${storeGuildsCount}`,
+        message: `Portal Bot commands registered successfully. Guild: instant, Global (DM): up to 1 hour, Store guilds: ${storeGuildsCount}`,
         main_guild_id: mainGuildId || null,
         commands: (results.guild || results.global || []).map((c: any) => ({ name: c.name, id: c.id })),
         store_guilds: results.storeGuilds,
