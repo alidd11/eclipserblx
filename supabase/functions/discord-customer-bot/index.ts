@@ -61,11 +61,13 @@ interface ServerContext {
 // Interaction types
 const PING = 1;
 const APPLICATION_COMMAND = 2;
+const MESSAGE_COMPONENT = 3;
 const MODAL_SUBMIT = 5;
 
 // Response types
 const PONG = 1;
 const CHANNEL_MESSAGE = 4;
+const UPDATE_MESSAGE = 7;
 const MODAL = 9;
 
 Deno.serve(async (req) => {
@@ -185,6 +187,21 @@ Deno.serve(async (req) => {
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
+    }
+
+    // Handle button/component interactions
+    if (interaction.type === MESSAGE_COMPONENT && interaction.data?.custom_id) {
+      const customId = interaction.data.custom_id;
+      const parts = customId.split("_");
+      const componentType = parts[0];
+      const action = parts[1];
+      const pageNum = parseInt(parts[2]) || 0;
+
+      if (componentType === "portalhelp") {
+        return handlePortalHelpPagination(serverContext, action, pageNum);
+      }
+      
+      return interactionResponse("Unknown component interaction.", true);
     }
 
     // Handle modal submissions
@@ -2443,37 +2460,61 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
   }
 }
 
-// /help command - Display all available commands
-function handleHelpCommand(serverContext: ServerContext) {
+// /help command - Paginated help with buttons
+function handleHelpCommand(serverContext: ServerContext, page = 0) {
   const branding = getBranding(serverContext);
 
-  const commands = [
-    { name: "/link", desc: "Check if your Discord is linked to Eclipse" },
-    { name: "/verify", desc: "Link your Discord using a code from Eclipse" },
-    { name: "/profile", desc: "View your Eclipse profile and stats" },
-    { name: "/purchases", desc: "View your recent purchases" },
-    { name: "/retrieve", desc: "Get a download link for a purchased product" },
-    { name: "/getrole", desc: "Sync your Discord roles based on your account" },
-    { name: "/store", desc: "View this server's store information" },
-    { name: "/unlink", desc: "Disconnect your Discord from Eclipse" },
-    { name: "/support", desc: "Contact Eclipse support - opens a ticket" },
-    { name: "/reply", desc: "Reply to your active support ticket (DM only)" },
-    { name: "/showcase", desc: "View a featured product from the marketplace" },
-    { name: "/help", desc: "View this help message" },
+  const pages = [
+    // Page 0: Account & Profile
+    {
+      title: "📖 Eclipse Portal Bot - Account",
+      commands: [
+        { name: "/link", desc: "Check if your Discord is linked to Eclipse" },
+        { name: "/verify", desc: "Link your Discord using a code from Eclipse" },
+        { name: "/profile", desc: "View your Eclipse profile and stats" },
+        { name: "/unlink", desc: "Disconnect your Discord from Eclipse" },
+      ],
+      tip: "💡 Use `/verify` with your code from the Eclipse website to link your account!",
+    },
+    // Page 1: Shopping & Downloads
+    {
+      title: "📖 Eclipse Portal Bot - Shopping",
+      commands: [
+        { name: "/purchases", desc: "View your recent purchases" },
+        { name: "/retrieve", desc: "Get a download link for a purchased product" },
+        { name: "/store", desc: "View this server's store information" },
+        { name: "/showcase", desc: "View a featured product from the marketplace" },
+      ],
+      tip: "🛒 Browse products and retrieve your purchases anytime!",
+    },
+    // Page 2: Roles & Support
+    {
+      title: "📖 Eclipse Portal Bot - Roles & Support",
+      commands: [
+        { name: "/getrole", desc: "Sync your Discord roles based on your account" },
+        { name: "/support", desc: "Contact Eclipse support - opens a ticket" },
+        { name: "/reply", desc: "Reply to your active support ticket (DM only)" },
+        { name: "/help", desc: "View this help message" },
+      ],
+      tip: "🎫 Use `/getrole` after purchases to sync your roles!",
+    },
   ];
 
-  const commandList = commands
+  const currentPage = pages[page] || pages[0];
+  const totalPages = pages.length;
+
+  const commandList = currentPage.commands
     .map((cmd) => `**${cmd.name}** — ${cmd.desc}`)
     .join("\n");
 
   const embed = {
     color: branding.color,
-    title: "📖 Eclipse Portal Bot Commands",
-    description: `Here are all the available commands:\n\n${commandList}`,
+    title: currentPage.title,
+    description: `Page ${page + 1} of ${totalPages}\n\n${commandList}`,
     fields: [
       {
-        name: "💡 Getting Started",
-        value: "Use `/verify` with your code from the Eclipse website to link your account, then use `/getrole` to sync your roles!",
+        name: currentPage.tip.split(" ")[0],
+        value: currentPage.tip.substring(currentPage.tip.indexOf(" ") + 1),
         inline: false,
       },
     ],
@@ -2484,12 +2525,153 @@ function handleHelpCommand(serverContext: ServerContext) {
     timestamp: new Date().toISOString(),
   };
 
+  const components = [
+    {
+      type: 1, // Action Row
+      components: [
+        {
+          type: 2, // Button
+          style: 2, // Secondary (gray)
+          label: "◀ Previous",
+          custom_id: `portalhelp_prev_${page}`,
+          disabled: page === 0,
+        },
+        {
+          type: 2,
+          style: 1, // Primary (blue)
+          label: `${page + 1}/${totalPages}`,
+          custom_id: `portalhelp_page_${page}`,
+          disabled: true,
+        },
+        {
+          type: 2,
+          style: 2,
+          label: "Next ▶",
+          custom_id: `portalhelp_next_${page}`,
+          disabled: page >= totalPages - 1,
+        },
+      ],
+    },
+  ];
+
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
       data: {
         embeds: [embed],
+        components,
         flags: 64, // Ephemeral
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// Handle help pagination for portal bot
+function handlePortalHelpPagination(serverContext: ServerContext, action: string, currentPage: number) {
+  const branding = getBranding(serverContext);
+  
+  let newPage = currentPage;
+  if (action === "prev") {
+    newPage = Math.max(0, currentPage - 1);
+  } else if (action === "next") {
+    newPage = Math.min(2, currentPage + 1);
+  }
+
+  const pages = [
+    {
+      title: "📖 Eclipse Portal Bot - Account",
+      commands: [
+        { name: "/link", desc: "Check if your Discord is linked to Eclipse" },
+        { name: "/verify", desc: "Link your Discord using a code from Eclipse" },
+        { name: "/profile", desc: "View your Eclipse profile and stats" },
+        { name: "/unlink", desc: "Disconnect your Discord from Eclipse" },
+      ],
+      tip: "💡 Use `/verify` with your code from the Eclipse website to link your account!",
+    },
+    {
+      title: "📖 Eclipse Portal Bot - Shopping",
+      commands: [
+        { name: "/purchases", desc: "View your recent purchases" },
+        { name: "/retrieve", desc: "Get a download link for a purchased product" },
+        { name: "/store", desc: "View this server's store information" },
+        { name: "/showcase", desc: "View a featured product from the marketplace" },
+      ],
+      tip: "🛒 Browse products and retrieve your purchases anytime!",
+    },
+    {
+      title: "📖 Eclipse Portal Bot - Roles & Support",
+      commands: [
+        { name: "/getrole", desc: "Sync your Discord roles based on your account" },
+        { name: "/support", desc: "Contact Eclipse support - opens a ticket" },
+        { name: "/reply", desc: "Reply to your active support ticket (DM only)" },
+        { name: "/help", desc: "View this help message" },
+      ],
+      tip: "🎫 Use `/getrole` after purchases to sync your roles!",
+    },
+  ];
+
+  const currentPageData = pages[newPage];
+  const totalPages = pages.length;
+
+  const commandList = currentPageData.commands
+    .map((cmd) => `**${cmd.name}** — ${cmd.desc}`)
+    .join("\n");
+
+  const embed = {
+    color: branding.color,
+    title: currentPageData.title,
+    description: `Page ${newPage + 1} of ${totalPages}\n\n${commandList}`,
+    fields: [
+      {
+        name: currentPageData.tip.split(" ")[0],
+        value: currentPageData.tip.substring(currentPageData.tip.indexOf(" ") + 1),
+        inline: false,
+      },
+    ],
+    footer: {
+      text: branding.footer,
+      icon_url: branding.icon,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  const components = [
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          style: 2,
+          label: "◀ Previous",
+          custom_id: `portalhelp_prev_${newPage}`,
+          disabled: newPage === 0,
+        },
+        {
+          type: 2,
+          style: 1,
+          label: `${newPage + 1}/${totalPages}`,
+          custom_id: `portalhelp_page_${newPage}`,
+          disabled: true,
+        },
+        {
+          type: 2,
+          style: 2,
+          label: "Next ▶",
+          custom_id: `portalhelp_next_${newPage}`,
+          disabled: newPage >= totalPages - 1,
+        },
+      ],
+    },
+  ];
+  
+  return new Response(
+    JSON.stringify({
+      type: 7, // UPDATE_MESSAGE
+      data: { 
+        embeds: [embed], 
+        components,
+        flags: 64,
       },
     }),
     { headers: { "Content-Type": "application/json" } }

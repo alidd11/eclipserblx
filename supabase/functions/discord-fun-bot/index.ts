@@ -283,94 +283,150 @@ function interactionResponse(content: string, ephemeral = false, embeds?: any[])
 
 // ==================== COMMAND HANDLERS ====================
 
-// /help command
-function handleHelpCommand(discordAvatarUrl?: string) {
+// /help command - Paginated help with buttons
+function handleHelpCommand(discordAvatarUrl?: string, page = 0) {
+  const pages = [
+    // Page 0: Solo & Multiplayer Games
+    {
+      title: "🎮 Eclipse Fun Bot - Games",
+      fields: [
+        {
+          name: "🎲 Solo Games",
+          value: [
+            "`/8ball` - Ask the magic 8-ball a question",
+            "`/coinflip` - Flip a coin (heads or tails)",
+            "`/roll` - Roll dice (customizable sides & count)",
+            "`/rps` - Rock Paper Scissors vs the bot",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "⚔️ Multiplayer Games",
+          value: [
+            "`/duel` - Challenge someone to RPS for XP",
+            "`/tictactoe` - Classic Tic-Tac-Toe battle",
+            "`/connect4` - Play Connect 4 with a friend",
+            "`/hangman` - Start a word guessing game",
+            "`/trivia` - Race to answer trivia first",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "🤝 Cooperative Games",
+          value: [
+            "`/heist` - Start a heist, recruit a crew!",
+            "`/boss` - Spawn a boss fight for everyone",
+          ].join("\n"),
+          inline: false,
+        },
+      ],
+    },
+    // Page 1: XP & Fun Stuff
+    {
+      title: "🎮 Eclipse Fun Bot - XP & Fun",
+      fields: [
+        {
+          name: "⭐ XP & Rewards",
+          value: [
+            "`/daily` - Claim your daily XP reward",
+            "`/level` - Check your level & XP progress",
+            "`/streak` - View your daily claim streak",
+            "`/leaderboard` - See the top XP earners",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "😄 Fun Stuff",
+          value: [
+            "`/joke` - Get a random joke",
+            "`/quote` - Receive an inspirational quote",
+            "`/funfact` - Learn something new",
+            "`/compliment` - Get (or give) a nice compliment",
+            "`/roast` - Friendly roasts for you or friends",
+          ].join("\n"),
+          inline: false,
+        },
+      ],
+    },
+    // Page 2: Developer Fun & Activities
+    {
+      title: "🎮 Eclipse Fun Bot - Dev & Activities",
+      fields: [
+        {
+          name: "💻 Developer Fun",
+          value: [
+            "`/debug` - Generate a random fake bug report",
+            "`/commit` - Funny git commit messages",
+            "`/codereview` - Random code review comments",
+            "`/stackoverflow` - Simulate SO responses",
+            "`/rubberduck` - Get debugging wisdom 🦆",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "🎣 Activities",
+          value: [
+            "`/fish` - Go fishing and see what you catch!",
+            "`/meme` - Get a random funny meme",
+          ].join("\n"),
+          inline: false,
+        },
+      ],
+    },
+  ];
+
+  const currentPage = pages[page] || pages[0];
+  const totalPages = pages.length;
+
   const embed = {
     color: 0x8b5cf6,
-    title: "🎮 Eclipse Fun Bot - Commands",
-    description: "Your go-to bot for games, XP, and entertainment! Here's everything you can do:",
+    title: currentPage.title,
+    description: `Page ${page + 1} of ${totalPages}`,
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
-    fields: [
-      {
-        name: "🎲 Solo Games",
-        value: [
-          "`/8ball` - Ask the magic 8-ball a question",
-          "`/coinflip` - Flip a coin (heads or tails)",
-          "`/roll` - Roll dice (customizable sides & count)",
-          "`/rps` - Rock Paper Scissors vs the bot",
-        ].join("\n"),
-        inline: false,
-      },
-      {
-        name: "⚔️ Multiplayer Games",
-        value: [
-          "`/duel` - Challenge someone to RPS for XP",
-          "`/tictactoe` - Classic Tic-Tac-Toe battle",
-          "`/connect4` - Play Connect 4 with a friend",
-          "`/hangman` - Start a word guessing game",
-          "`/trivia` - Race to answer trivia first",
-        ].join("\n"),
-        inline: false,
-      },
-      {
-        name: "🤝 Cooperative Games",
-        value: [
-          "`/heist` - Start a heist, recruit a crew!",
-          "`/boss` - Spawn a boss fight for everyone",
-        ].join("\n"),
-        inline: false,
-      },
-      {
-        name: "⭐ XP & Rewards",
-        value: [
-          "`/daily` - Claim your daily XP reward",
-          "`/level` - Check your level & XP progress",
-          "`/streak` - View your daily claim streak",
-          "`/leaderboard` - See the top XP earners",
-        ].join("\n"),
-        inline: false,
-      },
-      {
-        name: "😄 Fun Stuff",
-        value: [
-          "`/joke` - Get a random joke",
-          "`/quote` - Receive an inspirational quote",
-          "`/funfact` - Learn something new",
-          "`/compliment` - Get (or give) a nice compliment",
-          "`/roast` - Friendly roasts for you or friends",
-        ].join("\n"),
-        inline: false,
-      },
-      {
-        name: "💻 Developer Fun",
-        value: [
-          "`/debug` - Generate a random fake bug report",
-          "`/commit` - Funny git commit messages",
-          "`/codereview` - Random code review comments",
-          "`/stackoverflow` - Simulate SO responses",
-          "`/rubberduck` - Get debugging wisdom 🦆",
-        ].join("\n"),
-        inline: false,
-      },
-      {
-        name: "🎣 Activities",
-        value: [
-          "`/fish` - Go fishing and see what you catch!",
-          "`/meme` - Get a random funny meme (mostly dev-related)",
-        ].join("\n"),
-        inline: false,
-      },
-    ],
+    fields: currentPage.fields,
     footer: { 
       text: "Eclipse Fun Bot • Win games to earn XP and climb the leaderboard!",
     },
     timestamp: new Date().toISOString(),
   };
+
+  const components = [
+    {
+      type: 1, // Action Row
+      components: [
+        {
+          type: 2, // Button
+          style: 2, // Secondary (gray)
+          label: "◀ Previous",
+          custom_id: `funhelp_prev_${page}`,
+          disabled: page === 0,
+        },
+        {
+          type: 2,
+          style: 1, // Primary (blue)
+          label: `${page + 1}/${totalPages}`,
+          custom_id: `funhelp_page_${page}`,
+          disabled: true,
+        },
+        {
+          type: 2,
+          style: 2,
+          label: "Next ▶",
+          custom_id: `funhelp_next_${page}`,
+          disabled: page >= totalPages - 1,
+        },
+      ],
+    },
+  ];
   
   return new Response(
     JSON.stringify({
-      type: 4, // CHANNEL_MESSAGE
-      data: { embeds: [embed] },
+      type: CHANNEL_MESSAGE,
+      data: { 
+        embeds: [embed], 
+        components,
+        flags: 64, // Ephemeral
+      },
     }),
     { headers: { "Content-Type": "application/json" } }
   );
@@ -1099,6 +1155,8 @@ async function handleComponentInteraction(supabase: any, interaction: DiscordInt
   console.log(`[discord-fun-bot] Component interaction: ${customId}`);
 
   switch (gameType) {
+    case "funhelp":
+      return handleHelpPagination(action, parseInt(gameId) || 0);
     case "duel":
       return await handleDuelInteraction(supabase, interaction, gameId, action, discordUserId, discordUsername);
     case "trivia":
@@ -1116,6 +1174,158 @@ async function handleComponentInteraction(supabase: any, interaction: DiscordInt
     default:
       return interactionResponse("Unknown game interaction.", true);
   }
+}
+
+// Handle help pagination buttons
+function handleHelpPagination(action: string, currentPage: number) {
+  let newPage = currentPage;
+  if (action === "prev") {
+    newPage = Math.max(0, currentPage - 1);
+  } else if (action === "next") {
+    newPage = Math.min(2, currentPage + 1);
+  }
+  
+  const pages = [
+    {
+      title: "🎮 Eclipse Fun Bot - Games",
+      fields: [
+        {
+          name: "🎲 Solo Games",
+          value: [
+            "`/8ball` - Ask the magic 8-ball a question",
+            "`/coinflip` - Flip a coin (heads or tails)",
+            "`/roll` - Roll dice (customizable sides & count)",
+            "`/rps` - Rock Paper Scissors vs the bot",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "⚔️ Multiplayer Games",
+          value: [
+            "`/duel` - Challenge someone to RPS for XP",
+            "`/tictactoe` - Classic Tic-Tac-Toe battle",
+            "`/connect4` - Play Connect 4 with a friend",
+            "`/hangman` - Start a word guessing game",
+            "`/trivia` - Race to answer trivia first",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "🤝 Cooperative Games",
+          value: [
+            "`/heist` - Start a heist, recruit a crew!",
+            "`/boss` - Spawn a boss fight for everyone",
+          ].join("\n"),
+          inline: false,
+        },
+      ],
+    },
+    {
+      title: "🎮 Eclipse Fun Bot - XP & Fun",
+      fields: [
+        {
+          name: "⭐ XP & Rewards",
+          value: [
+            "`/daily` - Claim your daily XP reward",
+            "`/level` - Check your level & XP progress",
+            "`/streak` - View your daily claim streak",
+            "`/leaderboard` - See the top XP earners",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "😄 Fun Stuff",
+          value: [
+            "`/joke` - Get a random joke",
+            "`/quote` - Receive an inspirational quote",
+            "`/funfact` - Learn something new",
+            "`/compliment` - Get (or give) a nice compliment",
+            "`/roast` - Friendly roasts for you or friends",
+          ].join("\n"),
+          inline: false,
+        },
+      ],
+    },
+    {
+      title: "🎮 Eclipse Fun Bot - Dev & Activities",
+      fields: [
+        {
+          name: "💻 Developer Fun",
+          value: [
+            "`/debug` - Generate a random fake bug report",
+            "`/commit` - Funny git commit messages",
+            "`/codereview` - Random code review comments",
+            "`/stackoverflow` - Simulate SO responses",
+            "`/rubberduck` - Get debugging wisdom 🦆",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "🎣 Activities",
+          value: [
+            "`/fish` - Go fishing and see what you catch!",
+            "`/meme` - Get a random funny meme",
+          ].join("\n"),
+          inline: false,
+        },
+      ],
+    },
+  ];
+
+  const currentPageData = pages[newPage];
+  const totalPages = pages.length;
+
+  const embed = {
+    color: 0x8b5cf6,
+    title: currentPageData.title,
+    description: `Page ${newPage + 1} of ${totalPages}`,
+    fields: currentPageData.fields,
+    footer: { 
+      text: "Eclipse Fun Bot • Win games to earn XP and climb the leaderboard!",
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  const components = [
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          style: 2,
+          label: "◀ Previous",
+          custom_id: `funhelp_prev_${newPage}`,
+          disabled: newPage === 0,
+        },
+        {
+          type: 2,
+          style: 1,
+          label: `${newPage + 1}/${totalPages}`,
+          custom_id: `funhelp_page_${newPage}`,
+          disabled: true,
+        },
+        {
+          type: 2,
+          style: 2,
+          label: "Next ▶",
+          custom_id: `funhelp_next_${newPage}`,
+          disabled: newPage >= totalPages - 1,
+        },
+      ],
+    },
+  ];
+  
+  return new Response(
+    JSON.stringify({
+      type: UPDATE_MESSAGE,
+      data: { 
+        embeds: [embed], 
+        components,
+        flags: 64,
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 }
 
 // /duel command - Challenge to RPS for XP
