@@ -144,6 +144,10 @@ Deno.serve(async (req) => {
       }
 
       switch (commandName) {
+        // ==================== HELP ====================
+        case "help":
+          return handleHelpCommand(discordAvatarUrl);
+
         // ==================== GAMES ====================
         case "8ball":
           return handleMagic8BallCommand(interaction, discordUsername, discordAvatarUrl);
@@ -242,6 +246,80 @@ function interactionResponse(content: string, ephemeral = false, embeds?: any[])
 }
 
 // ==================== COMMAND HANDLERS ====================
+
+// /help command
+function handleHelpCommand(discordAvatarUrl?: string) {
+  const embed = {
+    color: 0x8b5cf6,
+    title: "🎮 Eclipse Fun Bot - Commands",
+    description: "Your go-to bot for games, XP, and entertainment! Here's everything you can do:",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    fields: [
+      {
+        name: "🎲 Solo Games",
+        value: [
+          "`/8ball` - Ask the magic 8-ball a question",
+          "`/coinflip` - Flip a coin (heads or tails)",
+          "`/roll` - Roll dice (customizable sides & count)",
+          "`/rps` - Rock Paper Scissors vs the bot",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "⚔️ Multiplayer Games",
+        value: [
+          "`/duel` - Challenge someone to RPS for XP",
+          "`/tictactoe` - Classic Tic-Tac-Toe battle",
+          "`/connect4` - Play Connect 4 with a friend",
+          "`/hangman` - Start a word guessing game",
+          "`/trivia` - Race to answer trivia first",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "🤝 Cooperative Games",
+        value: [
+          "`/heist` - Start a heist, recruit a crew!",
+          "`/boss` - Spawn a boss fight for everyone",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "⭐ XP & Rewards",
+        value: [
+          "`/daily` - Claim your daily XP reward",
+          "`/level` - Check your level & XP progress",
+          "`/streak` - View your daily claim streak",
+          "`/leaderboard` - See the top XP earners",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "😄 Fun Stuff",
+        value: [
+          "`/joke` - Get a random joke",
+          "`/quote` - Receive an inspirational quote",
+          "`/funfact` - Learn something new",
+          "`/compliment` - Get (or give) a nice compliment",
+          "`/roast` - Friendly roasts for you or friends",
+        ].join("\n"),
+        inline: false,
+      },
+    ],
+    footer: { 
+      text: "Eclipse Fun Bot • Win games to earn XP and climb the leaderboard!",
+    },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: 4, // CHANNEL_MESSAGE
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
 
 // /8ball command
 function handleMagic8BallCommand(

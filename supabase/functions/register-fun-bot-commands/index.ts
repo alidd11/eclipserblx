@@ -8,6 +8,14 @@ const corsHeaders = {
 
 // Fun Bot slash command definitions - games, XP, and entertainment
 const commands = [
+  // ==================== HELP ====================
+  {
+    name: "help",
+    description: "View all available commands and features",
+    contexts: [0],
+    integration_types: [0],
+  },
+  
   // ==================== GAMES & ENTERTAINMENT ====================
   {
     name: "8ball",
