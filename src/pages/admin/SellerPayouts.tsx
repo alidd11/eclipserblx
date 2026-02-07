@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, Banknote, Loader2 } from "lucide-react";
+import { Check, X, Banknote, Loader2, Clock, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 export default function SellerPayouts() {
   const queryClient = useQueryClient();
@@ -116,12 +116,18 @@ export default function SellerPayouts() {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error || "Failed to process Wise payout");
+      if (!data.success && !data.awaiting_funds) throw new Error(data.error || "Failed to process Wise payout");
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["seller-payouts"] });
-      toast.success("Bank transfer initiated via Wise");
+      
+      if (data.awaiting_funds) {
+        toast.info(data.message || "Wise balance low - Stripe funding initiated. Payout will complete in 1-2 business days.");
+      } else {
+        toast.success("Bank transfer initiated via Wise");
+      }
+      
       setSelectedPayout(null);
       setNotes("");
     },
@@ -130,14 +136,21 @@ export default function SellerPayouts() {
     },
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, payout?: any) => {
     switch (status) {
       case "completed":
         return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>;
       case "rejected":
         return <Badge variant="destructive">Rejected</Badge>;
       case "processing":
-        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Processing</Badge>;
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Processing</Badge>;
+      case "awaiting_funds":
+        return (
+          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Awaiting Funds
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">Pending</Badge>;
     }
@@ -152,6 +165,16 @@ export default function SellerPayouts() {
       return <Badge variant="secondary">PayPal</Badge>;
     }
     return <Badge variant="default">Stripe</Badge>;
+  };
+
+  const getEstimatedArrival = (payout: any) => {
+    if (payout.funding_requested_at) {
+      const requestedAt = new Date(payout.funding_requested_at);
+      const estimatedArrival = new Date(requestedAt);
+      estimatedArrival.setDate(estimatedArrival.getDate() + 2); // 1-2 business days
+      return format(estimatedArrival, "dd MMM yyyy");
+    }
+    return "1-2 business days";
   };
 
   const pendingTotal = payouts?.filter((p: any) => p.status === "pending")
@@ -171,6 +194,8 @@ export default function SellerPayouts() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="awaiting_funds">Awaiting Funds</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
               <SelectItem value="all">All Payouts</SelectItem>
@@ -259,7 +284,7 @@ export default function SellerPayouts() {
                       <TableCell className="text-sm">
                         {format(new Date(payout.created_at), "dd MMM yyyy")}
                       </TableCell>
-                      <TableCell>{getStatusBadge(payout.status)}</TableCell>
+                      <TableCell>{getStatusBadge(payout.status, payout)}</TableCell>
                       <TableCell>
                         {payout.status === "pending" && (
                           <Button
@@ -270,6 +295,23 @@ export default function SellerPayouts() {
                             <Check className="h-4 w-4 mr-1" />
                             Process
                           </Button>
+                        )}
+                        {payout.status === "awaiting_funds" && (
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs text-amber-400 flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              Stripe → Wise funding in progress
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              Est. arrival: {getEstimatedArrival(payout)}
+                            </span>
+                            {payout.failure_reason && (
+                              <span className="text-xs text-destructive flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                {payout.failure_reason}
+                              </span>
+                            )}
+                          </div>
                         )}
                         {payout.status === "processing" && (
                           <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -314,10 +356,15 @@ export default function SellerPayouts() {
                   </div>
                 )}
                 {selectedPayout?.stores?.payout_method === 'bank' && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Transfer via:</span>
-                    <span className="font-medium text-blue-400">Wise International Transfer</span>
-                  </div>
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Transfer via:</span>
+                      <span className="font-medium text-blue-400">Wise International Transfer</span>
+                    </div>
+                    <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-400">
+                      💡 If Wise balance is insufficient, funds will automatically be pulled from Stripe (1-2 business days).
+                    </div>
+                  </>
                 )}
               </div>
               <div>
