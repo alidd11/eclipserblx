@@ -6,12 +6,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Generate a secure random token
+function generateToken(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const url = new URL(req.url);
+    const tokenParam = url.searchParams.get("token");
+
+    // If token is provided, this is a download redemption request (GET)
+    if (tokenParam && req.method === "GET") {
+      return await handleTokenRedemption(tokenParam);
+    }
+
+    // Otherwise, this is a token generation request (POST with auth)
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -133,15 +149,38 @@ serve(async (req) => {
       .update({ download_count: (product.download_count || 0) + 1 })
       .eq('id', productId);
 
-    // Generate signed URL for the file (valid for 1 hour)
+    // Generate signed URL for the file (valid for 5 minutes)
     const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
       .from('product-assets')
-      .createSignedUrl(product.asset_file_url, 3600); // 1 hour expiry
+      .createSignedUrl(product.asset_file_url, 300); // 5 minutes expiry
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
       console.error("Error creating signed URL:", signedUrlError);
       return new Response(
         JSON.stringify({ error: "Failed to generate download link" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create one-time download token
+    const downloadToken = generateToken();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    const { error: tokenError } = await supabaseAdmin
+      .from('download_tokens')
+      .insert({
+        token: downloadToken,
+        user_id: user.id,
+        product_id: productId,
+        order_item_id: orderItemId || userOrder.id,
+        signed_url: signedUrlData.signedUrl,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (tokenError) {
+      console.error("Error creating download token:", tokenError);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate download token" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -158,18 +197,24 @@ serve(async (req) => {
       console.log("Could not get file size:", e);
     }
 
-    console.log(`Download successful: user=${user.id}, product=${productId}, size=${fileSize}`);
+    console.log(`Download token created: user=${user.id}, product=${productId}, token=${downloadToken.slice(0, 8)}...`);
 
     // Create filename with proper extension
     const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
     const fileName = fileExtension ? `${sanitizedName}${fileExtension}` : sanitizedName;
 
+    // Return the one-time token URL instead of direct signed URL
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
+
     return new Response(
       JSON.stringify({ 
-        downloadUrl: signedUrlData.signedUrl,
+        downloadUrl: downloadUrl,
         productName: product.name,
         fileName: fileName,
-        fileSize: fileSize
+        fileSize: fileSize,
+        expiresAt: expiresAt.toISOString(),
+        oneTimeUse: true,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -183,3 +228,104 @@ serve(async (req) => {
     );
   }
 });
+
+// Handle one-time token redemption (GET request with token)
+async function handleTokenRedemption(token: string): Promise<Response> {
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
+  // Find the token
+  const { data: tokenData, error: tokenError } = await supabaseAdmin
+    .from('download_tokens')
+    .select('*')
+    .eq('token', token)
+    .single();
+
+  if (tokenError || !tokenData) {
+    console.error("Token not found:", token.slice(0, 8));
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head><title>Download Error</title></head>
+        <body style="font-family: system-ui; text-align: center; padding: 50px;">
+          <h1>❌ Invalid Download Link</h1>
+          <p>This download link is invalid or has already been used.</p>
+          <p>Please request a new download link from your account.</p>
+        </body>
+      </html>`,
+      { status: 404, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+    );
+  }
+
+  // Check if already used
+  if (tokenData.used_at) {
+    console.log("Token already used:", token.slice(0, 8), "at", tokenData.used_at);
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head><title>Download Error</title></head>
+        <body style="font-family: system-ui; text-align: center; padding: 50px;">
+          <h1>⚠️ Link Already Used</h1>
+          <p>This download link has already been used.</p>
+          <p>Download links are one-time use only for security.</p>
+          <p>Please request a new download link from your account.</p>
+        </body>
+      </html>`,
+      { status: 410, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+    );
+  }
+
+  // Check if expired
+  const expiresAt = new Date(tokenData.expires_at);
+  if (expiresAt < new Date()) {
+    console.log("Token expired:", token.slice(0, 8), "expired at", tokenData.expires_at);
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head><title>Download Error</title></head>
+        <body style="font-family: system-ui; text-align: center; padding: 50px;">
+          <h1>⏰ Link Expired</h1>
+          <p>This download link has expired (5 minute limit).</p>
+          <p>Please request a new download link from your account.</p>
+        </body>
+      </html>`,
+      { status: 410, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+    );
+  }
+
+  // Mark token as used BEFORE redirecting (atomic operation)
+  const { error: updateError } = await supabaseAdmin
+    .from('download_tokens')
+    .update({ used_at: new Date().toISOString() })
+    .eq('id', tokenData.id)
+    .is('used_at', null); // Only update if still unused (prevents race conditions)
+
+  if (updateError) {
+    console.error("Failed to mark token as used:", updateError);
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head><title>Download Error</title></head>
+        <body style="font-family: system-ui; text-align: center; padding: 50px;">
+          <h1>❌ Download Failed</h1>
+          <p>An error occurred processing your download.</p>
+          <p>Please try again.</p>
+        </body>
+      </html>`,
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+    );
+  }
+
+  console.log(`Token redeemed: ${token.slice(0, 8)}... for product ${tokenData.product_id}`);
+
+  // Redirect to the signed URL for actual file download
+  return new Response(null, {
+    status: 302,
+    headers: {
+      ...corsHeaders,
+      "Location": tokenData.signed_url,
+    },
+  });
+}

@@ -2112,6 +2112,57 @@ export type Database = {
           },
         ]
       }
+      download_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          order_item_id: string | null
+          product_id: string
+          signed_url: string
+          token: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          order_item_id?: string | null
+          product_id: string
+          signed_url: string
+          token: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_item_id?: string | null
+          product_id?: string
+          signed_url?: string
+          token?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "download_tokens_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "download_tokens_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_subscriptions: {
         Row: {
           created_at: string
@@ -6358,6 +6409,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      cleanup_expired_download_tokens: { Args: never; Returns: undefined }
       cleanup_expired_link_codes: { Args: never; Returns: undefined }
       escalate_unanswered_tickets: { Args: never; Returns: number }
       generate_affiliate_id: { Args: never; Returns: string }
