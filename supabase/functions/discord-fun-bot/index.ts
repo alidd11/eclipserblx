@@ -137,6 +137,12 @@ Deno.serve(async (req) => {
         return interactionResponse("Unable to identify Discord user.", true);
       }
 
+      // Restrict commands to specific channel
+      const ALLOWED_CHANNEL_ID = "1461353045945221265";
+      if (interaction.channel_id && interaction.channel_id !== ALLOWED_CHANNEL_ID) {
+        return interactionResponse(`❌ Fun commands can only be used in <#${ALLOWED_CHANNEL_ID}>!`, true);
+      }
+
       const discordUserId = discordUser.id;
       const discordUsername = discordUser.global_name || discordUser.username;
       
