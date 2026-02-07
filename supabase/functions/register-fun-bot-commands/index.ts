@@ -6,87 +6,153 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-api-key, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Discord slash command definitions for Eclipse Portal Bot
-// contexts: 0 = Guild, 1 = Bot DM, 2 = Private Channel (Group DM)
-// integration_types: 0 = Guild Install, 1 = User Install
+// Fun Bot slash command definitions - games, XP, and entertainment
 const commands = [
-  // ==================== ACCOUNT COMMANDS ====================
+  // ==================== GAMES & ENTERTAINMENT ====================
   {
-    name: "link",
-    description: "Check if your Discord is linked to Eclipse",
-    contexts: [0], // Guild only
-    integration_types: [0],
-  },
-  {
-    name: "verify",
-    description: "Link your Discord using a code from Eclipse",
-    contexts: [0], // Guild only
+    name: "8ball",
+    description: "Ask the magic 8-ball a question",
+    contexts: [0],
     integration_types: [0],
     options: [
       {
-        name: "code",
-        description: "Your 6-character link code from Eclipse",
+        name: "question",
+        description: "Your question for the magic 8-ball",
         type: 3, // STRING
         required: true,
       },
     ],
   },
   {
-    name: "profile",
-    description: "View your Eclipse profile and stats",
-    contexts: [0], // Guild only
+    name: "coinflip",
+    description: "Flip a coin - heads or tails?",
+    contexts: [0],
     integration_types: [0],
   },
   {
-    name: "purchases",
-    description: "View your recent purchases",
-    contexts: [0], // Guild only
-    integration_types: [0],
-  },
-  {
-    name: "retrieve",
-    description: "Get a download link for a purchased product",
-    contexts: [0], // Guild only
+    name: "roll",
+    description: "Roll dice",
+    contexts: [0],
     integration_types: [0],
     options: [
       {
-        name: "product",
-        description: "Product name to download",
+        name: "sides",
+        description: "Number of sides on the die (default: 6)",
+        type: 4, // INTEGER
+        required: false,
+        min_value: 2,
+        max_value: 100,
+      },
+      {
+        name: "count",
+        description: "Number of dice to roll (default: 1)",
+        type: 4, // INTEGER
+        required: false,
+        min_value: 1,
+        max_value: 10,
+      },
+    ],
+  },
+  {
+    name: "rps",
+    description: "Play Rock Paper Scissors against the bot",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "choice",
+        description: "Your choice",
         type: 3, // STRING
+        required: true,
+        choices: [
+          { name: "🪨 Rock", value: "rock" },
+          { name: "📄 Paper", value: "paper" },
+          { name: "✂️ Scissors", value: "scissors" },
+        ],
+      },
+    ],
+  },
+  
+  // ==================== DAILY REWARDS & XP ====================
+  {
+    name: "daily",
+    description: "Claim your daily XP reward",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "level",
+    description: "Check your level and XP",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Check another user's level (optional)",
+        type: 6, // USER
         required: false,
       },
     ],
   },
   {
-    name: "getrole",
-    description: "Sync your Discord roles based on your Eclipse account status",
-    contexts: [0], // Guild only
+    name: "leaderboard",
+    description: "View the XP leaderboard",
+    contexts: [0],
     integration_types: [0],
   },
   {
-    name: "store",
-    description: "View this server's store information",
-    contexts: [0], // Guild only
+    name: "streak",
+    description: "Check your daily claim streak",
+    contexts: [0],
+    integration_types: [0],
+  },
+  
+  // ==================== FUN RESPONSES ====================
+  {
+    name: "joke",
+    description: "Get a random joke",
+    contexts: [0],
     integration_types: [0],
   },
   {
-    name: "unlink",
-    description: "Disconnect your Discord from your Eclipse account",
-    contexts: [0], // Guild only
+    name: "quote",
+    description: "Get an inspirational quote",
+    contexts: [0],
     integration_types: [0],
   },
   {
-    name: "support",
-    description: "Contact Eclipse support - opens a ticket",
-    contexts: [0], // Guild only
+    name: "funfact",
+    description: "Learn a random fun fact",
+    contexts: [0],
     integration_types: [0],
   },
   {
-    name: "reply",
-    description: "Reply to your active support ticket",
-    contexts: [1], // DM only
-    integration_types: [0, 1], // Works with both guild and user installs
-    dm_permission: true,
+    name: "compliment",
+    description: "Get a nice compliment",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Give a compliment to someone else",
+        type: 6, // USER
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "roast",
+    description: "Get a friendly roast",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Roast someone else (friendly!)",
+        type: 6, // USER
+        required: false,
+      },
+    ],
   },
 ];
 
@@ -136,13 +202,13 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Use separate Customer Bot credentials
-  const discordBotToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
-  const discordClientId = Deno.env.get("DISCORD_CUSTOMER_BOT_CLIENT_ID");
+  // Use Fun Bot credentials
+  const discordBotToken = Deno.env.get("DISCORD_FUN_BOT_TOKEN");
+  const discordClientId = Deno.env.get("DISCORD_FUN_BOT_CLIENT_ID");
 
   if (!discordBotToken || !discordClientId) {
     return new Response(
-      JSON.stringify({ error: "Discord Customer Bot credentials not configured. Required: DISCORD_CUSTOMER_BOT_TOKEN, DISCORD_CUSTOMER_BOT_CLIENT_ID" }),
+      JSON.stringify({ error: "Discord Fun Bot credentials not configured. Required: DISCORD_FUN_BOT_TOKEN, DISCORD_FUN_BOT_CLIENT_ID" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -163,7 +229,7 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("[register-discord-commands] Discord API error:", errorText);
+      console.error("[register-fun-bot-commands] Discord API error:", errorText);
       return new Response(
         JSON.stringify({ error: "Failed to register commands", details: errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -171,18 +237,18 @@ Deno.serve(async (req) => {
     }
 
     const result = await response.json();
-    console.log("[register-discord-commands] Commands registered:", result);
+    console.log("[register-fun-bot-commands] Commands registered:", result);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Discord commands registered successfully",
+        message: "Fun Bot commands registered successfully",
         commands: result.map((c: any) => ({ name: c.name, id: c.id })),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[register-discord-commands] Error:", error);
+    console.error("[register-fun-bot-commands] Error:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
