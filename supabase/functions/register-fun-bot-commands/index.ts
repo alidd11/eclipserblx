@@ -73,6 +73,103 @@ const commands = [
     ],
   },
   
+  // ==================== MULTIPLAYER GAMES ====================
+  {
+    name: "duel",
+    description: "Challenge another user to Rock Paper Scissors for XP",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "opponent",
+        description: "The user you want to challenge",
+        type: 6, // USER
+        required: true,
+      },
+      {
+        name: "xp",
+        description: "XP to wager (default: 10)",
+        type: 4, // INTEGER
+        required: false,
+        min_value: 5,
+        max_value: 100,
+      },
+    ],
+  },
+  {
+    name: "trivia",
+    description: "Start a trivia question - first correct answer wins!",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "category",
+        description: "Question category",
+        type: 3, // STRING
+        required: false,
+        choices: [
+          { name: "🎮 Gaming", value: "Gaming" },
+          { name: "🌍 General", value: "General" },
+          { name: "💻 Tech", value: "Tech" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "tictactoe",
+    description: "Challenge someone to Tic-Tac-Toe",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "opponent",
+        description: "The user you want to challenge",
+        type: 6, // USER
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "connect4",
+    description: "Challenge someone to Connect 4",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "opponent",
+        description: "The user you want to challenge",
+        type: 6, // USER
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "hangman",
+    description: "Start a game of Hangman",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "word",
+        description: "The word for others to guess (sent privately)",
+        type: 3, // STRING
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "heist",
+    description: "Start a heist - others can join for shared XP rewards!",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "boss",
+    description: "Spawn a boss fight - work together to defeat it!",
+    contexts: [0],
+    integration_types: [0],
+  },
+  
   // ==================== DAILY REWARDS & XP ====================
   {
     name: "daily",
