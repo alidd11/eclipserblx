@@ -233,6 +233,49 @@ export function handleRubberDuck(): { advice: string; emoji: string } {
   return getRandomElement(RUBBER_DUCK_WISDOM);
 }
 
+// Fishing outcomes for /fish command
+const FISHING_OUTCOMES = [
+  { catch: "🐟 Common Fish", description: "You caught a regular fish. Nothing special, but it's honest work!", rarity: "common", gif: "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif" },
+  { catch: "🐠 Tropical Fish", description: "Ooh, colorful! This one's from somewhere exotic.", rarity: "uncommon", gif: "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif" },
+  { catch: "🦈 Shark!", description: "JAWS THEME INTENSIFIES. You somehow survived!", rarity: "rare", gif: "https://media.giphy.com/media/xUPGcCh4nUHyCkyuti/giphy.gif" },
+  { catch: "🥾 Old Boot", description: "Classic. Someone's missing their left boot.", rarity: "junk", gif: "https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif" },
+  { catch: "🐙 Octopus", description: "Eight arms to hug you! Or strangle you. Same thing.", rarity: "rare", gif: "https://media.giphy.com/media/l3q2zCKqx8Eiuf3SE/giphy.gif" },
+  { catch: "🗑️ Trash", description: "You caught someone's old code. It's still in production.", rarity: "junk", gif: "https://media.giphy.com/media/RJaUOmpBQAoE4RuWnj/giphy.gif" },
+  { catch: "🐡 Pufferfish", description: "Don't poke it! ...You poked it, didn't you?", rarity: "uncommon", gif: "https://media.giphy.com/media/VkMV9TldsPd28/giphy.gif" },
+  { catch: "🦑 Giant Squid", description: "Release the Kraken! Wait, that's you holding it.", rarity: "legendary", gif: "https://media.giphy.com/media/26xBFT1F9BgskEvTO/giphy.gif" },
+  { catch: "🎣 Another Fishing Rod", description: "Yo dawg, I heard you like fishing...", rarity: "junk", gif: "https://media.giphy.com/media/3oEjI1erPMTMBFmNHi/giphy.gif" },
+  { catch: "🐋 Whale", description: "HOW?! Your rod should've snapped! You're built different.", rarity: "legendary", gif: "https://media.giphy.com/media/l0MYunAI4j10uWbFm/giphy.gif" },
+  { catch: "🦀 Crab", description: "It's giving you the side-eye. Menacingly.", rarity: "common", gif: "https://media.giphy.com/media/2dQ3FMaMFccpi/giphy.gif" },
+  { catch: "🐢 Sea Turtle", description: "It's older than your code architecture!", rarity: "uncommon", gif: "https://media.giphy.com/media/lXiRJ8IRz5QH6wTQc/giphy.gif" },
+  { catch: "💀 Skeleton", description: "It's holding a sign: 'I waited for npm install'", rarity: "spooky", gif: "https://media.giphy.com/media/l2JJKs3I69qfaQleE/giphy.gif" },
+  { catch: "🧜‍♀️ Mermaid", description: "She asked if you have games on your phone.", rarity: "mythical", gif: "https://media.giphy.com/media/3o7TKSxdQJIoiRXHl6/giphy.gif" },
+  { catch: "📱 Someone's Phone", description: "Still has 47 unread Discord pings.", rarity: "junk", gif: "https://media.giphy.com/media/l1J9FiGxR61OcF2mI/giphy.gif" },
+  { catch: "🐊 Alligator", description: "Wrong body of water?! It doesn't care, it's angry!", rarity: "rare", gif: "https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif" },
+  { catch: "🎁 Mystery Box", description: "Could be anything! It's a mass of seaweed. Disappointing.", rarity: "uncommon", gif: "https://media.giphy.com/media/3oriNZoNvn73MZaFYk/giphy.gif" },
+  { catch: "🌊 Nothing", description: "The fish saw your code commits and swam away.", rarity: "fail", gif: "https://media.giphy.com/media/Oj5w7lOaR5ieNpuBhn/giphy.gif" },
+];
+
+export function handleFishing(): { catch: string; description: string; rarity: string; gif: string; color: number } {
+  const outcome = getRandomElement(FISHING_OUTCOMES);
+  
+  // Color based on rarity
+  const colors: Record<string, number> = {
+    common: 0x9ca3af,
+    uncommon: 0x22c55e,
+    rare: 0x3b82f6,
+    legendary: 0xfbbf24,
+    mythical: 0xa855f7,
+    junk: 0x78716c,
+    spooky: 0x1f2937,
+    fail: 0xef4444,
+  };
+  
+  return {
+    ...outcome,
+    color: colors[outcome.rarity] || 0x6b7280,
+  };
+}
+
 // ==================== HELPER FUNCTIONS ====================
 
 function getRandomElement<T>(arr: T[]): T {

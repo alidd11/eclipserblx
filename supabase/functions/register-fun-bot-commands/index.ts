@@ -291,6 +291,14 @@ const commands = [
     contexts: [0],
     integration_types: [0],
   },
+  
+  // ==================== ACTIVITIES ====================
+  {
+    name: "fish",
+    description: "Go fishing and see what you catch!",
+    contexts: [0],
+    integration_types: [0],
+  },
 ];
 
 Deno.serve(async (req) => {
