@@ -7,21 +7,18 @@ const corsHeaders = {
 };
 
 // Fun Bot slash command definitions - games, XP, and entertainment
+// Removed contexts and integration_types to use Discord defaults for better compatibility
 const commands = [
   // ==================== HELP ====================
   {
     name: "help",
     description: "View all available commands and features",
-    contexts: [0],
-    integration_types: [0],
   },
   
   // ==================== GAMES & ENTERTAINMENT ====================
   {
     name: "8ball",
     description: "Ask the magic 8-ball a question",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "question",
@@ -34,14 +31,10 @@ const commands = [
   {
     name: "coinflip",
     description: "Flip a coin - heads or tails?",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "roll",
     description: "Roll dice",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "sides",
@@ -64,8 +57,6 @@ const commands = [
   {
     name: "rps",
     description: "Play Rock Paper Scissors against the bot",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "choice",
@@ -85,8 +76,6 @@ const commands = [
   {
     name: "duel",
     description: "Challenge another user to Rock Paper Scissors for XP",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "opponent",
@@ -107,8 +96,6 @@ const commands = [
   {
     name: "trivia",
     description: "Start a trivia question - first correct answer wins!",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "category",
@@ -126,8 +113,6 @@ const commands = [
   {
     name: "tictactoe",
     description: "Challenge someone to Tic-Tac-Toe",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "opponent",
@@ -140,8 +125,6 @@ const commands = [
   {
     name: "connect4",
     description: "Challenge someone to Connect 4",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "opponent",
@@ -154,8 +137,6 @@ const commands = [
   {
     name: "hangman",
     description: "Start a game of Hangman",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "word",
@@ -168,28 +149,20 @@ const commands = [
   {
     name: "heist",
     description: "Start a heist - others can join for shared XP rewards!",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "boss",
     description: "Spawn a boss fight - work together to defeat it!",
-    contexts: [0],
-    integration_types: [0],
   },
   
   // ==================== DAILY REWARDS & XP ====================
   {
     name: "daily",
     description: "Claim your daily XP reward",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "level",
     description: "Check your level and XP",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "user",
@@ -202,40 +175,28 @@ const commands = [
   {
     name: "leaderboard",
     description: "View the XP leaderboard",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "streak",
     description: "Check your daily claim streak",
-    contexts: [0],
-    integration_types: [0],
   },
   
   // ==================== FUN RESPONSES ====================
   {
     name: "joke",
     description: "Get a random joke",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "quote",
     description: "Get an inspirational quote",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "funfact",
     description: "Learn a random fun fact",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "compliment",
     description: "Get a nice compliment",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "user",
@@ -248,8 +209,6 @@ const commands = [
   {
     name: "roast",
     description: "Get a friendly roast",
-    contexts: [0],
-    integration_types: [0],
     options: [
       {
         name: "user",
@@ -264,46 +223,32 @@ const commands = [
   {
     name: "debug",
     description: "Generate a random fake bug report",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "commit",
     description: "Generate a funny git commit message",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "codereview",
     description: "Get a random code review comment",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "stackoverflow",
     description: "Simulate a Stack Overflow response",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "rubberduck",
     description: "Ask the rubber duck for debugging wisdom",
-    contexts: [0],
-    integration_types: [0],
   },
   
   // ==================== ACTIVITIES ====================
   {
     name: "fish",
     description: "Go fishing and see what you catch!",
-    contexts: [0],
-    integration_types: [0],
   },
   {
     name: "meme",
     description: "Get a random funny meme",
-    contexts: [0],
-    integration_types: [0],
   },
 ];
 
