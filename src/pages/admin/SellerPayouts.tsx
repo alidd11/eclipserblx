@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, DollarSign, Clock } from "lucide-react";
+import { Check, X, Banknote, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -80,7 +80,6 @@ export default function SellerPayouts() {
 
       // If completed, update seller balance
       if (status === "completed" && payout) {
-        // Get current balance and decrement
         const { data: currentBalance } = await supabase
           .from("seller_balances")
           .select("available_balance, total_paid")
@@ -109,15 +108,50 @@ export default function SellerPayouts() {
     },
   });
 
+  // Wise payout mutation for bank transfers
+  const wisePayoutMutation = useMutation({
+    mutationFn: async ({ payoutId }: { payoutId: string }) => {
+      const { data, error } = await supabase.functions.invoke("wise-payout", {
+        body: { action: "process-seller-payout", payoutId },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || "Failed to process Wise payout");
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seller-payouts"] });
+      toast.success("Bank transfer initiated via Wise");
+      setSelectedPayout(null);
+      setNotes("");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to process Wise payout");
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500/20 text-green-400">Completed</Badge>;
+        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>;
       case "rejected":
         return <Badge variant="destructive">Rejected</Badge>;
+      case "processing":
+        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Processing</Badge>;
       default:
         return <Badge variant="secondary">Pending</Badge>;
     }
+  };
+
+  const getPayoutMethodBadge = (payout: any) => {
+    const method = payout.stores?.payout_method;
+    if (method === 'bank') {
+      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank (Wise)</Badge>;
+    }
+    if (method === 'paypal') {
+      return <Badge variant="secondary">PayPal</Badge>;
+    }
+    return <Badge variant="default">Stripe</Badge>;
   };
 
   const pendingTotal = payouts?.filter((p: any) => p.status === "pending")
@@ -211,18 +245,16 @@ export default function SellerPayouts() {
                       <TableCell>{payout.stores?.name}</TableCell>
                       <TableCell className="font-medium">£{payout.amount?.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant={payout.stores?.payout_method === 'stripe' ? 'default' : 'secondary'}>
-                          {payout.stores?.payout_method === 'stripe' ? 'Stripe' : 
-                           payout.stores?.payout_method === 'paypal' ? 'PayPal' : 
-                           payout.stores?.payout_method || 'Stripe'}
-                        </Badge>
+                        {getPayoutMethodBadge(payout)}
                       </TableCell>
                       <TableCell className="text-sm">
                         {payout.stores?.payout_method === 'paypal' 
                           ? payout.stores?.paypal_email || "Not set"
-                          : payout.stores?.payout_method === 'stripe' 
-                            ? "Automatic via Stripe"
-                            : "Not configured"}
+                          : payout.stores?.payout_method === 'bank' 
+                            ? "Bank Transfer"
+                            : payout.stores?.payout_method === 'stripe' 
+                              ? "Automatic via Stripe"
+                              : "Not configured"}
                       </TableCell>
                       <TableCell className="text-sm">
                         {format(new Date(payout.created_at), "dd MMM yyyy")}
@@ -230,24 +262,20 @@ export default function SellerPayouts() {
                       <TableCell>{getStatusBadge(payout.status)}</TableCell>
                       <TableCell>
                         {payout.status === "pending" && (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() => setSelectedPayout(payout)}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => {
-                                setSelectedPayout(payout);
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => setSelectedPayout(payout)}
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Process
+                          </Button>
+                        )}
+                        {payout.status === "processing" && (
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Wise transfer in progress
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -275,11 +303,7 @@ export default function SellerPayouts() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Payout Method:</span>
-                  <Badge variant={selectedPayout?.stores?.payout_method === 'stripe' ? 'default' : 'secondary'}>
-                    {selectedPayout?.stores?.payout_method === 'stripe' ? 'Stripe (Auto)' : 
-                     selectedPayout?.stores?.payout_method === 'paypal' ? 'PayPal' : 
-                     selectedPayout?.stores?.payout_method || 'Stripe'}
-                  </Badge>
+                  {selectedPayout && getPayoutMethodBadge(selectedPayout)}
                 </div>
                 {selectedPayout?.stores?.payout_method === 'paypal' && (
                   <div className="flex justify-between">
@@ -287,6 +311,12 @@ export default function SellerPayouts() {
                     <span className="font-medium">
                       {selectedPayout?.stores?.paypal_email || "Not set"}
                     </span>
+                  </div>
+                )}
+                {selectedPayout?.stores?.payout_method === 'bank' && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Transfer via:</span>
+                    <span className="font-medium text-blue-400">Wise International Transfer</span>
                   </div>
                 )}
               </div>
@@ -300,30 +330,50 @@ export default function SellerPayouts() {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setSelectedPayout(null)}>
                 Cancel
               </Button>
               <Button
                 variant="destructive"
+                disabled={processMutation.isPending || wisePayoutMutation.isPending}
                 onClick={() => processMutation.mutate({
                   payoutId: selectedPayout.id,
                   status: "rejected",
                   notes,
                 })}
               >
+                {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
                 Reject
               </Button>
-              <Button
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => processMutation.mutate({
-                  payoutId: selectedPayout.id,
-                  status: "completed",
-                  notes,
-                })}
-              >
-                Mark as Paid
-              </Button>
+              
+              {selectedPayout?.stores?.payout_method === 'bank' ? (
+                <Button
+                  variant="default"
+                  disabled={wisePayoutMutation.isPending || processMutation.isPending}
+                  onClick={() => wisePayoutMutation.mutate({ payoutId: selectedPayout.id })}
+                >
+                  {wisePayoutMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Banknote className="h-4 w-4 mr-1" />
+                  )}
+                  Send via Wise
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  disabled={processMutation.isPending}
+                  onClick={() => processMutation.mutate({
+                    payoutId: selectedPayout.id,
+                    status: "completed",
+                    notes,
+                  })}
+                >
+                  {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+                  Mark as Paid
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
