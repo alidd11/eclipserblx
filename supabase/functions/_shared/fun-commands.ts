@@ -118,6 +118,121 @@ const ROASTS = [
   "You're like JavaScript - unpredictable but somehow it works! 🎲",
 ];
 
+// ==================== DEVELOPER COMMANDS ====================
+
+// Fake bugs for /debug
+const FAKE_BUGS = [
+  { error: "NullPointerException", message: "Cannot read property 'undefined' of undefined of undefined", file: "chaos.js", line: 404 },
+  { error: "StackOverflow", message: "Recursion exceeded: developer ego too large", file: "ego.ts", line: 9000 },
+  { error: "OutOfCoffeeException", message: "Fatal error: caffeine levels critically low", file: "developer.java", line: 7 },
+  { error: "SyntaxError", message: "Unexpected token 'happiness' at work", file: "monday.js", line: 1 },
+  { error: "TypeError", message: "undefined is not a function (but it was working yesterday)", file: "magic.ts", line: 42 },
+  { error: "InfiniteLoopError", message: "Task 'go home' never completes", file: "worklife.py", line: 247 },
+  { error: "MemoryLeak", message: "Chrome has consumed all RAM on this planet", file: "browser.exe", line: 999 },
+  { error: "GitConflictException", message: "Both versions are wrong", file: "CONFLICT", line: 0 },
+  { error: "CSS Error", message: "Element centered... in alternate universe only", file: "styles.css", line: 666 },
+  { error: "DatabaseTimeout", message: "Query started in 2019, still running", file: "query.sql", line: 1 },
+  { error: "DeploymentFailed", message: "Works on my machine ¯\\_(ツ)_/¯", file: "production.log", line: 500 },
+  { error: "npm ERR!", message: "node_modules has achieved sentience and refuses to install", file: "package.json", line: 13 },
+  { error: "CORS Error", message: "Your request was personally denied by the server", file: "api.ts", line: 401 },
+  { error: "SegmentationFault", message: "Memory accessed memories it wasn't supposed to", file: "core.c", line: 1337 },
+  { error: "RuntimeException", message: "Code worked in testing, panicked in production", file: "murphy.js", line: 101 },
+];
+
+// Funny git commit messages for /commit
+const FAKE_COMMITS = [
+  "Fixed bug that wasn't a bug, created 3 new bugs",
+  "Removed code that was definitely doing something important",
+  "Added TODO comment, will never come back to it",
+  "Made it work, don't ask how, don't touch it",
+  "Reverted revert of reverted revert",
+  "Emergency fix for the emergency fix",
+  "Refactored code I don't understand",
+  "WIP: Will probably never finish",
+  "Friday 5pm deployment, YOLO",
+  "Oops, forgot to remove console.log",
+  "Fixed typo in previous 'Fixed typo' commit",
+  "Implemented feature from 6 months ago that everyone forgot about",
+  "Removed feature nobody used (CEO's favorite feature)",
+  "Updated dependencies, broke everything",
+  "Added comments for future me who will hate past me",
+  "Merged develop into main, said 3 prayers",
+  "Performance optimization: removed tests",
+  "Security fix: deleted everything",
+  "Hotfix for hotfix for hotfix",
+  "git commit -m 'idk what i did but it works now'",
+];
+
+// Code review comments for /codereview
+const CODE_REVIEWS = [
+  { verdict: "APPROVED", comment: "LGTM 👍 (didn't actually read it)", emoji: "✅" },
+  { verdict: "CHANGES REQUESTED", comment: "This variable name... I'm calling HR", emoji: "🔴" },
+  { verdict: "APPROVED", comment: "Bold choice not using any comments whatsoever", emoji: "🤔" },
+  { verdict: "APPROVED", comment: "It works and I'm scared to understand why", emoji: "😰" },
+  { verdict: "CHANGES REQUESTED", comment: "Have you considered... not doing this?", emoji: "💀" },
+  { verdict: "APPROVED", comment: "Approved before I look too closely", emoji: "🙈" },
+  { verdict: "CHANGES REQUESTED", comment: "The code is great! It's the logic I have questions about", emoji: "🧐" },
+  { verdict: "APPROVED", comment: "Ship it! (We have rollback, right?)", emoji: "🚀" },
+  { verdict: "CHANGES REQUESTED", comment: "I see you've chosen chaos today", emoji: "🌀" },
+  { verdict: "APPROVED", comment: "Future you will definitely understand this... probably", emoji: "🔮" },
+  { verdict: "CHANGES REQUESTED", comment: "This deserves its own horror movie", emoji: "🎬" },
+  { verdict: "APPROVED", comment: "If it compiles, it ships", emoji: "📦" },
+  { verdict: "CHANGES REQUESTED", comment: "Have you tried turning it off and rewriting from scratch?", emoji: "🔄" },
+  { verdict: "APPROVED", comment: "I've seen worse. Approved out of exhaustion", emoji: "😴" },
+];
+
+// StackOverflow responses for /stackoverflow
+const STACKOVERFLOW_RESPONSES = [
+  { status: "CLOSED", reason: "Marked as duplicate of a question from 2009 that uses jQuery", votes: -3 },
+  { status: "ANSWERED", reason: "Just use a regex", votes: 147 },
+  { status: "CLOSED", reason: "Needs more focus, details, clarity, and coffee", votes: 0 },
+  { status: "ANSWERED", reason: "Have you tried turning it off and on again?", votes: 42 },
+  { status: "CLOSED", reason: "This is clearly a homework assignment", votes: -7 },
+  { status: "ANSWERED", reason: "Works for me™", votes: 1 },
+  { status: "CLOSED", reason: "Please read the documentation that doesn't exist", votes: -2 },
+  { status: "ANSWERED", reason: "Just import leftpad and move on with your life", votes: 89 },
+  { status: "CLOSED", reason: "Opinion-based: the correct answer is obviously subjective", votes: 0 },
+  { status: "ANSWERED", reason: "Have you considered using a different programming language?", votes: -15 },
+  { status: "ANSWERED", reason: "npm install problem-solver", votes: 256 },
+  { status: "CLOSED", reason: "OP edited the question 17 times and now nobody knows what they're asking", votes: 3 },
+];
+
+// Rubber duck debugging advice for /rubberduck
+const RUBBER_DUCK_WISDOM = [
+  { advice: "Have you tried explaining your code to me? I'm all ears. Well, I would be if I had ears.", emoji: "🦆" },
+  { advice: "Quack! That means 'have you checked if it's actually plugged in' in duck.", emoji: "🔌" },
+  { advice: "The bug is in line 42. It's always line 42. Or maybe line 1. Have you tried both?", emoji: "🔍" },
+  { advice: "Perhaps the real bug was the friends we made along the way... just kidding, check your semicolons.", emoji: "😌" },
+  { advice: "I've reviewed your code. My professional opinion: Quack.", emoji: "📋" },
+  { advice: "Your code is like modern art - I don't understand it but I'm sure it means something.", emoji: "🎨" },
+  { advice: "Have you tried adding more console.log statements? There's never enough.", emoji: "📝" },
+  { advice: "The answer is probably in the stack trace you didn't fully read.", emoji: "📚" },
+  { advice: "Quack quack quack. Translation: 'Did you clear your cache?'", emoji: "🗑️" },
+  { advice: "I believe in you! Also, check that API endpoint URL for typos.", emoji: "💪" },
+  { advice: "Your logic is flawless. That's why it's not working - computers hate perfection.", emoji: "🤖" },
+  { advice: "Sleep on it. Literally. Just go to bed. It'll work tomorrow.", emoji: "😴" },
+];
+
+export function handleDebug(): { error: string; message: string; file: string; line: number } {
+  return getRandomElement(FAKE_BUGS);
+}
+
+export function handleCommit(): string {
+  return getRandomElement(FAKE_COMMITS);
+}
+
+export function handleCodeReview(): { verdict: string; comment: string; emoji: string } {
+  return getRandomElement(CODE_REVIEWS);
+}
+
+export function handleStackOverflow(): { status: string; reason: string; votes: number } {
+  return getRandomElement(STACKOVERFLOW_RESPONSES);
+}
+
+export function handleRubberDuck(): { advice: string; emoji: string } {
+  return getRandomElement(RUBBER_DUCK_WISDOM);
+}
+
 // ==================== HELPER FUNCTIONS ====================
 
 function getRandomElement<T>(arr: T[]): T {

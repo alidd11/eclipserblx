@@ -10,6 +10,11 @@ import {
   handleFunFact,
   handleCompliment,
   handleRoast,
+  handleDebug,
+  handleCommit,
+  handleCodeReview,
+  handleStackOverflow,
+  handleRubberDuck,
   calculateDailyReward,
   getXPProgress,
   getLevelEmoji,
@@ -212,6 +217,22 @@ Deno.serve(async (req) => {
         case "roast":
           return handleRoastCommand(interaction, discordUserId, discordUsername, discordAvatarUrl);
 
+        // ==================== DEVELOPER FUN ====================
+        case "debug":
+          return handleDebugCommand(discordAvatarUrl);
+
+        case "commit":
+          return handleCommitCommand(discordAvatarUrl);
+
+        case "codereview":
+          return handleCodeReviewCommand(discordAvatarUrl);
+
+        case "stackoverflow":
+          return handleStackOverflowCommand(discordAvatarUrl);
+
+        case "rubberduck":
+          return handleRubberDuckCommand(discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -302,6 +323,17 @@ function handleHelpCommand(discordAvatarUrl?: string) {
           "`/funfact` - Learn something new",
           "`/compliment` - Get (or give) a nice compliment",
           "`/roast` - Friendly roasts for you or friends",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "💻 Developer Fun",
+        value: [
+          "`/debug` - Generate a random fake bug report",
+          "`/commit` - Funny git commit messages",
+          "`/codereview` - Random code review comments",
+          "`/stackoverflow` - Simulate SO responses",
+          "`/rubberduck` - Get debugging wisdom 🦆",
         ].join("\n"),
         inline: false,
       },
@@ -821,6 +853,132 @@ function handleRoastCommand(
     description: `${mentionTarget}\n\n${roast}`,
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: `${targetUser ? `From ${discordUsername} • ` : ""}All in good fun! 😄` },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// ==================== DEVELOPER FUN HANDLERS ====================
+
+// /debug command
+function handleDebugCommand(discordAvatarUrl?: string) {
+  const bug = handleDebug();
+  
+  const embed = {
+    color: 0xef4444,
+    title: "🐛 Bug Report Generated",
+    description: "```ansi\n\u001b[31mERROR\u001b[0m: Something went terribly wrong!\n```",
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    fields: [
+      { name: "❌ Error Type", value: `\`${bug.error}\``, inline: true },
+      { name: "📄 File", value: `\`${bug.file}:${bug.line}\``, inline: true },
+      { name: "💬 Message", value: bug.message, inline: false },
+    ],
+    footer: { text: "Eclipse Fun Bot • This is a fake bug (or is it?)" },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// /commit command
+function handleCommitCommand(discordAvatarUrl?: string) {
+  const commit = handleCommit();
+  const hash = Math.random().toString(16).slice(2, 9);
+  
+  const embed = {
+    color: 0x22c55e,
+    title: "📝 Git Commit Message",
+    description: `\`\`\`\n${hash} - ${commit}\n\`\`\``,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    footer: { text: "Eclipse Fun Bot • git push --force 💀" },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// /codereview command
+function handleCodeReviewCommand(discordAvatarUrl?: string) {
+  const review = handleCodeReview();
+  const isApproved = review.verdict === "APPROVED";
+  
+  const embed = {
+    color: isApproved ? 0x22c55e : 0xef4444,
+    title: `${review.emoji} Code Review: ${review.verdict}`,
+    description: review.comment,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    footer: { text: "Eclipse Fun Bot • PR #" + Math.floor(Math.random() * 999 + 1) },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// /stackoverflow command
+function handleStackOverflowCommand(discordAvatarUrl?: string) {
+  const response = handleStackOverflow();
+  const isClosed = response.status === "CLOSED";
+  
+  const voteEmoji = response.votes > 0 ? "⬆️" : response.votes < 0 ? "⬇️" : "➖";
+  
+  const embed = {
+    color: isClosed ? 0xef4444 : 0xf48024,
+    title: `📚 Stack Overflow: ${response.status}`,
+    description: response.reason,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    fields: [
+      { name: `${voteEmoji} Votes`, value: `${response.votes}`, inline: true },
+      { name: "📊 Status", value: response.status, inline: true },
+    ],
+    footer: { text: "Eclipse Fun Bot • Did this answer your question?" },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// /rubberduck command
+function handleRubberDuckCommand(discordAvatarUrl?: string) {
+  const duck = handleRubberDuck();
+  
+  const embed = {
+    color: 0xfbbf24,
+    title: "🦆 Rubber Duck Debugging",
+    description: `${duck.emoji} ${duck.advice}`,
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+    footer: { text: "Eclipse Fun Bot • Quack quack! 🦆" },
     timestamp: new Date().toISOString(),
   };
   
