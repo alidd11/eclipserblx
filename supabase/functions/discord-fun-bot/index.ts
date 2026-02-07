@@ -15,6 +15,7 @@ import {
   handleCodeReview,
   handleStackOverflow,
   handleRubberDuck,
+  handleFishing,
   calculateDailyReward,
   getXPProgress,
   getLevelEmoji,
@@ -233,6 +234,10 @@ Deno.serve(async (req) => {
         case "rubberduck":
           return handleRubberDuckCommand(discordAvatarUrl);
 
+        // ==================== ACTIVITIES ====================
+        case "fish":
+          return handleFishCommand(discordUsername, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -334,6 +339,13 @@ function handleHelpCommand(discordAvatarUrl?: string) {
           "`/codereview` - Random code review comments",
           "`/stackoverflow` - Simulate SO responses",
           "`/rubberduck` - Get debugging wisdom 🦆",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "🎣 Activities",
+        value: [
+          "`/fish` - Go fishing and see what you catch!",
         ].join("\n"),
         inline: false,
       },
@@ -979,6 +991,44 @@ function handleRubberDuckCommand(discordAvatarUrl?: string) {
     description: `${duck.emoji} ${duck.advice}`,
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: "Eclipse Fun Bot • Quack quack! 🦆" },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// ==================== ACTIVITY HANDLERS ====================
+
+// /fish command
+function handleFishCommand(discordUsername: string, discordAvatarUrl?: string) {
+  const result = handleFishing();
+  
+  const rarityLabels: Record<string, string> = {
+    common: "⚪ Common",
+    uncommon: "🟢 Uncommon",
+    rare: "🔵 Rare",
+    legendary: "🟡 Legendary",
+    mythical: "🟣 Mythical",
+    junk: "🟤 Junk",
+    spooky: "💀 Spooky",
+    fail: "❌ Failed",
+  };
+  
+  const embed = {
+    color: result.color,
+    title: `🎣 ${result.catch}`,
+    description: result.description,
+    image: { url: result.gif },
+    fields: [
+      { name: "Rarity", value: rarityLabels[result.rarity] || result.rarity, inline: true },
+    ],
+    footer: { text: `Caught by ${discordUsername} • Eclipse Fun Bot` },
     timestamp: new Date().toISOString(),
   };
   
