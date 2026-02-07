@@ -10,6 +10,7 @@ const corsHeaders = {
 // contexts: 0 = Guild, 1 = Bot DM, 2 = Private Channel (Group DM)
 // integration_types: 0 = Guild Install, 1 = User Install
 const commands = [
+  // ==================== ACCOUNT COMMANDS ====================
   {
     name: "link",
     description: "Check if your Discord is linked to Eclipse",
@@ -86,6 +87,153 @@ const commands = [
     contexts: [1], // DM only
     integration_types: [0, 1], // Works with both guild and user installs
     dm_permission: true,
+  },
+  
+  // ==================== GAMES & ENTERTAINMENT ====================
+  {
+    name: "8ball",
+    description: "Ask the magic 8-ball a question",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "question",
+        description: "Your question for the magic 8-ball",
+        type: 3, // STRING
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "coinflip",
+    description: "Flip a coin - heads or tails?",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "roll",
+    description: "Roll dice",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "sides",
+        description: "Number of sides on the die (default: 6)",
+        type: 4, // INTEGER
+        required: false,
+        min_value: 2,
+        max_value: 100,
+      },
+      {
+        name: "count",
+        description: "Number of dice to roll (default: 1)",
+        type: 4, // INTEGER
+        required: false,
+        min_value: 1,
+        max_value: 10,
+      },
+    ],
+  },
+  {
+    name: "rps",
+    description: "Play Rock Paper Scissors against the bot",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "choice",
+        description: "Your choice",
+        type: 3, // STRING
+        required: true,
+        choices: [
+          { name: "🪨 Rock", value: "rock" },
+          { name: "📄 Paper", value: "paper" },
+          { name: "✂️ Scissors", value: "scissors" },
+        ],
+      },
+    ],
+  },
+  
+  // ==================== DAILY REWARDS & XP ====================
+  {
+    name: "daily",
+    description: "Claim your daily XP reward",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "level",
+    description: "Check your level and XP",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Check another user's level (optional)",
+        type: 6, // USER
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "leaderboard",
+    description: "View the XP leaderboard",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "streak",
+    description: "Check your daily claim streak",
+    contexts: [0],
+    integration_types: [0],
+  },
+  
+  // ==================== FUN RESPONSES ====================
+  {
+    name: "joke",
+    description: "Get a random joke",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "quote",
+    description: "Get an inspirational quote",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "funfact",
+    description: "Learn a random fun fact",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "compliment",
+    description: "Get a nice compliment",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Give a compliment to someone else",
+        type: 6, // USER
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "roast",
+    description: "Get a friendly roast",
+    contexts: [0],
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Roast someone else (friendly!)",
+        type: 6, // USER
+        required: false,
+      },
+    ],
   },
 ];
 
