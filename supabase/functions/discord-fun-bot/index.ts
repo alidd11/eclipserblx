@@ -1050,15 +1050,10 @@ function handleFishCommand(discordUsername: string, discordAvatarUrl?: string) {
 function handleMemeCommand(discordUsername: string, discordAvatarUrl?: string) {
   const result = handleMeme();
   
-  const categoryLabel = result.category === "dev" ? "💻 Developer" : "😂 General";
-  
   const embed = {
-    color: result.category === "dev" ? 0x8b5cf6 : 0x22c55e,
+    color: 0x8b5cf6,
     title: `🖼️ ${result.title}`,
     image: { url: result.gif },
-    fields: [
-      { name: "Category", value: categoryLabel, inline: true },
-    ],
     footer: { text: `Sent by ${discordUsername} • Eclipse Fun Bot` },
     timestamp: new Date().toISOString(),
   };

@@ -301,7 +301,7 @@ const commands = [
   },
   {
     name: "meme",
-    description: "Get a random funny meme (mostly dev-related)",
+    description: "Get a random funny meme",
     contexts: [0],
     integration_types: [0],
   },
