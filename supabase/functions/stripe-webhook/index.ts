@@ -135,6 +135,48 @@ serve(async (req) => {
         refundAmount: charge.amount_refunded,
         isFullRefund: charge.refunded,
       }, stripe);
+    } else if (event.type === "payout.paid") {
+      // Handle Stripe payout completion - for Wise funding flow
+      const payout = event.data.object as Stripe.Payout;
+      logStep("Processing payout.paid", { payoutId: payout.id, metadata: payout.metadata });
+      
+      // Check if this is a Wise funding payout
+      if (payout.metadata?.purpose === 'wise_funding') {
+        const linkedPayoutId = payout.metadata?.linked_payout_id;
+        
+        // Update funding request status
+        const { error: updateError } = await supabaseAdmin
+          .from('wise_funding_requests')
+          .update({
+            status: 'paid',
+            completed_at: new Date().toISOString(),
+            notes: `Stripe payout completed at ${new Date().toISOString()}`,
+          })
+          .eq('stripe_payout_id', payout.id);
+        
+        if (updateError) {
+          logStep("Failed to update funding request", { error: updateError.message });
+        } else {
+          logStep("Funding request marked as paid", { stripePayoutId: payout.id, linkedPayoutId });
+        }
+        
+        // Optionally trigger immediate check for queued payouts
+        // The scheduled job will also pick this up within an hour
+        try {
+          const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+          await fetch(`${supabaseUrl}/functions/v1/check-wise-funding`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+            },
+            body: JSON.stringify({ triggered_by: 'payout.paid', payout_id: payout.id }),
+          });
+          logStep("Triggered check-wise-funding after payout.paid");
+        } catch (triggerError) {
+          logStep("Failed to trigger check-wise-funding (non-fatal)", { error: String(triggerError) });
+        }
+      }
     } else {
       logStep("Unhandled event type", { type: event.type });
     }

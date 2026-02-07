@@ -4022,7 +4022,11 @@ export type Database = {
       seller_payouts: {
         Row: {
           amount: number
+          completed_at: string | null
           created_at: string | null
+          failure_reason: string | null
+          funding_requested_at: string | null
+          funding_status: string | null
           id: string
           notes: string | null
           processed_at: string | null
@@ -4030,11 +4034,18 @@ export type Database = {
           seller_id: string
           status: string | null
           store_id: string
+          stripe_funding_payout_id: string | null
           stripe_transfer_id: string | null
+          wise_quote_id: string | null
+          wise_transfer_id: string | null
         }
         Insert: {
           amount: number
+          completed_at?: string | null
           created_at?: string | null
+          failure_reason?: string | null
+          funding_requested_at?: string | null
+          funding_status?: string | null
           id?: string
           notes?: string | null
           processed_at?: string | null
@@ -4042,11 +4053,18 @@ export type Database = {
           seller_id: string
           status?: string | null
           store_id: string
+          stripe_funding_payout_id?: string | null
           stripe_transfer_id?: string | null
+          wise_quote_id?: string | null
+          wise_transfer_id?: string | null
         }
         Update: {
           amount?: number
+          completed_at?: string | null
           created_at?: string | null
+          failure_reason?: string | null
+          funding_requested_at?: string | null
+          funding_status?: string | null
           id?: string
           notes?: string | null
           processed_at?: string | null
@@ -4054,7 +4072,10 @@ export type Database = {
           seller_id?: string
           status?: string | null
           store_id?: string
+          stripe_funding_payout_id?: string | null
           stripe_transfer_id?: string | null
+          wise_quote_id?: string | null
+          wise_transfer_id?: string | null
         }
         Relationships: [
           {
@@ -5823,6 +5844,51 @@ export type Database = {
             referencedColumns: ["name"]
           },
         ]
+      }
+      wise_funding_requests: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          id: string
+          linked_payout_ids: string[] | null
+          notes: string | null
+          requested_at: string | null
+          status: string | null
+          stripe_payout_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          linked_payout_ids?: string[] | null
+          notes?: string | null
+          requested_at?: string | null
+          status?: string | null
+          stripe_payout_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          linked_payout_ids?: string[] | null
+          notes?: string | null
+          requested_at?: string | null
+          status?: string | null
+          stripe_payout_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       wishlist: {
         Row: {
