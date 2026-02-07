@@ -1268,6 +1268,9 @@ async function handleRetrieveCommand(
 
   const { data: products, error: productsError } = await productsQuery;
 
+  console.log(`[discord-customer-bot] Retrieve: productIds=${JSON.stringify(productIds)}`);
+  console.log(`[discord-customer-bot] Retrieve: products=${products?.length ?? 'null'}, error=${productsError ? productsError.message : 'none'}`);
+
   if (productsError) {
     console.error("[discord-customer-bot] products lookup error:", {
       message: productsError.message,
@@ -1279,6 +1282,7 @@ async function handleRetrieveCommand(
   }
 
   if (!products || products.length === 0) {
+    console.log(`[discord-customer-bot] Retrieve: No downloadable products found for user`);
     const noFilesEmbed = {
       color: 0x3b82f6,
       title: "📁 No Downloads Available",
