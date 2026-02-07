@@ -259,6 +259,38 @@ const commands = [
       },
     ],
   },
+  
+  // ==================== DEVELOPER FUN ====================
+  {
+    name: "debug",
+    description: "Generate a random fake bug report",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "commit",
+    description: "Generate a funny git commit message",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "codereview",
+    description: "Get a random code review comment",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "stackoverflow",
+    description: "Simulate a Stack Overflow response",
+    contexts: [0],
+    integration_types: [0],
+  },
+  {
+    name: "rubberduck",
+    description: "Ask the rubber duck for debugging wisdom",
+    contexts: [0],
+    integration_types: [0],
+  },
 ];
 
 Deno.serve(async (req) => {
