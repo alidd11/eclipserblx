@@ -319,3 +319,9 @@ verify_jwt = false
 
 [functions.register-fun-bot-commands]
 verify_jwt = false
+
+[functions.auto-register-discord-commands]
+verify_jwt = false
+
+[functions.send-modmail-resolution]
+verify_jwt = false

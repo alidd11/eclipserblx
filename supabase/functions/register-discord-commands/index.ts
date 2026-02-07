@@ -102,6 +102,12 @@ const commands = [
   },
 ];
 
+// Guild-specific commands (without contexts/integration_types for better compatibility)
+const guildCommands = commands.map(cmd => {
+  const { contexts, integration_types, ...rest } = cmd as any;
+  return rest;
+});
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -115,18 +121,23 @@ Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization");
   const apiKey = req.headers.get("x-api-key");
   const botghostKey = Deno.env.get("BOTGHOST_API_KEY");
+  const internalKey = req.headers.get("x-internal-key");
   
   // Option 1: Service key via x-api-key header (for automated calls)
-  if (apiKey && botghostKey && apiKey.trim() === botghostKey.trim()) {
-    // Authorized via API key - proceed
-  } else {
-    // Option 2: User auth with admin role
+  const isApiKeyAuth = apiKey && botghostKey && apiKey.trim() === botghostKey.trim();
+  
+  // Option 2: Internal key (for cron jobs)
+  const isInternalAuth = internalKey && internalKey === supabaseServiceKey;
+  
+  if (!isApiKeyAuth && !isInternalAuth) {
+    // Option 3: User auth with admin role
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader || "" } },
     });
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
+      console.log("[register-discord-commands] Auth failed:", authError?.message);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -151,6 +162,7 @@ Deno.serve(async (req) => {
   // Use separate Customer Bot credentials
   const discordBotToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
   const discordClientId = Deno.env.get("DISCORD_CUSTOMER_BOT_CLIENT_ID");
+  const mainGuildId = Deno.env.get("DISCORD_GUILD_ID");
 
   if (!discordBotToken || !discordClientId) {
     return new Response(
@@ -160,8 +172,35 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Register global commands
-    const response = await fetch(
+    const results: { global?: any; guild?: any; storeGuilds?: any[] } = {};
+
+    // 1. Register GUILD commands for main Eclipse server (instant sync)
+    if (mainGuildId) {
+      console.log(`[register-discord-commands] Registering guild commands for main server: ${mainGuildId}`);
+      const guildResponse = await fetch(
+        `https://discord.com/api/v10/applications/${discordClientId}/guilds/${mainGuildId}/commands`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bot ${discordBotToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(guildCommands),
+        }
+      );
+
+      if (guildResponse.ok) {
+        results.guild = await guildResponse.json();
+        console.log(`[register-discord-commands] Guild commands registered: ${results.guild.length}`);
+      } else {
+        const errorText = await guildResponse.text();
+        console.error("[register-discord-commands] Guild registration error:", errorText);
+      }
+    }
+
+    // 2. Register GLOBAL commands (for store servers - takes up to 1 hour to propagate)
+    console.log("[register-discord-commands] Registering global commands...");
+    const globalResponse = await fetch(
       `https://discord.com/api/v10/applications/${discordClientId}/commands`,
       {
         method: "PUT",
@@ -173,23 +212,75 @@ Deno.serve(async (req) => {
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[register-discord-commands] Discord API error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to register commands", details: errorText }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (globalResponse.ok) {
+      results.global = await globalResponse.json();
+      console.log(`[register-discord-commands] Global commands registered: ${results.global.length}`);
+    } else {
+      const errorText = await globalResponse.text();
+      console.error("[register-discord-commands] Global registration error:", errorText);
+      
+      // If global fails but guild succeeded, still return success
+      if (!results.guild) {
+        return new Response(
+          JSON.stringify({ error: "Failed to register commands", details: errorText }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
-    const result = await response.json();
-    console.log("[register-discord-commands] Commands registered:", result);
+    // 3. Also register guild commands for any connected store servers
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: stores } = await supabase
+      .from("stores")
+      .select("discord_guild_id, name")
+      .eq("is_active", true)
+      .not("discord_guild_id", "is", null);
+
+    if (stores && stores.length > 0) {
+      results.storeGuilds = [];
+      for (const store of stores) {
+        if (store.discord_guild_id && store.discord_guild_id !== mainGuildId) {
+          try {
+            const storeGuildResponse = await fetch(
+              `https://discord.com/api/v10/applications/${discordClientId}/guilds/${store.discord_guild_id}/commands`,
+              {
+                method: "PUT",
+                headers: {
+                  Authorization: `Bot ${discordBotToken}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(guildCommands),
+              }
+            );
+
+            if (storeGuildResponse.ok) {
+              const storeResult = await storeGuildResponse.json();
+              results.storeGuilds.push({ 
+                guild_id: store.discord_guild_id, 
+                store_name: store.name,
+                commands: storeResult.length 
+              });
+              console.log(`[register-discord-commands] Store guild commands registered for ${store.name}: ${storeResult.length}`);
+            } else {
+              console.warn(`[register-discord-commands] Failed to register for store ${store.name}:`, await storeGuildResponse.text());
+            }
+          } catch (err) {
+            console.warn(`[register-discord-commands] Error registering for store ${store.name}:`, err);
+          }
+        }
+      }
+    }
+
+    const totalCommands = results.guild?.length || results.global?.length || 0;
+    const storeGuildsCount = results.storeGuilds?.length || 0;
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Discord commands registered successfully",
-        commands: result.map((c: any) => ({ name: c.name, id: c.id })),
+        message: `Portal Bot commands registered successfully. Main guild: instant, Global: up to 1 hour, Store guilds: ${storeGuildsCount}`,
+        main_guild_id: mainGuildId || null,
+        commands: (results.guild || results.global || []).map((c: any) => ({ name: c.name, id: c.id })),
+        store_guilds: results.storeGuilds,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

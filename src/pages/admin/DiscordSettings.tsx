@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, UserCheck, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Shield, Settings, Bell, Zap, Gamepad2 } from 'lucide-react';
+import { MessageSquare, Webhook, Star, Send, Loader2, CheckCircle2, XCircle, Link2, ExternalLink, Copy, Check, Users, UserCheck, Gift, Sparkles, ChevronDown, Megaphone, Package, Palette, BadgeDollarSign, Shield, Settings, Bell, Zap, Gamepad2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
@@ -1004,6 +1004,57 @@ export default function DiscordSettings() {
                     >
                       {testingWebhook === 'fun-commands' ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Zap className="h-3 w-3 mr-1.5" />}
                       Register Fun Commands
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Auto-Register All Commands */}
+                <div className="space-y-3 p-4 rounded-lg border border-green-500/30 bg-green-500/5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-green-500/20"><RefreshCw className="h-4 w-4 text-green-400" /></div>
+                    <div>
+                      <h4 className="font-medium text-sm">Sync All Bot Commands</h4>
+                      <p className="text-xs text-muted-foreground">Register commands for both bots + all store guilds (runs daily automatically)</p>
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground space-y-1">
+                    <p>• Portal Bot: Main guild (instant) + Global (1hr) + Store guilds</p>
+                    <p>• Fun Bot: Main guild only (instant)</p>
+                    <p>• This also runs automatically every day at midnight UTC</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setTestingWebhook('auto-register');
+                          const { data, error } = await supabase.functions.invoke('auto-register-discord-commands');
+                          if (error) throw error;
+                          if (data?.errors?.length > 0) {
+                            toast.warning(`Registered with ${data.errors.length} warning(s). Check console for details.`);
+                            console.warn('[DiscordSettings] Auto-register warnings:', data.errors);
+                          } else {
+                            toast.success(`All commands synced! Portal: ${data?.portal_bot?.commands || 0}, Fun: ${data?.fun_bot?.commands || 0}`);
+                          }
+                        } catch (err: any) {
+                          const msg =
+                            err?.context?.details ||
+                            err?.context?.error ||
+                            err?.context?.body?.details ||
+                            err?.context?.body?.error ||
+                            err?.message ||
+                            'Failed to sync commands';
+                          toast.error(String(msg));
+                        } finally {
+                          setTestingWebhook(null);
+                        }
+                      }}
+                      variant="default"
+                      size="sm"
+                      disabled={testingWebhook === 'auto-register'}
+                      className="h-8 bg-green-600 hover:bg-green-700"
+                    >
+                      {testingWebhook === 'auto-register' ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-1.5" />}
+                      Sync All Commands Now
                     </Button>
                   </div>
                 </div>
