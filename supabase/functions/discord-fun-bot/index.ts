@@ -867,7 +867,7 @@ function handleRoastCommand(
   const embed = {
     color: 0xf97316,
     title: "🔥 Friendly Roast",
-    description: `${mentionTarget}\n\n${roast}`,
+    description: roast,
     thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
     footer: { text: `${targetUser ? `From ${discordUsername} • ` : ""}All in good fun! 😄` },
     timestamp: new Date().toISOString(),
@@ -876,7 +876,10 @@ function handleRoastCommand(
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
-      data: { embeds: [embed] },
+      data: { 
+        content: mentionTarget, // This pings the user
+        embeds: [embed],
+      },
     }),
     { headers: { "Content-Type": "application/json" } }
   );
