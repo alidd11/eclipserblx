@@ -1402,7 +1402,7 @@ async function handleDuelCommand(
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
-      data: { embeds: [embed], components },
+      data: { content: `<@${opponentId}>`, embeds: [embed], components },
     }),
     { headers: { "Content-Type": "application/json" } }
   );
@@ -1784,7 +1784,7 @@ async function handleTicTacToeCommand(
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
-      data: { embeds: [embed], components },
+      data: { content: `<@${opponentId}>`, embeds: [embed], components },
     }),
     { headers: { "Content-Type": "application/json" } }
   );
@@ -2010,7 +2010,7 @@ async function handleConnect4Command(
   return new Response(
     JSON.stringify({
       type: CHANNEL_MESSAGE,
-      data: { embeds: [embed], components },
+      data: { content: `<@${opponentId}>`, embeds: [embed], components },
     }),
     { headers: { "Content-Type": "application/json" } }
   );
