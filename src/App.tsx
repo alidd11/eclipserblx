@@ -128,9 +128,16 @@ const AdminRefunds = lazy(() => import("./pages/admin/Refunds"));
 const AdminAdvertisementAnalytics = lazy(() => import("./pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazy(() => import("./pages/admin/GiftCredits"));
 const AdminIPReports = lazy(() => import("./pages/admin/IPReports"));
- const AdminDeveloperSubmissions = lazy(() => import("./pages/admin/DeveloperSubmissions"));
- const AdminDeveloperPayments = lazy(() => import("./pages/admin/DeveloperPayments"));
- const AdminDeveloperPaymentDetail = lazy(() => import("./pages/admin/DeveloperPaymentDetail"));
+const AdminDeveloperSubmissions = lazy(() => import("./pages/admin/DeveloperSubmissions"));
+const AdminDeveloperPayments = lazy(() => import("./pages/admin/DeveloperPayments"));
+const AdminDeveloperPaymentDetail = lazy(() => import("./pages/admin/DeveloperPaymentDetail"));
+const AdminRecruiters = lazy(() => import("./pages/admin/Recruiters"));
+const AdminRecruiterApplications = lazy(() => import("./pages/admin/RecruiterApplications"));
+const AdminRecruiterPayouts = lazy(() => import("./pages/admin/RecruiterPayouts"));
+const AdminRecruiterCommissions = lazy(() => import("./pages/admin/RecruiterCommissions"));
+
+// Recruiter page
+const Recruiter = lazy(() => import("./pages/Recruiter"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("./pages/seller/SellerDashboard"));
@@ -243,6 +250,7 @@ const App = () => (
                   <Route path="/eclipse-plus" element={<EclipsePlus />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/affiliate" element={<Affiliate />} />
+                  <Route path="/recruiter" element={<Recruiter />} />
                   <Route path="/advertise" element={<Advertise />} />
                   <Route path="/credits" element={<Credits />} />
                   <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
@@ -346,7 +354,11 @@ const App = () => (
                   <Route path="/admin/ip-reports" element={<AdminIPReports />} />
                   <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
                   <Route path="/admin/developer-payments" element={<AdminDeveloperPayments />} />
-                   <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
+                  <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
+                  <Route path="/admin/recruiters" element={<AdminRecruiters />} />
+                  <Route path="/admin/recruiter-applications" element={<AdminRecruiterApplications />} />
+                  <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
+                  <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
