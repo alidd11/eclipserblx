@@ -307,3 +307,6 @@ verify_jwt = false
 
 [functions.modmail-response-reminder]
 verify_jwt = false
+
+[functions.wise-webhook]
+verify_jwt = false
