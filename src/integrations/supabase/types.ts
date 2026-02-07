@@ -3569,6 +3569,207 @@ export type Database = {
         }
         Relationships: []
       }
+      recruiter_applications: {
+        Row: {
+          created_at: string | null
+          discord_username: string | null
+          display_name: string | null
+          email: string | null
+          expected_servers: string | null
+          id: string
+          notes: string | null
+          paypal_email: string | null
+          promotion_method: string
+          recruiter_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          discord_username?: string | null
+          display_name?: string | null
+          email?: string | null
+          expected_servers?: string | null
+          id?: string
+          notes?: string | null
+          paypal_email?: string | null
+          promotion_method: string
+          recruiter_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          discord_username?: string | null
+          display_name?: string | null
+          email?: string | null
+          expected_servers?: string | null
+          id?: string
+          notes?: string | null
+          paypal_email?: string | null
+          promotion_method?: string
+          recruiter_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recruiter_balances: {
+        Row: {
+          available_balance: number | null
+          qualified_referrals: number | null
+          total_earned: number | null
+          total_paid: number | null
+          total_referrals: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number | null
+          qualified_referrals?: number | null
+          total_earned?: number | null
+          total_paid?: number | null
+          total_referrals?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_balance?: number | null
+          qualified_referrals?: number | null
+          total_earned?: number | null
+          total_paid?: number | null
+          total_referrals?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recruiter_commissions: {
+        Row: {
+          commission_amount: number
+          commission_tier: string | null
+          created_at: string | null
+          discord_invite: string | null
+          id: string
+          member_count: number | null
+          notes: string | null
+          paid_at: string | null
+          payout_id: string | null
+          qualified_at: string | null
+          recruiter_id: string
+          rejection_reason: string | null
+          server_name: string
+          status: string | null
+          store_application_id: string | null
+          store_id: string | null
+        }
+        Insert: {
+          commission_amount: number
+          commission_tier?: string | null
+          created_at?: string | null
+          discord_invite?: string | null
+          id?: string
+          member_count?: number | null
+          notes?: string | null
+          paid_at?: string | null
+          payout_id?: string | null
+          qualified_at?: string | null
+          recruiter_id: string
+          rejection_reason?: string | null
+          server_name: string
+          status?: string | null
+          store_application_id?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          commission_amount?: number
+          commission_tier?: string | null
+          created_at?: string | null
+          discord_invite?: string | null
+          id?: string
+          member_count?: number | null
+          notes?: string | null
+          paid_at?: string | null
+          payout_id?: string | null
+          qualified_at?: string | null
+          recruiter_id?: string
+          rejection_reason?: string | null
+          server_name?: string
+          status?: string | null
+          store_application_id?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruiter_commissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruiter_commissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recruiter_payouts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          notes: string | null
+          payment_details: string | null
+          payment_method: string | null
+          processed_at: string | null
+          processed_by: string | null
+          rejection_reason: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_details?: string | null
+          payment_method?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_details?: string | null
+          payment_method?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       referral_clicks: {
         Row: {
           created_at: string | null
@@ -5021,6 +5222,8 @@ export type Database = {
           notes: string | null
           portfolio_url: string | null
           product_category: string | null
+          recruited_by: string | null
+          recruiter_code: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -5043,6 +5246,8 @@ export type Database = {
           notes?: string | null
           portfolio_url?: string | null
           product_category?: string | null
+          recruited_by?: string | null
+          recruiter_code?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -5065,6 +5270,8 @@ export type Database = {
           notes?: string | null
           portfolio_url?: string | null
           product_category?: string | null
+          recruited_by?: string | null
+          recruiter_code?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -5649,6 +5856,8 @@ export type Database = {
           owner_id: string
           payout_method: string
           product_count: number | null
+          recruited_by: string | null
+          recruiter_commission_paid: boolean | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -5714,6 +5923,8 @@ export type Database = {
           owner_id: string
           payout_method?: string
           product_count?: number | null
+          recruited_by?: string | null
+          recruiter_commission_paid?: boolean | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -5779,6 +5990,8 @@ export type Database = {
           owner_id?: string
           payout_method?: string
           product_count?: number | null
+          recruited_by?: string | null
+          recruiter_commission_paid?: boolean | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -6472,6 +6685,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_recruiter_commission_eligibility: {
+        Args: { p_store_id: string }
+        Returns: boolean
+      }
       claim_eclipse_plus_credit_bonus: {
         Args: { p_user_id: string }
         Returns: boolean
@@ -6484,11 +6701,23 @@ export type Database = {
       generate_customer_ticket_number: { Args: never; Returns: string }
       generate_discord_link_code: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
+      generate_recruiter_id: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       generate_staff_id: { Args: never; Returns: string }
       generate_store_id: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
+      get_store_qualification_progress: {
+        Args: { p_store_id: string }
+        Returns: {
+          days_active: number
+          is_active: boolean
+          is_qualified: boolean
+          product_count: number
+          required_days: number
+          required_products: number
+        }[]
+      }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       get_user_max_hierarchy: { Args: { _user_id: string }; Returns: number }
       has_permission: {
