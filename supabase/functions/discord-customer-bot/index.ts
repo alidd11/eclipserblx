@@ -2388,9 +2388,11 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
     if (store.is_verified) badges.push("✅ Verified");
     const badgeText = badges.length > 0 ? badges.join(" • ") : "";
 
-    // Truncate description
+    // Strip HTML tags and truncate description
     const maxDescLength = 200;
     let description = product.description || "A premium product from the Eclipse marketplace.";
+    // Remove HTML tags
+    description = description.replace(/<[^>]*>/g, '').trim();
     if (description.length > maxDescLength) {
       description = description.substring(0, maxDescLength).trim() + "...";
     }
