@@ -1210,32 +1210,49 @@ async function handleRetrieveCommand(
   const { data: orderItems, error: orderItemsError } = await supabase
     .from("order_items")
     .select("product_id")
-    .in("order_id", orderIds);
+    .in("order_id", orderIds)
+    // Some historical rows can have product_id = null; exclude them so downstream UUID filters don't break
+    .not("product_id", "is", null);
 
   if (orderItemsError) {
     console.error("[discord-customer-bot] order_items lookup error:", orderItemsError);
   }
 
-  const productIds = [...new Set(orderItems?.map((i: any) => i.product_id) || [])];
+  const isUuid = (v: unknown): v is string =>
+    typeof v === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+
+  const productIds = [
+    ...new Set(
+      (orderItems?.map((i: any) => i.product_id) || []).filter((id: unknown) => isUuid(id))
+    ),
+  ];
 
   if (productIds.length === 0) {
-    const msg = serverContext.store
-      ? `You haven't purchased any products from ${serverContext.store.name} yet.`
-      : "You haven't purchased any downloadable products yet.";
-    const noProductsEmbed = {
-      color: 0x3b82f6,
-      title: "📁 No Downloads Available",
+    const msg = "We found your orders, but they don't include valid product IDs for downloads.";
+    console.error("[discord-customer-bot] retrieve: no valid productIds", {
+      discordUserId,
+      userId: profile.user_id,
+      orderCount: orderIds.length,
+      rawCount: orderItems?.length ?? 0,
+    });
+
+    const embed = {
+      color: 0xef4444,
+      title: "❌ Downloads Unavailable",
       description: msg,
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
     };
+
     const channelEmbed = {
-      color: 0x3b82f6,
-      description: `<@${discordUserId}>\n📁 ${msg}`,
+      color: 0xef4444,
+      description: `<@${discordUserId}>\n❌ ${msg}`,
       thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
       footer: { text: branding.footer },
     };
-    return publicResponseWithDM(channelEmbed, discordUserId, [noProductsEmbed]);
+
+    return publicResponseWithDM(channelEmbed, discordUserId, [embed]);
   }
 
   // Get products with download files (store-filtered when applicable)
@@ -1249,8 +1266,17 @@ async function handleRetrieveCommand(
     productsQuery = productsQuery.eq("store_id", serverContext.store.id);
   }
 
-  const { data: products } = await productsQuery;
+  const { data: products, error: productsError } = await productsQuery;
 
+  if (productsError) {
+    console.error("[discord-customer-bot] products lookup error:", {
+      message: productsError.message,
+      details: (productsError as any).details,
+      hint: (productsError as any).hint,
+      code: (productsError as any).code,
+      productIdsCount: productIds.length,
+    });
+  }
 
   if (!products || products.length === 0) {
     const noFilesEmbed = {
