@@ -16,6 +16,7 @@ import {
   handleStackOverflow,
   handleRubberDuck,
   handleFishing,
+  handleMeme,
   calculateDailyReward,
   getXPProgress,
   getLevelEmoji,
@@ -238,6 +239,9 @@ Deno.serve(async (req) => {
         case "fish":
           return handleFishCommand(discordUsername, discordAvatarUrl);
 
+        case "meme":
+          return handleMemeCommand(discordUsername, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -346,6 +350,7 @@ function handleHelpCommand(discordAvatarUrl?: string) {
         name: "🎣 Activities",
         value: [
           "`/fish` - Go fishing and see what you catch!",
+          "`/meme` - Get a random funny meme (mostly dev-related)",
         ].join("\n"),
         inline: false,
       },
@@ -1029,6 +1034,32 @@ function handleFishCommand(discordUsername: string, discordAvatarUrl?: string) {
       { name: "Rarity", value: rarityLabels[result.rarity] || result.rarity, inline: true },
     ],
     footer: { text: `Caught by ${discordUsername} • Eclipse Fun Bot` },
+    timestamp: new Date().toISOString(),
+  };
+  
+  return new Response(
+    JSON.stringify({
+      type: CHANNEL_MESSAGE,
+      data: { embeds: [embed] },
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// /meme command
+function handleMemeCommand(discordUsername: string, discordAvatarUrl?: string) {
+  const result = handleMeme();
+  
+  const categoryLabel = result.category === "dev" ? "💻 Developer" : "😂 General";
+  
+  const embed = {
+    color: result.category === "dev" ? 0x8b5cf6 : 0x22c55e,
+    title: `🖼️ ${result.title}`,
+    image: { url: result.gif },
+    fields: [
+      { name: "Category", value: categoryLabel, inline: true },
+    ],
+    footer: { text: `Sent by ${discordUsername} • Eclipse Fun Bot` },
     timestamp: new Date().toISOString(),
   };
   

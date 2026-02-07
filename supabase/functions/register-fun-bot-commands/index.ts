@@ -299,6 +299,12 @@ const commands = [
     contexts: [0],
     integration_types: [0],
   },
+  {
+    name: "meme",
+    description: "Get a random funny meme (mostly dev-related)",
+    contexts: [0],
+    integration_types: [0],
+  },
 ];
 
 Deno.serve(async (req) => {
