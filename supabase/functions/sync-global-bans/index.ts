@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 // Sync Global Bans - Propagates bans across all servers where user has licensed bots
-// Uses DISCORD_CUSTOMER_BOT_TOKEN to execute bans via Discord API
+// Uses DISCORD_GLOBAL_GUARD_BOT_TOKEN (separate bot) to execute bans via Discord API
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,13 +32,13 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+  const botToken = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_TOKEN");
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   if (!botToken) {
-    console.error("[sync-global-bans] DISCORD_CUSTOMER_BOT_TOKEN not configured");
+    console.error("[sync-global-bans] DISCORD_GLOBAL_GUARD_BOT_TOKEN not configured");
     return new Response(
-      JSON.stringify({ error: "Bot token not configured" }),
+      JSON.stringify({ error: "Global Guard bot token not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

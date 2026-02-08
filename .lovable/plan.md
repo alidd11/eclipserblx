@@ -1,5 +1,3 @@
-
-
 # Global Guard - Implementation Status
 
 ## ✅ Completed Phases
@@ -10,14 +8,17 @@
 
 ### Phase 2: Database Schema ✅
 - Created 4 tables: `global_bans`, `global_ban_logs`, `global_ban_sync_status`, `global_guard_settings`
+- Added `global_ban_templates` table for premium users
 - RLS policies for user-owned ban management
 - Enums for ban types and sync status
+- `has_premium_global_guard()` and `get_global_guard_limits()` database functions
 
-### Phase 3: Edge Functions & Discord Commands ✅
-- Created `sync-global-bans` edge function for ban propagation
-- Added `/globalban`, `/globalunban`, `/globalbans` commands to discord-customer-bot
-- Updated help pages with Global Guard section
-- Commands registered via `register-discord-commands`
+### Phase 3: Edge Functions & Discord Bot ✅
+- **SEPARATE BOT**: Global Guard runs as its own Discord bot (not the Portal Bot)
+- Created `discord-global-guard-bot` edge function for slash command handling
+- Created `register-global-guard-commands` to register `/globalban`, `/globalunban`, `/globalbans`
+- Updated `sync-global-bans` to use `DISCORD_GLOBAL_GUARD_BOT_TOKEN`
+- Removed Global Guard commands from Portal Bot's command registry
 
 ### Phase 4: Dashboard UI ✅
 - Subdomain detection via `useGlobalGuardDomain` hook
@@ -25,11 +26,19 @@
 - Components: `BanListTable`, `AddBanDialog`, `ServerOverview`, `BanStatsCards`
 - `useGlobalGuardData` hook for CRUD operations
 
+### Phase 5: Tiered System ✅
+- **Free Tier**: 2 servers max, standard sync (300ms delay)
+- **Eclipse+ Premium**: Unlimited servers/bans, ban templates, priority sync (100ms delay)
+- `TierBadge` and `UpgradeBanner` components for tier visibility
+
 ## 🔧 Required User Actions
 
-1. **Add DNS A record**: Point `guard` to `185.158.133.1`
-2. **Domain Setup**: Add `guard.eclipserblx.com` in Lovable Project Settings → Domains
-3. **Sync Commands**: Trigger command registration from Admin Discord Settings
+1. **Discord Bot Setup**: Create Global Guard bot at discord.com/developers
+2. **Secrets**: Add `DISCORD_GLOBAL_GUARD_BOT_TOKEN`, `DISCORD_GLOBAL_GUARD_BOT_CLIENT_ID`, `DISCORD_GLOBAL_GUARD_BOT_PUBLIC_KEY`
+3. **Interactions URL**: Set to `https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/discord-global-guard-bot`
+4. **Add DNS A record**: Point `guard` to `185.158.133.1`
+5. **Domain Setup**: Add `guard.eclipserblx.com` in Lovable Project Settings → Domains
+6. **Register Commands**: Call `register-global-guard-commands` edge function
 
 ---
 
