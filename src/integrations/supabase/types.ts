@@ -2508,6 +2508,160 @@ export type Database = {
           },
         ]
       }
+      global_ban_logs: {
+        Row: {
+          action: string
+          ban_id: string
+          created_at: string
+          details: Json | null
+          guild_id: string | null
+          id: string
+          performed_by: string | null
+        }
+        Insert: {
+          action: string
+          ban_id: string
+          created_at?: string
+          details?: Json | null
+          guild_id?: string | null
+          id?: string
+          performed_by?: string | null
+        }
+        Update: {
+          action?: string
+          ban_id?: string
+          created_at?: string
+          details?: Json | null
+          guild_id?: string | null
+          id?: string
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_ban_logs_ban_id_fkey"
+            columns: ["ban_id"]
+            isOneToOne: false
+            referencedRelation: "global_bans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_ban_sync_status: {
+        Row: {
+          ban_id: string
+          created_at: string
+          error_message: string | null
+          guild_id: string
+          guild_name: string | null
+          id: string
+          status: Database["public"]["Enums"]["global_ban_sync_status_type"]
+          synced_at: string | null
+        }
+        Insert: {
+          ban_id: string
+          created_at?: string
+          error_message?: string | null
+          guild_id: string
+          guild_name?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["global_ban_sync_status_type"]
+          synced_at?: string | null
+        }
+        Update: {
+          ban_id?: string
+          created_at?: string
+          error_message?: string | null
+          guild_id?: string
+          guild_name?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["global_ban_sync_status_type"]
+          synced_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_ban_sync_status_ban_id_fkey"
+            columns: ["ban_id"]
+            isOneToOne: false
+            referencedRelation: "global_bans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_bans: {
+        Row: {
+          ban_type: Database["public"]["Enums"]["global_ban_type"]
+          banned_avatar_url: string | null
+          banned_discord_id: string
+          banned_username: string | null
+          created_at: string
+          created_via: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          owner_user_id: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          ban_type?: Database["public"]["Enums"]["global_ban_type"]
+          banned_avatar_url?: string | null
+          banned_discord_id: string
+          banned_username?: string | null
+          created_at?: string
+          created_via?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          owner_user_id: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ban_type?: Database["public"]["Enums"]["global_ban_type"]
+          banned_avatar_url?: string | null
+          banned_discord_id?: string
+          banned_username?: string | null
+          created_at?: string
+          created_via?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          owner_user_id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      global_guard_settings: {
+        Row: {
+          auto_sync_new_servers: boolean
+          created_at: string
+          default_ban_reason: string | null
+          id: string
+          notify_on_sync_failure: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_sync_new_servers?: boolean
+          created_at?: string
+          default_ban_reason?: string | null
+          id?: string
+          notify_on_sync_failure?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_sync_new_servers?: boolean
+          created_at?: string
+          default_ban_reason?: string | null
+          id?: string
+          notify_on_sync_failure?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       incident_updates: {
         Row: {
           created_at: string
@@ -6810,6 +6964,12 @@ export type Database = {
         | "spend"
         | "refund"
         | "subscription_bonus"
+      global_ban_sync_status_type:
+        | "pending"
+        | "success"
+        | "failed"
+        | "missing_permissions"
+      global_ban_type: "permanent" | "temporary"
       outreach_activity_type:
         | "created"
         | "contacted"
@@ -6955,6 +7115,13 @@ export const Constants = {
         "refund",
         "subscription_bonus",
       ],
+      global_ban_sync_status_type: [
+        "pending",
+        "success",
+        "failed",
+        "missing_permissions",
+      ],
+      global_ban_type: ["permanent", "temporary"],
       outreach_activity_type: [
         "created",
         "contacted",

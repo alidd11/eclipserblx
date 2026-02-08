@@ -1,0 +1,30 @@
+{
+  "name": "Global Guard",
+  "short_name": "Guard",
+  "description": "Cross-Server Ban Management System",
+  "theme_color": "#1e40af",
+  "background_color": "#0a0a0f",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/",
+  "id": "global-guard",
+  "icons": [
+    {
+      "src": "/global-guard-pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/global-guard-pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/global-guard-pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
