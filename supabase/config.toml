@@ -325,3 +325,9 @@ verify_jwt = false
 
 [functions.send-modmail-resolution]
 verify_jwt = false
+
+[functions.sync-global-bans]
+verify_jwt = false
+
+[functions.generate-global-guard-branding]
+verify_jwt = false
