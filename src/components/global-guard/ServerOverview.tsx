@@ -1,19 +1,21 @@
-import { Server, Users, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { Server, Users, CheckCircle, AlertCircle, Clock, Lock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 import type { ConnectedServer } from '@/types/global-guard';
 
 interface ServerOverviewProps {
   servers: ConnectedServer[];
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
-export function ServerOverview({ servers, isLoading }: ServerOverviewProps) {
+export function ServerOverview({ servers, isLoading, disabled }: ServerOverviewProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -32,23 +34,27 @@ export function ServerOverview({ servers, isLoading }: ServerOverviewProps) {
     );
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
+    if (disabled) return <Lock className="w-4 h-4 text-muted-foreground" />;
     switch (status) {
       case 'active':
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'pending':
-        return <Clock className="w-4 h-4 text-amber-400" />;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-red-400" />;
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
+    if (disabled) {
+      return <Badge variant="secondary" className="bg-muted text-muted-foreground">Locked</Badge>;
+    }
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>;
+        return <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">Active</Badge>;
       case 'pending':
-        return <Badge variant="outline" className="border-amber-500/50 text-amber-400">Pending</Badge>;
+        return <Badge variant="outline" className="border-amber-500/50 text-amber-600 dark:text-amber-400">Pending</Badge>;
       default:
         return <Badge variant="secondary" className="bg-muted text-muted-foreground">Inactive</Badge>;
     }
@@ -57,7 +63,13 @@ export function ServerOverview({ servers, isLoading }: ServerOverviewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {servers.map((server) => (
-        <Card key={server.guild_id} className="bg-card border-border hover:border-border/80 transition-colors">
+        <Card 
+          key={server.guild_id} 
+          className={cn(
+            "bg-card border-border transition-colors",
+            disabled ? "opacity-60" : "hover:border-primary/30"
+          )}
+        >
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
               <Avatar className="w-12 h-12 rounded-xl">
@@ -86,7 +98,7 @@ export function ServerOverview({ servers, isLoading }: ServerOverviewProps) {
                 </div>
                 <div className="flex items-center justify-between mt-3">
                   {getStatusBadge(server.license_status)}
-                  {server.last_synced_at && (
+                  {server.last_synced_at && !disabled && (
                     <span className="text-xs text-muted-foreground">
                       Last sync: {new Date(server.last_synced_at).toLocaleDateString()}
                     </span>

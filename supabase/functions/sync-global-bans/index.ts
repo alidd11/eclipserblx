@@ -123,12 +123,31 @@ Deno.serve(async (req) => {
       }
     });
 
-    console.log(`[sync-global-bans] Syncing to ${uniqueGuilds.size} servers`);
+    // Check user's tier limits
+    const { data: limits } = await supabase.rpc("get_global_guard_limits", { 
+      _user_id: ban.owner_user_id 
+    });
+    
+    const isPremium = limits?.[0]?.is_premium ?? false;
+    const maxServers = limits?.[0]?.max_servers ?? 2;
+    const hasPrioritySync = limits?.[0]?.has_priority_sync ?? false;
+
+    // Limit servers for free users
+    let guildsToSync = Array.from(uniqueGuilds.entries());
+    let limitedGuilds: string[] = [];
+    
+    if (!isPremium && maxServers !== null && guildsToSync.length > maxServers) {
+      limitedGuilds = guildsToSync.slice(maxServers).map(([id]) => id);
+      guildsToSync = guildsToSync.slice(0, maxServers);
+      console.log(`[sync-global-bans] Free tier: limiting to ${maxServers} servers, ${limitedGuilds.length} excluded`);
+    }
+
+    console.log(`[sync-global-bans] Syncing to ${guildsToSync.length} servers (premium: ${isPremium}, priority: ${hasPrioritySync})`);
 
     const results: SyncResult[] = [];
 
     // Process each server
-    for (const [guildId, guildName] of uniqueGuilds) {
+    for (const [guildId, guildName] of guildsToSync) {
       const result = await syncBanToGuild(
         botToken,
         guildId,
@@ -169,8 +188,20 @@ Deno.serve(async (req) => {
         },
       });
 
-      // Small delay to avoid rate limits
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Delay: priority sync gets faster processing
+      const delayMs = hasPrioritySync ? 100 : 300;
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+
+    // Record skipped servers for free tier
+    for (const guildId of limitedGuilds) {
+      const guildName = uniqueGuilds.get(guildId) || null;
+      results.push({
+        guildId,
+        guildName,
+        status: "failed",
+        error: "Server limit exceeded - upgrade to Eclipse+ for unlimited servers",
+      });
     }
 
     const successCount = results.filter(r => r.status === "success").length;
@@ -185,7 +216,9 @@ Deno.serve(async (req) => {
         synced: successCount,
         failed: failedCount,
         missingPermissions: permissionCount,
-        total: uniqueGuilds.size,
+        total: guildsToSync.length,
+        limitedServers: limitedGuilds.length,
+        isPremium,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
