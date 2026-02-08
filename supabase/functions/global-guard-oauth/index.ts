@@ -28,7 +28,7 @@ serve(async (req) => {
 
     // Use the Global Guard bot's credentials
     const clientId = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_CLIENT_ID");
-    const clientSecret = Deno.env.get("DISCORD_CLIENT_SECRET"); // Shared secret
+    const clientSecret = Deno.env.get("DISCORD_GLOBAL_GUARD_CLIENT_SECRET");
 
     if (!clientId || !clientSecret) {
       logStep("Missing Discord OAuth credentials");
