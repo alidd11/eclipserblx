@@ -103,8 +103,15 @@ Deno.serve(async (req) => {
     }
   }
 
-  const botToken = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_TOKEN");
-  const clientId = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_CLIENT_ID");
+  const botToken = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_TOKEN")?.trim();
+  const clientId = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_CLIENT_ID")?.trim();
+
+  console.log("[register-global-guard-commands] Credentials present", {
+    hasBotToken: !!botToken,
+    botTokenLength: botToken?.length || 0,
+    hasClientId: !!clientId,
+    clientIdLength: clientId?.length || 0,
+  });
 
   if (!botToken || !clientId) {
     return new Response(
@@ -145,8 +152,40 @@ Deno.serve(async (req) => {
     console.log(`[register-global-guard-commands] Registered ${registeredCommands.length} commands`);
 
     // Also register to specific guilds for instant availability
+    const guildResults: any[] = [];
+
+    // 1) Always register to the main Eclipse guild (instant)
+    const mainGuildId = Deno.env.get("DISCORD_GUILD_ID");
+    if (mainGuildId) {
+      try {
+        const mainGuildRes = await fetch(
+          `https://discord.com/api/v10/applications/${clientId}/guilds/${mainGuildId}/commands`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bot ${botToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(commands),
+          }
+        );
+
+        if (mainGuildRes.ok) {
+          guildResults.push({ guild_id: mainGuildId, status: "success", source: "main_guild" });
+        } else {
+          const errorText = await mainGuildRes.text();
+          console.warn(`[register-global-guard-commands] Main guild registration failed:`, errorText);
+          guildResults.push({ guild_id: mainGuildId, status: "failed", source: "main_guild", details: errorText });
+        }
+      } catch (e) {
+        console.warn(`[register-global-guard-commands] Main guild registration error:`, e);
+        guildResults.push({ guild_id: mainGuildId, status: "error", source: "main_guild" });
+      }
+    }
+
+    // 2) Register to any guilds where a license indicates an install
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+
     // Get all guilds where Global Guard bot is installed
     const { data: installations } = await supabase
       .from("bot_installation_codes")
@@ -154,10 +193,9 @@ Deno.serve(async (req) => {
       .eq("license_status", "active")
       .not("guild_id", "is", null);
 
-    const guildResults: any[] = [];
     if (installations) {
       for (const install of installations) {
-        if (install.guild_id) {
+        if (install.guild_id && install.guild_id !== mainGuildId) {
           try {
             const guildRes = await fetch(
               `https://discord.com/api/v10/applications/${clientId}/guilds/${install.guild_id}/commands`,
@@ -170,12 +208,17 @@ Deno.serve(async (req) => {
                 body: JSON.stringify(commands),
               }
             );
-            
+
             if (guildRes.ok) {
-              guildResults.push({ guild_id: install.guild_id, status: "success" });
+              guildResults.push({ guild_id: install.guild_id, status: "success", source: "licensed_install" });
+            } else {
+              const errorText = await guildRes.text();
+              console.warn(`[register-global-guard-commands] Failed for guild ${install.guild_id}:`, errorText);
+              guildResults.push({ guild_id: install.guild_id, status: "failed", source: "licensed_install", details: errorText });
             }
           } catch (e) {
-            console.warn(`[register-global-guard-commands] Failed for guild ${install.guild_id}:`, e);
+            console.warn(`[register-global-guard-commands] Error for guild ${install.guild_id}:`, e);
+            guildResults.push({ guild_id: install.guild_id, status: "error", source: "licensed_install" });
           }
         }
       }
