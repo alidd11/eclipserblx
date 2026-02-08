@@ -61,33 +61,33 @@ export default function GlobalGuardPermissions() {
     },
   });
 
-  // Fetch Discord roles when guild is selected
+  // Fetch Discord roles when guild is selected via edge function
   useEffect(() => {
-    if (!selectedGuild || !session?.accessToken) return;
+    if (!selectedGuild) return;
 
     const fetchRoles = async () => {
       setLoadingRoles(true);
       try {
-        const response = await fetch(`https://discord.com/api/v10/guilds/${selectedGuild}/roles`, {
-          headers: {
-            'Authorization': `Bot ${session.accessToken}`,
-          },
+        const { data, error } = await supabase.functions.invoke('global-guard-fetch-roles', {
+          body: { guildId: selectedGuild },
         });
 
-        if (!response.ok) {
-          // If bot token doesn't work, we'll use cached roles or show message
-          console.log('Cannot fetch roles - bot may not be in server');
+        if (error) {
+          console.error('Failed to fetch roles:', error);
+          toast.error('Failed to fetch server roles');
           setGuildRoles([]);
           return;
         }
 
-        const roles = await response.json();
-        // Filter out @everyone role and sort by position
-        setGuildRoles(
-          roles
-            .filter((r: DiscordRole) => r.name !== '@everyone')
-            .sort((a: DiscordRole, b: DiscordRole) => b.position - a.position)
-        );
+        if (!data?.success) {
+          if (data?.error === 'Bot not in server') {
+            toast.error(data?.message || 'Bot not in this server');
+          }
+          setGuildRoles([]);
+          return;
+        }
+
+        setGuildRoles(data.roles || []);
       } catch (error) {
         console.error('Failed to fetch roles:', error);
         setGuildRoles([]);
@@ -97,7 +97,7 @@ export default function GlobalGuardPermissions() {
     };
 
     fetchRoles();
-  }, [selectedGuild, session?.accessToken]);
+  }, [selectedGuild]);
 
   // Add permission mutation
   const addPermission = useMutation({
