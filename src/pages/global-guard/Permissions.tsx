@@ -117,10 +117,16 @@ export default function GlobalGuardPermissions() {
       const guild = ownedGuilds.find(g => g.id === selectedGuild);
       const role = guildRoles.find(r => r.id === selectedRole);
 
+      // Get the current Supabase user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('You must be logged in to add permissions');
+      }
+
       const { error } = await supabase
         .from('global_guard_guild_permissions')
         .insert({
-          owner_user_id: session?.discordUser?.id,
+          owner_user_id: user.id,
           guild_id: selectedGuild,
           guild_name: guild?.name || null,
           discord_role_id: selectedRole,
