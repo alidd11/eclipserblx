@@ -10,6 +10,7 @@ interface CustomRole {
   icon: string;
   hierarchy_level: number;
   is_system: boolean;
+  is_status_role: boolean;
 }
 
 interface RoleSelectorProps {

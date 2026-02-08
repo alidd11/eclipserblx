@@ -34,6 +34,7 @@ interface CustomRole {
   hierarchy_level: number;
   description: string | null;
   is_system: boolean;
+  is_status_role: boolean;
   created_at: string;
 }
 
@@ -80,12 +81,14 @@ export function RoleManagementCard() {
     enabled: !!user?.id,
   });
 
+  // Fetch only permission-based roles (exclude status roles)
   const { data: roles, isLoading } = useQuery({
-    queryKey: ['custom-roles'],
+    queryKey: ['custom-roles-management'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('custom_roles')
         .select('*')
+        .eq('is_status_role', false)
         .order('hierarchy_level', { ascending: false });
       
       if (error) throw error;

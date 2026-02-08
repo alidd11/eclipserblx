@@ -50,6 +50,7 @@ interface CustomRole {
   icon: string;
   hierarchy_level: number;
   is_system: boolean;
+  is_status_role: boolean;
 }
 
 // Define permission categories with icons and labels
@@ -113,13 +114,14 @@ export default function RolePermissions() {
   const [activeTab, setActiveTab] = useState<'assign' | 'manage'>('assign');
   const [allExpanded, setAllExpanded] = useState(true);
 
-  // Fetch custom roles
+  // Fetch custom roles (excluding status roles like seller, customer, eclipse_plus_member)
   const { data: customRoles, isLoading: rolesLoading } = useQuery({
-    queryKey: ['custom-roles'],
+    queryKey: ['custom-roles-permissions'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('custom_roles')
         .select('*')
+        .eq('is_status_role', false)
         .order('hierarchy_level', { ascending: false });
       
       if (error) throw error;
