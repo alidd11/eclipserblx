@@ -184,6 +184,16 @@ Deno.serve(async (req) => {
         case "help":
           return handleHelpCommand(serverContext);
 
+        // Global Guard commands
+        case "globalban":
+          return await handleGlobalBanCommand(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl);
+
+        case "globalunban":
+          return await handleGlobalUnbanCommand(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl);
+
+        case "globalbans":
+          return await handleGlobalBansListCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
+
         default:
           return interactionResponse(`Unknown command: ${commandName}`, true);
       }
@@ -2532,6 +2542,16 @@ function handleHelpCommand(serverContext: ServerContext, page = 0) {
       ],
       tip: "🎫 Use `/getrole` after purchases to sync your roles!",
     },
+    // Page 3: Global Guard
+    {
+      title: "🛡️ Eclipse Portal Bot - Global Guard",
+      commands: [
+        { name: "/globalban", desc: "Ban a user across all your servers" },
+        { name: "/globalunban", desc: "Remove a global ban from a user" },
+        { name: "/globalbans", desc: "View your active global bans" },
+      ],
+      tip: "🛡️ Requires an active bot license. Visit guard.eclipserblx.com for full management!",
+    },
   ];
 
   const currentPage = pages[page] || pages[0];
@@ -2609,7 +2629,7 @@ function handlePortalHelpPagination(serverContext: ServerContext, action: string
   if (action === "prev") {
     newPage = Math.max(0, currentPage - 1);
   } else if (action === "next") {
-    newPage = Math.min(2, currentPage + 1);
+    newPage = Math.min(3, currentPage + 1); // 4 pages total (0-3)
   }
 
   const pages = [
@@ -2642,6 +2662,15 @@ function handlePortalHelpPagination(serverContext: ServerContext, action: string
         { name: "/help", desc: "View this help message" },
       ],
       tip: "🎫 Use `/getrole` after purchases to sync your roles!",
+    },
+    {
+      title: "🛡️ Eclipse Portal Bot - Global Guard",
+      commands: [
+        { name: "/globalban", desc: "Ban a user across all your servers" },
+        { name: "/globalunban", desc: "Remove a global ban from a user" },
+        { name: "/globalbans", desc: "View your active global bans" },
+      ],
+      tip: "🛡️ Requires an active bot license. Visit guard.eclipserblx.com for full management!",
     },
   ];
 
@@ -2710,4 +2739,360 @@ function handlePortalHelpPagination(serverContext: ServerContext, action: string
     }),
     { headers: { "Content-Type": "application/json" } }
   );
+}
+
+// ==================== GLOBAL GUARD COMMANDS ====================
+
+// /globalban command - Ban a user across all servers
+async function handleGlobalBanCommand(
+  supabase: any,
+  interaction: DiscordInteraction,
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string
+) {
+  const options = interaction.data?.options || [];
+  const userOption = options.find((o) => o.name === "user")?.value || "";
+  const reason = options.find((o) => o.name === "reason")?.value || null;
+  const duration = options.find((o) => o.name === "duration")?.value || null;
+
+  // Extract Discord ID from mention or use directly
+  const targetDiscordId = userOption.replace(/<@!?(\d+)>/, "$1").trim();
+
+  if (!targetDiscordId || !/^\d{17,20}$/.test(targetDiscordId)) {
+    return interactionResponse("❌ Please provide a valid Discord user ID or @mention.", true);
+  }
+
+  // Get the Eclipse user from Discord ID
+  const profile = await getLinkedAccount(supabase, discordUserId);
+  if (!profile) {
+    return interactionResponse(
+      "❌ You must link your Discord account to Eclipse to use Global Guard.\nUse `/link` to get started.",
+      true
+    );
+  }
+
+  // Check if user has any active bot licenses (required for Global Guard)
+  const { data: licenses, error: licenseError } = await supabase
+    .from("bot_installation_codes")
+    .select("id")
+    .eq("user_id", profile.user_id)
+    .eq("license_status", "active")
+    .not("guild_id", "is", null)
+    .limit(1);
+
+  if (licenseError || !licenses || licenses.length === 0) {
+    return interactionResponse(
+      "❌ Global Guard requires an active bot license.\nPurchase a bot from the Eclipse marketplace to use this feature.",
+      true
+    );
+  }
+
+  // Calculate expiry for temporary bans
+  let expiresAt: string | null = null;
+  let banType: "permanent" | "temporary" = "permanent";
+  
+  if (duration) {
+    banType = "temporary";
+    const now = new Date();
+    const durationMap: Record<string, number> = {
+      "1h": 60 * 60 * 1000,
+      "12h": 12 * 60 * 60 * 1000,
+      "1d": 24 * 60 * 60 * 1000,
+      "7d": 7 * 24 * 60 * 60 * 1000,
+      "30d": 30 * 24 * 60 * 60 * 1000,
+      "90d": 90 * 24 * 60 * 60 * 1000,
+    };
+    expiresAt = new Date(now.getTime() + (durationMap[duration] || 0)).toISOString();
+  }
+
+  // Check if user is already banned
+  const { data: existingBan } = await supabase
+    .from("global_bans")
+    .select("id")
+    .eq("owner_user_id", profile.user_id)
+    .eq("banned_discord_id", targetDiscordId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (existingBan) {
+    return interactionResponse(
+      "⚠️ This user is already globally banned. Use `/globalunban` first to update the ban.",
+      true
+    );
+  }
+
+  // Try to get target user info from Discord
+  let targetUsername = "Unknown User";
+  let targetAvatarUrl: string | null = null;
+  
+  try {
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+    if (botToken) {
+      const userResponse = await fetch(`https://discord.com/api/v10/users/${targetDiscordId}`, {
+        headers: { Authorization: `Bot ${botToken}` },
+      });
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        targetUsername = userData.global_name || userData.username || "Unknown User";
+        if (userData.avatar) {
+          const ext = userData.avatar.startsWith("a_") ? "gif" : "png";
+          targetAvatarUrl = `https://cdn.discordapp.com/avatars/${targetDiscordId}/${userData.avatar}.${ext}`;
+        }
+      }
+    }
+  } catch (e) {
+    console.log("[discord-customer-bot] Failed to fetch target user info:", e);
+  }
+
+  // Create the global ban
+  const { data: ban, error: banError } = await supabase
+    .from("global_bans")
+    .insert({
+      owner_user_id: profile.user_id,
+      banned_discord_id: targetDiscordId,
+      banned_username: targetUsername,
+      banned_avatar_url: targetAvatarUrl,
+      reason: reason,
+      ban_type: banType,
+      expires_at: expiresAt,
+      created_via: "discord_command",
+      is_active: true,
+    })
+    .select()
+    .single();
+
+  if (banError) {
+    console.error("[discord-customer-bot] Failed to create global ban:", banError);
+    return interactionResponse("❌ Failed to create global ban. Please try again.", true);
+  }
+
+  // Create log entry
+  await supabase.from("global_ban_logs").insert({
+    ban_id: ban.id,
+    action: "created",
+    performed_by: profile.user_id,
+    details: { via: "discord_command", ban_type: banType },
+  });
+
+  // Trigger sync to all servers (fire and forget)
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  fetch(`${supabaseUrl}/functions/v1/sync-global-bans`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseServiceKey}`,
+    },
+    body: JSON.stringify({ banId: ban.id, action: "ban" }),
+  }).catch(console.error);
+
+  const durationText = duration 
+    ? `for **${duration.replace("h", " hour").replace("d", " day").replace(/(\d+)/, "$1")}**`
+    : "**permanently**";
+
+  const embed = {
+    color: 0xef4444, // Red
+    title: "🛡️ Global Ban Created",
+    description: `**${targetUsername}** has been banned ${durationText} across all your servers.`,
+    thumbnail: targetAvatarUrl ? { url: targetAvatarUrl } : undefined,
+    fields: [
+      {
+        name: "🆔 Discord ID",
+        value: targetDiscordId,
+        inline: true,
+      },
+      {
+        name: "📝 Reason",
+        value: reason || "No reason provided",
+        inline: true,
+      },
+      {
+        name: "⏱️ Status",
+        value: "Syncing to servers...",
+        inline: false,
+      },
+    ],
+    footer: {
+      text: "Global Guard • Eclipse Marketplace",
+      icon_url: discordAvatarUrl,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  return interactionResponse("", false, [embed]);
+}
+
+// /globalunban command - Remove a global ban
+async function handleGlobalUnbanCommand(
+  supabase: any,
+  interaction: DiscordInteraction,
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string
+) {
+  const options = interaction.data?.options || [];
+  const userOption = options.find((o) => o.name === "user")?.value || "";
+
+  // Extract Discord ID from mention or use directly
+  const targetDiscordId = userOption.replace(/<@!?(\d+)>/, "$1").trim();
+
+  if (!targetDiscordId || !/^\d{17,20}$/.test(targetDiscordId)) {
+    return interactionResponse("❌ Please provide a valid Discord user ID or @mention.", true);
+  }
+
+  // Get the Eclipse user from Discord ID
+  const profile = await getLinkedAccount(supabase, discordUserId);
+  if (!profile) {
+    return interactionResponse(
+      "❌ You must link your Discord account to Eclipse to use Global Guard.\nUse `/link` to get started.",
+      true
+    );
+  }
+
+  // Find the active ban
+  const { data: ban, error: banError } = await supabase
+    .from("global_bans")
+    .select("*")
+    .eq("owner_user_id", profile.user_id)
+    .eq("banned_discord_id", targetDiscordId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (banError || !ban) {
+    return interactionResponse("❌ No active global ban found for this user.", true);
+  }
+
+  // Revoke the ban
+  const { error: updateError } = await supabase
+    .from("global_bans")
+    .update({ is_active: false })
+    .eq("id", ban.id);
+
+  if (updateError) {
+    console.error("[discord-customer-bot] Failed to revoke global ban:", updateError);
+    return interactionResponse("❌ Failed to revoke ban. Please try again.", true);
+  }
+
+  // Create log entry
+  await supabase.from("global_ban_logs").insert({
+    ban_id: ban.id,
+    action: "revoked",
+    performed_by: profile.user_id,
+    details: { via: "discord_command" },
+  });
+
+  // Trigger unban sync to all servers (fire and forget)
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  fetch(`${supabaseUrl}/functions/v1/sync-global-bans`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseServiceKey}`,
+    },
+    body: JSON.stringify({ banId: ban.id, action: "unban" }),
+  }).catch(console.error);
+
+  const embed = {
+    color: 0x22c55e, // Green
+    title: "🛡️ Global Ban Removed",
+    description: `**${ban.banned_username || targetDiscordId}** has been unbanned from all your servers.`,
+    thumbnail: ban.banned_avatar_url ? { url: ban.banned_avatar_url } : undefined,
+    fields: [
+      {
+        name: "🆔 Discord ID",
+        value: targetDiscordId,
+        inline: true,
+      },
+      {
+        name: "⏱️ Status",
+        value: "Syncing to servers...",
+        inline: true,
+      },
+    ],
+    footer: {
+      text: "Global Guard • Eclipse Marketplace",
+      icon_url: discordAvatarUrl,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  return interactionResponse("", false, [embed]);
+}
+
+// /globalbans command - View active global bans
+async function handleGlobalBansListCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string
+) {
+  // Get the Eclipse user from Discord ID
+  const profile = await getLinkedAccount(supabase, discordUserId);
+  if (!profile) {
+    return interactionResponse(
+      "❌ You must link your Discord account to Eclipse to use Global Guard.\nUse `/link` to get started.",
+      true
+    );
+  }
+
+  // Get active bans
+  const { data: bans, error: bansError } = await supabase
+    .from("global_bans")
+    .select("*")
+    .eq("owner_user_id", profile.user_id)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (bansError) {
+    console.error("[discord-customer-bot] Failed to fetch global bans:", bansError);
+    return interactionResponse("❌ Failed to fetch your bans. Please try again.", true);
+  }
+
+  if (!bans || bans.length === 0) {
+    const embed = {
+      color: 0x3b82f6, // Blue
+      title: "🛡️ Global Guard - Active Bans",
+      description: "You have no active global bans.\n\nUse `/globalban` to ban a user across all your servers.",
+      footer: {
+        text: "Global Guard • Eclipse Marketplace",
+        icon_url: discordAvatarUrl,
+      },
+      timestamp: new Date().toISOString(),
+    };
+    return interactionResponse("", true, [embed]);
+  }
+
+  // Build ban list
+  const banList = bans.map((ban: any, index: number) => {
+    const typeEmoji = ban.ban_type === "permanent" ? "🔴" : "🟡";
+    const expiryText = ban.expires_at 
+      ? `Expires: <t:${Math.floor(new Date(ban.expires_at).getTime() / 1000)}:R>`
+      : "Permanent";
+    return `${typeEmoji} **${ban.banned_username || ban.banned_discord_id}**\n└ ID: \`${ban.banned_discord_id}\` • ${expiryText}`;
+  }).join("\n\n");
+
+  const embed = {
+    color: 0x3b82f6, // Blue
+    title: "🛡️ Global Guard - Active Bans",
+    description: `You have **${bans.length}** active global ban${bans.length === 1 ? "" : "s"}:\n\n${banList}`,
+    fields: [
+      {
+        name: "📊 Manage Bans",
+        value: "Visit [guard.eclipserblx.com](https://guard.eclipserblx.com) for full management.",
+        inline: false,
+      },
+    ],
+    footer: {
+      text: "Global Guard • Eclipse Marketplace",
+      icon_url: discordAvatarUrl,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  return interactionResponse("", true, [embed]);
 }

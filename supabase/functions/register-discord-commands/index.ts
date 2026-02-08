@@ -100,6 +100,61 @@ const commands = [
     contexts: [0], // Guild only
     integration_types: [0],
   },
+  // ==================== GLOBAL GUARD COMMANDS ====================
+  {
+    name: "globalban",
+    description: "Ban a user across all your servers with Global Guard",
+    contexts: [0], // Guild only
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention to ban",
+        type: 3, // STRING
+        required: true,
+      },
+      {
+        name: "reason",
+        description: "Reason for the ban",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "duration",
+        description: "Ban duration (leave empty for permanent)",
+        type: 3, // STRING
+        required: false,
+        choices: [
+          { name: "1 hour", value: "1h" },
+          { name: "12 hours", value: "12h" },
+          { name: "1 day", value: "1d" },
+          { name: "7 days", value: "7d" },
+          { name: "30 days", value: "30d" },
+          { name: "90 days", value: "90d" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "globalunban",
+    description: "Remove a global ban from a user",
+    contexts: [0], // Guild only
+    integration_types: [0],
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention to unban",
+        type: 3, // STRING
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "globalbans",
+    description: "View your active global bans",
+    contexts: [0], // Guild only
+    integration_types: [0],
+  },
 ];
 
 // IMPORTANT: In a guild, Discord surfaces BOTH guild-scoped commands AND global commands.
