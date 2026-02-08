@@ -10,6 +10,7 @@ const GlobalGuardDashboard = lazy(() => import('@/pages/global-guard/Dashboard')
 const GlobalGuardBans = lazy(() => import('@/pages/global-guard/Bans'));
 const GlobalGuardServers = lazy(() => import('@/pages/global-guard/Servers'));
 const GlobalGuardHistory = lazy(() => import('@/pages/global-guard/History'));
+const GlobalGuardPermissions = lazy(() => import('@/pages/global-guard/Permissions'));
 const GlobalGuardSettings = lazy(() => import('@/pages/global-guard/Settings'));
 
 function PageLoader() {
@@ -32,6 +33,7 @@ function AuthenticatedRoutes() {
         <Route path="bans" element={<GlobalGuardBans />} />
         <Route path="servers" element={<GlobalGuardServers />} />
         <Route path="history" element={<GlobalGuardHistory />} />
+        <Route path="permissions" element={<GlobalGuardPermissions />} />
         <Route path="settings" element={<GlobalGuardSettings />} />
         <Route path="*" element={<GlobalGuardDashboard />} />
       </Routes>

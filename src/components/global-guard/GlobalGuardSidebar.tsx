@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Users, Server, History, Settings, Home, ArrowLeft } from 'lucide-react';
+import { Shield, Users, Server, History, Settings, Home, ArrowLeft, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { path: '/guard/bans', label: 'Ban List', icon: Users },
   { path: '/guard/servers', label: 'Servers', icon: Server },
   { path: '/guard/history', label: 'History', icon: History },
+  { path: '/guard/permissions', label: 'Permissions', icon: Lock },
   { path: '/guard/settings', label: 'Settings', icon: Settings },
 ];
 

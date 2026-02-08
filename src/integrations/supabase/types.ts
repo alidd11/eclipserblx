@@ -2665,6 +2665,42 @@ export type Database = {
         }
         Relationships: []
       }
+      global_guard_guild_permissions: {
+        Row: {
+          created_at: string
+          discord_role_id: string
+          discord_role_name: string | null
+          guild_id: string
+          guild_name: string | null
+          id: string
+          owner_user_id: string
+          permission_level: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_role_id: string
+          discord_role_name?: string | null
+          guild_id: string
+          guild_name?: string | null
+          id?: string
+          owner_user_id: string
+          permission_level?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_role_id?: string
+          discord_role_name?: string | null
+          guild_id?: string
+          guild_name?: string | null
+          id?: string
+          owner_user_id?: string
+          permission_level?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       global_guard_settings: {
         Row: {
           auto_sync_new_servers: boolean
