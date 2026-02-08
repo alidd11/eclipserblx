@@ -21,6 +21,8 @@ import { AdminManifestHandler } from "@/components/pwa/AdminManifestHandler";
 import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
+import { GlobalGuardRouter } from "@/components/global-guard/GlobalGuardRouter";
+import { SubdomainRouter } from "@/components/SubdomainRouter";
 
 // Eagerly loaded - critical path
 import Index from "./pages/Index";
@@ -216,6 +218,7 @@ const App = () => (
                 <AdminPWAHandler />
                 <PWARouteRestorer />
                 <Suspense fallback={<PageLoader />}>
+                  <SubdomainRouter>
                   <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
@@ -362,6 +365,7 @@ const App = () => (
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </SubdomainRouter>
                 </Suspense>
                     <InstallPrompt />
                     </PWAWrapper>
