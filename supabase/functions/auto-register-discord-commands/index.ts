@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   console.log("[auto-register-discord-commands] Starting automated command registration...");
 
   try {
-    const results: { portalBot?: any; funBot?: any; errors: string[] } = { errors: [] };
+    const results: { portalBot?: any; funBot?: any; globalGuardBot?: any; errors: string[] } = { errors: [] };
 
     // 1. Register Portal Bot commands
     try {
@@ -70,6 +70,30 @@ Deno.serve(async (req) => {
       console.error("[auto-register-discord-commands] Fun Bot error:", err);
     }
 
+    // 3. Register Global Guard Bot commands
+    try {
+      const guardResponse = await fetch(`${supabaseUrl}/functions/v1/register-global-guard-commands`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-key": supabaseServiceKey,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (guardResponse.ok) {
+        results.globalGuardBot = await guardResponse.json();
+        console.log("[auto-register-discord-commands] Global Guard Bot commands registered:", results.globalGuardBot.global_commands?.length);
+      } else {
+        const errorText = await guardResponse.text();
+        results.errors.push(`Global Guard Bot: ${errorText}`);
+        console.error("[auto-register-discord-commands] Global Guard Bot registration failed:", errorText);
+      }
+    } catch (err) {
+      results.errors.push(`Global Guard Bot: ${err}`);
+      console.error("[auto-register-discord-commands] Global Guard Bot error:", err);
+    }
+
     // Log the registration to audit
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     await supabase.from("audit_logs").insert({
@@ -78,6 +102,7 @@ Deno.serve(async (req) => {
       details: {
         portal_bot_commands: results.portalBot?.commands?.length || 0,
         fun_bot_commands: results.funBot?.commands?.length || 0,
+        global_guard_commands: results.globalGuardBot?.global_commands?.length || 0,
         store_guilds: results.portalBot?.store_guilds?.length || 0,
         errors: results.errors,
       },
@@ -98,6 +123,10 @@ Deno.serve(async (req) => {
         } : null,
         fun_bot: results.funBot ? {
           commands: results.funBot.commands?.length || 0,
+        } : null,
+        global_guard_bot: results.globalGuardBot ? {
+          commands: results.globalGuardBot.global_commands?.length || 0,
+          guild_registrations: results.globalGuardBot.guild_registrations || 0,
         } : null,
         errors: results.errors,
       }),

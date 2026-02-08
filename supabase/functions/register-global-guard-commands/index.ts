@@ -67,14 +67,16 @@ Deno.serve(async (req) => {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-  // Auth check - service key or admin user
+  // Auth check - service key, internal key, or admin user
   const authHeader = req.headers.get("Authorization");
   const apiKey = req.headers.get("x-api-key");
   const botghostKey = Deno.env.get("BOTGHOST_API_KEY");
+  const internalKey = req.headers.get("x-internal-key");
 
   const isApiKeyAuth = apiKey && botghostKey && apiKey.trim() === botghostKey.trim();
+  const isInternalAuth = internalKey && internalKey === supabaseServiceKey;
 
-  if (!isApiKeyAuth) {
+  if (!isApiKeyAuth && !isInternalAuth) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader || "" } },
     });
