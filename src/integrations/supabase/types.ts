@@ -2743,6 +2743,119 @@ export type Database = {
         }
         Relationships: []
       }
+      global_guard_subscriptions: {
+        Row: {
+          billing_period: string
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: string
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_guard_subscriptions_tier_fkey"
+            columns: ["tier"]
+            isOneToOne: false
+            referencedRelation: "global_guard_tiers"
+            referencedColumns: ["tier"]
+          },
+        ]
+      }
+      global_guard_tiers: {
+        Row: {
+          annual_price_gbp: number
+          created_at: string
+          description: string | null
+          display_order: number
+          features: Json | null
+          has_ban_templates: boolean
+          has_priority_sync: boolean
+          id: string
+          is_active: boolean
+          max_servers: number | null
+          monthly_price_gbp: number
+          name: string
+          stripe_annual_price_id: string | null
+          stripe_annual_product_id: string | null
+          stripe_monthly_price_id: string | null
+          stripe_monthly_product_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          annual_price_gbp?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          features?: Json | null
+          has_ban_templates?: boolean
+          has_priority_sync?: boolean
+          id?: string
+          is_active?: boolean
+          max_servers?: number | null
+          monthly_price_gbp?: number
+          name: string
+          stripe_annual_price_id?: string | null
+          stripe_annual_product_id?: string | null
+          stripe_monthly_price_id?: string | null
+          stripe_monthly_product_id?: string | null
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          annual_price_gbp?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          features?: Json | null
+          has_ban_templates?: boolean
+          has_priority_sync?: boolean
+          id?: string
+          is_active?: boolean
+          max_servers?: number | null
+          monthly_price_gbp?: number
+          name?: string
+          stripe_annual_price_id?: string | null
+          stripe_annual_product_id?: string | null
+          stripe_monthly_price_id?: string | null
+          stripe_monthly_product_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       incident_updates: {
         Row: {
           created_at: string
