@@ -36,21 +36,21 @@ export function BanStatsCards({ stats, isLoading }: BanStatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
           <Card key={card.title} className="bg-card border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{card.title}</p>
-                  <p className="text-3xl font-bold text-foreground mt-1">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">{card.title}</p>
+                  <p className="text-xl md:text-3xl font-bold text-foreground mt-1">
                     {isLoading ? '...' : card.value.toLocaleString()}
                   </p>
                 </div>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shrink-0`}>
+                  <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
               </div>
             </CardContent>

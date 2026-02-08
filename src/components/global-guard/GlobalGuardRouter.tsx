@@ -25,11 +25,11 @@ export function GlobalGuardRouter() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<GlobalGuardDashboard />} />
-        <Route path="/bans" element={<GlobalGuardBans />} />
-        <Route path="/servers" element={<GlobalGuardServers />} />
-        <Route path="/history" element={<GlobalGuardHistory />} />
-        <Route path="/settings" element={<GlobalGuardSettings />} />
+        <Route index element={<GlobalGuardDashboard />} />
+        <Route path="bans" element={<GlobalGuardBans />} />
+        <Route path="servers" element={<GlobalGuardServers />} />
+        <Route path="history" element={<GlobalGuardHistory />} />
+        <Route path="settings" element={<GlobalGuardSettings />} />
         <Route path="*" element={<GlobalGuardDashboard />} />
       </Routes>
     </Suspense>
