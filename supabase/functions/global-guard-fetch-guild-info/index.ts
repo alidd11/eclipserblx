@@ -62,11 +62,13 @@ serve(async (req) => {
       });
     }
 
-    const botToken = Deno.env.get('DISCORD_GLOBAL_GUARD_BOT_TOKEN');
+    const botToken = Deno.env.get('DISCORD_GLOBAL_GUARD_BOT_TOKEN')?.trim();
     if (!botToken) {
       console.error('[global-guard-fetch-guild-info] DISCORD_GLOBAL_GUARD_BOT_TOKEN not configured');
       return json({ success: false, error: 'Bot not configured', httpStatus: 500 }, 500);
     }
+
+    console.log(`[global-guard-fetch-guild-info] Bot token present (length=${botToken.length})`);
 
     // Validate token and determine which guilds the user is allowed to query
     const guildsResp = await fetch('https://discord.com/api/users/@me/guilds', {

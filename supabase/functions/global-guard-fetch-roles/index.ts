@@ -99,11 +99,13 @@ serve(async (req) => {
       });
     }
 
-    const botToken = Deno.env.get('DISCORD_GLOBAL_GUARD_BOT_TOKEN');
+    const botToken = Deno.env.get('DISCORD_GLOBAL_GUARD_BOT_TOKEN')?.trim();
     if (!botToken) {
       console.error('[global-guard-fetch-roles] DISCORD_GLOBAL_GUARD_BOT_TOKEN not configured');
       return json({ success: false, error: 'Bot not configured', httpStatus: 500 }, 500);
     }
+
+    console.log(`[global-guard-fetch-roles] Bot token present (length=${botToken.length})`);
 
     console.log(`[global-guard-fetch-roles] Fetching roles for guild ${guildId} (bot-first, user-fallback)`);
 
