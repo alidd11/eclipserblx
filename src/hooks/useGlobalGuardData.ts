@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useGlobalGuardSession } from '@/hooks/useGlobalGuardSession';
 import type { GlobalBan, GlobalGuardStats, ConnectedServer, GlobalBanLog } from '@/types/global-guard';
 
 export function useGlobalGuardData() {
   const queryClient = useQueryClient();
-
+  const { session: ggSession } = useGlobalGuardSession();
   // Fetch all bans for current user
   const bansQuery = useQuery({
     queryKey: ['global-guard-bans'],
@@ -47,7 +48,7 @@ export function useGlobalGuardData() {
 
   // Fetch connected servers
   const serversQuery = useQuery({
-    queryKey: ['global-guard-servers'],
+    queryKey: ['global-guard-servers', ggSession?.accessToken ? 'with-discord' : 'no-discord'],
     queryFn: async (): Promise<ConnectedServer[]> => {
       const { data, error } = await supabase
         .from('bot_installation_codes')
@@ -55,7 +56,7 @@ export function useGlobalGuardData() {
         .not('guild_id', 'is', null);
 
       if (error) throw error;
-      
+
       // Deduplicate by guild_id
       const serversMap = new Map<string, ConnectedServer>();
       (data || []).forEach((s) => {
@@ -70,11 +71,44 @@ export function useGlobalGuardData() {
           });
         }
       });
-      
-      return Array.from(serversMap.values());
+
+      const baseServers = Array.from(serversMap.values());
+
+      // Enrich missing guild info (member counts/icons) from Discord when possible
+      if (!ggSession?.accessToken || baseServers.length === 0) return baseServers;
+
+      const guildIds = baseServers.map((s) => s.guild_id);
+      const { data: enrichData, error: enrichError } = await supabase.functions.invoke(
+        'global-guard-fetch-guild-info',
+        {
+          body: {
+            guildIds,
+            discordAccessToken: ggSession.accessToken,
+          },
+        }
+      );
+
+      if (enrichError || !enrichData?.success || !Array.isArray(enrichData?.guilds)) {
+        return baseServers;
+      }
+
+      const byId = new Map<string, { guild_name: string; guild_icon: string | null; member_count: number | null }>();
+      for (const g of enrichData.guilds as Array<{ guild_id: string; guild_name: string; guild_icon: string | null; member_count: number | null }>) {
+        byId.set(g.guild_id, { guild_name: g.guild_name, guild_icon: g.guild_icon, member_count: g.member_count });
+      }
+
+      return baseServers.map((s) => {
+        const extra = byId.get(s.guild_id);
+        if (!extra) return s;
+        return {
+          ...s,
+          guild_name: extra.guild_name ?? s.guild_name,
+          guild_icon: extra.guild_icon ?? s.guild_icon,
+          member_count: extra.member_count ?? s.member_count,
+        };
+      });
     },
   });
-
   // Fetch ban logs
   const logsQuery = useQuery({
     queryKey: ['global-guard-logs'],

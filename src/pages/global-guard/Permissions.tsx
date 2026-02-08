@@ -61,15 +61,24 @@ export default function GlobalGuardPermissions() {
     },
   });
 
-  // Fetch Discord roles when guild is selected via edge function
+  // Fetch Discord roles when guild is selected via backend function
   useEffect(() => {
     if (!selectedGuild) return;
 
     const fetchRoles = async () => {
       setLoadingRoles(true);
       try {
+        if (!session?.accessToken) {
+          toast.error('Your Discord session expired — please sign in again');
+          setGuildRoles([]);
+          return;
+        }
+
         const { data, error } = await supabase.functions.invoke('global-guard-fetch-roles', {
-          body: { guildId: selectedGuild },
+          body: {
+            guildId: selectedGuild,
+            discordAccessToken: session.accessToken,
+          },
         });
 
         if (error) {
@@ -80,9 +89,7 @@ export default function GlobalGuardPermissions() {
         }
 
         if (!data?.success) {
-          if (data?.error === 'Bot not in server') {
-            toast.error(data?.message || 'Bot not in this server');
-          }
+          toast.error(data?.message || 'Unable to load roles for this server');
           setGuildRoles([]);
           return;
         }
@@ -90,6 +97,7 @@ export default function GlobalGuardPermissions() {
         setGuildRoles(data.roles || []);
       } catch (error) {
         console.error('Failed to fetch roles:', error);
+        toast.error('Failed to fetch server roles');
         setGuildRoles([]);
       } finally {
         setLoadingRoles(false);
@@ -97,7 +105,7 @@ export default function GlobalGuardPermissions() {
     };
 
     fetchRoles();
-  }, [selectedGuild]);
+  }, [selectedGuild, session?.accessToken]);
 
   // Add permission mutation
   const addPermission = useMutation({
