@@ -2587,6 +2587,39 @@ export type Database = {
           },
         ]
       }
+      global_ban_templates: {
+        Row: {
+          ban_type: string
+          created_at: string
+          duration: string | null
+          id: string
+          name: string
+          owner_user_id: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          ban_type?: string
+          created_at?: string
+          duration?: string | null
+          id?: string
+          name: string
+          owner_user_id: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ban_type?: string
+          created_at?: string
+          duration?: string | null
+          id?: string
+          name?: string
+          owner_user_id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       global_bans: {
         Row: {
           ban_type: Database["public"]["Enums"]["global_ban_type"]
@@ -2637,7 +2670,11 @@ export type Database = {
           auto_sync_new_servers: boolean
           created_at: string
           default_ban_reason: string | null
+          has_ban_templates: boolean
+          has_priority_sync: boolean
           id: string
+          max_active_bans: number | null
+          max_servers: number
           notify_on_sync_failure: boolean
           updated_at: string
           user_id: string
@@ -2646,7 +2683,11 @@ export type Database = {
           auto_sync_new_servers?: boolean
           created_at?: string
           default_ban_reason?: string | null
+          has_ban_templates?: boolean
+          has_priority_sync?: boolean
           id?: string
+          max_active_bans?: number | null
+          max_servers?: number
           notify_on_sync_failure?: boolean
           updated_at?: string
           user_id: string
@@ -2655,7 +2696,11 @@ export type Database = {
           auto_sync_new_servers?: boolean
           created_at?: string
           default_ban_reason?: string | null
+          has_ban_templates?: boolean
+          has_priority_sync?: boolean
           id?: string
+          max_active_bans?: number | null
+          max_servers?: number
           notify_on_sync_failure?: boolean
           updated_at?: string
           user_id?: string
@@ -6863,6 +6908,16 @@ export type Database = {
       generate_staff_id: { Args: never; Returns: string }
       generate_store_id: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
+      get_global_guard_limits: {
+        Args: { _user_id: string }
+        Returns: {
+          has_ban_templates: boolean
+          has_priority_sync: boolean
+          is_premium: boolean
+          max_active_bans: number
+          max_servers: number
+        }[]
+      }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_store_qualification_progress: {
         Args: { p_store_id: string }
@@ -6881,6 +6936,7 @@ export type Database = {
         Args: { _permission_name: string; _user_id: string }
         Returns: boolean
       }
+      has_premium_global_guard: { Args: { _user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_store_owner: {

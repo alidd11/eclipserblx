@@ -46,6 +46,10 @@ export interface GlobalGuardSettings {
   default_ban_reason: string | null;
   created_at: string;
   updated_at: string;
+  max_servers: number;
+  max_active_bans: number | null;
+  has_priority_sync: boolean;
+  has_ban_templates: boolean;
 }
 
 export interface GlobalGuardStats {
@@ -60,6 +64,17 @@ export interface ConnectedServer {
   guild_name: string | null;
   guild_icon: string | null;
   member_count: number | null;
-  license_status: string;
+  license_status: string | null;
   last_synced_at: string | null;
+}
+
+export interface GlobalBanTemplate {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  reason: string | null;
+  ban_type: GlobalBanType;
+  duration: string | null;
+  created_at: string;
+  updated_at: string;
 }
