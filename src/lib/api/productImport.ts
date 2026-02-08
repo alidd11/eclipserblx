@@ -61,6 +61,36 @@ export interface ImportHistoryResponse {
   error?: string;
 }
 
+async function getFunctionErrorMessage(error: unknown): Promise<string> {
+  const err = error as any;
+
+  // Supabase Functions errors often include the raw Response in `context`.
+  const res: Response | undefined = err?.context;
+  if (res && typeof res.clone === 'function') {
+    try {
+      const json = await res.clone().json();
+      const msg = (json as any)?.error ?? (json as any)?.message;
+      if (typeof msg === 'string' && msg.trim()) return msg;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const text = await res.clone().text();
+      if (typeof text === 'string' && text.trim()) return text;
+    } catch {
+      // ignore
+    }
+
+    if (typeof res.status === 'number' && res.status > 0) {
+      return `Request failed (HTTP ${res.status})`;
+    }
+  }
+
+  if (typeof err?.message === 'string' && err.message.trim()) return err.message;
+  return 'Request failed';
+}
+
 export const productImportApi = {
   /**
    * List all products from an external store
@@ -72,7 +102,7 @@ export const productImportApi = {
 
     if (error) {
       console.error('Import list error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: await getFunctionErrorMessage(error) };
     }
 
     return data;
@@ -88,7 +118,7 @@ export const productImportApi = {
 
     if (error) {
       console.error('Import details error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: await getFunctionErrorMessage(error) };
     }
 
     return data;
@@ -104,7 +134,7 @@ export const productImportApi = {
 
     if (error) {
       console.error('Bulk import error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: await getFunctionErrorMessage(error) };
     }
 
     return data;
@@ -120,7 +150,7 @@ export const productImportApi = {
 
     if (error) {
       console.error('Import history error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: await getFunctionErrorMessage(error) };
     }
 
     return data;
