@@ -1119,6 +1119,7 @@ export type Database = {
           hierarchy_level: number
           icon: string
           id: string
+          is_status_role: boolean
           is_system: boolean
           name: string
           updated_at: string
@@ -1131,6 +1132,7 @@ export type Database = {
           hierarchy_level?: number
           icon?: string
           id?: string
+          is_status_role?: boolean
           is_system?: boolean
           name: string
           updated_at?: string
@@ -1143,6 +1145,7 @@ export type Database = {
           hierarchy_level?: number
           icon?: string
           id?: string
+          is_status_role?: boolean
           is_system?: boolean
           name?: string
           updated_at?: string
