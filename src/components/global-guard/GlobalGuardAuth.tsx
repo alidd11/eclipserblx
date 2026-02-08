@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
+const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_GLOBAL_GUARD_CLIENT_ID;
 
 export function GlobalGuardAuth() {
   const [isLoading, setIsLoading] = useState(false);
