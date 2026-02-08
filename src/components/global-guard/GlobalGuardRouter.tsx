@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGlobalGuardSession } from '@/hooks/useGlobalGuardSession';
+import { GlobalGuardAuth } from './GlobalGuardAuth';
+import { GlobalGuardCallback } from './GlobalGuardCallback';
 
 // Lazy load Global Guard pages
 const GlobalGuardDashboard = lazy(() => import('@/pages/global-guard/Dashboard'));
@@ -21,7 +24,7 @@ function PageLoader() {
   );
 }
 
-export function GlobalGuardRouter() {
+function AuthenticatedRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
@@ -33,5 +36,26 @@ export function GlobalGuardRouter() {
         <Route path="*" element={<GlobalGuardDashboard />} />
       </Routes>
     </Suspense>
+  );
+}
+
+export function GlobalGuardRouter() {
+  const { isAuthenticated, loading } = useGlobalGuardSession();
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+  return (
+    <Routes>
+      {/* OAuth callback route - always accessible */}
+      <Route path="callback" element={<GlobalGuardCallback />} />
+      
+      {/* Protected routes */}
+      <Route
+        path="*"
+        element={isAuthenticated ? <AuthenticatedRoutes /> : <GlobalGuardAuth />}
+      />
+    </Routes>
   );
 }
