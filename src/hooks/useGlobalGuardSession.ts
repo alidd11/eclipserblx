@@ -51,11 +51,31 @@ export function useGlobalGuardSession() {
 
   useEffect(() => {
     loadSession();
+
+    // Listen for storage events (cross-tab sync) and custom events (same-tab updates)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'global_guard_session') {
+        loadSession();
+      }
+    };
+
+    const handleSessionUpdate = () => {
+      loadSession();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('global_guard_session_updated', handleSessionUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('global_guard_session_updated', handleSessionUpdate);
+    };
   }, [loadSession]);
 
   const logout = useCallback(() => {
     sessionStorage.removeItem('global_guard_session');
     setSession(null);
+    window.dispatchEvent(new Event('global_guard_session_updated'));
   }, []);
 
   const refreshSession = useCallback(() => {

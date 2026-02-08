@@ -52,6 +52,9 @@ export function GlobalGuardCallback() {
             expiresAt: Date.now() + (data.expires_in * 1000),
           }));
 
+          // Dispatch event to notify session hook of the update
+          window.dispatchEvent(new Event('global_guard_session_updated'));
+
           toast.success(`Welcome, ${data.discord_user.username}!`);
           navigate('/guard', { replace: true });
         } else {
