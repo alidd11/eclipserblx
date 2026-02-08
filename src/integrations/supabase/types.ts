@@ -2701,6 +2701,54 @@ export type Database = {
         }
         Relationships: []
       }
+      global_guard_server_usage: {
+        Row: {
+          additional_servers: number
+          base_servers: number
+          billing_period_end: string | null
+          billing_period_start: string | null
+          created_at: string
+          current_server_count: number
+          id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          total_servers: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_servers?: number
+          base_servers?: number
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string
+          current_server_count?: number
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          total_servers?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_servers?: number
+          base_servers?: number
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string
+          current_server_count?: number
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          total_servers?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       global_guard_settings: {
         Row: {
           auto_sync_new_servers: boolean
