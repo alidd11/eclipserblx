@@ -1,7 +1,9 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GlobalGuardRouter } from "@/components/global-guard/GlobalGuardRouter";
+
+// Lazy load Global Guard router for /guard path
+const GlobalGuardRouter = lazy(() => import("@/components/global-guard/GlobalGuardRouter").then(m => ({ default: m.GlobalGuardRouter })));
 
 // Eagerly loaded - critical path
 import Index from "@/pages/Index";
@@ -325,6 +327,8 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-applications" element={<AdminRecruiterApplications />} />
         <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
+        {/* Global Guard routes (path-based instead of subdomain) */}
+        <Route path="/guard/*" element={<GlobalGuardRouter />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
