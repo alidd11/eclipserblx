@@ -296,5 +296,53 @@
       "earlyAccess": "Accès anticipé aux nouveautés",
       "memberDiscounts": "Réductions exclusives pour les membres"
     }
+  },
+  "sidebar": {
+    "quickAccess": "Accès Rapide",
+    "home": "Accueil",
+    "sellerDashboard": "Tableau de Bord Vendeur",
+    "myAccount": "Mon Compte",
+    "profile": "Profil",
+    "cart": "Panier",
+    "wishlist": "Liste de Souhaits",
+    "following": "Abonnements",
+    "purchases": "Achats",
+    "wallet": "Portefeuille",
+    "notifications": "Notifications",
+    "storeMessages": "Messages de la Boutique",
+    "affiliate": "Affilié",
+    "discover": "Découvrir",
+    "featured": "En Vedette",
+    "marketplace": "Place de Marché",
+    "advertise": "Publicité",
+    "browse": "Parcourir",
+    "allProducts": "Tous les Produits",
+    "categories": "Catégories",
+    "support": "Support",
+    "myTickets": "Mes Tickets",
+    "helpCenter": "Centre d'Aide",
+    "faq": "FAQ",
+    "jobs": "Emplois",
+    "discord": "Discord",
+    "signOut": "Se Déconnecter"
+  },
+  "cookies": {
+    "title": "Nous respectons votre vie privée",
+    "description": "Nous utilisons des cookies pour améliorer votre expérience, analyser le trafic et personnaliser le contenu. En cliquant sur \"Tout Accepter\", vous consentez à l'utilisation de cookies. Vous pouvez gérer vos préférences ou en savoir plus dans notre",
+    "acceptAll": "Tout Accepter",
+    "rejectNonEssential": "Rejeter les Non-Essentiels",
+    "customize": "Personnaliser",
+    "preferences": "Préférences de Cookies",
+    "manageSettings": "Gérez vos paramètres de cookies ci-dessous",
+    "savePreferences": "Enregistrer les Préférences",
+    "essential": "Cookies Essentiels",
+    "essentialDesc": "Nécessaires au bon fonctionnement du site. Ces cookies activent les fonctionnalités de base comme la sécurité et l'accessibilité. Vous ne pouvez pas les désactiver.",
+    "analytics": "Cookies d'Analyse",
+    "analyticsDesc": "Nous aident à comprendre comment les visiteurs interagissent avec notre site en collectant des informations de manière anonyme.",
+    "marketing": "Cookies Marketing",
+    "marketingDesc": "Utilisés pour suivre les visiteurs sur différents sites afin d'afficher des publicités pertinentes."
+  },
+  "search": {
+    "placeholder": "Rechercher produits, catégories..."
   }
 }

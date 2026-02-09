@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { CookieSettingsDialog } from './CookieSettingsDialog';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function CookieConsentBanner() {
   const { showBanner, showSettings, acceptAll, rejectNonEssential, openSettings } = useCookieConsent();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -35,20 +37,18 @@ export function CookieConsentBanner() {
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-semibold text-foreground">
-                          We value your privacy
+                          {t('cookies.title')}
                         </h3>
                         <Shield className="h-4 w-4 text-muted-foreground" />
                       </div>
                       
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        We use cookies to enhance your browsing experience, analyse site traffic, and personalise content. 
-                        By clicking "Accept All", you consent to our use of cookies. You can manage your preferences 
-                        or learn more in our{' '}
+                        {t('cookies.description')}{' '}
                         <Link 
                           to="/privacy" 
                           className="text-primary hover:underline underline-offset-2"
                         >
-                          Privacy Policy
+                          {t('auth.privacyPolicy')}
                         </Link>.
                       </p>
 
@@ -58,21 +58,21 @@ export function CookieConsentBanner() {
                           onClick={acceptAll}
                           className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium"
                         >
-                          Accept All
+                          {t('cookies.acceptAll')}
                         </Button>
                         <Button
                           variant="outline"
                           onClick={rejectNonEssential}
                           className="border-border hover:bg-muted"
                         >
-                          Reject Non-Essential
+                          {t('cookies.rejectNonEssential')}
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={openSettings}
                           className="text-muted-foreground hover:text-foreground"
                         >
-                          Customize
+                          {t('cookies.customize')}
                         </Button>
                       </div>
                     </div>

@@ -21,6 +21,7 @@ import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useRecentStores } from '@/hooks/useRecentStores';
 import { RecentStoresSection } from '@/components/sidebar/RecentStoresSection';
+import { useTranslation } from 'react-i18next';
 
 
 interface NavItem {
@@ -82,6 +83,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { recentStores } = useRecentStores();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
@@ -135,51 +137,50 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
-      title: 'Quick Access',
+      title: t('sidebar.quickAccess'),
       icon: Home,
       items: [
-        { title: 'Home', icon: Home, href: '/' },
-        ...(isSeller ? [{ title: 'Seller Dashboard', icon: Store, href: '/seller' }] : []),
+        { title: t('sidebar.home'), icon: Home, href: '/' },
+        ...(isSeller ? [{ title: t('sidebar.sellerDashboard'), icon: Store, href: '/seller' }] : []),
       ],
     },
     {
       id: 'account',
-      title: 'My Account',
+      title: t('sidebar.myAccount'),
       icon: User,
       items: [
-        { title: 'Profile', icon: User, href: '/account' },
-        { title: 'Cart', icon: ShoppingCart, href: '/cart' },
-        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
-        { title: 'Following', icon: Store, href: '/account/following' },
-        { title: 'Purchases', icon: Download, href: '/purchases' },
-        { title: 'Wallet', icon: Wallet, href: '/credits' },
-        { title: 'Notifications', icon: Bell, href: '/messages', showNotificationDot: true },
-        ...(isSeller ? [{ title: 'Store Messages', icon: MessageSquareText, href: '/store-messages' }] : []),
-        ...(affiliateSettings.isEnabled ? [{ title: 'Affiliate', icon: TrendingUp, href: '/affiliate' }] : []),
+        { title: t('sidebar.profile'), icon: User, href: '/account' },
+        { title: t('sidebar.cart'), icon: ShoppingCart, href: '/cart' },
+        { title: t('sidebar.wishlist'), icon: Heart, href: '/wishlist' },
+        { title: t('sidebar.following'), icon: Store, href: '/account/following' },
+        { title: t('sidebar.purchases'), icon: Download, href: '/purchases' },
+        { title: t('sidebar.wallet'), icon: Wallet, href: '/credits' },
+        { title: t('sidebar.notifications'), icon: Bell, href: '/messages', showNotificationDot: true },
+        ...(isSeller ? [{ title: t('sidebar.storeMessages'), icon: MessageSquareText, href: '/store-messages' }] : []),
+        ...(affiliateSettings.isEnabled ? [{ title: t('sidebar.affiliate'), icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
     {
       id: 'discover',
-      title: 'Discover',
+      title: t('sidebar.discover'),
       icon: Sparkles,
       items: [
-        { title: 'Featured', icon: Star, href: '/featured' },
+        { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        { title: 'Marketplace', icon: Store, href: '/marketplace' },
-        { title: 'Advertise', icon: Megaphone, href: '/advertise' },
+        { title: t('sidebar.marketplace'), icon: Store, href: '/marketplace' },
+        { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
       ],
     },
-    // Note: "Browse" section with All Products + Categories is rendered via renderBrowseSection()
     {
       id: 'community',
-     title: 'Support',
-     icon: HelpCircle,
+      title: t('sidebar.support'),
+      icon: HelpCircle,
       items: [
-       { title: 'My Tickets', icon: MessageSquareText, href: '/support/tickets' },
-       { title: 'Help Center', icon: HelpCircle, href: '/support' },
-       { title: 'FAQ', icon: FileQuestion, href: '/faq' },
-        { title: 'Jobs', icon: Briefcase, href: '/jobs' },
-        { title: 'Discord', icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
+        { title: t('sidebar.myTickets'), icon: MessageSquareText, href: '/support/tickets' },
+        { title: t('sidebar.helpCenter'), icon: HelpCircle, href: '/support' },
+        { title: t('sidebar.faq'), icon: FileQuestion, href: '/faq' },
+        { title: t('sidebar.jobs'), icon: Briefcase, href: '/jobs' },
+        { title: t('sidebar.discord'), icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
       ],
     },
   ];
@@ -546,7 +547,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             <TooltipContent side="right" className="p-0">
               <div className="py-2">
                 <div className="px-3 pb-1 text-xs font-semibold text-muted-foreground">
-                  Browse
+                  {t('sidebar.browse')}
                 </div>
                 <NavLink
                   to="/products"
@@ -558,7 +559,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   )}
                 >
                   <Grid3X3 className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
-                  All Products
+                   {t('sidebar.allProducts')}
                 </NavLink>
                 <NavLink
                   to="/categories"
@@ -569,7 +570,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   )}
                 >
                   <FolderOpen className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
-                  Categories
+                   {t('sidebar.categories')}
                 </NavLink>
               </div>
             </TooltipContent>
@@ -600,7 +601,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               ICON_SIZE, "shrink-0 transition-colors",
               isBrowseActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
             )} />
-            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">Browse</span>
+            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{t('sidebar.browse')}</span>
             <ChevronDown className={cn(
               ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
               (openGroups['browse'] ?? true) ? "rotate-0" : "-rotate-90"
@@ -623,7 +624,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             )}
           >
             <Grid3X3 className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
-            <span className="leading-none">All Products</span>
+            <span className="leading-none">{t('sidebar.allProducts')}</span>
           </NavLink>
           
           {/* Categories link - navigates to category grid page */}
@@ -640,7 +641,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             )}
           >
             <FolderOpen className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
-            <span className="leading-none">Categories</span>
+            <span className="leading-none">{t('sidebar.categories')}</span>
           </NavLink>
         </CollapsibleContent>
       </Collapsible>
@@ -724,7 +725,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   <LogOut className={ICON_SIZE_SMALL} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">Sign Out</TooltipContent>
+              <TooltipContent side="right">{t('sidebar.signOut')}</TooltipContent>
             </Tooltip>
           ) : (
             <Button
@@ -737,7 +738,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               }}
             >
               <LogOut className={cn(ICON_SIZE_SMALL, "shrink-0")} />
-              <span className="ml-3">Sign Out</span>
+              <span className="ml-3">{t('sidebar.signOut')}</span>
             </Button>
           )}
         </div>

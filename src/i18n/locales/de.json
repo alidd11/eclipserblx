@@ -296,5 +296,53 @@
       "earlyAccess": "Frühzeitiger Zugang zu Neuheiten",
       "memberDiscounts": "Exklusive Mitgliederrabatte"
     }
+  },
+  "sidebar": {
+    "quickAccess": "Schnellzugriff",
+    "home": "Startseite",
+    "sellerDashboard": "Verkäufer-Dashboard",
+    "myAccount": "Mein Konto",
+    "profile": "Profil",
+    "cart": "Warenkorb",
+    "wishlist": "Wunschliste",
+    "following": "Folge ich",
+    "purchases": "Käufe",
+    "wallet": "Geldbörse",
+    "notifications": "Benachrichtigungen",
+    "storeMessages": "Shop-Nachrichten",
+    "affiliate": "Partner",
+    "discover": "Entdecken",
+    "featured": "Empfohlen",
+    "marketplace": "Marktplatz",
+    "advertise": "Werben",
+    "browse": "Durchsuchen",
+    "allProducts": "Alle Produkte",
+    "categories": "Kategorien",
+    "support": "Support",
+    "myTickets": "Meine Tickets",
+    "helpCenter": "Hilfezentrum",
+    "faq": "FAQ",
+    "jobs": "Jobs",
+    "discord": "Discord",
+    "signOut": "Abmelden"
+  },
+  "cookies": {
+    "title": "Wir schätzen Ihre Privatsphäre",
+    "description": "Wir verwenden Cookies, um Ihr Surferlebnis zu verbessern, den Seitenverkehr zu analysieren und Inhalte zu personalisieren. Durch Klicken auf \"Alle Akzeptieren\" stimmen Sie der Verwendung von Cookies zu. Sie können Ihre Einstellungen verwalten oder mehr erfahren in unserer",
+    "acceptAll": "Alle Akzeptieren",
+    "rejectNonEssential": "Nicht-Wesentliche Ablehnen",
+    "customize": "Anpassen",
+    "preferences": "Cookie-Einstellungen",
+    "manageSettings": "Verwalten Sie Ihre Cookie-Einstellungen unten",
+    "savePreferences": "Einstellungen Speichern",
+    "essential": "Wesentliche Cookies",
+    "essentialDesc": "Erforderlich für die ordnungsgemäße Funktion der Website. Diese Cookies ermöglichen Kernfunktionen wie Sicherheit und Barrierefreiheit. Sie können diese nicht deaktivieren.",
+    "analytics": "Analyse-Cookies",
+    "analyticsDesc": "Helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, indem sie anonym Informationen sammeln.",
+    "marketing": "Marketing-Cookies",
+    "marketingDesc": "Werden verwendet, um Besucher über verschiedene Websites hinweg zu verfolgen und relevante Werbung anzuzeigen."
+  },
+  "search": {
+    "placeholder": "Produkte, Kategorien suchen..."
   }
 }

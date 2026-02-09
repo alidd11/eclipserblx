@@ -2,6 +2,7 @@ import { Search } from 'lucide-react';
 import { useSearchCommand } from '@/hooks/useSearchCommand';
 import { hapticTap } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface HeaderSearchBarProps {
   className?: string;
@@ -10,6 +11,7 @@ interface HeaderSearchBarProps {
 
 export function HeaderSearchBar({ className, compact = false }: HeaderSearchBarProps) {
   const searchCommand = useSearchCommand();
+  const { t } = useTranslation();
 
   return (
     <button
@@ -41,7 +43,7 @@ export function HeaderSearchBar({ className, compact = false }: HeaderSearchBarP
         "flex-1 text-left truncate",
         compact ? "text-xs text-muted-foreground/70" : "text-sm"
       )}>
-        {compact ? "Search..." : "Search products, categories..."}
+        {compact ? t('common.search') + "..." : t('search.placeholder')}
       </span>
       {!compact && (
         <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
