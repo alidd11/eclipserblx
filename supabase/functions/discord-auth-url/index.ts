@@ -1,6 +1,6 @@
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 Deno.serve(async (req) => {
@@ -10,9 +10,22 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { redirect_uri } = await req.json();
+    const origin = req.headers.get('origin') ?? 'unknown';
 
-    const clientId = Deno.env.get('DISCORD_CLIENT_ID');
+    const body = await req.json().catch(() => ({}));
+    const redirect_uri = typeof body?.redirect_uri === 'string' ? body.redirect_uri : '';
+
+    console.log('[discord-auth-url] origin:', origin);
+    console.log('[discord-auth-url] redirect_uri:', redirect_uri);
+
+    if (!redirect_uri || !/^https?:\/\//i.test(redirect_uri)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid redirect_uri provided', redirect_uri }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const clientId = (Deno.env.get('DISCORD_CLIENT_ID') ?? '').trim();
 
     if (!clientId) {
       console.error('DISCORD_CLIENT_ID not configured');
@@ -27,10 +40,11 @@ Deno.serve(async (req) => {
 
     const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodedRedirectUri}&response_type=code&scope=${scope}`;
 
-    return new Response(
-      JSON.stringify({ url: authUrl }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.log('[discord-auth-url] authUrl generated');
+
+    return new Response(JSON.stringify({ url: authUrl, redirect_uri }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Error generating Discord auth URL:', error);
     return new Response(
