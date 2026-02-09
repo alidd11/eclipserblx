@@ -135,6 +135,32 @@ export function useAdSubscriptionCheckout() {
   });
 }
 
+// Returns config for embedded payment modal instead of redirecting
+export function usePurchasePingsConfig() {
+  const { session } = useAuth();
+  
+  const validatePingPurchase = ({ 
+    herePings = 0, 
+    everyonePings = 0 
+  }: { 
+    herePings?: number;
+    everyonePings?: number;
+  }): { valid: boolean; herePings: number; everyonePings: number; error?: string } => {
+    if (!session?.access_token) {
+      return { valid: false, herePings, everyonePings, error: 'Please sign in to purchase pings' };
+    }
+    
+    if (herePings === 0 && everyonePings === 0) {
+      return { valid: false, herePings, everyonePings, error: 'Please select at least one ping to purchase' };
+    }
+    
+    return { valid: true, herePings, everyonePings };
+  };
+  
+  return { validatePingPurchase };
+}
+
+// Legacy hook for backward compatibility - still redirects to Stripe
 export function usePurchasePings() {
   const { session } = useAuth();
   

@@ -12,13 +12,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, usePurchasePings, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
+import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
 import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart, History, Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-GB', {
@@ -71,6 +72,10 @@ export default function Advertise() {
   const [showPingPurchase, setShowPingPurchase] = useState(false);
   const [herePingsToBuy, setHerePingsToBuy] = useState(5);
   const [everyonePingsToBuy, setEveryonePingsToBuy] = useState(5);
+  
+  // Embedded payment modal state for ad pings
+  const [pingPaymentModalOpen, setPingPaymentModalOpen] = useState(false);
+  const [isPurchasingPings, setIsPurchasingPings] = useState(false);
   
   const subscriptionSuccess = searchParams.get('subscription_success') === 'true';
   const subscriptionCancelled = searchParams.get('subscription_cancelled') === 'true';
@@ -172,7 +177,6 @@ export default function Advertise() {
   const canSchedule = subscription?.tier === 'pro' || subscription?.tier === 'premium';
 
   const checkoutMutation = useAdSubscriptionCheckout();
-  const purchasePingsMutation = usePurchasePings();
 
   useEffect(() => {
     if (subscriptionSuccess) {
@@ -296,10 +300,21 @@ export default function Advertise() {
       toast.error('Please select at least one ping to purchase');
       return;
     }
-    purchasePingsMutation.mutate({ 
-      herePings: herePingsToBuy,
-      everyonePings: everyonePingsToBuy,
-    });
+    // Open embedded payment modal
+    setPingPaymentModalOpen(true);
+  };
+
+  const handlePingPaymentSuccess = () => {
+    toast.success(`Ping credits added! ${herePingsToBuy} @here, ${everyonePingsToBuy} @everyone`);
+    refetchSubscription();
+    setPingPaymentModalOpen(false);
+    setShowPingPurchase(false);
+    setHerePingsToBuy(5);
+    setEveryonePingsToBuy(5);
+  };
+
+  const handlePingPaymentError = (error: string) => {
+    toast.error(error);
   };
 
   const handleManageSubscription = async () => {
@@ -576,10 +591,10 @@ export default function Advertise() {
                     </div>
                     <Button 
                       onClick={handlePurchasePings}
-                      disabled={purchasePingsMutation.isPending || (herePingsToBuy === 0 && everyonePingsToBuy === 0)}
+                      disabled={isPurchasingPings || (herePingsToBuy === 0 && everyonePingsToBuy === 0)}
                       className="w-full sm:w-auto shrink-0"
                     >
-                      {purchasePingsMutation.isPending ? (
+                      {isPurchasingPings ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       ) : null}
                       Purchase Pings
@@ -1098,6 +1113,17 @@ export default function Advertise() {
           </div>
         )}
       </div>
+
+      {/* Embedded Payment Modal for Ad Pings */}
+      <EmbeddedPaymentModal
+        open={pingPaymentModalOpen}
+        onOpenChange={setPingPaymentModalOpen}
+        paymentType="ad_pings"
+        herePings={herePingsToBuy}
+        everyonePings={everyonePingsToBuy}
+        onSuccess={handlePingPaymentSuccess}
+        onError={handlePingPaymentError}
+      />
     </MainLayout>
   );
 }
