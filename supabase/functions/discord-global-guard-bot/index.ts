@@ -940,6 +940,127 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ==================== LOGCHANNEL COMMAND ====================
+    if (commandName === "logchannel") {
+      if (!guildId) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Server Only",
+                description: "This command can only be used in a server.",
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const channelOption = interaction.data.options?.find((o: any) => o.name === "channel");
+      const roleOption = interaction.data.options?.find((o: any) => o.name === "ping_role");
+
+      // If no channel provided, disable logging
+      if (!channelOption) {
+        const { error: deleteError } = await supabase
+          .from("global_guard_guild_settings")
+          .delete()
+          .eq("guild_id", guildId)
+          .eq("owner_user_id", profile.user_id);
+
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "🔕 Logging Disabled",
+                description: "Ban/unban events will no longer be logged to a channel in this server.",
+                color: COLORS.WARNING,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const channelId = channelOption.value;
+      const roleId = roleOption?.value || null;
+
+      // Resolve channel name
+      let channelName = "Unknown Channel";
+      let roleName: string | null = null;
+      
+      // Get resolved data from Discord
+      const resolved = interaction.data.resolved;
+      if (resolved?.channels?.[channelId]) {
+        channelName = resolved.channels[channelId].name;
+      }
+      if (roleId && resolved?.roles?.[roleId]) {
+        roleName = resolved.roles[roleId].name;
+      }
+
+      // Upsert guild settings
+      const { error: upsertError } = await supabase
+        .from("global_guard_guild_settings")
+        .upsert({
+          guild_id: guildId,
+          owner_user_id: profile.user_id,
+          log_channel_id: channelId,
+          log_channel_name: channelName,
+          ping_role_id: roleId,
+          ping_role_name: roleName,
+          log_bans: true,
+          log_unbans: true,
+        }, {
+          onConflict: "guild_id",
+        });
+
+      if (upsertError) {
+        console.error("[global-guard-bot] Log channel save error:", upsertError);
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Save Failed",
+                description: "Could not save log channel settings.",
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const roleText = roleId 
+        ? `\n**Ping Role:** <@&${roleId}>` 
+        : "\n*No role will be pinged*";
+
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: "📢 Log Channel Configured",
+              description: `Ban and unban events will now be logged to <#${channelId}>.${roleText}`,
+              color: COLORS.SUCCESS,
+              fields: [
+                { name: "Channel", value: `<#${channelId}>`, inline: true },
+                { name: "Ping Role", value: roleId ? `<@&${roleId}>` : "None", inline: true },
+              ],
+              footer: { text: "Global Guard • Logging Enabled" },
+            }],
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ==================== HELP COMMAND ====================
     if (commandName === "help") {
       return new Response(
@@ -962,8 +1083,8 @@ Deno.serve(async (req) => {
                   inline: false,
                 },
                 {
-                  name: "⚙️ Account",
-                  value: "`/dashboard` - Open web dashboard\n`/upgrade` - View premium benefits",
+                  name: "⚙️ Settings",
+                  value: "`/logchannel` - Set logging channel & ping role\n`/dashboard` - Open web dashboard\n`/upgrade` - View premium benefits",
                   inline: false,
                 },
               ],

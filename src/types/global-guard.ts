@@ -78,3 +78,17 @@ export interface GlobalBanTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface GlobalGuardGuildSettings {
+  id: string;
+  guild_id: string;
+  owner_user_id: string;
+  log_channel_id: string | null;
+  log_channel_name: string | null;
+  ping_role_id: string | null;
+  ping_role_name: string | null;
+  log_bans: boolean;
+  log_unbans: boolean;
+  created_at: string;
+  updated_at: string;
+}
