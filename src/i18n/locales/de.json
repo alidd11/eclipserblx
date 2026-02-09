@@ -249,5 +249,27 @@
     "degraded": "Beeinträchtigte Leistung",
     "offline": "Dienststörung",
     "checking": "Status wird überprüft..."
+  },
+  "offers": {
+    "activeOffers": "Aktive Angebote",
+    "newMemberExclusive": "🎁 Exklusiv für Neue Mitglieder",
+    "daysEclipsePlusFree": "{{days}} Tage Eclipse+ KOSTENLOS",
+    "offerClaimed": "Angebot Eingelöst!",
+    "claimed": "Eingelöst",
+    "signUpToClaim": "Registrieren zum Einlösen",
+    "claimOffer": "Angebot Einlösen",
+    "claiming": "Wird eingelöst...",
+    "ends": "Endet am {{date}}",
+    "expires": "Läuft ab am {{date}}",
+    "minOrder": "Mindestbestellung £{{amount}}",
+    "off": "RABATT",
+    "percentOff": "{{value}}% RABATT",
+    "amountOff": "£{{amount}} RABATT",
+    "benefits": {
+      "discount": "30% Rabatt auf alle Einkäufe",
+      "prioritySupport": "Vorrangiger Support-Zugang",
+      "earlyAccess": "Frühzeitiger Zugang zu Neuheiten",
+      "memberDiscounts": "Exklusive Mitgliederrabatte"
+    }
   }
 }
