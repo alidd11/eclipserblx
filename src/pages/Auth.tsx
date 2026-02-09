@@ -14,6 +14,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { lovable } from '@/integrations/lovable/index';
+import { useTranslation } from 'react-i18next';
+
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -23,10 +25,11 @@ const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
-type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify' | 'reset-verify';
+type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'reset-verify' | 'verify';
 
 const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   usePageTracking({ pagePath: '/auth' });
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -134,22 +137,20 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setLoading(true);
 
     try {
-      // Use custom password reset endpoint
       const response = await supabase.functions.invoke('custom-password-reset/request', {
         body: { email },
       });
 
       if (response.error) {
         toast({
-          title: 'Error',
+          title: t('common.error'),
           description: 'Failed to send reset email. Please try again.',
           variant: 'destructive',
         });
       } else {
-        // Move to OTP verification mode
         setMode('reset-verify');
         toast({
-          title: 'Check Your Email',
+          title: t('auth.checkYourEmail'),
           description: 'We sent you a 4-digit verification code.',
         });
       }
@@ -168,12 +169,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     }
 
     if (password.length < 6) {
-      setErrors({ password: 'Password must be at least 6 characters' });
+      setErrors({ password: t('auth.passwordRequirements') });
       return;
     }
 
     if (!isPasswordStrongEnough(password)) {
-      setErrors({ password: 'Please choose a stronger password (good or strong)' });
+      setErrors({ password: t('auth.strongerPassword') });
       return;
     }
 
@@ -201,15 +202,15 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           setErrors({ otp: 'Invalid code. Please check and try again.' });
         } else {
           toast({
-            title: 'Error',
+            title: t('common.error'),
             description: errorMessage,
             variant: 'destructive',
           });
         }
       } else {
         toast({
-          title: 'Password Updated!',
-          description: 'Your password has been reset successfully. Please sign in.',
+          title: t('auth.passwordUpdated'),
+          description: t('auth.passwordResetSuccess') + ' ' + t('auth.pleaseSignIn'),
         });
         setMode('login');
         setOtpCode('');
@@ -230,14 +231,14 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
       if (response.error) {
         toast({
-          title: 'Error',
+          title: t('common.error'),
           description: 'Failed to resend code. Please try again.',
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Code Sent!',
-          description: 'A new verification code has been sent to your email.',
+          title: t('auth.codeSent'),
+          description: t('auth.newCodeSent'),
         });
         setOtpCode('');
       }
@@ -251,7 +252,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setErrors({});
 
     if (password.length < 6) {
-      setErrors({ password: 'Password must be at least 6 characters' });
+      setErrors({ password: t('auth.passwordRequirements') });
       return;
     }
 
@@ -267,14 +268,14 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
       if (error) {
         toast({
-          title: 'Error',
+          title: t('common.error'),
           description: error.message,
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Password Updated!',
-          description: 'Your password has been reset successfully.',
+          title: t('auth.passwordUpdated'),
+          description: t('auth.passwordResetSuccess'),
         });
         navigate('/');
       }
@@ -298,17 +299,15 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       return;
     }
 
-    // Enforce minimum password strength on signup
     if (mode === 'signup' && !isPasswordStrongEnough(password)) {
-      setErrors({ password: 'Please choose a stronger password (good or strong)' });
+      setErrors({ password: t('auth.strongerPassword') });
       return;
     }
 
-    // Validate username on signup (required and 6-20 characters)
     if (mode === 'signup') {
       const trimmedUsername = displayName.trim();
       if (!trimmedUsername) {
-        setErrors({ displayName: 'Username is required' });
+        setErrors({ displayName: t('auth.usernameRequired') });
         return;
       }
       if (trimmedUsername.length < 6) {
@@ -321,28 +320,25 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       }
     }
 
-    // Check username availability on signup
     if (mode === 'signup') {
       const { data: isAvailable } = await supabase.rpc('is_username_available', { 
         username: displayName.trim() 
       });
       if (!isAvailable) {
-        setErrors({ displayName: 'This username is already taken' });
+        setErrors({ displayName: t('auth.usernameTaken') });
         return;
       }
     }
 
-    // Validate password confirmation on signup
     if (mode === 'signup' && password !== confirmPassword) {
       setErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
     if (mode === 'signup' && !captchaVerified) {
-      setErrors({ captcha: 'Please verify that you are not a robot' });
+      setErrors({ captcha: t('auth.captchaRequired') });
       return;
     }
 
-    // Verify TOS agreement on signup
     if (mode === 'signup' && !agreedToTos) {
       setErrors({ tos: 'You must agree to the Terms of Service to create an account' });
       return;
@@ -351,24 +347,22 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setLoading(true);
 
     try {
-      // Check for VPN on signup
       if (mode === 'signup') {
         try {
           const { data: vpnData, error: vpnError } = await supabase.functions.invoke('check-vpn');
           
           if (!vpnError && vpnData?.isVpn) {
             setLoading(false);
-            setErrors({ vpn: 'VPN or proxy detected. Please disable your VPN to create an account.' });
+            setErrors({ vpn: t('auth.vpnDetected') });
             toast({
               title: 'VPN Detected',
-              description: 'Sign ups are not allowed while using a VPN or proxy. Please disable it and try again.',
+              description: t('auth.vpnDetected'),
               variant: 'destructive',
             });
             return;
           }
         } catch (vpnCheckError) {
           console.error('VPN check error:', vpnCheckError);
-          // Continue with signup if VPN check fails (fail open)
         }
       }
 
@@ -377,13 +371,13 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast({
-              title: 'Login Failed',
-              description: 'Invalid email or password. Please try again.',
+              title: t('auth.loginFailed'),
+              description: t('auth.invalidCredentials'),
               variant: 'destructive',
             });
           } else {
             toast({
-              title: 'Login Failed',
+              title: t('auth.loginFailed'),
               description: error.message,
               variant: 'destructive',
             });
@@ -396,26 +390,23 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
-              title: 'Account Exists',
-              description: 'An account with this email already exists. Please sign in instead.',
+              title: t('auth.accountExists'),
+              description: t('auth.accountExistsDesc'),
               variant: 'destructive',
             });
           } else {
             toast({
-              title: 'Sign Up Failed',
+              title: t('auth.signUpFailed'),
               description: error.message,
               variant: 'destructive',
             });
           }
         } else {
-          // Create email subscription if opted in
           if (subscribeToEmails) {
-            // We'll create the subscription after email verification when the user is logged in
-            // Store the preference in sessionStorage to apply after verification
             sessionStorage.setItem('pendingEmailSubscription', 'true');
           }
           toast({
-            title: 'Check Your Email',
+            title: t('auth.checkYourEmail'),
             description: 'We sent you a 6-digit verification code.',
           });
           setMode('verify');
@@ -457,15 +448,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           });
         }
       } else {
-        // Process pending referral if exists
         const pendingRefCode = sessionStorage.getItem('pendingReferralCode');
         if (pendingRefCode) {
           sessionStorage.removeItem('pendingReferralCode');
-          // Get the new user's ID from current session
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user?.id) {
             try {
-              // Find the referrer by their referral code
               const { data: referrerProfile } = await supabase
                 .from('profiles')
                 .select('user_id')
@@ -473,7 +461,6 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 .single();
               
               if (referrerProfile) {
-                // Create the referral record
                 await supabase.from('referrals').insert({
                   referrer_id: referrerProfile.user_id,
                   referred_id: session.user.id,
@@ -488,8 +475,8 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         }
         
         toast({
-          title: 'Email Verified!',
-          description: 'Your account has been verified successfully.',
+          title: t('auth.emailVerified'),
+          description: t('auth.accountVerified'),
         });
         navigate('/');
       }
@@ -508,14 +495,14 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
       if (error) {
         toast({
-          title: 'Error',
+          title: t('common.error'),
           description: error.message,
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Code Sent!',
-          description: 'A new verification code has been sent to your email.',
+          title: t('auth.codeSent'),
+          description: t('auth.newCodeSent'),
         });
         setOtpCode('');
       }
@@ -585,16 +572,11 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setErrors({});
     
     try {
-      // For mobile apps (Capacitor), window.location.origin may not be a valid HTTPS URL.
-      // Always use the production domain for Discord OAuth to ensure compatibility.
       const productionDomain = 'https://eclipserblx.com';
       const currentOrigin = window.location.origin;
-      
-      // Use production domain if we're not on a valid https origin (e.g., capacitor://localhost)
       const baseUrl = currentOrigin.startsWith('https://') ? currentOrigin : productionDomain;
       const redirectUri = `${baseUrl}/auth/discord/callback`;
       
-      // Get the OAuth URL from the edge function (which has access to the client ID)
       const { data, error } = await supabase.functions.invoke('discord-auth-url', {
         body: { redirect_uri: redirectUri },
       });
@@ -610,7 +592,6 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         return;
       }
       
-      // Redirect to Discord OAuth
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -649,7 +630,6 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         return;
       }
       
-      // Store code_verifier in sessionStorage for PKCE flow
       if (data.code_verifier) {
         sessionStorage.setItem('roblox_code_verifier', data.code_verifier);
       }
@@ -669,23 +649,23 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
   const getTitle = () => {
     switch (mode) {
-      case 'signup': return 'Create Account';
-      case 'forgot': return 'Reset Password';
-      case 'reset': return 'Set New Password';
-      case 'reset-verify': return 'Reset Your Password';
-      case 'verify': return 'Verify Your Email';
-      default: return 'Welcome Back';
+      case 'signup': return t('auth.createAccount');
+      case 'forgot': return t('auth.resetPassword');
+      case 'reset': return t('auth.setNewPassword');
+      case 'reset-verify': return t('auth.resetYourPassword');
+      case 'verify': return t('auth.verifyYourEmail');
+      default: return t('auth.welcomeBack');
     }
   };
 
   const getDescription = () => {
     switch (mode) {
-      case 'signup': return 'Join UK Roleplay Assets to start shopping';
-      case 'forgot': return 'Enter your email and we\'ll send you a verification code';
-      case 'reset': return 'Enter your new password below';
+      case 'signup': return t('auth.signUpDescription');
+      case 'forgot': return t('auth.forgotDescription');
+      case 'reset': return t('auth.resetDescription');
       case 'reset-verify': return `Enter the 4-digit code sent to ${email} and choose a new password`;
       case 'verify': return `Enter the 6-digit code sent to ${email}`;
-      default: return 'Sign in to access your purchases and account';
+      default: return t('auth.signInDescription');
     }
   };
 
@@ -704,7 +684,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to store
+            {t('common.backToStore')}
           </Link>
 
           {/* Header */}
@@ -720,7 +700,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           {mode === 'forgot' ? (
             <form onSubmit={handleForgotPassword} className="gaming-card p-6 space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -741,7 +721,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Send Verification Code
+                {t('auth.sendVerificationCode')}
               </Button>
 
               <button
@@ -749,7 +729,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 onClick={() => setMode('login')}
                 className="w-full text-sm text-muted-foreground hover:text-foreground"
               >
-                Back to Sign In
+                {t('auth.backToSignIn')}
               </button>
             </form>
           ) : mode === 'reset-verify' ? (
@@ -782,7 +762,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="password">{t('auth.newPassword')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -809,7 +789,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">{t('auth.confirmNewPassword')}</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -840,12 +820,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 disabled={loading || otpCode.length !== 4}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Reset Password
+                {t('auth.resetPassword')}
               </Button>
 
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Didn't receive the code?
+                  {t('auth.didntReceiveCode')}
                 </p>
                 <button
                   type="button"
@@ -853,7 +833,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                   disabled={loading}
                   className="text-sm text-primary hover:underline disabled:opacity-50"
                 >
-                  Resend Code
+                  {t('auth.resendCode')}
                 </button>
               </div>
 
@@ -862,14 +842,14 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 onClick={() => { setMode('forgot'); setOtpCode(''); setPassword(''); setConfirmPassword(''); }}
                 className="w-full text-sm text-muted-foreground hover:text-foreground"
               >
-                Use a different email
+                {t('auth.useDifferentEmail')}
               </button>
             </form>
           ) : mode === 'reset' ? (
             /* Reset Password Form (legacy - for magic link flow if needed) */
             <form onSubmit={handleResetPassword} className="gaming-card p-6 space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="password">{t('auth.newPassword')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -896,7 +876,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">{t('auth.confirmNewPassword')}</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -927,7 +907,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Password
+                {t('auth.updatePassword')}
               </Button>
             </form>
           ) : mode === 'verify' ? (
@@ -967,12 +947,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 disabled={loading || otpCode.length !== 6}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Verify Email
+                {t('auth.verifyEmail')}
               </Button>
 
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Didn't receive the code?
+                  {t('auth.didntReceiveCode')}
                 </p>
                 <button
                   type="button"
@@ -980,7 +960,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                   disabled={loading}
                   className="text-sm text-primary hover:underline disabled:opacity-50"
                 >
-                  Resend Code
+                  {t('auth.resendCode')}
                 </button>
               </div>
 
@@ -989,7 +969,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 onClick={() => { setMode('signup'); setOtpCode(''); }}
                 className="w-full text-sm text-muted-foreground hover:text-foreground"
               >
-                Back to Sign Up
+                {t('common.back')} to {t('common.signUp')}
               </button>
             </form>
           ) : (
@@ -997,7 +977,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
               {mode === 'signup' && (
                 <div className="space-y-2">
-                  <Label htmlFor="displayName">Username</Label>
+                  <Label htmlFor="displayName">{t('auth.username')}</Label>
                   <div className="relative">
                     <Input
                       id="displayName"
@@ -1021,10 +1001,10 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                     )}
                   </div>
                   {usernameAvailable === true && displayName.trim().length >= 6 && (
-                    <p className="text-sm text-green-500">This username is available</p>
+                    <p className="text-sm text-green-500">{t('auth.usernameAvailable')}</p>
                   )}
                   {usernameAvailable === false && displayName.trim().length >= 6 && (
-                    <p className="text-sm text-destructive">This username is already taken</p>
+                    <p className="text-sm text-destructive">{t('auth.usernameTaken')}</p>
                   )}
                   {errors.displayName && (
                     <p className="text-sm text-destructive">{errors.displayName}</p>
@@ -1033,7 +1013,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -1050,14 +1030,14 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('auth.password')}</Label>
                   {mode === 'login' && (
                     <button
                       type="button"
                       onClick={() => setMode('forgot')}
                       className="text-xs text-primary hover:underline"
                     >
-                      Forgot password?
+                      {t('auth.forgotPassword')}
                     </button>
                   )}
                 </div>
@@ -1099,7 +1079,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
               {mode === 'signup' && (
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -1187,7 +1167,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       htmlFor="emailSubscription" 
                       className="text-sm font-normal cursor-pointer select-none leading-relaxed"
                     >
-                      Subscribe to receive product updates, exclusive discount codes, and special offers
+                      {t('auth.subscribeEmails')}
                     </Label>
                   </div>
 
@@ -1204,23 +1184,23 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                         htmlFor="tos" 
                         className="text-sm font-normal cursor-pointer select-none leading-relaxed"
                       >
-                        I agree to the{' '}
+                        {t('auth.agreeToTerms')}{' '}
                         <Link 
                           to="/terms-of-service" 
                           target="_blank"
                           className="text-primary hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          Terms of Service
+                          {t('auth.termsOfService')}
                         </Link>{' '}
-                        and{' '}
+                        {t('auth.and')}{' '}
                         <Link 
                           to="/privacy-policy" 
                           target="_blank"
                           className="text-primary hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          Privacy Policy
+                          {t('auth.privacyPolicy')}
                         </Link>
                       </Label>
                     </div>
@@ -1244,7 +1224,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'login' ? 'Sign In' : 'Create Account'}
+                {mode === 'login' ? t('common.signIn') : t('auth.createAccount')}
               </Button>
 
               {/* Social Login Divider */}
@@ -1253,7 +1233,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
                 </div>
               </div>
 
@@ -1272,7 +1252,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
                   </svg>
                 )}
-                Sign in with Discord
+                {t('auth.continueWithDiscord')}
               </Button>
 
               {/* Roblox Sign-In Button */}
@@ -1290,7 +1270,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                     <path d="M5.164 0L.16 18.928 18.836 24l5.004-18.928L5.164 0zm7.17 15.107l-3.438-.906.906-3.437 3.438.906-.906 3.437z"/>
                   </svg>
                 )}
-                Sign in with Roblox
+                {t('auth.continueWithRoblox')}
               </Button>
 
               {/* Apple Sign-In Button */}
@@ -1308,7 +1288,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                     <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                   </svg>
                 )}
-                Sign in with Apple
+                {t('auth.continueWithApple')}
               </Button>
 
               {/* Google Sign-In Button */}
@@ -1329,7 +1309,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                 )}
-                Sign in with Google
+                {t('auth.continueWithGoogle')}
               </Button>
 
               {errors.social && (
@@ -1341,13 +1321,13 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           {/* Toggle */}
           {(mode === 'login' || mode === 'signup') && (
             <p className="text-center text-sm text-muted-foreground">
-              {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+              {mode === 'login' ? t('auth.noAccount') : t('auth.hasAccount')}{' '}
               <button
                 type="button"
                 onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
                 className="text-primary hover:underline font-medium"
               >
-                {mode === 'login' ? 'Sign up' : 'Sign in'}
+                {mode === 'login' ? t('common.signUp') : t('common.signIn')}
               </button>
             </p>
           )}

@@ -18,15 +18,16 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useTranslation } from 'react-i18next';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
-// 4 rows: 16 products on desktop (4 cols), 12 on mobile (3 cols)
 const PRODUCTS_PER_PAGE_DESKTOP = 16;
 const PRODUCTS_PER_PAGE_MOBILE = 12;
 
 export default function Products() {
   usePageTracking({ pagePath: '/products' });
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -35,16 +36,13 @@ export default function Products() {
   const sourceFilter = searchParams.get('source');
   const pageParam = searchParams.get('page');
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 300); // Debounce search for 300ms
+  const debouncedSearch = useDebounce(search, 300);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('smart');
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
 
   const { isStaff, loading: adminLoading } = useAdminAuth();
 
-  // Backwards compatibility: old Featured link used /products?featured=true.
-  // In PWA contexts, users can get "stuck" on that URL via cache/route restore.
-  // Redirect to the new curated Featured page.
   useEffect(() => {
     if (featuredOnly) {
       navigate('/featured', { replace: true });
@@ -59,7 +57,6 @@ export default function Products() {
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      // Optimized: Select only needed columns
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, slug, description, display_order')
@@ -67,13 +64,12 @@ export default function Products() {
       if (error) throw error;
       return data;
     },
-    staleTime: 60000, // Cache categories for 1 minute
+    staleTime: 60000,
   });
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', categorySlug, debouncedSearch, featuredOnly, sortBy, sourceFilter, isStaff],
     queryFn: async () => {
-      // Optimized: Select only needed columns instead of *
       let query = supabase
         .from('products')
         .select(`
@@ -83,8 +79,6 @@ export default function Products() {
           stores (name, slug, logo_url, is_verified, is_trusted, is_active)
         `);
 
-      // Customers should only see active + released products.
-      // Staff can preview scheduled and inactive products.
       if (!isStaff) {
         query = query
           .eq('is_active', true)
@@ -102,7 +96,6 @@ export default function Products() {
         query = query.eq('is_featured', true);
       }
 
-      // Filter to marketplace-only products when source=marketplace
       if (sourceFilter === 'marketplace') {
         query = query.not('store_id', 'is', null);
       }
@@ -114,10 +107,8 @@ export default function Products() {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Only include products with active stores
       const filtered = (data || []).filter(p => p.stores?.is_active === true);
       
-      // Sort products based on selected sort option
       const now = new Date();
       const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
       
@@ -135,23 +126,15 @@ export default function Products() {
             return (b.download_count || 0) - (a.download_count || 0);
           case 'smart':
           default:
-            // Featured products first
             if (a.is_featured && !b.is_featured) return -1;
             if (!a.is_featured && b.is_featured) return 1;
-            
-            // Among non-featured, new products (within 3 days) come next
             const aIsNew = new Date(a.created_at) > threeDaysAgo;
             const bIsNew = new Date(b.created_at) > threeDaysAgo;
-            
             if (aIsNew && !bIsNew) return -1;
             if (!aIsNew && bIsNew) return 1;
-            
-            // If both are new, sort by newest first
             if (aIsNew && bIsNew) {
               return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
             }
-            
-            // Otherwise, sort by popularity (download_count)
             return (b.download_count || 0) - (a.download_count || 0);
         }
       });
@@ -159,16 +142,16 @@ export default function Products() {
       return sorted;
     },
     enabled: !adminLoading && (categories !== undefined || !categorySlug),
-    staleTime: 0, // Ensure staff role changes are reflected immediately
+    staleTime: 0,
   });
 
   const sortOptions = [
-    { value: 'smart', label: 'Smart Sort' },
-    { value: 'popularity', label: 'Most Popular' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'price-low', label: 'Price: Low to High' },
-    { value: 'price-high', label: 'Price: High to Low' },
+    { value: 'smart', label: t('products.smartSort') },
+    { value: 'popularity', label: t('products.mostPopular') },
+    { value: 'newest', label: t('products.newestFirst') },
+    { value: 'oldest', label: t('products.oldestFirst') },
+    { value: 'price-low', label: t('products.priceLowHigh') },
+    { value: 'price-high', label: t('products.priceHighLow') },
   ];
 
   const activeCategory = categories?.find(c => c.slug === categorySlug);
@@ -177,36 +160,30 @@ export default function Products() {
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-6">
-        {/* Combined Header & Filter Card */}
         <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
           <CardContent className="p-4 space-y-3">
-            {/* Title Row */}
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary/80" />
               <h1 className="text-lg font-display text-foreground">
-                {featuredOnly ? 'Featured Products' : activeCategory ? activeCategory.name : 'All Products'}
+                {featuredOnly ? t('products.featuredProducts') : activeCategory ? activeCategory.name : t('products.allProducts')}
               </h1>
             </div>
 
-            {/* Description */}
             <p className="text-sm text-muted-foreground">
-              {featuredOnly ? 'Discover our handpicked premium assets' : activeCategory?.description || 'Browse our collection of premium roleplay assets'}
+              {featuredOnly ? t('products.discoverPremium') : activeCategory?.description || t('products.browseCollection')}
             </p>
 
-            {/* Search, Sort & Categories Row */}
             <div className="flex items-center gap-2">
-              {/* Search Bar */}
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                 <Input
-                  placeholder="Search products..."
+                  placeholder={t('products.searchProducts')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50 w-full"
                 />
               </div>
 
-              {/* Sort Dropdown */}
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                 <SelectTrigger className="w-auto h-9 text-sm bg-muted/30 border-border/50 gap-1.5 px-2.5">
                   <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
@@ -221,17 +198,15 @@ export default function Products() {
                 </SelectContent>
               </Select>
 
-              {/* Categories Filter */}
               <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
                 <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-2.5 py-2 rounded-md bg-muted/30 hover:bg-muted/50 h-9">
                   <Filter className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="hidden sm:inline truncate max-w-[100px]">{activeCategory ? activeCategory.name : 'Filter'}</span>
+                  <span className="hidden sm:inline truncate max-w-[100px]">{activeCategory ? activeCategory.name : t('products.filter')}</span>
                   <ChevronDown className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
               </Collapsible>
             </div>
 
-            {/* Categories Dropdown */}
             {categoriesOpen && (
               <nav className="flex flex-wrap gap-2 pt-1">
                 <Link
@@ -243,7 +218,7 @@ export default function Products() {
                       : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                 >
-                  All
+                  {t('common.all')}
                 </Link>
                 {categories?.map((category) => (
                   <Link
@@ -264,7 +239,6 @@ export default function Products() {
           </CardContent>
         </Card>
 
-        {/* Products Grid */}
         <ProductsGridWrapper 
           products={products}
           isLoading={isLoading}
@@ -277,7 +251,6 @@ export default function Products() {
           featuredOnly={featuredOnly}
         />
 
-        {/* Featured Products Card */}
         <FeaturedProductsCard />
         </div>
       </PullToRefresh>
@@ -285,14 +258,12 @@ export default function Products() {
   );
 }
 
-// Wrapper to use the mobile hook at component level
 function ProductsGridWrapper(props: Omit<ProductsGridProps, 'productsPerPage'>) {
   const isMobile = useIsMobile();
   const productsPerPage = isMobile ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
   return <ProductsGrid {...props} productsPerPage={productsPerPage} />;
 }
 
-// Extracted component for products grid with pagination
 interface ProductsGridProps {
   products: any[] | undefined;
   isLoading: boolean;
@@ -318,7 +289,7 @@ function ProductsGrid({
   featuredOnly,
   productsPerPage
 }: ProductsGridProps) {
-  // Calculate pagination
+  const { t } = useTranslation();
   const totalProducts = products?.length ?? 0;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   const startIndex = (currentPage - 1) * productsPerPage;
@@ -343,13 +314,13 @@ function ProductsGrid({
   if (products?.length === 0) {
     return (
       <div className="text-center py-16 space-y-4">
-        <p className="text-xl text-muted-foreground">No products found</p>
+        <p className="text-xl text-muted-foreground">{t('products.noProductsFound')}</p>
         <Button variant="outline" onClick={() => {
           setSearch('');
           const newParams = new URLSearchParams();
           setSearchParams(newParams);
         }}>
-          Clear filters
+          {t('common.clearFilters')}
         </Button>
       </div>
     );
@@ -382,7 +353,6 @@ function ProductsGrid({
         ))}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
@@ -393,12 +363,11 @@ function ProductsGrid({
             className="gap-1"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Previous</span>
+            <span className="hidden sm:inline">{t('common.previous')}</span>
           </Button>
 
           <div className="flex items-center gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              // Show first, last, current, and adjacent pages
               const showPage = 
                 page === 1 || 
                 page === totalPages || 
@@ -439,16 +408,15 @@ function ProductsGrid({
             disabled={currentPage === totalPages}
             className="gap-1"
           >
-            <span className="hidden sm:inline">Next</span>
+            <span className="hidden sm:inline">{t('common.next')}</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       )}
 
-      {/* Page info */}
       {totalPages > 1 && (
         <p className="text-center text-sm text-muted-foreground">
-          Showing {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} products
+          {t('products.showingRange', { start: startIndex + 1, end: Math.min(endIndex, totalProducts), total: totalProducts })}
         </p>
       )}
     </div>

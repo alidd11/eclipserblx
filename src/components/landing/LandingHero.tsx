@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { HeroProductShowcase } from './HeroProductShowcase';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { HeroBanner } from './HeroBanner';
+import { useTranslation } from 'react-i18next';
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -19,6 +20,7 @@ const POPULAR_SEARCHES = [
 
 export function LandingHero() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSearchClick = (term: string) => {
     navigate(`/marketplace?q=${encodeURIComponent(term)}`);
@@ -26,14 +28,11 @@ export function LandingHero() {
 
   return (
     <section className="relative overflow-hidden min-h-[500px] md:min-h-[550px] lg:min-h-[600px]">
-      {/* Animated gradient banner */}
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 relative z-10">
         <div className="w-full">
-          {/* Text content */}
           <div className="text-center">
-            {/* Badge - simpler */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -41,27 +40,24 @@ export function LandingHero() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-sm font-medium mb-4">
                 <Store className="h-4 w-4" />
-                The Roblox Creator Marketplace
+                {t('landing.badge')}
               </div>
             </motion.div>
 
-            {/* Main Headline & Description */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.05 }}
             >
               <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] tracking-tight mb-4">
-                Level Up Your{' '}
-                <span className="text-primary">Roblox Experience.</span>
+                {t('landing.headline')}{' '}
+                <span className="text-primary">{t('landing.headlineHighlight')}</span>
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 leading-relaxed">
-                Premium scripts, models, UI kits, and game assets built by top Roblox developers.
-                Power your next experience.
+                {t('landing.description')}
               </p>
             </motion.div>
 
-            {/* Active Offers - prominent position below hero text */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -71,7 +67,6 @@ export function LandingHero() {
               <ActiveOffersCard />
             </motion.div>
 
-            {/* CTAs - more compact */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -81,14 +76,14 @@ export function LandingHero() {
               <Link to="/marketplace">
                 <Button size="default" className="h-10 px-5">
                   <Store className="mr-2 h-4 w-4" />
-                  Start Selling
+                  {t('landing.startSelling')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/marketplace">
                 <Button size="default" variant="outline" className="h-10 px-5">
                   <ShoppingBag className="mr-2 h-4 w-4" />
-                  Browse Marketplace
+                  {t('landing.browseMarketplace')}
                 </Button>
               </Link>
               <Link to="/eclipse-plus">
@@ -103,7 +98,6 @@ export function LandingHero() {
               </Link>
             </motion.div>
 
-            {/* Popular Searches - utility content like BuiltByBit */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -112,7 +106,7 @@ export function LandingHero() {
             >
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Search className="h-3 w-3" />
-                Popular:
+                {t('landing.popular')}
               </span>
               {POPULAR_SEARCHES.map((term) => (
                 <button
@@ -126,7 +120,6 @@ export function LandingHero() {
             </motion.div>
           </div>
 
-          {/* Product showcase below hero text (desktop only) */}
           <div className="hidden lg:block mt-8">
             <HeroProductShowcase />
           </div>

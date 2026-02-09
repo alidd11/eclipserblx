@@ -8,9 +8,11 @@ import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { useTranslation } from 'react-i18next';
 
 export default function Cart() {
   usePageTracking({ pagePath: '/cart' });
+  const { t } = useTranslation();
   const { items, removeItem, clearCart, total } = useCart();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -37,13 +39,13 @@ export default function Cart() {
                 <ShoppingBag className="h-10 w-10 text-muted-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-display font-bold mb-2">Your Cart is Empty</h1>
+                <h1 className="text-2xl font-display font-bold mb-2">{t('cart.cartEmpty')}</h1>
                 <p className="text-muted-foreground max-w-sm mx-auto">
-                  Looks like you haven't added any products yet. Browse our collection to find something you'll love!
+                  {t('cart.cartEmptyDesc')}
                 </p>
               </div>
               <Button asChild className="gradient-button border-0">
-                <Link to="/products">Browse Products</Link>
+                <Link to="/products">{t('common.browseProducts')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -56,9 +58,9 @@ export default function Cart() {
     <MainLayout>
       <div className="container py-8 space-y-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl md:text-4xl font-display font-bold">Your Cart</h1>
+          <h1 className="text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
           <Button variant="ghost" size="sm" onClick={clearCart} className="text-destructive hover:text-destructive">
-            Clear Cart
+            {t('cart.clearCart')}
           </Button>
         </div>
 
@@ -68,7 +70,7 @@ export default function Cart() {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
-                Cart Items
+                {t('cart.cartItems')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -93,7 +95,7 @@ export default function Cart() {
                       <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1">
                         {item.name}
                       </Link>
-                      <p className="text-muted-foreground text-sm">Digital Product • Instant Delivery</p>
+                      <p className="text-muted-foreground text-sm">{t('common.digitalProduct')} • {t('common.instantDelivery')}</p>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -130,12 +132,12 @@ export default function Cart() {
           {/* Order Summary */}
           <Card className="bg-card border-border h-fit">
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>{t('cart.orderSummary')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal ({items.length} items)</span>
+                  <span className="text-muted-foreground">{t('cart.subtotal')} ({items.length} {t('cart.items')})</span>
                   <span>{formatPrice(total)}</span>
                 </div>
                 
@@ -143,26 +145,26 @@ export default function Cart() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground flex items-center gap-1">
                       <Sparkles className="h-3 w-3 text-amber-400" />
-                      Eclipse+ Discount
+                      {t('cart.eclipseDiscount')}
                     </span>
                     <span className="text-primary">{formatPrice(-eclipseDiscount)}</span>
                   </div>
                 )}
                 
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Discount Code</span>
+                  <span className="text-muted-foreground">{t('cart.discountCode')}</span>
                   <span>{formatPrice(0)}</span>
                 </div>
                 
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
+                    <span>{t('cart.total')}</span>
                     <span>{formatPrice(memberTotal)}</span>
                   </div>
                   {isSubscribed && eclipseDiscount > 0 && (
                     <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
                       <Sparkles className="h-3 w-3" />
-                      You're saving {formatPrice(eclipseDiscount)} with Eclipse+!
+                      {t('cart.savingWith', { amount: formatPrice(eclipseDiscount) })}
                     </p>
                   )}
                 </div>
@@ -170,7 +172,7 @@ export default function Cart() {
 
               <Button asChild className="w-full h-12 gradient-button border-0">
                 <Link to="/checkout">
-                  Proceed to Checkout
+                  {t('cart.proceedToCheckout')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -179,11 +181,11 @@ export default function Cart() {
               <div className="grid grid-cols-3 gap-2 pt-4 border-t border-border">
                 <div className="text-center">
                   <ShieldCheck className="h-5 w-5 mx-auto text-primary mb-1" />
-                  <p className="text-[10px] text-muted-foreground">Secure</p>
+                  <p className="text-[10px] text-muted-foreground">{t('common.secure')}</p>
                 </div>
                 <div className="text-center">
                   <Zap className="h-5 w-5 mx-auto text-primary mb-1" />
-                  <p className="text-[10px] text-muted-foreground">Instant</p>
+                  <p className="text-[10px] text-muted-foreground">{t('common.instant')}</p>
                 </div>
                 <div className="text-center">
                   <CreditCard className="h-5 w-5 mx-auto text-primary mb-1" />
