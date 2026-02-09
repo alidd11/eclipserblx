@@ -32,14 +32,14 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
       )}>
         {/* Banner section */}
         {store.banner_url ? (
-          <div className="relative h-24 overflow-hidden">
+          <div className="relative h-28 overflow-hidden">
             <img 
               src={store.banner_url} 
               alt=""
               className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
             />
-            {/* Subtle vignette */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            {/* Gradient blend into black area */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/95" />
           </div>
         ) : (
           /* Accent gradient when no banner */
