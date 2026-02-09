@@ -159,8 +159,8 @@ Deno.serve(async (req) => {
 
     const tierInfo = limits?.[0] || { is_premium: false, max_servers: 2 };
 
-    // Rate limiting for free tier users (20 commands per 24 hours)
-    const FREE_TIER_LIMIT = 20;
+    // Rate limiting for free tier users (6 commands per 24 hours)
+    const FREE_TIER_LIMIT = 6;
     const RATE_LIMIT_WINDOW = 1440; // 24 hours in minutes
     
     if (!tierInfo.is_premium) {
