@@ -120,6 +120,14 @@ const commands = [
     name: "exportbans",
     description: "Export your global bans to JSON format",
   },
+  {
+    name: "dashboard",
+    description: "Get your Global Guard dashboard link via DM",
+  },
+  {
+    name: "upgrade",
+    description: "Learn about premium benefits and upgrade options",
+  },
 ];
 
 Deno.serve(async (req) => {
