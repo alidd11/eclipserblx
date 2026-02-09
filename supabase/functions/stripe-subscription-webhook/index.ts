@@ -360,11 +360,3 @@ async function grantEclipsePlusCreditBonus(
     console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Failed to grant credit bonus: ${String(e)}`);
   }
 }
-        });
-    } else {
-      console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] User ${userId} already claimed Eclipse+ bonus`);
-    }
-  } catch (e) {
-    console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Failed to grant credit bonus: ${String(e)}`);
-  }
-}
