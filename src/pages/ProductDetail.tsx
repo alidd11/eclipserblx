@@ -13,7 +13,7 @@ import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
-
+import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
 import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
 import { useCart, CartItem } from '@/hooks/useCart';
@@ -492,6 +492,10 @@ export default function ProductDetail() {
               </div>
             )}
             
+            {/* Store Details Card - below thumbnails */}
+            {product.stores && (
+              <StoreDetailsCard store={product.stores} className="w-full" />
+            )}
           </div>
 
           {/* Details */}
