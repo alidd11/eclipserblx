@@ -18,15 +18,28 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
   image?: string;
   category_slug?: string;
   category_id?: string;
 }
 
+type PaymentType = 'checkout' | 'credits' | 'subscription' | 'ad_pings';
+
 interface PaymentIntentRequest {
-  items: CartItem[];
+  type?: PaymentType;
+  // For checkout
+  items?: CartItem[];
   email?: string;
   discountCodeId?: string;
+  // For credits
+  amount?: number;
+  // For subscription
+  tier?: string;
+  billingPeriod?: 'monthly' | 'annual';
+  // For ad pings
+  herePings?: number;
+  everyonePings?: number;
 }
 
 const logStep = (step: string, details?: unknown) => {
@@ -59,7 +72,7 @@ serve(async (req) => {
   }
 
   try {
-    // Rate limit check - prevent DDoS on payment endpoints
+    // Rate limit check
     const clientIp = getClientIp(req);
     const rateLimitResult = checkRateLimit({
       ...RATE_LIMITS.WRITE,
@@ -86,14 +99,12 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { items, email, discountCodeId }: PaymentIntentRequest = await req.json();
-    logStep("Request received", { itemCount: items?.length, email, discountCodeId });
+    const requestBody: PaymentIntentRequest = await req.json();
+    const { type = 'checkout', items, email, discountCodeId, amount, tier, billingPeriod, herePings, everyonePings } = requestBody;
+    
+    logStep("Request received", { type, itemCount: items?.length, email, amount, tier });
 
-    if (!items || items.length === 0) {
-      throw new Error("No items provided");
-    }
-
-    // Try to get authenticated user
+    // Authenticate user
     let userEmail = email;
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
@@ -108,174 +119,258 @@ serve(async (req) => {
       }
     }
 
-    // SERVER-SIDE: Verify Eclipse+ subscription status
-    let isEclipseMember = false;
-    if (userId) {
-      const { data: subscription } = await supabaseClient
-        .from('subscriptions')
-        .select('status, current_period_end')
-        .eq('user_id', userId)
-        .in('status', ['active', 'trialing'])
-        .single();
-      
-      if (subscription && new Date(subscription.current_period_end) > new Date()) {
-        isEclipseMember = true;
-        logStep("User has active Eclipse+ subscription");
-      }
+    if (!userId && type !== 'checkout') {
+      throw new Error("Authentication required");
     }
 
-    // SERVER-SIDE: Fetch actual product data and calculate correct prices
-    const productIds = items.map(item => item.id);
-    const { data: products, error: productsError } = await supabaseClient
-      .from('products')
-      .select('id, name, price, category_id, is_resellable, slug')
-      .in('id', productIds);
-
-    if (productsError) {
-      logStep("Error fetching products", productsError);
-      throw new Error("Failed to verify product prices");
-    }
-
-    const productMap = new Map(products?.map(p => [p.id, p]) || []);
-
-    // Validate and calculate server-side prices
-    const validatedItems: Array<{
-      id: string;
-      name: string;
-      originalPrice: number;
-      finalPrice: number;
-      category_id?: string;
-      category_slug?: string;
-    }> = [];
-
-    let serverSubtotal = 0;
-    let serverEclipseDiscount = 0;
-
-    for (const item of items) {
-      const product = productMap.get(item.id);
-      if (!product) {
-        logStep("Product not found", { productId: item.id });
-        throw new Error(`Product not found: ${item.id}`);
-      }
-
-      const originalPrice = product.price;
-      let finalPrice = originalPrice;
-
-      // Apply Eclipse+ discount server-side if user is a member
-      if (isEclipseMember) {
-        finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable);
-        if (finalPrice < originalPrice) {
-          serverEclipseDiscount += (originalPrice - finalPrice);
-        }
-      }
-
-      validatedItems.push({
-        id: product.id,
-        name: product.name,
-        originalPrice,
-        finalPrice,
-        category_id: product.category_id,
-        category_slug: item.category_slug, // Keep original category_slug for bot detection
-      });
-
-      serverSubtotal += finalPrice;
-    }
-
-    logStep("Server-side price validation complete", { 
-      serverSubtotal, 
-      serverEclipseDiscount,
-      isEclipseMember 
-    });
-
-    // Apply discount code (only if NOT an Eclipse+ member - no stacking)
-    let discountAmount = 0;
-    if (discountCodeId && !isEclipseMember) {
-      const { data: discount } = await supabaseClient
-        .from('discount_codes')
-        .select('*')
-        .eq('id', discountCodeId)
-        .eq('is_active', true)
-        .single();
-
-      if (discount) {
-        if (discount.discount_type === 'percentage') {
-          discountAmount = (serverSubtotal * discount.discount_value) / 100;
-        } else {
-          discountAmount = Math.min(discount.discount_value, serverSubtotal);
-        }
-        logStep("Discount applied", { discountAmount, type: discount.discount_type });
-      }
-    } else if (discountCodeId && isEclipseMember) {
-      logStep("Discount code ignored - Eclipse+ member (no stacking)");
-    }
-
-    // Calculate final amount in pence
-    const amount = Math.max(0, Math.round((serverSubtotal - discountAmount) * 100));
-    logStep("Calculated amount", { serverSubtotal, discountAmount, amount, currency: "gbp" });
-
-    // Minimum order requirement: £1.00 (100 pence)
-    const MINIMUM_ORDER_PENCE = 100;
-    if (amount < MINIMUM_ORDER_PENCE) {
-      logStep("Order below minimum", { amount, minimum: MINIMUM_ORDER_PENCE });
-      throw new Error("Minimum order amount is £1.00");
-    }
-
-    // Check if customer exists in Stripe
+    // Get or create Stripe customer
     let customerId: string | undefined;
     if (userEmail) {
       const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
-        logStep("Found existing Stripe customer", { customerId });
+      } else if (userId) {
+        const customer = await stripe.customers.create({ email: userEmail });
+        customerId = customer.id;
       }
+      logStep("Customer ready", { customerId });
     }
 
-    // Create PaymentIntent with SERVER-VALIDATED prices
+    let amountInPence: number;
+    let description: string;
+    const metadata: Record<string, string> = {
+      user_id: userId || "",
+      customer_email: userEmail || "",
+      payment_type: type,
+    };
+
+    // Calculate amount based on payment type
+    switch (type) {
+      case 'checkout': {
+        if (!items || items.length === 0) throw new Error("No items provided");
+
+        // Check Eclipse+ subscription
+        let isEclipseMember = false;
+        if (userId) {
+          const { data: subscription } = await supabaseClient
+            .from('subscriptions')
+            .select('status, current_period_end')
+            .eq('user_id', userId)
+            .in('status', ['active', 'trialing'])
+            .single();
+          
+          if (subscription && new Date(subscription.current_period_end) > new Date()) {
+            isEclipseMember = true;
+          }
+        }
+
+        // Fetch and validate products
+        const productIds = items.map(item => item.id);
+        const { data: products, error: productsError } = await supabaseClient
+          .from('products')
+          .select('id, name, price, category_id, is_resellable')
+          .in('id', productIds);
+
+        if (productsError) throw new Error("Failed to verify product prices");
+
+        const productMap = new Map(products?.map(p => [p.id, p]) || []);
+        let serverSubtotal = 0;
+        let serverEclipseDiscount = 0;
+        const validatedItems: Array<{ id: string; name: string; finalPrice: number; originalPrice: number; category_id?: string; category_slug?: string }> = [];
+
+        for (const item of items) {
+          const product = productMap.get(item.id);
+          if (!product) throw new Error(`Product not found: ${item.id}`);
+
+          const originalPrice = product.price;
+          let finalPrice = originalPrice;
+          
+          if (isEclipseMember) {
+            finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable);
+            if (finalPrice < originalPrice) {
+              serverEclipseDiscount += (originalPrice - finalPrice);
+            }
+          }
+
+          validatedItems.push({
+            id: product.id,
+            name: product.name,
+            finalPrice,
+            originalPrice,
+            category_id: product.category_id,
+            category_slug: item.category_slug,
+          });
+          serverSubtotal += finalPrice;
+        }
+
+        // Apply discount code
+        let discountAmount = 0;
+        if (discountCodeId && !isEclipseMember) {
+          const { data: discount } = await supabaseClient
+            .from('discount_codes')
+            .select('*')
+            .eq('id', discountCodeId)
+            .eq('is_active', true)
+            .single();
+
+          if (discount) {
+            if (discount.discount_type === 'percentage') {
+              discountAmount = (serverSubtotal * discount.discount_value) / 100;
+            } else {
+              discountAmount = Math.min(discount.discount_value, serverSubtotal);
+            }
+          }
+        }
+
+        amountInPence = Math.round((serverSubtotal - discountAmount) * 100);
+        
+        if (amountInPence < 100) throw new Error("Minimum order amount is £1.00");
+
+        description = `Purchase: ${validatedItems.map(i => i.name).join(', ')}`;
+        metadata.items = JSON.stringify(validatedItems);
+        metadata.discount_code_id = discountCodeId || '';
+        metadata.discount_amount = discountAmount.toString();
+        metadata.eclipse_discount = serverEclipseDiscount.toString();
+        metadata.is_eclipse_member = isEclipseMember ? "true" : "false";
+        break;
+      }
+
+      case 'credits': {
+        const amountNum = parseFloat(String(amount));
+        if (isNaN(amountNum) || amountNum < 1 || amountNum > 500) {
+          throw new Error("Amount must be between £1.00 and £500.00");
+        }
+        amountInPence = Math.round(amountNum * 100);
+        description = `Store Credit - £${amountNum.toFixed(2)}`;
+        metadata.credit_amount = amountNum.toString();
+        break;
+      }
+
+      case 'subscription': {
+        const tierName = tier || 'pro';
+        const period = billingPeriod || 'monthly';
+        
+        const { data: tierData, error: tierError } = await supabaseClient
+          .from('subscription_tiers')
+          .select('*')
+          .eq('tier', tierName)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (tierError || !tierData) throw new Error(`Tier '${tierName}' not found`);
+
+        // For subscriptions, we'll use SetupIntent to collect payment method
+        const setupIntent = await stripe.setupIntents.create({
+          customer: customerId,
+          payment_method_types: ['card'],
+          metadata: {
+            ...metadata,
+            tier: tierName,
+            billing_period: period,
+          },
+        });
+
+        logStep("SetupIntent created for subscription", { setupIntentId: setupIntent.id });
+
+        return new Response(JSON.stringify({
+          clientSecret: setupIntent.client_secret,
+          intentType: 'setup_intent',
+          customerId,
+          tier: tierName,
+          billingPeriod: period,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      case 'ad_pings': {
+        const hereCount = Math.max(0, Math.min(100, parseInt(String(herePings)) || 0));
+        const everyoneCount = Math.max(0, Math.min(100, parseInt(String(everyonePings)) || 0));
+
+        if (hereCount === 0 && everyoneCount === 0) {
+          throw new Error("Please select at least one ping to purchase");
+        }
+
+        // Check subscription requirement
+        const { data: adSub } = await supabaseClient
+          .from("advertisement_subscriptions")
+          .select("*")
+          .eq("user_id", userId!)
+          .eq("status", "active")
+          .maybeSingle();
+
+        // Allow test user to bypass
+        const isTestUser = userEmail === "alicanimir1@gmail.com";
+        if (!adSub && !isTestUser) {
+          throw new Error("You need an active advertisement subscription to purchase pings");
+        }
+
+        // Pricing with bulk discounts
+        const HERE_PING_BASE = 79;
+        const EVERYONE_PING_BASE = 149;
+        const BULK_DISCOUNTS = [
+          { minQty: 50, discount: 0.30 },
+          { minQty: 25, discount: 0.20 },
+          { minQty: 10, discount: 0.10 },
+          { minQty: 5, discount: 0.05 },
+        ];
+
+        const getDiscountedPrice = (base: number, qty: number) => {
+          const tier = BULK_DISCOUNTS.find(t => qty >= t.minQty);
+          return tier ? Math.round(base * (1 - tier.discount)) : base;
+        };
+
+        let totalPence = 0;
+        if (hereCount > 0) {
+          totalPence += getDiscountedPrice(HERE_PING_BASE, hereCount) * hereCount;
+        }
+        if (everyoneCount > 0) {
+          totalPence += getDiscountedPrice(EVERYONE_PING_BASE, everyoneCount) * everyoneCount;
+        }
+
+        amountInPence = totalPence;
+        description = `Ad Pings: ${hereCount} @here, ${everyoneCount} @everyone`;
+        metadata.here_pings = hereCount.toString();
+        metadata.everyone_pings = everyoneCount.toString();
+        break;
+      }
+
+      default:
+        throw new Error("Invalid payment type");
+    }
+
+    // Create PaymentIntent for one-time payments
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: "gbp",
+      amount: amountInPence,
+      currency: 'gbp',
       customer: customerId,
       receipt_email: userEmail,
-      metadata: {
-        user_id: userId || "",
-        customer_email: userEmail || "",
-        items: JSON.stringify(validatedItems.map(i => ({ 
-          id: i.id, 
-          name: i.name, 
-          price: i.finalPrice, 
-          originalPrice: i.originalPrice,
-          category_id: i.category_id,
-          category_slug: i.category_slug 
-        }))),
-        discount_code_id: (!isEclipseMember && discountCodeId) ? discountCodeId : "",
-        discount_amount: discountAmount.toString(),
-        eclipse_discount: serverEclipseDiscount.toString(),
-        is_eclipse_member: isEclipseMember ? "true" : "false",
-      },
+      description,
+      metadata,
       automatic_payment_methods: {
         enabled: true,
       },
+      setup_future_usage: 'on_session', // Save card for future use
     });
 
-    logStep("PaymentIntent created", { paymentIntentId: paymentIntent.id, finalAmount: amount });
+    logStep("PaymentIntent created", { paymentIntentId: paymentIntent.id, amount: amountInPence });
 
-    return new Response(
-      JSON.stringify({
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
-        amount,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify({
+      clientSecret: paymentIntent.client_secret,
+      intentType: 'payment_intent',
+      paymentIntentId: paymentIntent.id,
+      amount: amountInPence,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 400,
     });
   }
 });

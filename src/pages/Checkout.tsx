@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { CreditCard, ChevronLeft, Tag, X, Check, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { PaymentMethodDisplay } from '@/components/payments/PaymentMethodDisplay';
-import { openExternalUrl } from '@/lib/externalBrowser';
+import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
 interface AppliedDiscount {
@@ -25,15 +25,17 @@ interface AppliedDiscount {
 
 export default function Checkout() {
   usePageTracking({ pagePath: '/checkout' });
-  const { items, total } = useCart();
+  const { items, total, clearCart } = useCart();
   const { user, session, loading } = useAuth();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Calculate Eclipse+ member pricing
   const calculateMemberPricing = () => {
@@ -184,47 +186,41 @@ export default function Checkout() {
       return;
     }
 
-    setIsProcessing(true);
+    // Open embedded payment modal instead of redirecting
+    setShowPaymentModal(true);
+  };
 
-    try {
-      // Send items with member pricing applied
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          items: itemsWithMemberPricing.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.memberPrice, // Use member price
-            originalPrice: item.originalPrice,
-            image: item.image,
-            category_slug: item.category_slug,
-            category_id: item.category_id,
-          })),
-          email: user.email,
-          discountCodeId: appliedDiscount?.id,
-          eclipseDiscount: eclipseDiscount,
-          isEclipseMember: isSubscribed,
-        },
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
-      });
+  const handlePaymentSuccess = () => {
+    clearCart();
+    showSuccessNotification('Payment Successful!', 'Your order is being processed');
+    navigate('/order-success?embedded=true');
+  };
 
-      if (error) throw error;
-
-      if (data?.url) {
-        await openExternalUrl(data.url);
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (error: any) {
-      console.error('Checkout error:', error);
-      showErrorNotification('Checkout Failed', error.message || 'Please try again.');
-      setIsProcessing(false);
-    }
+  const handlePaymentError = (error: string) => {
+    showErrorNotification('Payment Failed', error);
   };
 
   return (
     <MainLayout>
+      {/* Embedded Payment Modal */}
+      <EmbeddedPaymentModal
+        open={showPaymentModal}
+        onOpenChange={setShowPaymentModal}
+        paymentType="checkout"
+        items={itemsWithMemberPricing.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.memberPrice,
+          originalPrice: item.originalPrice,
+          image: item.image,
+          category_slug: item.category_slug,
+          category_id: item.category_id,
+        }))}
+        discountCodeId={appliedDiscount?.id}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
+      />
+
       <div className="container py-8 max-w-4xl space-y-8 overflow-x-hidden px-4 sm:px-6 w-full box-border">
         <Link to="/cart" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" />
