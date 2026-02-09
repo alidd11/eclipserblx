@@ -40,10 +40,9 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           valid: false, 
-          reason: "No active license found for this server",
-          should_leave: true 
+          reason: "No active license found for this server"
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
