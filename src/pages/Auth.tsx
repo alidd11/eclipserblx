@@ -585,7 +585,14 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setErrors({});
     
     try {
-      const redirectUri = `${window.location.origin}/auth/discord/callback`;
+      // For mobile apps (Capacitor), window.location.origin may not be a valid HTTPS URL.
+      // Always use the production domain for Discord OAuth to ensure compatibility.
+      const productionDomain = 'https://eclipserblx.com';
+      const currentOrigin = window.location.origin;
+      
+      // Use production domain if we're not on a valid https origin (e.g., capacitor://localhost)
+      const baseUrl = currentOrigin.startsWith('https://') ? currentOrigin : productionDomain;
+      const redirectUri = `${baseUrl}/auth/discord/callback`;
       
       // Get the OAuth URL from the edge function (which has access to the client ID)
       const { data, error } = await supabase.functions.invoke('discord-auth-url', {
