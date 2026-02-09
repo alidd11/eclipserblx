@@ -870,6 +870,44 @@ export type Database = {
           },
         ]
       }
+      category_translations: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          language_code: string
+          translated_description: string | null
+          translated_name: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          language_code: string
+          translated_description?: string | null
+          translated_name: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          language_code?: string
+          translated_description?: string | null
+          translated_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_translations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           assigned_to: string | null
