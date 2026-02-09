@@ -51,7 +51,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
         <div className="flex items-center gap-2">
           <Crown className="h-4 w-4 text-blue-400" />
           <span className="text-sm font-medium">
-            {isAtLimit ? 'Server limit reached' : 'Free tier: 2 servers max'}
+            {isAtLimit ? 'Server limit reached' : 'Free tier: 1 server max'}
           </span>
         </div>
         <Button 

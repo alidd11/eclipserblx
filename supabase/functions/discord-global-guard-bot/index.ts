@@ -426,9 +426,9 @@ Deno.serve(async (req) => {
             data: {
               embeds: [{
                 title: "🛡️ Global Bans",
-                description: "You have no active global bans.",
-                color: COLORS.PRIMARY,
-                footer: { text: tierInfo.is_premium ? "Eclipse+ Member" : "Free Tier • 2 servers max" },
+              description: "You have no active global bans.",
+              color: COLORS.PRIMARY,
+              footer: { text: tierInfo.is_premium ? "Eclipse+ Member" : "Free Tier • 1 server max" },
               }],
               flags: 64,
             },
@@ -455,7 +455,7 @@ Deno.serve(async (req) => {
               footer: { 
                 text: tierInfo.is_premium 
                   ? `Eclipse+ • ${bans.length} active bans` 
-                  : `Free Tier • ${bans.length} active bans • 2 servers max` 
+                  : `Free Tier • ${bans.length} active bans • 1 server max` 
               },
             }],
             flags: 64,
@@ -875,35 +875,12 @@ Deno.serve(async (req) => {
 
     // ==================== DASHBOARD COMMAND ====================
     if (commandName === "dashboard") {
-      const botToken = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_TOKEN");
       const dashboardUrl = "https://roleplay-hub-shop.lovable.app/guard";
       
-      // Try to send DM to user
-      try {
-        // Create DM channel
-        const dmChannelRes = await fetch("https://discord.com/api/v10/users/@me/channels", {
-          method: "POST",
-          headers: {
-            Authorization: `Bot ${botToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ recipient_id: discordUserId }),
-        });
-
-        if (!dmChannelRes.ok) {
-          throw new Error("Could not create DM channel");
-        }
-
-        const dmChannel = await dmChannelRes.json();
-
-        // Send DM with dashboard link
-        const dmRes = await fetch(`https://discord.com/api/v10/channels/${dmChannel.id}/messages`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bot ${botToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
             embeds: [{
               title: "🛡️ Global Guard Dashboard",
               description: `Manage your global bans, view analytics, and configure your servers all in one place.\n\n**[Open Dashboard](${dashboardUrl})**`,
@@ -913,144 +890,54 @@ Deno.serve(async (req) => {
               ],
               footer: { text: "Global Guard by Eclipse" },
             }],
-          }),
-        });
-
-        if (!dmRes.ok) {
-          throw new Error("Could not send DM");
-        }
-
-        return new Response(
-          JSON.stringify({
-            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
-            data: {
-              embeds: [{
-                title: "✅ Check Your DMs!",
-                description: "I've sent you the dashboard link via DM.",
-                color: COLORS.SUCCESS,
-              }],
-              flags: 64,
-            },
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch (e) {
-        console.error("[global-guard-bot] DM failed:", e);
-        return new Response(
-          JSON.stringify({
-            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
-            data: {
-              embeds: [{
-                title: "❌ Couldn't Send DM",
-                description: `Please make sure your DMs are open.\n\n**[Open Dashboard](${dashboardUrl})**`,
-                color: COLORS.WARNING,
-              }],
-              flags: 64,
-            },
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // ==================== UPGRADE COMMAND ====================
     if (commandName === "upgrade") {
-      const botToken = Deno.env.get("DISCORD_GLOBAL_GUARD_BOT_TOKEN");
       const upgradeUrl = "https://roleplay-hub-shop.lovable.app/guard";
       
-      const upgradeEmbed = {
-        title: "⭐ Upgrade to Global Guard Premium",
-        description: "Unlock the full power of cross-server moderation with premium features.",
-        color: COLORS.PRIMARY,
-        fields: [
-          { 
-            name: "🆓 Free Tier", 
-            value: "• 2 servers max\n• 6 commands/day\n• Basic ban management", 
-            inline: true 
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: "⭐ Upgrade to Global Guard Premium",
+              description: "Unlock the full power of cross-server moderation with premium features.",
+              color: COLORS.PRIMARY,
+              fields: [
+                { 
+                  name: "🆓 Free Tier", 
+                  value: "• 1 server\n• 6 commands/day\n• Basic ban management", 
+                  inline: true 
+                },
+                { 
+                  name: "⭐ Premium", 
+                  value: "• Unlimited servers\n• Unlimited commands\n• Priority sync\n• Ban templates\n• Advanced analytics", 
+                  inline: true 
+                },
+                { 
+                  name: "💰 Pricing", 
+                  value: "**£2.99/month** for 2 servers\n+£1.00/month per additional server\n\n*Or get **Eclipse+** for unlimited access!*", 
+                  inline: false 
+                },
+                {
+                  name: "🔗 Ready to Upgrade?",
+                  value: `**[Upgrade Now](${upgradeUrl})**`,
+                  inline: false,
+                },
+              ],
+              footer: { text: "Global Guard by Eclipse" },
+            }],
+            flags: 64,
           },
-          { 
-            name: "⭐ Premium", 
-            value: "• Unlimited servers\n• Unlimited commands\n• Priority sync\n• Ban templates\n• Advanced analytics", 
-            inline: true 
-          },
-          { 
-            name: "💰 Pricing", 
-            value: "**£2.99/month** for 2 servers\n+£1.00/month per additional server\n\n*Or get **Eclipse+** for unlimited access!*", 
-            inline: false 
-          },
-          {
-            name: "🔗 Ready to Upgrade?",
-            value: `**[Upgrade Now](${upgradeUrl})**`,
-            inline: false,
-          },
-        ],
-        footer: { text: "Global Guard by Eclipse" },
-      };
-
-      // Try to send DM to user
-      try {
-        // Create DM channel
-        const dmChannelRes = await fetch("https://discord.com/api/v10/users/@me/channels", {
-          method: "POST",
-          headers: {
-            Authorization: `Bot ${botToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ recipient_id: discordUserId }),
-        });
-
-        if (!dmChannelRes.ok) {
-          throw new Error("Could not create DM channel");
-        }
-
-        const dmChannel = await dmChannelRes.json();
-
-        // Send DM with upgrade info
-        const dmRes = await fetch(`https://discord.com/api/v10/channels/${dmChannel.id}/messages`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bot ${botToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ embeds: [upgradeEmbed] }),
-        });
-
-        if (!dmRes.ok) {
-          throw new Error("Could not send DM");
-        }
-
-        return new Response(
-          JSON.stringify({
-            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
-            data: {
-              embeds: [{
-                title: "✅ Check Your DMs!",
-                description: "I've sent you the upgrade information via DM.",
-                color: COLORS.SUCCESS,
-              }],
-              flags: 64,
-            },
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch (e) {
-        console.error("[global-guard-bot] DM failed:", e);
-        // Fall back to showing in channel if DM fails
-        return new Response(
-          JSON.stringify({
-            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
-            data: {
-              embeds: [{
-                ...upgradeEmbed,
-                title: "❌ Couldn't Send DM - Here's the Info",
-                description: "Please make sure your DMs are open.\n\n" + upgradeEmbed.description,
-              }],
-              flags: 64,
-            },
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Unknown command
