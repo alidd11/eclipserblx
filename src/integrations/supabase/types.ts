@@ -2628,6 +2628,7 @@ export type Database = {
           banned_username: string | null
           created_at: string
           created_via: string
+          evidence: Json | null
           expires_at: string | null
           id: string
           is_active: boolean
@@ -2642,6 +2643,7 @@ export type Database = {
           banned_username?: string | null
           created_at?: string
           created_via?: string
+          evidence?: Json | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
@@ -2656,6 +2658,7 @@ export type Database = {
           banned_username?: string | null
           created_at?: string
           created_via?: string
+          evidence?: Json | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
