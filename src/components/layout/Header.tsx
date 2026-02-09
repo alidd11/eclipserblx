@@ -14,19 +14,22 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { CurrencySelector } from './CurrencySelector';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
-const navLinks = [
-  { href: '/featured', label: 'Featured', icon: Sparkles },
-  { href: '/products', label: 'Products', icon: Package },
-  { href: '/categories', label: 'Categories', icon: Grid3X3 },
-  { href: '/eclipse-plus', label: 'Eclipse+', icon: Circle },
-  { href: '/jobs', label: 'Jobs', icon: Briefcase },
+// Nav links use translation keys - labels resolved in render
+const navLinkDefs = [
+  { href: '/featured', labelKey: 'nav.featured', icon: Sparkles },
+  { href: '/products', labelKey: 'nav.products', icon: Package },
+  { href: '/categories', labelKey: 'nav.categories', icon: Grid3X3 },
+  { href: '/eclipse-plus', labelKey: 'nav.eclipsePlus', icon: Circle },
+  { href: '/jobs', labelKey: 'nav.jobs', icon: Briefcase },
 ];
-const legalLinks = [
-  { href: '/faq', label: 'FAQ', icon: HelpCircle },
-  { href: '/privacy', label: 'Privacy Policy', icon: Shield },
-  { href: '/terms', label: 'Terms of Service', icon: FileText },
-  { href: '/refunds', label: 'Refund Policy', icon: RotateCcw },
+const legalLinkDefs = [
+  { href: '/faq', labelKey: 'nav.faq', icon: HelpCircle },
+  { href: '/privacy', labelKey: 'nav.privacyPolicy', icon: Shield },
+  { href: '/terms', labelKey: 'nav.termsOfService', icon: FileText },
+  { href: '/refunds', labelKey: 'nav.refundPolicy', icon: RotateCcw },
 ];
 
 type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
@@ -42,10 +45,14 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const navLinks = navLinkDefs.map(l => ({ ...l, label: t(l.labelKey) }));
+  const legalLinks = legalLinkDefs.map(l => ({ ...l, label: t(l.labelKey) }));
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -81,10 +88,10 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
   }, []);
 
   const statusConfig = {
-    online: { label: 'All Systems Operational', color: 'text-green-500', bg: 'bg-green-500' },
-    degraded: { label: 'Degraded Performance', color: 'text-yellow-500', bg: 'bg-yellow-500' },
-    offline: { label: 'Service Disruption', color: 'text-red-500', bg: 'bg-red-500' },
-    checking: { label: 'Checking Status...', color: 'text-muted-foreground', bg: 'bg-muted-foreground' },
+    online: { label: t('status.online'), color: 'text-green-500', bg: 'bg-green-500' },
+    degraded: { label: t('status.degraded'), color: 'text-yellow-500', bg: 'bg-yellow-500' },
+    offline: { label: t('status.offline'), color: 'text-red-500', bg: 'bg-red-500' },
+    checking: { label: t('status.checking'), color: 'text-muted-foreground', bg: 'bg-muted-foreground' },
   };
 
   return (
@@ -119,9 +126,10 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
           {/* Right section: Icons (flush right, tighter spacing) */}
           <div className="flex items-center shrink-0 ml-auto gap-0.5">
             <CurrencySelector compact />
+            <LanguageSwitcher compact />
             <NotificationBell />
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label="Shopping cart">
+              <Button variant="ghost" size="icon" className="relative h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>
                 <ShoppingCart className="h-4 w-4" />
                 {itemCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary text-[8px] font-medium text-primary-foreground flex items-center justify-center">
@@ -132,13 +140,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label="My account">
+                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label={t('nav.myAccount')}>
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label="Sign in">
+                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label={t('common.signIn')}>
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
@@ -163,6 +171,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             </Link>
             <HeaderSearchBar className="flex-1 max-w-xl" />
             <CurrencySelector />
+            <LanguageSwitcher />
           </div>
 
           {/* Right: Actions */}
@@ -172,7 +181,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" aria-label="Join our Discord server">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" aria-label={t('nav.joinDiscord')}>
                 <svg
                   className="h-5 w-5"
                   viewBox="0 0 24 24"
@@ -188,7 +197,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
             <NotificationBell />
 
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-9 w-9 text-muted-foreground hover:text-foreground" aria-label="Shopping cart">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>
                 <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs font-medium text-primary-foreground flex items-center justify-center">
@@ -200,14 +209,14 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" aria-label="My account">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" aria-label={t('nav.myAccount')}>
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
             ) : (
               <Link to="/auth">
                 <Button className="gradient-button border-0 h-9 px-4 text-sm rounded-md">
-                  Sign In
+                  {t('common.signIn')}
                 </Button>
               </Link>
             )}
@@ -262,7 +271,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               >
                 <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
               </svg>
-              <span>Join Discord</span>
+              <span>{t('nav.joinDiscord')}</span>
             </a>
             
             {/* System Status */}
@@ -279,7 +288,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
               }
             >
               <Activity className="h-4 w-4 shrink-0" />
-              <span className="flex-1">System Status</span>
+              <span className="flex-1">{t('nav.systemStatus')}</span>
               <Circle className={cn('h-2.5 w-2.5 fill-current', statusConfig[systemStatus].color)} />
             </NavLink>
             
@@ -324,7 +333,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                   }
                 >
                   <User className="h-4 w-4 shrink-0" />
-                  <span>My Account</span>
+                  <span>{t('nav.myAccount')}</span>
                 </NavLink>
                 
                 <button
@@ -332,7 +341,7 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
                   className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg transition-colors touch-manipulation w-full text-left"
                 >
                   <LogOut className="h-4 w-4 shrink-0" />
-                  <span>Sign Out</span>
+                  <span>{t('common.signOut')}</span>
                 </button>
               </>
             )}
