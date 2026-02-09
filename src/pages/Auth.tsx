@@ -580,13 +580,41 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     }
   };
 
-  const handleDiscordSignIn = () => {
-    const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/discord/callback`);
-    const scope = encodeURIComponent('identify email');
+  const handleDiscordSignIn = async () => {
+    setSocialLoading(true);
+    setErrors({});
     
-    // Redirect to Discord OAuth
-    window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+    try {
+      const redirectUri = `${window.location.origin}/auth/discord/callback`;
+      
+      // Get the OAuth URL from the edge function (which has access to the client ID)
+      const { data, error } = await supabase.functions.invoke('discord-auth-url', {
+        body: { redirect_uri: redirectUri },
+      });
+      
+      if (error || data?.error) {
+        toast({
+          title: 'Discord Sign-In Failed',
+          description: data?.error || 'Failed to initiate Discord sign-in',
+          variant: 'destructive',
+        });
+        setErrors({ social: data?.error || 'Discord sign-in failed' });
+        setSocialLoading(false);
+        return;
+      }
+      
+      // Redirect to Discord OAuth
+      window.location.href = data.url;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      toast({
+        title: 'Discord Sign-In Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      setErrors({ social: errorMessage });
+      setSocialLoading(false);
+    }
   };
 
   const getTitle = () => {
