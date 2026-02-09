@@ -496,17 +496,19 @@ export default function ProductDetail() {
             <Card className="bg-card border-border">
               <CardContent className="pt-6 space-y-6">
                 <div className="space-y-2">
-                  {product.categories && (
-                    <Badge variant="outline" className="text-primary border-primary">
-                      {product.categories.name}
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {product.categories && (
+                      <Badge variant="outline" className="text-primary border-primary">
+                        {product.categories.name}
+                      </Badge>
+                    )}
+                    {product.is_featured && (
+                      <Badge className="bg-primary/10 text-primary border-primary/20">
+                        Featured Product
+                      </Badge>
+                    )}
+                  </div>
                   <h1 className="text-3xl md:text-4xl font-display font-bold">{product.name}</h1>
-                {product.is_featured && (
-                    <Badge className="bg-primary/10 text-primary border-primary/20">
-                      Featured Product
-                    </Badge>
-                  )}
                 </div>
 
                 <div className="space-y-2">
