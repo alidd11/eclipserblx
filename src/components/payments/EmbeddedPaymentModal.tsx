@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
@@ -9,8 +9,35 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-// Initialize Stripe outside the component
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+
+// Initialize Stripe outside the component (only if configured)
+const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;
+
+function resolveHslCssVar(varName: string): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return raw ? `hsl(${raw})` : undefined;
+}
+
+function createStripeAppearance() {
+  const colorPrimary = resolveHslCssVar('--primary');
+  const colorBackground = resolveHslCssVar('--card');
+  const colorText = resolveHslCssVar('--foreground');
+  const colorDanger = resolveHslCssVar('--destructive');
+
+  return {
+    theme: 'night',
+    variables: {
+      ...(colorPrimary ? { colorPrimary } : {}),
+      ...(colorBackground ? { colorBackground } : {}),
+      ...(colorText ? { colorText } : {}),
+      ...(colorDanger ? { colorDanger } : {}),
+      fontFamily: 'inherit',
+      borderRadius: '0.5rem',
+    },
+  } as const;
+}
 
 export type PaymentType = 'checkout' | 'credits' | 'subscription' | 'ad_pings';
 
@@ -169,11 +196,13 @@ function PaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement 
-        options={{
-          layout: 'tabs',
-        }}
-      />
+      <div className="rounded-lg border border-border bg-card p-4 min-h-[180px]">
+        <PaymentElement
+          options={{
+            layout: 'tabs',
+          }}
+        />
+      </div>
       
       {errorMessage && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -228,11 +257,30 @@ export function EmbeddedPaymentModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const stripeAppearance = useMemo(() => createStripeAppearance(), []);
+
   useEffect(() => {
-    if (open && session?.access_token) {
-      createPaymentIntent();
+    if (!open) return;
+
+    if (!stripePromise) {
+      setError('Payments are temporarily unavailable (Stripe is not configured).');
+      return;
     }
-  }, [open, session?.access_token]);
+
+    const requiresAuth = paymentType === 'credits' || paymentType === 'subscription' || paymentType === 'ad_pings';
+
+    if (!session?.access_token) {
+      if (requiresAuth) {
+        setError('Please sign in to continue.');
+      } else {
+        // Checkout can be initialized without an authenticated session
+        createPaymentIntent();
+      }
+      return;
+    }
+
+    createPaymentIntent();
+  }, [open, session?.access_token, paymentType]);
 
   const createPaymentIntent = async () => {
     setIsLoading(true);
@@ -257,9 +305,9 @@ export function EmbeddedPaymentModal({
 
       const { data, error: invokeError } = await supabase.functions.invoke('create-payment-intent', {
         body,
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
       });
 
       if (invokeError) throw invokeError;
@@ -328,28 +376,21 @@ export function EmbeddedPaymentModal({
                 <AlertCircle className="h-8 w-8 text-destructive" />
               </div>
               <p className="text-sm text-destructive text-center">{error}</p>
-              <Button variant="outline" onClick={createPaymentIntent}>
-                Try Again
-              </Button>
+              {stripePromise ? (
+                <Button variant="outline" onClick={createPaymentIntent}>
+                  Try Again
+                </Button>
+              ) : null}
             </div>
           )}
 
-          {clientSecret && !isLoading && !error && (
-            <Elements 
-              stripe={stripePromise} 
-              options={{ 
+          {clientSecret && !isLoading && !error && stripePromise && (
+            <Elements
+              stripe={stripePromise}
+              options={{
                 clientSecret,
-                appearance: {
-                  theme: 'night',
-                  variables: {
-                    colorPrimary: 'hsl(var(--primary))',
-                    colorBackground: 'hsl(var(--card))',
-                    colorText: 'hsl(var(--foreground))',
-                    colorDanger: 'hsl(var(--destructive))',
-                    fontFamily: 'inherit',
-                    borderRadius: '0.5rem',
-                  },
-                },
+                appearance: stripeAppearance,
+                loader: 'auto',
               }}
             >
               <PaymentForm
