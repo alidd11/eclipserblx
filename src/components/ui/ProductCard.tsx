@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -141,13 +142,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         <div className="relative aspect-[4/3] bg-black/20 overflow-hidden flex-shrink-0">
           {displayMedia ? (
             isVideo ? (
-              <video
+              <BackgroundVideo
                 ref={videoRef}
                 src={displayMedia}
-                muted
-                loop
-                playsInline
-                autoPlay
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             ) : (

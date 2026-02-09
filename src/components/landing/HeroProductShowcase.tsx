@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Store, BadgeCheck, Shield, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,11 +43,8 @@ function CompactProductCard({ product, index }: { product: HeroProduct; index: n
         <div className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
           {displayMedia ? (
             isVideo ? (
-              <video
+              <BackgroundVideo
                 src={displayMedia}
-                muted
-                loop
-                playsInline
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
