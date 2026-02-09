@@ -1,116 +1,108 @@
 
+# Plan: Add Discord OAuth for Main Portal Sign-In/Sign-Up
 
-# Plan: Make Product Videos Non-Interactive Across All Pages
+## Current State
 
-## Problem
-Product pages with videos currently have issues where:
-- Videos can be clicked/interacted with unexpectedly
-- Native browser video icons (play/pause overlays on iOS/Android) appear
-- These interactions can interrupt the expected user flow (e.g., clicking a product card should navigate to the product, not play/pause the video)
+The platform currently has:
+- **Primary auth**: Email/password with OTP verification via Supabase Auth
+- **Social login**: Google and Apple via Lovable Cloud managed OAuth
+- **Discord linking**: A secondary feature to connect Discord accounts to existing profiles
+- **Global Guard**: Separate Discord OAuth that stores sessions in sessionStorage (not Supabase Auth)
 
-## Solution
-Create a reusable video component that ensures videos are purely decorative/background media in listing contexts, with consistent styling across all pages.
+## Challenge
+
+Discord OAuth is **not natively supported** by Lovable Cloud's managed OAuth system. The existing Discord OAuth implementations are custom edge functions used for:
+- Account linking (not authentication)
+- Global Guard's standalone session management
+
+## Proposed Solution
+
+Create a custom Discord-to-Supabase authentication bridge that:
+1. Authenticates users via Discord OAuth
+2. Creates or links Supabase Auth accounts
+3. Provides a seamless sign-in experience alongside existing methods
 
 ---
 
-## Technical Approach
+## Technical Implementation
 
-### Step 1: Create a Reusable Background Video Component
+### Step 1: Create Discord Auth Edge Function
 
-Create a new `BackgroundVideo` component in `src/components/ui/BackgroundVideo.tsx` that:
-
-- Uses `pointer-events-none` to prevent all click interactions
-- Applies a transparent overlay to block native video controls on mobile
-- Adds `disablePictureInPicture`, `disableRemotePlayback` attributes
-- Uses `webkit-media-controls` CSS to hide native controls
-- Ensures consistent behavior across browsers
+Create a new edge function `discord-auth-login` that:
+- Exchanges Discord OAuth code for tokens
+- Checks if a Supabase account exists with that Discord ID
+- If exists: Signs in the user and returns a Supabase session
+- If new: Creates a Supabase account and profile, then returns session
 
 ```text
-BackgroundVideo Component
-┌────────────────────────────────────────┐
-│  <div className="relative">            │
-│    <video                              │
-│      autoPlay muted loop playsInline   │
-│      disablePictureInPicture           │
-│      disableRemotePlayback             │
-│      className="pointer-events-none"   │
-│    />                                  │
-│    <div className="absolute inset-0    │
-│         pointer-events-none" />        │
-│  </div>                                │
-└────────────────────────────────────────┘
+Discord OAuth Flow
+┌─────────────────────────────────────────────────────────────────┐
+│  User clicks "Continue with Discord"                            │
+│       ↓                                                         │
+│  Redirect to Discord OAuth (identify scope)                     │
+│       ↓                                                         │
+│  Discord redirects back with code                               │
+│       ↓                                                         │
+│  Edge function exchanges code → Discord user info               │
+│       ↓                                                         │
+│  Check profiles table for discord_id                            │
+│       ├── Found → Sign in existing Supabase user                │
+│       └── Not found → Create new account with Discord details   │
+│       ↓                                                         │
+│  Return Supabase session tokens                                 │
+│       ↓                                                         │
+│  Frontend sets Supabase session                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Step 2: Add Global CSS to Hide Native Video Controls
+### Step 2: Add Auth Callback Route
 
-Add CSS in `src/index.css` to hide native video controls for background videos:
+Create `/auth/discord/callback` route that:
+- Receives the Discord OAuth callback
+- Sends code to the edge function
+- Sets the Supabase session on success
+- Handles errors gracefully
 
-```css
-/* Hide native video controls for background/decorative videos */
-video.background-video::-webkit-media-controls {
-  display: none !important;
-}
-video.background-video::-webkit-media-controls-enclosure {
-  display: none !important;
-}
-video.background-video::-webkit-media-controls-panel {
-  display: none !important;
-}
-```
+### Step 3: Update Auth Page UI
 
-### Step 3: Update All Video Locations
+Add a Discord sign-in button to the Auth page:
+- Position alongside Google/Apple in the social login section
+- Use existing Discord branding (purple button with Discord logo)
+- Handle the redirect flow
 
-Replace inline `<video>` elements with the new `BackgroundVideo` component in:
+### Step 4: Handle Account Linking Conflicts
 
-| File | Context | Current State |
-|------|---------|---------------|
-| `ProductCard.tsx` | Product listings | Needs update |
-| `FeaturedProductsCard.tsx` | Featured grid | Needs update |
-| `HeroProductShowcase.tsx` | Hero section | Needs update |
-| `Featured.tsx` | Featured page | Needs update |
-
-**Note:** `ProductDetail.tsx` will keep the current `<video controls>` implementation since the main product view should allow video playback controls.
+When a Discord account is used to sign up:
+- Check if the Discord ID is already linked to another account
+- If linked: Sign in to that existing account
+- If not linked: Create new account with auto-generated username from Discord
 
 ---
 
 ## Files to Create
 
-1. **`src/components/ui/BackgroundVideo.tsx`** - New reusable component
+1. **`supabase/functions/discord-auth-login/index.ts`** - New edge function for Discord auth
+
+2. **`src/pages/AuthDiscordCallback.tsx`** - Callback handler page
 
 ## Files to Modify
 
-1. **`src/index.css`** - Add CSS to hide native controls
-2. **`src/components/ui/ProductCard.tsx`** - Use BackgroundVideo
-3. **`src/components/home/FeaturedProductsCard.tsx`** - Use BackgroundVideo
-4. **`src/components/landing/HeroProductShowcase.tsx`** - Use BackgroundVideo
-5. **`src/pages/Featured.tsx`** - Use BackgroundVideo
+1. **`src/pages/Auth.tsx`** - Add Discord sign-in button and handler
+
+2. **`src/components/AppRoutes.tsx`** - Add the Discord callback route
 
 ---
 
-## Component API
+## Security Considerations
 
-```typescript
-interface BackgroundVideoProps {
-  src: string;
-  className?: string;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  videoRef?: React.RefObject<HTMLVideoElement>;
-}
-```
+- Uses existing `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` secrets
+- Creates Supabase accounts with random passwords (users can set later via password reset)
+- Discord ID stored in profiles table (already exists for account linking)
+- No email verification required for Discord signups (Discord already verified)
 
-The component will:
-- Accept a `videoRef` for cases like `ProductCard` where mouse hover controls play/pause
-- Include an invisible overlay div to intercept any touches on mobile
-- Apply all necessary attributes to suppress native browser behavior
+## User Experience
 
----
-
-## Benefits
-
-- **Consistent behavior**: All background videos work identically
-- **Single source of truth**: One component to maintain
-- **No native icons**: CSS and attributes hide browser-specific overlays
-- **Non-clickable**: Videos don't interfere with card navigation
-- **Mobile-friendly**: Overlay blocks touch interactions on iOS/Android
-
+- One-click sign-in for Discord users
+- Auto-creates profile with Discord username
+- Seamlessly links Discord on first login
+- Works alongside existing email/Google/Apple auth
