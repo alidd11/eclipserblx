@@ -624,6 +624,49 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     }
   };
 
+  const handleRobloxSignIn = async () => {
+    setSocialLoading(true);
+    setErrors({});
+    
+    try {
+      const productionDomain = 'https://eclipserblx.com';
+      const currentOrigin = window.location.origin;
+      const baseUrl = currentOrigin.startsWith('https://') ? currentOrigin : productionDomain;
+      const redirectUri = `${baseUrl}/auth/roblox/callback`;
+      
+      const { data, error } = await supabase.functions.invoke('roblox-auth-url', {
+        body: { redirect_uri: redirectUri },
+      });
+      
+      if (error || data?.error) {
+        toast({
+          title: 'Roblox Sign-In Failed',
+          description: data?.error || 'Failed to initiate Roblox sign-in',
+          variant: 'destructive',
+        });
+        setErrors({ social: data?.error || 'Roblox sign-in failed' });
+        setSocialLoading(false);
+        return;
+      }
+      
+      // Store code_verifier in sessionStorage for PKCE flow
+      if (data.code_verifier) {
+        sessionStorage.setItem('roblox_code_verifier', data.code_verifier);
+      }
+      
+      window.location.href = data.url;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      toast({
+        title: 'Roblox Sign-In Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      setErrors({ social: errorMessage });
+      setSocialLoading(false);
+    }
+  };
+
   const getTitle = () => {
     switch (mode) {
       case 'signup': return 'Create Account';
@@ -1230,6 +1273,24 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                   </svg>
                 )}
                 Sign in with Discord
+              </Button>
+
+              {/* Roblox Sign-In Button */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full bg-[#E2231A] hover:bg-[#C01E17] text-white border-0"
+                disabled={socialLoading || loading}
+                onClick={handleRobloxSignIn}
+              >
+                {socialLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5.164 0L.16 18.928 18.836 24l5.004-18.928L5.164 0zm7.17 15.107l-3.438-.906.906-3.437 3.438.906-.906 3.437z"/>
+                  </svg>
+                )}
+                Sign in with Roblox
               </Button>
 
               {/* Apple Sign-In Button */}
