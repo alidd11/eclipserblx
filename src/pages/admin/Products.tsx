@@ -345,9 +345,21 @@ export default function AdminProducts() {
         const { error } = await supabase.from('products').update(payload).eq('id', data.id);
         if (error) throw error;
 
+        // Re-translate product in background on update
+        supabase.functions.invoke('translate-product', {
+          body: { productId: data.id },
+        }).catch(err => console.error('Translation failed:', err));
+
       } else {
         const { data: newProduct, error } = await supabase.from('products').insert(payload).select().single();
         if (error) throw error;
+
+        // Translate new product in background
+        if (newProduct) {
+          supabase.functions.invoke('translate-product', {
+            body: { productId: newProduct.id },
+          }).catch(err => console.error('Translation failed:', err));
+        }
 
         // Send push notifications for new active products
         if (payload.is_active && newProduct) {
