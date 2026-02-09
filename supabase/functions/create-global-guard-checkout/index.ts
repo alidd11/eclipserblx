@@ -11,7 +11,8 @@ const corsHeaders = {
 const GLOBAL_GUARD_PRICES = {
   monthly: "price_1SyeCoCjEHxHwNl9YROPHdNC", // £2.99/month for 2 servers
   annual: "price_TBD", // £24.99/year - needs to be created
-  additionalServer: "price_1SyhypCjEHxHwNl9gA3bzFls", // £1.00/month per extra server
+  additionalServerEclipsePlus: "price_1SyhypCjEHxHwNl9gA3bzFls", // £1.00/month per extra server (Eclipse+ members)
+  additionalServerStandard: "price_1SyhypCjEHxHwNl9gA3bzFls", // £1.50/month per extra server (non-Eclipse+ members) - TODO: Create new price in Stripe
 };
 
 const logStep = (step: string, details?: unknown) => {
@@ -50,8 +51,9 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const billingPeriod = body.billingPeriod || 'monthly';
     const additionalServers = Math.max(0, parseInt(body.additionalServers) || 0);
+    const isEclipsePlus = body.isEclipsePlus === true;
 
-    logStep("Subscription request", { billingPeriod, additionalServers });
+    logStep("Subscription request", { billingPeriod, additionalServers, isEclipsePlus });
 
     // Get the appropriate base price
     const basePriceId = billingPeriod === 'annual' 
@@ -96,9 +98,14 @@ serve(async (req) => {
     ];
 
     // Add additional server slots if requested
+    // Eclipse+ members get £1.00/server, non-members pay £1.50/server
     if (additionalServers > 0) {
+      const additionalServerPriceId = isEclipsePlus 
+        ? GLOBAL_GUARD_PRICES.additionalServerEclipsePlus 
+        : GLOBAL_GUARD_PRICES.additionalServerStandard;
+      
       lineItems.push({
-        price: GLOBAL_GUARD_PRICES.additionalServer,
+        price: additionalServerPriceId,
         quantity: additionalServers,
       });
     }

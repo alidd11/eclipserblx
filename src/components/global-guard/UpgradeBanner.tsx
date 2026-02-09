@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface UpgradeBannerProps {
   currentServers?: number;
@@ -15,10 +16,12 @@ interface UpgradeBannerProps {
 export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'full' }: UpgradeBannerProps) {
   const [additionalServers, setAdditionalServers] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSubscribed } = useSubscription();
   
   const isAtLimit = maxServers !== null && currentServers >= maxServers;
   const basePrice = 2.99;
-  const additionalPrice = 1.00;
+  // Eclipse+ members get £1.00/server, non-members pay £1.50/server
+  const additionalPrice = isSubscribed ? 1.00 : 1.50;
   const totalPrice = basePrice + (additionalServers * additionalPrice);
   const totalServers = 2 + additionalServers;
 
@@ -29,6 +32,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
         body: {
           billingPeriod: 'monthly',
           additionalServers,
+          isEclipsePlus: isSubscribed,
         },
       });
 
@@ -96,7 +100,9 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-medium">Additional Servers</span>
-              <span className="text-xs text-muted-foreground">(£{additionalPrice.toFixed(2)} each)</span>
+              <span className="text-xs text-muted-foreground">
+                (£{additionalPrice.toFixed(2)} each{isSubscribed && ' - Eclipse+ discount'})
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Button 
