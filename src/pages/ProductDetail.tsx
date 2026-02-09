@@ -30,6 +30,7 @@ import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { useProductTranslation } from '@/hooks/useProductTranslation';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -96,6 +97,8 @@ export default function ProductDetail() {
     enabled: !adminLoading && slug !== undefined,
     staleTime: 0, // Always refetch when isStaff changes
   });
+
+  const { getTranslatedName, getTranslatedDescription } = useProductTranslation(product?.id);
 
   const { data: relatedProducts } = useQuery({
     queryKey: ['related-products', product?.category_id, isStaff],
@@ -508,7 +511,7 @@ export default function ProductDetail() {
                       </Badge>
                     )}
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-display font-bold">{product.name}</h1>
+                  <h1 className="text-3xl md:text-4xl font-display font-bold">{getTranslatedName(product.name)}</h1>
                 </div>
 
                 <div className="space-y-2">
@@ -572,10 +575,10 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-{product.description && (
+{(getTranslatedDescription(product.description) || product.description) && (
                   <div 
                     className="prose prose-invert prose-sm max-w-none text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0 [&>p:empty]:hidden [&>h2]:text-foreground [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:mt-6 [&>h2]:mb-3 [&>h3]:text-foreground [&>h3]:text-base [&>h3]:font-medium [&>h3]:mt-5 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>hr]:border-border [&>hr]:my-6 [&_li]:mb-1 [&_li:empty]:hidden [&_li_br]:hidden [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80 [&_a]:transition-colors"
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(getTranslatedDescription(product.description) || product.description) }}
                   />
                 )}
 
