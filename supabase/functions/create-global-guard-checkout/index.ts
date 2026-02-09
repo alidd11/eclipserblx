@@ -12,7 +12,7 @@ const GLOBAL_GUARD_PRICES = {
   monthly: "price_1SyeCoCjEHxHwNl9YROPHdNC", // £2.99/month for 2 servers
   annual: "price_TBD", // £24.99/year - needs to be created
   additionalServerEclipsePlus: "price_1SyhypCjEHxHwNl9gA3bzFls", // £1.00/month per extra server (Eclipse+ members)
-  additionalServerStandard: "price_1SyhypCjEHxHwNl9gA3bzFls", // £1.50/month per extra server (non-Eclipse+ members) - TODO: Create new price in Stripe
+  additionalServerStandard: "price_1SyjeZCjEHxHwNl9gWiP3gqd", // £1.50/month per extra server (non-Eclipse+ members)
 };
 
 const logStep = (step: string, details?: unknown) => {
