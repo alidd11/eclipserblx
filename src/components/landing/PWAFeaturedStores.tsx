@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface FeaturedStore {
   id: string;
@@ -20,7 +21,7 @@ interface FeaturedStore {
   average_rating: number | null;
 }
 
-const SLIDE_INTERVAL = 8000; // 8 seconds
+const SLIDE_INTERVAL = 8000;
 
 function useAlgorithmicStores() {
   return useQuery({
@@ -35,11 +36,8 @@ function useAlgorithmicStores() {
         .order('is_verified', { ascending: false })
         .order('follower_count', { ascending: false, nullsFirst: false })
         .limit(8);
-
       if (error) throw error;
-      
       const stores = data as FeaturedStore[];
-      
       const scored = stores.map(store => ({
         ...store,
         score: 
@@ -49,22 +47,20 @@ function useAlgorithmicStores() {
           (store.average_rating || 0) * 10 +
           Math.random() * 20
       }));
-      
-      return scored
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 6);
+      return scored.sort((a, b) => b.score - a.score).slice(0, 6);
     },
     staleTime: 1000 * 60 * 2,
   });
 }
 
 function StoreCard({ store }: { store: FeaturedStore }) {
+  const { t } = useTranslation();
+  
   return (
     <Link 
       to={`/store/${store.slug}`}
       className="group relative block rounded-2xl overflow-hidden border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg active:scale-[0.98]"
     >
-      {/* Banner */}
       <div className="relative h-24 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
@@ -75,47 +71,34 @@ function StoreCard({ store }: { store: FeaturedStore }) {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
-        
-        {/* Badges */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
           {store.is_trusted && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/90 text-white text-[10px] font-medium backdrop-blur-sm">
               <Award className="h-3 w-3" />
-              Trusted
+              {t('landing.trusted')}
             </span>
           )}
           {store.is_verified && !store.is_trusted && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/90 text-white text-[10px] font-medium backdrop-blur-sm">
               <ShieldCheck className="h-3 w-3" />
-              Verified
+              {t('landing.verified')}
             </span>
           )}
         </div>
       </div>
-      
-      {/* Content */}
       <div className="relative px-4 pb-4 -mt-6">
-        {/* Logo */}
         <div className="w-14 h-14 rounded-xl bg-card border-2 border-card overflow-hidden shadow-lg mb-3">
           {store.logo_url ? (
-            <img 
-              src={store.logo_url} 
-              alt={store.name}
-              className="w-full h-full object-cover"
-            />
+            <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xl font-bold bg-muted text-muted-foreground">
               {store.name.charAt(0)}
             </div>
           )}
         </div>
-        
-        {/* Store Info */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-foreground truncate pr-2">
-              {store.name}
-            </h3>
+            <h3 className="font-semibold text-base text-foreground truncate pr-2">{store.name}</h3>
             {store.average_rating && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
                 <span className="text-amber-500">★</span>
@@ -123,17 +106,12 @@ function StoreCard({ store }: { store: FeaturedStore }) {
               </span>
             )}
           </div>
-          
           {store.description && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-              {store.description}
-            </p>
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{store.description}</p>
           )}
         </div>
-        
-        {/* View Store Link */}
         <div className="flex items-center justify-end mt-3 text-xs text-primary font-medium">
-          <span className="group-hover:underline">View Store</span>
+          <span className="group-hover:underline">{t('landing.viewStore')}</span>
           <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </div>
       </div>
@@ -156,6 +134,7 @@ function StoreSkeleton() {
 }
 
 export function PWAFeaturedStores() {
+  const { t } = useTranslation();
   const { data: stores, isLoading } = useAlgorithmicStores();
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -178,12 +157,9 @@ export function PWAFeaturedStores() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Featured Stores</h3>
-        <Link 
-          to="/stores" 
-          className="text-xs text-primary hover:underline flex items-center gap-0.5"
-        >
-          View all
+        <h3 className="text-sm font-semibold text-foreground">{t('landing.featuredStores')}</h3>
+        <Link to="/stores" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+          {t('landing.viewAll')}
           <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -192,20 +168,16 @@ export function PWAFeaturedStores() {
         {isLoading ? (
           <StoreSkeleton />
         ) : currentStore ? (
-          <div 
-            key={currentStore.id}
-            className="animate-fade-in"
-          >
+          <div key={currentStore.id} className="animate-fade-in">
             <StoreCard store={currentStore} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
-            No stores available
+            {t('landing.noStoresAvailable')}
           </p>
         )}
       </div>
 
-      {/* Slide indicators */}
       {totalSlides > 1 && (
         <div className="flex items-center justify-center gap-1.5 pt-1">
           {Array.from({ length: totalSlides }).map((_, i) => (
@@ -214,9 +186,7 @@ export function PWAFeaturedStores() {
               onClick={() => setCurrentSlide(i)}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
-                i === currentSlide
-                  ? "w-4 bg-primary"
-                  : "w-1.5 bg-muted-foreground/30"
+                i === currentSlide ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/30"
               )}
               aria-label={`Go to slide ${i + 1}`}
             />

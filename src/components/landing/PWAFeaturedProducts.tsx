@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslation } from 'react-i18next';
 
 interface FeaturedProduct {
   id: string;
@@ -127,17 +128,18 @@ function ProductSkeleton() {
 }
 
 export function PWAFeaturedProducts() {
+  const { t } = useTranslation();
   const { data: products, isLoading } = useAlgorithmicProducts();
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Featured Products</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('landing.featuredProducts')}</h3>
         <Link 
           to="/products" 
           className="text-xs text-primary hover:underline flex items-center gap-0.5"
         >
-          View all
+          {t('landing.viewAll')}
           <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -153,7 +155,7 @@ export function PWAFeaturedProducts() {
           ))
         ) : (
           <p className="col-span-2 text-sm text-muted-foreground text-center py-4">
-            No products available
+            {t('landing.noProductsAvailable')}
           </p>
         )}
       </div>
