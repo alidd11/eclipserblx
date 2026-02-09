@@ -28,8 +28,8 @@ export default function GlobalGuardServers() {
         <TierBadge isPremium={isPremium} />
       </div>
       
-      {/* Upgrade Banner for Free Users - only show after limits have loaded */}
-      {!isLoadingLimits && !isPremium && servers.length > (maxServers ?? 1) && (
+      {/* Upgrade Banner - show for free users at limit OR anyone who might want more servers */}
+      {!isLoadingLimits && (
         <div className="mb-6">
           <UpgradeBanner 
             currentServers={servers.length} 

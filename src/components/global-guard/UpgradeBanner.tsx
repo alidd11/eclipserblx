@@ -22,8 +22,9 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
   const basePrice = 2.99;
   // Eclipse+ members get £1.00/server, non-members pay £1.50/server
   const additionalPrice = isSubscribed ? 1.00 : 1.50;
+  const includedServers = isSubscribed ? 3 : 2; // Eclipse+ gets 3 included, others get 2
   const totalPrice = basePrice + (additionalServers * additionalPrice);
-  const totalServers = 2 + additionalServers;
+  const totalServers = includedServers + additionalServers;
 
   const handleSubscribe = async () => {
     setIsLoading(true);
@@ -92,7 +93,9 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
           <div className="flex items-center justify-between">
             <div>
               <span className="font-medium">Base Plan</span>
-              <span className="text-xs text-muted-foreground ml-2">(2 servers included)</span>
+              <span className="text-xs text-muted-foreground ml-2">
+                ({includedServers} servers included{isSubscribed && ' - Eclipse+ bonus'})
+              </span>
             </div>
             <span className="font-semibold">£{basePrice.toFixed(2)}/mo</span>
           </div>
