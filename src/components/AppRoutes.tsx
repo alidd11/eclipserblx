@@ -10,6 +10,9 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
+// Lazy loaded - Discord OAuth callback
+const AuthDiscordCallback = lazy(() => import("@/pages/AuthDiscordCallback"));
+
 // Lazy loaded - user pages
 const Account = lazy(() => import("@/pages/Account"));
 const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
@@ -188,6 +191,7 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/discord/callback" element={<AuthDiscordCallback />} />
         <Route path="/account" element={<Account />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/purchases" element={<MyPurchases />} />
