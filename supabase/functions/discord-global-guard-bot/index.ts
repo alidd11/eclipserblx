@@ -159,6 +159,43 @@ Deno.serve(async (req) => {
 
     const tierInfo = limits?.[0] || { is_premium: false, max_servers: 2 };
 
+    // Rate limiting for free tier users (20 commands per 24 hours)
+    const FREE_TIER_LIMIT = 20;
+    const RATE_LIMIT_WINDOW = 1440; // 24 hours in minutes
+    
+    if (!tierInfo.is_premium) {
+      const { data: canProceed } = await supabase.rpc("check_rate_limit", {
+        p_identifier: `gg_${discordUserId}`,
+        p_action_type: "global_guard_command",
+        p_max_requests: FREE_TIER_LIMIT,
+        p_window_minutes: RATE_LIMIT_WINDOW,
+      });
+
+      if (!canProceed) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "⏱️ Daily Limit Reached",
+                description: `You've used all **${FREE_TIER_LIMIT} commands** for today.\n\nUpgrade to **Eclipse+** for unlimited commands!`,
+                color: COLORS.WARNING,
+                footer: { text: "Limit resets in 24 hours" },
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Record this command usage
+      await supabase.rpc("record_rate_limit", {
+        p_identifier: `gg_${discordUserId}`,
+        p_action_type: "global_guard_command",
+      });
+    }
+
     // ==================== GLOBALBAN COMMAND ====================
     if (commandName === "globalban") {
       const userInput = interaction.data.options?.find((o: any) => o.name === "user")?.value;
@@ -420,6 +457,414 @@ Deno.serve(async (req) => {
                   ? `Eclipse+ • ${bans.length} active bans` 
                   : `Free Tier • ${bans.length} active bans • 2 servers max` 
               },
+            }],
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ==================== EVIDENCE COMMAND ====================
+    if (commandName === "evidence") {
+      const userInput = interaction.data.options?.find((o: any) => o.name === "user")?.value;
+      const evidenceUrl = interaction.data.options?.find((o: any) => o.name === "url")?.value;
+      const notes = interaction.data.options?.find((o: any) => o.name === "notes")?.value;
+      const targetUserId = extractUserId(userInput);
+
+      if (!targetUserId) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Invalid User",
+                description: "Please provide a valid Discord user ID or mention.",
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!evidenceUrl && !notes) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ No Evidence Provided",
+                description: "Please provide at least a URL or notes.",
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Find active ban
+      const { data: ban, error: findError } = await supabase
+        .from("global_bans")
+        .select("*")
+        .eq("owner_user_id", profile.user_id)
+        .eq("banned_discord_id", targetUserId)
+        .eq("is_active", true)
+        .single();
+
+      if (findError || !ban) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ No Active Ban",
+                description: `No active global ban found for user ID \`${targetUserId}\`.`,
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Update ban with evidence
+      const currentEvidence = ban.evidence || [];
+      const newEvidence = {
+        url: evidenceUrl || null,
+        notes: notes || null,
+        added_at: new Date().toISOString(),
+        added_by: discordUserId,
+      };
+
+      const { error: updateError } = await supabase
+        .from("global_bans")
+        .update({ 
+          evidence: [...currentEvidence, newEvidence],
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", ban.id);
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Update Failed",
+                description: updateError.message,
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: "📎 Evidence Added",
+              description: `Evidence added to ban for **${ban.banned_username}**.`,
+              color: COLORS.SUCCESS,
+              fields: [
+                evidenceUrl ? { name: "URL", value: evidenceUrl, inline: false } : null,
+                notes ? { name: "Notes", value: notes, inline: false } : null,
+              ].filter(Boolean),
+              footer: { text: `Total evidence: ${currentEvidence.length + 1} items` },
+            }],
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ==================== BANINFO COMMAND ====================
+    if (commandName === "baninfo") {
+      const userInput = interaction.data.options?.find((o: any) => o.name === "user")?.value;
+      const targetUserId = extractUserId(userInput);
+
+      if (!targetUserId) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Invalid User",
+                description: "Please provide a valid Discord user ID or mention.",
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: ban } = await supabase
+        .from("global_bans")
+        .select("*")
+        .eq("owner_user_id", profile.user_id)
+        .eq("banned_discord_id", targetUserId)
+        .eq("is_active", true)
+        .single();
+
+      if (!ban) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "ℹ️ No Active Ban",
+                description: `No active global ban found for \`${targetUserId}\`.`,
+                color: COLORS.PRIMARY,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const evidenceCount = ban.evidence?.length || 0;
+      const fields = [
+        { name: "User ID", value: ban.banned_discord_id, inline: true },
+        { name: "Username", value: ban.banned_username || "Unknown", inline: true },
+        { name: "Type", value: ban.ban_type === "permanent" ? "Permanent" : "Temporary", inline: true },
+        { name: "Reason", value: ban.reason || "No reason provided", inline: false },
+        { name: "Created", value: `<t:${Math.floor(new Date(ban.created_at).getTime() / 1000)}:R>`, inline: true },
+        ban.expires_at ? { name: "Expires", value: `<t:${Math.floor(new Date(ban.expires_at).getTime() / 1000)}:R>`, inline: true } : null,
+        { name: "Evidence", value: `${evidenceCount} item(s)`, inline: true },
+        { name: "Created Via", value: ban.created_via || "dashboard", inline: true },
+      ].filter(Boolean);
+
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: `🛡️ Ban Info: ${ban.banned_username}`,
+              color: COLORS.PRIMARY,
+              thumbnail: ban.banned_avatar_url ? { url: ban.banned_avatar_url } : undefined,
+              fields,
+              footer: { text: `Ban ID: ${ban.id.slice(0, 8)}` },
+            }],
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ==================== BANHISTORY COMMAND ====================
+    if (commandName === "banhistory") {
+      const userInput = interaction.data.options?.find((o: any) => o.name === "user")?.value;
+      const targetUserId = extractUserId(userInput);
+
+      if (!targetUserId) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Invalid User",
+                description: "Please provide a valid Discord user ID or mention.",
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: bans } = await supabase
+        .from("global_bans")
+        .select("*")
+        .eq("owner_user_id", profile.user_id)
+        .eq("banned_discord_id", targetUserId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (!bans || bans.length === 0) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "📜 Ban History",
+                description: `No ban history found for \`${targetUserId}\`.`,
+                color: COLORS.PRIMARY,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const historyList = bans.map((b, i) => {
+        const status = b.is_active ? "🟢 Active" : "⚫ Expired/Removed";
+        const date = `<t:${Math.floor(new Date(b.created_at).getTime() / 1000)}:d>`;
+        return `**${i + 1}.** ${status} • ${date}\n   └ ${b.reason?.slice(0, 40) || "No reason"}${b.reason?.length > 40 ? "..." : ""}`;
+      }).join("\n\n");
+
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: `📜 Ban History: ${bans[0]?.banned_username || targetUserId}`,
+              description: historyList,
+              color: COLORS.PRIMARY,
+              footer: { text: `${bans.length} record(s) found` },
+            }],
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ==================== IMPORTBANS COMMAND ====================
+    if (commandName === "importbans") {
+      const urlInput = interaction.data.options?.find((o: any) => o.name === "url")?.value;
+
+      if (!urlInput) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "📥 Import Bans",
+                description: "To import bans, provide a URL to a JSON file with this format:\n```json\n[\n  {\n    \"user_id\": \"123456789\",\n    \"reason\": \"Spam\"\n  }\n]\n```\nOr visit your dashboard to import via file upload.",
+                color: COLORS.PRIMARY,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      try {
+        const response = await fetch(urlInput);
+        if (!response.ok) throw new Error("Failed to fetch URL");
+        
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error("Invalid format - expected array");
+
+        let imported = 0;
+        let skipped = 0;
+
+        for (const item of data.slice(0, 50)) { // Limit to 50 at a time
+          const userId = item.user_id || item.userId || item.id;
+          if (!userId) { skipped++; continue; }
+
+          const { error } = await supabase
+            .from("global_bans")
+            .insert({
+              owner_user_id: profile.user_id,
+              banned_discord_id: String(userId),
+              banned_username: item.username || "Imported User",
+              reason: item.reason || "Imported ban",
+              ban_type: "permanent",
+              created_via: "discord_import",
+              is_active: true,
+            });
+
+          if (error) { skipped++; } else { imported++; }
+        }
+
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "📥 Import Complete",
+                description: `Successfully imported **${imported}** ban(s).\n${skipped > 0 ? `Skipped: ${skipped} (duplicates or errors)` : ""}`,
+                color: imported > 0 ? COLORS.SUCCESS : COLORS.WARNING,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (e) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "❌ Import Failed",
+                description: `Could not import bans: ${e.message}`,
+                color: COLORS.ERROR,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // ==================== EXPORTBANS COMMAND ====================
+    if (commandName === "exportbans") {
+      const { data: bans } = await supabase
+        .from("global_bans")
+        .select("banned_discord_id, banned_username, reason, ban_type, expires_at, created_at")
+        .eq("owner_user_id", profile.user_id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (!bans || bans.length === 0) {
+        return new Response(
+          JSON.stringify({
+            type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+            data: {
+              embeds: [{
+                title: "📤 Export Bans",
+                description: "You have no active bans to export.",
+                color: COLORS.PRIMARY,
+              }],
+              flags: 64,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Format for export
+      const exportData = bans.map(b => ({
+        user_id: b.banned_discord_id,
+        username: b.banned_username,
+        reason: b.reason,
+        type: b.ban_type,
+        expires_at: b.expires_at,
+        created_at: b.created_at,
+      }));
+
+      // Create a simple text representation for Discord
+      const jsonPreview = JSON.stringify(exportData.slice(0, 3), null, 2);
+      const isTruncated = bans.length > 3;
+
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: "📤 Export Bans",
+              description: `Found **${bans.length}** active ban(s).\n\n**Preview:**\n\`\`\`json\n${jsonPreview.slice(0, 800)}${isTruncated ? "\n..." : ""}\n\`\`\`\n\nVisit your dashboard for the full export file.`,
+              color: COLORS.SUCCESS,
+              footer: { text: "Full JSON export available on dashboard" },
             }],
             flags: 64,
           },
