@@ -16,6 +16,15 @@ export const supportedLanguages = [
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
 ] as const;
 
+// Read stored language synchronously to prevent flicker in PWA
+const storedLang = (() => {
+  try {
+    return localStorage.getItem('i18nextLng') || undefined;
+  } catch {
+    return undefined;
+  }
+})();
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -27,6 +36,8 @@ i18n
       fr: { translation: fr },
       de: { translation: de },
     },
+    // Set lng explicitly from localStorage to prevent async detection flicker
+    lng: storedLang && ['en', 'es', 'pt', 'fr', 'de'].includes(storedLang) ? storedLang : undefined,
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
@@ -34,6 +45,7 @@ i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
     },
   });
 

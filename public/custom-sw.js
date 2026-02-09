@@ -1,7 +1,7 @@
 // Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.0.4';
+const SW_VERSION = '1.0.5';
 const CACHE_PREFIX = 'eclipse-v';
 const OFFLINE_CACHE = 'offline-v1';
 const OFFLINE_URL = '/offline.html';

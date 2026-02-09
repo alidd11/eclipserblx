@@ -249,5 +249,27 @@
     "degraded": "Degraded Performance",
     "offline": "Service Disruption",
     "checking": "Checking Status..."
+  },
+  "offers": {
+    "activeOffers": "Active Offers",
+    "newMemberExclusive": "🎁 New Member Exclusive",
+    "daysEclipsePlusFree": "{{days}} days of Eclipse+ FREE",
+    "offerClaimed": "Offer Claimed!",
+    "claimed": "Claimed",
+    "signUpToClaim": "Sign Up to Claim",
+    "claimOffer": "Claim Offer",
+    "claiming": "Claiming...",
+    "ends": "Ends {{date}}",
+    "expires": "Expires {{date}}",
+    "minOrder": "Min. order £{{amount}}",
+    "off": "OFF",
+    "percentOff": "{{value}}% OFF",
+    "amountOff": "£{{amount}} OFF",
+    "benefits": {
+      "discount": "30% off all purchases",
+      "prioritySupport": "Priority support access",
+      "earlyAccess": "Early access to new releases",
+      "memberDiscounts": "Exclusive member discounts"
+    }
   }
 }

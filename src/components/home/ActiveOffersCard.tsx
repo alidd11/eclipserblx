@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface Promotion {
   id: string;
@@ -31,15 +32,16 @@ interface DiscountCode {
   min_order_amount: number | null;
 }
 
-const PROMO_BENEFITS = [
-  "30% off all purchases",
-  "Priority support access",
-  "Early access to new releases",
-  "Exclusive member discounts",
+const PROMO_BENEFIT_KEYS = [
+  "offers.benefits.discount",
+  "offers.benefits.prioritySupport",
+  "offers.benefits.earlyAccess",
+  "offers.benefits.memberDiscounts",
 ];
 
 export function ActiveOffersCard() {
   const { user, loading: authLoading, session } = useAuth();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [claimingPromoId, setClaimingPromoId] = useState<string | null>(null);
   const [benefitIndex, setBenefitIndex] = useState(0);
@@ -47,7 +49,7 @@ export function ActiveOffersCard() {
   // Rotate benefits every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setBenefitIndex((prev) => (prev + 1) % PROMO_BENEFITS.length);
+      setBenefitIndex((prev) => (prev + 1) % PROMO_BENEFIT_KEYS.length);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -162,9 +164,9 @@ export function ActiveOffersCard() {
 
   const formatDiscount = (code: DiscountCode) => {
     if (code.discount_type === 'percentage') {
-      return `${code.discount_value}% OFF`;
+      return t('offers.percentOff', { value: code.discount_value });
     }
-    return `£${code.discount_value.toFixed(2)} OFF`;
+    return t('offers.amountOff', { amount: code.discount_value.toFixed(2) });
   };
 
   return (
@@ -178,7 +180,7 @@ export function ActiveOffersCard() {
             <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Gift className="h-3 w-3 md:h-4 md:w-4 text-primary" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Offers</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('offers.activeOffers')}</span>
           </div>
 
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -204,15 +206,15 @@ export function ActiveOffersCard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         {isClaimed ? (
-                          <span className="font-medium text-sm text-green-600 dark:text-green-400">Offer Claimed!</span>
+                          <span className="font-medium text-sm text-green-600 dark:text-green-400">{t('offers.offerClaimed')}</span>
                         ) : (
                           <>
                             <span className="font-medium text-sm text-amber-600 dark:text-amber-400">
-                              🎁 New Member Exclusive
+                              {t('offers.newMemberExclusive')}
                             </span>
                             {promo.eclipse_plus_days && (
                               <p className="text-xs text-foreground font-medium mt-0.5">
-                                {promo.eclipse_plus_days} days of Eclipse+ FREE
+                                {t('offers.daysEclipsePlusFree', { days: promo.eclipse_plus_days })}
                               </p>
                             )}
                             {/* Sliding benefits */}
@@ -227,14 +229,14 @@ export function ActiveOffersCard() {
                                   className="text-[11px] text-muted-foreground flex items-center gap-1"
                                 >
                                   <Check className="h-3 w-3 text-amber-500 flex-shrink-0" />
-                                  {PROMO_BENEFITS[benefitIndex]}
+                                  {t(PROMO_BENEFIT_KEYS[benefitIndex])}
                                 </motion.p>
                               </AnimatePresence>
                             </div>
                             {promo.ends_at && (
                               <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
                                 <Clock className="h-3 w-3" />
-                                Ends {format(new Date(promo.ends_at), 'MMM d')}
+                                {t('offers.ends', { date: format(new Date(promo.ends_at), 'MMM d') })}
                               </div>
                             )}
                           </>
@@ -252,7 +254,7 @@ export function ActiveOffersCard() {
                           disabled
                         >
                           <Check className="h-3.5 w-3.5 mr-1.5" />
-                          Claimed
+                          {t('offers.claimed')}
                         </Button>
                       ) : !user ? (
                         <Link to="/auth" className="block">
@@ -262,7 +264,7 @@ export function ActiveOffersCard() {
                             className="w-full border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
                           >
                             <LogIn className="h-3.5 w-3.5 mr-1.5" />
-                            Sign Up to Claim
+                            {t('offers.signUpToClaim')}
                           </Button>
                         </Link>
                       ) : (
@@ -276,12 +278,12 @@ export function ActiveOffersCard() {
                           {isClaiming ? (
                             <>
                               <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                              Claiming...
+                              {t('offers.claiming')}
                             </>
                           ) : (
                             <>
                               <Gift className="h-3.5 w-3.5 mr-1.5" />
-                              Claim Offer
+                              {t('offers.claimOffer')}
                             </>
                           )}
                         </Button>
@@ -311,13 +313,13 @@ export function ActiveOffersCard() {
                     </div>
                     {code.min_order_amount && (
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Min. order £{code.min_order_amount.toFixed(2)}
+                        {t('offers.minOrder', { amount: code.min_order_amount.toFixed(2) })}
                       </p>
                     )}
                     {code.expires_at && (
                       <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        Expires {format(new Date(code.expires_at), 'MMM d')}
+                        {t('offers.expires', { date: format(new Date(code.expires_at), 'MMM d') })}
                       </div>
                     )}
                   </div>
