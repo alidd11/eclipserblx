@@ -4,6 +4,7 @@ import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, Ba
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -313,12 +314,8 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
       <div className="relative aspect-[4/3] overflow-hidden">
         {displayMedia ? (
           isVideo ? (
-            <video 
-              src={displayMedia} 
-              autoPlay
-              muted
-              loop
-              playsInline
+            <BackgroundVideo
+              src={displayMedia}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (

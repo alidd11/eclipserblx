@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { Sparkles, TrendingUp, Clock, ArrowRight, Play, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -352,12 +353,8 @@ function HeroProductCard({ product }: { product: any }) {
           {displayMedia ? (
             isVideo ? (
               <>
-                <video
+                <BackgroundVideo
                   src={displayMedia}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
