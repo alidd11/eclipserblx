@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 
 export default function GlobalGuardServers() {
   const { servers, isLoadingServers } = useGlobalGuardData();
-  const { data: limits } = useGlobalGuardLimits();
+  const { data: limits, isLoadingLimits } = useGlobalGuardLimits();
   const isPremium = limits?.isPremium ?? false;
   const maxServers = limits?.maxServers;
   
@@ -28,8 +28,8 @@ export default function GlobalGuardServers() {
         <TierBadge isPremium={isPremium} />
       </div>
       
-      {/* Upgrade Banner for Free Users */}
-      {!isPremium && servers.length > (maxServers ?? 2) && (
+      {/* Upgrade Banner for Free Users - only show after limits have loaded */}
+      {!isLoadingLimits && !isPremium && servers.length > (maxServers ?? 1) && (
         <div className="mb-6">
           <UpgradeBanner 
             currentServers={servers.length} 

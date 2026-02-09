@@ -10,7 +10,7 @@ export interface GlobalGuardLimits {
 }
 
 export function useGlobalGuardLimits() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['global-guard-limits'],
     queryFn: async (): Promise<GlobalGuardLimits> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -49,4 +49,9 @@ export function useGlobalGuardLimits() {
     },
     staleTime: 60 * 1000, // Cache for 1 minute
   });
+
+  return {
+    ...query,
+    isLoadingLimits: query.isLoading,
+  };
 }

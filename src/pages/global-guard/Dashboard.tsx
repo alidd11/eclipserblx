@@ -20,7 +20,7 @@ export default function GlobalGuardDashboard() {
     isCreatingBan 
   } = useGlobalGuardData();
 
-  const { data: limits } = useGlobalGuardLimits();
+  const { data: limits, isLoadingLimits } = useGlobalGuardLimits();
   const isPremium = limits?.isPremium ?? false;
 
   // Show only the 5 most recent bans on dashboard
@@ -33,8 +33,8 @@ export default function GlobalGuardDashboard() {
         <TierBadge isPremium={isPremium} />
       </div>
       
-      {/* Upgrade Banner for Free Users */}
-      {!isPremium && (
+      {/* Upgrade Banner for Free Users - only show after limits have loaded */}
+      {!isLoadingLimits && !isPremium && (
         <div className="mb-6">
           <UpgradeBanner 
             currentServers={servers.length} 
