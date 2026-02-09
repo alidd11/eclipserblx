@@ -21,6 +21,7 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface FAQItem {
   question: string;
@@ -29,7 +30,7 @@ interface FAQItem {
 
 interface FAQCategory {
   icon: React.ElementType;
-  title: string;
+  titleKey: string;
   color: string;
   items: FAQItem[];
 }
@@ -37,7 +38,7 @@ interface FAQCategory {
 const faqCategories: FAQCategory[] = [
   {
     icon: ShoppingBag,
-    title: 'Orders & Purchases',
+    titleKey: 'faq.ordersAndPurchases',
     color: 'text-blue-500',
     items: [
       {
@@ -56,7 +57,7 @@ const faqCategories: FAQCategory[] = [
   },
   {
     icon: Download,
-    title: 'Downloads',
+    titleKey: 'faq.downloads',
     color: 'text-green-500',
     items: [
       {
@@ -79,7 +80,7 @@ const faqCategories: FAQCategory[] = [
   },
   {
     icon: CreditCard,
-    title: 'Payments & Billing',
+    titleKey: 'faq.paymentsBilling',
     color: 'text-purple-500',
     items: [
       {
@@ -102,7 +103,7 @@ const faqCategories: FAQCategory[] = [
   },
   {
     icon: RefreshCw,
-    title: 'Refunds & Returns',
+    titleKey: 'faq.refundsReturns',
     color: 'text-orange-500',
     items: [
       {
@@ -121,7 +122,7 @@ const faqCategories: FAQCategory[] = [
   },
   {
     icon: Bot,
-    title: 'Discord Bots',
+    titleKey: 'faq.discordBots',
     color: 'text-indigo-500',
     items: [
       {
@@ -144,7 +145,7 @@ const faqCategories: FAQCategory[] = [
   },
   {
     icon: Shield,
-    title: 'Account & Security',
+    titleKey: 'faq.accountSecurity',
     color: 'text-red-500',
     items: [
       {
@@ -167,7 +168,7 @@ const faqCategories: FAQCategory[] = [
   },
   {
     icon: ShoppingBag,
-    title: 'Selling on Eclipse',
+    titleKey: 'faq.sellingOnEclipse',
     color: 'text-primary',
     items: [
       {
@@ -222,6 +223,7 @@ function FAQAccordionItem({ item, isOpen, onToggle }: { item: FAQItem; isOpen: b
 }
 
 function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; searchQuery: string }) {
+  const { t } = useTranslation();
   const [openItems, setOpenItems] = useState<Set<number>>(new Set());
 
   const filteredItems = category.items.filter(
@@ -252,7 +254,7 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
         <div className={cn("p-2.5 rounded-lg bg-background", category.color)}>
           <Icon className="h-5 w-5" />
         </div>
-        <h2 className="text-lg font-semibold">{category.title}</h2>
+        <h2 className="text-lg font-semibold">{t(category.titleKey)}</h2>
       </div>
       <div className="px-5">
         {filteredItems.map((item, index) => (
@@ -270,6 +272,7 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
 
 export default function FAQ() {
   usePageTracking({ pagePath: '/faq' });
+  const { t } = useTranslation();
   const { discordUrl } = useDiscordUrl();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -286,18 +289,17 @@ export default function FAQ() {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        {/* Header with Search */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-display font-bold mb-4">Frequently Asked Questions</h1>
+          <h1 className="text-4xl font-display font-bold mb-4">{t('faq.title')}</h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Find answers to common questions about {SITE_NAME}
+            {t('faq.subtitle', { siteName: SITE_NAME })}
           </p>
           
           <div className="relative max-w-xl mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search questions..."
+              placeholder={t('faq.searchQuestions')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 h-12 text-base bg-muted/50 border-border"
@@ -306,12 +308,11 @@ export default function FAQ() {
           
           {searchQuery && (
             <p className="mt-4 text-sm text-muted-foreground">
-              Showing {filteredCount} of {totalQuestions} questions
+              {t('faq.showingResults', { filtered: filteredCount, total: totalQuestions })}
             </p>
           )}
         </div>
 
-        {/* FAQ Categories */}
         <div className="space-y-6 mb-12">
           {faqCategories.map((category, index) => (
             <FAQCategorySection 
@@ -323,18 +324,17 @@ export default function FAQ() {
           
           {searchQuery && filteredCount === 0 && (
             <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">No results found for "{searchQuery}"</p>
-              <p className="text-sm mt-2">Try a different search term or contact support</p>
+              <p className="text-lg">{t('faq.noResults', { query: searchQuery })}</p>
+              <p className="text-sm mt-2">{t('faq.noResultsHint')}</p>
             </div>
           )}
         </div>
 
-        {/* Contact Options */}
         <div className="bg-muted/30 rounded-xl p-8">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-display font-semibold mb-2">Still have questions?</h2>
+            <h2 className="text-xl font-display font-semibold mb-2">{t('faq.stillHaveQuestions')}</h2>
             <p className="text-muted-foreground">
-              Our support team is ready to assist you
+              {t('faq.supportReady')}
             </p>
           </div>
           
@@ -348,8 +348,8 @@ export default function FAQ() {
               }}
             >
               <MessageCircle className="h-5 w-5" />
-              <span className="font-medium">Live Chat</span>
-              <span className="text-xs text-muted-foreground">Mon-Sat, 9AM-7PM</span>
+              <span className="font-medium">{t('faq.liveChat')}</span>
+              <span className="text-xs text-muted-foreground">{t('faq.liveChatHours')}</span>
             </Button>
             
             <Button
@@ -359,9 +359,9 @@ export default function FAQ() {
             >
               <a href={discordUrl} target="_blank" rel="noopener noreferrer">
                 <Users className="h-5 w-5" />
-                <span className="font-medium">Discord</span>
+                <span className="font-medium">{t('faq.discord')}</span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  Community support <ExternalLink className="h-3 w-3" />
+                  {t('faq.communitySupport')} <ExternalLink className="h-3 w-3" />
                 </span>
               </a>
             </Button>
@@ -373,8 +373,8 @@ export default function FAQ() {
             >
               <Link to="/support">
                 <ChevronRight className="h-5 w-5" />
-                <span className="font-medium">Support Centre</span>
-                <span className="text-xs text-muted-foreground">Browse help topics</span>
+                <span className="font-medium">{t('faq.supportCentre')}</span>
+                <span className="text-xs text-muted-foreground">{t('faq.browseHelp')}</span>
               </Link>
             </Button>
           </div>
