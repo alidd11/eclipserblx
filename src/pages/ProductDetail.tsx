@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Download, Shield, Zap, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Store as StoreIcon, Flag } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
-import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
+
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
 import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
 import { useCart, CartItem } from '@/hooks/useCart';
@@ -421,67 +421,6 @@ export default function ProductDetail() {
                 </div>
               )}
               
-              {/* Store info + Rating overlay at bottom of image */}
-              {product.stores && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-8 z-10">
-                  <div className="flex items-center justify-between gap-2">
-                    {/* Store info */}
-                    <Link 
-                      to={`/store/${product.stores.slug}`}
-                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {product.stores.logo_url ? (
-                        <img 
-                          src={product.stores.logo_url} 
-                          alt={product.stores.name}
-                          className="h-8 w-8 rounded-lg object-contain bg-white/10 flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                          <StoreIcon className="h-4 w-4 text-white/70" />
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm text-white font-medium truncate max-w-[150px]">
-                          {product.stores.name}
-                        </span>
-                        {product.stores.is_verified && (
-                          <BadgeCheck className="h-4 w-4 text-blue-400 flex-shrink-0" />
-                        )}
-                        {product.stores.is_trusted && (
-                          <Shield className="h-4 w-4 text-amber-400 flex-shrink-0" />
-                        )}
-                      </div>
-                    </Link>
-                    
-                    {/* Rating display */}
-                    {reviewCount > 0 && averageRating !== null && (
-                      <div className="flex items-center gap-1 text-white">
-                        <div className="flex items-center gap-0.5">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={cn(
-                                "h-4 w-4",
-                                star <= Math.round(averageRating)
-                                  ? "fill-amber-400 text-amber-400"
-                                  : "fill-transparent text-white/40"
-                              )}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm font-medium ml-1">
-                          {averageRating.toFixed(1)}
-                        </span>
-                        <span className="text-xs text-white/70">
-                          ({reviewCount})
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
               
               {/* Pagination dots - positioned above the store overlay */}
               {images.length > 1 && (
@@ -553,10 +492,6 @@ export default function ProductDetail() {
               </div>
             )}
             
-            {/* Store Details Card - below thumbnails, matching gallery width */}
-            {product.stores && (
-              <StoreDetailsCard store={product.stores} className="w-full" />
-            )}
           </div>
 
           {/* Details */}
@@ -695,31 +630,6 @@ export default function ProductDetail() {
               </CardContent>
             </Card>
 
-            {/* Trust badges */}
-            <Card className="bg-card border-border">
-              <CardContent className="py-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                      <Download className="h-5 w-5 text-primary" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Instant Download</p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                      <Shield className="h-5 w-5 text-primary" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Secure Payment</p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                      <Zap className="h-5 w-5 text-primary" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">24/7 Support</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Report IP Violation */}
             <Button
