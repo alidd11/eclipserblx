@@ -56,6 +56,70 @@ const commands = [
     name: "globalbans",
     description: "View your active global bans",
   },
+  {
+    name: "evidence",
+    description: "Add evidence to an existing global ban",
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention of the banned user",
+        type: 3, // STRING
+        required: true,
+      },
+      {
+        name: "url",
+        description: "URL to evidence (screenshot, video, etc.)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "notes",
+        description: "Additional notes about the evidence",
+        type: 3, // STRING
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "baninfo",
+    description: "View detailed information about a user's ban",
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention",
+        type: 3, // STRING
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "banhistory",
+    description: "View a user's ban history across your servers",
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention",
+        type: 3, // STRING
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "importbans",
+    description: "Import bans from a JSON URL or paste",
+    options: [
+      {
+        name: "url",
+        description: "URL to a JSON file with ban data",
+        type: 3, // STRING
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "exportbans",
+    description: "Export your global bans to JSON format",
+  },
 ];
 
 Deno.serve(async (req) => {
