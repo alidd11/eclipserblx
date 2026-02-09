@@ -32,7 +32,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
       )}>
         {/* Banner section */}
         {store.banner_url ? (
-          <div className="relative h-28 overflow-hidden">
+          <div className="relative h-20 overflow-hidden">
             <img 
               src={store.banner_url} 
               alt=""
@@ -52,7 +52,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
         )}
         
         {/* Content area - dark background */}
-        <div className="bg-black/95 p-4 space-y-3">
+        <div className="bg-black/95 px-3 py-2.5 space-y-2">
           {/* Store header */}
           <div className="flex items-center gap-3">
             {/* Store Logo - positioned to overlap banner slightly */}
