@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Shield, Store, Star, Package, ChevronRight } from 'lucide-react';
+import { BadgeCheck, Shield, Store, Star, Package } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface StoreDetailsCardProps {
@@ -10,6 +9,7 @@ interface StoreDetailsCardProps {
     name: string;
     slug: string;
     logo_url?: string | null;
+    banner_url?: string | null;
     description?: string | null;
     is_verified?: boolean;
     is_trusted?: boolean;
@@ -22,86 +22,87 @@ interface StoreDetailsCardProps {
 
 export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
   return (
-    <Card className={cn("bg-card border-border overflow-hidden", className)}>
-      {/* Accent color banner */}
-      {store.accent_color && (
-        <div 
-          className="h-2 w-full"
-          style={{ backgroundColor: store.accent_color }}
-        />
-      )}
-      
-      <CardContent className="p-4 space-y-4">
-        {/* Store header */}
-        <div className="flex items-start gap-3">
-          {/* Store Logo */}
-          {store.logo_url ? (
+    <Link to={`/store/${store.slug}`} className="block group">
+      <Card className={cn(
+        "bg-card border-border overflow-hidden relative transition-all duration-300",
+        "hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5 hover:border-primary/30",
+        className
+      )}>
+        {/* Banner background */}
+        {store.banner_url && (
+          <div className="absolute inset-0 z-0">
             <img 
-              src={store.logo_url} 
-              alt={store.name}
-              className="h-14 w-14 rounded-lg object-contain bg-background border border-border flex-shrink-0"
+              src={store.banner_url} 
+              alt=""
+              className="w-full h-full object-cover opacity-15"
             />
-          ) : (
-            <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 border border-border">
-              <Store className="h-6 w-6 text-muted-foreground" />
-            </div>
-          )}
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-display font-semibold text-lg truncate">
-                {store.name}
-              </h3>
-              {store.is_verified && (
-                <BadgeCheck className="h-4 w-4 text-blue-500 flex-shrink-0" />
-              )}
-              {store.is_trusted && (
-                <Shield className="h-4 w-4 text-amber-500 flex-shrink-0" />
-              )}
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/95 to-card/80" />
+          </div>
+        )}
+        
+        {/* Accent color top border */}
+        {store.accent_color && (
+          <div 
+            className="h-1 w-full relative z-10"
+            style={{ backgroundColor: store.accent_color }}
+          />
+        )}
+        
+        <CardContent className="p-4 space-y-3 relative z-10">
+          {/* Store header */}
+          <div className="flex items-start gap-3">
+            {/* Store Logo */}
+            {store.logo_url ? (
+              <img 
+                src={store.logo_url} 
+                alt={store.name}
+                className="h-12 w-12 rounded-lg object-contain bg-background/80 backdrop-blur-sm border border-border flex-shrink-0 group-hover:border-primary/30 transition-colors"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-lg bg-muted/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-border group-hover:border-primary/30 transition-colors">
+                <Store className="h-5 w-5 text-muted-foreground" />
+              </div>
+            )}
             
-            {store.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                {store.description}
-              </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="font-display font-semibold text-base truncate group-hover:text-primary transition-colors">
+                  {store.name}
+                </h3>
+                {store.is_verified && (
+                  <BadgeCheck className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                )}
+                {store.is_trusted && (
+                  <Shield className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                )}
+              </div>
+              
+              {store.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                  {store.description}
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {/* Store stats - inline */}
+          <div className="flex items-center gap-3 text-xs">
+            {store.product_count !== undefined && store.product_count > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Package className="h-3.5 w-3.5 text-primary" />
+                <span>{store.product_count} products</span>
+              </div>
+            )}
+            
+            {store.average_rating !== undefined && store.average_rating > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                <span>{store.average_rating.toFixed(1)}</span>
+              </div>
             )}
           </div>
-        </div>
-        
-        {/* Store stats */}
-        <div className="grid grid-cols-2 gap-2 text-center">
-          {store.product_count !== undefined && store.product_count > 0 && (
-            <div className="p-2 rounded-lg bg-muted/50">
-              <div className="flex items-center justify-center gap-1 text-primary">
-                <Package className="h-3.5 w-3.5" />
-                <span className="font-semibold text-sm">{store.product_count}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Products</p>
-            </div>
-          )}
-          
-          <div className="p-2 rounded-lg bg-muted/50">
-            <div className="flex items-center justify-center gap-1 text-amber-500">
-              <Star className="h-3.5 w-3.5 fill-current" />
-              <span className="font-semibold text-sm">
-                {store.average_rating && store.average_rating > 0 
-                  ? store.average_rating.toFixed(1) 
-                  : '—'}
-              </span>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Rating</p>
-          </div>
-        </div>
-        
-        {/* Visit store button */}
-        <Button asChild variant="outline" className="w-full group">
-          <Link to={`/store/${store.slug}`}>
-            <Store className="h-4 w-4 mr-2" />
-            Visit Store
-            <ChevronRight className="h-4 w-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
