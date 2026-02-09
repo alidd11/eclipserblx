@@ -2704,6 +2704,48 @@ export type Database = {
         }
         Relationships: []
       }
+      global_guard_guild_settings: {
+        Row: {
+          created_at: string | null
+          guild_id: string
+          id: string
+          log_bans: boolean | null
+          log_channel_id: string | null
+          log_channel_name: string | null
+          log_unbans: boolean | null
+          owner_user_id: string
+          ping_role_id: string | null
+          ping_role_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          guild_id: string
+          id?: string
+          log_bans?: boolean | null
+          log_channel_id?: string | null
+          log_channel_name?: string | null
+          log_unbans?: boolean | null
+          owner_user_id: string
+          ping_role_id?: string | null
+          ping_role_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          guild_id?: string
+          id?: string
+          log_bans?: boolean | null
+          log_channel_id?: string | null
+          log_channel_name?: string | null
+          log_unbans?: boolean | null
+          owner_user_id?: string
+          ping_role_id?: string | null
+          ping_role_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       global_guard_server_usage: {
         Row: {
           additional_servers: number

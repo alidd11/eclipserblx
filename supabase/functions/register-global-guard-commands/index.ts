@@ -177,6 +177,25 @@ const commands = [
     description: "Learn about premium benefits and upgrade options",
   },
   {
+    name: "logchannel",
+    description: "Set the channel where bans and unbans are logged",
+    options: [
+      {
+        name: "channel",
+        description: "The channel to log ban/unban events (leave empty to disable)",
+        type: 7, // CHANNEL
+        required: false,
+        channel_types: [0], // Text channels only
+      },
+      {
+        name: "ping_role",
+        description: "Role to ping when bans/unbans occur (optional)",
+        type: 8, // ROLE
+        required: false,
+      },
+    ],
+  },
+  {
     name: "help",
     description: "View all Global Guard commands and their usage",
   },
