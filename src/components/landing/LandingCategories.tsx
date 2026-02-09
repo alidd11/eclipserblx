@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 
 const categoryConfig: Record<string, { icon: typeof Car }> = {
   'vehicle-liveries': { icon: Car },
@@ -37,6 +38,7 @@ const REGIONAL_CATEGORY_SLUGS = [
 ];
 
 export function LandingCategories() {
+  const { t } = useTranslation();
   const { data: categories } = useQuery({
     queryKey: ['landing-categories'],
     queryFn: async () => {
@@ -83,10 +85,10 @@ export function LandingCategories() {
           className="text-center mb-10 sm:mb-12"
         >
           <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
-            Browse by Category
+            {t('landing.browseByCategory')}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Find exactly what you need from our curated collection of premium assets
+            {t('landing.browseByCategoryDesc')}
           </p>
         </motion.div>
 
@@ -144,7 +146,7 @@ export function LandingCategories() {
             to="/products" 
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
           >
-            View all categories
+            {t('landing.viewAllCategories')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>

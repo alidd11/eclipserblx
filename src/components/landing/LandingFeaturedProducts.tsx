@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
-// Region flag images
+import { useTranslation } from 'react-i18next';
 import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
@@ -142,6 +141,7 @@ function ProductSkeleton() {
 }
 
 export function LandingFeaturedProducts() {
+  const { t } = useTranslation();
   const { data: products, isLoading } = useQuery({
     queryKey: ['landing-featured-products'],
     queryFn: async () => {
@@ -179,15 +179,15 @@ export function LandingFeaturedProducts() {
         >
           <div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold mb-2">
-              Featured Products
+              {t('landing.featuredProducts')}
             </h2>
             <p className="text-muted-foreground">
-              Hand-picked by our team for quality and value
+              {t('landing.featuredProductsDesc')}
             </p>
           </div>
           <Link to="/products">
             <Button variant="outline" className="gap-2">
-              View All Products
+              {t('landing.viewAllProducts')}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -213,7 +213,7 @@ export function LandingFeaturedProducts() {
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              No featured products yet. Check back soon!
+              {t('landing.noFeaturedProducts')}
             </div>
           )}
         </div>
