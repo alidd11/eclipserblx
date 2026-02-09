@@ -24,31 +24,36 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
   return (
     <Link to={`/store/${store.slug}`} className="block group">
       <Card className={cn(
-        "bg-card border-border overflow-hidden relative transition-all duration-300",
+        "bg-card border-border overflow-hidden transition-all duration-300",
         "hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5 hover:border-primary/30",
         className
       )}>
-        {/* Banner background */}
-        {store.banner_url && (
-          <div className="absolute inset-0 z-0">
+        {/* Banner section */}
+        {store.banner_url ? (
+          <div className="relative h-20 overflow-hidden">
             <img 
               src={store.banner_url} 
               alt=""
-              className="w-full h-full object-cover opacity-30"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/90 to-card/70" />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+            
+            {/* Accent color accent line */}
+            {store.accent_color && (
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-0.5"
+                style={{ backgroundColor: store.accent_color }}
+              />
+            )}
           </div>
-        )}
-        
-        {/* Accent color top border */}
-        {store.accent_color && (
+        ) : store.accent_color ? (
           <div 
-            className="h-1 w-full relative z-10"
+            className="h-1 w-full"
             style={{ backgroundColor: store.accent_color }}
           />
-        )}
+        ) : null}
         
-        <CardContent className="p-4 space-y-3 relative z-10">
+        <CardContent className="p-4 space-y-3">
           {/* Store header */}
           <div className="flex items-start gap-3">
             {/* Store Logo */}
@@ -56,10 +61,10 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
               <img 
                 src={store.logo_url} 
                 alt={store.name}
-                className="h-12 w-12 rounded-lg object-contain bg-background/80 backdrop-blur-sm border border-border flex-shrink-0 group-hover:border-primary/30 transition-colors"
+                className="h-12 w-12 rounded-lg object-contain bg-background border border-border flex-shrink-0 group-hover:border-primary/30 transition-colors"
               />
             ) : (
-              <div className="h-12 w-12 rounded-lg bg-muted/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-border group-hover:border-primary/30 transition-colors">
+              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 border border-border group-hover:border-primary/30 transition-colors">
                 <Store className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
