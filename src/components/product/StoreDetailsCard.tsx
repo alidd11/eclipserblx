@@ -34,9 +34,9 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
             <img 
               src={store.banner_url} 
               alt=""
-              className="w-full h-full object-cover opacity-15"
+              className="w-full h-full object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/95 to-card/80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/90 to-card/70" />
           </div>
         )}
         
