@@ -296,5 +296,53 @@
       "earlyAccess": "Acesso antecipado a novos lançamentos",
       "memberDiscounts": "Descontos exclusivos para membros"
     }
+  },
+  "sidebar": {
+    "quickAccess": "Acesso Rápido",
+    "home": "Início",
+    "sellerDashboard": "Painel do Vendedor",
+    "myAccount": "Minha Conta",
+    "profile": "Perfil",
+    "cart": "Carrinho",
+    "wishlist": "Lista de Desejos",
+    "following": "Seguindo",
+    "purchases": "Compras",
+    "wallet": "Carteira",
+    "notifications": "Notificações",
+    "storeMessages": "Mensagens da Loja",
+    "affiliate": "Afiliado",
+    "discover": "Descobrir",
+    "featured": "Destaques",
+    "marketplace": "Marketplace",
+    "advertise": "Anunciar",
+    "browse": "Navegar",
+    "allProducts": "Todos os Produtos",
+    "categories": "Categorias",
+    "support": "Suporte",
+    "myTickets": "Meus Tickets",
+    "helpCenter": "Central de Ajuda",
+    "faq": "Perguntas Frequentes",
+    "jobs": "Vagas",
+    "discord": "Discord",
+    "signOut": "Sair"
+  },
+  "cookies": {
+    "title": "Valorizamos sua privacidade",
+    "description": "Usamos cookies para melhorar sua experiência, analisar o tráfego do site e personalizar conteúdo. Ao clicar em \"Aceitar Tudo\", você consente com o uso de cookies. Você pode gerenciar suas preferências ou saber mais em nossa",
+    "acceptAll": "Aceitar Tudo",
+    "rejectNonEssential": "Rejeitar Não Essenciais",
+    "customize": "Personalizar",
+    "preferences": "Preferências de Cookies",
+    "manageSettings": "Gerencie suas configurações de cookies",
+    "savePreferences": "Salvar Preferências",
+    "essential": "Cookies Essenciais",
+    "essentialDesc": "Necessários para o funcionamento do site. Estes cookies habilitam funcionalidades básicas como segurança e acessibilidade. Você não pode desativá-los.",
+    "analytics": "Cookies de Análise",
+    "analyticsDesc": "Nos ajudam a entender como os visitantes interagem com nosso site, coletando informações de forma anônima.",
+    "marketing": "Cookies de Marketing",
+    "marketingDesc": "Usados para rastrear visitantes em diferentes sites e exibir anúncios relevantes."
+  },
+  "search": {
+    "placeholder": "Buscar produtos, categorias..."
   }
 }

@@ -296,5 +296,53 @@
       "earlyAccess": "Acceso anticipado a nuevos lanzamientos",
       "memberDiscounts": "Descuentos exclusivos para miembros"
     }
+  },
+  "sidebar": {
+    "quickAccess": "Acceso Rápido",
+    "home": "Inicio",
+    "sellerDashboard": "Panel del Vendedor",
+    "myAccount": "Mi Cuenta",
+    "profile": "Perfil",
+    "cart": "Carrito",
+    "wishlist": "Lista de Deseos",
+    "following": "Siguiendo",
+    "purchases": "Compras",
+    "wallet": "Billetera",
+    "notifications": "Notificaciones",
+    "storeMessages": "Mensajes de Tienda",
+    "affiliate": "Afiliado",
+    "discover": "Descubrir",
+    "featured": "Destacados",
+    "marketplace": "Marketplace",
+    "advertise": "Anunciar",
+    "browse": "Explorar",
+    "allProducts": "Todos los Productos",
+    "categories": "Categorías",
+    "support": "Soporte",
+    "myTickets": "Mis Tickets",
+    "helpCenter": "Centro de Ayuda",
+    "faq": "Preguntas Frecuentes",
+    "jobs": "Empleos",
+    "discord": "Discord",
+    "signOut": "Cerrar Sesión"
+  },
+  "cookies": {
+    "title": "Valoramos tu privacidad",
+    "description": "Usamos cookies para mejorar tu experiencia, analizar el tráfico del sitio y personalizar contenido. Al hacer clic en \"Aceptar Todo\", consientes el uso de cookies. Puedes gestionar tus preferencias o saber más en nuestra",
+    "acceptAll": "Aceptar Todo",
+    "rejectNonEssential": "Rechazar No Esenciales",
+    "customize": "Personalizar",
+    "preferences": "Preferencias de Cookies",
+    "manageSettings": "Gestiona tus ajustes de cookies",
+    "savePreferences": "Guardar Preferencias",
+    "essential": "Cookies Esenciales",
+    "essentialDesc": "Necesarias para el funcionamiento del sitio web. Estas cookies habilitan funciones básicas como seguridad y accesibilidad. No puedes desactivarlas.",
+    "analytics": "Cookies de Análisis",
+    "analyticsDesc": "Nos ayudan a entender cómo los visitantes interactúan con nuestro sitio web recopilando información de forma anónima.",
+    "marketing": "Cookies de Marketing",
+    "marketingDesc": "Se usan para rastrear visitantes en diferentes sitios web y mostrar anuncios relevantes."
+  },
+  "search": {
+    "placeholder": "Buscar productos, categorías..."
   }
 }

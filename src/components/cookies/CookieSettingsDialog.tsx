@@ -12,11 +12,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
+import { useTranslation } from 'react-i18next';
 
 interface CookieCategory {
   id: 'essential' | 'analytics' | 'marketing';
-  title: string;
-  description: string;
+  titleKey: string;
+  descKey: string;
   icon: React.ReactNode;
   required?: boolean;
 }
@@ -24,34 +25,34 @@ interface CookieCategory {
 const cookieCategories: CookieCategory[] = [
   {
     id: 'essential',
-    title: 'Essential Cookies',
-    description: 'Required for the website to function properly. These cookies enable core functionality such as security, network management, and accessibility. You cannot disable these cookies.',
+    titleKey: 'cookies.essential',
+    descKey: 'cookies.essentialDesc',
     icon: <Lock className="h-5 w-5" />,
     required: true,
   },
   {
     id: 'analytics',
-    title: 'Analytics Cookies',
-    description: 'Help us understand how visitors interact with our website by collecting and reporting information anonymously. This helps us improve our website and services.',
+    titleKey: 'cookies.analytics',
+    descKey: 'cookies.analyticsDesc',
     icon: <BarChart3 className="h-5 w-5" />,
   },
   {
     id: 'marketing',
-    title: 'Marketing Cookies',
-    description: 'Used to track visitors across websites to display relevant advertisements. These cookies help us measure the effectiveness of our marketing campaigns.',
+    titleKey: 'cookies.marketing',
+    descKey: 'cookies.marketingDesc',
     icon: <Megaphone className="h-5 w-5" />,
   },
 ];
 
 export function CookieSettingsDialog() {
   const { showSettings, closeSettings, preferences, updatePreferences } = useCookieConsent();
+  const { t } = useTranslation();
   
   const [localPrefs, setLocalPrefs] = useState({
     analytics: preferences.analytics,
     marketing: preferences.marketing,
   });
 
-  // Sync local state with context preferences when dialog opens
   useEffect(() => {
     if (showSettings) {
       setLocalPrefs({
@@ -88,9 +89,9 @@ export function CookieSettingsDialog() {
               <Cookie className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle>Cookie Preferences</DialogTitle>
+              <DialogTitle>{t('cookies.preferences')}</DialogTitle>
               <DialogDescription>
-                Manage your cookie settings below
+                {t('cookies.manageSettings')}
               </DialogDescription>
             </div>
           </div>
@@ -110,7 +111,7 @@ export function CookieSettingsDialog() {
                       htmlFor={category.id} 
                       className="text-sm font-medium text-foreground"
                     >
-                      {category.title}
+                      {t(category.titleKey)}
                     </Label>
                     <Switch
                       id={category.id}
@@ -121,7 +122,7 @@ export function CookieSettingsDialog() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {category.description}
+                    {t(category.descKey)}
                   </p>
                 </div>
               </div>
@@ -131,13 +132,13 @@ export function CookieSettingsDialog() {
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={closeSettings}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="outline" onClick={handleAcceptAll}>
-            Accept All
+            {t('cookies.acceptAll')}
           </Button>
           <Button onClick={handleSave}>
-            Save Preferences
+            {t('cookies.savePreferences')}
           </Button>
         </div>
       </DialogContent>

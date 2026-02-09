@@ -296,5 +296,53 @@
       "earlyAccess": "Early access to new releases",
       "memberDiscounts": "Exclusive member discounts"
     }
+  },
+  "sidebar": {
+    "quickAccess": "Quick Access",
+    "home": "Home",
+    "sellerDashboard": "Seller Dashboard",
+    "myAccount": "My Account",
+    "profile": "Profile",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "following": "Following",
+    "purchases": "Purchases",
+    "wallet": "Wallet",
+    "notifications": "Notifications",
+    "storeMessages": "Store Messages",
+    "affiliate": "Affiliate",
+    "discover": "Discover",
+    "featured": "Featured",
+    "marketplace": "Marketplace",
+    "advertise": "Advertise",
+    "browse": "Browse",
+    "allProducts": "All Products",
+    "categories": "Categories",
+    "support": "Support",
+    "myTickets": "My Tickets",
+    "helpCenter": "Help Center",
+    "faq": "FAQ",
+    "jobs": "Jobs",
+    "discord": "Discord",
+    "signOut": "Sign Out"
+  },
+  "cookies": {
+    "title": "We value your privacy",
+    "description": "We use cookies to enhance your browsing experience, analyse site traffic, and personalise content. By clicking \"Accept All\", you consent to our use of cookies. You can manage your preferences or learn more in our",
+    "acceptAll": "Accept All",
+    "rejectNonEssential": "Reject Non-Essential",
+    "customize": "Customize",
+    "preferences": "Cookie Preferences",
+    "manageSettings": "Manage your cookie settings below",
+    "savePreferences": "Save Preferences",
+    "essential": "Essential Cookies",
+    "essentialDesc": "Required for the website to function properly. These cookies enable core functionality such as security, network management, and accessibility. You cannot disable these cookies.",
+    "analytics": "Analytics Cookies",
+    "analyticsDesc": "Help us understand how visitors interact with our website by collecting and reporting information anonymously. This helps us improve our website and services.",
+    "marketing": "Marketing Cookies",
+    "marketingDesc": "Used to track visitors across websites to display relevant advertisements. These cookies help us measure the effectiveness of our marketing campaigns."
+  },
+  "search": {
+    "placeholder": "Search products, categories..."
   }
 }
