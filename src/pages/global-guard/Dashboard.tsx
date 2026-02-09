@@ -4,6 +4,7 @@ import { BanListTable } from '@/components/global-guard/BanListTable';
 import { AddBanDialog } from '@/components/global-guard/AddBanDialog';
 import { UpgradeBanner } from '@/components/global-guard/UpgradeBanner';
 import { TierBadge } from '@/components/global-guard/TierBadge';
+import { FeatureCards } from '@/components/global-guard/FeatureCards';
 import { useGlobalGuardData } from '@/hooks/useGlobalGuardData';
 import { useGlobalGuardLimits } from '@/hooks/useGlobalGuardLimits';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,6 +83,12 @@ export default function GlobalGuardDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Feature Cards */}
+      <div className="mt-6">
+        <h3 className="text-lg font-medium text-foreground mb-4">What Global Guard Does</h3>
+        <FeatureCards />
       </div>
     </GlobalGuardLayout>
   );
