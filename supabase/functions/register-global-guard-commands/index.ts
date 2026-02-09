@@ -124,8 +124,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Register commands globally for the Global Guard bot
-    console.log("[register-global-guard-commands] Registering commands...");
+    // Register commands globally ONLY (no per-guild registration to avoid duplicates)
+    console.log("[register-global-guard-commands] Registering global commands only (no guild-specific)...");
     
     const response = await fetch(
       `https://discord.com/api/v10/applications/${clientId}/commands`,
@@ -149,16 +149,17 @@ Deno.serve(async (req) => {
     }
 
     const registeredCommands = await response.json();
-    console.log(`[register-global-guard-commands] Registered ${registeredCommands.length} commands`);
+    console.log(`[register-global-guard-commands] Registered ${registeredCommands.length} global commands`);
 
-    // Also register to specific guilds for instant availability
-    const guildResults: any[] = [];
+    // Clear any existing guild-specific commands to prevent duplicates
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const clearedGuilds: string[] = [];
 
-    // 1) Always register to the main Eclipse guild (instant)
+    // Clear from main Eclipse guild
     const mainGuildId = Deno.env.get("DISCORD_GUILD_ID");
     if (mainGuildId) {
       try {
-        const mainGuildRes = await fetch(
+        const clearRes = await fetch(
           `https://discord.com/api/v10/applications/${clientId}/guilds/${mainGuildId}/commands`,
           {
             method: "PUT",
@@ -166,27 +167,21 @@ Deno.serve(async (req) => {
               Authorization: `Bot ${botToken}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(commands),
+            body: JSON.stringify([]), // Empty array clears all guild commands
           }
         );
-
-        if (mainGuildRes.ok) {
-          guildResults.push({ guild_id: mainGuildId, status: "success", source: "main_guild" });
+        if (clearRes.ok) {
+          clearedGuilds.push(mainGuildId);
+          console.log(`[register-global-guard-commands] Cleared guild commands from main guild ${mainGuildId}`);
         } else {
-          const errorText = await mainGuildRes.text();
-          console.warn(`[register-global-guard-commands] Main guild registration failed:`, errorText);
-          guildResults.push({ guild_id: mainGuildId, status: "failed", source: "main_guild", details: errorText });
+          console.warn(`[register-global-guard-commands] Could not clear main guild:`, await clearRes.text());
         }
       } catch (e) {
-        console.warn(`[register-global-guard-commands] Main guild registration error:`, e);
-        guildResults.push({ guild_id: mainGuildId, status: "error", source: "main_guild" });
+        console.warn(`[register-global-guard-commands] Error clearing main guild:`, e);
       }
     }
 
-    // 2) Register to any guilds where a license indicates an install
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get all guilds where Global Guard bot is installed
+    // Clear from any licensed guilds
     const { data: installations } = await supabase
       .from("bot_installation_codes")
       .select("guild_id")
@@ -197,7 +192,7 @@ Deno.serve(async (req) => {
       for (const install of installations) {
         if (install.guild_id && install.guild_id !== mainGuildId) {
           try {
-            const guildRes = await fetch(
+            const clearRes = await fetch(
               `https://discord.com/api/v10/applications/${clientId}/guilds/${install.guild_id}/commands`,
               {
                 method: "PUT",
@@ -205,20 +200,15 @@ Deno.serve(async (req) => {
                   Authorization: `Bot ${botToken}`,
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify(commands),
+                body: JSON.stringify([]),
               }
             );
-
-            if (guildRes.ok) {
-              guildResults.push({ guild_id: install.guild_id, status: "success", source: "licensed_install" });
-            } else {
-              const errorText = await guildRes.text();
-              console.warn(`[register-global-guard-commands] Failed for guild ${install.guild_id}:`, errorText);
-              guildResults.push({ guild_id: install.guild_id, status: "failed", source: "licensed_install", details: errorText });
+            if (clearRes.ok) {
+              clearedGuilds.push(install.guild_id);
+              console.log(`[register-global-guard-commands] Cleared guild commands from ${install.guild_id}`);
             }
           } catch (e) {
-            console.warn(`[register-global-guard-commands] Error for guild ${install.guild_id}:`, e);
-            guildResults.push({ guild_id: install.guild_id, status: "error", source: "licensed_install" });
+            console.warn(`[register-global-guard-commands] Error clearing guild ${install.guild_id}:`, e);
           }
         }
       }
@@ -227,9 +217,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Global Guard commands registered",
+        message: "Global Guard commands registered globally only (no duplicates). May take up to 1 hour to propagate.",
         global_commands: registeredCommands.map((c: any) => ({ name: c.name, id: c.id })),
-        guild_registrations: guildResults.length,
+        cleared_guild_commands: clearedGuilds.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
