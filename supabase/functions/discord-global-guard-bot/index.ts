@@ -196,8 +196,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ==================== GLOBALBAN COMMAND ====================
-    if (commandName === "globalban") {
+    // ==================== BAN / GLOBALBAN COMMAND ====================
+    if (commandName === "globalban" || commandName === "ban") {
       const userInput = interaction.data.options?.find((o: any) => o.name === "user")?.value;
       const reason = interaction.data.options?.find((o: any) => o.name === "reason")?.value || "No reason provided";
       const duration = interaction.data.options?.find((o: any) => o.name === "duration")?.value;
@@ -313,8 +313,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ==================== GLOBALUNBAN COMMAND ====================
-    if (commandName === "globalunban") {
+    // ==================== UNBAN / GLOBALUNBAN COMMAND ====================
+    if (commandName === "globalunban" || commandName === "unban") {
       const userInput = interaction.data.options?.find((o: any) => o.name === "user")?.value;
       const targetUserId = extractUserId(userInput);
 
@@ -409,8 +409,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ==================== GLOBALBANS COMMAND ====================
-    if (commandName === "globalbans") {
+    // ==================== BANS / GLOBALBANS COMMAND ====================
+    if (commandName === "globalbans" || commandName === "bans") {
       const { data: bans, error: bansError } = await supabase
         .from("global_bans")
         .select("*")
@@ -940,12 +940,52 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ==================== HELP COMMAND ====================
+    if (commandName === "help") {
+      return new Response(
+        JSON.stringify({
+          type: RESPONSE_TYPE.CHANNEL_MESSAGE,
+          data: {
+            embeds: [{
+              title: "🛡️ Global Guard Commands",
+              description: "Cross-server ban management made easy.",
+              color: COLORS.PRIMARY,
+              fields: [
+                {
+                  name: "⚔️ Ban Management",
+                  value: "`/ban` `/unban` - Quick ban/unban\n`/bans` - View your active bans\n`/baninfo` `/banhistory` - User info",
+                  inline: false,
+                },
+                {
+                  name: "📎 Evidence & Import",
+                  value: "`/evidence` - Add proof to a ban\n`/importbans` - Import from JSON\n`/exportbans` - Export your bans",
+                  inline: false,
+                },
+                {
+                  name: "⚙️ Account",
+                  value: "`/dashboard` - Open web dashboard\n`/upgrade` - View premium benefits",
+                  inline: false,
+                },
+              ],
+              footer: { 
+                text: tierInfo.is_premium 
+                  ? "Eclipse+ Member • Unlimited Commands" 
+                  : `Free Tier • ${FREE_TIER_LIMIT - 1} commands remaining today` 
+              },
+            }],
+            flags: 64,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Unknown command
     return new Response(
       JSON.stringify({
         type: RESPONSE_TYPE.CHANNEL_MESSAGE,
         data: {
-          content: "Unknown command.",
+          content: "Unknown command. Use `/help` to see available commands.",
           flags: 64,
         },
       }),
