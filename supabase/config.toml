@@ -331,3 +331,9 @@ verify_jwt = false
 
 [functions.generate-global-guard-branding]
 verify_jwt = false
+
+[functions.create-global-guard-checkout]
+verify_jwt = false
+
+[functions.update-global-guard-servers]
+verify_jwt = false

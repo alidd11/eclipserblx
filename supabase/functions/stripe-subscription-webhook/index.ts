@@ -70,11 +70,15 @@ serve(async (req) => {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
       
+      // Check if this is a Global Guard subscription
+      const isGlobalGuard = subscription.metadata?.product_type === 'global_guard';
+      
       logStep("Processing subscription event", { 
         type: event.type, 
         subscriptionId: subscription.id,
         customerId,
-        status: subscription.status 
+        status: subscription.status,
+        isGlobalGuard,
       });
 
       // Get customer email to find user
@@ -89,7 +93,7 @@ serve(async (req) => {
       }
 
       if (!customerEmail) {
-        logStep("No customer email found, skipping Discord webhook");
+        logStep("No customer email found, skipping");
         return new Response(JSON.stringify({ received: true }), {
           headers: { "Content-Type": "application/json" },
           status: 200,
@@ -112,6 +116,15 @@ serve(async (req) => {
       }
 
       const userId = profile.user_id;
+      
+      // Handle Global Guard subscriptions separately
+      if (isGlobalGuard) {
+        await handleGlobalGuardSubscription(supabaseAdmin, subscription, userId, event.type);
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
       
       // Determine what Discord event to send based on subscription status
       let discordEvent: 'subscription_activated' | 'subscription_deactivated' | null = null;
@@ -229,6 +242,90 @@ serve(async (req) => {
   }
 });
 
+// Handle Global Guard subscription events
+async function handleGlobalGuardSubscription(
+  supabase: any,
+  subscription: Stripe.Subscription,
+  userId: string,
+  eventType: string
+) {
+  const additionalServers = parseInt(subscription.metadata?.additional_servers || '0');
+  
+  logStep("Handling Global Guard subscription", { 
+    userId, 
+    subscriptionId: subscription.id,
+    status: subscription.status,
+    additionalServers,
+  });
+  
+  if (eventType === "customer.subscription.created" || 
+      (eventType === "customer.subscription.updated" && subscription.status === "active")) {
+    
+    // Create or update usage record
+    const { error } = await supabase
+      .from('global_guard_server_usage')
+      .upsert({
+        user_id: userId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: subscription.customer as string,
+        base_servers: 2,
+        additional_servers: additionalServers,
+        current_server_count: 0,
+        billing_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+        billing_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        status: 'active',
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id',
+      });
+    
+    if (error) {
+      logStep("Failed to update Global Guard usage", { error: error.message });
+    } else {
+      logStep("Global Guard subscription activated", { userId, additionalServers });
+      
+      // Create notification
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          title: "🛡️ Global Guard Activated!",
+          message: `Your Global Guard subscription is now active with ${2 + additionalServers} server slots.`,
+          type: "general",
+        });
+    }
+    
+  } else if (eventType === "customer.subscription.deleted" || 
+             ["canceled", "unpaid", "past_due"].includes(subscription.status)) {
+    
+    // Mark subscription as inactive
+    const { error } = await supabase
+      .from('global_guard_server_usage')
+      .update({
+        status: subscription.status === "canceled" ? 'canceled' : 
+                subscription.status === "past_due" ? 'past_due' : 'inactive',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+    
+    if (error) {
+      logStep("Failed to deactivate Global Guard", { error: error.message });
+    } else {
+      logStep("Global Guard subscription deactivated", { userId, status: subscription.status });
+      
+      // Create notification
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          title: "⚠️ Global Guard Subscription Ended",
+          message: "Your Global Guard subscription has ended. Resubscribe to continue syncing bans.",
+          type: "general",
+        });
+    }
+  }
+}
+
 // Grant Eclipse+ £10 credit bonus on first subscription
 async function grantEclipsePlusCreditBonus(
   supabase: any,
@@ -255,6 +352,14 @@ async function grantEclipsePlusCreditBonus(
           title: "🎁 Welcome to Eclipse+!",
           message: "You've received £10 in store credit as a welcome bonus. Enjoy shopping!",
           type: "general",
+        });
+    } else {
+      console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] User ${userId} already claimed Eclipse+ bonus`);
+    }
+  } catch (e) {
+    console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Failed to grant credit bonus: ${String(e)}`);
+  }
+}
         });
     } else {
       console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] User ${userId} already claimed Eclipse+ bonus`);
