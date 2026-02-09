@@ -90,30 +90,19 @@ export function useCredits() {
     fetchBalance();
   }, [fetchBalance]);
 
-  const purchaseCredits = useCallback(async (amount: number) => {
+  // Returns true to signal the caller should open the embedded payment modal
+  const purchaseCredits = useCallback(async (amount: number): Promise<{ openModal: true; amount: number }> => {
     if (!user) {
       throw new Error('You must be logged in to purchase credits');
     }
 
-    try {
-      const { data, error } = await supabase.functions.invoke('create-credit-checkout', {
-        body: { amount },
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
-      });
-      
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error creating credit checkout:', error);
-      throw error;
+    if (amount < 1 || amount > 500) {
+      throw new Error('Amount must be between £1 and £500');
     }
-  }, [user, session]);
+
+    // Return signal to open the embedded payment modal
+    return { openModal: true, amount };
+  }, [user]);
 
   // Check if user can pay for a product with credits
   const canPayWithCredits = useCallback((productPrice: number): boolean => {

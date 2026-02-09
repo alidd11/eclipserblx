@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Wallet } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -16,11 +16,18 @@ import { TransactionHistoryCard } from '@/components/wallet/TransactionHistoryCa
 import { EclipsePlusBanner } from '@/components/wallet/EclipsePlusBanner';
 import { MyPaymentsCard } from '@/components/wallet/MyPaymentsCard';
 
+// Embedded payment
+import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
+
 export default function Credits() {
   usePageTracking({ pagePath: '/credits' });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  // Embedded payment modal state
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [creditAmount, setCreditAmount] = useState(0);
   
   const { 
     balance, 
@@ -30,7 +37,6 @@ export default function Credits() {
     eclipsePlusBonusClaimed,
     transactions, 
     isLoading, 
-    purchaseCredits,
     fetchBalance 
   } = useCredits();
 
@@ -48,6 +54,21 @@ export default function Credits() {
       navigate('/credits', { replace: true });
     }
   }, [wasSuccess, wasCanceled, purchasedAmount, fetchBalance, navigate]);
+
+  const handlePurchaseCredits = (amount: number) => {
+    setCreditAmount(amount);
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    toast.success(`Successfully added £${creditAmount.toFixed(2)} to your wallet!`);
+    fetchBalance();
+    setPaymentModalOpen(false);
+  };
+
+  const handlePaymentError = (error: string) => {
+    toast.error(error);
+  };
 
   // Not logged in state
   if (!user) {
@@ -106,7 +127,7 @@ export default function Credits() {
         {/* Two column layout for Add Credits & History */}
         <div className="grid md:grid-cols-2 gap-6">
           <AddCreditsCard
-            onPurchase={purchaseCredits}
+            onPurchase={handlePurchaseCredits}
             isLoggedIn={!!user}
             onLoginRedirect={() => navigate('/auth?redirect=/credits')}
           />
@@ -120,6 +141,16 @@ export default function Credits() {
         {/* Developer Payments - only shows if user has payments */}
         <MyPaymentsCard />
       </div>
+
+      {/* Embedded Payment Modal */}
+      <EmbeddedPaymentModal
+        open={paymentModalOpen}
+        onOpenChange={setPaymentModalOpen}
+        paymentType="credits"
+        amount={creditAmount}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
+      />
     </MainLayout>
   );
 }

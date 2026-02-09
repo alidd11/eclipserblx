@@ -12,16 +12,16 @@ const MAX_AMOUNT = 500;
 const suggestedAmounts = [5, 10, 25, 50, 100];
 
 interface AddCreditsCardProps {
-  onPurchase: (amount: number) => Promise<void>;
+  onPurchase: (amount: number) => void;
   isLoggedIn: boolean;
   onLoginRedirect: () => void;
+  isPurchasing?: boolean;
 }
 
-export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect }: AddCreditsCardProps) {
+export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurchasing = false }: AddCreditsCardProps) {
   const [customAmount, setCustomAmount] = useState<string>('10');
-  const [isPurchasing, setIsPurchasing] = useState(false);
 
-  const handlePurchase = async (amount: number) => {
+  const handlePurchase = (amount: number) => {
     if (!isLoggedIn) {
       onLoginRedirect();
       return;
@@ -32,13 +32,7 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect }: AddC
       return;
     }
 
-    setIsPurchasing(true);
-    try {
-      await onPurchase(amount);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to start purchase');
-      setIsPurchasing(false);
-    }
+    onPurchase(amount);
   };
 
   const handleCustomAmountChange = (value: string) => {
