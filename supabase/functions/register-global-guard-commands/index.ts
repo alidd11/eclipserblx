@@ -9,6 +9,50 @@ const corsHeaders = {
 // Global Guard slash commands
 const commands = [
   {
+    name: "ban",
+    description: "Ban a user across all your Global Guard servers",
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention to ban",
+        type: 3, // STRING
+        required: true,
+      },
+      {
+        name: "reason",
+        description: "Reason for the ban",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "duration",
+        description: "Ban duration (leave empty for permanent)",
+        type: 3, // STRING
+        required: false,
+        choices: [
+          { name: "1 hour", value: "1h" },
+          { name: "12 hours", value: "12h" },
+          { name: "1 day", value: "1d" },
+          { name: "7 days", value: "7d" },
+          { name: "30 days", value: "30d" },
+          { name: "90 days", value: "90d" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "unban",
+    description: "Remove a global ban from a user",
+    options: [
+      {
+        name: "user",
+        description: "Discord user ID or @mention to unban",
+        type: 3, // STRING
+        required: true,
+      },
+    ],
+  },
+  {
     name: "globalban",
     description: "Ban a user across all your servers with Global Guard",
     options: [
@@ -51,6 +95,10 @@ const commands = [
         required: true,
       },
     ],
+  },
+  {
+    name: "bans",
+    description: "View your active global bans",
   },
   {
     name: "globalbans",
@@ -122,11 +170,15 @@ const commands = [
   },
   {
     name: "dashboard",
-    description: "Get your Global Guard dashboard link via DM",
+    description: "Get your Global Guard dashboard link",
   },
   {
     name: "upgrade",
     description: "Learn about premium benefits and upgrade options",
+  },
+  {
+    name: "help",
+    description: "View all Global Guard commands and their usage",
   },
 ];
 
