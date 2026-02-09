@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
+import { useCategoryTranslations } from '@/hooks/useCategoryTranslations';
 
 const categoryConfig: Record<string, { icon: typeof Car }> = {
   'vehicle-liveries': { icon: Car },
@@ -39,6 +40,7 @@ const REGIONAL_CATEGORY_SLUGS = [
 
 export function LandingCategories() {
   const { t } = useTranslation();
+  const { getTranslatedName, getTranslatedDescription } = useCategoryTranslations();
   const { data: categories } = useQuery({
     queryKey: ['landing-categories'],
     queryFn: async () => {
@@ -119,11 +121,11 @@ export function LandingCategories() {
                         <IconComponent className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                       </div>
                       <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {category.name}
+                        {getTranslatedName(category.id, category.name)}
                       </h3>
                       {category.description && (
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {category.description}
+                          {getTranslatedDescription(category.id, category.description)}
                         </p>
                       )}
                     </CardContent>
