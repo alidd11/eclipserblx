@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { sortMediaVideosFirst, isVideoUrl } from '@/lib/mediaUtils';
+import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -383,18 +384,10 @@ export default function ProductDetail() {
             >
               {images[selectedImage] ? (
                 isVideoUrl(images[selectedImage]) ? (
-                  <video
+                  <BackgroundVideo
                     ref={videoRef}
                     src={images[selectedImage]}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    controls
-                    controlsList="nodownload"
-                    className="w-full h-full object-contain pointer-events-auto cursor-default"
-                    onContextMenu={(e) => e.preventDefault()}
-                    onClick={(e) => e.stopPropagation()}
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <img
