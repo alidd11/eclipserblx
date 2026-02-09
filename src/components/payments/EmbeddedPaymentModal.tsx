@@ -266,7 +266,7 @@ export function EmbeddedPaymentModal({
       if (data?.error) throw new Error(data.error);
 
       setClientSecret(data.clientSecret);
-      setIntentType(data.type);
+      setIntentType(data.intentType || 'payment_intent');
       setPaymentAmount(data.amount || 0);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to initialize payment';
