@@ -454,9 +454,11 @@ function ApplicationFormDialog({
     let passed = 0;
     let total = 0;
 
-    // Account age
-    total++;
-    if (verificationResults.account_age?.meets_requirement) passed++;
+    // Account age (only count if requirement > 0)
+    if (settings.seller_min_account_age_days > 0) {
+      total++;
+      if (verificationResults.account_age?.meets_requirement) passed++;
+    }
 
     // Email verified
     total++;
@@ -479,10 +481,6 @@ function ApplicationFormDialog({
       total++;
       if (verificationResults.roblox_badges?.all_owned) passed++;
     }
-
-    // Discord server
-    total++;
-    if (verificationResults.discord_server?.valid && verificationResults.discord_server?.is_permanent) passed++;
 
     return { passed, total, percentage: total > 0 ? Math.round((passed / total) * 100) : 0 };
   };
@@ -533,14 +531,16 @@ function ApplicationFormDialog({
             </div>
 
             <div className="grid gap-2 text-sm">
-              {/* Account Age */}
-              <VerificationItem
-                icon={Clock}
-                label={`Account Age (${verificationResults.account_age?.days || 0} days)`}
-                passed={verificationResults.account_age?.meets_requirement}
-                required={true}
-                detail={`Minimum ${settings.seller_min_account_age_days} days required`}
-              />
+              {/* Account Age - only show if requirement > 0 */}
+              {settings.seller_min_account_age_days > 0 && (
+                <VerificationItem
+                  icon={Clock}
+                  label={`Account Age (${verificationResults.account_age?.days || 0} days)`}
+                  passed={verificationResults.account_age?.meets_requirement}
+                  required={true}
+                  detail={`Minimum ${settings.seller_min_account_age_days} days required`}
+                />
+              )}
 
               {/* Email Verified */}
               <VerificationItem

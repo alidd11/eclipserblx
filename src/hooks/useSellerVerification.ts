@@ -339,8 +339,8 @@ export function useSellerVerification() {
     const { account_age, email_verified, purchase_history, roblox_group, roblox_badges, discord_server } =
       verificationResults;
 
-    // Account age must pass
-    if (!account_age?.meets_requirement) return false;
+    // Account age must pass (only if requirement > 0)
+    if (settings.seller_min_account_age_days > 0 && !account_age?.meets_requirement) return false;
 
     // Email must be verified
     if (!email_verified) return false;
