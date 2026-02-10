@@ -426,9 +426,10 @@ serve(async (req) => {
       // Check for already imported products
       const { data: existingImports } = await supabaseAdmin
         .from('product_imports')
-        .select('source_url')
+        .select('source_url, product_id')
         .eq('store_id', store.id)
-        .eq('status', 'completed');
+        .eq('status', 'completed')
+        .not('product_id', 'is', null);
       
       const importedUrls = new Set(existingImports?.map(i => i.source_url) || []);
       
