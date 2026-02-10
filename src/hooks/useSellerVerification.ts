@@ -313,9 +313,9 @@ export function useSellerVerification() {
         ...prev,
         discord_server: {
           valid: data?.valid || false,
-          is_permanent: data?.is_permanent || false,
-          guild_name: data?.guild_name,
-          member_count: data?.member_count,
+          is_permanent: data?.valid || false, // If valid=true, the edge function already confirmed it's permanent
+          guild_name: data?.guild_name || data?.guildName,
+          member_count: data?.member_count || data?.memberCount,
           error: data?.error,
           verified_at: new Date().toISOString(),
         },
