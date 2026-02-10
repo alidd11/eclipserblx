@@ -494,7 +494,7 @@ function ApplicationFormDialog({
     termsAccepted &&
     verificationResults.discord_server?.valid &&
     verificationResults.discord_server?.is_permanent &&
-    verificationResults.account_age?.meets_requirement &&
+    (settings.seller_min_account_age_days === 0 || verificationResults.account_age?.meets_requirement) &&
     verificationResults.email_verified &&
     (!settings.seller_require_group_membership || verificationResults.roblox_group?.in_group) &&
     (!settings.seller_require_badge_ownership || verificationResults.roblox_badges?.all_owned) &&
