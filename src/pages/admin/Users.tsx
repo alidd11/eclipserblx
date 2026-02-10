@@ -161,7 +161,7 @@ export default function AdminUsers() {
     queryFn: async () => {
       // Optimized: Select only needed columns
       let query = supabase.from('profiles')
-        .select('user_id, display_name, username, avatar_url, email, customer_id, staff_id, discord_id, discord_username, created_at')
+        .select('user_id, display_name, username, avatar_url, email, customer_id, staff_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at')
         .order('created_at', { ascending: false });
       if (debouncedSearch) {
         query = query.ilike('customer_id', `%${debouncedSearch}%`);
