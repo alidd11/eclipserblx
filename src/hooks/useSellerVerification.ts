@@ -236,10 +236,10 @@ export function useSellerVerification() {
           if (error) throw error;
 
           results.roblox_group = {
-            in_group: data?.in_group || false,
-            group_name: data?.group_name,
-            role: data?.role,
-            rank: data?.rank,
+            in_group: data?.inGroup || false,
+            group_name: data?.groupName,
+            role: data?.role?.name,
+            rank: data?.role?.rank,
           };
         } catch (err: any) {
           results.roblox_group = {
