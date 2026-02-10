@@ -48,14 +48,14 @@ function suggestCategory(name: string, description: string): string | undefined 
 }
 
 // Parse ClearlyDev store page
-function parseClearlyDevStore(markdown: string, storeUrl: string): ExternalProduct[] {
+function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string[]): ExternalProduct[] {
   const products: ExternalProduct[] = [];
+  const seenUrls = new Set<string>();
   
+  // Method 1: Parse markdown for product links
   const productLinkRegex = /\[([^\]]+)\]\((https:\/\/clearlydev\.com\/product\/[^\)]+)\)/g;
   
   let match;
-  const seenUrls = new Set<string>();
-  
   while ((match = productLinkRegex.exec(markdown)) !== null) {
     const name = match[1].trim();
     const url = match[2];
@@ -74,6 +74,41 @@ function parseClearlyDevStore(markdown: string, storeUrl: string): ExternalProdu
       platform: 'clearlydev',
       suggestedCategoryId: categorySlug,
     });
+  }
+  
+  // Method 2: If no products found from markdown, use links array from Firecrawl
+  if (products.length === 0 && links && links.length > 0) {
+    console.log(`No products from markdown, checking ${links.length} raw links...`);
+    
+    for (const link of links) {
+      if (!link.includes('clearlydev.com/product/')) continue;
+      if (seenUrls.has(link)) continue;
+      seenUrls.add(link);
+      
+      // Extract product name from URL slug
+      const slugMatch = link.match(/\/product\/([^\/\?#]+)/);
+      const slug = slugMatch ? slugMatch[1] : '';
+      const name = slug
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+      
+      if (!name || name.length < 3) continue;
+      
+      const categorySlug = suggestCategory(name, '');
+      
+      products.push({
+        name,
+        description: '',
+        price: 0,
+        images: [],
+        sourceUrl: link.split('?')[0], // Remove query params
+        platform: 'clearlydev',
+        suggestedCategoryId: categorySlug,
+      });
+    }
+    
+    console.log(`Found ${products.length} products from links array`);
   }
   
   return products;
@@ -159,7 +194,7 @@ function parseBuiltByBitStore(markdown: string, storeUrl: string): ExternalProdu
 }
 
 // Scrape a single URL using Firecrawl
-async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolean; markdown?: string; error?: string }> {
+async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolean; markdown?: string; links?: string[]; error?: string }> {
   console.log(`Scraping: ${url}`);
   
   const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
@@ -170,9 +205,9 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolea
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
+      formats: ['markdown', 'links'],
       onlyMainContent: false,
-      waitFor: 2000,
+      waitFor: 5000,
     }),
   });
   
@@ -183,10 +218,12 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolea
     return { success: false, error: data.error || `Failed with status ${response.status}` };
   }
   
-  return { 
-    success: true, 
-    markdown: data.data?.markdown || data.markdown || '' 
-  };
+  const markdown = data.data?.markdown || data.markdown || '';
+  const links = data.data?.links || data.links || [];
+  
+  console.log(`Scraped ${markdown.length} chars markdown, ${links.length} links`);
+  
+  return { success: true, markdown, links };
 }
 
 // Download image and upload to Supabase storage
@@ -348,7 +385,7 @@ serve(async (req) => {
 
       let products: ExternalProduct[] = [];
       if (detectedPlatform === 'clearlydev') {
-        products = parseClearlyDevStore(scrapeResult.markdown!, storeUrl);
+        products = parseClearlyDevStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
       } else if (detectedPlatform === 'builtbybit') {
         products = parseBuiltByBitStore(scrapeResult.markdown!, storeUrl);
       }
