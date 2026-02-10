@@ -15,6 +15,7 @@ import { useSellerTicketNotifications } from '@/hooks/useSellerTicketNotificatio
 import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useAdminTextScaling } from '@/hooks/useAdminTextScaling';
 
 
 
@@ -352,6 +353,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   
   // Use admin-specific PWA manifest
   useAdminManifest();
+  
+  // Respect OS-level text size settings in admin PWA
+  useAdminTextScaling();
   
 
   useEffect(() => {
