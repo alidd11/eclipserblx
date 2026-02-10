@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { FileText, Plus, Upload, ExternalLink, Trash2, Filter, Link as LinkIcon, Eye, EyeOff, Bell } from "lucide-react";
+import { FileText, Plus, Upload, ExternalLink, Trash2, Filter, Link as LinkIcon, Eye, EyeOff, Bell, Scale, ChevronDown, ChevronUp } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { SITE_NAME } from "@/lib/constants";
 
 const DEFAULT_CATEGORIES = [
   { value: "general", label: "General", color: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
@@ -43,6 +45,7 @@ export default function AdminSellerDocuments() {
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isTosExpanded, setIsTosExpanded] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -361,6 +364,102 @@ export default function AdminSellerDocuments() {
             </Button>
           )}
         </div>
+
+        {/* Seller Terms of Service Preview */}
+        <Collapsible open={isTosExpanded} onOpenChange={setIsTosExpanded}>
+          <Card className="border-primary/30">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Scale className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Seller Terms of Service</CardTitle>
+                    <CardDescription>The agreement all sellers must sign before their store goes live (v1.0)</CardDescription>
+                  </div>
+                </div>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    {isTosExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {isTosExpanded ? "Collapse" : "View Agreement"}
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="border-t pt-6">
+                <div className="prose prose-invert max-w-none space-y-6 text-sm">
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Introduction</h3>
+                    <p className="text-muted-foreground">
+                      This Seller Agreement is entered into between {SITE_NAME} and the store owner operating a store on our marketplace. 
+                      By selling products on {SITE_NAME}, sellers agree to be bound by these terms. This Agreement is governed by the laws of England and Wales.
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Seller Obligations</h3>
+                    <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
+                      <li>Provide accurate product descriptions and imagery</li>
+                      <li>Ensure all products are original work or seller has rights to sell</li>
+                      <li>Respond to customer inquiries within 48 hours</li>
+                      <li>Maintain high quality standards for all digital content</li>
+                      <li>Not sell content that infringes on third-party IP</li>
+                      <li>Comply with all applicable laws and regulations</li>
+                    </ul>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Product Standards</h3>
+                    <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
+                      <li>Be compatible with Roblox and function as described</li>
+                      <li>Include clear documentation or instructions</li>
+                      <li>Not contain malicious code, backdoors, or security vulnerabilities</li>
+                      <li>Not include NSFW, violent, or inappropriate content</li>
+                    </ul>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Commission & Payments</h3>
+                    <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
+                      <li><strong>Standard Products:</strong> 10% commission on net sales</li>
+                      <li><strong>Bot Products:</strong> 15% commission on net sales</li>
+                    </ul>
+                    <p className="text-muted-foreground mt-2">
+                      Formula: (Sale Price - UK Stripe Fee) × (1 - Commission Rate). Payments processed through Stripe Connect.
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Intellectual Property</h3>
+                    <p className="text-muted-foreground">
+                      Sellers retain 100% ownership of all IP rights. A non-exclusive license is granted to {SITE_NAME} for display and distribution, terminating when products are removed.
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Prohibited Activities</h3>
+                    <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
+                      <li>Selling stolen, leaked, or pirated content</li>
+                      <li>Price manipulation or fraudulent practices</li>
+                      <li>Creating fake reviews or manipulating ratings</li>
+                      <li>Circumventing platform fees or commission</li>
+                      <li>Selling products that violate Roblox's ToS</li>
+                    </ul>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Account Suspension & Termination</h3>
+                    <p className="text-muted-foreground">
+                      Accounts may be suspended for violations. Sellers may close their store at any time with a 30-day waiting period for outstanding balance.
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="text-base font-semibold mb-2">Refunds & Disputes</h3>
+                    <p className="text-muted-foreground">
+                      Refunds handled per platform policy. Commission is deducted on refunds. Sellers may be responsible for chargeback fees.
+                    </p>
+                  </section>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Documents Grid */}
         {isLoading ? (
