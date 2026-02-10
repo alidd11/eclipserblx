@@ -29,12 +29,7 @@ const getRedirectUri = () => {
   return new URL("/account", window.location.origin).toString();
 };
 
-const getDiscordOAuthUrl = () => {
-  const redirectUri = encodeURIComponent(getRedirectUri());
-  const scope = encodeURIComponent("identify");
-  const clientId = encodeURIComponent(getDiscordClientId());
-  return `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
-};
+// OAuth URL is now generated server-side via discord-auth-url edge function
 
 export const DiscordLinkCard = ({
   userId,
@@ -163,7 +158,26 @@ export const DiscordLinkCard = ({
       return;
     }
     setIsLinking(true);
-    await openExternalUrl(getDiscordOAuthUrl());
+    try {
+      // Use edge function to get auth URL (keeps client_id server-side)
+      const { data, error: urlError } = await supabase.functions.invoke("discord-auth-url", {
+        body: { redirect_uri: getRedirectUri() },
+      });
+
+      if (urlError || !data?.url) {
+        throw new Error(data?.error || urlError?.message || "Failed to get Discord auth URL");
+      }
+
+      await openExternalUrl(data.url);
+    } catch (err) {
+      console.error("Discord link error:", err);
+      setIsLinking(false);
+      toast({
+        title: "Link Failed",
+        description: err instanceof Error ? err.message : "Could not start Discord linking",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUnlink = async () => {
