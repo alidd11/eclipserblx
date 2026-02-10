@@ -748,6 +748,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               accountsLocked={(profile as any)?.accounts_locked}
               onUpdate={() => {
                 queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                queryClient.invalidateQueries({ queryKey: ['user-profile-linked-accounts', user.id] });
                 queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
               }}
             />
