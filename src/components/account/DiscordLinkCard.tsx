@@ -17,7 +17,7 @@ interface DiscordLinkCardProps {
 }
 
 // Discord OAuth configuration
-const DEFAULT_DISCORD_CLIENT_ID = "1460773107446059273";
+const DEFAULT_DISCORD_CLIENT_ID = "1466778545039741072";
 
 const getDiscordClientId = () => {
   const envId = import.meta.env.VITE_DISCORD_CLIENT_ID;
