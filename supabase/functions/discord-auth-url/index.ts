@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const scope = encodeURIComponent('identify email');
+    const scope = encodeURIComponent('identify');
     const encodedRedirectUri = encodeURIComponent(redirect_uri);
 
     const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodedRedirectUri}&response_type=code&scope=${scope}`;
