@@ -55,7 +55,7 @@ interface SellerVerificationSettings {
 }
 
 const DEFAULT_SETTINGS: SellerVerificationSettings = {
-  seller_min_account_age_days: 7,
+  seller_min_account_age_days: 0,
   seller_min_purchases_required: 0,
   seller_require_group_membership: true,
   seller_require_badge_ownership: false,
