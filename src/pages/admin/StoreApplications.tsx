@@ -141,7 +141,7 @@ export default function StoreApplications() {
           name: application.store_name,
           slug: `${slug}-${Date.now().toString(36)}`,
           description: application.store_description,
-          discord_invite: application.discord_server_invite,
+          discord_url: application.discord_server_invite,
           status: 'approved',
           is_active: true,
           reviewed_by: user?.id,
