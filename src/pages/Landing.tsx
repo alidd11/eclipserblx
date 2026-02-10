@@ -7,6 +7,7 @@ import { LandingCTA } from '@/components/landing/LandingCTA';
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 import { PWALandingHero } from '@/components/landing/PWALandingHero';
 import { usePWAStandalone } from '@/hooks/usePWAStandalone';
+import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
 
 export default function Landing() {
   const { isStandalone, isLoading } = usePWAStandalone();
@@ -32,6 +33,8 @@ export default function Landing() {
   // Browser mode: full landing page
   return (
     <MainLayout>
+      <OrganizationSchema />
+      <WebsiteSearchSchema />
       <LandingHero />
       {/* Promotions below hero */}
       <section className="px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
