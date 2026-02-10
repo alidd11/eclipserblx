@@ -11,6 +11,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Simple in-memory cache for parsed queries (per instance)
+  const queryCache = new Map<string, { params: any; timestamp: number }>();
+  const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
+
   try {
     const { query, userId } = await req.json();
 
@@ -39,19 +43,34 @@ serve(async (req) => {
       .from("categories")
       .select("id, name, slug");
 
-    // Use AI to parse the natural language query
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: `You are a search query parser for a Roblox digital assets marketplace. 
+    // Check cache first
+    const cacheKey = query.toLowerCase().trim();
+    const cached = queryCache.get(cacheKey);
+    let searchParams: {
+      keywords: string[];
+      category?: string;
+      maxPrice?: number;
+      minPrice?: number;
+      sortBy?: string;
+    } = { keywords: [query] };
+
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      console.log("Using cached parsed query for:", cacheKey);
+      searchParams = cached.params;
+    } else {
+      // Use AI to parse the natural language query
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            {
+              role: "system",
+              content: `You are a search query parser for a Roblox digital assets marketplace. 
 Extract search parameters from natural language queries.
 
 Available categories: ${categories?.map((c: any) => c.name).join(", ") || "Scripts, UI Kits, Models, Plugins"}
@@ -67,87 +86,83 @@ Examples:
 "tycoon UI kit under $10" -> {"keywords": ["tycoon", "UI", "kit"], "maxPrice": 10}
 "cheap admin scripts" -> {"keywords": ["admin", "scripts"], "sortBy": "price_asc"}
 "newest models" -> {"keywords": ["models"], "sortBy": "newest"}`
-          },
-          {
-            role: "user",
-            content: query
-          }
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "parse_search_query",
-              description: "Parse search query into structured parameters",
-              parameters: {
-                type: "object",
-                properties: {
-                  keywords: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Search keywords"
+            },
+            {
+              role: "user",
+              content: query
+            }
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "parse_search_query",
+                description: "Parse search query into structured parameters",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    keywords: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Search keywords"
+                    },
+                    category: {
+                      type: "string",
+                      description: "Category name if specified"
+                    },
+                    maxPrice: {
+                      type: "number",
+                      description: "Maximum price in dollars"
+                    },
+                    minPrice: {
+                      type: "number",
+                      description: "Minimum price in dollars"
+                    },
+                    sortBy: {
+                      type: "string",
+                      enum: ["price_asc", "price_desc", "newest", "popular"],
+                      description: "Sort order"
+                    }
                   },
-                  category: {
-                    type: "string",
-                    description: "Category name if specified"
-                  },
-                  maxPrice: {
-                    type: "number",
-                    description: "Maximum price in dollars"
-                  },
-                  minPrice: {
-                    type: "number",
-                    description: "Minimum price in dollars"
-                  },
-                  sortBy: {
-                    type: "string",
-                    enum: ["price_asc", "price_desc", "newest", "popular"],
-                    description: "Sort order"
-                  }
-                },
-                required: ["keywords"]
+                  required: ["keywords"]
+                }
               }
             }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "parse_search_query" } }
-      }),
-    });
+          ],
+          tool_choice: { type: "function", function: { name: "parse_search_query" } }
+        }),
+      });
 
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded, please try again" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      if (!aiResponse.ok) {
+        if (aiResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Rate limit exceeded, please try again" }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (aiResponse.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "AI service unavailable" }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        throw new Error(`AI API error: ${aiResponse.status}`);
       }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI service unavailable" }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      throw new Error(`AI API error: ${aiResponse.status}`);
-    }
 
-    const aiData = await aiResponse.json();
-    console.log("AI response:", JSON.stringify(aiData));
+      const aiData = await aiResponse.json();
+      console.log("AI response:", JSON.stringify(aiData));
 
-    let searchParams: {
-      keywords: string[];
-      category?: string;
-      maxPrice?: number;
-      minPrice?: number;
-      sortBy?: string;
-    } = { keywords: [query] };
-    
-    try {
-      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-      if (toolCall?.function?.arguments) {
-        searchParams = JSON.parse(toolCall.function.arguments);
+      try {
+        const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+        if (toolCall?.function?.arguments) {
+          searchParams = JSON.parse(toolCall.function.arguments);
+        }
+      } catch (e) {
+        console.error("Failed to parse AI response:", e);
       }
-    } catch (e) {
-      console.error("Failed to parse AI response:", e);
+
+      // Cache the result
+      queryCache.set(cacheKey, { params: searchParams, timestamp: Date.now() });
     }
 
     console.log("Parsed search params:", searchParams);

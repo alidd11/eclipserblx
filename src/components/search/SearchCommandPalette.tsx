@@ -66,29 +66,16 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
   
   const { search: smartSearch, isSearching: isSmartSearching, results: smartResults } = useSmartSearch();
 
-  // Detect if query looks like natural language
-  useEffect(() => {
-    const nlPatterns = /\b(under|below|above|over|between|cheap|expensive|free|best|top|new|latest|popular|for|with|like|similar)\b/i;
-    setUseAI(nlPatterns.test(searchQuery) && searchQuery.length > 5);
-  }, [searchQuery]);
-
-  // Fetch products when search query changes
+  // Fetch products when search query changes (standard search only)
   useEffect(() => {
     if (!open) {
       setSearchQuery('');
+      setUseAI(false);
       return;
     }
 
-    // If using AI search, let the smart search handle it
-    if (useAI) {
-      if (searchQuery.length >= 3) {
-        const debounce = setTimeout(() => {
-          smartSearch(searchQuery);
-        }, 500);
-        return () => clearTimeout(debounce);
-      }
-      return;
-    }
+    // If AI search is active, don't run standard search
+    if (useAI) return;
 
     const fetchProducts = async () => {
       if (searchQuery.length < 2) {
@@ -106,7 +93,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
           .limit(10);
 
         if (!error && data) {
-          // Only include products with active stores
           const filtered = data.filter(p => p.stores?.is_active === true);
           setProducts(filtered.slice(0, 5));
         }
@@ -119,7 +105,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
     const debounce = setTimeout(fetchProducts, 200);
     return () => clearTimeout(debounce);
-  }, [searchQuery, open, useAI, smartSearch]);
+  }, [searchQuery, open, useAI]);
 
   // Use smart search results when AI is active
   const displayProducts = useAI && smartResults.length > 0 ? smartResults : products;
@@ -137,16 +123,34 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <div className="relative">
         <CommandInput 
-          placeholder="Search products, pages, or try 'scripts under £10'..." 
+          placeholder="Search products, pages..." 
           value={searchQuery}
-          onValueChange={setSearchQuery}
+          onValueChange={(val) => {
+            setSearchQuery(val);
+            setUseAI(false); // Reset AI mode on new typing
+          }}
         />
-        {useAI && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>AI Search</span>
-          </div>
-        )}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+          {useAI && isSmartSearching && (
+            <div className="flex items-center gap-1 text-xs text-primary">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>AI searching...</span>
+            </div>
+          )}
+          {searchQuery.length >= 3 && !useAI && (
+            <button
+              type="button"
+              onClick={() => {
+                setUseAI(true);
+                smartSearch(searchQuery);
+              }}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-accent"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>AI Search</span>
+            </button>
+          )}
+        </div>
       </div>
       <CommandList>
         <CommandEmpty>
