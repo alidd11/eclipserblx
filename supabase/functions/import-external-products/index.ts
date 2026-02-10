@@ -530,9 +530,9 @@ serve(async (req) => {
           images: product.images.length > 0 ? product.images : [],
           store_id: store.id,
           is_seller_product: true,
-          is_active: false,
+          is_active: true,
           category_id: product.suggestedCategoryId || null,
-          moderation_status: 'pending',
+          moderation_status: 'approved',
         })
         .select('id')
         .single();
@@ -660,9 +660,9 @@ serve(async (req) => {
             images: product.images.length > 0 ? product.images : [],
             store_id: store.id,
             is_seller_product: true,
-            is_active: false, // Start inactive so seller can review & upload files
+            is_active: true,
             category_id: product.suggestedCategoryId || null,
-            moderation_status: 'pending',
+            moderation_status: 'approved',
           })
           .select('id')
           .single();
