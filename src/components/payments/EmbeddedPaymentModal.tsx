@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51Sl84pCjEHxHwNl9cWPDitNkEcjiqaiOiq9l3Y0Z9HY89atChTJEY19WK2O9447JBz97YzdpLqefTVmjjyHmfiCo00wpuvzsB9';
 
 // Initialize Stripe outside the component (only if configured)
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;

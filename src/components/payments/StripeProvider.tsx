@@ -12,7 +12,7 @@ let stripePromise: Promise<Stripe | null> | null = null;
 
 function getStripePromise() {
   if (!stripePromise) {
-    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51Sl84pCjEHxHwNl9cWPDitNkEcjiqaiOiq9l3Y0Z9HY89atChTJEY19WK2O9447JBz97YzdpLqefTVmjjyHmfiCo00wpuvzsB9';
     if (publishableKey) {
       stripePromise = loadStripe(publishableKey);
     }
