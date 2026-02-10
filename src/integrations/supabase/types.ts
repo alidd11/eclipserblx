@@ -3300,6 +3300,33 @@ export type Database = {
         }
         Relationships: []
       }
+      nsfw_scan_cache: {
+        Row: {
+          id: string
+          image_hash: string
+          is_nsfw: boolean
+          reason: string | null
+          scan_count: number
+          scanned_at: string
+        }
+        Insert: {
+          id?: string
+          image_hash: string
+          is_nsfw?: boolean
+          reason?: string | null
+          scan_count?: number
+          scanned_at?: string
+        }
+        Update: {
+          id?: string
+          image_hash?: string
+          is_nsfw?: boolean
+          reason?: string | null
+          scan_count?: number
+          scanned_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string

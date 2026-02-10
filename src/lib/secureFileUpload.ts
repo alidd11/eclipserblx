@@ -180,12 +180,50 @@ async function analyzeLuaScript(scriptContent: string, fileName: string): Promis
 }
 
 /**
- * Check image for NSFW content
+ * Resize image to max 512px for NSFW scanning (reduces payload, same accuracy)
  */
-async function checkNsfw(imageBase64: string): Promise<NsfwCheckResponse> {
+async function resizeImageForScan(file: File, maxDim = 512): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const { width, height } = img;
+      // Skip resize if already small enough
+      if (width <= maxDim && height <= maxDim) {
+        fileToBase64(file).then(resolve).catch(reject);
+        return;
+      }
+      const scale = maxDim / Math.max(width, height);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas not supported")); return; }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Return as data URL (base64)
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Failed to load image")); };
+    img.src = url;
+  });
+}
+
+/**
+ * Check image for NSFW content with hash caching and resize optimization
+ */
+async function checkNsfw(imageBase64OrFile: string | File, fileHash?: string): Promise<NsfwCheckResponse> {
   try {
+    let imageData: string;
+    if (typeof imageBase64OrFile === "string") {
+      imageData = imageBase64OrFile;
+    } else {
+      // Resize before scanning to reduce payload
+      imageData = await resizeImageForScan(imageBase64OrFile);
+    }
+
     const { data, error } = await supabase.functions.invoke("check-nsfw", {
-      body: { imageBase64 }
+      body: { imageBase64: imageData, hash: fileHash }
     });
 
     if (error) {
@@ -351,11 +389,10 @@ export async function performSecurityScan(
     }
   }
 
-  // Step 3: NSFW check (for images)
+  // Step 3: NSFW check (for images) — uses resize + hash caching
   if (!skipNsfwCheck && isImageFile(fileName, file.type)) {
     try {
-      const imageBase64 = await fileToBase64(file);
-      const nsfwResult = await checkNsfw(imageBase64);
+      const nsfwResult = await checkNsfw(file, fileHash);
 
       if (nsfwResult.isNSFW) {
         console.warn(`NSFW content blocked: ${fileName}`);
