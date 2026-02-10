@@ -487,18 +487,24 @@ function ApplicationFormDialog({
 
   const status = getVerificationStatus();
 
-  const canSubmit = 
-    storeName.trim() && 
-    discordServerInvite.trim() && 
-    ageConfirmed && 
-    termsAccepted &&
-    verificationResults.discord_server?.valid &&
-    verificationResults.discord_server?.is_permanent &&
-    (settings.seller_min_account_age_days === 0 || verificationResults.account_age?.meets_requirement) &&
-    verificationResults.email_verified &&
-    (!settings.seller_require_group_membership || verificationResults.roblox_group?.in_group) &&
-    (!settings.seller_require_badge_ownership || verificationResults.roblox_badges?.all_owned) &&
-    (settings.seller_min_purchases_required === 0 || verificationResults.purchase_history?.meets_requirement);
+  const canSubmitChecks = {
+    storeName: !!storeName.trim(),
+    discordInvite: !!discordServerInvite.trim(),
+    ageConfirmed,
+    termsAccepted,
+    discordValid: !!verificationResults.discord_server?.valid,
+    discordPermanent: !!verificationResults.discord_server?.is_permanent,
+    accountAge: settings.seller_min_account_age_days === 0 || !!verificationResults.account_age?.meets_requirement,
+    emailVerified: !!verificationResults.email_verified,
+    groupMembership: !settings.seller_require_group_membership || !!verificationResults.roblox_group?.in_group,
+    badgeOwnership: !settings.seller_require_badge_ownership || !!verificationResults.roblox_badges?.all_owned,
+    purchaseHistory: settings.seller_min_purchases_required === 0 || !!verificationResults.purchase_history?.meets_requirement,
+  };
+  console.log('canSubmit checks:', canSubmitChecks);
+  console.log('discord_server result:', verificationResults.discord_server);
+  console.log('settings:', settings);
+
+  const canSubmit = Object.values(canSubmitChecks).every(Boolean);
 
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
