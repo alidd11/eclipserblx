@@ -515,7 +515,7 @@ serve(async (req) => {
       
       const results: { url: string; success: boolean; product?: ExternalProduct; error?: string }[] = [];
       
-      for (const url of productUrls.slice(0, 10)) { // Limit to 10 at a time
+      for (const url of productUrls.slice(0, 50)) { // Limit to 50 at a time
         let detectedPlatform = platform;
         if (!detectedPlatform) {
           if (url.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
