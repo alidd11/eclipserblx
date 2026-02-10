@@ -37,7 +37,7 @@ export default function SellerProducts() {
   const queryClient = useQueryClient();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [moderationNotes, setModerationNotes] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("pending");
+  const [filterStatus, setFilterStatus] = useState<string>("flagged");
   const [productToDelete, setProductToDelete] = useState<any>(null);
   const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
 
@@ -58,7 +58,10 @@ export default function SellerProducts() {
         .eq("is_seller_product", true)
         .order("created_at", { ascending: false });
 
-      if (filterStatus !== "all") {
+      if (filterStatus === "flagged") {
+        // Show only products that were flagged by security/moderation checks
+        query = query.eq("moderation_status", "pending").not("moderation_flags", "is", null);
+      } else if (filterStatus !== "all") {
         query = query.eq("moderation_status", filterStatus);
       }
 
@@ -197,7 +200,8 @@ export default function SellerProducts() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="pending">Pending Review</SelectItem>
+              <SelectItem value="flagged">Flagged for Review</SelectItem>
+              <SelectItem value="pending">All Pending</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
               <SelectItem value="all">All Products</SelectItem>
