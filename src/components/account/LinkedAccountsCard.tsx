@@ -39,24 +39,9 @@ interface LinkedAccountsCardProps {
   onUpdate: () => void;
 }
 
-// Discord OAuth configuration
-const DEFAULT_DISCORD_CLIENT_ID = "1460773107446059273";
-
-const getDiscordClientId = () => {
-  const envId = import.meta.env.VITE_DISCORD_CLIENT_ID;
-  const resolved = (typeof envId === "string" ? envId : "").trim();
-  return resolved || DEFAULT_DISCORD_CLIENT_ID;
-};
-
+// Discord OAuth - URL generated server-side via edge function
 const getRedirectUri = () => {
   return new URL("/account", window.location.origin).toString();
-};
-
-const getDiscordOAuthUrl = () => {
-  const redirectUri = encodeURIComponent(getRedirectUri());
-  const scope = encodeURIComponent("identify");
-  const clientId = encodeURIComponent(getDiscordClientId());
-  return `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
 };
 
 export function LinkedAccountsCard({
@@ -101,16 +86,23 @@ export function LinkedAccountsCard({
 
       // Handle auto-link action from Discord /link command
       if (action === "link-discord" && !discordId && !code) {
-        // Clean URL
         const url = new URL(window.location.href);
         url.searchParams.delete("action");
         window.history.replaceState({}, "", url.toString());
         
-        // Auto-trigger Discord OAuth
-        const clientId = getDiscordClientId();
-        if (clientId) {
-          setIsLinkingDiscord(true);
-          window.location.href = getDiscordOAuthUrl();
+        // Auto-trigger Discord OAuth via edge function
+        setIsLinkingDiscord(true);
+        try {
+          const { data, error: urlError } = await supabase.functions.invoke("discord-auth-url", {
+            body: { redirect_uri: getRedirectUri() },
+          });
+          if (!urlError && data?.url) {
+            window.location.href = data.url;
+          } else {
+            setIsLinkingDiscord(false);
+          }
+        } catch {
+          setIsLinkingDiscord(false);
         }
         return;
       }
@@ -177,13 +169,24 @@ export function LinkedAccountsCard({
   }, [userId, discordId, hasEclipsePlus, onUpdate, toastHook]);
 
   const handleLinkDiscord = async () => {
-    const clientId = getDiscordClientId();
-    if (!clientId) {
-      toastHook({ title: "Configuration Error", description: "Discord OAuth is not configured.", variant: "destructive" });
-      return;
-    }
     setIsLinkingDiscord(true);
-    await openExternalUrl(getDiscordOAuthUrl());
+    try {
+      const { data, error: urlError } = await supabase.functions.invoke("discord-auth-url", {
+        body: { redirect_uri: getRedirectUri() },
+      });
+      if (urlError || !data?.url) {
+        throw new Error(data?.error || urlError?.message || "Failed to get Discord auth URL");
+      }
+      await openExternalUrl(data.url);
+    } catch (err) {
+      console.error("Discord link error:", err);
+      setIsLinkingDiscord(false);
+      toastHook({
+        title: "Link Failed",
+        description: err instanceof Error ? err.message : "Could not start Discord linking",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUnlinkDiscord = async () => {
