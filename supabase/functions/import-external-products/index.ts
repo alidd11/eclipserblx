@@ -116,9 +116,42 @@ function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string
 
 // Parse ClearlyDev product page for full details
 function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct | null {
-  const titleMatch = markdown.match(/^# (.+?)(?:\s*\\|\s*$)/m) || markdown.match(/^## (.+?)(?:\s*\\|\s*$)/m);
-  const name = titleMatch ? titleMatch[1].trim() : '';
-  
+  let name = '';
+
+  // Strategy 1: Page title line (first line often has "Product Name | ClearlyDev Marketplace")
+  const pageTitleMatch = markdown.match(/^(.+?)\s*\\?\|.*ClearlyDev/m);
+  if (pageTitleMatch) {
+    const candidate = pageTitleMatch[1].trim();
+    if (candidate.length >= 3 && !candidate.toLowerCase().includes('hi, there')) {
+      name = candidate;
+    }
+  }
+
+  // Strategy 2: Find ## heading that is NOT a generic greeting/section header
+  if (!name) {
+    const headingRegex = /^#{1,2}\s+(.+?)(?:\s*\\|\s*$)/gm;
+    let hMatch;
+    const skipPatterns = /^(hi,?\s*there|description|refund|instant|reviews?|related|license|file\s*size)/i;
+    while ((hMatch = headingRegex.exec(markdown)) !== null) {
+      const candidate = hMatch[1].trim();
+      if (candidate.length >= 3 && !skipPatterns.test(candidate)) {
+        name = candidate;
+        break;
+      }
+    }
+  }
+
+  // Strategy 3: Extract from URL slug as last resort
+  if (!name) {
+    const slugMatch = url.match(/\/product\/([^\/\?#]+)/);
+    if (slugMatch) {
+      name = slugMatch[1]
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+    }
+  }
+
   if (!name) return null;
   
   const imageRegex = /!\[([^\]]*)\]\((https:\/\/files[^\)]+)\)/g;
@@ -482,6 +515,34 @@ serve(async (req) => {
         ? categoryMap.get(product.suggestedCategoryId) 
         : undefined;
 
+      // Auto-create product record in the products table
+      const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+      const uniqueSlug = `${productSlugForDb}-${Date.now().toString(36)}`;
+      
+      const { data: createdProduct, error: createError } = await supabaseAdmin
+        .from('products')
+        .insert({
+          name: product.name,
+          slug: uniqueSlug,
+          description: product.description || null,
+          price: product.price || 0,
+          images: product.images.length > 0 ? product.images : [],
+          store_id: store.id,
+          is_seller_product: true,
+          is_active: false,
+          category_id: product.suggestedCategoryId || null,
+          moderation_status: 'pending',
+        })
+        .select('id')
+        .single();
+
+      let productId: string | null = null;
+      if (createError) {
+        console.error(`Failed to create product record:`, createError.message);
+      } else {
+        productId = createdProduct.id;
+      }
+
       // Record the import
       await supabaseAdmin
         .from('product_imports')
@@ -493,6 +554,7 @@ serve(async (req) => {
           source_price: product.price,
           imported_by: user.id,
           status: 'completed',
+          product_id: productId,
           metadata: { images_downloaded: downloadImages, image_count: product.images.length },
         });
 
@@ -583,6 +645,34 @@ serve(async (req) => {
           ? categoryMap.get(product.suggestedCategoryId) 
           : undefined;
 
+        // Auto-create product record in the products table
+        const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+        const uniqueSlug = `${productSlugForDb}-${Date.now().toString(36)}`;
+        
+        const { data: createdProduct, error: createError } = await supabaseAdmin
+          .from('products')
+          .insert({
+            name: product.name,
+            slug: uniqueSlug,
+            description: product.description || null,
+            price: product.price || 0,
+            images: product.images.length > 0 ? product.images : [],
+            store_id: store.id,
+            is_seller_product: true,
+            is_active: false, // Start inactive so seller can review & upload files
+            category_id: product.suggestedCategoryId || null,
+            moderation_status: 'pending',
+          })
+          .select('id')
+          .single();
+
+        let productId: string | null = null;
+        if (createError) {
+          console.error(`Failed to create product record for "${product.name}":`, createError.message);
+        } else {
+          productId = createdProduct.id;
+        }
+
         await supabaseAdmin.from('product_imports').insert({
           store_id: store.id,
           source_url: url,
@@ -591,6 +681,7 @@ serve(async (req) => {
           source_price: product.price,
           imported_by: user.id,
           status: 'completed',
+          product_id: productId,
           metadata: { images_downloaded: downloadImages, image_count: product.images.length },
         });
 
