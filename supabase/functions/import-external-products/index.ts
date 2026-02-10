@@ -207,7 +207,7 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolea
       url,
       formats: ['markdown', 'links'],
       onlyMainContent: false,
-      waitFor: 5000,
+      waitFor: 15000,
     }),
   });
   
