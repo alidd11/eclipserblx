@@ -191,7 +191,7 @@ export function PaymentRequestButton({
       <button
         type="button"
         onClick={handleClick}
-        className="w-full h-14 rounded-xl bg-black text-white font-medium flex items-center justify-center gap-2 transition-all hover:bg-black/90 active:scale-[0.98] shadow-lg"
+        className="w-full h-12 rounded-lg bg-black text-white font-medium flex items-center justify-center gap-2 transition-all hover:bg-black/90 active:scale-[0.98]"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
         <ApplePayMark />
@@ -204,7 +204,7 @@ export function PaymentRequestButton({
     <button
       type="button"
       onClick={handleClick}
-      className="w-full h-14 rounded-xl bg-white border border-border text-black font-medium flex items-center justify-center gap-2 transition-all hover:bg-gray-50 active:scale-[0.98] shadow-sm"
+      className="w-full h-12 rounded-lg bg-white border border-border text-black font-medium flex items-center justify-center gap-2 transition-all hover:bg-gray-50 active:scale-[0.98]"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <GooglePayMark />
