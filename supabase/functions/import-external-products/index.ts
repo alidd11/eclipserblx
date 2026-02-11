@@ -159,11 +159,15 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   const images: string[] = [];
   const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|brand)\b/i;
   const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com)\b/i;
+  // Skip images whose alt text or URL suggests platform branding
+  const skipAltTextPatterns = /\b(clearlydev|clearly\s*dev|store\s*logo|seller\s*avatar|platform\s*logo|store\s*banner)\b/i;
   let imgMatch;
   while ((imgMatch = imageRegex.exec(markdown)) !== null) {
+    const imgAlt = imgMatch[1] || '';
     const imgUrl = imgMatch[2];
     if (skipImagePatterns.test(imgUrl)) continue;
     if (skipImageDomains.test(imgUrl)) continue;
+    if (skipAltTextPatterns.test(imgAlt)) continue;
     // Keep the full proxy URL - stripping plain/ causes files.clearlydev.com to return Roblox placeholders
     const cleanUrl = imgUrl;
     if (!images.includes(cleanUrl)) {
