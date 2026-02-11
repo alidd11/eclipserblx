@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Award, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
@@ -46,19 +47,28 @@ interface FeaturedProduct {
   slug: string;
   price: number;
   images: string[] | null;
+  category_id: string | null;
+  is_resellable: boolean;
   stores: {
     name: string;
     slug: string;
     logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
+    eclipse_plus_discount_enabled: boolean;
   } | null;
 }
 
 const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
   function ProductCard({ product }, ref) {
     const { formatPrice } = useCurrency();
+    const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
     const regionFlag = getRegionFlag(product.name);
+    
+    const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+    const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
+    const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
+    const hasMemberDiscount = isEligible && memberPrice < product.price;
     
     return (
       <Link ref={ref} to={`/products/${product.slug}`} className="group block">
@@ -116,10 +126,25 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
               {product.name}
             </h3>
             
-            <div className="flex items-center justify-between relative z-10">
-              <span className="text-lg font-bold text-primary">
-                {formatPrice(product.price)}
-              </span>
+            <div className="flex items-center gap-2 flex-wrap relative z-10">
+              {hasMemberDiscount ? (
+                <>
+                  <span className="text-lg font-bold text-amber-500">
+                    {formatPrice(memberPrice)}
+                  </span>
+                  <span className="text-sm text-muted-foreground line-through">
+                    {formatPrice(product.price)}
+                  </span>
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
+                    <Crown className="h-2.5 w-2.5" />
+                    {discountPercent}%
+                  </span>
+                </>
+              ) : (
+                <span className="text-lg font-bold text-primary">
+                  {formatPrice(product.price)}
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -149,8 +174,8 @@ export function LandingFeaturedProducts() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images,
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
+          id, name, slug, price, images, category_id, is_resellable,
+          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
         .eq('is_active', true)
         .eq('is_featured', true)
