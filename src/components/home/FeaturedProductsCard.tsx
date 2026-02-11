@@ -71,6 +71,7 @@ interface FeaturedProduct {
     is_verified: boolean;
     is_trusted: boolean;
     is_active: boolean;
+    eclipse_plus_discount_enabled: boolean;
   } | null;
 }
 
@@ -286,7 +287,7 @@ interface ProductGridItemProps {
   formatPrice: (price: number) => string;
   getMemberPrice: (price: number, categoryId: string | null, isResellable: boolean) => number;
   getDiscountPercent: (categoryId: string | null, isResellable: boolean) => number;
-  isEligibleForDiscount: (categoryId: string | null, isResellable: boolean) => boolean;
+  isEligibleForDiscount: (categoryId?: string | null, isResellable?: boolean, storeEclipseEnabled?: boolean) => boolean;
 }
 
 const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>(function ProductGridItem({
@@ -299,7 +300,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
   const navigate = useNavigate();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images);
   const isVideo = isVideoUrl(displayMedia);
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
