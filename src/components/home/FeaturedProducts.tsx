@@ -24,7 +24,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         .select(`
           id, name, slug, price, images, is_featured, category_id, is_resellable, created_at,
           categories (name, slug),
-          stores (is_active)
+          stores (is_active, eclipse_plus_discount_enabled)
         `)
         .eq('is_featured', true)
         .eq('is_active', true)

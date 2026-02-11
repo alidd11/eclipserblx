@@ -90,7 +90,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name), stores (name, slug, logo_url, is_verified, is_trusted, is_active), is_resellable`)
+        .select(`*, categories (name), stores (name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled), is_resellable`)
         .eq('is_featured', true)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)

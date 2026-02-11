@@ -76,7 +76,7 @@ export default function Products() {
           id, name, slug, price, images, is_active, is_featured,
           category_id, store_id, created_at, is_resellable, download_count,
           categories (name, slug),
-          stores (name, slug, logo_url, is_verified, is_trusted, is_active)
+          stores (name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled)
         `);
 
       if (!isStaff) {
@@ -349,6 +349,7 @@ function ProductsGrid({
             storeLogo={product.stores?.logo_url}
             isVerified={product.stores?.is_verified}
             isTrusted={product.stores?.is_trusted}
+            storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
           />
         ))}
       </div>

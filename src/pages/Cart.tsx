@@ -75,7 +75,7 @@ export default function Cart() {
             </CardHeader>
             <CardContent className="space-y-4">
               {items.map((item) => {
-                const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id, item.is_resellable);
+                const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
                 const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
                 const discountPercent = getDiscountPercent(item.category_id, item.is_resellable);
                 

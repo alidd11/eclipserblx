@@ -294,9 +294,10 @@ export default function ProductDetail() {
   // Sort media to show videos first
   const images = product.images?.length ? sortMediaVideosFirst(product.images) : [null];
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
+  const storeEclipseEnabled = product.stores?.eclipse_plus_discount_enabled;
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, storeEclipseEnabled);
+  const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
+  const discountPercent = isEligible ? getDiscountPercent(product.category_id, product.is_resellable) : 0;
   const hasMemberDiscount = isEligible && memberPrice < product.price;
   const canClaimThisProduct = isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id, product.is_resellable, product.eclipse_free_eligible);
 
@@ -314,6 +315,7 @@ export default function ProductDetail() {
         category_slug: product.categories?.slug,
         category_id: product.category_id,
         is_resellable: product.is_resellable,
+        store_eclipse_enabled: storeEclipseEnabled,
       };
 
       // Add bundle info if this is a bot product with a bundle selected

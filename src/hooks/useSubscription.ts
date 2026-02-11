@@ -215,7 +215,9 @@ export function useSubscription() {
   }, []);
 
   // Check if a product is eligible for the discount
-  const isEligibleForDiscount = useCallback((categoryId?: string | null, isResellable?: boolean): boolean => {
+  const isEligibleForDiscount = useCallback((categoryId?: string | null, isResellable?: boolean, storeEclipseEnabled?: boolean): boolean => {
+    // Store has opted out of Eclipse+ discounts
+    if (storeEclipseEnabled === false) return false;
     // Resellable products are NOT eligible for discounts
     if (isResellable) return false;
     // Eclipse Savers products are NOT eligible for discounts
