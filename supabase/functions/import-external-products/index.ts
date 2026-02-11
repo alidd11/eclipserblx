@@ -157,12 +157,13 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   // Match all markdown images with http/https URLs
   const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
   const images: string[] = [];
-  const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon)\b/i;
+  const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|brand)\b/i;
+  const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com)\b/i;
   let imgMatch;
   while ((imgMatch = imageRegex.exec(markdown)) !== null) {
     const imgUrl = imgMatch[2];
-    // Skip tiny UI icons, avatars, etc.
     if (skipImagePatterns.test(imgUrl)) continue;
+    if (skipImageDomains.test(imgUrl)) continue;
     // Keep the full proxy URL - stripping plain/ causes files.clearlydev.com to return Roblox placeholders
     const cleanUrl = imgUrl;
     if (!images.includes(cleanUrl) && images.length < 4) {
@@ -278,6 +279,13 @@ async function downloadAndUploadImage(
     const response = await fetch(imageUrl);
     if (!response.ok) {
       console.error(`Failed to download image: ${response.status}`);
+      return null;
+    }
+
+    // Reject Roblox placeholder images (redirects or tiny fallback icons)
+    const finalUrl = response.url || imageUrl;
+    if (/\b(rbxcdn\.com|roblox\.com)\b/i.test(finalUrl)) {
+      console.log(`Skipping Roblox placeholder image: ${finalUrl}`);
       return null;
     }
     
