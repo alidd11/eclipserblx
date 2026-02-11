@@ -3677,6 +3677,7 @@ export type Database = {
           discord_message_id: string | null
           discord_thread_id: string | null
           download_count: number | null
+          early_access_hours: number | null
           eclipse_free_eligible: boolean
           id: string
           images: string[] | null
@@ -3709,6 +3710,7 @@ export type Database = {
           discord_message_id?: string | null
           discord_thread_id?: string | null
           download_count?: number | null
+          early_access_hours?: number | null
           eclipse_free_eligible?: boolean
           id?: string
           images?: string[] | null
@@ -3741,6 +3743,7 @@ export type Database = {
           discord_message_id?: string | null
           discord_thread_id?: string | null
           download_count?: number | null
+          early_access_hours?: number | null
           eclipse_free_eligible?: boolean
           id?: string
           images?: string[] | null
