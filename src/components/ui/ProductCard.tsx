@@ -70,9 +70,10 @@ interface ProductCardProps {
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
   averageRating?: number;
+  storeEclipseEnabled?: boolean;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -89,10 +90,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     ? showNewBadge 
     : createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
-  // Always show member price for eligible products (not resellable)
-  const isEligible = isEligibleForDiscount(categoryId, isResellable);
-  const memberPrice = getMemberPrice(price, categoryId, isResellable);
-  const discountPercent = getDiscountPercent(categoryId, isResellable);
+  // Always show member price for eligible products (not resellable, store opted in)
+  const isEligible = isEligibleForDiscount(categoryId, isResellable, storeEclipseEnabled);
+  const memberPrice = isEligible ? getMemberPrice(price, categoryId, isResellable) : price;
+  const discountPercent = isEligible ? getDiscountPercent(categoryId, isResellable) : 0;
   const hasMemberDiscount = isEligible && memberPrice < price;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {

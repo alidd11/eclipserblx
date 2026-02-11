@@ -42,7 +42,7 @@ export default function Checkout() {
   // Calculate Eclipse+ member pricing
   const calculateMemberPricing = () => {
     const itemsWithMemberPricing = items.map(item => {
-      const eligible = isEligibleForDiscount(item.category_id, item.is_resellable);
+      const eligible = isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
       const memberPrice = eligible ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
       return {
         ...item,

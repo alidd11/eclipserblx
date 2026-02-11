@@ -6384,6 +6384,7 @@ export type Database = {
           description: string | null
           discord_guild_id: string | null
           discord_url: string | null
+          eclipse_plus_discount_enabled: boolean
           featured_product_ids: string[] | null
           follower_count: number | null
           font_body: string | null
@@ -6451,6 +6452,7 @@ export type Database = {
           description?: string | null
           discord_guild_id?: string | null
           discord_url?: string | null
+          eclipse_plus_discount_enabled?: boolean
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -6518,6 +6520,7 @@ export type Database = {
           description?: string | null
           discord_guild_id?: string | null
           discord_url?: string | null
+          eclipse_plus_discount_enabled?: boolean
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null

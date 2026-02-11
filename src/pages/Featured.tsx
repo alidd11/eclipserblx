@@ -25,7 +25,7 @@ export default function Featured() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted)`)
+        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted, eclipse_plus_discount_enabled)`)
         .eq('is_featured', true)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
@@ -47,7 +47,7 @@ export default function Featured() {
       
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted)`)
+        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted, eclipse_plus_discount_enabled)`)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .gte('created_at', weekAgo.toISOString())
@@ -66,7 +66,7 @@ export default function Featured() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted)`)
+        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted, eclipse_plus_discount_enabled)`)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .order('download_count', { ascending: false })
@@ -149,6 +149,7 @@ export default function Featured() {
                     isVerified={product.stores?.is_verified}
                     isTrusted={product.stores?.is_trusted}
                     isResellable={product.is_resellable}
+                    storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
                   />
                 ))}
               </div>
@@ -212,6 +213,7 @@ export default function Featured() {
                     isVerified={product.stores?.is_verified}
                     isTrusted={product.stores?.is_trusted}
                     isResellable={product.is_resellable}
+                    storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
                   />
                 ))}
               </div>
@@ -288,6 +290,7 @@ export default function Featured() {
                     isVerified={product.stores?.is_verified}
                     isTrusted={product.stores?.is_trusted}
                     isResellable={product.is_resellable}
+                    storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
                   />
                 ))}
               </div>
@@ -338,9 +341,10 @@ function HeroProductCard({ product }: { product: any }) {
   const isVideo = isVideoUrl(displayMedia);
   
   // Pass is_resellable to properly exclude resell items from Eclipse+ pricing
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discount = getDiscountPercent(product.category_id, product.is_resellable);
+  const storeEclipseEnabled = product.stores?.eclipse_plus_discount_enabled;
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, storeEclipseEnabled);
+  const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
+  const discount = isEligible ? getDiscountPercent(product.category_id, product.is_resellable) : 0;
 
   return (
     <Link 

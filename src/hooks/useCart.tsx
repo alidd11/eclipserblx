@@ -14,6 +14,7 @@ export interface CartItem {
   quantity?: number; // For bundle purchases (e.g., 3-pack of bot licenses)
   bundle_id?: string; // Reference to the bundle if applicable
   bundle_label?: string; // Human-readable bundle name (e.g., "3-Pack")
+  store_eclipse_enabled?: boolean; // Whether store has Eclipse+ discounts enabled
 }
 
 interface CartContextType {
