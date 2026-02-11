@@ -192,11 +192,14 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   
   const categorySlug = suggestCategory(name, description);
   
+  // ClearlyDev pages always append 2 platform branding logos at the end — remove them
+  const cleanedImages = images.length > 2 ? images.slice(0, -2) : images;
+
   return {
     name,
     description,
     price,
-    images,
+    images: cleanedImages,
     sourceUrl: url,
     platform: 'clearlydev',
     suggestedCategoryId: categorySlug,
