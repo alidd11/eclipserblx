@@ -340,7 +340,7 @@ serve(async (req) => {
       );
     }
 
-    const { action, storeUrl, productUrl, productUrls, platform, downloadImages } = await req.json();
+    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId } = await req.json();
 
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlApiKey) {
@@ -356,25 +356,49 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('discord_username, discord_id')
-      .eq('user_id', user.id)
-      .single();
+    // Check if user is admin (allows importing for other stores)
+    const { data: userRoles } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+    const isAdmin = userRoles?.some(r => r.role === 'admin') ?? false;
 
-    if (!profile?.discord_username && !profile?.discord_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "You must link your Discord account first" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Skip Discord check for admins importing on behalf of another store
+    if (!isAdmin) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('discord_username, discord_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile?.discord_username && !profile?.discord_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: "You must link your Discord account first" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
-    const { data: store } = await supabaseAdmin
-      .from('stores')
-      .select('id, name, slug')
-      .eq('owner_id', user.id)
-      .eq('status', 'approved')
-      .single();
+    let store: { id: string; name: string; slug: string } | null = null;
+
+    if (isAdmin && targetStoreId) {
+      // Admin importing on behalf of another store
+      const { data: targetStore } = await supabaseAdmin
+        .from('stores')
+        .select('id, name, slug')
+        .eq('id', targetStoreId)
+        .eq('status', 'approved')
+        .single();
+      store = targetStore;
+    } else {
+      const { data: ownStore } = await supabaseAdmin
+        .from('stores')
+        .select('id, name, slug')
+        .eq('owner_id', user.id)
+        .eq('status', 'approved')
+        .single();
+      store = ownStore;
+    }
 
     if (!store) {
       return new Response(
