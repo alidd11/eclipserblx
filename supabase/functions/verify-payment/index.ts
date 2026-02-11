@@ -287,7 +287,9 @@ serve(async (req) => {
           
           if (sellerId) {
             // Calculate net-based seller earnings
-            const grossAmount = item.price;
+            // Use full product price so sellers earn the same regardless of Eclipse+ discounts
+            // The platform absorbs the Eclipse+ discount
+            const grossAmount = product.price;
             // Allocate Stripe fee proportionally across all items
             const proportionalStripeFee = sellerProductCount > 0 
               ? stripeProcessingFee / sellerProductCount 
