@@ -138,6 +138,12 @@ const SellerAnalytics = lazy(() => import("@/pages/seller/SellerAnalytics"));
 const SellerDocuments = lazy(() => import("@/pages/seller/SellerDocuments"));
 const SellerTermsOfService = lazy(() => import("@/pages/seller/SellerTermsOfService"));
 const SellerGuide = lazy(() => import("@/pages/seller/SellerGuide"));
+const ProductListingGuide = lazy(() => import("@/pages/seller/documents/ProductListingGuide"));
+const PayoutsFinanceGuide = lazy(() => import("@/pages/seller/documents/PayoutsFinanceGuide"));
+const StoreSetupGuide = lazy(() => import("@/pages/seller/documents/StoreSetupGuide"));
+const IntegrationsGuide = lazy(() => import("@/pages/seller/documents/IntegrationsGuide"));
+const CommunityGuidelines = lazy(() => import("@/pages/seller/documents/CommunityGuidelines"));
+const SellerFAQ = lazy(() => import("@/pages/seller/documents/SellerFAQ"));
 const SellerSettingsProfile = lazy(() => import("@/pages/seller/SellerSettingsProfile"));
 const SellerSettingsAppearance = lazy(() => import("@/pages/seller/SellerSettingsAppearance"));
 const SellerSettingsTeam = lazy(() => import("@/pages/seller/SellerSettingsTeam"));
@@ -248,6 +254,12 @@ export function AppRoutes() {
         <Route path="/seller/documents" element={<SellerDocuments />} />
         <Route path="/seller/documents/terms" element={<SellerTermsOfService />} />
         <Route path="/seller/documents/guide" element={<SellerGuide />} />
+        <Route path="/seller/documents/product-listing" element={<ProductListingGuide />} />
+        <Route path="/seller/documents/payouts-finance" element={<PayoutsFinanceGuide />} />
+        <Route path="/seller/documents/store-setup" element={<StoreSetupGuide />} />
+        <Route path="/seller/documents/integrations" element={<IntegrationsGuide />} />
+        <Route path="/seller/documents/community-guidelines" element={<CommunityGuidelines />} />
+        <Route path="/seller/documents/faq" element={<SellerFAQ />} />
         <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
         <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
         <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
