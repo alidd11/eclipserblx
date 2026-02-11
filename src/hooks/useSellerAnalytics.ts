@@ -23,6 +23,30 @@ const getVisitorId = (): string => {
   return visitorId;
 };
 
+// Get visitor country via free geo-IP API (cached per session)
+let countryPromise: Promise<string | null> | null = null;
+
+const getVisitorCountry = (): Promise<string | null> => {
+  if (countryPromise) return countryPromise;
+  
+  const cached = safeStorage.getItem('eclipse_visitor_country');
+  if (cached) {
+    countryPromise = Promise.resolve(cached);
+    return countryPromise;
+  }
+
+  countryPromise = fetch('https://ipapi.co/json/')
+    .then(res => res.json())
+    .then(data => {
+      const country = data.country_name || null;
+      if (country) safeStorage.setItem('eclipse_visitor_country', country);
+      return country;
+    })
+    .catch(() => null);
+  
+  return countryPromise;
+};
+
 // Get device type
 const getDeviceType = (): string => {
   const ua = navigator.userAgent;
@@ -53,6 +77,7 @@ export function useSellerAnalytics(storeId: string | undefined) {
     }
 
     try {
+      const country = await getVisitorCountry();
       await supabase
         .from('seller_analytics')
         .insert({
@@ -62,7 +87,7 @@ export function useSellerAnalytics(storeId: string | undefined) {
           visitor_id: getVisitorId(),
           referrer: document.referrer || null,
           device_type: getDeviceType(),
-          country: null, // Would need a geo-IP service for this
+          country,
         });
     } catch (error) {
       console.error('Analytics tracking error:', error);
