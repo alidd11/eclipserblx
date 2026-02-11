@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+// Separator removed - no longer needed
 import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
 import { 
   Bell,
@@ -362,79 +362,46 @@ export default function SellerSettingsNotifications() {
                 Discord Role Integration
               </CardTitle>
               <CardDescription>
-                Automatically assign roles to customers who purchase from your store
+                Automatically assign roles to customers who purchase from your store via the Eclipse Portal Bot
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">Setup Required</p>
-                  <p className="text-xs text-muted-foreground">
-                    To use role integration, you'll need to create a Discord bot and invite it to your server with the "Manage Roles" permission.{' '}
-                    <a 
-                      href="https://discord.com/developers/applications" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Create a Discord Application
-                      <ExternalLink className="h-3 w-3 inline ml-1" />
-                    </a>
-                  </p>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="discord_bot_token" className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Bot Token
-                  </Label>
-                  <Input
-                    id="discord_bot_token"
-                    type="password"
-                    value={formData.discord_bot_token}
-                    onChange={(e) => setFormData({ ...formData, discord_bot_token: e.target.value })}
-                    placeholder="Your Discord bot token"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Found in your Discord Developer Portal under "Bot" → "Token"
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="discord_guild_id">Server (Guild) ID</Label>
-                    <Input
-                      id="discord_guild_id"
-                      value={formData.discord_guild_id}
-                      onChange={(e) => setFormData({ ...formData, discord_guild_id: e.target.value })}
-                      placeholder="123456789012345678"
-                    />
+              {store?.credentials?.discord_guild_id ? (
+                <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <div>
+                    <p className="text-sm font-medium">Eclipse Portal Bot Connected</p>
                     <p className="text-xs text-muted-foreground">
-                      Enable Developer Mode, right-click your server → Copy ID
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="discord_role_id">Customer Role ID</Label>
-                    <Input
-                      id="discord_role_id"
-                      value={formData.discord_role_id}
-                      onChange={(e) => setFormData({ ...formData, discord_role_id: e.target.value })}
-                      placeholder="123456789012345678"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Right-click the role you want to assign → Copy ID
+                      Guild ID: <span className="font-mono">{store.credentials.discord_guild_id}</span> — Role integration uses the shared Eclipse Portal Bot.
                     </p>
                   </div>
                 </div>
+              ) : (
+                <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Add Eclipse Portal Bot First</p>
+                    <p className="text-xs text-muted-foreground">
+                      Go to <a href="/seller/discord" className="text-primary hover:underline">Discord Integration</a> and add the Eclipse Portal Bot to your server. The Guild ID will be auto-populated.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="discord_role_id">Customer Role ID</Label>
+                <Input
+                  id="discord_role_id"
+                  value={formData.discord_role_id}
+                  onChange={(e) => setFormData({ ...formData, discord_role_id: e.target.value })}
+                  placeholder="123456789012345678"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Right-click the role you want to assign to customers on purchase → Copy ID
+                </p>
               </div>
 
-              {formData.discord_bot_token && formData.discord_guild_id && formData.discord_role_id && (
+              {store?.credentials?.discord_guild_id && formData.discord_role_id && (
                 <div className="flex items-center gap-3 p-3 bg-[#5865F2]/10 border border-[#5865F2]/30 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-[#5865F2]" />
                   <div>
@@ -449,7 +416,7 @@ export default function SellerSettingsNotifications() {
           </Card>
 
           {/* Additional Role Configurations */}
-          {store?.id && formData.discord_bot_token && formData.discord_guild_id && (
+          {store?.id && store?.credentials?.discord_guild_id && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
