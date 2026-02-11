@@ -331,21 +331,32 @@ serve(async (req) => {
     );
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Not authenticated" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Invalid authentication" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    let user: { id: string } | null = null;
+
+    if (isServiceRole) {
+      // Service role bypass – treat as admin
+      user = { id: "service-role" };
+    } else {
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Not authenticated" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser(token);
+      
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Invalid authentication" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      user = authUser;
     }
 
     const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId } = await req.json();
@@ -365,11 +376,13 @@ serve(async (req) => {
     );
 
     // Check if user is admin (allows importing for other stores)
-    const { data: userRoles } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id);
-    const isAdmin = userRoles?.some(r => r.role === 'admin') ?? false;
+    const isAdmin = isServiceRole || (await (async () => {
+      const { data: userRoles } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user!.id);
+      return userRoles?.some(r => r.role === 'admin') ?? false;
+    })());
 
     // Skip Discord check for admins importing on behalf of another store
     if (!isAdmin) {
