@@ -166,7 +166,7 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
     if (skipImageDomains.test(imgUrl)) continue;
     // Keep the full proxy URL - stripping plain/ causes files.clearlydev.com to return Roblox placeholders
     const cleanUrl = imgUrl;
-    if (!images.includes(cleanUrl) && images.length < 4) {
+    if (!images.includes(cleanUrl)) {
       images.push(cleanUrl);
     }
   }
@@ -661,7 +661,7 @@ serve(async (req) => {
           const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
           const uploadedImages: string[] = [];
           
-          for (let i = 0; i < Math.min(product.images.length, 4); i++) {
+          for (let i = 0; i < product.images.length; i++) {
             const uploadedUrl = await downloadAndUploadImage(
               product.images[i],
               store.id,
