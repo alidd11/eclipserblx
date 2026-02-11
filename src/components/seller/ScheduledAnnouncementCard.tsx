@@ -1,78 +1,39 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { CalendarIcon, Send, Clock, Megaphone, Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Send, Megaphone, Loader2, Bot, Webhook } from 'lucide-react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 interface AnnouncementFormData {
   title: string;
   description: string;
-  scheduledDate: Date | undefined;
-  scheduledTime: string;
   announcementType: 'product_release' | 'promotion' | 'update' | 'custom';
   linkUrl: string;
+  channelId: string;
+  pingRoles: boolean;
 }
 
 export function ScheduledAnnouncementCard() {
   const { store } = useSellerStatus();
-  const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false);
+  const hasBotConnected = !!store?.credentials?.discord_guild_id;
+  const hasWebhook = !!store?.credentials?.discord_webhook_url;
+
   const [formData, setFormData] = useState<AnnouncementFormData>({
     title: '',
     description: '',
-    scheduledDate: undefined,
-    scheduledTime: '12:00',
     announcementType: 'custom',
     linkUrl: '',
-  });
-
-  const sendAnnouncement = useMutation({
-    mutationFn: async (immediate: boolean) => {
-      if (!store?.credentials?.discord_webhook_url) {
-        throw new Error('Please configure your Discord webhook URL in Settings → Notifications');
-      }
-
-      const embed = getEmbed();
-      
-      const response = await fetch(store.credentials.discord_webhook_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: store?.name || 'Store Announcement',
-          embeds: [embed],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send announcement');
-      }
-
-      return { immediate };
-    },
-    onSuccess: ({ immediate }) => {
-      toast.success(immediate ? 'Announcement sent!' : 'Announcement scheduled!');
-      setFormData({
-        title: '',
-        description: '',
-        scheduledDate: undefined,
-        scheduledTime: '12:00',
-        announcementType: 'custom',
-        linkUrl: '',
-      });
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    channelId: '',
+    pingRoles: false,
   });
 
   const getEmbed = () => {
@@ -84,7 +45,6 @@ export function ScheduledAnnouncementCard() {
     };
 
     const config = typeConfig[formData.announcementType];
-    
     const fields: any[] = [];
     if (formData.linkUrl) {
       fields.push({
@@ -99,14 +59,78 @@ export function ScheduledAnnouncementCard() {
       description: formData.description,
       color: config.color,
       fields: fields.length > 0 ? fields : undefined,
-      footer: {
-        text: `${store?.name || 'Store'} • Announcement`,
-      },
+      footer: { text: `${store?.name || 'Store'} • Announcement` },
       timestamp: new Date().toISOString(),
     };
   };
 
-  const canSend = formData.title.trim() && formData.description.trim() && store?.credentials?.discord_webhook_url;
+  const sendAnnouncement = useMutation({
+    mutationFn: async () => {
+      const embed = getEmbed();
+
+      if (hasBotConnected && formData.channelId.trim()) {
+        // Bot-powered sending via edge function
+        const rolePings: string[] = [];
+        if (formData.pingRoles) {
+          if (store?.credentials?.product_drops_role_id) {
+            rolePings.push(store.credentials.product_drops_role_id);
+          }
+          if (store?.credentials?.early_product_drops_role_id) {
+            rolePings.push(store.credentials.early_product_drops_role_id);
+          }
+        }
+
+        const content = rolePings.length > 0
+          ? rolePings.map(id => `<@&${id}>`).join(' ')
+          : undefined;
+
+        const { data, error } = await supabase.functions.invoke('send-product-drop-embed', {
+          body: {
+            channel_id: formData.channelId.trim(),
+            embed,
+            content,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      } else if (hasWebhook) {
+        // Webhook fallback
+        const response = await fetch(store!.credentials!.discord_webhook_url!, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: store?.name || 'Store Announcement',
+            embeds: [embed],
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to send announcement via webhook');
+      } else {
+        throw new Error('No sending method configured. Add the Eclipse Portal Bot or configure a webhook.');
+      }
+    },
+    onSuccess: () => {
+      toast.success('Announcement sent!');
+      setFormData({
+        title: '',
+        description: '',
+        announcementType: 'custom',
+        linkUrl: '',
+        channelId: formData.channelId, // Keep channel ID for convenience
+        pingRoles: false,
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const canSend = formData.title.trim() && formData.description.trim() && (
+    (hasBotConnected && formData.channelId.trim()) || hasWebhook
+  );
+
+  const sendingMethod = hasBotConnected && formData.channelId.trim() ? 'bot' : hasWebhook ? 'webhook' : null;
 
   return (
     <Card>
@@ -120,9 +144,29 @@ export function ScheduledAnnouncementCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!store?.credentials?.discord_webhook_url && (
+        {!hasBotConnected && !hasWebhook && (
           <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm text-yellow-600 dark:text-yellow-400">
-            Configure your Discord webhook in Settings → Notifications to enable announcements.
+            Add the Eclipse Portal Bot above or configure a Discord webhook in Settings → Notifications to enable announcements.
+          </div>
+        )}
+
+        {/* Bot Channel ID */}
+        {hasBotConnected && (
+          <div className="space-y-2">
+            <Label htmlFor="channelId" className="flex items-center gap-2">
+              <Bot className="h-4 w-4" />
+              Channel ID
+            </Label>
+            <Input
+              id="channelId"
+              value={formData.channelId}
+              onChange={(e) => setFormData({ ...formData, channelId: e.target.value })}
+              placeholder="Right-click channel → Copy Channel ID"
+              className="font-mono"
+            />
+            <p className="text-xs text-muted-foreground">
+              The channel in your server where the announcement will be posted via the Eclipse Portal Bot.
+            </p>
           </div>
         )}
 
@@ -182,9 +226,26 @@ export function ScheduledAnnouncementCard() {
             />
           </div>
 
+          {/* Role Ping Toggle - only when using bot */}
+          {hasBotConnected && formData.channelId.trim() && (store?.credentials?.product_drops_role_id || store?.credentials?.early_product_drops_role_id) && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="space-y-0.5">
+                <Label htmlFor="pingRoles" className="text-sm font-medium">Ping Roles</Label>
+                <p className="text-xs text-muted-foreground">
+                  Mention your configured product drop roles
+                </p>
+              </div>
+              <Switch
+                id="pingRoles"
+                checked={formData.pingRoles}
+                onCheckedChange={(checked) => setFormData({ ...formData, pingRoles: checked })}
+              />
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button
-              onClick={() => sendAnnouncement.mutate(true)}
+              onClick={() => sendAnnouncement.mutate()}
               disabled={!canSend || sendAnnouncement.isPending}
               className="flex-1"
             >
@@ -195,6 +256,15 @@ export function ScheduledAnnouncementCard() {
               )}
               Send Now
             </Button>
+            {sendingMethod && (
+              <Badge variant="outline" className="self-center text-xs">
+                {sendingMethod === 'bot' ? (
+                  <><Bot className="h-3 w-3 mr-1" /> Via Portal Bot</>
+                ) : (
+                  <><Webhook className="h-3 w-3 mr-1" /> Via Webhook</>
+                )}
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>

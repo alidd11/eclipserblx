@@ -1,10 +1,11 @@
 import { SellerLayout } from '@/components/seller/SellerLayout';
+import { AddPortalBotCard } from '@/components/seller/AddPortalBotCard';
 import { ScheduledAnnouncementCard } from '@/components/seller/ScheduledAnnouncementCard';
 import { DiscordRolePingsCard } from '@/components/seller/DiscordRolePingsCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Settings, ExternalLink } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 export default function SellerDiscord() {
   return (
@@ -16,6 +17,9 @@ export default function SellerDiscord() {
             Connect with your community through Discord announcements and notifications.
           </p>
         </div>
+
+        {/* Portal Bot Card - Primary */}
+        <AddPortalBotCard />
 
         {/* Announcement Card */}
         <ScheduledAnnouncementCard />
