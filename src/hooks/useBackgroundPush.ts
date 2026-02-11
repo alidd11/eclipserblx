@@ -107,7 +107,7 @@ export function useBackgroundPush() {
 
       try {
         const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
+        const subscription = await (registration as any).pushManager.getSubscription();
         
         if (subscription) {
           // Verify it exists in database
@@ -174,7 +174,7 @@ export function useBackgroundPush() {
       const registration = await navigator.serviceWorker.ready;
 
       // Check for existing subscription
-      let subscription = await registration.pushManager.getSubscription();
+      let subscription = await (registration as any).pushManager.getSubscription();
       
       if (!subscription) {
         // Create new subscription
@@ -187,7 +187,7 @@ export function useBackgroundPush() {
         }
 
         const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
-        subscription = await registration.pushManager.subscribe({
+        subscription = await (registration as any).pushManager.subscribe({
           userVisibleOnly: true,
           // Important: pass the Uint8Array directly for maximum browser compatibility.
           // Cast is to satisfy TS DOM lib differences (ArrayBuffer vs SharedArrayBuffer typing).
@@ -248,7 +248,7 @@ export function useBackgroundPush() {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await (registration as any).pushManager.getSubscription();
 
       if (subscription) {
         // Remove from database first
