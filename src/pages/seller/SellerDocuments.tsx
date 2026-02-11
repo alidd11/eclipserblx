@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Users, Scale, ExternalLink, CheckCircle2, Clock, Filter, Bell, BellDot } from "lucide-react";
+import { FileText, Users, Scale, ExternalLink, CheckCircle2, Clock, Filter, Bell, BellDot, Package, Wallet, Palette, MessageSquare, Shield, HelpCircle } from "lucide-react";
 import { SellerLayout } from "@/components/seller/SellerLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,54 @@ const staticDocuments: StaticDocument[] = [
     description: "Learn about Eclipse's marketplace benefits, commission rates, and how to maximize your earnings as a seller.",
     icon: Users,
     href: "/seller/documents/guide",
+    category: "guide",
+  },
+  {
+    id: "product-listing",
+    title: "Product Listing Guide",
+    description: "Best practices for creating listings that sell — images, descriptions, pricing strategies, and file requirements.",
+    icon: Package,
+    href: "/seller/documents/product-listing",
+    category: "guide",
+  },
+  {
+    id: "payouts-finance",
+    title: "Payouts & Finance Guide",
+    description: "Understand your earnings, commission structure, payout methods, and how Eclipse+ discounts work.",
+    icon: Wallet,
+    href: "/seller/documents/payouts-finance",
+    category: "guide",
+  },
+  {
+    id: "store-setup",
+    title: "Store Setup & Customization",
+    description: "Step-by-step guide to themes, branding, typography, social links, and earning Trusted Seller status.",
+    icon: Palette,
+    href: "/seller/documents/store-setup",
+    category: "guide",
+  },
+  {
+    id: "integrations",
+    title: "Discord & Integrations",
+    description: "Set up Discord webhooks, bot licensing, role pings, and Roblox integrations for your store.",
+    icon: MessageSquare,
+    href: "/seller/documents/integrations",
+    category: "training",
+  },
+  {
+    id: "community-guidelines",
+    title: "Community Guidelines & Policies",
+    description: "Rules, prohibited content, enforcement actions, and dispute resolution process for sellers.",
+    icon: Shield,
+    href: "/seller/documents/community-guidelines",
+    category: "policy",
+  },
+  {
+    id: "seller-faq",
+    title: "FAQ & Troubleshooting",
+    description: "Answers to the most common questions about selling, payouts, store management, and more.",
+    icon: HelpCircle,
+    href: "/seller/documents/faq",
     category: "guide",
   },
 ];
