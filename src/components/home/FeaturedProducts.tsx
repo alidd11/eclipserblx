@@ -176,6 +176,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                       categoryId={currentProduct.category_id}
                       isFeatured={currentProduct.is_featured}
                       isResellable={currentProduct.is_resellable}
+                      storeEclipseEnabled={currentProduct.stores?.eclipse_plus_discount_enabled}
                     />
                   </div>
                 )}

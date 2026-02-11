@@ -35,14 +35,14 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 // Server-side Eclipse+ discount eligibility check
-function isEligibleForDiscount(categoryId: string | null | undefined, isResellable: boolean | null | undefined): boolean {
+function isEligibleForDiscount(categoryId: string | null | undefined, isResellable: boolean | null | undefined, storeEclipseEnabled?: boolean): boolean {
+  if (storeEclipseEnabled === false) return false;
   if (isResellable) return false;
   return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
 }
 
-// Server-side member price calculation
-function calculateMemberPrice(originalPrice: number, categoryId: string | null | undefined, isResellable: boolean | null | undefined): number {
-  if (!isEligibleForDiscount(categoryId, isResellable)) {
+function calculateMemberPrice(originalPrice: number, categoryId: string | null | undefined, isResellable: boolean | null | undefined, storeEclipseEnabled?: boolean): number {
+  if (!isEligibleForDiscount(categoryId, isResellable, storeEclipseEnabled)) {
     return originalPrice;
   }
   
@@ -140,7 +140,7 @@ serve(async (req) => {
     const productIds = items.map(item => item.id);
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
-      .select('id, name, price, category_id, is_resellable, slug')
+      .select('id, name, price, category_id, is_resellable, slug, stores(eclipse_plus_discount_enabled)')
       .in('id', productIds);
 
     if (productsError) {
@@ -175,7 +175,8 @@ serve(async (req) => {
 
       // Apply Eclipse+ discount server-side if user is a member
       if (isEclipseMember) {
-        finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable);
+        const storeEclipse = product.stores?.eclipse_plus_discount_enabled;
+        finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable, storeEclipse);
         if (finalPrice < originalPrice) {
           serverEclipseDiscount += (originalPrice - finalPrice);
         }

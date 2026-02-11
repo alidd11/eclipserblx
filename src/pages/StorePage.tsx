@@ -647,6 +647,7 @@ export default function StorePage() {
                           isResellable={product.is_resellable}
                           showNewBadge={isNewProduct}
                           createdAt={product.created_at}
+                          storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                         />
                       );
                     })}
@@ -781,6 +782,7 @@ export default function StorePage() {
                             isResellable={product.is_resellable}
                             showNewBadge={isNewProduct}
                             createdAt={product.created_at}
+                            storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                           />
                         );
                       })}
