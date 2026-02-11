@@ -163,7 +163,8 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
     const imgUrl = imgMatch[2];
     // Skip tiny UI icons, avatars, etc.
     if (skipImagePatterns.test(imgUrl)) continue;
-    const cleanUrl = imgUrl.includes('plain/') ? imgUrl.split('plain/')[1] : imgUrl;
+    // Keep the full proxy URL - stripping plain/ causes files.clearlydev.com to return Roblox placeholders
+    const cleanUrl = imgUrl;
     if (!images.includes(cleanUrl) && images.length < 4) {
       images.push(cleanUrl);
     }
