@@ -154,11 +154,15 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
 
   if (!name) return null;
   
-  const imageRegex = /!\[([^\]]*)\]\((https:\/\/files[^\)]+)\)/g;
+  // Match all markdown images with http/https URLs
+  const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
   const images: string[] = [];
+  const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon)\b/i;
   let imgMatch;
   while ((imgMatch = imageRegex.exec(markdown)) !== null) {
     const imgUrl = imgMatch[2];
+    // Skip tiny UI icons, avatars, etc.
+    if (skipImagePatterns.test(imgUrl)) continue;
     const cleanUrl = imgUrl.includes('plain/') ? imgUrl.split('plain/')[1] : imgUrl;
     if (!images.includes(cleanUrl) && images.length < 4) {
       images.push(cleanUrl);
