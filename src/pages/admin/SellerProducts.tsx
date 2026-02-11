@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -355,7 +356,16 @@ export default function SellerProducts() {
               </div>
               <div>
                 <span className="text-muted-foreground text-sm">Description:</span>
-                <p className="mt-1 text-sm">{selectedProduct?.description || "No description"}</p>
+                {selectedProduct?.description ? (
+                  <div
+                    className="mt-1 text-sm prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(selectedProduct.description),
+                    }}
+                  />
+                ) : (
+                  <p className="mt-1 text-sm text-muted-foreground">No description</p>
+                )}
               </div>
               {/* Show moderation flags in detail */}
               {selectedProduct?.moderation_flags && (
