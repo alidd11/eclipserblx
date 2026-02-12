@@ -145,7 +145,7 @@ function getPaymentLabel(method?: string): string {
   }
 }
 
-function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: EnrichedItem[]): string {
+function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: EnrichedItem[], pdfDownloadUrl?: string | null): string {
   const hasBotPurchase = data.hasBotPurchase || data.botInstallationCodes?.length || data.items.some(item =>
     item.category_slug === 'bots' || (item.product_name || item.name || '').toLowerCase().includes('bot')
   );
@@ -353,9 +353,12 @@ function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: Enrich
                   <td style="padding-right: 10px;">
                     <a href="https://eclipserblx.com/downloads" style="display: inline-block; background: #a855f7; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">Access Downloads</a>
                   </td>
-                  <td>
+                  <td style="padding-right: 10px;">
                     <a href="https://eclipserblx.com/my-purchases" style="display: inline-block; background: #1e1e2e; color: #e4e4e7; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; border: 1px solid #2a2a3e;">View Order</a>
                   </td>
+                  ${pdfDownloadUrl ? `<td>
+                    <a href="${pdfDownloadUrl}" style="display: inline-block; background: #1e1e2e; color: #e4e4e7; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; border: 1px solid #2a2a3e;">📄 Download Receipt</a>
+                  </td>` : ''}
                 </tr>
               </table>
             </td>
@@ -553,36 +556,47 @@ const handler = async (req: Request): Promise<Response> => {
     const enrichedItems = await enrichItems(data.items);
     logStep("Enrichment complete", { enrichedCount: enrichedItems.filter(i => i.image_url).length });
 
-    // Generate PDF receipt attachment
+    // Generate PDF receipt and upload to storage
     logStep("Generating PDF receipt");
     const pdfBytes = await generatePdfReceipt(data, enrichedItems);
     logStep("PDF generated", { byteLength: pdfBytes.length });
 
-    // Generate HTML email
-    const emailHtml = generateEmailHtml(data, enrichedItems);
+    // Upload PDF to Supabase Storage for download link
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // Convert to base64 safely for Resend API
-    let binary = '';
-    const chunkSize = 8192;
-    for (let i = 0; i < pdfBytes.length; i += chunkSize) {
-      const chunk = pdfBytes.subarray(i, i + chunkSize);
-      binary += String.fromCharCode(...chunk);
+    const pdfFilename = `receipts/${data.orderId.substring(0, 8)}-${Date.now()}.pdf`;
+    const { error: uploadError } = await supabase.storage
+      .from("product-assets")
+      .upload(pdfFilename, pdfBytes, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    let pdfDownloadUrl: string | null = null;
+    if (uploadError) {
+      logStep("PDF upload failed (non-fatal)", { error: uploadError.message });
+    } else {
+      // Create a signed URL valid for 30 days
+      const { data: signedData } = await supabase.storage
+        .from("product-assets")
+        .createSignedUrl(pdfFilename, 60 * 60 * 24 * 30);
+      pdfDownloadUrl = signedData?.signedUrl || null;
+      logStep("PDF uploaded and signed URL created", { url: pdfDownloadUrl ? "yes" : "no" });
     }
-    const pdfBase64 = btoa(binary);
+
+    // Generate HTML email with PDF download link
+    const emailHtml = generateEmailHtml(data, enrichedItems, pdfDownloadUrl);
 
     logStep("Sending confirmation email via Resend API");
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    const emailPayload = {
+    const emailPayload: any = {
       from: "Eclipse <noreply@eclipserblx.com>",
       to: [data.customerEmail],
       subject: `Receipt - ${data.orderId.length > 12 ? data.orderId.substring(0, 12) : data.orderId}`,
       html: emailHtml,
-      attachments: [
-        {
-          filename: `Eclipse-Receipt-${data.orderId.substring(0, 8)}.pdf`,
-          content: pdfBase64,
-        },
-      ],
     };
 
     const emailRes = await fetch("https://api.resend.com/emails", {
