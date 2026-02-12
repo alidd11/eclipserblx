@@ -375,39 +375,56 @@ function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: Enrich
 }
 
 function generateTextReceipt(data: OrderConfirmationRequest, enrichedItems: EnrichedItem[]): string {
-  const w = 48;
+  const w = 52;
+  const sep = '─'.repeat(w);
   const pad = (left: string, right: string) => {
     const gap = Math.max(2, w - left.length - right.length);
     return left + ' '.repeat(gap) + right;
   };
 
-  const lines: string[] = [];
   const discount = data.discount || 0;
+  const botCodes = data.botInstallationCodes || [];
+  const lines: string[] = [];
 
+  // Header
   lines.push('');
-  lines.push('  ECLIPSE');
-  lines.push('  Order Receipt');
+  lines.push('  ╔═══════════════════════════════════════════════╗');
+  lines.push('  ║              E C L I P S E                    ║');
+  lines.push('  ║            Order Receipt                      ║');
+  lines.push('  ╚═══════════════════════════════════════════════╝');
   lines.push('');
-  lines.push('-'.repeat(w));
+
+  // Order details
+  lines.push(`  ${sep}`);
+  lines.push('  ORDER DETAILS');
+  lines.push(`  ${sep}`);
   lines.push('');
-  lines.push(pad('  Order', data.orderId));
+  lines.push(pad('  Order ID', data.orderId));
   lines.push(pad('  Date', formatDate(data.orderDate)));
   lines.push(pad('  Email', data.customerEmail));
   lines.push(pad('  Payment', getPaymentLabel(data.paymentMethod)));
   lines.push('');
-  lines.push('-'.repeat(w));
+
+  // Products
+  lines.push(`  ${sep}`);
+  lines.push('  ITEMS PURCHASED');
+  lines.push(`  ${sep}`);
   lines.push('');
 
-  enrichedItems.forEach((item) => {
+  enrichedItems.forEach((item, idx) => {
+    if (idx > 0) lines.push('');
     lines.push(`  ${item.product_name}`);
-    if (item.store_name) {
-      lines.push(`  Store: ${item.store_name}`);
-    }
-    lines.push(pad('', `£${item.price.toFixed(2)}`));
-    lines.push('');
+    if (item.store_name) lines.push(`    Store: ${item.store_name}`);
+    if (item.category_name) lines.push(`    Category: ${item.category_name}`);
+    lines.push(pad('    Price', `£${item.price.toFixed(2)}`));
   });
 
-  lines.push('-'.repeat(w));
+  lines.push('');
+
+  // Pricing
+  lines.push(`  ${sep}`);
+  lines.push('  PAYMENT SUMMARY');
+  lines.push(`  ${sep}`);
   lines.push('');
 
   if (discount > 0 || data.subtotal !== data.total) {
@@ -416,25 +433,27 @@ function generateTextReceipt(data: OrderConfirmationRequest, enrichedItems: Enri
   if (discount > 0) {
     lines.push(pad('  Discount', `-£${discount.toFixed(2)}`));
   }
-  lines.push(pad('  Total', `£${data.total.toFixed(2)}`));
+  lines.push(pad('  Total Paid', `£${data.total.toFixed(2)}`));
   lines.push('');
 
-  const botCodes = data.botInstallationCodes || [];
+  // Bot codes
   if (botCodes.length > 0) {
-    lines.push('-'.repeat(w));
-    lines.push('');
-    lines.push('  Installation Codes');
+    lines.push(`  ${sep}`);
+    lines.push('  INSTALLATION CODES');
+    lines.push(`  ${sep}`);
     lines.push('');
     botCodes.forEach(code => {
       lines.push(`  ${code.product_name}`);
-      lines.push(`  ${code.installation_code}`);
+      lines.push(`  Code: ${code.installation_code}`);
       lines.push('');
     });
   }
 
-  lines.push('-'.repeat(w));
+  // Footer
+  lines.push(`  ${sep}`);
+  lines.push('');
   lines.push('  eclipserblx.com');
-  lines.push(`  © ${new Date().getFullYear()} Eclipse`);
+  lines.push(`  © ${new Date().getFullYear()} Eclipse. All rights reserved.`);
   lines.push('');
 
   return lines.join('\n');
