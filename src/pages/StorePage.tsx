@@ -545,10 +545,6 @@ export default function StorePage() {
                 <span className="font-medium">{store.product_count || 0} Products</span>
               </div>
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{store.total_sales || 0} Sales</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{store.follower_count || 0} Followers</span>
               </div>
