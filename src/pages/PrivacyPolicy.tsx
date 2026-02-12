@@ -55,8 +55,9 @@ export default function PrivacyPolicy() {
               <li>Username</li>
               <li>Account credentials (securely hashed)</li>
               <li>Purchase and order history</li>
-              <li>Download records</li>
+              <li>Download records (including IP address, device information, and timestamps)</li>
               <li>Subscription status (e.g., Eclipse+ membership)</li>
+              <li>Digital watermark identifiers embedded in downloaded product files for anti-piracy purposes</li>
             </ul>
 
             <h3 className="font-semibold text-lg mt-6 mb-3">Payment Information</h3>

@@ -125,6 +125,18 @@ export default function TermsOfService() {
               <li>Remove any watermarks, credits, or attribution</li>
               <li>Use content for illegal purposes</li>
             </ul>
+
+            <h3 className="font-semibold text-lg mt-6 mb-3">Digital Watermarking</h3>
+            <p className="text-muted-foreground">
+              To protect sellers' intellectual property and deter piracy, certain digital products 
+              (including Lua scripts) are automatically watermarked with a unique, traceable identifier 
+              linked to your purchase at the time of download. This watermark is embedded within the 
+              file and does not affect the product's functionality. Removing, altering, or tampering 
+              with watermarks is strictly prohibited and may result in account suspension. If a 
+              watermarked file is found to have been redistributed without authorisation, we reserve 
+              the right to trace the leak back to the original purchaser and take appropriate action, 
+              including account termination and legal proceedings.
+            </p>
           </section>
 
           {/* Pricing and Payment */}

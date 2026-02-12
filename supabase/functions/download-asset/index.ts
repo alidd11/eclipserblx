@@ -25,6 +25,59 @@ function getClientIp(req: Request): string {
     || "unknown";
 }
 
+// Generate a unique watermark identifier from user/order data
+function generateWatermarkHash(userId: string, orderId: string, productId: string): string {
+  // Create a deterministic but opaque hash from user + order + product
+  const raw = `${userId}:${orderId}:${productId}`;
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Convert to alphanumeric string
+  const hex = Math.abs(hash).toString(36).toUpperCase();
+  return `ECL-${hex.padStart(8, '0').slice(0, 8)}`;
+}
+
+// Encode watermark ID into a Lua-safe obfuscated variable
+function generateLuaWatermark(watermarkId: string): string {
+  // Encode the watermark as a series of string.char calls to make it less obvious
+  const chars = watermarkId.split('').map(c => c.charCodeAt(0));
+  const charStr = chars.join(',');
+  
+  const lines = [
+    `-- Eclipse Marketplace | Licensed Copy`,
+    `-- Unauthorized redistribution is prohibited`,
+    `-- https://eclipserblx.com/terms`,
+    `local _=string.char(${charStr}) --[[ license ]]`,
+  ];
+  return lines.join('\n');
+}
+
+// Inject watermark into Lua file content
+function watermarkLuaFile(content: string, userId: string, orderId: string, productId: string): string {
+  const watermarkId = generateWatermarkHash(userId, orderId, productId);
+  const watermark = generateLuaWatermark(watermarkId);
+  
+  // Insert watermark after any existing header comments/shebangs, or at the very top
+  const lines = content.split('\n');
+  let insertIndex = 0;
+  
+  // Skip past any initial comment block
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith('--') || trimmed === '' || trimmed.startsWith('#!')) {
+      insertIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+  
+  lines.splice(insertIndex, 0, watermark, '');
+  return lines.join('\n');
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -84,7 +137,6 @@ serve(async (req) => {
     );
 
     // === RATE LIMITING ===
-    // Check per-product daily download limit
     const { data: perProductOk } = await supabaseAdmin.rpc('check_download_rate_limit', {
       p_user_id: user.id,
       p_product_id: productId,
@@ -102,7 +154,6 @@ serve(async (req) => {
       );
     }
 
-    // Check global hourly download limit
     const { data: globalOk } = await supabaseAdmin.rpc('check_global_download_rate_limit', {
       p_user_id: user.id,
       p_max_downloads_per_hour: MAX_DOWNLOADS_PER_HOUR_GLOBAL,
@@ -136,7 +187,6 @@ serve(async (req) => {
       .eq('product_id', productId)
       .in('orders.status', ['paid', 'completed']);
 
-    // Find an order that belongs to this user (by user_id or email)
     const userOrder = orderItems?.find((item: any) => 
       item.orders?.user_id === user.id || 
       item.orders?.customer_email === user.email
@@ -171,9 +221,9 @@ serve(async (req) => {
       );
     }
 
-    // Extract file extension from asset URL
     const assetUrl = product.asset_file_url;
     const fileExtension = assetUrl.includes('.') ? assetUrl.substring(assetUrl.lastIndexOf('.')) : '';
+    const isLuaFile = fileExtension.toLowerCase() === '.lua';
 
     // Log the download with IP and user agent
     const { error: logError } = await supabaseAdmin
@@ -196,10 +246,117 @@ serve(async (req) => {
       .update({ download_count: (product.download_count || 0) + 1 })
       .eq('id', productId);
 
-    // Generate signed URL for the file (valid for 5 minutes)
+    // === WATERMARKING for .lua files ===
+    if (isLuaFile) {
+      console.log(`Watermarking Lua file for user=${user.id}, product=${productId}`);
+      
+      // Download the original file
+      const { data: fileData, error: downloadError } = await supabaseAdmin.storage
+        .from('product-assets')
+        .download(assetUrl);
+      
+      if (downloadError || !fileData) {
+        console.error("Failed to download file for watermarking:", downloadError);
+        // Fall through to normal signed URL flow
+      } else {
+        try {
+          const originalContent = await fileData.text();
+          const watermarkedContent = watermarkLuaFile(
+            originalContent, 
+            user.id, 
+            (userOrder as any).order_id || userOrder.id, 
+            productId
+          );
+          
+          const watermarkId = generateWatermarkHash(
+            user.id, 
+            (userOrder as any).order_id || userOrder.id, 
+            productId
+          );
+          
+          console.log(`Watermark applied: ${watermarkId} for user=${user.id}`);
+          
+          // Create filename
+          const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
+          const fileName = `${sanitizedName}.lua`;
+          
+          // Return watermarked file directly as a download
+          const downloadToken = generateToken();
+          const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+          
+          // Store the watermarked content as a signed blob URL
+          // Upload to a temp path in product-assets
+          const tempPath = `_watermarked/${user.id}/${downloadToken}.lua`;
+          const watermarkedBlob = new Blob([watermarkedContent], { type: 'text/plain' });
+          
+          const { error: uploadError } = await supabaseAdmin.storage
+            .from('product-assets')
+            .upload(tempPath, watermarkedBlob, { 
+              contentType: 'application/octet-stream',
+              upsert: true 
+            });
+          
+          if (uploadError) {
+            console.error("Failed to upload watermarked file:", uploadError);
+            // Fall through to normal flow
+          } else {
+            // Create signed URL for the watermarked file
+            const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+              .from('product-assets')
+              .createSignedUrl(tempPath, 300);
+            
+            if (!signedUrlError && signedUrlData?.signedUrl) {
+              // Create one-time download token
+              const { error: tokenError } = await supabaseAdmin
+                .from('download_tokens')
+                .insert({
+                  token: downloadToken,
+                  user_id: user.id,
+                  product_id: productId,
+                  order_item_id: orderItemId || userOrder.id,
+                  signed_url: signedUrlData.signedUrl,
+                  expires_at: expiresAt.toISOString(),
+                });
+              
+              if (!tokenError) {
+                // Schedule cleanup of temp file (fire and forget)
+                setTimeout(async () => {
+                  try {
+                    await supabaseAdmin.storage
+                      .from('product-assets')
+                      .remove([tempPath]);
+                  } catch (e) {
+                    console.log("Temp watermark file cleanup failed (non-critical):", e);
+                  }
+                }, 6 * 60 * 1000); // 6 minutes (after token expires)
+                
+                const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+                const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
+                
+                return new Response(
+                  JSON.stringify({
+                    downloadUrl,
+                    productName: product.name,
+                    fileName,
+                    fileSize: watermarkedContent.length,
+                    expiresAt: expiresAt.toISOString(),
+                    oneTimeUse: true,
+                  }),
+                  { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Watermarking failed, falling back to normal download:", e);
+        }
+      }
+    }
+
+    // === STANDARD (non-Lua) DOWNLOAD FLOW ===
     const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
       .from('product-assets')
-      .createSignedUrl(product.asset_file_url, 300); // 5 minutes expiry
+      .createSignedUrl(product.asset_file_url, 300);
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
       console.error("Error creating signed URL:", signedUrlError);
@@ -209,9 +366,8 @@ serve(async (req) => {
       );
     }
 
-    // Create one-time download token
     const downloadToken = generateToken();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     const { error: tokenError } = await supabaseAdmin
       .from('download_tokens')
@@ -232,7 +388,6 @@ serve(async (req) => {
       );
     }
 
-    // Get file metadata for size
     let fileSize: number | null = null;
     try {
       const headResponse = await fetch(signedUrlData.signedUrl, { method: 'HEAD' });
@@ -246,20 +401,18 @@ serve(async (req) => {
 
     console.log(`Download token created: user=${user.id}, product=${productId}, ip=${clientIp}, token=${downloadToken.slice(0, 8)}...`);
 
-    // Create filename with proper extension
     const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
     const fileName = fileExtension ? `${sanitizedName}${fileExtension}` : sanitizedName;
 
-    // Return the one-time token URL instead of direct signed URL
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
 
     return new Response(
       JSON.stringify({ 
-        downloadUrl: downloadUrl,
+        downloadUrl,
         productName: product.name,
-        fileName: fileName,
-        fileSize: fileSize,
+        fileName,
+        fileSize,
         expiresAt: expiresAt.toISOString(),
         oneTimeUse: true,
       }),
@@ -283,7 +436,6 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
-  // Find the token
   const { data: tokenData, error: tokenError } = await supabaseAdmin
     .from('download_tokens')
     .select('*')
@@ -306,7 +458,6 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     );
   }
 
-  // Check if already used
   if (tokenData.used_at) {
     console.log("Token already used:", token.slice(0, 8), "at", tokenData.used_at);
     return new Response(
@@ -324,7 +475,6 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     );
   }
 
-  // Check if expired
   const expiresAt = new Date(tokenData.expires_at);
   if (expiresAt < new Date()) {
     console.log("Token expired:", token.slice(0, 8), "expired at", tokenData.expires_at);
@@ -342,12 +492,11 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     );
   }
 
-  // Mark token as used BEFORE redirecting (atomic operation)
   const { error: updateError } = await supabaseAdmin
     .from('download_tokens')
     .update({ used_at: new Date().toISOString() })
     .eq('id', tokenData.id)
-    .is('used_at', null); // Only update if still unused (prevents race conditions)
+    .is('used_at', null);
 
   if (updateError) {
     console.error("Failed to mark token as used:", updateError);
@@ -368,7 +517,6 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
   const clientIp = getClientIp(req);
   console.log(`Token redeemed: ${token.slice(0, 8)}... for product ${tokenData.product_id}, ip=${clientIp}`);
 
-  // Redirect to the signed URL for actual file download
   return new Response(null, {
     status: 302,
     headers: {
