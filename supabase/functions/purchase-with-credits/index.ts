@@ -255,6 +255,28 @@ serve(async (req) => {
           
           logStep("Seller balance updated", { sellerId: item.seller_id, amount: sellerEarnings });
 
+          // Send email + in-app sale notification to seller
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+            await fetch(`${supabaseUrl}/functions/v1/notify-seller-sale`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              },
+              body: JSON.stringify({
+                type: 'sale',
+                store_id: item.store_id,
+                order_id: order.id,
+                product_name: item.name,
+                amount: sellerEarnings,
+              }),
+            });
+            logStep("Seller sale notification triggered", { sellerId: item.seller_id, product: item.name });
+          } catch (notifyError) {
+            logStep("Seller sale notification error (non-fatal)", String(notifyError));
+          }
+
           // Send Discord notification to seller
           const { data: credentials } = await supabaseClient
             .from("store_credentials")
