@@ -1,4 +1,4 @@
-import { Star, Quote, BadgeCheck } from 'lucide-react';
+import { Star, Quote, BadgeCheck, Globe, MessageCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,6 +10,39 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+
+const SOURCE_CONFIG: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
+  ClearlyDev: {
+    icon: <Globe className="h-3 w-3" />,
+    label: 'ClearlyDev',
+    color: 'text-blue-400',
+  },
+  BuiltByBit: {
+    icon: <Globe className="h-3 w-3" />,
+    label: 'BuiltByBit',
+    color: 'text-orange-400',
+  },
+  Discord: {
+    icon: <MessageCircle className="h-3 w-3" />,
+    label: 'Discord',
+    color: 'text-indigo-400',
+  },
+  'Twitter/X': {
+    icon: <Globe className="h-3 w-3" />,
+    label: 'Twitter/X',
+    color: 'text-sky-400',
+  },
+  Trustpilot: {
+    icon: <Star className="h-3 w-3" />,
+    label: 'Trustpilot',
+    color: 'text-emerald-400',
+  },
+  'Google Reviews': {
+    icon: <Star className="h-3 w-3" />,
+    label: 'Google Reviews',
+    color: 'text-yellow-400',
+  },
+};
 
 interface Review {
   id: string;
@@ -174,11 +207,15 @@ export function ReviewsShowcase() {
                           </span>
                         )}
                       </div>
-                      {review.is_external && review.external_source && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          via {review.external_source}
-                        </p>
-                      )}
+                      {review.is_external && review.external_source && (() => {
+                        const source = SOURCE_CONFIG[review.external_source];
+                        return (
+                          <p className={`inline-flex items-center gap-1 text-xs mt-0.5 ${source?.color || 'text-muted-foreground'}`}>
+                            {source?.icon || <Globe className="h-3 w-3" />}
+                            via {source?.label || review.external_source}
+                          </p>
+                        );
+                      })()}
                       {review.products?.name && (
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {review.products.name}
