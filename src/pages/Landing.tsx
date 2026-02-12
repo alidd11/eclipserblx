@@ -5,6 +5,7 @@ import { LandingFeaturedProducts } from '@/components/landing/LandingFeaturedPro
 import { LandingTrustSignals } from '@/components/landing/LandingTrustSignals';
 import { LandingCTA } from '@/components/landing/LandingCTA';
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
+import { ReviewsShowcase } from '@/components/home/ReviewsShowcase';
 import { PWALandingHero } from '@/components/landing/PWALandingHero';
 import { usePWAStandalone } from '@/hooks/usePWAStandalone';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
@@ -42,6 +43,7 @@ export default function Landing() {
       </section>
       <LandingCategories />
       <LandingFeaturedProducts />
+      <ReviewsShowcase />
       <LandingTrustSignals />
       <LandingCTA />
     </MainLayout>
