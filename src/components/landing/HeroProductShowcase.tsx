@@ -135,11 +135,14 @@ export function HeroProductShowcase() {
         .eq('stores.is_active', true)
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
-        .order('created_at', { ascending: false })
-        .limit(15);
+        .limit(20);
 
       if (error) throw error;
-      return data as unknown as HeroProduct[];
+      const all = data as unknown as HeroProduct[];
+      return all
+        .map(p => ({ ...p, _sort: Math.random() }))
+        .sort((a, b) => a._sort - b._sort)
+        .slice(0, 15);
     },
     staleTime: 5 * 60 * 1000,
   });
