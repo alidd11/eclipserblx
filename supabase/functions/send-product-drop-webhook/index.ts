@@ -68,7 +68,7 @@ serve(async (req) => {
     }
 
     // Build the webhook payload
-    const productLink = `https://eclipserblx.com/products/${product.slug}`;
+    const productLink = `https://eclipserblx.com/products/${encodeURIComponent(product.slug)}`;
     const images = product.images || [];
     const storeName = (product as any).stores?.name || 'Unknown Store';
     const color = isEarlyAccess ? 0x8B5CF6 : 0x00CED1; // Violet for early, Cyan for regular
