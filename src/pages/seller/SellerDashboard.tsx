@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
 import { NotificationCenter } from '@/components/seller/NotificationCenter';
+import { FileReviewConsentBanner } from '@/components/seller/FileReviewConsentBanner';
 import { toast } from 'sonner';
 import { 
   Store, 
@@ -137,6 +138,9 @@ export default function SellerDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* File Review Consent Banners */}
+        <FileReviewConsentBanner />
 
         {/* Greeting Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

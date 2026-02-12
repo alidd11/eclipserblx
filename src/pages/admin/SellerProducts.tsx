@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -149,7 +149,24 @@ export default function SellerProducts() {
     setDeleteStep(1);
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, product?: any) => {
+    // Show consent status for flagged products
+    if (status === 'pending' && product?.moderation_flags && product?.file_review_requested_at) {
+      if (!product?.file_review_consented_at) {
+        return (
+          <Badge variant="secondary" className="gap-1">
+            <Lock className="h-3 w-3" />
+            Awaiting Consent
+          </Badge>
+        );
+      }
+      return (
+        <Badge className="bg-amber-500/20 text-amber-400 gap-1">
+          <Eye className="h-3 w-3" />
+          Ready for Review
+        </Badge>
+      );
+    }
     switch (status) {
       case "approved":
         return <Badge className="bg-green-500/20 text-green-400">Approved</Badge>;
@@ -242,7 +259,7 @@ export default function SellerProducts() {
                     </div>
                   )}
                   <div className="absolute top-2 right-2">
-                    {getStatusBadge(product.moderation_status || "pending")}
+                    {getStatusBadge(product.moderation_status || "pending", product)}
                   </div>
                 </div>
                 <CardHeader className="pb-2">
@@ -264,6 +281,19 @@ export default function SellerProducts() {
                     <span className="text-muted-foreground">Category</span>
                     <span>{product.categories?.name || "Uncategorized"}</span>
                   </div>
+                  {/* Consent status info */}
+                  {product.moderation_status === "pending" && product.moderation_flags && product.file_review_requested_at && !product.file_review_consented_at && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground p-2 rounded bg-muted/50">
+                      <Lock className="h-3 w-3" />
+                      <span>File sealed — waiting for seller consent since {new Date(product.file_review_requested_at).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {product.file_review_consented_at && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground p-2 rounded bg-green-500/5">
+                      <Check className="h-3 w-3 text-green-500" />
+                      <span>Seller consented {new Date(product.file_review_consented_at).toLocaleDateString()}</span>
+                    </div>
+                  )}
                   {/* Show moderation flags for pending products */}
                   {product.moderation_status === "pending" && renderModerationFlags(product.moderation_flags)}
                   <div className="flex gap-2">
@@ -278,18 +308,28 @@ export default function SellerProducts() {
                     </Button>
                     {product.moderation_status === "pending" && (
                       <>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => moderateMutation.mutate({
-                            productId: product.id,
-                            status: "approved",
-                            notes: "",
-                          })}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
+                        {/* Only allow approve/reject if consent given (or no flags) */}
+                        {(!product.moderation_flags || product.file_review_consented_at) ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => moderateMutation.mutate({
+                                productId: product.id,
+                                status: "approved",
+                                notes: "",
+                              })}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <Button size="sm" variant="secondary" disabled className="gap-1">
+                            <Lock className="h-3 w-3" />
+                            Sealed
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="destructive"
@@ -351,7 +391,7 @@ export default function SellerProducts() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Status:</span>
-                  <p>{getStatusBadge(selectedProduct?.moderation_status || "pending")}</p>
+                  <p>{getStatusBadge(selectedProduct?.moderation_status || "pending", selectedProduct)}</p>
                 </div>
               </div>
               <div>
