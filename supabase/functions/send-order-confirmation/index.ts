@@ -557,8 +557,11 @@ const handler = async (req: Request): Promise<Response> => {
     logStep("Generating PDF receipt");
     const pdfBytes = await generatePdfReceipt(data, enrichedItems);
     logStep("PDF generated", { byteLength: pdfBytes.length });
-    
-    // Convert Uint8Array to base64 safely (avoid stack overflow with spread)
+
+    // Generate HTML email
+    const emailHtml = generateEmailHtml(data, enrichedItems);
+
+    // Convert to base64 safely for Resend API
     let binary = '';
     const chunkSize = 8192;
     for (let i = 0; i < pdfBytes.length; i += chunkSize) {
@@ -566,13 +569,10 @@ const handler = async (req: Request): Promise<Response> => {
       binary += String.fromCharCode(...chunk);
     }
     const pdfBase64 = btoa(binary);
-    logStep("PDF base64 encoded", { base64Length: pdfBase64.length });
 
-    // Generate HTML email
-    const emailHtml = generateEmailHtml(data, enrichedItems);
-
-    logStep("Sending confirmation email");
-    const emailResponse = await resend.emails.send({
+    logStep("Sending confirmation email via Resend API");
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const emailPayload = {
       from: "Eclipse <noreply@eclipserblx.com>",
       to: [data.customerEmail],
       subject: `Receipt - ${data.orderId.length > 12 ? data.orderId.substring(0, 12) : data.orderId}`,
@@ -581,10 +581,23 @@ const handler = async (req: Request): Promise<Response> => {
         {
           filename: `Eclipse-Receipt-${data.orderId.substring(0, 8)}.pdf`,
           content: pdfBase64,
-          content_type: "application/pdf",
         },
       ],
+    };
+
+    const emailRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(emailPayload),
     });
+
+    const emailResponse = await emailRes.json();
+    if (!emailRes.ok) {
+      throw new Error(`Resend API error: ${JSON.stringify(emailResponse)}`);
+    }
 
     logStep("Email sent successfully", { response: emailResponse });
 
