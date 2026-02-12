@@ -49,51 +49,56 @@ function formatDate(dateString: string): string {
 }
 
 function generateTextReceipt(data: OrderConfirmationRequest): string {
-  const line = "=".repeat(50);
-  const thinLine = "-".repeat(50);
+  const w = 44;
+  const pad = (left: string, right: string) => {
+    const gap = Math.max(2, w - left.length - right.length);
+    return left + ' '.repeat(gap) + right;
+  };
+
+  const lines: string[] = [];
+
+  lines.push('ECLIPSE');
+  lines.push('');
+  lines.push('ORDER RECEIPT');
+  lines.push('-'.repeat(w));
+  lines.push('');
+  lines.push(pad('Order', data.orderId));
+  lines.push(pad('Date', formatDate(data.orderDate)));
+  lines.push(pad('Email', data.customerEmail));
+  lines.push(pad('Payment', data.paymentMethod.charAt(0).toUpperCase() + data.paymentMethod.slice(1)));
+  lines.push('');
+  lines.push('-'.repeat(w));
   
-  let receipt = `
-${line}
-                    ECLIPSE
-              Digital Marketplace
-                  RECEIPT
-${line}
-
-Order ID:      ${data.orderId}
-Date:          ${formatDate(data.orderDate)}
-Email:         ${data.customerEmail}
-Payment:       ${data.paymentMethod.charAt(0).toUpperCase() + data.paymentMethod.slice(1)}
-
-${thinLine}
-ITEMS
-${thinLine}
-`;
-
   data.items.forEach((item) => {
-    const nameLength = item.product_name.length;
-    const priceStr = `£${item.price.toFixed(2)}`;
-    const spaces = Math.max(2, 48 - nameLength - priceStr.length);
-    receipt += `${item.product_name}${" ".repeat(spaces)}${priceStr}\n`;
+    lines.push(pad(item.product_name, `£${item.price.toFixed(2)}`));
   });
 
-  receipt += `
-${thinLine}
-Subtotal:${" ".repeat(33)}£${data.subtotal.toFixed(2)}
-${line}
-TOTAL:${" ".repeat(36)}£${data.total.toFixed(2)}
-${line}
+  lines.push('-'.repeat(w));
+  lines.push('');
 
-        Thank you for your purchase!
-    
-    Website: eclipserblx.com
-    Support: support@eclipserblx.com
+  if (data.subtotal !== data.total) {
+    lines.push(pad('Subtotal', `£${data.subtotal.toFixed(2)}`));
+  }
+  lines.push(pad('Total', `£${data.total.toFixed(2)}`));
+  lines.push('');
 
-${line}
-          © ${new Date().getFullYear()} Eclipse
-           All rights reserved.
-`;
+  const botCodes = data.botInstallationCodes || [];
+  if (botCodes.length > 0) {
+    lines.push('-'.repeat(w));
+    lines.push('INSTALLATION CODES');
+    lines.push('');
+    botCodes.forEach(code => {
+      lines.push(`${code.product_name}`);
+      lines.push(`${code.installation_code}`);
+      lines.push('');
+    });
+  }
 
-  return receipt;
+  lines.push('-'.repeat(w));
+  lines.push('eclipserblx.com');
+  lines.push(`© ${new Date().getFullYear()} Eclipse`);
+
+  return lines.join('\n');
 }
 
 function generateEmailHtml(data: OrderConfirmationRequest): string {
