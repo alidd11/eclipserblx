@@ -97,7 +97,6 @@ ${line}
 }
 
 function generateEmailHtml(data: OrderConfirmationRequest): string {
-  // Check if order contains bot purchases
   const hasBotPurchase = data.hasBotPurchase || data.botInstallationCodes?.length || data.items.some(item => 
     item.category_slug === 'bots' || 
     item.product_name.toLowerCase().includes('bot')
@@ -109,117 +108,42 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
     .map(
       (item) => `
       <tr>
-        <td style="padding: 12px 16px; border-bottom: 1px solid #2d2d2d; color: #e0e0e0; font-family: 'Rajdhani', Arial, sans-serif;">
-          ${item.product_name}
-        </td>
-        <td style="padding: 12px 16px; border-bottom: 1px solid #2d2d2d; color: #a855f7; font-family: 'Rajdhani', Arial, sans-serif; text-align: right; font-weight: 600;">
-          £${item.price.toFixed(2)}
-        </td>
-      </tr>
-    `
+        <td style="padding: 10px 0; border-bottom: 1px solid #222; color: #e0e0e0; font-size: 14px;">${item.product_name}</td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #222; color: #a855f7; text-align: right; font-weight: 600; font-size: 14px;">£${item.price.toFixed(2)}</td>
+      </tr>`
     )
     .join("");
 
-  // Bot installation codes section
   const botCodesHtml = botCodes.length > 0 ? `
-          <!-- Bot Installation Codes -->
           <tr>
-            <td style="padding: 0 40px 24px 40px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%); border-radius: 12px; border: 2px solid rgba(34, 197, 94, 0.3); overflow: hidden;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <h3 style="margin: 0 0 16px 0; color: #22c55e; font-size: 18px; font-weight: 700; font-family: 'Cinzel', serif;">
-                      🔑 Your Installation Codes
-                    </h3>
-                    <p style="margin: 0 0 16px 0; color: #e0e0e0; font-size: 14px; line-height: 1.6;">
-                      <strong>IMPORTANT:</strong> Save these codes! You'll need to provide them when opening a support ticket for bot installation. Each code is unique and can only be used once.
-                    </p>
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden;">
-                      ${botCodes.map(code => `
-                        <tr>
-                          <td style="padding: 12px 16px; border-bottom: 1px solid rgba(34, 197, 94, 0.2);">
-                            <p style="margin: 0 0 4px 0; color: #a0a0a0; font-size: 12px;">${code.product_name}</p>
-                            <p style="margin: 0; color: #22c55e; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">
-                              ${code.installation_code}
-                            </p>
-                          </td>
-                        </tr>
-                      `).join('')}
-                    </table>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding: 24px 0;">
+              <p style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600; color: #ffffff;">Your Installation Codes</p>
+              <p style="margin: 0 0 16px 0; font-size: 13px; color: #a3a3a3;">Save these codes. You'll need them when opening a support ticket for bot installation. Each code is single-use.</p>
+              ${botCodes.map(code => `
+                <p style="margin: 0 0 8px 0; font-size: 13px; color: #a3a3a3;">${code.product_name}</p>
+                <p style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #a855f7; font-family: 'Courier New', monospace; letter-spacing: 2px;">${code.installation_code}</p>
+              `).join('')}
             </td>
           </tr>
   ` : '';
 
-  // Bot installation notice section
-  const botInstallationNotice = hasBotPurchase ? `
-          <!-- Bot Installation Notice -->
+  const botNoticeHtml = hasBotPurchase ? `
           <tr>
-            <td style="padding: 0 40px 32px 40px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.15) 100%); border-radius: 12px; border: 2px solid rgba(59, 130, 246, 0.3); overflow: hidden;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding-bottom: 16px;">
-                          <h3 style="margin: 0; color: #60a5fa; font-size: 18px; font-weight: 700; font-family: 'Cinzel', serif;">
-                            🤖 Bot Installation Required
-                          </h3>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p style="margin: 0 0 16px 0; color: #e0e0e0; font-size: 14px; line-height: 1.6;">
-                            Your bot purchase requires manual installation by our team. To get your bot set up:
-                          </p>
-                          <ol style="margin: 0 0 20px 0; padding-left: 20px; color: #c0c0c0; font-size: 14px; line-height: 1.8;">
-                            <li style="margin-bottom: 8px;">Open a support ticket on our website or Discord server</li>
-                            <li style="margin-bottom: 8px;">Provide your <strong style="color: #22c55e;">Installation Code</strong> shown above</li>
-                            <li style="margin-bottom: 8px;">Include your Discord server ID or Roblox game details</li>
-                            <li>Our team will install and configure your bot within 24-48 hours</li>
-                          </ol>
-                          <table cellpadding="0" cellspacing="0" style="margin-top: 8px;">
-                            <tr>
-                              <td style="padding-right: 12px;">
-                                <a href="https://eclipserblx.com/support" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
-                                  Open Support Ticket
-                                </a>
-                              </td>
-                              <td>
-                                <a href="https://eclipserblx.com/bot-installation" style="display: inline-block; background: transparent; color: #60a5fa; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; border: 1px solid #3b82f6;">
-                                  Installation Guide
-                                </a>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding: 0 0 24px 0;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #ffffff;">Bot installation</p>
+              <p style="margin: 0 0 12px 0; font-size: 14px; color: #a3a3a3; line-height: 1.6;">Your bot needs to be set up by our team. To get started:</p>
+              <ol style="margin: 0 0 16px 0; padding-left: 20px; color: #a3a3a3; font-size: 14px; line-height: 1.8;">
+                <li>Open a support ticket on our website or Discord</li>
+                <li>Include your installation code from above</li>
+                <li>Provide your Discord server ID or Roblox game details</li>
+                <li>We'll have your bot running within 24-48 hours</li>
+              </ol>
+              <a href="https://eclipserblx.com/support" style="color: #a855f7; font-size: 14px; text-decoration: none;">Open a support ticket</a>
+              &nbsp;&middot;&nbsp;
+              <a href="https://eclipserblx.com/bot-installation" style="color: #a855f7; font-size: 14px; text-decoration: none;">Installation guide</a>
             </td>
           </tr>
   ` : '';
-
-  // Download CTA - only show if there are non-bot items or no bot purchase
-  const downloadCta = `
-          <!-- Download CTA -->
-          <tr>
-            <td style="padding: 0 40px 40px 40px; text-align: center;">
-              <p style="margin: 0 0 20px 0; color: #a0a0a0; font-size: 14px;">
-                ${hasBotPurchase 
-                  ? 'Need other downloads? Access your digital products here.' 
-                  : 'Your digital products are ready for download!'}
-              </p>
-              <a href="https://eclipserblx.com/downloads" style="display: inline-block; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; letter-spacing: 0.5px;">
-                Access Your Downloads
-              </a>
-            </td>
-          </tr>
-  `;
 
   return `
 <!DOCTYPE html>
@@ -227,107 +151,74 @@ function generateEmailHtml(data: OrderConfirmationRequest): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Confirmation</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Rajdhani', Arial, sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0f;">
     <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16161a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #2d2d2d;">
-          
-          <!-- Header -->
+      <td align="center" style="padding: 40px 20px;">
+        <table width="520" cellpadding="0" cellspacing="0" style="max-width: 520px;">
           <tr>
-            <td style="background: linear-gradient(135deg, #1e1e2e 0%, #0d0d0d 100%); padding: 32px 40px; text-align: center; border-bottom: 1px solid #a855f7;">
+            <td style="padding-bottom: 32px;">
+              <span style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h1 style="margin: 0 0 8px 0; color: #ffffff; font-size: 22px; font-weight: 600;">Order confirmed</h1>
+              <p style="margin: 0 0 24px 0; color: #a3a3a3; font-size: 14px;">Thanks for your purchase.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom: 24px;">
+              <p style="margin: 0 0 4px 0; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order ID</p>
+              <p style="margin: 0 0 12px 0; color: #ffffff; font-size: 14px;">${data.orderId}</p>
+              <p style="margin: 0 0 4px 0; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Date</p>
+              <p style="margin: 0; color: #ffffff; font-size: 14px;">${formatDate(data.orderDate)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td>
               <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-                      <span style="color: white; font-size: 28px; font-weight: bold; font-family: 'Cinzel', serif; line-height: 56px;">E</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; font-family: 'Cinzel', serif; letter-spacing: 2px;">
-                      ORDER CONFIRMED
-                    </h1>
-                    <p style="margin: 8px 0 0 0; color: #a0a0a0; font-size: 14px;">
-                      Thank you for your purchase!
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Order Info -->
-          <tr>
-            <td style="padding: 32px 40px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(168, 85, 247, 0.1); border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.2); padding: 20px;">
-                <tr>
-                  <td style="padding: 16px;">
-                    <p style="margin: 0 0 8px 0; color: #a0a0a0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order ID</p>
-                    <p style="margin: 0; color: #ffffff; font-size: 14px; font-weight: 600;">${data.orderId}</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 16px 16px 16px;">
-                    <p style="margin: 0 0 8px 0; color: #a0a0a0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Date</p>
-                    <p style="margin: 0; color: #ffffff; font-size: 14px;">${formatDate(data.orderDate)}</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Items -->
-          <tr>
-            <td style="padding: 0 40px 32px 40px;">
-              <h2 style="margin: 0 0 16px 0; color: #ffffff; font-size: 18px; font-weight: 600; font-family: 'Cinzel', serif;">
-                Your Items
-              </h2>
-              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; overflow: hidden; border: 1px solid #2d2d2d;">
                 <thead>
-                  <tr style="background: rgba(168, 85, 247, 0.1);">
-                    <th style="padding: 12px 16px; text-align: left; color: #a855f7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Product</th>
-                    <th style="padding: 12px 16px; text-align: right; color: #a855f7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Price</th>
+                  <tr>
+                    <th style="padding: 8px 0; text-align: left; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; font-weight: 500;">Product</th>
+                    <th style="padding: 8px 0; text-align: right; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; font-weight: 500;">Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${itemsHtml}
                 </tbody>
                 <tfoot>
-                  <tr style="background: rgba(168, 85, 247, 0.15);">
-                    <td style="padding: 16px; color: #ffffff; font-weight: 700; font-size: 16px;">Total</td>
-                    <td style="padding: 16px; color: #a855f7; font-weight: 700; font-size: 18px; text-align: right;">£${data.total.toFixed(2)}</td>
+                  <tr>
+                    <td style="padding: 12px 0; color: #ffffff; font-weight: 600; font-size: 15px;">Total</td>
+                    <td style="padding: 12px 0; color: #a855f7; font-weight: 600; font-size: 16px; text-align: right;">£${data.total.toFixed(2)}</td>
                   </tr>
                 </tfoot>
               </table>
             </td>
           </tr>
-          
+
           ${botCodesHtml}
-          
-          ${botInstallationNotice}
-          
-          ${downloadCta}
-          
-          <!-- Footer -->
+          ${botNoticeHtml}
+
           <tr>
-            <td style="background: #0d0d0d; padding: 24px 40px; text-align: center; border-top: 1px solid #2d2d2d;">
-              <p style="margin: 0 0 8px 0; color: #a0a0a0; font-size: 12px;">
-                A receipt is attached to this email for your records.
+            <td style="padding: 24px 0;">
+              <p style="margin: 0 0 16px 0; color: #a3a3a3; font-size: 14px;">
+                ${hasBotPurchase ? 'Need other downloads? Access them here.' : 'Your downloads are ready.'}
               </p>
-              <p style="margin: 0; color: #606060; font-size: 11px;">
-                Questions? Contact us at <a href="mailto:support@eclipserblx.com" style="color: #a855f7; text-decoration: none;">support@eclipserblx.com</a>
-              </p>
-              <p style="margin: 16px 0 0 0; color: #404040; font-size: 10px;">
-                © ${new Date().getFullYear()} Eclipse. All rights reserved.
-              </p>
+              <a href="https://eclipserblx.com/downloads" style="display: inline-block; background: #a855f7; color: white; padding: 12px 28px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                Access Downloads
+              </a>
             </td>
           </tr>
-          
+
+          <tr>
+            <td style="border-top: 1px solid #222; padding-top: 24px;">
+              <p style="margin: 0 0 8px 0; color: #525252; font-size: 12px;">A receipt is attached for your records.</p>
+              <p style="margin: 0 0 8px 0; color: #525252; font-size: 12px;">Questions? Email <a href="mailto:support@eclipserblx.com" style="color: #737373; text-decoration: none;">support@eclipserblx.com</a></p>
+              <p style="font-size: 11px; color: #404040; margin: 12px 0 0 0;">&copy; ${new Date().getFullYear()} Eclipse</p>
+            </td>
+          </tr>
         </table>
       </td>
     </tr>
@@ -342,7 +233,6 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting: 30 requests per minute (write operations)
   const clientIp = getClientIp(req);
   const rateLimitResult = checkRateLimit({
     ...RATE_LIMITS.WRITE,
@@ -359,19 +249,15 @@ const handler = async (req: Request): Promise<Response> => {
     const data: OrderConfirmationRequest = await req.json();
     logStep("Processing order confirmation", { orderId: data.orderId, email: data.customerEmail });
 
-    // Generate text receipt
     logStep("Generating receipt");
     const receiptText = generateTextReceipt(data);
-    // Use TextEncoder for proper UTF-8 to base64 conversion
     const encoder = new TextEncoder();
     const receiptBytes = encoder.encode(receiptText);
     const receiptBase64 = btoa(String.fromCharCode(...receiptBytes));
     logStep("Receipt generated successfully");
 
-    // Generate email HTML
     const emailHtml = generateEmailHtml(data);
 
-    // Send email with receipt attachment
     logStep("Sending confirmation email");
     const emailResponse = await resend.emails.send({
       from: "Eclipse <noreply@eclipserblx.com>",

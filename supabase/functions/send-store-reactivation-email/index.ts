@@ -20,60 +20,48 @@ function logStep(step: string, details?: Record<string, unknown>) {
 
 function generateEmailHtml(storeName: string, ownerName: string): string {
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Your Store Has Been Reactivated</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f5;">
-      <table role="presentation" style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table role="presentation" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-              <tr>
-                <td style="padding: 40px 40px 20px 40px; text-align: center;">
-                  <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 28px;">✓</span>
-                  </div>
-                  <h1 style="margin: 0 0 10px 0; font-size: 24px; color: #18181b; font-weight: 600;">
-                    Your Store Has Been Reactivated
-                  </h1>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 0 40px 30px 40px;">
-                  <p style="margin: 0 0 15px 0; font-size: 16px; color: #3f3f46; line-height: 1.6;">
-                    Hi ${ownerName},
-                  </p>
-                  <p style="margin: 0 0 15px 0; font-size: 16px; color: #3f3f46; line-height: 1.6;">
-                    Great news! Your store <strong style="color: #18181b;">${storeName}</strong> has been reactivated and is now live on our marketplace.
-                  </p>
-                  <p style="margin: 0 0 15px 0; font-size: 16px; color: #3f3f46; line-height: 1.6;">
-                    Your products are now visible to customers and you can resume selling immediately.
-                  </p>
-                  <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 14px; color: #166534;">
-                      <strong>What's next?</strong><br>
-                      Check your store dashboard to ensure all your products and settings are up to date.
-                    </p>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 20px 40px 40px 40px; border-top: 1px solid #e4e4e7;">
-                  <p style="margin: 0; font-size: 14px; color: #71717a; text-align: center;">
-                    If you have any questions, please contact our support team.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="520" cellspacing="0" cellpadding="0" style="max-width: 520px;">
+          <tr>
+            <td style="padding-bottom: 32px;">
+              <span style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h1 style="font-size: 22px; font-weight: 600; color: #ffffff; margin: 0 0 20px 0;">Store reactivated</h1>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                Hi ${ownerName},
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                Your store <strong style="color: #e4e4e7;">${storeName}</strong> is back up and live on the marketplace. Your products are visible again and you can resume selling straight away.
+              </p>
+              <p style="margin: 0 0 24px 0; font-size: 14px; color: #737373; line-height: 1.6;">
+                You might want to check your store dashboard to make sure your products and settings are up to date.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top: 1px solid #222; padding-top: 24px;">
+              <p style="margin: 0 0 8px 0; font-size: 13px; color: #525252;">Questions? Get in touch with our support team.</p>
+              <p style="margin: 0; font-size: 11px; color: #404040;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
   `;
 }
 
@@ -94,7 +82,6 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch store details
     const { data: store, error: storeError } = await supabase
       .from("stores")
       .select("name, owner_id")
@@ -107,7 +94,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     logStep("Fetched store details", { storeName: store.name, ownerId: store.owner_id });
 
-    // Fetch owner profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("email, display_name")
@@ -127,13 +113,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Owner email not found");
     }
 
-    // Send the email
     const emailHtml = generateEmailHtml(store.name, ownerName);
 
     const emailResponse = await resend.emails.send({
       from: "Eclipse <noreply@eclipserblx.com>",
       to: [ownerEmail],
-      subject: `Your Store "${store.name}" Has Been Reactivated`,
+      subject: `Your store "${store.name}" has been reactivated`,
       html: emailHtml,
     });
 

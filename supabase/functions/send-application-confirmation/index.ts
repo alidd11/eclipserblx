@@ -38,126 +38,46 @@ const handler = async (req: Request): Promise<Response> => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Application Received - Eclipse</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width: 520px; background: linear-gradient(180deg, #151518 0%, #0d0d10 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; overflow: hidden;">
-          
-          <!-- Header with gradient accent -->
+        <table width="520" cellspacing="0" cellpadding="0" style="max-width: 520px;">
           <tr>
-            <td style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%); padding: 32px 40px 24px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center">
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); width: 44px; height: 44px; border-radius: 10px; text-align: center; vertical-align: middle;">
-                          <span style="font-size: 22px; font-weight: 800; color: #ffffff; font-family: Georgia, serif;">E</span>
-                        </td>
-                        <td style="padding-left: 12px;">
-                          <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding-bottom: 32px;">
+              <span style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
             </td>
           </tr>
-          
-          <!-- Icon & Heading -->
           <tr>
-            <td align="center" style="padding: 24px 40px 16px;">
-              <div style="width: 64px; height: 64px; background: rgba(168, 85, 247, 0.1); border: 2px solid rgba(168, 85, 247, 0.3); border-radius: 50%; display: inline-block; line-height: 60px; text-align: center;">
-                <span style="font-size: 28px; line-height: 64px; color: #a855f7;">✓</span>
-              </div>
-            </td>
-          </tr>
-          
-          <tr>
-            <td align="center" style="padding: 0 40px 12px;">
-              <h1 style="font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; font-family: Georgia, serif;">Application Received!</h1>
-            </td>
-          </tr>
-          
-          <tr>
-            <td align="center" style="padding: 0 40px 28px;">
-              <p style="font-size: 14px; color: #737373; margin: 0;">Thank you for applying to join our team</p>
-            </td>
-          </tr>
-          
-          <!-- Body Text -->
-          <tr>
-            <td style="padding: 0 40px 24px;">
-              <p style="margin: 0 0 20px 0; font-size: 16px; color: #e4e4e7; line-height: 1.6;">
+            <td>
+              <h1 style="font-size: 22px; font-weight: 600; color: #ffffff; margin: 0 0 20px 0;">Application received</h1>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
                 Hi ${applicant_name},
               </p>
-              <p style="margin: 0 0 24px 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-                We've received your application for the <strong style="color: #a855f7;">${position}</strong> position at Eclipse. Our team will review your application carefully.
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                We've got your application for the <strong style="color: #e4e4e7;">${position}</strong> position. Our team will take a look and get back to you.
               </p>
-            </td>
-          </tr>
-          
-          <!-- What's Next Box -->
-          <tr>
-            <td style="padding: 0 40px 24px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.02) 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px;">
-                <tr>
-                  <td style="padding: 20px;">
-                    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #a855f7;">What's Next?</h3>
-                    <table role="presentation" cellspacing="0" cellpadding="0" style="color: #a3a3a3; font-size: 14px;">
-                      <tr><td style="padding: 4px 0;">• Our recruiting team will review your application</td></tr>
-                      <tr><td style="padding: 4px 0;">• You may receive messages from us with updates</td></tr>
-                      <tr><td style="padding: 4px 0;">• Check your status on our <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a></td></tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <tr>
-            <td style="padding: 0 40px 24px;">
-              <p style="margin: 0 0 24px 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-                If we need more information, we'll reach out via the email you provided. Please allow up to 7 business days for a response.
+              <p style="margin: 0 0 4px 0; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">What happens next</p>
+              <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #a3a3a3; font-size: 14px; line-height: 1.8;">
+                <li>Our recruiting team reviews your application</li>
+                <li>You may get messages from us with updates</li>
+                <li>Check your status on the <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a></li>
+              </ul>
+              <p style="margin: 0 0 20px 0; font-size: 14px; color: #a3a3a3; line-height: 1.6;">
+                If we need more info, we'll reach out to this email. Please allow up to 7 business days.
               </p>
-              <p style="margin: 0; font-size: 15px; color: #a3a3a3; line-height: 1.7;">
-                Best of luck,<br>
+              <p style="margin: 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                Cheers,<br>
                 <strong style="color: #e4e4e7;">The Eclipse Team</strong>
               </p>
             </td>
           </tr>
-          
-          <!-- Divider -->
           <tr>
-            <td style="padding: 0 40px;">
-              <hr style="border: none; border-top: 1px solid rgba(168, 85, 247, 0.15); margin: 0;">
+            <td style="border-top: 1px solid #222; padding-top: 24px; margin-top: 32px;">
+              <p style="margin: 0; font-size: 11px; color: #404040;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p>
             </td>
           </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td align="center" style="padding: 24px 40px 32px;">
-              <table role="presentation" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="padding-right: 20px;">
-                    <a href="https://eclipserblx.com" style="font-size: 12px; color: #a855f7; text-decoration: none;">Website</a>
-                  </td>
-                  <td style="border-left: 1px solid #333; padding-left: 20px; padding-right: 20px;">
-                    <a href="https://eclipserblx.com/support" style="font-size: 12px; color: #a855f7; text-decoration: none;">Support</a>
-                  </td>
-                  <td style="border-left: 1px solid #333; padding-left: 20px;">
-                    <a href="https://eclipserblx.com/privacy-policy" style="font-size: 12px; color: #a855f7; text-decoration: none;">Privacy</a>
-                  </td>
-                </tr>
-              </table>
-              <p style="font-size: 11px; color: #404040; margin: 20px 0 0 0;">© 2025 Eclipse. Premium Roblox assets for UK roleplay.</p>
-            </td>
-          </tr>
-          
         </table>
       </td>
     </tr>
@@ -171,7 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Eclipse <noreply@eclipserblx.com>",
       to: [applicant_email],
-      subject: `Application Received - ${position}`,
+      subject: `Application received - ${position}`,
       html: emailHtml,
     });
 

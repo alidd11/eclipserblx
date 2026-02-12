@@ -20,85 +20,63 @@ function logStep(step: string, details?: Record<string, unknown>) {
 
 function generateEmailHtml(storeName: string, ownerName: string, reason?: string): string {
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Store Deactivation Notice</title>
-    </head>
-    <body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-      <table role="presentation" style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table role="presentation" style="width: 100%; max-width: 600px; border-collapse: collapse;">
-              <!-- Header -->
-              <tr>
-                <td style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); padding: 30px 40px; border-radius: 12px 12px 0 0;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">
-                    Store Deactivation Notice
-                  </h1>
-                </td>
-              </tr>
-              
-              <!-- Content -->
-              <tr>
-                <td style="background-color: #18181b; padding: 40px; border-radius: 0 0 12px 12px;">
-                  <p style="margin: 0 0 20px; color: #e4e4e7; font-size: 16px; line-height: 1.6;">
-                    Hello ${ownerName},
-                  </p>
-                  
-                  <p style="margin: 0 0 20px; color: #e4e4e7; font-size: 16px; line-height: 1.6;">
-                    We're writing to inform you that your store <strong style="color: #a855f7;">${storeName}</strong> has been temporarily deactivated by our admin team.
-                  </p>
-                  
-                  ${reason ? `
-                  <div style="background-color: #27272a; border-left: 4px solid #a855f7; padding: 16px 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
-                    <p style="margin: 0 0 8px; color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Reason
-                    </p>
-                    <p style="margin: 0; color: #e4e4e7; font-size: 14px; line-height: 1.5;">
-                      ${reason}
-                    </p>
-                  </div>
-                  ` : ''}
-                  
-                  <p style="margin: 20px 0; color: #e4e4e7; font-size: 16px; line-height: 1.6;">
-                    While your store is deactivated:
-                  </p>
-                  
-                  <ul style="margin: 0 0 20px; padding-left: 20px; color: #a1a1aa; font-size: 14px; line-height: 1.8;">
-                    <li>Your products will not be visible to customers</li>
-                    <li>Customers cannot make purchases from your store</li>
-                    <li>Your existing orders and earnings are preserved</li>
-                    <li>You can still access your seller dashboard</li>
-                  </ul>
-                  
-                  <p style="margin: 20px 0; color: #e4e4e7; font-size: 16px; line-height: 1.6;">
-                    If you believe this was done in error or would like to discuss reactivation, please contact our support team.
-                  </p>
-                  
-                  <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://eclipserblx.com/contact" 
-                       style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-                      Contact Support
-                    </a>
-                  </div>
-                  
-                  <!-- Footer -->
-                  <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #27272a;">
-                    <p style="margin: 0; color: #71717a; font-size: 12px; text-align: center;">
-                      This is an automated message from Eclipse. Please do not reply directly to this email.
-                    </p>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0f;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="520" cellspacing="0" cellpadding="0" style="max-width: 520px;">
+          <tr>
+            <td style="padding-bottom: 32px;">
+              <span style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; font-family: Georgia, serif;">ECLIPSE</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h1 style="font-size: 22px; font-weight: 600; color: #ffffff; margin: 0 0 20px 0;">Store deactivated</h1>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                Hi ${ownerName},
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                Your store <strong style="color: #e4e4e7;">${storeName}</strong> has been temporarily deactivated by our admin team.
+              </p>
+              ${reason ? `
+              <p style="margin: 0 0 4px 0; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Reason</p>
+              <p style="margin: 0 0 20px 0; font-size: 14px; color: #e4e4e7; line-height: 1.5; padding-left: 12px; border-left: 2px solid #333;">${reason}</p>
+              ` : ''}
+              <p style="margin: 0 0 12px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                While deactivated:
+              </p>
+              <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #a3a3a3; font-size: 14px; line-height: 1.8;">
+                <li>Your products won't be visible to customers</li>
+                <li>No new purchases can be made</li>
+                <li>Existing orders and earnings are safe</li>
+                <li>You can still access your seller dashboard</li>
+              </ul>
+              <p style="margin: 0 0 20px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                If you think this was a mistake or want to discuss reactivation, get in touch with our support team.
+              </p>
+              <a href="https://eclipserblx.com/contact" style="display: inline-block; background: #a855f7; color: #ffffff; text-decoration: none; padding: 12px 28px; font-weight: 600; font-size: 14px;">
+                Contact Support
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top: 1px solid #222; padding-top: 24px; margin-top: 32px;">
+              <p style="margin: 0; font-size: 11px; color: #404040;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
   `;
 }
 
@@ -115,12 +93,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("store_id is required");
     }
 
-    // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get store details with owner info
     const { data: store, error: storeError } = await supabase
       .from("stores")
       .select("name, owner_id")
@@ -132,7 +108,6 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Store not found");
     }
 
-    // Get owner profile separately
     const { data: ownerProfile, error: profileError } = await supabase
       .from("profiles")
       .select("email, display_name")
