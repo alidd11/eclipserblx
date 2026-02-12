@@ -262,6 +262,34 @@ export default function SellerTermsOfService() {
                 </p>
               </section>
 
+              {/* Anti-Piracy & Watermarking */}
+              <section>
+                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+                  <ShieldCheck className="h-6 w-6 text-primary" />
+                  Anti-Piracy & Digital Watermarking
+                </h2>
+                <p className="text-muted-foreground">
+                  To protect your intellectual property, {SITE_NAME} automatically applies digital 
+                  watermarking to eligible product files (including Lua scripts) at the time of download. 
+                  Each watermark contains a unique, traceable identifier linked to the buyer's purchase, 
+                  enabling us to trace leaked files back to the original purchaser.
+                </p>
+                <p className="text-muted-foreground mt-4">
+                  <strong>What this means for you as a seller:</strong>
+                </p>
+                <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mt-2">
+                  <li>Watermarking is <strong>automatic</strong> — no action required on your part</li>
+                  <li>Watermarks do not alter your product's functionality</li>
+                  <li>If a leaked copy is found, we can identify the buyer who redistributed it</li>
+                  <li>Buyers are informed of watermarking in the Terms of Service and Privacy Policy</li>
+                  <li>Additional download protections include rate limiting, IP tracking, and one-time-use download tokens</li>
+                </ul>
+                <p className="text-muted-foreground mt-4">
+                  If you discover your products being redistributed without authorisation, please contact 
+                  support with the leaked file and we will investigate using the embedded watermark data.
+                </p>
+              </section>
+
               {/* Prohibited Activities */}
               <section>
                 <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
