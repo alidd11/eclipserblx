@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -374,71 +375,153 @@ function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: Enrich
 </html>`;
 }
 
-function generateTextReceipt(data: OrderConfirmationRequest, enrichedItems: EnrichedItem[]): string {
-  const w = 44;
-  const line = '-'.repeat(w);
-  const pad = (l: string, r: string) => {
-    const gap = Math.max(2, w - l.length - r.length);
-    return l + ' '.repeat(gap) + r;
-  };
+async function generatePdfReceipt(data: OrderConfirmationRequest, enrichedItems: EnrichedItem[]): Promise<Uint8Array> {
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([595, 842]);
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const { height } = page.getSize();
+
+  const dark = rgb(0.04, 0.04, 0.05);
+  const cardBg = rgb(0.07, 0.07, 0.10);
+  const white = rgb(1, 1, 1);
+  const grey = rgb(0.64, 0.64, 0.64);
+  const dimGrey = rgb(0.45, 0.45, 0.45);
+  const purple = rgb(0.66, 0.33, 0.97);
+  const green = rgb(0.29, 0.77, 0.50);
+  const dividerCol = rgb(0.12, 0.12, 0.18);
 
   const discount = data.discount || 0;
   const botCodes = data.botInstallationCodes || [];
-  const lines: string[] = [];
+  const pw = 595;
+  const mx = 40;
+  const cw = pw - mx * 2;
 
-  lines.push('');
-  lines.push('ECLIPSE');
-  lines.push('Order Receipt');
-  lines.push('');
-  lines.push(line);
-  lines.push('');
-  lines.push(pad('Order', data.orderId));
-  lines.push(pad('Date', formatDate(data.orderDate)));
-  lines.push(pad('Email', data.customerEmail));
-  lines.push(pad('Payment', getPaymentLabel(data.paymentMethod)));
-  lines.push('');
-  lines.push(line);
-  lines.push('');
+  page.drawRectangle({ x: 0, y: 0, width: pw, height: height, color: dark });
+
+  let y = height - 50;
+
+  // Header
+  page.drawText('ECLIPSE', { x: mx, y, font: fontBold, size: 20, color: white });
+  const badgeText = 'PAID';
+  const badgeW = fontBold.widthOfTextAtSize(badgeText, 9) + 16;
+  const badgeX = pw - mx - badgeW;
+  page.drawRectangle({ x: badgeX, y: y - 4, width: badgeW, height: 20, color: rgb(0.06, 0.16, 0.10), borderColor: rgb(0.09, 0.40, 0.20), borderWidth: 1 });
+  page.drawText(badgeText, { x: badgeX + 8, y: y + 2, font: fontBold, size: 9, color: green });
+
+  y -= 40;
+
+  // Order details card
+  const cardH1 = 110;
+  page.drawRectangle({ x: mx, y: y - cardH1, width: cw, height: cardH1, color: cardBg, borderColor: dividerCol, borderWidth: 1 });
+  let cy = y - 20;
+  page.drawText('ORDER CONFIRMATION', { x: mx + 20, y: cy, font, size: 8, color: dimGrey });
+  cy -= 20;
+  page.drawText('Receipt', { x: mx + 20, y: cy, font: fontBold, size: 18, color: white });
+  cy -= 28;
+
+  const col1x = mx + 20;
+  const col2x = mx + cw / 2 + 10;
+
+  page.drawText('ORDER ID', { x: col1x, y: cy, font, size: 7, color: dimGrey });
+  page.drawText(data.orderId.length > 16 ? data.orderId.substring(0, 16) + '...' : data.orderId, { x: col1x, y: cy - 13, font, size: 10, color: white });
+  page.drawText('DATE', { x: col2x, y: cy, font, size: 7, color: dimGrey });
+  page.drawText(formatDate(data.orderDate), { x: col2x, y: cy - 13, font, size: 10, color: white });
+
+  cy -= 32;
+  page.drawText('PAYMENT', { x: col1x, y: cy, font, size: 7, color: dimGrey });
+  page.drawText(getPaymentLabel(data.paymentMethod), { x: col1x, y: cy - 13, font, size: 10, color: white });
+  page.drawText('EMAIL', { x: col2x, y: cy, font, size: 7, color: dimGrey });
+  const emailDisplay = data.customerEmail.length > 28 ? data.customerEmail.substring(0, 28) + '...' : data.customerEmail;
+  page.drawText(emailDisplay, { x: col2x, y: cy - 13, font, size: 10, color: white });
+
+  y -= cardH1 + 16;
+
+  // Items card
+  const itemRowH = 44;
+  const itemsCardH = 30 + enrichedItems.length * itemRowH + 10;
+  page.drawRectangle({ x: mx, y: y - itemsCardH, width: cw, height: itemsCardH, color: cardBg, borderColor: dividerCol, borderWidth: 1 });
+  cy = y - 24;
+  page.drawText('ITEMS PURCHASED', { x: mx + 20, y: cy, font, size: 8, color: dimGrey });
+  cy -= 20;
 
   enrichedItems.forEach((item, idx) => {
-    if (idx > 0) lines.push('');
-    lines.push(item.product_name);
-    if (item.store_name) lines.push(`  Store: ${item.store_name}`);
-    if (item.category_name) lines.push(`  Category: ${item.category_name}`);
-    lines.push(pad('', `£${item.price.toFixed(2)}`));
+    page.drawText(item.product_name, { x: mx + 20, y: cy, font: fontBold, size: 11, color: white });
+    const priceStr = `£${item.price.toFixed(2)}`;
+    const priceW = fontBold.widthOfTextAtSize(priceStr, 11);
+    page.drawText(priceStr, { x: pw - mx - 20 - priceW, y: cy, font: fontBold, size: 11, color: purple });
+    cy -= 14;
+
+    const meta: string[] = [];
+    if (item.category_name || item.category_slug) meta.push(getCategoryLabel(item));
+    if (item.store_name) meta.push(item.store_name);
+    if (meta.length > 0) {
+      page.drawText(meta.join('  •  '), { x: mx + 20, y: cy, font, size: 8, color: dimGrey });
+    }
+    cy -= 18;
+
+    if (idx < enrichedItems.length - 1) {
+      page.drawLine({ start: { x: mx + 20, y: cy + 8 }, end: { x: pw - mx - 20, y: cy + 8 }, thickness: 0.5, color: dividerCol });
+      cy -= 4;
+    }
   });
 
-  lines.push('');
-  lines.push(line);
-  lines.push('');
+  y -= itemsCardH + 16;
+
+  // Pricing card
+  let pricingRows = 1;
+  if (discount > 0 || data.subtotal !== data.total) pricingRows++;
+  if (discount > 0) pricingRows++;
+  const pricingCardH = 20 + pricingRows * 24 + 14;
+  page.drawRectangle({ x: mx, y: y - pricingCardH, width: cw, height: pricingCardH, color: cardBg, borderColor: dividerCol, borderWidth: 1 });
+  cy = y - 24;
 
   if (discount > 0 || data.subtotal !== data.total) {
-    lines.push(pad('Subtotal', `£${data.subtotal.toFixed(2)}`));
+    page.drawText('Subtotal', { x: mx + 20, y: cy, font, size: 10, color: grey });
+    const subStr = `£${data.subtotal.toFixed(2)}`;
+    page.drawText(subStr, { x: pw - mx - 20 - font.widthOfTextAtSize(subStr, 10), y: cy, font, size: 10, color: grey });
+    cy -= 24;
   }
   if (discount > 0) {
-    lines.push(pad('Discount', `-£${discount.toFixed(2)}`));
+    page.drawText('Discount', { x: mx + 20, y: cy, font, size: 10, color: green });
+    const discStr = `-£${discount.toFixed(2)}`;
+    page.drawText(discStr, { x: pw - mx - 20 - font.widthOfTextAtSize(discStr, 10), y: cy, font, size: 10, color: green });
+    cy -= 24;
   }
-  lines.push(pad('Total', `£${data.total.toFixed(2)}`));
-  lines.push('');
+  page.drawLine({ start: { x: mx + 20, y: cy + 14 }, end: { x: pw - mx - 20, y: cy + 14 }, thickness: 0.5, color: dividerCol });
+  page.drawText('Total', { x: mx + 20, y: cy, font: fontBold, size: 14, color: white });
+  const totalStr = `£${data.total.toFixed(2)}`;
+  page.drawText(totalStr, { x: pw - mx - 20 - fontBold.widthOfTextAtSize(totalStr, 14), y: cy, font: fontBold, size: 14, color: purple });
 
+  y -= pricingCardH + 16;
+
+  // Bot codes
   if (botCodes.length > 0) {
-    lines.push(line);
-    lines.push('');
-    lines.push('Installation Codes');
-    lines.push('');
+    const codesCardH = 50 + botCodes.length * 40;
+    page.drawRectangle({ x: mx, y: y - codesCardH, width: cw, height: codesCardH, color: cardBg, borderColor: dividerCol, borderWidth: 1 });
+    cy = y - 24;
+    page.drawText('INSTALLATION CODES', { x: mx + 20, y: cy, font: fontBold, size: 10, color: white });
+    cy -= 14;
+    page.drawText('Save these codes. You will need them for bot setup.', { x: mx + 20, y: cy, font, size: 8, color: dimGrey });
+    cy -= 20;
     botCodes.forEach(code => {
-      lines.push(code.product_name);
-      lines.push(code.installation_code);
-      lines.push('');
+      page.drawText(code.product_name, { x: mx + 20, y: cy, font, size: 9, color: grey });
+      cy -= 16;
+      page.drawText(code.installation_code, { x: mx + 20, y: cy, font: fontBold, size: 14, color: purple });
+      cy -= 24;
     });
+    y -= codesCardH + 16;
   }
 
-  lines.push(line);
-  lines.push('eclipserblx.com');
-  lines.push(`© ${new Date().getFullYear()} Eclipse`);
-  lines.push('');
+  // Footer
+  y -= 10;
+  page.drawLine({ start: { x: mx, y }, end: { x: pw - mx, y }, thickness: 0.5, color: dividerCol });
+  y -= 18;
+  page.drawText('eclipserblx.com', { x: mx, y, font, size: 9, color: dimGrey });
+  y -= 14;
+  page.drawText(`© ${new Date().getFullYear()} Eclipse. All rights reserved.`, { x: mx, y, font, size: 8, color: rgb(0.25, 0.25, 0.25) });
 
-  return lines.join('\n');
+  return await pdf.save();
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -467,11 +550,10 @@ const handler = async (req: Request): Promise<Response> => {
     const enrichedItems = await enrichItems(data.items);
     logStep("Enrichment complete", { enrichedCount: enrichedItems.filter(i => i.image_url).length });
 
-    // Generate text receipt attachment
-    const receiptText = generateTextReceipt(data, enrichedItems);
-    const encoder = new TextEncoder();
-    const receiptBytes = encoder.encode(receiptText);
-    const receiptBase64 = btoa(String.fromCharCode(...receiptBytes));
+    // Generate PDF receipt attachment
+    logStep("Generating PDF receipt");
+    const pdfBytes = await generatePdfReceipt(data, enrichedItems);
+    const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
 
     // Generate HTML email
     const emailHtml = generateEmailHtml(data, enrichedItems);
@@ -484,8 +566,8 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
       attachments: [
         {
-          filename: `Eclipse-Receipt-${data.orderId.substring(0, 8)}.txt`,
-          content: receiptBase64,
+          filename: `Eclipse-Receipt-${data.orderId.substring(0, 8)}.pdf`,
+          content: pdfBase64,
         },
       ],
     });
