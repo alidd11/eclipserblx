@@ -1,88 +1,156 @@
 
 
-# Seller Discord Bot Integration -- Eclipse Portal Bot
+# Seller File Privacy: Consent-Based Admin Access
 
 ## Overview
-Allow sellers to invite the Eclipse Portal Bot (App ID: `1466778545039741072`) to their own Discord server. Once added, their customers can use commands like `/retrieve`, `/link`, `/purchases`, `/profile`, etc., scoped to that seller's products. Sellers can also send rich product drop embeds to their server channels using the bot.
 
-## Current State
-- The Eclipse Portal Bot already supports multi-server via `getServerContext()` -- it looks up `stores.discord_guild_id` to identify seller servers and scopes commands accordingly
-- The `stores` table already has a `discord_guild_id` column
-- `store_credentials` has `discord_guild_id` too (used for role assignment)
-- The `send-product-drop-embed` edge function uses `DISCORD_CUSTOMER_BOT_TOKEN` to send messages
-- Sellers currently only have webhook-based announcements (no bot-powered embeds)
+Currently, Eclipse staff have unrestricted access to all files in the `product-assets` storage bucket. This plan implements a "sealed envelope" model where seller files are inaccessible to staff unless:
 
-## What Changes
+1. The product is **flagged** by the automated security scan
+2. The seller is **notified** of the flag
+3. The seller **acknowledges** and consents to the file being reviewed
 
-### 1. Seller Discord Page -- "Add Eclipse Portal Bot" Section
-Add a prominent card at the top of `/seller/discord` that:
-- Shows an "Add to Server" button generating a Discord OAuth2 invite URL for the Eclipse Portal Bot (client ID `1466778545039741072`) with permissions for sending messages, embedding links, and managing roles
-- On successful addition, saves the `discord_guild_id` to both `stores` and `store_credentials` tables
-- Displays the connected server name when already linked
-- Lists what commands become available: `/retrieve`, `/link`, `/purchases`, `/profile`, `/store`, `/getrole`
+Until the seller consents, even admins cannot view/download the flagged file.
 
-### 2. New Edge Function: `invite-portal-bot`
-A simple function that:
-- Takes the seller's `store_id` and generates an OAuth2 invite URL for the Eclipse Portal Bot
-- Uses a state parameter (like `activate-bot-license` does) to securely pass the store ID
-- On OAuth callback, saves the `guild_id` to `stores.discord_guild_id` and `store_credentials.discord_guild_id`
-- Returns a success page redirecting back to the seller dashboard
+---
 
-### 3. Seller Embed Builder using the Portal Bot
-Replace the current webhook-based `ScheduledAnnouncementCard` with a bot-powered embed sender:
-- Seller enters a channel ID (the channel in their server where they want to post)
-- Builds the embed (title, description, color, optional image, optional fields)
-- Sends via `send-product-drop-embed` edge function (which already uses the Portal Bot token)
-- Option to include role pings using their configured role IDs
-- Keep the webhook fallback for sellers who haven't added the bot yet
+## How It Works
 
-### 4. Update SellerSettingsNotifications
-- Replace the "Bot Token" / "Guild ID" / "Role ID" section with a simpler flow
-- Remove the need for sellers to create their own bot application
-- The guild ID gets auto-populated when they add the Eclipse Portal Bot
-- Keep the "Customer Role ID" field so sellers can configure which role to assign on purchase
-- Keep webhook URL as a fallback option
+```text
+Seller uploads product
+        |
+   [Auto-scan runs]
+        |
+   +----+-----+
+   |           |
+ Clean      Flagged
+   |           |
+ Auto-       Set moderation_status = 'pending'
+ approved    Store flag details
+   |           |
+   Done      Notify seller (in-app + email)
+               |
+          Seller sees notification
+               |
+          Seller acknowledges
+          ("I consent to file review")
+               |
+          file_review_consented_at = NOW()
+               |
+          Admin can now view/download file
+               |
+          Admin approves or rejects
+```
+
+---
+
+## Database Changes
+
+**Add columns to `products` table:**
+- `file_review_consented_at` (timestamptz, nullable) -- when seller agreed to let staff view the file
+- `file_review_requested_at` (timestamptz, nullable) -- when the flag notification was sent
+
+**Create a `seller_notifications` table** for in-app notifications:
+- `id`, `user_id`, `type`, `title`, `message`, `product_id`, `action_url`, `read_at`, `acknowledged_at`, `created_at`
+
+---
+
+## Storage Policy Changes
+
+1. **Remove** the broad "Staff can manage product assets" policy that gives admins unrestricted access
+2. **Replace** with a conditional policy that only allows admin SELECT on `product-assets` when:
+   - The file belongs to a product where `file_review_consented_at IS NOT NULL`
+   - OR the file belongs to the requesting user's own store (seller managing their own files)
+3. Keep the service role access for the download edge function (it uses `SUPABASE_SERVICE_ROLE_KEY` which bypasses RLS)
+
+---
+
+## Frontend Changes
+
+### 1. Seller Dashboard -- Notification Banner
+- When a product is flagged, show a prominent notification on the seller dashboard
+- Include a clear explanation: "Your product [name] has been flagged for security review. To proceed, you must consent to Eclipse staff reviewing the file."
+- Consent button that sets `file_review_consented_at`
+- Until consent is given, the product remains in "pending" but the file is sealed from admin access
+
+### 2. Admin Seller Products Page
+- For flagged products where `file_review_consented_at IS NULL`:
+  - Show a "Waiting for Seller Consent" badge
+  - Disable the file download/preview button
+  - Show when the notification was sent
+- For flagged products where `file_review_consented_at IS NOT NULL`:
+  - Enable file review as normal
+  - Show consent timestamp for audit trail
+
+### 3. Seller Notification Component
+- New component in the seller dashboard for managing review consent requests
+- Displays the specific flags that triggered the review
+- Clear legal language about what consenting means
+
+---
+
+## Email Notification
+
+- When a product is flagged, send an email to the seller via the existing Resend integration
+- Subject: "Action Required: Product Review for [Product Name]"
+- Body explains the flag reason (without exposing scan internals) and links to the consent page
+
+---
+
+## Edge Function Changes
+
+- Update the `analyze-lua-script` / security scan flow to set `file_review_requested_at` when flagging a product
+- Create a new edge function `notify-seller-review` that sends the email notification
+
+---
+
+## What This Does NOT Change
+
+- Seller upload flow remains identical
+- Auto-approval of clean products is unaffected
+- Customer downloads are unaffected (uses service role key)
+- Discord bot downloads are unaffected
+- Product images (public bucket) remain accessible -- this only applies to downloadable asset files
+- The existing moderation approval/rejection workflow stays the same, it just can't start until consent is given
 
 ---
 
 ## Technical Details
 
-### New Edge Function: `invite-portal-bot`
+**New DB function for storage policy:**
+```sql
+CREATE OR REPLACE FUNCTION public.product_file_review_consented(file_path TEXT)
+RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = 'public'
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.products
+    WHERE asset_file_url = file_path
+      AND file_review_consented_at IS NOT NULL
+  )
+$$;
+```
 
-| Detail | Value |
-|--------|-------|
-| Path | `supabase/functions/invite-portal-bot/index.ts` |
-| Method | POST (generate URL), GET (OAuth callback) |
-| Auth | JWT verified for POST, state-verified for GET |
-| Bot App ID | `1466778545039741072` (hardcoded, not from env) |
-| Permissions | `2147534848` (Send Messages, Embed Links, Use Slash Commands, Manage Roles) |
-| Scopes | `bot`, `applications.commands` |
+**Updated storage policy (replaces current admin access):**
+```sql
+CREATE POLICY "Staff can access consented product assets"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'product-assets'
+  AND (
+    has_role(auth.uid(), 'admin')
+    OR has_role(auth.uid(), 'product_manager')
+  )
+  AND public.product_file_review_consented(name)
+);
+```
 
-The callback saves `guild_id` to both `stores.discord_guild_id` and `store_credentials.discord_guild_id`, then redirects to `/seller/discord?connected=true`.
-
-### New Component: `AddPortalBotCard`
-- Shows bot status (connected server name or "Not Connected")
-- "Add to Server" button that calls `invite-portal-bot`
-- Lists available commands with descriptions
-- If already connected, shows a "Disconnect" option that clears `discord_guild_id`
-
-### Updated `ScheduledAnnouncementCard`
-- Detects if Portal Bot is connected (has `discord_guild_id` on store)
-- If yes: sends via `send-product-drop-embed` (bot-powered, richer features)
-- If no: falls back to webhook-based sending (current behavior)
-- Adds channel ID input field for bot-powered sends
-- Adds role ping toggle
-
-### File Changes
-
-| File | Action |
-|------|--------|
-| `supabase/functions/invite-portal-bot/index.ts` | Create -- OAuth flow for adding bot to seller server |
-| `src/components/seller/AddPortalBotCard.tsx` | Create -- Bot invite and status card |
-| `src/components/seller/ScheduledAnnouncementCard.tsx` | Update -- Add bot-powered sending path with channel ID |
-| `src/pages/seller/SellerDiscord.tsx` | Update -- Add Portal Bot card, reorder sections |
-| `src/pages/seller/SellerSettingsNotifications.tsx` | Update -- Simplify bot section, auto-populate guild ID |
-
-### No Database Migration Needed
-Both `stores.discord_guild_id` and `store_credentials.discord_guild_id` columns already exist.
+**Seller consent API call:**
+```typescript
+await supabase.from('products')
+  .update({ file_review_consented_at: new Date().toISOString() })
+  .eq('id', productId)
+  .eq('stores.owner_id', user.id); // RLS ensures only the seller can consent
+```
 
