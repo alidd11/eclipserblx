@@ -174,9 +174,9 @@ export default function SellerProducts() {
         release_at: releaseAt,
       };
 
-      // Only set moderation_status to pending for new products, not updates
+      // Auto-approve new products (no security scan in quick editor = no flags)
       if (!data.id) {
-        productData.moderation_status = 'pending';
+        productData.moderation_status = 'approved';
       }
 
       if (data.id) {
