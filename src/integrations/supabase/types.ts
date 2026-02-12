@@ -2118,22 +2118,28 @@ export type Database = {
         Row: {
           downloaded_at: string
           id: string
+          ip_address: string | null
           order_item_id: string | null
           product_id: string
+          user_agent: string | null
           user_id: string
         }
         Insert: {
           downloaded_at?: string
           id?: string
+          ip_address?: string | null
           order_item_id?: string | null
           product_id: string
+          user_agent?: string | null
           user_id: string
         }
         Update: {
           downloaded_at?: string
           id?: string
+          ip_address?: string | null
           order_item_id?: string | null
           product_id?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: [
@@ -7228,6 +7234,18 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      check_download_rate_limit: {
+        Args: {
+          p_max_downloads_per_day?: number
+          p_product_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      check_global_download_rate_limit: {
+        Args: { p_max_downloads_per_hour?: number; p_user_id: string }
+        Returns: boolean
       }
       check_rate_limit: {
         Args: {
