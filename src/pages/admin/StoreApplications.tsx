@@ -175,6 +175,20 @@ export default function StoreApplications() {
         console.error('Failed to lock accounts:', lockError);
       }
 
+      // 5. Send approval email
+      try {
+        await supabase.functions.invoke('send-seller-application-status', {
+          body: {
+            seller_name: application.profiles?.display_name || 'Seller',
+            seller_email: application.profiles?.email,
+            store_name: application.store_name,
+            status: 'approved',
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send approval email:', emailError);
+      }
+
       return store;
     },
     onSuccess: () => {
@@ -189,6 +203,9 @@ export default function StoreApplications() {
 
   const rejectApplication = useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      // Find the application to get seller info for the email
+      const app = applications?.find(a => a.id === id);
+
       const { error } = await supabase
         .from('store_applications')
         .update({
@@ -200,6 +217,23 @@ export default function StoreApplications() {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Send rejection email
+      if (app?.profiles?.email) {
+        try {
+          await supabase.functions.invoke('send-seller-application-status', {
+            body: {
+              seller_name: app.profiles?.display_name || 'Seller',
+              seller_email: app.profiles.email,
+              store_name: app.store_name,
+              status: 'rejected',
+              rejection_reason: reason,
+            },
+          });
+        } catch (emailError) {
+          console.error('Failed to send rejection email:', emailError);
+        }
+      }
     },
     onSuccess: () => {
       toast({ title: 'Application Rejected' });
