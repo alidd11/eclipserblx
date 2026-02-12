@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
+import { ReviewsShowcase } from '@/components/home/ReviewsShowcase';
 import { PWAFeaturedStores } from '@/components/landing/PWAFeaturedStores';
 import { PWAFeaturedProducts } from '@/components/landing/PWAFeaturedProducts';
 import { HeroBanner } from './HeroBanner';
@@ -48,6 +49,7 @@ export function PWALandingHero() {
             <PWAFeaturedStores />
             <ActiveOffersCard />
             <PWAFeaturedProducts />
+            <ReviewsShowcase />
           </div>
         </div>
       </div>
