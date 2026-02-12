@@ -117,6 +117,28 @@ export default function SellerDiscounts() {
       queryClient.invalidateQueries({ queryKey: ['seller-discount-codes'] });
       setShowCreateDialog(false);
       resetForm();
+
+      // Send Discord announcement for active discount codes
+      if (formData.is_active) {
+        const discountDisplay = formData.discount_type === 'percentage'
+          ? `${formData.discount_value}% OFF`
+          : `£${formData.discount_value.toFixed(2)} OFF`;
+        const storeName = store?.name || 'a seller';
+
+        supabase.functions.invoke('send-promotion-discord-webhook', {
+          body: {
+            custom: {
+              title: `${storeName} — New Discount!`,
+              description: `**${storeName}** just dropped a discount code! Use it on their store products.`,
+              code: formData.code.toUpperCase().trim(),
+              discount_value: discountDisplay,
+              expires_at: formData.expires_at || undefined,
+            },
+          },
+        }).then(({ error }) => {
+          if (error) console.error('Discord promotion announce failed:', error);
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.message);
