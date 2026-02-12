@@ -82,6 +82,7 @@ export default function Products() {
       if (!isStaff) {
         query = query
           .eq('is_active', true)
+          .eq('moderation_status', 'approved')
           .or('release_at.is.null,release_at.lte.' + new Date().toISOString());
       }
 
