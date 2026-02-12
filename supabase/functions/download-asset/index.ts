@@ -3,14 +3,26 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Rate limits
+const MAX_DOWNLOADS_PER_PRODUCT_PER_DAY = 5;
+const MAX_DOWNLOADS_PER_HOUR_GLOBAL = 15;
 
 // Generate a secure random token
 function generateToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+// Extract client IP from request headers
+function getClientIp(req: Request): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() 
+    || req.headers.get("x-real-ip") 
+    || req.headers.get("cf-connecting-ip")
+    || "unknown";
 }
 
 serve(async (req) => {
@@ -24,7 +36,7 @@ serve(async (req) => {
 
     // If token is provided, this is a download redemption request (GET)
     if (tokenParam && req.method === "GET") {
-      return await handleTokenRedemption(tokenParam);
+      return await handleTokenRedemption(tokenParam, req);
     }
 
     // Otherwise, this is a token generation request (POST with auth)
@@ -53,8 +65,10 @@ serve(async (req) => {
     }
 
     const { productId, orderItemId } = await req.json();
+    const clientIp = getClientIp(req);
+    const userAgent = req.headers.get("user-agent") || "unknown";
 
-    console.log("Download request:", { productId, orderItemId, userId: user.id, email: user.email });
+    console.log("Download request:", { productId, orderItemId, userId: user.id, ip: clientIp });
 
     if (!productId) {
       return new Response(
@@ -69,7 +83,43 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Verify user has purchased this product
+    // === RATE LIMITING ===
+    // Check per-product daily download limit
+    const { data: perProductOk } = await supabaseAdmin.rpc('check_download_rate_limit', {
+      p_user_id: user.id,
+      p_product_id: productId,
+      p_max_downloads_per_day: MAX_DOWNLOADS_PER_PRODUCT_PER_DAY,
+    });
+
+    if (perProductOk === false) {
+      console.warn(`Rate limit hit: user=${user.id} product=${productId} (per-product daily)`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Download limit reached",
+          message: `You've reached the maximum of ${MAX_DOWNLOADS_PER_PRODUCT_PER_DAY} downloads per day for this product. Please try again later.`,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check global hourly download limit
+    const { data: globalOk } = await supabaseAdmin.rpc('check_global_download_rate_limit', {
+      p_user_id: user.id,
+      p_max_downloads_per_hour: MAX_DOWNLOADS_PER_HOUR_GLOBAL,
+    });
+
+    if (globalOk === false) {
+      console.warn(`Rate limit hit: user=${user.id} (global hourly)`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Download limit reached",
+          message: `You've reached the maximum of ${MAX_DOWNLOADS_PER_HOUR_GLOBAL} downloads per hour. Please try again later.`,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // === PURCHASE VERIFICATION ===
     const { data: orderItems, error: orderError } = await supabaseAdmin
       .from('order_items')
       .select(`
@@ -86,8 +136,6 @@ serve(async (req) => {
       .eq('product_id', productId)
       .in('orders.status', ['paid', 'completed']);
 
-    console.log("Order items found:", orderItems?.length, "Error:", orderError);
-
     // Find an order that belongs to this user (by user_id or email)
     const userOrder = orderItems?.find((item: any) => 
       item.orders?.user_id === user.id || 
@@ -101,8 +149,6 @@ serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    console.log("Found matching order:", userOrder.id);
 
     // Get product asset URL
     const { data: product, error: productError } = await supabaseAdmin
@@ -129,18 +175,19 @@ serve(async (req) => {
     const assetUrl = product.asset_file_url;
     const fileExtension = assetUrl.includes('.') ? assetUrl.substring(assetUrl.lastIndexOf('.')) : '';
 
-    // Log the download
+    // Log the download with IP and user agent
     const { error: logError } = await supabaseAdmin
       .from('download_logs')
       .insert({
         user_id: user.id,
         product_id: productId,
         order_item_id: orderItemId || userOrder.id,
+        ip_address: clientIp,
+        user_agent: userAgent,
       });
 
     if (logError) {
       console.error("Error logging download:", logError);
-      // Don't fail the download, just log the error
     }
 
     // Increment download count
@@ -197,7 +244,7 @@ serve(async (req) => {
       console.log("Could not get file size:", e);
     }
 
-    console.log(`Download token created: user=${user.id}, product=${productId}, token=${downloadToken.slice(0, 8)}...`);
+    console.log(`Download token created: user=${user.id}, product=${productId}, ip=${clientIp}, token=${downloadToken.slice(0, 8)}...`);
 
     // Create filename with proper extension
     const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
@@ -230,7 +277,7 @@ serve(async (req) => {
 });
 
 // Handle one-time token redemption (GET request with token)
-async function handleTokenRedemption(token: string): Promise<Response> {
+async function handleTokenRedemption(token: string, req: Request): Promise<Response> {
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -318,7 +365,8 @@ async function handleTokenRedemption(token: string): Promise<Response> {
     );
   }
 
-  console.log(`Token redeemed: ${token.slice(0, 8)}... for product ${tokenData.product_id}`);
+  const clientIp = getClientIp(req);
+  console.log(`Token redeemed: ${token.slice(0, 8)}... for product ${tokenData.product_id}, ip=${clientIp}`);
 
   // Redirect to the signed URL for actual file download
   return new Response(null, {
