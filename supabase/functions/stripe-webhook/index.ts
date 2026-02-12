@@ -771,6 +771,48 @@ async function processRefund(
     logStep("Seller earnings reversed (if any existed)", { orderId });
   }
 
+  // Notify affected sellers about the refund/dispute
+  try {
+    const { data: orderItems } = await supabase
+      .from("order_items")
+      .select("product_id, product_name, price")
+      .eq("order_id", orderId);
+
+    if (orderItems) {
+      for (const item of orderItems) {
+        if (!item.product_id) continue;
+        
+        const { data: product } = await supabase
+          .from("products")
+          .select("store_id")
+          .eq("id", item.product_id)
+          .maybeSingle();
+
+        if (product?.store_id) {
+          const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+          await fetch(`${supabaseUrl}/functions/v1/notify-seller-sale`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({
+              type: 'dispute',
+              store_id: product.store_id,
+              order_id: orderId,
+              product_name: item.product_name,
+              reason: isFullRefund ? 'Full refund issued' : 'Partial refund issued',
+              amount: item.price,
+            }),
+          });
+          logStep("Seller dispute notification sent", { storeId: product.store_id, product: item.product_name });
+        }
+      }
+    }
+  } catch (notifyError) {
+    logStep("Seller dispute notification error (non-fatal)", { error: String(notifyError) });
+  }
+
   // Create notification for user if they exist
   if (order.user_id) {
     try {
