@@ -160,7 +160,7 @@ export default function SellerProducts() {
         releaseAt = new Date(data.release_at).toISOString();
       }
 
-      const productData = {
+      const productData: Record<string, any> = {
         name: data.name,
         slug: data.slug,
         price: parseFloat(data.price) || 0,
@@ -171,9 +171,13 @@ export default function SellerProducts() {
         asset_file_url: data.asset_file_url || null,
         store_id: store.id,
         is_seller_product: true,
-        moderation_status: 'pending',
         release_at: releaseAt,
       };
+
+      // Only set moderation_status to pending for new products, not updates
+      if (!data.id) {
+        productData.moderation_status = 'pending';
+      }
 
       if (data.id) {
         const { error } = await supabase
@@ -186,7 +190,7 @@ export default function SellerProducts() {
       } else {
         const { error } = await supabase
           .from('products')
-          .insert(productData);
+          .insert(productData as any);
 
         if (error) throw error;
       }
