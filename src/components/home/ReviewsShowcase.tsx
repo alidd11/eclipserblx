@@ -24,7 +24,7 @@ interface Review {
   external_reviewer_name: string | null;
   is_verified_purchase: boolean | null;
   profiles: { display_name: string | null } | null;
-  products: { name: string } | null;
+  products: { name: string; stores: { name: string } | null } | null;
 }
 
 export function ReviewsShowcase() {
@@ -49,7 +49,7 @@ export function ReviewsShowcase() {
           external_source,
           external_reviewer_name,
           is_verified_purchase,
-          products:product_id(name)
+          products:product_id(name, stores:store_id(name))
         `)
         .eq('is_approved', true)
         .eq('is_featured', true)
@@ -179,9 +179,12 @@ export function ReviewsShowcase() {
                           via {review.external_source}
                         </p>
                       )}
-                      {!review.is_external && review.products?.name && (
+                      {review.products?.name && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Reviewed: {review.products.name}
+                          {review.products.name}
+                          {review.products.stores?.name && (
+                            <span> · {review.products.stores.name}</span>
+                          )}
                         </p>
                       )}
                     </div>
