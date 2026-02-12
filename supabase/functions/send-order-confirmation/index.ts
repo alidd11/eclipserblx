@@ -556,7 +556,17 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate PDF receipt attachment
     logStep("Generating PDF receipt");
     const pdfBytes = await generatePdfReceipt(data, enrichedItems);
-    const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
+    logStep("PDF generated", { byteLength: pdfBytes.length });
+    
+    // Convert Uint8Array to base64 safely (avoid stack overflow with spread)
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < pdfBytes.length; i += chunkSize) {
+      const chunk = pdfBytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    const pdfBase64 = btoa(binary);
+    logStep("PDF base64 encoded", { base64Length: pdfBase64.length });
 
     // Generate HTML email
     const emailHtml = generateEmailHtml(data, enrichedItems);
