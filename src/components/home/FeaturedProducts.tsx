@@ -32,8 +32,11 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
         .limit(12);
       
       if (error) throw error;
-      // Include products without stores (Eclipse main store) or with active stores
-      return data?.filter(p => !p.stores || p.stores.is_active !== false) ?? [];
+      const filtered = data?.filter(p => !p.stores || p.stores.is_active !== false) ?? [];
+      // Shuffle for variety
+      return filtered
+        .map(p => ({ ...p, _sort: Math.random() }))
+        .sort((a, b) => a._sort - b._sort);
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });

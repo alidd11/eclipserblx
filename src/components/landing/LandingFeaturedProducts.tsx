@@ -182,11 +182,15 @@ export function LandingFeaturedProducts() {
         .eq('stores.is_active', true)
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
-        .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(20);
 
       if (error) throw error;
-      return data as unknown as FeaturedProduct[];
+      const all = data as unknown as FeaturedProduct[];
+      // Shuffle and pick 8 for variety
+      return all
+        .map(p => ({ ...p, _sort: Math.random() }))
+        .sort((a, b) => a._sort - b._sort)
+        .slice(0, 8);
     },
     staleTime: 5 * 60 * 1000,
   });
