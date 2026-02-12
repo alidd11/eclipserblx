@@ -563,13 +563,25 @@ function ApplicationFormDialog({
 
               {/* Group Membership */}
               {settings.seller_require_group_membership && (
-                <VerificationItem
-                  icon={Users}
-                  label="Eclipse Group Member"
-                  passed={verificationResults.roblox_group?.in_group}
-                  required={true}
-                  detail={verificationResults.roblox_group?.role ? `Role: ${verificationResults.roblox_group.role}` : undefined}
-                />
+                <div>
+                  <VerificationItem
+                    icon={Users}
+                    label="Eclipse Group Member"
+                    passed={verificationResults.roblox_group?.in_group}
+                    required={true}
+                    detail={verificationResults.roblox_group?.role ? `Role: ${verificationResults.roblox_group.role}` : undefined}
+                  />
+                  {!verificationResults.roblox_group?.in_group && (
+                    <a
+                      href="https://www.roblox.com/communities/16006471/Eclipse-RBXL#!/about"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-9 mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                    >
+                      Join the Eclipse Group →
+                    </a>
+                  )}
+                </div>
               )}
 
               {/* Badge Ownership */}
