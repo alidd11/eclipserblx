@@ -197,7 +197,7 @@ export default function SellerDashboard() {
         )}
 
         {/* Stats Cards - Using AdminStatCard */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <AdminStatCard
             label="Total Revenue"
             value={formatCurrency(store?.total_revenue || 0)}
@@ -209,12 +209,6 @@ export default function SellerDashboard() {
             value={formatCurrency(balance?.available_balance || 0)}
             valueColor="green"
             subtitle="Ready for payout"
-          />
-          <AdminStatCard
-            label="Total Sales"
-            value={store?.total_sales || 0}
-            valueColor="blue"
-            subtitle="Products sold"
           />
           <AdminStatCard
             label="Products"
