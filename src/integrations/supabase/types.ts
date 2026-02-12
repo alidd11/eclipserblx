@@ -3685,6 +3685,8 @@ export type Database = {
           download_count: number | null
           early_access_hours: number | null
           eclipse_free_eligible: boolean
+          file_review_consented_at: string | null
+          file_review_requested_at: string | null
           id: string
           images: string[] | null
           ip_ownership_confirmed: boolean
@@ -3718,6 +3720,8 @@ export type Database = {
           download_count?: number | null
           early_access_hours?: number | null
           eclipse_free_eligible?: boolean
+          file_review_consented_at?: string | null
+          file_review_requested_at?: string | null
           id?: string
           images?: string[] | null
           ip_ownership_confirmed?: boolean
@@ -3751,6 +3755,8 @@ export type Database = {
           download_count?: number | null
           early_access_hours?: number | null
           eclipse_free_eligible?: boolean
+          file_review_consented_at?: string | null
+          file_review_requested_at?: string | null
           id?: string
           images?: string[] | null
           ip_ownership_confirmed?: boolean
@@ -5064,6 +5070,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      seller_notifications: {
+        Row: {
+          acknowledged_at: string | null
+          action_url: string | null
+          created_at: string
+          id: string
+          message: string
+          product_id: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          product_id?: string | null
+          read_at?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          product_id?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_notifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_payouts: {
         Row: {
@@ -7321,6 +7374,10 @@ export type Database = {
         Returns: boolean
       }
       is_username_available: { Args: { username: string }; Returns: boolean }
+      product_file_review_consented: {
+        Args: { file_path: string }
+        Returns: boolean
+      }
       record_rate_limit: {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined

@@ -412,6 +412,25 @@ export default function SellerProductEditor() {
       } else if (result.isAutoApproved) {
         toast.success('Product updated successfully');
       } else {
+        // Product was flagged — trigger seller notification for consent
+        try {
+          const flagReasons: string[] = [];
+          if (moderationFlags.nsfw_flags?.length) flagReasons.push('NSFW content detected');
+          if (moderationFlags.lua_risk_level && moderationFlags.lua_risk_level !== 'low') {
+            flagReasons.push(`Lua script: ${moderationFlags.lua_risk_level} risk`);
+          }
+          
+          await supabase.functions.invoke('notify-seller-review', {
+            body: {
+              productId: result.productId,
+              productName: formData.name,
+              storeOwnerId: user?.id,
+              flagReasons,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to notify seller:', error);
+        }
         toast.success('Product submitted for review - our team will approve it shortly');
       }
       
