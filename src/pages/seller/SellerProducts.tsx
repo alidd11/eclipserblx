@@ -195,11 +195,33 @@ export default function SellerProducts() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
-      toast.success(form.id ? 'Product updated' : 'Product created');
+    onSuccess: (_data, variables) => {
+      toast.success(variables.id ? 'Product updated' : 'Product created');
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
       setIsDialogOpen(false);
       setForm(INITIAL_FORM);
+
+      // Send Discord announcement for new auto-approved products
+      if (!variables.id) {
+        // Fetch the newly created product to get its ID
+        supabase
+          .from('products')
+          .select('id')
+          .eq('store_id', store!.id)
+          .eq('slug', variables.slug)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+          .then(({ data: newProduct }) => {
+            if (newProduct) {
+              supabase.functions.invoke('send-product-drop-webhook', {
+                body: { productId: newProduct.id, isEarlyAccess: false },
+              }).then(({ error }) => {
+                if (error) console.error('Discord product drop announce failed:', error);
+              });
+            }
+          });
+      }
     },
     onError: (error) => {
       toast.error('Failed to save product: ' + error.message);
