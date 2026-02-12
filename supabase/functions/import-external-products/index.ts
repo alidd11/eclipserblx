@@ -157,10 +157,12 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   // Match all markdown images with http/https URLs
   const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
   const images: string[] = [];
-  const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|brand)\b/i;
+  const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|clearlydev|clearly-dev|brand|banner)\b/i;
   const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com)\b/i;
   // Skip images whose alt text or URL suggests platform branding
-  const skipAltTextPatterns = /\b(clearlydev|clearly\s*dev|store\s*logo|seller\s*avatar|platform\s*logo|store\s*banner)\b/i;
+  const skipAltTextPatterns = /\b(clearlydev|clearly\s*dev|clearly\.dev|store\s*logo|seller\s*avatar|platform\s*logo|store\s*banner|builtbybit|built\s*by\s*bit|marketplace\s*logo)\b/i;
+  // Skip images whose URL contains clearlydev branding indicators anywhere in the path
+  const skipUrlBrandingPatterns = /clearlydev\.(com|io|dev)\/.*\/(logo|brand|banner|icon)/i;
   let imgMatch;
   while ((imgMatch = imageRegex.exec(markdown)) !== null) {
     const imgAlt = imgMatch[1] || '';
@@ -168,6 +170,7 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
     if (skipImagePatterns.test(imgUrl)) continue;
     if (skipImageDomains.test(imgUrl)) continue;
     if (skipAltTextPatterns.test(imgAlt)) continue;
+    if (skipUrlBrandingPatterns.test(imgUrl)) continue;
     // Keep the full proxy URL - stripping plain/ causes files.clearlydev.com to return Roblox placeholders
     const cleanUrl = imgUrl;
     if (!images.includes(cleanUrl)) {
@@ -192,8 +195,12 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   
   const categorySlug = suggestCategory(name, description);
   
-  // ClearlyDev pages always append 2 platform branding logos at the end — remove them
-  const cleanedImages = images.length > 2 ? images.slice(0, -2) : images;
+  // ClearlyDev pages: first image is often a branded banner, last 2 are platform logos — remove all
+  const cleanedImages = images.length > 3 
+    ? images.slice(1, -2)  // Skip first (banner) and last 2 (logos)
+    : images.length > 2 
+      ? images.slice(0, -2) 
+      : images;
 
   return {
     name,
