@@ -168,7 +168,8 @@ export const DiscordLinkCard = ({
         throw new Error(data?.error || urlError?.message || "Failed to get Discord auth URL");
       }
 
-      await openExternalUrl(data.url);
+      // Use direct navigation for OAuth flows so the callback returns to this page
+      window.location.href = data.url;
     } catch (err) {
       console.error("Discord link error:", err);
       setIsLinking(false);
