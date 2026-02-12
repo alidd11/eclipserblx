@@ -12,7 +12,8 @@ const corsHeaders = {
 };
 
 interface OrderItem {
-  product_name: string;
+  product_name?: string;
+  name?: string;
   price: number;
   category_slug?: string;
 }
@@ -68,7 +69,7 @@ async function enrichItems(items: OrderItem[]): Promise<EnrichedItem[]> {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const productNames = items.map(i => i.product_name);
+    const productNames = items.map(i => i.product_name || i.name).filter(Boolean);
     const { data: products } = await supabase
       .from("products")
       .select(`
@@ -92,7 +93,8 @@ async function enrichItems(items: OrderItem[]): Promise<EnrichedItem[]> {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 
     return items.map(item => {
-      const product = productMap.get(item.product_name);
+      const itemName = item.product_name || item.name || 'Product';
+      const product = productMap.get(itemName);
       let imageUrl: string | undefined;
       
       if (product?.images?.length > 0) {
@@ -109,7 +111,7 @@ async function enrichItems(items: OrderItem[]): Promise<EnrichedItem[]> {
         : undefined;
 
       return {
-        product_name: item.product_name,
+        product_name: itemName,
         price: item.price,
         category_slug: item.category_slug || (product?.categories as any)?.slug,
         category_name: (product?.categories as any)?.name,
@@ -132,7 +134,8 @@ function getCategoryLabel(item: EnrichedItem): string {
   return 'Digital Product';
 }
 
-function getPaymentLabel(method: string): string {
+function getPaymentLabel(method?: string): string {
+  if (!method) return 'Card';
   switch (method.toLowerCase()) {
     case 'card': return 'Card';
     case 'apple_pay': return 'Apple Pay';
@@ -144,7 +147,7 @@ function getPaymentLabel(method: string): string {
 
 function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: EnrichedItem[]): string {
   const hasBotPurchase = data.hasBotPurchase || data.botInstallationCodes?.length || data.items.some(item =>
-    item.category_slug === 'bots' || item.product_name.toLowerCase().includes('bot')
+    item.category_slug === 'bots' || (item.product_name || item.name || '').toLowerCase().includes('bot')
   );
   const botCodes = data.botInstallationCodes || [];
   const discount = data.discount || 0;
@@ -446,7 +449,7 @@ async function generatePdfReceipt(data: OrderConfirmationRequest, enrichedItems:
   cy -= 20;
 
   enrichedItems.forEach((item, idx) => {
-    page.drawText(item.product_name, { x: mx + 20, y: cy, font: fontBold, size: 11, color: white });
+    page.drawText(item.product_name || item.name || 'Product', { x: mx + 20, y: cy, font: fontBold, size: 11, color: white });
     const priceStr = `£${item.price.toFixed(2)}`;
     const priceW = fontBold.widthOfTextAtSize(priceStr, 11);
     page.drawText(priceStr, { x: pw - mx - 20 - priceW, y: cy, font: fontBold, size: 11, color: purple });
@@ -505,7 +508,7 @@ async function generatePdfReceipt(data: OrderConfirmationRequest, enrichedItems:
     page.drawText('Save these codes. You will need them for bot setup.', { x: mx + 20, y: cy, font, size: 8, color: dimGrey });
     cy -= 20;
     botCodes.forEach(code => {
-      page.drawText(code.product_name, { x: mx + 20, y: cy, font, size: 9, color: grey });
+      page.drawText(code.product_name || 'Bot', { x: mx + 20, y: cy, font, size: 9, color: grey });
       cy -= 16;
       page.drawText(code.installation_code, { x: mx + 20, y: cy, font: fontBold, size: 14, color: purple });
       cy -= 24;
@@ -568,6 +571,7 @@ const handler = async (req: Request): Promise<Response> => {
         {
           filename: `Eclipse-Receipt-${data.orderId.substring(0, 8)}.pdf`,
           content: pdfBase64,
+          content_type: "application/pdf",
         },
       ],
     });
