@@ -886,7 +886,7 @@ function AdminChatContent() {
       {...dragProps}
     >
       {/* iOS-style header with logo */}
-      <div className="flex-shrink-0 border-b border-border/50 bg-card/80 backdrop-blur-sm">
+      <div className="flex-shrink-0 border-b border-border bg-card">
         <div className="flex items-center justify-center gap-2 py-3 px-4">
           <EclipseLogo size="sm" />
           <span className="text-sm font-semibold text-foreground">Admin Chat</span>
@@ -895,7 +895,7 @@ function AdminChatContent() {
 
       {/* Drag overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/90 pointer-events-none">
           <div className="flex flex-col items-center gap-2 text-primary">
             <Upload className="h-12 w-12 animate-bounce" />
             <span className="text-lg font-medium">Drop file here</span>
@@ -1091,7 +1091,7 @@ function AdminChatContent() {
       )}>
         {/* Mention suggestions */}
         {showMentionSuggestions && (
-          <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[100]">
             {isAdminsLoading ? (
               <div className="px-3 py-2 text-sm text-muted-foreground">Loading admins…</div>
             ) : adminsError ? (

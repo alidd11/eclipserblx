@@ -689,7 +689,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
           {/* Header */}
           <div className="text-center">
-            <div className="inline-flex h-12 w-12 rounded-xl gradient-button items-center justify-center mb-4">
+            <div className="inline-flex h-12 w-12 rounded-lg gradient-button items-center justify-center mb-4">
               <span className="text-white font-display font-bold text-lg">UK</span>
             </div>
             <h1 className="font-display text-2xl font-bold">{getTitle()}</h1>

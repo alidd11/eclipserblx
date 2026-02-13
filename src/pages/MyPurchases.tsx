@@ -420,7 +420,7 @@ export default function MyPurchases() {
               <>
                 {/* Batch Download Header */}
                 {selectableItems.length > 0 && (
-                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-card/60 border border-primary/10 backdrop-blur-sm">
+                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-card border border-border">
                     <div className="flex items-center gap-3">
                       <Checkbox id="select-all" checked={allSelectableSelected} onCheckedChange={toggleSelectAll} disabled={isBatchDownloading} />
                       <label htmlFor="select-all" className="text-sm cursor-pointer">
@@ -442,7 +442,7 @@ export default function MyPurchases() {
                     const botCode = isBot ? getBotCode(item.id) : null;
 
                     return (
-                      <div key={`${item.orderId}-${item.id}`} className="p-4 rounded-xl bg-card/80 border border-primary/10 hover:border-primary/20 backdrop-blur-sm transition-all">
+                      <div key={`${item.orderId}-${item.id}`} className="p-4 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors">
                         <div className="flex items-start gap-4">
                           {!isBot && hasAsset && (
                             <div className="flex-shrink-0 pt-1">

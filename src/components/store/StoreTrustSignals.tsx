@@ -40,7 +40,7 @@ export function StoreTrustSignals({
         {signals.map((signal) => (
           <div
             key={signal.title}
-            className="flex flex-col items-center text-center p-4 rounded-xl border bg-card/50 backdrop-blur-sm transition-all hover:shadow-md"
+            className="flex flex-col items-center text-center p-4 rounded-lg border bg-card transition-colors"
             style={{ borderColor: `${accentColor}20` }}
           >
             <div 

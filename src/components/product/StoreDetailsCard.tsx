@@ -26,8 +26,8 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
   return (
     <Link to={`/store/${store.slug}`} className="block group">
       <Card className={cn(
-        "overflow-hidden transition-all duration-300 border-border bg-card",
-        "hover:shadow-xl hover:shadow-primary/15 hover:-translate-y-1 hover:border-primary/40",
+        "overflow-hidden transition-colors duration-200 border-border bg-card",
+        "hover:border-primary/40",
         className
       )}>
         {/* Banner section */}
@@ -60,8 +60,8 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
               <img 
                 src={store.logo_url} 
                 alt={store.name}
-                className="h-12 w-12 rounded-lg object-contain bg-white/10 backdrop-blur-sm border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors"
-              />
+              className="h-12 w-12 rounded-lg object-contain bg-white/10 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors"
+            />
             ) : (
               <div className="h-12 w-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 border border-white/10">
                 <Store className="h-5 w-5 text-white/60" />

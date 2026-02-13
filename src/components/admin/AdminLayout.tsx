@@ -450,7 +450,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           >
             <SheetContent 
               side="left" 
-              className="!h-[100dvh] !max-h-[100dvh] p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-0 [&>button]:hidden shadow-2xl shadow-black/50 bg-sidebar border-0"
+              className="!h-[100dvh] !max-h-[100dvh] p-0 w-[68vw] max-w-[14.5rem] pt-[env(safe-area-inset-top)] pb-0 [&>button]:hidden shadow-lg bg-sidebar border-0"
               style={{ height: '100dvh', maxHeight: '100dvh' }}
               onPointerDownOutside={() => setMobileOpen(false)}
             >
@@ -514,7 +514,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           )}
         >
           {isMobile && !isChatPage && (
-            <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+            <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 

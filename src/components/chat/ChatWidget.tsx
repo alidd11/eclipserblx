@@ -83,7 +83,7 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
         <button
           type="button"
           onClick={() => setShowInfo(true)}
-          className="fixed z-[9998] h-6 w-6 rounded-full bg-muted/80 backdrop-blur-sm shadow-sm touch-manipulation cursor-pointer flex items-center justify-center hover:bg-muted transition-colors"
+          className="fixed z-[9998] h-6 w-6 rounded-full bg-muted shadow-sm touch-manipulation cursor-pointer flex items-center justify-center hover:bg-muted transition-colors"
           style={{
             bottom: 'max(4.5rem, env(safe-area-inset-bottom, 0px) + 4rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
@@ -97,7 +97,7 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
       {/* Info panel - shows availability details */}
       {showInfo && (
         <div
-          className="fixed z-[9999] bg-card border border-border rounded-xl shadow-xl p-4 w-72"
+          className="fixed z-[9999] bg-card border border-border rounded-lg shadow-lg p-4 w-72"
           style={{
             bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
