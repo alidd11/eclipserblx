@@ -105,7 +105,11 @@ export default function SellerBalance() {
   };
 
   const minPayout = 25; // Minimum payout threshold
-  const canRequestPayout = (balance?.available_balance || 0) >= minPayout && store?.paymentDetails?.payouts_enabled;
+  const hasPayoutMethod = 
+    store?.paymentDetails?.payouts_enabled || 
+    (store?.paymentDetails?.payout_method === 'paypal' && !!store?.paymentDetails?.paypal_email) ||
+    (store?.paymentDetails?.payout_method === 'bank_transfer' && !!store?.paymentDetails?.bank_name);
+  const canRequestPayout = (balance?.available_balance || 0) >= minPayout && hasPayoutMethod;
   const payoutProgress = Math.min(((balance?.available_balance || 0) / minPayout) * 100, 100);
 
   const getPayoutStatusBadge = (status: string) => {
@@ -188,13 +192,13 @@ export default function SellerBalance() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!store?.paymentDetails?.payouts_enabled ? (
+            {!hasPayoutMethod ? (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>
                   <p className="font-medium">Payouts Not Enabled</p>
                   <p className="text-sm text-muted-foreground">
-                    Please complete your Stripe Connect setup in Store Settings to enable payouts.
+                    Please configure a payout method (Stripe Connect, PayPal, or Bank Transfer) in Store Settings to enable payouts.
                   </p>
                 </div>
               </div>
