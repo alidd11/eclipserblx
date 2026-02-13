@@ -107,12 +107,12 @@ export function AddPortalBotCard() {
       <CardContent className="space-y-4">
         {/* Connection Status */}
         {isConnected ? (
-          <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div className="flex items-center gap-3 min-w-0">
+              <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+              <div className="min-w-0">
                 <p className="text-sm font-medium">Bot Connected</p>
-                <p className="text-xs text-muted-foreground font-mono">
+                <p className="text-xs text-muted-foreground font-mono truncate">
                   Guild ID: {connectedGuildId}
                 </p>
               </div>
@@ -122,7 +122,7 @@ export function AddPortalBotCard() {
               size="sm"
               onClick={() => disconnectBot.mutate()}
               disabled={disconnectBot.isPending}
-              className="text-destructive hover:text-destructive"
+              className="text-destructive hover:text-destructive shrink-0 self-start sm:self-auto"
             >
               {disconnectBot.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

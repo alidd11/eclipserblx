@@ -33,14 +33,14 @@ export default function SellerDiscord() {
 
         {/* Webhook Config Link */}
         <Card className="border-border/50">
-          <CardContent className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <Settings className="h-4 w-4 text-muted-foreground" />
+          <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
               <p className="text-sm text-muted-foreground">
                 Configure your Discord webhook URL for fallback announcements
               </p>
             </div>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="shrink-0 self-start sm:self-auto">
               <Link to="/seller/settings/notifications">
                 Configure
               </Link>

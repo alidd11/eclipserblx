@@ -11,7 +11,7 @@ interface EmbedPreviewProps {
 
 export function DiscordEmbedPreview({ title, description, color, linkUrl, footerText, pingText }: EmbedPreviewProps) {
   return (
-    <div className="rounded-lg bg-[#2b2d31] p-3 space-y-2 font-sans text-sm">
+    <div className="rounded-lg bg-[#2b2d31] p-3 space-y-2 font-sans text-sm overflow-hidden">
       {/* Ping preview */}
       {pingText && (
         <p className="text-[#dee0fc] text-[13px]">{pingText}</p>
