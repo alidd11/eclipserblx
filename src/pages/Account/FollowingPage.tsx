@@ -1,20 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { FollowButton } from '@/components/store/FollowButton';
+import { toast } from 'sonner';
 import { 
   Store as StoreIcon, 
   CheckCircle, 
   Package, 
   Users,
   Bell,
-  BellOff,
   ArrowRight
 } from 'lucide-react';
 
@@ -39,6 +39,7 @@ interface FollowedStore {
 
 export function FollowingPage() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: followedStores, isLoading } = useQuery({
     queryKey: ['followed-stores', user?.id],
@@ -74,13 +75,29 @@ export function FollowingPage() {
     enabled: !!user?.id,
   });
 
+  const toggleNotifyMutation = useMutation({
+    mutationFn: async ({ followId, currentValue }: { followId: string; currentValue: boolean }) => {
+      const { error } = await supabase
+        .from('store_follows')
+        .update({ notify_new_products: !currentValue })
+        .eq('id', followId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['followed-stores'] });
+    },
+    onError: () => {
+      toast.error('Failed to update notification preference');
+    },
+  });
+
   if (isLoading) {
     return (
       <MainLayout>
         <div className="container max-w-4xl mx-auto py-8 px-4 space-y-4">
           <h1 className="text-2xl font-bold mb-6">Following</h1>
           {[1, 2, 3].map(i => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className="h-40" />
           ))}
         </div>
       </MainLayout>
@@ -124,29 +141,29 @@ export function FollowingPage() {
             <Card key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/30 transition-colors group">
               {/* Banner */}
               {store.banner_url ? (
-                <div className="relative h-20 overflow-hidden">
+                <Link to={`/store/${store.slug}`} className="block relative h-24 overflow-hidden">
                   <img 
                     src={store.banner_url} 
                     alt=""
                     className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90" />
-                </div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card" />
+                </Link>
               ) : (
                 <div 
-                  className="h-14"
+                  className="h-16"
                   style={{ 
-                    background: `linear-gradient(135deg, ${accentColor}30 0%, ${accentColor}10 100%)`
+                    background: `linear-gradient(135deg, ${accentColor}20 0%, ${accentColor}08 100%)`
                   }}
                 />
               )}
 
               {/* Content */}
-              <div className="p-3 sm:p-4 space-y-2.5">
+              <div className="px-4 pb-4 space-y-3">
+                {/* Store identity row */}
                 <div className="flex items-start gap-3">
-                  {/* Store Logo */}
-                  <Link to={`/store/${store.slug}`} className="flex-shrink-0 -mt-8 relative z-10">
-                    <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden border border-border bg-muted/80 backdrop-blur-sm">
+                  <Link to={`/store/${store.slug}`} className="flex-shrink-0 -mt-6 relative z-10">
+                    <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden border border-border bg-card">
                       {store.logo_url ? (
                         <img 
                           src={store.logo_url} 
@@ -159,9 +176,8 @@ export function FollowingPage() {
                     </div>
                   </Link>
 
-                  {/* Store Info */}
-                  <div className="flex-1 min-w-0 -mt-1">
-                    <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className="flex-1 min-w-0 pt-1">
+                    <div className="flex items-center gap-1.5">
                       <Link 
                         to={`/store/${store.slug}`}
                         className="font-semibold text-sm hover:text-primary transition-colors truncate"
@@ -174,38 +190,48 @@ export function FollowingPage() {
                     </div>
                     
                     {store.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
                         {store.description}
                       </p>
                     )}
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5">
+                      <span className="flex items-center gap-1">
+                        <Package className="h-3 w-3" />
+                        {store.product_count || 0} Products
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {store.follower_count || 0} Followers
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Stats + Actions row */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Package className="h-3 w-3" />
-                      {store.product_count || 0}
+                {/* Actions row */}
+                <div className="flex items-center justify-between border-t border-border pt-3">
+                  {/* Notification toggle */}
+                  <button
+                    className="flex items-center gap-2 text-xs cursor-pointer group/notif"
+                    onClick={() => toggleNotifyMutation.mutate({ 
+                      followId: follow.id, 
+                      currentValue: follow.notify_new_products 
+                    })}
+                    disabled={toggleNotifyMutation.isPending}
+                  >
+                    <Switch
+                      checked={follow.notify_new_products}
+                      className="pointer-events-none scale-90"
+                    />
+                    <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-muted-foreground group-hover/notif:text-foreground transition-colors">
+                      Notifications
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      {store.follower_count || 0}
-                    </span>
-                    {follow.notify_new_products ? (
-                      <span className="flex items-center gap-1 text-emerald-500">
-                        <Bell className="h-3 w-3" />
-                        Notifs on
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <BellOff className="h-3 w-3" />
-                        Notifs off
-                      </span>
-                    )}
-                  </div>
+                  </button>
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Buttons */}
+                  <div className="flex items-center gap-2">
                     <FollowButton 
                       storeId={store.id} 
                       accentColor={accentColor}
