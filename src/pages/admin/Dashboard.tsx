@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield } from 'lucide-react';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -378,12 +379,33 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="max-w-6xl mx-auto space-y-5">
-        <div className="pb-1">
-          <h1 className="text-xl sm:text-2xl font-display font-bold">
-            {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
-          </h1>
-          <p className="text-muted-foreground text-sm">Manage your duties and quick actions.</p>
-        </div>
+        {/* Hero Banner */}
+        <Card className="overflow-hidden border-border bg-card">
+          <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+          </div>
+          <CardContent className="relative -mt-10 px-4 sm:px-6 pb-5">
+            <div className="flex items-end gap-4 mb-4">
+              <div className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg rounded-full bg-card flex items-center justify-center">
+                <EclipseLogo size="lg" removeWhiteBackground />
+              </div>
+              <div className="flex-1 min-w-0 pb-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-display font-bold truncate">
+                    {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
+                  </h1>
+                  <Badge variant="default" className="gap-1 shrink-0">
+                    <Shield className="h-3 w-3" />
+                    Admin
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground truncate">
+                  Manage your duties and quick actions
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Staff Announcements */}
         <Card className="bg-card border-border">
