@@ -169,7 +169,7 @@ export function ReviewsShowcase() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                 >
-                  <div className="relative rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-colors duration-300">
+                  <div className="relative rounded-lg border border-border bg-card p-6 hover:border-border transition-colors duration-300">
                     <Quote className="absolute top-4 right-4 h-6 w-6 text-muted-foreground/15" />
                     
                     <div className="flex items-center gap-0.5 mb-3">

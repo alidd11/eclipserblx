@@ -104,8 +104,8 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
     return (
       <div ref={ref} className="rounded-2xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-            <TrendingUp className="h-3 w-3 text-primary" />
+          <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center">
+            <TrendingUp className="h-3 w-3 text-foreground" />
           </div>
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Our Community</span>
         </div>
@@ -132,8 +132,8 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
   return (
     <div ref={ref} className="rounded-2xl border border-border bg-card p-5 h-full">
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <TrendingUp className="h-4 w-4 text-primary" />
+        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+          <TrendingUp className="h-4 w-4 text-foreground" />
         </div>
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Our Community</span>
       </div>

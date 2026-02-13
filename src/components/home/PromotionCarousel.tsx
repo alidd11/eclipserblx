@@ -23,8 +23,8 @@ export function PromotionCarousel() {
       description: t('landing.affiliateDesc'),
       cta: t('landing.affiliateCta'),
       link: '/affiliate',
-      accentColor: 'text-primary',
-      bgAccent: 'bg-primary/10',
+      accentColor: 'text-foreground',
+      bgAccent: 'bg-muted',
     },
     {
       id: 'seller',
@@ -83,14 +83,14 @@ export function PromotionCarousel() {
                     </div>
                   </div>
                   <Link to={promo.link} className="shrink-0 hidden sm:block">
-                    <Button variant="outline" className={`${promo.id === 'affiliate' ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
+                    <Button variant="outline" className={`${promo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
                       {promo.cta}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
                 <Link to={promo.link} className="block sm:hidden mt-4">
-                  <Button variant="outline" className={`w-full ${promo.id === 'affiliate' ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
+                  <Button variant="outline" className={`w-full ${promo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
                     {promo.cta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -114,14 +114,14 @@ export function PromotionCarousel() {
               </div>
             </div>
             <Link to={currentPromo.link} className="shrink-0 hidden sm:block">
-              <Button variant="outline" className={`${currentPromo.id === 'affiliate' ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
+              <Button variant="outline" className={`${currentPromo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
                 {currentPromo.cta}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
           <Link to={currentPromo.link} className="block sm:hidden mt-4">
-            <Button variant="outline" className={`w-full ${currentPromo.id === 'affiliate' ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
+            <Button variant="outline" className={`w-full ${currentPromo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
               {currentPromo.cta}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

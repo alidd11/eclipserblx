@@ -30,8 +30,8 @@ export function TrustSignals() {
       <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Shield className="h-5 w-5 text-primary" />
+          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+            <Shield className="h-5 w-5 text-foreground" />
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-bold">Why creators choose us</h2>
@@ -42,8 +42,8 @@ export function TrustSignals() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {signals.map((signal) => (
             <div key={signal.title} className="rounded-xl border border-border bg-muted/30 p-4 text-center">
-              <div className="mx-auto w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <signal.icon className="h-5 w-5 text-primary" />
+              <div className="mx-auto w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-3">
+                <signal.icon className="h-5 w-5 text-foreground" />
               </div>
               <h3 className="font-semibold text-sm mb-1">{signal.title}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">{signal.description}</p>
