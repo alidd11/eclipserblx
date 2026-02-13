@@ -636,21 +636,8 @@ export default function ProductDetail() {
             </Card>
 
 
-            {/* Share & Report */}
+            {/* Report */}
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/product-og?slug=${encodeURIComponent(product.slug)}`;
-                  navigator.clipboard.writeText(shareUrl);
-                  toast.success('Share link copied! Paste in Discord for a rich preview.');
-                }}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Copy Share Link
-              </Button>
               <Button
                 variant="ghost"
                 size="sm"
