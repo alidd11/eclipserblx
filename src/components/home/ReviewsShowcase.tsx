@@ -168,9 +168,8 @@ export function ReviewsShowcase() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="h-full"
                 >
-                  <div className="relative h-full rounded-xl border border-border bg-card p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+                  <div className="relative rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-colors duration-300">
                     <Quote className="absolute top-4 right-4 h-6 w-6 text-muted-foreground/15" />
                     
                     <div className="flex items-center gap-0.5 mb-3">
