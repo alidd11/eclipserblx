@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -68,7 +69,7 @@ export default function SellerTransactionHistory() {
   };
 
   return (
-    <div className="space-y-6">
+    <SellerLayout><div className="space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold">Transaction History</h1>
         <p className="text-sm text-muted-foreground">Complete log of every sale, refund, and fee.</p>
@@ -154,6 +155,6 @@ export default function SellerTransactionHistory() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </div></SellerLayout>
   );
 }

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
@@ -68,7 +69,7 @@ export default function SellerTaxFeeSummary() {
   ];
 
   return (
-    <div className="space-y-6">
+    <SellerLayout><div className="space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold">Tax & Fee Summary</h1>
         <p className="text-sm text-muted-foreground">Understand your platform fees, processing costs, and net earnings.</p>
@@ -137,6 +138,6 @@ export default function SellerTaxFeeSummary() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div></SellerLayout>
   );
 }
