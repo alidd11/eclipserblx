@@ -4,131 +4,131 @@
 
 /* Orientation lock is now handled by React component OrientationLockOverlay */
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap&font-display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap&font-display=swap');
 
 @layer base {
-  /* Light theme - Clean and professional with purple accents */
+  /* Light theme - Clean utilitarian with blurple accent */
   :root {
-    --background: 240 20% 98%;
-    --foreground: 240 10% 10%;
+    --background: 220 14% 96%;
+    --foreground: 220 9% 12%;
     
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card-foreground: 220 9% 12%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover-foreground: 220 9% 12%;
     
-    --primary: 265 85% 55%;
+    --primary: 235 86% 60%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 200 80% 50%;
+    --secondary: 215 20% 55%;
     --secondary-foreground: 0 0% 100%;
     
-    --muted: 240 10% 92%;
-    --muted-foreground: 240 5% 45%;
+    --muted: 220 12% 91%;
+    --muted-foreground: 220 6% 44%;
     
-    --accent: 280 70% 55%;
+    --accent: 235 60% 55%;
     --accent-foreground: 0 0% 100%;
     
-    --destructive: 0 75% 50%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 145 70% 40%;
+    --success: 145 65% 39%;
     --success-foreground: 0 0% 100%;
     
-    --warning: 45 95% 50%;
+    --warning: 45 93% 47%;
     --warning-foreground: 0 0% 10%;
     
-    --border: 240 10% 88%;
-    --input: 240 10% 92%;
-    --ring: 265 85% 55%;
+    --border: 220 9% 87%;
+    --input: 220 12% 91%;
+    --ring: 235 86% 60%;
     
-    --radius: 0.75rem;
+    --radius: 0.5rem;
     
-    /* Gaming-specific tokens - softened for light mode */
-    --neon-purple: 265 85% 55%;
-    --neon-blue: 200 80% 50%;
-    --neon-pink: 320 80% 55%;
-    --neon-green: 145 80% 45%;
+    /* Accent tokens (kept for compatibility, shifted to blurple family) */
+    --neon-purple: 235 86% 60%;
+    --neon-blue: 215 80% 52%;
+    --neon-pink: 340 65% 55%;
+    --neon-green: 145 70% 42%;
     
-    --gradient-primary: linear-gradient(135deg, hsl(265 85% 55%), hsl(200 80% 50%));
-    --gradient-accent: linear-gradient(135deg, hsl(280 70% 55%), hsl(320 80% 55%));
-    --gradient-success: linear-gradient(135deg, hsl(145 70% 40%), hsl(170 80% 40%));
+    --gradient-primary: linear-gradient(135deg, hsl(235 86% 60%), hsl(215 80% 52%));
+    --gradient-accent: linear-gradient(135deg, hsl(235 60% 55%), hsl(250 55% 58%));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 39%), hsl(170 60% 38%));
     
-    --glow-purple: 0 0 20px hsl(265 85% 55% / 0.25);
-    --glow-blue: 0 0 20px hsl(200 80% 50% / 0.25);
-    --glow-pink: 0 0 20px hsl(320 80% 55% / 0.25);
+    --glow-purple: 0 0 8px hsl(235 86% 60% / 0.15);
+    --glow-blue: 0 0 8px hsl(215 80% 52% / 0.15);
+    --glow-pink: 0 0 8px hsl(340 65% 55% / 0.15);
     
     /* Sidebar - light mode */
-    --sidebar-background: 240 15% 96%;
-    --sidebar-foreground: 240 10% 20%;
-    --sidebar-primary: 265 85% 55%;
+    --sidebar-background: 220 13% 94%;
+    --sidebar-foreground: 220 9% 18%;
+    --sidebar-primary: 235 86% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 92%;
-    --sidebar-accent-foreground: 240 10% 20%;
-    --sidebar-border: 240 10% 88%;
-    --sidebar-ring: 265 85% 55%;
+    --sidebar-accent: 220 12% 91%;
+    --sidebar-accent-foreground: 220 9% 18%;
+    --sidebar-border: 220 9% 87%;
+    --sidebar-ring: 235 86% 60%;
   }
 
-  /* Dark theme - Gaming aesthetic with neon accents */
+  /* Dark theme - Discord-inspired neutral darks with blurple accent */
   .dark {
-    --background: 220 20% 4%;
-    --foreground: 220 10% 95%;
+    --background: 228 6% 9%;
+    --foreground: 210 8% 92%;
     
-    --card: 220 20% 7%;
-    --card-foreground: 220 10% 95%;
+    --card: 225 6% 13%;
+    --card-foreground: 210 8% 92%;
     
-    --popover: 220 20% 7%;
-    --popover-foreground: 220 10% 95%;
+    --popover: 225 6% 13%;
+    --popover-foreground: 210 8% 92%;
     
-    --primary: 265 100% 65%;
+    --primary: 235 86% 65%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 200 100% 50%;
+    --secondary: 215 60% 50%;
     --secondary-foreground: 0 0% 100%;
     
-    --muted: 220 15% 15%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 223 7% 18%;
+    --muted-foreground: 218 7% 56%;
     
-    --accent: 280 100% 60%;
+    --accent: 235 65% 58%;
     --accent-foreground: 0 0% 100%;
     
-    --destructive: 0 85% 60%;
+    --destructive: 0 80% 58%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 145 80% 45%;
+    --success: 145 72% 43%;
     --success-foreground: 0 0% 100%;
     
-    --warning: 45 100% 50%;
+    --warning: 45 93% 47%;
     --warning-foreground: 0 0% 10%;
     
-    --border: 220 15% 18%;
-    --input: 220 15% 12%;
-    --ring: 265 100% 65%;
+    --border: 224 6% 22%;
+    --input: 225 6% 15%;
+    --ring: 235 86% 65%;
     
-    /* Gaming-specific tokens */
-    --neon-purple: 265 100% 65%;
-    --neon-blue: 200 100% 55%;
-    --neon-pink: 320 100% 60%;
-    --neon-green: 145 100% 50%;
+    /* Accent tokens */
+    --neon-purple: 235 86% 65%;
+    --neon-blue: 215 85% 55%;
+    --neon-pink: 340 70% 58%;
+    --neon-green: 145 75% 46%;
     
-    --gradient-primary: linear-gradient(135deg, hsl(265 100% 65%), hsl(200 100% 55%));
-    --gradient-accent: linear-gradient(135deg, hsl(280 100% 60%), hsl(320 100% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(145 80% 45%), hsl(170 100% 40%));
+    --gradient-primary: linear-gradient(135deg, hsl(235 86% 65%), hsl(215 85% 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(235 65% 58%), hsl(250 60% 60%));
+    --gradient-success: linear-gradient(135deg, hsl(145 72% 43%), hsl(170 70% 40%));
     
-    --glow-purple: 0 0 20px hsl(265 100% 65% / 0.5);
-    --glow-blue: 0 0 20px hsl(200 100% 55% / 0.5);
-    --glow-pink: 0 0 20px hsl(320 100% 60% / 0.5);
+    --glow-purple: 0 0 8px hsl(235 86% 65% / 0.2);
+    --glow-blue: 0 0 8px hsl(215 85% 55% / 0.2);
+    --glow-pink: 0 0 8px hsl(340 70% 58% / 0.2);
     
-    /* Sidebar */
-    --sidebar-background: 220 20% 6%;
-    --sidebar-foreground: 220 10% 90%;
-    --sidebar-primary: 265 100% 65%;
+    /* Sidebar - Discord channel-list style */
+    --sidebar-background: 228 6% 7%;
+    --sidebar-foreground: 210 8% 85%;
+    --sidebar-primary: 235 86% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 12%;
-    --sidebar-accent-foreground: 220 10% 90%;
-    --sidebar-border: 220 15% 15%;
-    --sidebar-ring: 265 100% 65%;
+    --sidebar-accent: 223 7% 15%;
+    --sidebar-accent-foreground: 210 8% 85%;
+    --sidebar-border: 224 6% 18%;
+    --sidebar-ring: 235 86% 65%;
   }
 
   /* ========================================
@@ -180,9 +180,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(195 75% 45%), hsl(175 75% 42%));
     --gradient-success: linear-gradient(135deg, hsl(160 70% 38%), hsl(180 70% 38%));
     
-    --glow-purple: 0 0 20px hsl(185 85% 45% / 0.25);
-    --glow-blue: 0 0 20px hsl(210 80% 50% / 0.25);
-    --glow-pink: 0 0 20px hsl(195 75% 45% / 0.25);
+    --glow-purple: 0 0 8px hsl(185 85% 45% / 0.15);
+    --glow-blue: 0 0 8px hsl(210 80% 50% / 0.15);
+    --glow-pink: 0 0 8px hsl(195 75% 45% / 0.15);
     
     --sidebar-background: 195 25% 96%;
     --sidebar-foreground: 200 20% 20%;
@@ -194,7 +194,7 @@
     --sidebar-ring: 185 85% 40%;
   }
 
-  /* Ocean theme - Dark mode (both classes on html element) */
+  /* Ocean theme - Dark mode */
   :root.dark.theme-ocean,
   .dark.theme-ocean {
     --background: 200 25% 6%;
@@ -240,9 +240,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(195 100% 45%), hsl(175 100% 45%));
     --gradient-success: linear-gradient(135deg, hsl(160 80% 42%), hsl(180 90% 40%));
     
-    --glow-purple: 0 0 20px hsl(185 100% 50% / 0.5);
-    --glow-blue: 0 0 20px hsl(210 100% 55% / 0.5);
-    --glow-pink: 0 0 20px hsl(195 100% 50% / 0.5);
+    --glow-purple: 0 0 8px hsl(185 100% 50% / 0.2);
+    --glow-blue: 0 0 8px hsl(210 100% 55% / 0.2);
+    --glow-pink: 0 0 8px hsl(195 100% 50% / 0.2);
     
     --sidebar-background: 200 24% 8%;
     --sidebar-foreground: 200 10% 88%;
@@ -299,9 +299,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(10 85% 50%), hsl(0 75% 50%));
     --gradient-success: linear-gradient(135deg, hsl(145 70% 38%), hsl(120 65% 38%));
     
-    --glow-purple: 0 0 20px hsl(25 90% 50% / 0.25);
-    --glow-blue: 0 0 20px hsl(45 90% 48% / 0.25);
-    --glow-pink: 0 0 20px hsl(10 85% 50% / 0.25);
+    --glow-purple: 0 0 8px hsl(25 90% 50% / 0.15);
+    --glow-blue: 0 0 8px hsl(45 90% 48% / 0.15);
+    --glow-pink: 0 0 8px hsl(10 85% 50% / 0.15);
     
     --sidebar-background: 30 28% 96%;
     --sidebar-foreground: 15 20% 20%;
@@ -313,7 +313,7 @@
     --sidebar-ring: 25 90% 48%;
   }
 
-  /* Ember theme - Dark mode (both classes on html element) */
+  /* Ember theme - Dark mode */
   :root.dark.theme-ember,
   .dark.theme-ember {
     --background: 15 25% 6%;
@@ -359,9 +359,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(10 100% 55%), hsl(0 85% 55%));
     --gradient-success: linear-gradient(135deg, hsl(145 75% 42%), hsl(120 70% 40%));
     
-    --glow-purple: 0 0 20px hsl(25 100% 55% / 0.5);
-    --glow-blue: 0 0 20px hsl(45 100% 50% / 0.5);
-    --glow-pink: 0 0 20px hsl(10 100% 55% / 0.5);
+    --glow-purple: 0 0 8px hsl(25 100% 55% / 0.2);
+    --glow-blue: 0 0 8px hsl(45 100% 50% / 0.2);
+    --glow-pink: 0 0 8px hsl(10 100% 55% / 0.2);
     
     --sidebar-background: 15 24% 8%;
     --sidebar-foreground: 30 10% 88%;
@@ -418,9 +418,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(120 65% 42%), hsl(100 70% 40%));
     --gradient-success: linear-gradient(135deg, hsl(145 75% 38%), hsl(170 70% 38%));
     
-    --glow-purple: 0 0 20px hsl(145 75% 40% / 0.25);
-    --glow-blue: 0 0 20px hsl(160 70% 38% / 0.25);
-    --glow-pink: 0 0 20px hsl(120 65% 42% / 0.25);
+    --glow-purple: 0 0 8px hsl(145 75% 40% / 0.15);
+    --glow-blue: 0 0 8px hsl(160 70% 38% / 0.15);
+    --glow-pink: 0 0 8px hsl(120 65% 42% / 0.15);
     
     --sidebar-background: 140 25% 96%;
     --sidebar-foreground: 140 20% 20%;
@@ -432,7 +432,7 @@
     --sidebar-ring: 145 75% 38%;
   }
 
-  /* Forest theme - Dark mode (both classes on html element) */
+  /* Forest theme - Dark mode */
   :root.dark.theme-forest,
   .dark.theme-forest {
     --background: 140 25% 5%;
@@ -478,9 +478,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(120 75% 48%), hsl(100 80% 45%));
     --gradient-success: linear-gradient(135deg, hsl(145 85% 45%), hsl(170 90% 40%));
     
-    --glow-purple: 0 0 20px hsl(145 85% 45% / 0.5);
-    --glow-blue: 0 0 20px hsl(160 80% 42% / 0.5);
-    --glow-pink: 0 0 20px hsl(120 75% 48% / 0.5);
+    --glow-purple: 0 0 8px hsl(145 85% 45% / 0.2);
+    --glow-blue: 0 0 8px hsl(160 80% 42% / 0.2);
+    --glow-pink: 0 0 8px hsl(120 75% 48% / 0.2);
     
     --sidebar-background: 140 24% 7%;
     --sidebar-foreground: 140 10% 88%;
@@ -537,9 +537,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(0 0% 30%), hsl(0 0% 45%));
     --gradient-success: linear-gradient(135deg, hsl(145 60% 38%), hsl(160 50% 36%));
     
-    --glow-purple: 0 0 20px hsl(0 0% 20% / 0.15);
-    --glow-blue: 0 0 20px hsl(0 0% 30% / 0.15);
-    --glow-pink: 0 0 20px hsl(0 0% 25% / 0.15);
+    --glow-purple: 0 0 8px hsl(0 0% 20% / 0.1);
+    --glow-blue: 0 0 8px hsl(0 0% 30% / 0.1);
+    --glow-pink: 0 0 8px hsl(0 0% 25% / 0.1);
     
     --sidebar-background: 0 0% 96%;
     --sidebar-foreground: 0 0% 20%;
@@ -551,7 +551,7 @@
     --sidebar-ring: 0 0% 30%;
   }
 
-  /* Monochrome theme - Dark mode (both classes on html element) */
+  /* Monochrome theme - Dark mode */
   :root.dark.theme-mono,
   .dark.theme-mono {
     --background: 0 0% 5%;
@@ -597,9 +597,9 @@
     --gradient-accent: linear-gradient(135deg, hsl(0 0% 75%), hsl(0 0% 60%));
     --gradient-success: linear-gradient(135deg, hsl(145 60% 40%), hsl(160 50% 38%));
     
-    --glow-purple: 0 0 20px hsl(0 0% 85% / 0.3);
-    --glow-blue: 0 0 20px hsl(0 0% 80% / 0.3);
-    --glow-pink: 0 0 20px hsl(0 0% 75% / 0.3);
+    --glow-purple: 0 0 8px hsl(0 0% 85% / 0.15);
+    --glow-blue: 0 0 8px hsl(0 0% 80% / 0.15);
+    --glow-pink: 0 0 8px hsl(0 0% 75% / 0.15);
     
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 88%;
@@ -619,40 +619,26 @@
   
   html {
     @apply bg-background text-foreground;
-    /* Theme color is set dynamically via useThemeColor hook */
-    /* Prevent iOS overscroll from showing gaps */
     overscroll-behavior: none;
-    /* Ensure safe areas have proper background */
     background-color: hsl(var(--background));
   }
   
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Manrope', sans-serif;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
     min-height: 100vh;
     min-height: 100dvh;
-    /* Prevent text selection in PWA for native feel */
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     user-select: none;
-    /* Prevent overscroll bounce revealing gaps on iOS */
     overscroll-behavior: none;
     overscroll-behavior-y: contain;
-    /* Ensure consistent background through safe areas */
     background-color: hsl(var(--background));
-    /* Avoid layout shifts from safe-area padding; we paint the safe-area with ::after instead */
     padding-bottom: 0;
     box-sizing: border-box;
   }
-
-  /*
-    iOS safe-area background fill without adding extra bottom space.
-    This prevents the “tall grey strip” while still ensuring the home-indicator area
-    matches the current page background (including chat pages that override body bg).
-  */
-  /* body::after removed - was causing duplicate bottom space on iOS */
   
   /* Allow text selection in inputs and textareas */
   input, textarea, [contenteditable="true"] {
@@ -671,7 +657,7 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
   }
   
@@ -696,40 +682,37 @@
   }
 
   .gaming-card {
-    @apply bg-card border border-border rounded-xl;
+    @apply bg-card border border-border rounded-lg;
   }
   
   .dark .gaming-card {
-    background: linear-gradient(135deg, hsl(220 20% 7%) 0%, hsl(220 20% 5%) 100%);
+    background: hsl(225 6% 13%);
   }
   
   .gaming-card-hover {
-    @apply gaming-card transition-all duration-300;
+    @apply gaming-card transition-colors duration-200;
   }
   
   .gaming-card-hover:hover {
-    @apply border-primary/50;
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.15);
-    transform: translateY(-2px);
+    @apply border-primary/40;
   }
   
   .neon-text {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+    text-shadow: 0 0 6px currentColor;
   }
   
   .neon-border {
-    box-shadow: 0 0 10px hsl(265 100% 65% / 0.3), inset 0 0 10px hsl(265 100% 65% / 0.1);
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.2);
   }
   
-  /* Premium brand wordmark - inspired by Discord, Razer, Stripe */
+  /* Brand wordmark — clean, no purple gradient */
   .gradient-text {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(
       135deg, 
       hsl(0 0% 100%) 0%, 
-      hsl(0 0% 92%) 30%,
-      hsl(265 65% 78%) 65%, 
-      hsl(200 75% 68%) 100%
+      hsl(0 0% 88%) 50%,
+      hsl(215 40% 78%) 100%
     );
   }
   
@@ -737,29 +720,28 @@
     background-image: linear-gradient(
       135deg, 
       hsl(0 0% 100%) 0%, 
-      hsl(0 0% 95%) 25%,
-      hsl(265 80% 80%) 60%, 
-      hsl(200 90% 72%) 100%
+      hsl(0 0% 92%) 40%,
+      hsl(215 50% 80%) 100%
     );
   }
   
-  /* Brand text - uppercase with wide tracking for authority */
+  /* Brand text - uppercase with wide tracking */
   .brand-text {
-    @apply font-display font-black uppercase;
-    letter-spacing: 0.06em;
+    @apply font-bold uppercase;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.04em;
   }
   
   .gradient-button {
-    background: linear-gradient(135deg, hsl(265 100% 65%), hsl(280 100% 60%));
+    background: hsl(var(--primary));
   }
   
   .gradient-button:hover {
-    background: linear-gradient(135deg, hsl(265 100% 70%), hsl(280 100% 65%));
-    box-shadow: 0 0 25px hsl(265 100% 65% / 0.4);
+    background: hsl(var(--primary) / 0.85);
   }
   
   .glass-effect {
-    @apply backdrop-blur-xl bg-card/80;
+    @apply backdrop-blur-md bg-card/80;
   }
   
   .scanline {
@@ -786,7 +768,7 @@
 }
 
 @layer utilities {
-  /* Fluid typography - scales smoothly between viewport sizes */
+  /* Fluid typography */
   .text-fluid-xs {
     font-size: clamp(0.625rem, 0.55rem + 0.25vw, 0.75rem);
   }
@@ -857,10 +839,10 @@
   
   @keyframes glow {
     from {
-      box-shadow: 0 0 10px hsl(265 100% 65% / 0.3);
+      box-shadow: 0 0 4px hsl(var(--primary) / 0.15);
     }
     to {
-      box-shadow: 0 0 25px hsl(265 100% 65% / 0.6);
+      box-shadow: 0 0 10px hsl(var(--primary) / 0.25);
     }
   }
   
@@ -884,19 +866,19 @@
   @keyframes pulse-glow {
     0%, 100% {
       opacity: 1;
-      filter: drop-shadow(0 0 5px currentColor);
+      filter: drop-shadow(0 0 2px currentColor);
     }
     50% {
-      opacity: 0.8;
-      filter: drop-shadow(0 0 15px currentColor);
+      opacity: 0.85;
+      filter: drop-shadow(0 0 6px currentColor);
     }
   }
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -905,11 +887,11 @@
 
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 /* Selection styling */
@@ -918,13 +900,12 @@
   color: hsl(var(--foreground));
 }
 
-/* PWA swipe-back prevention - iOS Safari uses overscroll for back navigation */
+/* PWA swipe-back prevention */
 @media (display-mode: standalone) {
   html, body {
     overscroll-behavior-x: none;
   }
   
-  /* Prevent horizontal pan gestures on the entire page */
   body {
     touch-action: pan-y pinch-zoom;
   }
