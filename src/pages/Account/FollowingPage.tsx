@@ -211,25 +211,6 @@ export function FollowingPage() {
 
                 {/* Actions row */}
                 <div className="flex items-center justify-between border-t border-border pt-3">
-                  {/* Notification toggle */}
-                  <button
-                    className="flex items-center gap-2 text-xs cursor-pointer group/notif"
-                    onClick={() => toggleNotifyMutation.mutate({ 
-                      followId: follow.id, 
-                      currentValue: follow.notify_new_products 
-                    })}
-                    disabled={toggleNotifyMutation.isPending}
-                  >
-                    <Switch
-                      checked={follow.notify_new_products}
-                      className="pointer-events-none scale-90"
-                    />
-                    <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground group-hover/notif:text-foreground transition-colors">
-                      Notifications
-                    </span>
-                  </button>
-
                   {/* Buttons */}
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" asChild>
@@ -243,6 +224,25 @@ export function FollowingPage() {
                       size="sm"
                     />
                   </div>
+
+                  {/* Notification toggle */}
+                  <button
+                    className="flex items-center gap-2 text-xs cursor-pointer group/notif"
+                    onClick={() => toggleNotifyMutation.mutate({ 
+                      followId: follow.id, 
+                      currentValue: follow.notify_new_products 
+                    })}
+                    disabled={toggleNotifyMutation.isPending}
+                  >
+                    <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-muted-foreground group-hover/notif:text-foreground transition-colors">
+                      Notifications
+                    </span>
+                    <Switch
+                      checked={follow.notify_new_products}
+                      className="pointer-events-none scale-90"
+                    />
+                  </button>
                 </div>
               </div>
             </Card>
