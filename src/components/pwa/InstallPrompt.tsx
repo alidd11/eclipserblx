@@ -107,7 +107,7 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
         exit={{ opacity: 0, y: 100 }}
         className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50"
       >
-        <div className="bg-card border border-border rounded-xl p-4 shadow-2xl backdrop-blur-sm">
+        <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
           <button
             onClick={handleDismiss}
             className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -117,7 +117,7 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
           </button>
 
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
               <Smartphone className="h-6 w-6 text-primary" />
             </div>
 

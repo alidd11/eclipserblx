@@ -192,10 +192,10 @@ export function ActiveOffersCard() {
                 return (
                   <div
                     key={promo.id}
-                    className={`flex flex-col p-3 rounded-lg backdrop-blur-sm transition-colors ${
+                    className={`flex flex-col p-3 rounded-lg transition-colors ${
                       isClaimed 
                         ? 'border border-green-500/30 bg-green-500/5' 
-                        : 'bg-muted/30 border border-border/50 hover:border-primary/20'
+                        : 'bg-muted/30 border border-border hover:border-primary/20'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -297,7 +297,7 @@ export function ActiveOffersCard() {
               {discountCodes.map((code) => (
                 <div
                   key={code.id}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 backdrop-blur-sm transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border hover:border-primary/20 transition-colors"
                 >
                   <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
                     <Tag className="h-4 w-4 text-primary" />

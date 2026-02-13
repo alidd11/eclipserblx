@@ -93,9 +93,9 @@ export function LandingTrustSignals() {
               transition={{ duration: 0.4, delay: index * 0.05 }}
               className="group"
             >
-              <div className="h-full rounded-xl border border-border bg-card p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+              <div className="h-full rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-colors">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <signal.icon className="h-6 w-6 text-primary" />
                   </div>
                   {signal.highlight && (

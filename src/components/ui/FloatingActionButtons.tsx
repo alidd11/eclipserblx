@@ -72,7 +72,7 @@ export function FloatingActionButtons() {
             <Button
               size="icon"
               onClick={() => navigate('/cart')}
-              className="h-12 w-12 xs:h-14 xs:w-14 rounded-full shadow-xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-500 hover:via-yellow-600 hover:to-amber-700 text-white border-0 ring-2 ring-amber-300/50 touch-target"
+              className="h-12 w-12 xs:h-14 xs:w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 touch-target"
             >
               <ShoppingCart className="h-5 w-5 xs:h-6 xs:w-6" />
             </Button>

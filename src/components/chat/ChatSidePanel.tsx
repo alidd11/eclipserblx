@@ -582,7 +582,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className={cn(
-            'fixed bg-background border border-border rounded-xl shadow-2xl z-[9998] flex flex-col overflow-hidden',
+            'fixed bg-background border border-border rounded-lg shadow-lg z-[9998] flex flex-col overflow-hidden',
             isMinimized 
               ? 'w-72 h-12' 
               : 'w-[calc(100vw-2rem)] sm:w-96 h-[min(500px,70dvh)]'

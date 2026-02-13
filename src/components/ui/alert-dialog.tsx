@@ -17,7 +17,7 @@ const AlertDialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/70 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
     )}
     {...props}
@@ -39,17 +39,17 @@ const AlertDialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           // Base styles
-          "fixed z-50 grid w-full gap-4 border bg-background p-6 shadow-2xl duration-300",
+          "fixed z-50 grid w-full gap-4 border bg-background p-6 shadow-lg duration-300",
           // Mobile: Bottom sheet style
           isMobile ? [
-            "inset-x-0 bottom-0 rounded-t-2xl max-h-[90dvh] overflow-y-auto",
+            "inset-x-0 bottom-0 rounded-t-lg max-h-[90dvh] overflow-y-auto",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
             "pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
           ] : [
             // Desktop: Centered modal style
-            "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] max-w-lg rounded-xl",
+            "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] max-w-lg rounded-lg",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

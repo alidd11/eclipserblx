@@ -161,7 +161,7 @@ export default function Products() {
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-6">
-        <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
+        <Card className="bg-card border-border">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary/80" />

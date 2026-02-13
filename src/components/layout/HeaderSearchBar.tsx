@@ -26,11 +26,10 @@ export function HeaderSearchBar({ className, compact = false }: HeaderSearchBarP
         "transition-all duration-200 cursor-text",
         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
         compact && [
-          "h-8 px-3 rounded-full",
-          "bg-muted/40 backdrop-blur-sm",
-          "border-border/50 hover:border-primary/40",
+          "h-8 px-3 rounded-md",
+          "bg-muted",
+          "border-border hover:border-primary/40",
           "active:scale-[0.98]",
-          "shadow-inner shadow-black/5"
         ],
         className
       )}

@@ -22,9 +22,9 @@ export function CookieConsentBanner() {
             className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
           >
             <div className="mx-auto max-w-4xl">
-              <div className="relative overflow-hidden rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl">
-                {/* Gradient accent */}
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/60" />
+              <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                {/* Top accent line */}
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-primary" />
                 
                 <div className="p-4 md:p-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
@@ -56,7 +56,7 @@ export function CookieConsentBanner() {
                       <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:flex-wrap">
                         <Button
                           onClick={acceptAll}
-                          className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
                         >
                           {t('cookies.acceptAll')}
                         </Button>

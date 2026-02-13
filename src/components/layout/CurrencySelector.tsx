@@ -27,8 +27,8 @@ export function CurrencySelector({ className, compact = false }: CurrencySelecto
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "flex items-center gap-1.5 h-10 px-3 rounded-xl",
-            "bg-muted/50 border border-border hover:border-primary/50",
+            "flex items-center gap-1.5 h-10 px-3 rounded-lg",
+            "bg-muted border border-border hover:border-primary/40",
             "text-sm font-medium text-foreground",
             "transition-all duration-200 cursor-pointer",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
