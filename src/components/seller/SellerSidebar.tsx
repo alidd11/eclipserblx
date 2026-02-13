@@ -45,7 +45,9 @@ const navGroups: NavGroup[] = [
       { title: 'Recent Orders', icon: ShoppingCart, href: '/seller/orders' },
       { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
+      { title: 'Reviews', icon: Star, href: '/seller/reviews' },
       { title: 'Discounts', icon: Tag, href: '/seller/discounts' },
+      { title: 'Documents', icon: FileText, href: '/seller/documents' },
     ],
   },
   {
@@ -65,15 +67,6 @@ const navGroups: NavGroup[] = [
     icon: DollarSign,
     items: [
       { title: 'Balance & Payouts', icon: DollarSign, href: '/seller/balance' },
-      { title: 'Documents', icon: FileText, href: '/seller/documents' },
-    ],
-  },
-  {
-    id: 'customers',
-    title: 'Customers',
-    icon: Users,
-    items: [
-      { title: 'Reviews', icon: Star, href: '/seller/reviews' },
     ],
   },
   {
