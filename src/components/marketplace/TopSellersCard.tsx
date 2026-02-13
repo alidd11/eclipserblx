@@ -35,7 +35,7 @@ export function TopSellersCard() {
   });
 
   return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="overflow-hidden border-border bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20">

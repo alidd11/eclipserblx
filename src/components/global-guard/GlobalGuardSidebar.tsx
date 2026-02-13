@@ -40,7 +40,7 @@ export function GlobalGuardSidebar({ className, isMobile, onNavigate }: GlobalGu
     >
       {/* Logo */}
       <div className="flex items-center gap-3 p-6 border-b border-border">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
           <Shield className="w-6 h-6 text-white" />
         </div>
         <div>
@@ -63,7 +63,7 @@ export function GlobalGuardSidebar({ className, isMobile, onNavigate }: GlobalGu
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                 active 
-                  ? "bg-gradient-to-r from-blue-600/20 to-violet-600/20 text-blue-400 border border-blue-500/30" 
+                  ? "bg-primary/15 text-primary border border-primary/30" 
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               )}
             >

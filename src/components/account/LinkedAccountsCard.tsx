@@ -293,7 +293,7 @@ export function LinkedAccountsCard({
 
   if (isProcessingOAuth) {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-3">
             <Loader2 className="w-6 h-6 animate-spin text-[#5865F2] mx-auto" />
@@ -305,7 +305,7 @@ export function LinkedAccountsCard({
   }
 
   return (
-    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="border-border bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Link2 className="h-4 w-4" />

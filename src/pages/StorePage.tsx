@@ -410,7 +410,7 @@ export default function StorePage() {
         ) : theme === 'minimal' ? (
           <div className={`${themeStyles.banner} bg-muted/30`} />
         ) : (
-          <div className="h-28 md:h-40 bg-gradient-to-br from-primary/20 to-primary/5">
+          <div className="h-28 md:h-40 bg-muted/30">
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           </div>
         )}

@@ -134,7 +134,7 @@ export function MyPurchasesCard() {
 
   if (isLoading) {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function MyPurchasesCard() {
   }
 
   return (
-    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="border-border bg-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Package className="h-5 w-5" />

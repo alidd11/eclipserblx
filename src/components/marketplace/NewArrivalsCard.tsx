@@ -54,7 +54,7 @@ export function NewArrivalsCard() {
   });
 
   return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-card via-card to-emerald-500/5">
+    <Card className="overflow-hidden border-border bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20">

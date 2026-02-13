@@ -128,7 +128,7 @@ export const ReviewCard = memo(function ReviewCard() {
 
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-4 md:p-5 h-full">
+      <div className="rounded-lg border border-border bg-card p-4 md:p-5 h-full">
         <div className="text-center text-muted-foreground py-4 md:py-8">
           No reviews yet
         </div>
@@ -142,7 +142,7 @@ export const ReviewCard = memo(function ReviewCard() {
   if (isMobile) {
     return (
       <div 
-        className="rounded-2xl border border-border bg-card p-4 touch-pan-x"
+        className="rounded-lg border border-border bg-card p-4 touch-pan-x"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -208,7 +208,7 @@ export const ReviewCard = memo(function ReviewCard() {
   // Desktop: Full carousel with animations
   return (
     <div 
-      className="rounded-2xl border border-border bg-card p-5 h-full touch-pan-x relative"
+      className="rounded-lg border border-border bg-card p-5 h-full touch-pan-x relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

@@ -281,7 +281,7 @@ export default function GlobalGuardPermissions() {
               <Button
                 onClick={() => addPermission.mutate()}
                 disabled={!selectedGuild || !selectedRole || addPermission.isPending}
-                className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Permission

@@ -88,7 +88,7 @@ export function CategoriesGridCard() {
   });
 
   return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-card via-card to-violet-500/5">
+    <Card className="overflow-hidden border-border bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-lg">
           <div className="flex items-center gap-2">

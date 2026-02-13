@@ -187,7 +187,7 @@ const StatusBadgesSection = ({
     <div className="border-t border-border/50 px-4 sm:px-6 py-3 bg-muted/30">
       <div className="flex items-center justify-center gap-1.5 flex-wrap">
         {isSubscribed && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/15 border border-primary/30">
             <Sparkles className="h-3 w-3 text-primary" />
             <span className="text-[10px] font-semibold text-primary">Eclipse+</span>
           </div>

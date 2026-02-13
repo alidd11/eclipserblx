@@ -299,7 +299,7 @@ export function BecomeSellerCard() {
 
   // Default: Show "Become a Seller" CTA
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+    <Card className="border-border bg-muted/30">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />

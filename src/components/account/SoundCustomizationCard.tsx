@@ -39,7 +39,7 @@ export function SoundCustomizationCard() {
   };
 
   return (
-    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="border-border bg-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Music className="h-5 w-5" />

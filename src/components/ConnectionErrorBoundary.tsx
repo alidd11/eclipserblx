@@ -53,7 +53,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-gradient-to-br from-background to-background/80 flex items-center justify-center p-6 pt-safe pb-safe">
           <div className="text-center max-w-md w-full">
             {/* Icon */}
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center shadow-lg shadow-primary/30">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
               {isNetworkError ? (
                 <WifiOff className="w-10 h-10 text-primary-foreground" />
               ) : (

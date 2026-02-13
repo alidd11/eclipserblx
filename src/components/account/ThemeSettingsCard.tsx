@@ -35,7 +35,7 @@ export function ThemeSettingsCard() {
   }
 
   return (
-    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="border-border bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Appearance</CardTitle>
         <CardDescription>

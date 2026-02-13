@@ -156,7 +156,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className={cn(
           "grid gap-3",
           isMobile ? "grid-cols-2" : "grid-cols-3"
@@ -171,7 +171,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 
   if (!products || products.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-primary" />
@@ -192,7 +192,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 
   return (
     <div 
-      className="rounded-2xl border border-border bg-card p-5 h-full"
+      className="rounded-lg border border-border bg-card p-5 h-full"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
       onTouchStart={handleTouchStart}

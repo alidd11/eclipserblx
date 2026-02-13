@@ -823,7 +823,7 @@ function StaffMessagesContent() {
       style={{ overscrollBehavior: 'none' }}
     >
       {/* iOS-style header with logo */}
-      <div className="flex-shrink-0 border-b border-border/50 bg-card/80 backdrop-blur-sm">
+      <div className="flex-shrink-0 border-b border-border bg-card">
         <div className="flex items-center justify-center gap-2 py-3 px-4">
           <EclipseLogo size="sm" />
           <span className="text-sm font-semibold text-foreground">Staff Messages</span>

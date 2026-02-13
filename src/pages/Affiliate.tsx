@@ -482,7 +482,7 @@ export default function Affiliate() {
             </div>
 
             {/* CTA */}
-            <Card className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border-primary/30">
+            <Card className="bg-muted/30 border-border">
               <CardContent className="py-8 text-center space-y-4">
                 <Gift className="h-12 w-12 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold">Ready to Start Earning?</h2>
@@ -831,8 +831,8 @@ export default function Affiliate() {
           )}
 
           {/* Cash Out Hero Card */}
-          <Card className="bg-gradient-to-br from-primary/30 via-primary/20 to-transparent border-primary/40 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <Card className="bg-muted/30 border-border overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-muted/20 rounded-full -translate-y-1/2 translate-x-1/2" />
             <CardContent className="pt-6 pb-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">

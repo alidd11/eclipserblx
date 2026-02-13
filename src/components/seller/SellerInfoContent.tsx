@@ -138,7 +138,7 @@ export function SellerInfoContent() {
           <EclipseLogo size="lg" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-purple-400 to-primary bg-clip-text text-transparent print:text-primary">
+          <h1 className="text-4xl md:text-5xl font-bold text-primary print:text-primary">
             Sell Your Digital Products on Eclipse
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
