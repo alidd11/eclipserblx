@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock } from "lucide-react";
+import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -108,6 +108,44 @@ export default function SellerProducts() {
     },
     onError: () => {
       toast.error("Failed to update product status");
+    },
+  });
+
+  // Delete individual image from a product
+  const deleteImageMutation = useMutation({
+    mutationFn: async ({ productId, imageUrl, allImages }: { productId: string; imageUrl: string; allImages: string[] }) => {
+      const updatedImages = allImages.filter(img => img !== imageUrl);
+      
+      const { error } = await supabase
+        .from("products")
+        .update({ images: updatedImages })
+        .eq("id", productId);
+
+      if (error) throw error;
+
+      // Try to delete from storage too
+      try {
+        const url = new URL(imageUrl);
+        const pathParts = url.pathname.split('/product-images/');
+        if (pathParts[1]) {
+          await supabase.storage.from('product-images').remove([decodeURIComponent(pathParts[1])]);
+        }
+      } catch {
+        // Storage deletion is best-effort
+      }
+
+      return updatedImages;
+    },
+    onSuccess: (updatedImages) => {
+      queryClient.invalidateQueries({ queryKey: ["seller-products-moderation"] });
+      // Update selected product in place
+      if (selectedProduct) {
+        setSelectedProduct({ ...selectedProduct, images: updatedImages });
+      }
+      toast.success("Image removed from product");
+    },
+    onError: () => {
+      toast.error("Failed to remove image");
     },
   });
 
@@ -363,15 +401,48 @@ export default function SellerProducts() {
               <DialogTitle>Review Product: {selectedProduct?.name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                {selectedProduct?.images?.[0] ? (
-                  <img
-                    src={selectedProduct.images[0]}
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
-                  />
+              {/* Product Images Gallery */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Product Images ({selectedProduct?.images?.length || 0})
+                  </span>
+                </div>
+                {selectedProduct?.images?.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2">
+                    {selectedProduct.images.map((imageUrl: string, index: number) => (
+                      <div key={index} className="relative group aspect-square rounded-lg overflow-hidden bg-muted border border-border">
+                        <img
+                          src={imageUrl}
+                          alt={`Product image ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="gap-1"
+                            onClick={() => deleteImageMutation.mutate({
+                              productId: selectedProduct.id,
+                              imageUrl,
+                              allImages: selectedProduct.images,
+                            })}
+                            disabled={deleteImageMutation.isPending}
+                          >
+                            <ImageMinus className="h-3.5 w-3.5" />
+                            Remove
+                          </Button>
+                        </div>
+                        {index === 0 && (
+                          <Badge className="absolute top-1 left-1 text-[10px] px-1.5 py-0">
+                            Thumbnail
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                     <Package className="h-12 w-12 text-muted-foreground" />
                   </div>
                 )}
