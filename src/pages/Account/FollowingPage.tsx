@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -73,141 +74,152 @@ export function FollowingPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <Skeleton key={i} className="h-32" />
-        ))}
-      </div>
+      <MainLayout>
+        <div className="container max-w-4xl mx-auto py-8 px-4 space-y-4">
+          <h1 className="text-2xl font-bold mb-6">Following</h1>
+          {[1, 2, 3].map(i => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+      </MainLayout>
     );
   }
 
   if (!followedStores || followedStores.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h3 className="text-lg font-medium mb-2">Not Following Anyone Yet</h3>
-          <p className="text-muted-foreground mb-4">
-            Follow your favorite creators to get notified when they release new products.
-          </p>
-          <Button asChild>
-            <Link to="/products">
-              Discover Creators
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <MainLayout>
+        <div className="container max-w-4xl mx-auto py-8 px-4">
+          <h1 className="text-2xl font-bold mb-6">Following</h1>
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">Not Following Anyone Yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Follow your favorite creators to get notified when they release new products.
+              </p>
+              <Button asChild>
+                <Link to="/products">
+                  Discover Creators
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {followedStores.map((follow) => {
-        const store = follow.stores;
-        const accentColor = store.accent_color || '#8b5cf6';
-        
-        return (
-          <Card key={follow.id} className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                {/* Store Logo */}
-                <Link 
-                  to={`/store/${store.slug}`}
-                  className="flex-shrink-0"
-                >
-                  <div 
-                    className="h-16 w-16 rounded-xl flex items-center justify-center overflow-hidden border-2"
-                    style={{ 
-                      backgroundColor: store.logo_url ? 'transparent' : `${accentColor}20`,
-                      borderColor: `${accentColor}30`,
-                    }}
+    <MainLayout>
+      <div className="container max-w-4xl mx-auto py-8 px-4 space-y-4">
+        <h1 className="text-2xl font-bold mb-6">Following</h1>
+        {followedStores.map((follow) => {
+          const store = follow.stores;
+          const accentColor = store.accent_color || '#8b5cf6';
+          
+          return (
+            <Card key={follow.id} className="overflow-hidden hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  {/* Store Logo */}
+                  <Link 
+                    to={`/store/${store.slug}`}
+                    className="flex-shrink-0"
                   >
-                    {store.logo_url ? (
-                      <img 
-                        src={store.logo_url} 
-                        alt={store.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <StoreIcon 
-                        className="h-8 w-8" 
-                        style={{ color: accentColor }}
-                      />
-                    )}
-                  </div>
-                </Link>
-
-                {/* Store Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Link 
-                      to={`/store/${store.slug}`}
-                      className="font-semibold hover:text-primary transition-colors truncate"
+                    <div 
+                      className="h-16 w-16 rounded-xl flex items-center justify-center overflow-hidden border-2"
+                      style={{ 
+                        backgroundColor: store.logo_url ? 'transparent' : `${accentColor}20`,
+                        borderColor: `${accentColor}30`,
+                      }}
                     >
-                      {store.name}
-                    </Link>
-                    {store.is_verified && (
-                      <Badge 
-                        variant="secondary"
-                        className="gap-1 text-xs"
-                        style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
-                      >
-                        <CheckCircle className="h-3 w-3" />
-                        Verified
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {store.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-                      {store.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Package className="h-3.5 w-3.5" />
-                      {store.product_count || 0} Products
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {store.follower_count || 0} Followers
-                    </span>
-                    <span className="flex items-center gap-1">
-                      {follow.notify_new_products ? (
-                        <>
-                          <Bell className="h-3.5 w-3.5 text-emerald-500" />
-                          <span className="text-emerald-500">Notifications on</span>
-                        </>
+                      {store.logo_url ? (
+                        <img 
+                          src={store.logo_url} 
+                          alt={store.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
-                        <>
-                          <BellOff className="h-3.5 w-3.5" />
-                          <span>Notifications off</span>
-                        </>
+                        <StoreIcon 
+                          className="h-8 w-8" 
+                          style={{ color: accentColor }}
+                        />
                       )}
-                    </span>
+                    </div>
+                  </Link>
+
+                  {/* Store Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <Link 
+                        to={`/store/${store.slug}`}
+                        className="font-semibold hover:text-primary transition-colors truncate"
+                      >
+                        {store.name}
+                      </Link>
+                      {store.is_verified && (
+                        <Badge 
+                          variant="secondary"
+                          className="gap-1 text-xs"
+                          style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+                        >
+                          <CheckCircle className="h-3 w-3" />
+                          Verified
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {store.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
+                        {store.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Package className="h-3.5 w-3.5" />
+                        {store.product_count || 0} Products
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {store.follower_count || 0} Followers
+                      </span>
+                      <span className="flex items-center gap-1">
+                        {follow.notify_new_products ? (
+                          <>
+                            <Bell className="h-3.5 w-3.5 text-emerald-500" />
+                            <span className="text-emerald-500">Notifications on</span>
+                          </>
+                        ) : (
+                          <>
+                            <BellOff className="h-3.5 w-3.5" />
+                            <span>Notifications off</span>
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <FollowButton 
+                      storeId={store.id} 
+                      accentColor={accentColor}
+                      size="sm"
+                    />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/store/${store.slug}`}>
+                        View Store
+                      </Link>
+                    </Button>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <FollowButton 
-                    storeId={store.id} 
-                    accentColor={accentColor}
-                    size="sm"
-                  />
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/store/${store.slug}`}>
-                      View Store
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </MainLayout>
   );
 }
