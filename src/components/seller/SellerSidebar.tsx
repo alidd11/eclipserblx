@@ -305,12 +305,33 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-60"),
       className
     )}>
-      {/* Header */}
-      <div className="px-3 py-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-border/50">
+      {/* Header with banner + logo */}
+      <div className="border-b border-border/50 overflow-hidden">
+        {/* Banner */}
+        <div className="relative h-16 pt-[env(safe-area-inset-top)]">
+          {store?.banner_url ? (
+            <img
+              src={store.banner_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-primary/10" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+        </div>
+
+        {/* Store info overlaid at bottom of banner */}
         {!isCollapsed ? (
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Store className="h-4 w-4 text-primary" />
+          <div className="relative px-3 pb-3 -mt-5 flex items-end gap-2.5">
+            <div className="h-10 w-10 rounded-lg border-2 border-card bg-card shrink-0 overflow-hidden shadow-sm">
+              {store?.logo_url ? (
+                <img src={store.logo_url} alt={store?.name || 'Store'} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                  <Store className="h-5 w-5 text-primary" />
+                </div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">
@@ -333,11 +354,17 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             </Tooltip>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2">
+          <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Store className="h-4 w-4 text-primary" />
+                <div className="h-8 w-8 rounded-lg border-2 border-card bg-card overflow-hidden shadow-sm">
+                  {store?.logo_url ? (
+                    <img src={store.logo_url} alt={store?.name || 'Store'} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                      <Store className="h-4 w-4 text-primary" />
+                    </div>
+                  )}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right">{store?.name || 'My Store'}</TooltipContent>
