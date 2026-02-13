@@ -177,8 +177,8 @@ export function ActiveOffersCard() {
     >
         <div className="rounded-lg border border-border bg-card p-4 md:p-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Gift className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+            <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-muted flex items-center justify-center">
+              <Gift className="h-3 w-3 md:h-4 md:w-4 text-foreground" />
             </div>
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('offers.activeOffers')}</span>
           </div>
@@ -195,7 +195,7 @@ export function ActiveOffersCard() {
                     className={`flex flex-col p-3 rounded-lg transition-colors ${
                       isClaimed 
                         ? 'border border-green-500/30 bg-green-500/5' 
-                        : 'bg-muted/30 border border-border hover:border-primary/20'
+                        : 'bg-muted/30 border border-border hover:border-border'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -271,7 +271,7 @@ export function ActiveOffersCard() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                          className="w-full"
                           onClick={handleClaimPromotion}
                           disabled={isClaiming || claimsLoading}
                         >
@@ -297,14 +297,14 @@ export function ActiveOffersCard() {
               {discountCodes.map((code) => (
                 <div
                   key={code.id}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border hover:border-primary/20 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border hover:border-border transition-colors"
                 >
-                  <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
-                    <Tag className="h-4 w-4 text-primary" />
+                  <div className="flex-shrink-0 p-2 rounded-full bg-muted">
+                    <Tag className="h-4 w-4 text-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge className="font-mono text-xs bg-primary/20 text-primary border-0">
+                      <Badge className="font-mono text-xs bg-muted text-foreground border-0">
                         {code.code}
                       </Badge>
                       <span className="font-semibold text-sm text-primary">

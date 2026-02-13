@@ -117,8 +117,8 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
           </button>
 
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Smartphone className="h-6 w-6 text-primary" />
+            <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+              <Smartphone className="h-6 w-6 text-foreground" />
             </div>
 
             <div className="flex-1 min-w-0">

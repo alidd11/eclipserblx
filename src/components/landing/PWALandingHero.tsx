@@ -22,7 +22,7 @@ export function PWALandingHero() {
         <div className="relative z-10 flex flex-col items-center justify-center px-6 py-8">
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-center leading-tight tracking-tight mb-3">
             {t('landing.pwaHeadline')}{' '}
-            <span className="text-primary">{t('landing.pwaHeadlineHighlight')}</span>
+            <span className="text-foreground">{t('landing.pwaHeadlineHighlight')}</span>
           </h1>
 
           <p className="text-muted-foreground text-center text-base max-w-md mb-6 leading-relaxed">

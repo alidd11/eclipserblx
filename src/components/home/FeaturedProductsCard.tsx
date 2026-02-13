@@ -173,8 +173,8 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
     return (
       <div className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+            <Sparkles className="h-4 w-4 text-foreground" />
           </div>
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Featured</span>
         </div>
@@ -202,8 +202,8 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+            <Sparkles className="h-4 w-4 text-foreground" />
           </div>
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Featured</span>
         </div>
@@ -309,7 +309,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
     <Link 
       ref={ref}
       to={`/products/${product.slug}`} 
-      className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-primary/50 transition-all duration-200"
+      className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-muted-foreground/30 transition-all duration-200"
     >
       {/* Media */}
       <div className="relative aspect-[4/3] overflow-hidden">
