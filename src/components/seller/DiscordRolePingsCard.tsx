@@ -152,20 +152,14 @@ export function DiscordRolePingsCard() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <AtSign className="h-5 w-5" />
-              Discord Roles
-            </CardTitle>
-            <CardDescription>
-              Manage ping roles and create custom roles for your customers
-            </CardDescription>
-          </div>
-          <Button size="sm" onClick={() => setShowAddDialog(true)} className="shrink-0 self-start sm:self-auto">
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Add Role
-          </Button>
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <AtSign className="h-5 w-5" />
+            Discord Roles
+          </CardTitle>
+          <CardDescription>
+            Manage ping roles and create custom roles for your customers
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -209,6 +203,14 @@ export function DiscordRolePingsCard() {
               />
             </div>
           </div>
+          <Button
+            onClick={() => setShowAddDialog(true)}
+            size="sm"
+            className="w-full"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            Add Role
+          </Button>
           <Button
             onClick={() => updateRolePings.mutate()}
             disabled={!pingHasChanges || updateRolePings.isPending}
