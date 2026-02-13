@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,23 +20,10 @@ export default function Featured() {
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
 
-  // Featured products - hand-picked by the team
-  const { data: featuredProducts, isLoading: loadingFeatured } = useQuery({
-    queryKey: ['featured-page-products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, is_trusted, eclipse_plus_discount_enabled)`)
-        .eq('is_featured', true)
-        .eq('is_active', true)
-        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-        .order('created_at', { ascending: false })
-        .limit(12);
-      
-      if (error) throw error;
-      return data?.filter(p => !p.stores || p.stores.is_active !== false) ?? [];
-    },
-    staleTime: 1000 * 60 * 5,
+  const { data: featuredProducts, isLoading: loadingFeatured } = useFeaturedProducts({
+    limit: 12,
+    maxPerStore: 3,
+    queryKey: 'featured-page-scored',
   });
 
   // New this week - products added in last 7 days

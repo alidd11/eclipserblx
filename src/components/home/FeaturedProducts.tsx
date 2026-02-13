@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { cn } from '@/lib/utils';
 
@@ -15,30 +14,10 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
   const touchEndX = useRef<number | null>(null);
   const minSwipeDistance = 50;
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: async () => {
-      // Optimized: Select only needed columns
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id, name, slug, price, images, is_featured, category_id, is_resellable, created_at,
-          categories (name, slug),
-          stores (is_active, eclipse_plus_discount_enabled)
-        `)
-        .eq('is_featured', true)
-        .eq('is_active', true)
-        .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
-        .limit(12);
-      
-      if (error) throw error;
-      const filtered = data?.filter(p => !p.stores || p.stores.is_active !== false) ?? [];
-      // Shuffle for variety
-      return filtered
-        .map(p => ({ ...p, _sort: Math.random() }))
-        .sort((a, b) => a._sort - b._sort);
-    },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  const { data: products, isLoading } = useFeaturedProducts({
+    limit: 12,
+    maxPerStore: 3,
+    queryKey: 'home-featured-scored',
   });
 
   const goToNext = useCallback(() => {

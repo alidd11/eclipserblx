@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
@@ -41,23 +40,7 @@ const getRegionFlag = (productName?: string): { src: string; name: string } | nu
   return null;
 };
 
-interface FeaturedProduct {
-  id: string;
-  name: string;
-  slug: string;
-  price: number;
-  images: string[] | null;
-  category_id: string | null;
-  is_resellable: boolean;
-  stores: {
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    is_verified: boolean;
-    is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
-  } | null;
-}
+type FeaturedProduct = ScoredProduct;
 
 const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
   function ProductCard({ product }, ref) {
@@ -167,32 +150,10 @@ function ProductSkeleton() {
 
 export function LandingFeaturedProducts() {
   const { t } = useTranslation();
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['landing-featured-products'],
-    queryFn: async () => {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id, name, slug, price, images, category_id, is_resellable,
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
-        `)
-        .eq('is_active', true)
-        .eq('is_featured', true)
-        .eq('stores.is_active', true)
-        .eq('stores.is_testing', false)
-        .or(`release_at.is.null,release_at.lte.${now}`)
-        .limit(20);
-
-      if (error) throw error;
-      const all = data as unknown as FeaturedProduct[];
-      // Shuffle and pick 8 for variety
-      return all
-        .map(p => ({ ...p, _sort: Math.random() }))
-        .sort((a, b) => a._sort - b._sort)
-        .slice(0, 8);
-    },
-    staleTime: 5 * 60 * 1000,
+  const { data: products, isLoading } = useFeaturedProducts({
+    limit: 8,
+    maxPerStore: 2,
+    queryKey: 'landing-featured-scored',
   });
 
   return (
