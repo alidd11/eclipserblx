@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,6 +61,25 @@ export default function AdminDashboard() {
       return data;
     },
     enabled: !!user?.id,
+  });
+
+  // Fetch admin dashboard stats
+  const { data: adminStats } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: async () => {
+      const [productsRes, ordersRes, usersRes, pendingRes] = await Promise.all([
+        supabase.from('products').select('id', { count: 'exact', head: true }),
+        supabase.from('orders').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('user_id', { count: 'exact', head: true }),
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('moderation_status', 'pending'),
+      ]);
+      return {
+        totalProducts: productsRes.count || 0,
+        totalOrders: ordersRes.count || 0,
+        totalUsers: usersRes.count || 0,
+        pendingModeration: pendingRes.count || 0,
+      };
+    },
   });
 
   // Fetch active announcements
@@ -381,14 +401,20 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto space-y-5">
         {/* Hero Banner */}
         <Card className="overflow-hidden border-border bg-card">
+          {/* Banner area */}
           <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
           </div>
+
           <CardContent className="relative -mt-10 px-4 sm:px-6 pb-5">
+            {/* Avatar + Name row */}
             <div className="flex items-end gap-4 mb-4">
-              <div className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg rounded-full bg-card flex items-center justify-center">
-                <EclipseLogo size="lg" removeWhiteBackground />
-              </div>
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
+                <AvatarFallback className="bg-muted">
+                  <EclipseLogo size="lg" removeWhiteBackground />
+                </AvatarFallback>
+              </Avatar>
+
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-xl sm:text-2xl font-display font-bold truncate">
@@ -400,13 +426,64 @@ export default function AdminDashboard() {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground truncate">
-                  Manage your duties and quick actions
+                  Here's your platform overview
                 </p>
+              </div>
+            </div>
+
+            {/* Stats row - matching seller layout */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">Total Users</p>
+                <p className="text-lg font-bold mt-0.5">{adminStats?.totalUsers ?? '—'}</p>
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">Total Orders</p>
+                <p className="text-lg font-bold mt-0.5">{adminStats?.totalOrders ?? '—'}</p>
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">Products</p>
+                <p className="text-lg font-bold mt-0.5">{adminStats?.totalProducts ?? '—'}</p>
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">Pending Review</p>
+                <p className="text-lg font-bold mt-0.5 text-amber-500">{adminStats?.pendingModeration ?? '—'}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Quick Actions - right after hero like seller dashboard */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
+              {quickLinks.map((link) => (
+                <Link key={link.href} to={link.href}>
+                  <motion.div
+                    whileHover={{ y: -2, scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
+                  >
+                    <div className="p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
+                      <link.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium block">{link.title}</span>
+                      <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Announcements + Duty Status side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Staff Announcements */}
         <Card className="bg-card border-border">
           <CardHeader>
@@ -619,36 +696,11 @@ export default function AdminDashboard() {
               </div>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
-              {quickLinks.map((link) => (
-                <Link key={link.href} to={link.href}>
-                  <motion.div
-                    whileHover={{ y: -2, scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
-                  >
-                    <div className="p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
-                      <link.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-medium block">{link.title}</span>
-                      <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
+        {/* Duty Logs - side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* My Recent Duty Logs */}
         <Card className="bg-card border-border">
           <CardHeader>
@@ -737,6 +789,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
+        </div>
 
       </div>
     </AdminLayout>
