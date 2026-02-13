@@ -59,7 +59,7 @@ function StoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link 
       to={`/store/${store.slug}`}
-      className="group relative block rounded-2xl overflow-hidden border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg active:scale-[0.98]"
+      className="group relative block rounded-lg overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/30 active:scale-[0.98]"
     >
       <div className="relative h-24 overflow-hidden">
         <div 
@@ -67,19 +67,19 @@ function StoreCard({ store }: { store: FeaturedStore }) {
           style={{
             backgroundImage: store.banner_url 
               ? `url(${store.banner_url})` 
-              : 'linear-gradient(135deg, hsl(var(--primary)/0.2), hsl(var(--muted)))'
+              : 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted)))'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
           {store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/90 text-white text-[10px] font-medium backdrop-blur-sm">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-medium">
               <Award className="h-3 w-3" />
               {t('landing.trusted')}
             </span>
           )}
           {store.is_verified && !store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/90 text-white text-[10px] font-medium backdrop-blur-sm">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-medium">
               <ShieldCheck className="h-3 w-3" />
               {t('landing.verified')}
             </span>
@@ -87,7 +87,7 @@ function StoreCard({ store }: { store: FeaturedStore }) {
         </div>
       </div>
       <div className="relative px-4 pb-4 -mt-6">
-        <div className="w-14 h-14 rounded-xl bg-card border-2 border-card overflow-hidden shadow-lg mb-3">
+        <div className="w-14 h-14 rounded-lg bg-card border-2 border-card overflow-hidden shadow-md mb-3">
           {store.logo_url ? (
             <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
           ) : (
@@ -121,10 +121,10 @@ function StoreCard({ store }: { store: FeaturedStore }) {
 
 function StoreSkeleton() {
   return (
-    <div className="rounded-2xl border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <Skeleton className="h-24 rounded-none" />
       <div className="px-4 pb-4 -mt-6 relative">
-        <Skeleton className="w-14 h-14 rounded-xl mb-3" />
+        <Skeleton className="w-14 h-14 rounded-lg mb-3" />
         <Skeleton className="h-5 w-32 mb-2" />
         <Skeleton className="h-3 w-full mb-1" />
         <Skeleton className="h-3 w-3/4" />
