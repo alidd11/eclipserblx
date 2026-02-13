@@ -18,12 +18,12 @@ export function WalletBalanceCard({
 }: WalletBalanceCardProps) {
   return (
     <Card className="relative overflow-hidden w-full max-w-full">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-border" />
       
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
+            <Wallet className="h-5 w-5 text-foreground" />
             <CardDescription className="font-medium">Available Balance</CardDescription>
           </div>
         </div>

@@ -24,12 +24,12 @@ export function CookieConsentBanner() {
             <div className="mx-auto max-w-4xl">
               <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-lg">
                 {/* Top accent line */}
-                <div className="absolute inset-x-0 top-0 h-0.5 bg-primary" />
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-border" />
                 
                 <div className="p-4 md:p-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
                     {/* Icon */}
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted">
                       <Cookie className="h-6 w-6 text-primary" />
                     </div>
 

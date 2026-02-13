@@ -14,7 +14,7 @@ export function ScrollProgressIndicator() {
       className="fixed top-0 left-0 right-0 h-1 z-[100] origin-left"
       style={{
         scaleX,
-        background: 'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(45 93% 58%) 50%, hsl(var(--primary)) 100%)',
+        background: 'hsl(var(--foreground) / 0.15)',
       }}
     />
   );

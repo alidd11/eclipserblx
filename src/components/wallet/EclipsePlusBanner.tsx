@@ -16,8 +16,8 @@ export function EclipsePlusBanner({ show }: EclipsePlusBannerProps) {
     <Card className="border-border bg-muted/20">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-            <Crown className="h-5 w-5 text-primary" />
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+            <Crown className="h-5 w-5 text-foreground" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-medium text-sm">Get £10 free credit!</div>
