@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import eclipseBanner from '@/assets/eclipse-banner.jpeg';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -403,6 +404,11 @@ export default function AdminDashboard() {
         <Card className="overflow-hidden border-border bg-card">
           {/* Banner area */}
           <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
+            <img
+              src={eclipseBanner}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover opacity-40"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
           </div>
 
