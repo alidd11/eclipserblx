@@ -30,7 +30,9 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -117,17 +119,29 @@ export default function SellerProducts() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch categories
+  // Fetch categories with hierarchy
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
+        .order('display_order')
         .order('name');
       if (error) throw error;
       return data;
     },
+  });
+
+  // Derived hierarchy for category selector
+  const parentCats = categories?.filter((c: any) => !c.parent_id) || [];
+  const childCatsMap = new Map<string, any[]>();
+  categories?.forEach((c: any) => {
+    if (c.parent_id) {
+      const arr = childCatsMap.get(c.parent_id) || [];
+      arr.push(c);
+      childCatsMap.set(c.parent_id, arr);
+    }
   });
 
   // Fetch seller's products with caching
@@ -797,11 +811,26 @@ export default function SellerProducts() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories?.map((cat: any) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
+                      {parentCats.map((parent: any) => {
+                        const children = childCatsMap.get(parent.id) || [];
+                        if (children.length > 0) {
+                          return (
+                            <SelectGroup key={parent.id}>
+                              <SelectLabel>{parent.name}</SelectLabel>
+                              {children.map((child: any) => (
+                                <SelectItem key={child.id} value={child.id} className="pl-6">
+                                  {child.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          );
+                        }
+                        return (
+                          <SelectItem key={parent.id} value={parent.id}>
+                            {parent.name}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
