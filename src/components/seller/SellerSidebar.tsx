@@ -59,6 +59,7 @@ const navGroups: NavGroup[] = [
       { title: 'Import', icon: Import, href: '/seller/import' },
       { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
       { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
+      { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
     ],
   },
   {
@@ -78,7 +79,6 @@ const navGroups: NavGroup[] = [
     icon: Gamepad2,
     items: [
       { title: 'Discord', icon: MessageCircle, href: '/seller/discord' },
-      { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
       { title: 'Roblox', icon: Gamepad2, href: '/seller/roblox' },
     ],
   },
@@ -87,9 +87,9 @@ const navGroups: NavGroup[] = [
     title: 'Settings',
     icon: Settings,
     items: [
+      { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Store Profile', icon: Store, href: '/seller/settings/profile' },
       { title: 'Appearance', icon: Palette, href: '/seller/settings/appearance' },
-      { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
     ],
   },
