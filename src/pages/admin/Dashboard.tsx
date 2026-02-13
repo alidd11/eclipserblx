@@ -438,7 +438,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stats row - matching seller layout */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <div className="rounded-lg bg-muted/50 p-3">
                 <p className="text-xs text-muted-foreground">Total Users</p>
                 <p className="text-lg font-bold mt-0.5">{adminStats?.totalUsers ?? '—'}</p>
