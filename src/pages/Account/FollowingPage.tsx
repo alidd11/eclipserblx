@@ -232,16 +232,16 @@ export function FollowingPage() {
 
                   {/* Buttons */}
                   <div className="flex items-center gap-2">
-                    <FollowButton 
-                      storeId={store.id} 
-                      accentColor={accentColor}
-                      size="sm"
-                    />
                     <Button variant="outline" size="sm" asChild>
                       <Link to={`/store/${store.slug}`}>
                         View Store
                       </Link>
                     </Button>
+                    <FollowButton 
+                      storeId={store.id} 
+                      accentColor={accentColor}
+                      size="sm"
+                    />
                   </div>
                 </div>
               </div>
