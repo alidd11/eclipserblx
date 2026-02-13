@@ -500,7 +500,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
             className="fixed left-0 top-[calc(50%+env(safe-area-inset-top))] -translate-y-1/2 z-30 flex items-center"
             onClick={() => setMobileOpen(true)}
           >
-            <div className="w-1.5 h-20 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 rounded-r-full shadow-lg shadow-primary/30 transition-all duration-300 hover:w-2 hover:bg-primary/60 active:scale-x-150 active:bg-primary/80 animate-pulse">
+            <div className="w-1.5 h-20 bg-gradient-to-b from-muted-foreground/20 via-muted-foreground/40 to-muted-foreground/20 rounded-r-full transition-all duration-300 hover:w-2 hover:bg-muted-foreground/50 active:scale-x-150">
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-28 -ml-1" />
             </div>
           </div>

@@ -424,7 +424,7 @@ export default function Advertise() {
               {showPingPurchase && (
                 <div className="pt-4 border-t border-border space-y-4">
                   {/* Bulk Discount Banner */}
-                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+                  <div className="p-3 rounded-lg bg-muted/50 border border-border">
                     <p className="text-sm font-medium text-primary mb-2">🎉 Bulk Discounts Available!</p>
                     <div className="grid grid-cols-4 gap-2 text-xs">
                       <button
@@ -607,7 +607,7 @@ export default function Advertise() {
 
           {/* Hero Section */}
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
               <Megaphone className="h-8 w-8 text-primary" />
             </div>
             <h1 className="text-3xl font-bold">Post an Advertisement</h1>
@@ -949,7 +949,7 @@ export default function Advertise() {
       <div className="container max-w-5xl py-8 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
             <Megaphone className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">Advertise on Discord</h1>

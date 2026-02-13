@@ -208,7 +208,7 @@ export function StoreSidebar({
         ? "flex items-center justify-center py-2.5"
         : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
       isActive
-        ? "bg-primary text-primary-foreground"
+        ? "bg-muted text-foreground"
         : "text-muted-foreground hover:text-foreground hover:bg-muted"
     );
 
@@ -287,7 +287,7 @@ export function StoreSidebar({
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
@@ -327,7 +327,7 @@ export function StoreSidebar({
                       onClick={handleNavClick}
                       className={({ isActive }) => cn(
                         "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                        isActive ? "bg-muted text-foreground" : "hover:bg-muted"
                       )}
                     >
                       <item.icon className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
@@ -395,7 +395,7 @@ export function StoreSidebar({
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
                   isBrowseActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
@@ -414,7 +414,7 @@ export function StoreSidebar({
                   onClick={() => handleTabClick(null)}
                   className={cn(
                     "w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors text-left",
-                    isAllProductsActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    isAllProductsActive ? "bg-muted text-foreground" : "hover:bg-muted"
                   )}
                 >
                   <LayoutGrid className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
@@ -427,7 +427,7 @@ export function StoreSidebar({
                     onClick={() => handleTabClick(tab.slug)}
                     className={cn(
                       "w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors text-left",
-                      activeTab === tab.slug ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      activeTab === tab.slug ? "bg-muted text-foreground" : "hover:bg-muted"
                     )}
                   >
                     <Package className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
@@ -478,7 +478,7 @@ export function StoreSidebar({
               "transition-all duration-100 active:scale-[0.97] active:opacity-90",
               "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
               isAllProductsActive
-                ? "bg-primary text-primary-foreground"
+                ? "bg-muted text-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
@@ -497,7 +497,7 @@ export function StoreSidebar({
                 "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                 "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
                 activeTab === tab.slug
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >

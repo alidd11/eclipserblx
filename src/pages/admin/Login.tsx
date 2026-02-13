@@ -178,11 +178,11 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   if (showEnrollPrompt) {
     return (
       <div ref={ref} className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-        <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        {/* Clean background */}
         <div className="flex-1 flex items-center justify-center p-4 relative">
           <div className="w-full max-w-md space-y-8">
             <div className="text-center">
-              <div className="inline-flex h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 items-center justify-center mb-4">
+                <div className="inline-flex h-16 w-16 rounded-2xl bg-muted border border-border items-center justify-center mb-4">
                 <Fingerprint className="h-8 w-8 text-primary" />
               </div>
               <h1 className="font-display text-2xl font-bold">Enable Biometric Login?</h1>
@@ -226,10 +226,7 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
 
   return (
     <div ref={ref} className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
-      <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Clean background */}
 
       <div className="flex-1 flex items-center justify-center p-4 relative">
         <div className="w-full max-w-md space-y-8">

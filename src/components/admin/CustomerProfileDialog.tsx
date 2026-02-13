@@ -223,7 +223,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 bg-gradient-to-b from-primary/10 to-transparent">
+        <DialogHeader className="p-6 pb-4 bg-muted/30">
           <div className="flex items-start gap-4">
             <Avatar className="h-16 w-16 border-2 border-primary/20">
               <AvatarImage src={profile.avatar_url || undefined} />
