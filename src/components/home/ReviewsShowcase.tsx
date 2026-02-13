@@ -151,6 +151,7 @@ export function ReviewsShowcase() {
           </p>
         </motion.div>
 
+        <div className="max-w-5xl mx-auto">
         <Carousel
           opts={{
             align: 'start',
@@ -231,6 +232,7 @@ export function ReviewsShowcase() {
             ))}
           </CarouselContent>
         </Carousel>
+        </div>
       </div>
     </section>
   );
