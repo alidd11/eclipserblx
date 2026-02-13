@@ -59,9 +59,9 @@ DiscordIcon.displayName = 'DiscordIcon';
 
 const STORAGE_KEY = 'customer-sidebar-groups';
 
-// Unified icon styling constants for seamless appearance
-const ICON_SIZE = "h-[1.125rem] w-[1.125rem]";
-const ICON_SIZE_SMALL = "h-4 w-4"; // For tooltip/compact contexts
+// Unified icon styling constants — compact Discord-style
+const ICON_SIZE = "h-4 w-4";
+const ICON_SIZE_SMALL = "h-3.5 w-3.5";
 const ICON_STROKE_ACTIVE = "stroke-[2.25]";
 const ICON_STROKE_DEFAULT = "stroke-[1.75]";
 
@@ -302,14 +302,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
 
     const linkClassName = cn(
-      "rounded-lg text-sm font-medium select-none",
-      "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+      "rounded-md text-[13px] font-medium select-none",
+      "transition-colors duration-100",
       isCollapsed
-        ? "flex items-center justify-center py-2.5"
-        : "flex flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-4",
+        ? "flex items-center justify-center py-1.5"
+        : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
       isActive
-        ? "bg-primary text-primary-foreground"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        ? "bg-primary/15 text-primary"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
     );
 
     // External link (Discord)
@@ -489,26 +489,22 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium select-none",
-              "transition-all duration-100 active:scale-[0.98] active:opacity-90",
+              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold select-none uppercase tracking-wider",
+              "transition-colors duration-100",
               "focus:outline-none focus-visible:outline-none",
               hasActiveItem
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <group.icon className={cn(
-              ICON_SIZE, "shrink-0 transition-colors",
-              hasActiveItem ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
-            )} />
-            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{group.title}</span>
+            <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown className={cn(
               ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
               isOpen ? "rotate-0" : "-rotate-90"
             )} />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-0.5 pt-0.5">
+        <CollapsibleContent className="space-y-px pt-px">
           {group.items.map(renderNavItem)}
         </CollapsibleContent>
       </Collapsible>
@@ -589,55 +585,51 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium select-none",
-              "transition-all duration-100 active:scale-[0.98] active:opacity-90",
+              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold select-none uppercase tracking-wider",
+              "transition-colors duration-100",
               "focus:outline-none focus-visible:outline-none",
               isBrowseActive
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Package className={cn(
-              ICON_SIZE, "shrink-0 transition-colors",
-              isBrowseActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
-            )} />
-            <span className="flex-1 text-left truncate text-xs uppercase tracking-wider">{t('sidebar.browse')}</span>
+            <span className="flex-1 text-left truncate">{t('sidebar.browse')}</span>
             <ChevronDown className={cn(
               ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
               (openGroups['browse'] ?? true) ? "rotate-0" : "-rotate-90"
             )} />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-0.5 pt-0.5">
+        <CollapsibleContent className="space-y-px pt-px">
           {/* All Products link */}
           <NavLink
             to="/products"
             end
             onClick={handleNavClick}
             className={() => cn(
-              "rounded-lg text-sm font-medium select-none",
-              "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-              "flex flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-4",
+              "rounded-md text-[13px] font-medium select-none",
+              "transition-colors duration-100",
+              "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
               isAllProductsActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
             <Grid3X3 className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
             <span className="leading-none">{t('sidebar.allProducts')}</span>
           </NavLink>
           
-          {/* Categories link - navigates to category grid page */}
+          {/* Categories link */}
           <NavLink
             to="/categories"
             onClick={handleNavClick}
             className={() => cn(
-              "rounded-lg text-sm font-medium select-none",
-              "transition-all duration-100 active:scale-[0.97] active:opacity-90",
-              "flex flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-4",
+              "rounded-md text-[13px] font-medium select-none",
+              "transition-colors duration-100",
+              "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
               isCategoriesPageActive || isCategoryProductsActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
             <FolderOpen className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
@@ -654,40 +646,37 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   return (
     <aside 
       className={cn(
-        "bg-sidebar/90 backdrop-blur-xl text-foreground flex flex-col transition-all duration-300 shrink-0",
+        "bg-sidebar text-foreground flex flex-col transition-all duration-200 shrink-0",
         isMobileDrawer 
           ? "h-full w-full border-0 max-h-[100dvh]" 
-          : "h-screen sticky top-0 border-r border-border/50",
-        !isMobileDrawer && (isCollapsed ? "w-14" : "w-52"),
+          : "h-screen sticky top-0 border-r border-border",
+        !isMobileDrawer && (isCollapsed ? "w-12" : "w-48"),
         className
       )}
       data-gesture-exempt="true"
     >
       {/* Header */}
-      <div className="p-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-border">
+      <div className="px-3 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-border">
         {!isCollapsed && (
-          <>
-            <h1 className="font-display font-bold text-xl text-primary truncate">
-              Eclipse
-            </h1>
-            <p className="text-xs text-muted-foreground">Marketplace</p>
-          </>
+          <h1 className="font-display font-bold text-base text-foreground truncate tracking-wide">
+            ECLIPSE
+          </h1>
         )}
         {isCollapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center justify-center">
-                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                <span className="font-display font-bold text-sm text-foreground">E</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="right">Eclipse Marketplace</TooltipContent>
+            <TooltipContent side="right">Eclipse</TooltipContent>
           </Tooltip>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        <div className="space-y-1">
+      <nav className="flex-1 px-1.5 py-1.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+        <div className="space-y-0.5">
           {navGroups.map((group) => (
             <div key={group.id}>
               {renderGroup(group)}

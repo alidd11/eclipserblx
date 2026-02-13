@@ -2,9 +2,7 @@ import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Award, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { motion } from 'framer-motion';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -14,36 +12,20 @@ import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
 import beFlag from '@/assets/regions/be-flag.png';
 
-// Helper to get region flag from product name
 const getRegionFlag = (productName?: string): { src: string; name: string } | null => {
   const nameLower = productName?.toLowerCase() || '';
-  
-  // Check for specific products/brands first
-  if (nameLower.includes('ypres') || nameLower.includes('belgium')) {
-    return { src: beFlag, name: 'Belgium' };
-  }
-  
-  // UK brands
-  if (nameLower.includes('land rover') || nameLower.includes('landrover')) {
-    return { src: ukFlag, name: 'UK' };
-  }
-  
-  // Standard region checks based on product name
-  if (nameLower.startsWith('uk ') || nameLower.includes(' uk ')) {
-    return { src: ukFlag, name: 'UK' };
-  } else if (nameLower.startsWith('us ') || nameLower.includes(' us ')) {
-    return { src: usFlag, name: 'US' };
-  } else if (nameLower.startsWith('eu ') || nameLower.includes(' eu ')) {
-    return { src: euFlag, name: 'EU' };
-  }
-  
+  if (nameLower.includes('ypres') || nameLower.includes('belgium')) return { src: beFlag, name: 'Belgium' };
+  if (nameLower.includes('land rover') || nameLower.includes('landrover')) return { src: ukFlag, name: 'UK' };
+  if (nameLower.startsWith('uk ') || nameLower.includes(' uk ')) return { src: ukFlag, name: 'UK' };
+  if (nameLower.startsWith('us ') || nameLower.includes(' us ')) return { src: usFlag, name: 'US' };
+  if (nameLower.startsWith('eu ') || nameLower.includes(' eu ')) return { src: euFlag, name: 'EU' };
   return null;
 };
 
 type FeaturedProduct = ScoredProduct;
 
-const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
-  function ProductCard({ product }, ref) {
+const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; featured?: boolean }>(
+  function ProductCard({ product, featured = false }, ref) {
     const { formatPrice } = useCurrency();
     const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
     const regionFlag = getRegionFlag(product.name);
@@ -54,30 +36,30 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
     const hasMemberDiscount = isEligible && memberPrice < product.price;
     
     return (
-      <Link ref={ref} to={`/products/${product.slug}`} className="group block">
-        <Card className="overflow-hidden h-full border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
+      <Link ref={ref} to={`/products/${product.slug}`} className="group block h-full">
+        <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
           {/* Image */}
-          <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+          <div className={`relative overflow-hidden bg-muted ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
             {product.images?.[0] ? (
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
-                <span className="text-muted-foreground">No image</span>
+                <span className="text-muted-foreground text-sm">No image</span>
               </div>
             )}
             
-            {/* Store overlay at bottom */}
-            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
-              <div className="flex items-center gap-2">
+            {/* Store overlay */}
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
+              <div className="flex items-center gap-1.5">
                 {product.stores?.logo_url ? (
                   <img 
                     src={product.stores.logo_url} 
                     alt={product.stores.name}
-                    className="h-6 w-6 rounded-md object-contain bg-white/10"
+                    className="h-5 w-5 rounded object-contain bg-white/10"
                   />
                 ) : null}
                 <span className="text-white text-xs font-medium truncate">
@@ -93,58 +75,53 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct }>(
             </div>
           </div>
 
-          <CardContent className="p-4 relative overflow-hidden">
-            {/* Flag background overlay */}
+          <div className="p-3 relative overflow-hidden">
             {regionFlag && (
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <img
-                  src={regionFlag.src}
-                  alt=""
-                  className="absolute inset-0 w-full h-full opacity-[0.08] object-cover"
-                />
+                <img src={regionFlag.src} alt="" className="absolute inset-0 w-full h-full opacity-[0.06] object-cover" />
               </div>
             )}
             
-            <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-2 relative z-10">
+            <h3 className={`font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1.5 relative z-10 ${featured ? 'text-base' : 'text-sm'}`}>
               {product.name}
             </h3>
             
             <div className="flex items-center gap-2 flex-wrap relative z-10">
               {hasMemberDiscount ? (
                 <>
-                  <span className="text-lg font-bold text-amber-500">
+                  <span className={`font-bold text-amber-500 ${featured ? 'text-base' : 'text-sm'}`}>
                     {formatPrice(memberPrice)}
                   </span>
-                  <span className="text-sm text-muted-foreground line-through">
+                  <span className="text-xs text-muted-foreground line-through">
                     {formatPrice(product.price)}
                   </span>
-                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
                     <Crown className="h-2.5 w-2.5" />
                     {discountPercent}%
                   </span>
                 </>
               ) : (
-                <span className="text-lg font-bold text-primary">
+                <span className={`font-bold text-foreground ${featured ? 'text-base' : 'text-sm'}`}>
                   {formatPrice(product.price)}
                 </span>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </Link>
     );
   }
 );
 
-function ProductSkeleton() {
+function ProductSkeleton({ featured = false }: { featured?: boolean }) {
   return (
-    <Card className="overflow-hidden">
-      <Skeleton className="aspect-[4/3]" />
-      <CardContent className="p-4 space-y-2">
-        <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-5 w-1/3" />
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <Skeleton className={featured ? 'aspect-[16/10]' : 'aspect-[4/3]'} />
+      <div className="p-3 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/3" />
+      </div>
+    </div>
   );
 }
 
@@ -157,56 +134,53 @@ export function LandingFeaturedProducts() {
   });
 
   return (
-    <section className="py-16 sm:py-20 bg-muted/30">
+    <section className="py-10 sm:py-14">
       <div className="px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-10"
-        >
+        <div className="flex items-end justify-between gap-4 mb-6">
           <div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold mb-2">
+            <h2 className="font-display text-xl sm:text-2xl font-bold mb-1">
               {t('landing.featuredProducts')}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {t('landing.featuredProductsDesc')}
             </p>
           </div>
           <Link to="/products">
-            <Button variant="outline" className="gap-2">
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
               {t('landing.viewAllProducts')}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
-        </motion.div>
-
-        {/* Products Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {isLoading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <ProductSkeleton key={i} />
-            ))
-          ) : products?.length ? (
-            products.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              {t('landing.noFeaturedProducts')}
-            </div>
-          )}
         </div>
+
+        {/* Asymmetric grid: 2 large + 6 smaller */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductSkeleton key={i} featured={i < 2} />
+            ))}
+          </div>
+        ) : products?.length ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* First 2 products span 2 cols on large screens */}
+            {products.slice(0, 2).map((product) => (
+              <div key={product.id} className="col-span-1 lg:col-span-2">
+                <ProductCard product={product} featured />
+              </div>
+            ))}
+            {/* Remaining products in regular grid */}
+            {products.slice(2).map((product) => (
+              <div key={product.id} className="col-span-1">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            {t('landing.noFeaturedProducts')}
+          </div>
+        )}
       </div>
     </section>
   );
