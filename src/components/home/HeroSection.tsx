@@ -17,8 +17,8 @@ import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard'
 export function HeroSection() {
   return (
     <section className="relative">
-      {/* Simple gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+      {/* Flat background */}
+      <div className="absolute inset-0 bg-background" />
       
       <SectionWrapper as="div" className="pt-6 md:pt-10 relative">
         {/* ========== MOBILE/TABLET LAYOUT (< lg) ========== */}
