@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -376,7 +377,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
+      <div className="max-w-6xl mx-auto space-y-5">
         <div className="pb-1">
           <h1 className="text-xl sm:text-2xl font-display font-bold">
             {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
@@ -598,24 +599,28 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions - Rows of 3 */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
               {quickLinks.map((link) => (
                 <Link key={link.href} to={link.href}>
-                  <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-center">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                      <link.icon className="h-5 w-5 text-primary" />
+                  <motion.div
+                    whileHover={{ y: -2, scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
+                  >
+                    <div className="p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
+                      <link.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                    <p className="font-medium text-xs">{link.title}</p>
-                  </div>
+                    <div>
+                      <span className="text-xs font-medium block">{link.title}</span>
+                      <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
+                    </div>
+                  </motion.div>
                 </Link>
               ))}
             </div>
