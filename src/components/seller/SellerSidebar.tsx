@@ -389,12 +389,12 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       {/* Navigation */}
       <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {/* Top-level links */}
-        <div className="space-y-0.5 mb-3">
+        <div className="space-y-0.5 mb-1.5">
           {topLevelItems.map(item => renderNavLink(item, item.href === '/seller'))}
         </div>
 
         {/* Separator */}
-        <div className="h-px bg-border/40 mx-1 mb-3" />
+        <div className="h-px bg-border/40 mx-1 mb-1.5" />
 
         {/* Grouped sections */}
         <div className="space-y-1.5">
