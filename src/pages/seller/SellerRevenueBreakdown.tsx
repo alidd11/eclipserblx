@@ -20,7 +20,7 @@ export default function SellerRevenueBreakdown() {
       if (!store?.id) return [];
       const { data, error } = await supabase
         .from('seller_transactions')
-        .select('*, order_items!inner(product_id, products!inner(name, category_id, categories!inner(name)))')
+        .select('*, order_items(product_id, products(name, category_id, categories(name)))')
         .eq('store_id', store.id)
         .eq('type', 'sale')
         .is('refunded_at', null)
@@ -50,7 +50,9 @@ export default function SellerRevenueBreakdown() {
   const byProduct = useMemo(() => {
     const map = new Map<string, number>();
     transactions.forEach((t: any) => {
-      const name = t.order_items?.products?.name || 'Unknown';
+      const orderItem = Array.isArray(t.order_items) ? t.order_items[0] : t.order_items;
+      const product = orderItem ? (Array.isArray(orderItem.products) ? orderItem.products[0] : orderItem.products) : null;
+      const name = product?.name || 'Unknown';
       map.set(name, (map.get(name) || 0) + Number(t.net_amount || 0));
     });
     return Array.from(map, ([name, revenue]) => ({ name, revenue: Number(revenue.toFixed(2)) }))
@@ -62,7 +64,10 @@ export default function SellerRevenueBreakdown() {
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
     transactions.forEach((t: any) => {
-      const cat = t.order_items?.products?.categories?.name || 'Uncategorised';
+      const orderItem = Array.isArray(t.order_items) ? t.order_items[0] : t.order_items;
+      const product = orderItem ? (Array.isArray(orderItem.products) ? orderItem.products[0] : orderItem.products) : null;
+      const category = product ? (Array.isArray(product.categories) ? product.categories[0] : product.categories) : null;
+      const cat = category?.name || 'Uncategorised';
       map.set(cat, (map.get(cat) || 0) + Number(t.net_amount || 0));
     });
     return Array.from(map, ([name, value]) => ({ name, value: Number(value.toFixed(2)) }));
