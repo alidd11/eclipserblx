@@ -103,8 +103,8 @@ export default function Credits() {
       >
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Wallet className="h-5 w-5 text-primary" />
+          <div className="p-2 rounded-lg bg-muted">
+            <Wallet className="h-5 w-5 text-foreground" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Wallet</h1>
