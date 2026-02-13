@@ -28,6 +28,7 @@ interface FollowedStore {
     name: string;
     slug: string;
     logo_url: string | null;
+    banner_url: string | null;
     description: string | null;
     is_verified: boolean;
     product_count: number | null;
@@ -56,6 +57,7 @@ export function FollowingPage() {
             name,
             slug,
             logo_url,
+            banner_url,
             description,
             is_verified,
             product_count,
@@ -119,43 +121,68 @@ export function FollowingPage() {
           const accentColor = store.accent_color || 'hsl(var(--primary))';
           
           return (
-            <Card key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/30 transition-colors">
-              <div className="flex items-start gap-3 p-3 sm:p-4">
-                {/* Store Logo */}
-                <Link to={`/store/${store.slug}`} className="flex-shrink-0">
-                  <div className="h-11 w-11 rounded-lg flex items-center justify-center overflow-hidden border border-border bg-muted/50">
-                    {store.logo_url ? (
-                      <img 
-                        src={store.logo_url} 
-                        alt={store.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <StoreIcon className="h-5 w-5 text-muted-foreground" />
+            <Card key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/30 transition-colors group">
+              {/* Banner */}
+              {store.banner_url ? (
+                <div className="relative h-20 overflow-hidden">
+                  <img 
+                    src={store.banner_url} 
+                    alt=""
+                    className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90" />
+                </div>
+              ) : (
+                <div 
+                  className="h-14"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${accentColor}30 0%, ${accentColor}10 100%)`
+                  }}
+                />
+              )}
+
+              {/* Content */}
+              <div className="p-3 sm:p-4 space-y-2.5">
+                <div className="flex items-start gap-3">
+                  {/* Store Logo */}
+                  <Link to={`/store/${store.slug}`} className="flex-shrink-0 -mt-8 relative z-10">
+                    <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden border border-border bg-muted/80 backdrop-blur-sm">
+                      {store.logo_url ? (
+                        <img 
+                          src={store.logo_url} 
+                          alt={store.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <StoreIcon className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Store Info */}
+                  <div className="flex-1 min-w-0 -mt-1">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <Link 
+                        to={`/store/${store.slug}`}
+                        className="font-semibold text-sm hover:text-primary transition-colors truncate"
+                      >
+                        {store.name}
+                      </Link>
+                      {store.is_verified && (
+                        <CheckCircle className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    
+                    {store.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {store.description}
+                      </p>
                     )}
                   </div>
-                </Link>
+                </div>
 
-                {/* Store Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Link 
-                      to={`/store/${store.slug}`}
-                      className="font-semibold text-sm hover:text-primary transition-colors truncate"
-                    >
-                      {store.name}
-                    </Link>
-                    {store.is_verified && (
-                      <CheckCircle className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
-                    )}
-                  </div>
-                  
-                  {store.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
-                      {store.description}
-                    </p>
-                  )}
-
+                {/* Stats + Actions row */}
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Package className="h-3 w-3" />
@@ -177,20 +204,19 @@ export function FollowingPage() {
                       </span>
                     )}
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0 pt-0.5">
-                  <FollowButton 
-                    storeId={store.id} 
-                    accentColor={accentColor}
-                    size="sm"
-                  />
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/store/${store.slug}`}>
-                      View Store
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <FollowButton 
+                      storeId={store.id} 
+                      accentColor={accentColor}
+                      size="sm"
+                    />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/store/${store.slug}`}>
+                        View Store
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </Card>
