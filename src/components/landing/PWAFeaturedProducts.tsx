@@ -1,67 +1,12 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, ShieldCheck, Award, Crown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 
-interface FeaturedProduct {
-  id: string;
-  name: string;
-  slug: string;
-  price: number;
-  images: string[] | null;
-  category_id: string | null;
-  is_resellable: boolean;
-  stores: {
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    is_verified: boolean;
-    is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
-  } | null;
-}
-
-// Admin-managed store slugs for featured products
-const FEATURED_STORE_SLUGS = ['eclipse-store', 'vino-store'];
-
-function useAlgorithmicProducts() {
-  return useQuery({
-    queryKey: ['pwa-featured-products'],
-    queryFn: async () => {
-      const now = new Date().toISOString();
-      
-      // Fetch active products from Eclipse and Vino stores only
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id, name, slug, price, images, category_id, is_resellable,
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
-        `)
-        .eq('is_active', true)
-        .eq('stores.is_active', true)
-        .in('stores.slug', FEATURED_STORE_SLUGS)
-        .or(`release_at.is.null,release_at.lte.${now}`)
-        .limit(20);
-
-      if (error) throw error;
-      
-      const products = data as unknown as FeaturedProduct[];
-      
-      // Shuffle products randomly for variety
-      const shuffled = products
-        .map(p => ({ ...p, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .slice(0, 6);
-      
-      return shuffled;
-    },
-    staleTime: 1000 * 60 * 2, // 2 min cache
-  });
-}
+type FeaturedProduct = ScoredProduct;
 
 function ProductCard({ product }: { product: FeaturedProduct }) {
   const { formatPrice } = useCurrency();
@@ -156,7 +101,11 @@ function ProductSkeleton() {
 
 export function PWAFeaturedProducts() {
   const { t } = useTranslation();
-  const { data: products, isLoading } = useAlgorithmicProducts();
+  const { data: products, isLoading } = useFeaturedProducts({
+    limit: 6,
+    maxPerStore: 2,
+    queryKey: 'pwa-featured-scored',
+  });
 
   return (
     <div className="space-y-3">

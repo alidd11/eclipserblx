@@ -751,9 +751,6 @@ export default function AdminProducts() {
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">Inactive</Badge>
                             )}
-                            {product.is_featured && (
-                              <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-xs px-2 py-0.5 hover:bg-yellow-500/20">Featured</Badge>
-                            )}
                           </div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(product)} className="h-10 w-10 touch-manipulation active:scale-95 flex-shrink-0">
@@ -835,9 +832,6 @@ export default function AdminProducts() {
                               <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
-                            )}
-                            {product.is_featured && (
-                              <Badge variant="outline" className="text-primary border-primary/30">Featured</Badge>
                             )}
                           </div>
                         </TableCell>
@@ -1071,14 +1065,6 @@ export default function AdminProducts() {
                   onCheckedChange={(v) => setForm({ ...form, is_active: v })}
                 />
                 <Label htmlFor="active">Active</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="featured"
-                  checked={form.is_featured}
-                  onCheckedChange={(v) => setForm({ ...form, is_featured: v })}
-                />
-                <Label htmlFor="featured">Featured</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
@@ -1358,35 +1344,6 @@ export default function AdminProducts() {
               )}
             </div>
 
-            {/* Featured Status */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id="mass-featured-toggle"
-                  checked={massEditForm.is_featured !== null}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setMassEditForm({ ...massEditForm, is_featured: true });
-                    } else {
-                      setMassEditForm({ ...massEditForm, is_featured: null });
-                    }
-                  }}
-                />
-                <Label htmlFor="mass-featured-toggle" className="font-medium">Change Featured Status</Label>
-              </div>
-              {massEditForm.is_featured !== null && (
-                <div className="flex items-center gap-2 ml-6">
-                  <Switch
-                    id="mass-featured"
-                    checked={massEditForm.is_featured}
-                    onCheckedChange={(v) => setMassEditForm({ ...massEditForm, is_featured: v })}
-                  />
-                  <Label htmlFor="mass-featured">
-                    {massEditForm.is_featured ? 'Featured' : 'Not Featured'}
-                  </Label>
-                </div>
-              )}
-            </div>
             {/* Price Adjustment */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">

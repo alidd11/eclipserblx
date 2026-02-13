@@ -4,8 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 
@@ -120,31 +119,10 @@ function ProductSkeleton() {
 }
 
 export function HeroProductShowcase() {
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['hero-featured-products'],
-    queryFn: async () => {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id, name, slug, price, images,
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
-        `)
-        .eq('is_active', true)
-        .eq('is_featured', true)
-        .eq('stores.is_active', true)
-        .eq('stores.is_testing', false)
-        .or(`release_at.is.null,release_at.lte.${now}`)
-        .limit(20);
-
-      if (error) throw error;
-      const all = data as unknown as HeroProduct[];
-      return all
-        .map(p => ({ ...p, _sort: Math.random() }))
-        .sort((a, b) => a._sort - b._sort)
-        .slice(0, 15);
-    },
-    staleTime: 5 * 60 * 1000,
+  const { data: products, isLoading } = useFeaturedProducts({
+    limit: 15,
+    maxPerStore: 3,
+    queryKey: 'hero-featured-scored',
   });
 
   if (isLoading) {
