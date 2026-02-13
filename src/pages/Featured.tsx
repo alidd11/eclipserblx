@@ -74,10 +74,10 @@ export default function Featured() {
       <div className="min-h-screen">
         {/* Hero Section */}
         <section className="relative py-12 md:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-transparent to-transparent" />
           <div className="container mx-auto px-4 relative">
             <div className="text-center mb-10 md:mb-16">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border mb-4">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-primary">Staff Picks</span>
               </div>
@@ -300,7 +300,7 @@ export default function Featured() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-12 md:py-16 bg-gradient-to-b from-transparent to-primary/5">
+        <section className="py-12 md:py-16 bg-gradient-to-b from-transparent to-muted/30">
           <div className="container mx-auto px-4 text-center">
             <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
               Looking for something specific?

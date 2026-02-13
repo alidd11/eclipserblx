@@ -171,7 +171,7 @@ export default function SellerDashboard() {
 
         {/* Store Link Card */}
         {storeUrl && (
-          <Card className="bg-primary/5 border-primary/20 overflow-hidden">
+          <Card className="bg-muted/30 border-border overflow-hidden">
             <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-4">
               <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                 <ExternalLink className="h-5 w-5 text-primary flex-shrink-0" />

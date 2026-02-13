@@ -308,7 +308,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         ? "flex items-center justify-center py-1.5"
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
       isActive
-        ? "bg-primary/15 text-primary"
+        ? "bg-muted text-foreground"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
     );
 
@@ -417,7 +417,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
@@ -459,7 +459,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                       className={({ isActive }) => cn(
                         "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
                         isActive
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-muted text-foreground"
                           : "hover:bg-muted"
                       )}
                     >
@@ -530,7 +530,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
                   isBrowseActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
@@ -551,7 +551,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   onClick={handleNavClick}
                   className={({ isActive }) => cn(
                     "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                    isActive && !location.search.includes('category=') ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    isActive && !location.search.includes('category=') ? "bg-muted text-foreground" : "hover:bg-muted"
                   )}
                 >
                   <Grid3X3 className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
@@ -562,7 +562,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   onClick={handleNavClick}
                   className={({ isActive }) => cn(
                     "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                    isActive || location.pathname.startsWith('/browse/') ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    isActive || location.pathname.startsWith('/browse/') ? "bg-muted text-foreground" : "hover:bg-muted"
                   )}
                 >
                   <FolderOpen className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />

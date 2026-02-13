@@ -62,7 +62,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
             </div>
             
             {/* Title */}
-            <h1 className="text-2xl font-bold mb-3 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold mb-3 text-foreground">
               {isNetworkError ? 'Connection Issue' : 'Something Went Wrong'}
             </h1>
             
