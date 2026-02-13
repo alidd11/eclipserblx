@@ -698,31 +698,16 @@
   }
   
   .neon-text {
-    text-shadow: 0 0 6px currentColor;
+    /* Flat — no text-shadow */
   }
   
   .neon-border {
-    box-shadow: 0 0 6px hsl(var(--primary) / 0.2);
+    /* Flat — no box-shadow */
   }
   
-  /* Brand wordmark — clean, no purple gradient */
+  /* Brand wordmark — flat text */
   .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(
-      135deg, 
-      hsl(0 0% 100%) 0%, 
-      hsl(0 0% 88%) 50%,
-      hsl(215 40% 78%) 100%
-    );
-  }
-  
-  .dark .gradient-text {
-    background-image: linear-gradient(
-      135deg, 
-      hsl(0 0% 100%) 0%, 
-      hsl(0 0% 92%) 40%,
-      hsl(215 50% 80%) 100%
-    );
+    @apply text-foreground;
   }
   
   /* Brand text - uppercase with wide tracking */
@@ -741,29 +726,11 @@
   }
   
   .glass-effect {
-    @apply backdrop-blur-md bg-card/80;
+    @apply bg-card/90;
   }
   
   .scanline {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .scanline::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      hsl(0 0% 0% / 0.03) 2px,
-      hsl(0 0% 0% / 0.03) 4px
-    );
-    pointer-events: none;
+    /* Removed — no scanline effect */
   }
 }
 
@@ -833,46 +800,7 @@
     @apply min-h-[44px] min-w-[44px];
   }
   
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-  
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 4px hsl(var(--primary) / 0.15);
-    }
-    to {
-      box-shadow: 0 0 10px hsl(var(--primary) / 0.25);
-    }
-  }
-  
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-  
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-  
-  @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 1;
-      filter: drop-shadow(0 0 2px currentColor);
-    }
-    50% {
-      opacity: 0.85;
-      filter: drop-shadow(0 0 6px currentColor);
-    }
-  }
+  /* Glow/float animations removed for utilitarian aesthetic */
 }
 
 /* Scrollbar styling */
