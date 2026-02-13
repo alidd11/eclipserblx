@@ -121,7 +121,7 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
           </div>
 
           {/* AI availability notice */}
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-3">
+          <div className="bg-muted border border-border rounded-lg p-3 mb-3">
             <p className="text-xs text-foreground font-medium">🤖 AI Support Available 24/7</p>
             <p className="text-xs text-muted-foreground mt-1">
               Get instant help anytime. Complex issues will be queued for our team.

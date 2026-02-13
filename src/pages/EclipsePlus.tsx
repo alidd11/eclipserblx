@@ -116,7 +116,7 @@ export default function EclipsePlus() {
       <div className="container py-8 max-w-4xl space-y-12">
         {/* Hero Section */}
         <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-foreground">
             <Crown className="h-5 w-5" />
             <span className="font-semibold">Eclipse+ Membership</span>
           </div>
@@ -148,12 +148,12 @@ export default function EclipsePlus() {
 
         {/* Subscribed Status Card */}
         {isSubscribed && subscriptionInfo && (
-          <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-primary">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
+          <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-border">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-border" />
             
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <Crown className="h-8 w-8 text-primary-foreground" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                <Crown className="h-8 w-8 text-foreground" />
               </div>
               <div className="flex items-center justify-center gap-2">
                 <CardTitle className="text-2xl">Eclipse+</CardTitle>
@@ -197,9 +197,9 @@ export default function EclipsePlus() {
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center",
-                    canClaimFree ? "bg-primary/10" : "bg-muted"
+                    canClaimFree ? "bg-muted" : "bg-muted"
                   )}>
-                    <Gift className={cn("h-5 w-5", canClaimFree ? "text-primary" : "text-muted-foreground")} />
+                    <Gift className={cn("h-5 w-5", canClaimFree ? "text-foreground" : "text-muted-foreground")} />
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Monthly Free Product</div>
@@ -253,14 +253,14 @@ export default function EclipsePlus() {
 
         {/* Pricing Card for Non-Subscribers */}
         {!isSubscribed && (
-          <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-primary">
-            <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center text-sm py-2 font-medium">
+          <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-border">
+            <div className="absolute top-0 left-0 right-0 bg-foreground text-background text-center text-sm py-2 font-medium">
               Most Popular Choice
             </div>
             
             <CardHeader className="text-center pt-12 pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <Crown className="h-8 w-8 text-primary-foreground" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                <Crown className="h-8 w-8 text-foreground" />
               </div>
               
               <CardTitle className="text-2xl">Eclipse+</CardTitle>

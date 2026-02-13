@@ -107,8 +107,8 @@ export default function Featured() {
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="h-5 w-5 text-primary" />
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 text-foreground" />
                   </div>
                   <div>
                     <h2 className="font-display text-2xl font-bold">Featured Collection</h2>

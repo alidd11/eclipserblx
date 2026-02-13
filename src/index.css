@@ -694,7 +694,7 @@
   }
   
   .gaming-card-hover:hover {
-    @apply border-primary/40;
+    @apply border-border;
   }
   
   .neon-text {
