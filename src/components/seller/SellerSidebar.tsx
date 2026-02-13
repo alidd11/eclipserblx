@@ -312,24 +312,50 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Store className="h-4 w-4 text-primary" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">
                 {store?.name || 'My Store'}
               </h1>
               <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Seller Dashboard</p>
             </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
+                  onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Sign Out</TooltipContent>
+            </Tooltip>
           </div>
         ) : (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Store className="h-4 w-4 text-primary" />
                 </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">{store?.name || 'My Store'}</TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              <TooltipContent side="right">{store?.name || 'My Store'}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-muted/60"
+                  onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Sign Out</TooltipContent>
+            </Tooltip>
+          </div>
         )}
       </div>
 
@@ -377,31 +403,6 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           )
         )}
 
-        {isCollapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-center text-muted-foreground hover:text-destructive hover:bg-muted/60"
-                onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Sign Out</TooltipContent>
-          </Tooltip>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted/60 rounded-md px-2.5 py-[7px] h-auto"
-            onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
-          >
-            <LogOut className="h-4 w-4 shrink-0" />
-            <span className="ml-2.5 text-[13px]">Sign Out</span>
-          </Button>
-        )}
       </div>
 
       <SignOutConfirmDialog
