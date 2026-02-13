@@ -1,6 +1,7 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -635,16 +636,31 @@ export default function ProductDetail() {
             </Card>
 
 
-            {/* Report IP Violation */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-muted-foreground hover:text-foreground"
-              onClick={() => setShowIPReportDialog(true)}
-            >
-              <Flag className="h-4 w-4 mr-2" />
-              Report IP Violation
-            </Button>
+            {/* Share & Report */}
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/product-og?slug=${encodeURIComponent(product.slug)}`;
+                  navigator.clipboard.writeText(shareUrl);
+                  toast.success('Share link copied! Paste in Discord for a rich preview.');
+                }}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Copy Share Link
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowIPReportDialog(true)}
+              >
+                <Flag className="h-4 w-4 mr-2" />
+                Report IP Violation
+              </Button>
+            </div>
             
           </div>
         </div>
