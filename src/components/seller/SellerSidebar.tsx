@@ -33,10 +33,21 @@ interface NavGroup {
 // Top-level items (no group)
 const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/seller' },
-  { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
 ];
 
 const navGroups: NavGroup[] = [
+  {
+    id: 'daily-ops',
+    title: 'Daily Operations',
+    icon: BarChart3,
+    items: [
+      { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
+      { title: 'Recent Orders', icon: ShoppingCart, href: '/seller/orders' },
+      { title: 'Messages', icon: MessageCircle, href: '/seller/messages' },
+      { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
+      { title: 'Discounts', icon: Tag, href: '/seller/discounts' },
+    ],
+  },
   {
     id: 'products',
     title: 'Products',
@@ -46,15 +57,13 @@ const navGroups: NavGroup[] = [
       { title: 'Import', icon: Import, href: '/seller/import' },
       { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
       { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
-      { title: 'Discounts', icon: Tag, href: '/seller/discounts' },
     ],
   },
   {
-    id: 'orders',
-    title: 'Orders & Money',
-    icon: ShoppingCart,
+    id: 'finance',
+    title: 'Finance',
+    icon: DollarSign,
     items: [
-      { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
       { title: 'Balance & Payouts', icon: DollarSign, href: '/seller/balance' },
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
     ],
@@ -65,8 +74,6 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { title: 'Reviews', icon: Star, href: '/seller/reviews' },
-      { title: 'Messages', icon: MessageCircle, href: '/seller/messages' },
-      { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
     ],
   },
   {
