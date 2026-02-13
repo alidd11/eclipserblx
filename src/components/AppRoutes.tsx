@@ -49,6 +49,7 @@ const Advertise = lazy(() => import("@/pages/Advertise"));
 const Credits = lazy(() => import("@/pages/Credits"));
 const MyAdvertisementsPage = lazy(() => import("@/pages/Account/MyAdvertisementsPage"));
 const AdAnalyticsPage = lazy(() => import("@/pages/Account/AdAnalyticsPage"));
+const FollowingPage = lazy(() => import("@/pages/Account/FollowingPage").then(m => ({ default: m.FollowingPage })));
 
 // Lazy loaded - admin pages
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -239,6 +240,7 @@ export function AppRoutes() {
         <Route path="/credits" element={<Credits />} />
         <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
         <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
+        <Route path="/account/following" element={<FollowingPage />} />
         <Route path="/support/chat" element={<LiveChat />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/store-messages" element={<StoreMessages />} />
