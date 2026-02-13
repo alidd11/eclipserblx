@@ -175,7 +175,7 @@ export function ActiveOffersCard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.4 }}
     >
-        <div className="rounded-2xl border border-primary/10 bg-gradient-to-br from-card via-card to-primary/5 p-4 md:p-5">
+        <div className="rounded-lg border border-border bg-card p-4 md:p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Gift className="h-3 w-3 md:h-4 md:w-4 text-primary" />
