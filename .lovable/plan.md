@@ -1,90 +1,49 @@
 
+## Restructure Seller Categories to Show Hierarchical Parent/Sub-Category Layout
 
-# Dead Code Cleanup Plan
+### Overview
+Update the seller-side category experience to display categories in a hierarchical parent/sub-category structure (like ClearlyDev), instead of the current flat list. This affects three areas: the category management page, the store sections page, and the product form's category picker.
 
-After thorough investigation, I found several files and hooks that are completely unused (never imported anywhere). Here's what's safe to remove and what should stay.
+### Changes
 
----
+#### 1. SellerCategories page (`/seller/categories`) - Hierarchical toggle list
+Currently shows a flat 2-column grid of all categories with toggle switches. Will be restructured to:
+- Display parent categories as expandable rows (accordion-style, matching the landing page pattern)
+- Nest sub-categories underneath their parent with indentation
+- Toggling a parent category enables/disables all its children
+- Each sub-category can also be individually toggled
+- Clean vertical list layout instead of grid
 
-## Safe to Remove (confirmed zero imports)
+#### 2. Product form category selector (in `SellerProducts.tsx`)
+Currently a flat `<Select>` dropdown listing every category alphabetically. Will be updated to:
+- Group options by parent category using `<SelectGroup>` with `<SelectLabel>` headers
+- Show parent categories as group headers (non-selectable if they have children)
+- Show sub-categories indented under their parent group
+- Categories without children remain directly selectable
 
-### 1. Orphaned Pages (not in any route or import)
-- **`src/pages/MarketplaceComingSoon.tsx`** -- Not referenced in AppRoutes or anywhere else. Likely a placeholder that was replaced by the live Marketplace page.
-- **`src/pages/ThreadDetail.tsx`** -- Not in any route. Appears to be leftover from a forum feature that was never fully wired up.
+#### 3. SellerStoreTabs page (`/seller/tabs`) - Minor alignment
+- No structural changes needed here as these are custom store sections, not marketplace categories
+- Rename sidebar label from "Store Sections" to something clearer if needed
 
-### 2. Unused Hooks (never imported by any component)
-- **`src/hooks/usePrefetch.ts`** -- Zero imports anywhere. Was likely meant for pre-loading data but never connected.
-- **`src/hooks/useEmbeddedPayment.ts`** -- Zero imports. Payment flows use `EmbeddedPaymentModal` directly instead.
-- **`src/hooks/useNativeApp.ts`** -- Zero imports. Capacitor/native app detection hook that nothing uses.
-- **`src/hooks/useResponsiveColumns.ts`** -- Zero imports. Grid column calculator that was never adopted.
+### Technical Details
 
-### 3. Unused Components (never imported)
-- **`src/components/NavLink.tsx`** -- Custom NavLink wrapper with zero imports. All components use `NavLink` directly from `react-router-dom`.
-- **`src/components/admin/KeyboardDebugOverlay.tsx`** -- Debug-only overlay with zero imports. Was used during iOS PWA keyboard debugging and left behind.
-- **`src/components/forum/CreateThreadDialog.tsx`** -- Zero imports. Part of the incomplete forum feature.
-- **`src/components/forum/GeneralChatChannel.tsx`** -- Zero imports. Same orphaned forum feature.
-- **`src/components/recommendations/RecommendedProducts.tsx`** -- Zero imports (and the only consumer of `useAIRecommendations`).
-- **`src/hooks/useAIRecommendations.ts`** -- Only imported by the unused `RecommendedProducts.tsx` above, so also dead.
+**SellerCategories.tsx:**
+- Modify the categories query to fetch all categories with `parent_id` field
+- Separate into `parentCategories` (where `parent_id` is null) and child lookup (grouped by `parent_id`)
+- Replace the 2-column grid with a vertical accordion list using expandable rows (same pattern as `LandingCategories`)
+- Add `useState` for expanded parent tracking
+- Use `framer-motion` `AnimatePresence` for expand/collapse animation
+- Add "toggle all children" logic when parent switch is toggled
 
-### 4. Entire Orphaned Directories (all contents unused)
-- **`src/components/forum/`** -- Both files inside are unused. Can remove the whole folder.
-- **`src/components/recommendations/`** -- Single file inside is unused. Can remove the whole folder.
+**SellerProducts.tsx (category selector):**
+- Update the categories query to include `parent_id` field
+- Separate parent vs child categories
+- Render `<SelectGroup>` per parent with `<SelectLabel>` for the parent name
+- Render child categories as `<SelectItem>` within each group
+- Standalone categories (no children, no parent) render as top-level `<SelectItem>`
 
----
+**No database changes required** - the `parent_id` column already exists and is populated.
 
-## Keep (confirmed in use)
-These were investigated but are actively used:
-- `useCountUp` -- used by StatsCard
-- `useFormPersistence` -- used across 16+ files
-- `useDropZone` -- used in 5+ files
-- `useNetworkQuality` -- used by PWAWrapper
-- `useCurrentIp` -- used by admin Users page
-- `useSwipeGesture` -- used by ProductDetail and StorePage
-- `useFeatureFlag` -- used by 5 files
-- `useVideoThumbnail` -- used by VideoThumbnail component (which is used)
-- `usePlatform` -- used by PaymentMethodDisplay
-- `useBackgroundPush` -- used by 3 files
-- `useBiometricAuth` -- used by admin Settings and Login
-- `useAdminTextScaling` -- used by AdminLayout
-- `useStaffPresence` -- used by AdminLayout
-- `useSmartSearch` -- used by SearchCommandPalette
-- `AdminStatCard` -- used across 9+ admin pages
-- `IpBanCheck` -- used in App.tsx
-- `LanguageSwitcher` -- used in Header and Footer
-- `ConnectionErrorBoundary` -- used in App.tsx
-- `HeroBanner` -- used by LandingHero and PWALandingHero
-- All bot components -- used by ProductDetail and MyPurchases
-
----
-
-## Summary
-
-| Category | Files to Remove | Risk |
-|----------|----------------|------|
-| Orphaned pages | 2 | None -- no routes point to them |
-| Unused hooks | 6 (including useAIRecommendations) | None -- zero consumers |
-| Unused components | 5 | None -- zero imports |
-| **Total** | **13 files** | **Zero breakage risk** |
-
----
-
-## Technical Details
-
-The removal is straightforward file deletion with no cascading effects since every file identified has **zero imports** across the entire codebase. No database tables, edge functions, or routes reference them.
-
-Files to delete:
-```text
-src/pages/MarketplaceComingSoon.tsx
-src/pages/ThreadDetail.tsx
-src/hooks/usePrefetch.ts
-src/hooks/useEmbeddedPayment.ts
-src/hooks/useNativeApp.ts
-src/hooks/useResponsiveColumns.ts
-src/hooks/useAIRecommendations.ts
-src/components/NavLink.tsx
-src/components/admin/KeyboardDebugOverlay.tsx
-src/components/forum/CreateThreadDialog.tsx
-src/components/forum/GeneralChatChannel.tsx
-src/components/recommendations/RecommendedProducts.tsx
-```
-
+### Files to modify
+- `src/pages/seller/SellerCategories.tsx` - Full redesign to hierarchical accordion layout
+- `src/pages/seller/SellerProducts.tsx` - Update category `<Select>` to grouped hierarchy
