@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
-  Gamepad2, Layers
+  Gamepad2, Layers, TrendingUp, Receipt, LineChart
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -67,6 +67,9 @@ const navGroups: NavGroup[] = [
     icon: DollarSign,
     items: [
       { title: 'Balance & Payouts', icon: DollarSign, href: '/seller/balance' },
+      { title: 'Revenue Breakdown', icon: LineChart, href: '/seller/revenue' },
+      { title: 'Transactions', icon: Receipt, href: '/seller/transactions' },
+      { title: 'Fees & Summary', icon: TrendingUp, href: '/seller/fees' },
     ],
   },
   {
