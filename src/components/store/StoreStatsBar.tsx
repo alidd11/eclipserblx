@@ -126,7 +126,7 @@ export function StoreStatsBar({
   return (
     <div className="w-full py-3">
       <div 
-        className="rounded-xl border bg-card/50 backdrop-blur-sm px-4 py-3"
+        className="rounded-lg border bg-card px-4 py-3"
         style={{ borderColor: `${accentColor}30` }}
       >
         {/* Single line horizontal layout */}

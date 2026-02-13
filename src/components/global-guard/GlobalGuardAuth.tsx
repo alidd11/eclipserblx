@@ -47,7 +47,7 @@ export function GlobalGuardAuth() {
       <div className="w-full max-w-md space-y-6">
         {/* Logo & Branding */}
         <div className="text-center space-y-3">
-          <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+          <div className="mx-auto w-20 h-20 rounded-lg bg-primary/20 flex items-center justify-center shadow-lg">
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-foreground">Global Guard</h1>

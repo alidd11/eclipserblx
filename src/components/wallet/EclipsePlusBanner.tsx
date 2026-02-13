@@ -13,7 +13,7 @@ export function EclipsePlusBanner({ show }: EclipsePlusBannerProps) {
   if (!show) return null;
   
   return (
-    <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+    <Card className="border-border bg-muted/20">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">

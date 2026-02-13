@@ -116,7 +116,7 @@ export function EmailSubscriptionCard() {
 
   if (isLoading) {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardContent className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
@@ -125,7 +125,7 @@ export function EmailSubscriptionCard() {
   }
 
   return (
-    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="border-border bg-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />

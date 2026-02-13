@@ -68,7 +68,7 @@ export function GlobalGuardLayout({ children }: GlobalGuardLayoutProps) {
               <Menu className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Shield className="w-4 h-4 text-white" />
               </div>
               <span className="font-semibold text-foreground">Global Guard</span>
@@ -147,7 +147,7 @@ export function GlobalGuardLayout({ children }: GlobalGuardLayoutProps) {
 export function GlobalGuardHeader() {
   return (
     <div className="flex items-center gap-3 mb-6 md:mb-8">
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center">
+      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/20 flex items-center justify-center">
         <Shield className="w-5 h-5 md:w-7 md:h-7 text-white" />
       </div>
       <div>

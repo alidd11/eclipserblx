@@ -12,7 +12,7 @@ export function TierBadge({ isPremium, className }: TierBadgeProps) {
     return (
       <Badge 
         className={cn(
-          "bg-gradient-to-r from-primary to-violet-500 text-white border-0",
+          "bg-primary text-primary-foreground border-0",
           className
         )}
       >

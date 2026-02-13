@@ -285,7 +285,7 @@ export function AffiliateCard() {
 
   if (applicationLoading || balanceLoading) {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardContent className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
@@ -296,7 +296,7 @@ export function AffiliateCard() {
   // No application yet - show application form
   if (!application) {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -421,7 +421,7 @@ export function AffiliateCard() {
   // Application pending
   if (application.status === 'pending') {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -451,7 +451,7 @@ export function AffiliateCard() {
   // Application rejected
   if (application.status === 'rejected') {
     return (
-      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -479,7 +479,7 @@ export function AffiliateCard() {
 
   // Approved affiliate - show earnings dashboard
   return (
-    <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="border-border bg-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />

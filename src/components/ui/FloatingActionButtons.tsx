@@ -62,7 +62,7 @@ export function FloatingActionButtons() {
           <Button
             size="icon"
             onClick={() => openChat()}
-            className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground border-0 touch-target"
+            className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 touch-target"
           >
             <MessageCircle className="h-4 w-4 xs:h-5 xs:w-5" />
           </Button>

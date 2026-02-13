@@ -149,10 +149,10 @@ export default function EclipsePlus() {
         {/* Subscribed Status Card */}
         {isSubscribed && subscriptionInfo && (
           <Card className="relative overflow-hidden max-w-lg mx-auto ring-2 ring-primary">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/60" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
             
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                 <Crown className="h-8 w-8 text-primary-foreground" />
               </div>
               <div className="flex items-center justify-center gap-2">
@@ -259,7 +259,7 @@ export default function EclipsePlus() {
             </div>
             
             <CardHeader className="text-center pt-12 pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                 <Crown className="h-8 w-8 text-primary-foreground" />
               </div>
               

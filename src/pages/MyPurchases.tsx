@@ -402,7 +402,7 @@ export default function MyPurchases() {
             {isLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : downloadableItems.length === 0 ? (
-              <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+              <Card className="border-border bg-card">
                 <CardContent className="py-12 text-center space-y-4">
                   <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
                     <FileDown className="h-8 w-8 text-muted-foreground" />
@@ -590,7 +590,7 @@ export default function MyPurchases() {
             {isLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : filteredOrders.length === 0 ? (
-              <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/5">
+              <Card className="border-border bg-card">
                 <CardContent className="py-12 text-center space-y-4">
                   <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
                     <Package className="h-8 w-8 text-muted-foreground" />
@@ -614,7 +614,7 @@ export default function MyPurchases() {
                     const displayStatus = order.status === 'paid' ? 'Completed' : order.status.charAt(0).toUpperCase() + order.status.slice(1).replace('_', ' ');
 
                     return (
-                      <div key={order.id} className="rounded-xl border border-primary/10 bg-gradient-to-br from-card to-muted/30 overflow-hidden hover:border-primary/20 transition-colors">
+                      <div key={order.id} className="rounded-lg border border-border bg-card overflow-hidden hover:border-muted-foreground/30 transition-colors">
                         <div className="p-4 space-y-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>

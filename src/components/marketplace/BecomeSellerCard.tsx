@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 export function BecomeSellerCard() {
   return (
-    <Card className="bg-gradient-to-br from-primary/10 via-card to-card border-primary/20 overflow-hidden">
+    <Card className="bg-muted/20 border-border overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-primary/20">

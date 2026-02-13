@@ -89,7 +89,7 @@ export default function GlobalGuardSettings() {
           <Button 
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700"
+            className="bg-primary hover:bg-primary/90"
           >
             {isSaving ? 'Saving...' : 'Save Settings'}
           </Button>

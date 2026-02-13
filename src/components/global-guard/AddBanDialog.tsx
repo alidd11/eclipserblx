@@ -71,7 +71,7 @@ export function AddBanDialog({ onSubmit, isSubmitting }: AddBanDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700">
+        <Button className="bg-primary hover:bg-primary/90">
           <Plus className="w-4 h-4 mr-2" />
           Add Ban
         </Button>
@@ -79,7 +79,7 @@ export function AddBanDialog({ onSubmit, isSubmitting }: AddBanDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -203,7 +203,7 @@ export function AddBanDialog({ onSubmit, isSubmitting }: AddBanDialogProps) {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 {isSubmitting ? 'Creating...' : 'Create Ban'}
               </Button>
