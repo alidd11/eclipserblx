@@ -1,17 +1,19 @@
 export function HeroBanner() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {/* Subtle radial glow to add depth without blocking global gradient */}
+      {/* Solid dark background — no animated gradients */}
+      <div className="absolute inset-0 bg-background" />
+      
+      {/* Subtle noise texture for depth */}
       <div 
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
-          background: `radial-gradient(ellipse 80% 60% at 50% 30%, hsl(var(--primary) / 0.3) 0%, transparent 70%)`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
         }}
       />
       
-      
-      {/* Soft bottom fade to content - very subtle */}
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/50 to-transparent" />
+      {/* Subtle bottom fade */}
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />
     </div>
   );
 }
