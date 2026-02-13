@@ -138,82 +138,79 @@ export function FollowingPage() {
           const accentColor = store.accent_color || 'hsl(var(--primary))';
           
           return (
-            <Card key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/30 transition-colors group">
+            <Card key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/40 transition-colors duration-200 group">
               {/* Banner */}
               {store.banner_url ? (
-                <Link to={`/store/${store.slug}`} className="block relative h-24 overflow-hidden">
+                <div className="relative h-20 overflow-hidden">
                   <img 
                     src={store.banner_url} 
                     alt=""
                     className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card" />
-                </Link>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/95" />
+                </div>
               ) : (
                 <div 
                   className="h-16"
                   style={{ 
-                    background: `linear-gradient(135deg, ${accentColor}20 0%, ${accentColor}08 100%)`
+                    background: `linear-gradient(135deg, ${accentColor}40 0%, ${accentColor}20 100%)`
                   }}
                 />
               )}
 
-              {/* Content */}
-              <div className="px-4 pb-4 space-y-3">
-                {/* Store identity row */}
-                <div className="flex items-start gap-3">
-                  <Link to={`/store/${store.slug}`} className="flex-shrink-0 -mt-6 relative z-10">
-                    <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden border border-border bg-card">
-                      {store.logo_url ? (
-                        <img 
-                          src={store.logo_url} 
-                          alt={store.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <StoreIcon className="h-5 w-5 text-muted-foreground" />
-                      )}
+              {/* Content area */}
+              <div className="bg-black/95 px-3 py-2.5 space-y-2.5">
+                {/* Store header */}
+                <div className="flex items-center gap-3">
+                  {store.logo_url ? (
+                    <img 
+                      src={store.logo_url} 
+                      alt={store.name}
+                      className="h-12 w-12 rounded-lg object-contain bg-white/10 border border-white/10 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 border border-white/10">
+                      <StoreIcon className="h-5 w-5 text-white/60" />
                     </div>
-                  </Link>
+                  )}
 
-                  <div className="flex-1 min-w-0 pt-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <Link 
                         to={`/store/${store.slug}`}
-                        className="font-semibold text-sm hover:text-primary transition-colors truncate"
+                        className="font-display font-bold text-base text-white hover:text-primary transition-colors truncate"
                       >
                         {store.name}
                       </Link>
                       {store.is_verified && (
-                        <CheckCircle className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-blue-400 flex-shrink-0" />
                       )}
                     </div>
                     
                     {store.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                      <p className="text-xs text-white/60 line-clamp-1 mt-0.5">
                         {store.description}
                       </p>
                     )}
-
-                    {/* Stats */}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5">
-                      <span className="flex items-center gap-1">
-                        <Package className="h-3 w-3" />
-                        {store.product_count || 0} Products
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {store.follower_count || 0} Followers
-                      </span>
-                    </div>
                   </div>
                 </div>
 
+                {/* Stats */}
+                <div className="flex items-center gap-4 text-xs text-white/70">
+                  <span className="flex items-center gap-1.5">
+                    <Package className="h-3.5 w-3.5 text-primary" />
+                    {store.product_count || 0} products
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 text-primary" />
+                    {store.follower_count || 0} followers
+                  </span>
+                </div>
+
                 {/* Actions row */}
-                <div className="flex items-center justify-between border-t border-border pt-3">
-                  {/* Buttons */}
+                <div className="flex items-center justify-between border-t border-white/10 pt-2.5">
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" className="border-white/10 text-white/80 hover:text-white hover:bg-white/10 h-7 text-xs" asChild>
                       <Link to={`/store/${store.slug}`}>
                         View Store
                       </Link>
@@ -225,7 +222,6 @@ export function FollowingPage() {
                     />
                   </div>
 
-                  {/* Notification toggle */}
                   <button
                     className="flex items-center gap-2 text-xs cursor-pointer group/notif"
                     onClick={() => toggleNotifyMutation.mutate({ 
@@ -234,8 +230,8 @@ export function FollowingPage() {
                     })}
                     disabled={toggleNotifyMutation.isPending}
                   >
-                    <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground group-hover/notif:text-foreground transition-colors">
+                    <Bell className="h-3.5 w-3.5 text-white/50" />
+                    <span className="text-white/50 group-hover/notif:text-white/80 transition-colors">
                       Notifications
                     </span>
                     <Switch
@@ -244,6 +240,12 @@ export function FollowingPage() {
                     />
                   </button>
                 </div>
+
+                {/* Accent line */}
+                <div 
+                  className="h-0.5 w-full rounded-full opacity-60"
+                  style={{ backgroundColor: accentColor }}
+                />
               </div>
             </Card>
           );
