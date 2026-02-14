@@ -235,16 +235,17 @@ export function PWALandingHero() {
             </Link>
           </div>
 
-          <div className="w-full px-0 space-y-6 pb-6">
-            <PWAFeaturedStores />
+           <div className="w-full px-0 space-y-6 pb-6">
+             <PWAFeaturedStores />
 
-            {/* Recent Releases - 2 cards rotating every 3s */}
+            {/* Discord Community Banner */}
+            <PWADiscordBanner />
+
+            {/* Recent Releases - 1 card rotating every 3s */}
             <PWARecentReleases />
 
              <ActiveOffersCard />
 
-            {/* Discord Community Banner */}
-            <PWADiscordBanner />
 
             {/* Featured Products — spotlight + grid */}
             <div>
