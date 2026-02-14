@@ -46,7 +46,7 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex items-center gap-2 mb-5">
+            <div className="flex flex-col items-center gap-2 mb-5">
               <Link to="/products">
                 <Button size="sm" className="h-8 px-3 text-xs">
                   <Store className="mr-1 h-3 w-3" />
@@ -54,22 +54,24 @@ export function LandingHero() {
                   <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
-              <Link to="/products">
-                <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
-                  <ShoppingBag className="mr-1 h-3 w-3" />
-                  {t('landing.browseMarketplace')}
-                </Button>
-              </Link>
-              <Link to="/eclipse-plus">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-8 px-3 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
-                >
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  Eclipse+
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link to="/products">
+                  <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
+                    <ShoppingBag className="mr-1 h-3 w-3" />
+                    {t('landing.browseMarketplace')}
+                  </Button>
+                </Link>
+                <Link to="/eclipse-plus">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 px-3 text-xs text-amber-500 border-amber-500/30 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
+                  >
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    Eclipse+
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
