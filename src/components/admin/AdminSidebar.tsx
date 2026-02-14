@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { SITE_NAME } from '@/lib/constants';
-import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import eclipseStoreLogo from '@/assets/eclipse-store-moon-logo.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -471,7 +471,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       <div className="p-4 border-b border-[hsl(var(--sidebar-border))]">
         {!isCollapsed && (
           <div className="flex items-center gap-3">
-            <EclipseLogo size="sm" removeWhiteBackground />
+            <img src={eclipseStoreLogo} alt="Eclipse" className="h-7 w-7 rounded-md object-contain" />
             <div>
               <h1 className="font-display font-bold text-base text-[hsl(var(--sidebar-primary))]">{SITE_NAME}</h1>
               <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.6)]">Admin Dashboard</p>
@@ -482,7 +482,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center justify-center">
-                <EclipseLogo size="xs" removeWhiteBackground />
+                <img src={eclipseStoreLogo} alt="Eclipse" className="h-5 w-5 rounded-sm object-contain" />
               </div>
             </TooltipTrigger>
             <TooltipContent side="right">{SITE_NAME}</TooltipContent>
