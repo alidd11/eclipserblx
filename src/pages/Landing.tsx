@@ -5,7 +5,7 @@ import { LandingCategories } from '@/components/landing/LandingCategories';
 import { LandingTrustSignals } from '@/components/landing/LandingTrustSignals';
 import { LandingCTA } from '@/components/landing/LandingCTA';
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
-import { ReviewsShowcase } from '@/components/home/ReviewsShowcase';
+
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
@@ -25,7 +25,7 @@ export default function Landing() {
         <PWADiscordBanner />
       </section>
       <LandingCategories />
-      <ReviewsShowcase />
+      
       <LandingTrustSignals />
       <LandingCTA />
     </MainLayout>
