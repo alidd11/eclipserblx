@@ -2,7 +2,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingCategories } from '@/components/landing/LandingCategories';
 
-import { LandingTrustSignals } from '@/components/landing/LandingTrustSignals';
+
 import { LandingCTA } from '@/components/landing/LandingCTA';
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 
@@ -26,7 +26,7 @@ export default function Landing() {
       </section>
       <LandingCategories />
       
-      <LandingTrustSignals />
+      
       <LandingCTA />
     </MainLayout>
   );
