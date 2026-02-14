@@ -10,14 +10,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
-import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
 import { useCurrency } from '@/hooks/useCurrency';
 
-import { NewArrivalsCard } from '@/components/marketplace/NewArrivalsCard';
-import { CategoriesGridCard } from '@/components/marketplace/CategoriesGridCard';
 import { BecomeSellerCard } from '@/components/marketplace/BecomeSellerCard';
-import { HowItWorksCard } from '@/components/marketplace/HowItWorksCard';
 import { TopStoresSection } from '@/components/marketplace/TopStoresSection';
+import { MarketplaceBrowseToggle } from '@/components/marketplace/MarketplaceBrowseToggle';
+import { RecentReleasesCarousel } from '@/components/marketplace/RecentReleasesCarousel';
+import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Crown } from 'lucide-react';
 
 interface StoreData {
   id: string;
@@ -48,7 +49,6 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
   return (
     <Link to={`/store/${store.slug}`}>
       <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden h-full border-border/50 hover:border-primary/30">
-        {/* Banner */}
         <div 
           className="h-20 relative overflow-hidden"
           style={{ 
@@ -58,7 +58,6 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-          {/* Testing Badge */}
           {showTestingBadge && store.is_testing && (
             <div className="absolute top-2 right-2">
               <Badge className="bg-orange-500/90 text-white border-0 text-[10px] gap-1">
@@ -70,7 +69,6 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
         </div>
         
         <CardContent className="pt-0 -mt-8 relative">
-          {/* Logo */}
           <div className="flex items-start gap-3 mb-3">
             {store.logo_url ? (
               <img 
@@ -110,14 +108,12 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
             </div>
           </div>
           
-          {/* Description */}
           {store.description && (
             <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
               {store.description}
             </p>
           )}
           
-          {/* Footer */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
@@ -150,11 +146,67 @@ function StoreCardSkeleton() {
   );
 }
 
+function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+  const { formatPrice } = useCurrency();
+  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
+
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
+  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
+  const hasMemberDiscount = isEligible && memberPrice < product.price;
+
+  return (
+    <Link to={`/products/${product.slug}`} className="group block h-full">
+      <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
+        <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+          {product.images?.[0] ? (
+            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <span className="text-muted-foreground text-sm">No image</span>
+            </div>
+          )}
+          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+            <div className="flex items-center gap-1">
+              {product.stores?.logo_url && (
+                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10" />
+              )}
+              <span className="text-white text-[11px] font-medium truncate">{product.stores?.name}</span>
+              {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+              {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+            </div>
+          </div>
+        </div>
+        <div className="p-3">
+          <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
+            {product.name}
+          </h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            {hasMemberDiscount ? (
+              <>
+                <span className="text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
+                <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
+                  <Crown className="h-2.5 w-2.5" />
+                  {discountPercent}%
+                </span>
+              </>
+            ) : (
+              <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function Marketplace() {
   const navigate = useNavigate();
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [browseMode, setBrowseMode] = useState<'stores' | 'products'>('stores');
   const { formatPrice } = useCurrency();
 
   // Debounce search query
@@ -165,7 +217,7 @@ export default function Marketplace() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
   
-  // Fetch all approved stores (filter testing stores for non-admins)
+  // Fetch all approved stores
   const { data: stores, isLoading: storesLoading } = useQuery({
     queryKey: ['marketplace-stores', isAdmin],
     queryFn: async () => {
@@ -178,7 +230,6 @@ export default function Marketplace() {
         .order('is_verified', { ascending: false })
         .order('follower_count', { ascending: false });
       
-      // Non-admins can't see testing stores
       if (!isAdmin) {
         query = query.eq('is_testing', false);
       }
@@ -190,7 +241,14 @@ export default function Marketplace() {
     enabled: hasAccess,
   });
 
-  // Search products when query is present - only marketplace products (with store_id)
+  // Featured products for products mode
+  const { data: featuredProducts, isLoading: productsLoading } = useFeaturedProducts({
+    limit: 12,
+    maxPerStore: 2,
+    queryKey: 'marketplace-products',
+  });
+
+  // Search products
   const { data: searchProducts, isLoading: searchProductsLoading } = useQuery({
     queryKey: ['marketplace-search-products', debouncedQuery],
     queryFn: async () => {
@@ -201,7 +259,7 @@ export default function Marketplace() {
         .select('id, name, slug, price, images, stores!inner (name, slug, is_active)')
         .eq('is_active', true)
         .eq('stores.is_active', true)
-        .not('store_id', 'is', null) // Only marketplace products
+        .not('store_id', 'is', null)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .ilike('name', `%${debouncedQuery}%`)
         .limit(10);
@@ -212,11 +270,10 @@ export default function Marketplace() {
     enabled: hasAccess && debouncedQuery.length >= 2,
   });
 
-  // Filter stores based on search query
+  // Filter stores based on search
   const filteredStores = useMemo(() => {
     if (!stores) return [];
     if (!debouncedQuery.trim()) return stores;
-    
     const query = debouncedQuery.toLowerCase();
     return stores.filter(store => 
       store.name.toLowerCase().includes(query) ||
@@ -225,15 +282,13 @@ export default function Marketplace() {
   }, [stores, debouncedQuery]);
 
   const isSearching = debouncedQuery.length >= 2;
-  // Only redirect if marketplace is public but user lacks specific access
-  // When private, everyone can see the "Coming Soon" page
+
   useEffect(() => {
     if (!accessLoading && isMarketplacePublic && !hasAccess) {
       navigate('/', { replace: true });
     }
   }, [accessLoading, hasAccess, isMarketplacePublic, navigate]);
 
-  // Show nothing while checking access
   if (accessLoading) {
     return (
       <MainLayout>
@@ -246,44 +301,30 @@ export default function Marketplace() {
     );
   }
 
-  // Don't render if marketplace is public but no access (will redirect)
   if (!hasAccess && isMarketplacePublic) {
     return null;
   }
 
-  const isLoading = storesLoading;
-  
-  // Use filtered stores when searching, otherwise use all stores
   const storesList = isSearching ? filteredStores : (stores || []);
-  
-  // Top 3 stores are shown in TopStoresSection, exclude them from main grid to avoid duplication
   const topStoreIds = new Set((stores || []).slice(0, 3).map(s => s.id));
   const allStores = isSearching ? storesList : storesList.filter(s => !topStoreIds.has(s.id));
-  // For pagination: first 9 stores in main view, rest in "More Stores"
-  const mainStores = allStores.slice(0, 9);
-  const remainingStores = allStores.slice(9);
 
-  // Show seller application process if marketplace is not public (for non-admin users)
+  // Coming soon page for non-admin non-public
   if (!isMarketplacePublic && !isAdmin) {
     return (
       <MainLayout>
         <div className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
-          {/* Hero Section */}
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <Store className="h-4 w-4" />
               Eclipse Marketplace
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-              Coming Soon
-            </h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Coming Soon</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
               The Eclipse Marketplace is preparing for launch. Want to be one of our first sellers? 
               Apply now to set up your store and be ready when we go live!
             </p>
           </div>
-
-          {/* Seller Application Section */}
           <div className="max-w-2xl mx-auto">
             <BecomeSellerCard />
           </div>
@@ -302,18 +343,23 @@ export default function Marketplace() {
             Eclipse Marketplace
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-            Discover Amazing Stores
+            {browseMode === 'stores' ? 'Discover Amazing Stores' : 'Browse Products'}
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            Browse our curated collection of verified sellers offering premium digital assets, 
-            scripts, and resources for your projects.
+            {browseMode === 'stores'
+              ? 'Browse our curated collection of verified sellers offering premium digital assets, scripts, and resources for your projects.'
+              : 'Explore the latest products from top stores across the marketplace.'}
           </p>
         </div>
+
+        {/* Browse Mode Toggle */}
+        {!isSearching && (
+          <MarketplaceBrowseToggle mode={browseMode} onChange={setBrowseMode} />
+        )}
 
         {/* Search Results */}
         {isSearching && (
           <div className="space-y-6">
-            {/* Product Results */}
             {(searchProducts && searchProducts.length > 0) && (
               <section>
                 <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
@@ -322,19 +368,11 @@ export default function Marketplace() {
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {searchProducts.map((product) => (
-                    <Link
-                      key={product.id}
-                      to={`/product/${product.slug}`}
-                      className="group"
-                    >
+                    <Link key={product.id} to={`/product/${product.slug}`} className="group">
                       <Card className="overflow-hidden hover:shadow-md transition-all h-full">
                         <div className="aspect-square relative bg-muted">
                           {product.images?.[0] ? (
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            />
+                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -342,34 +380,17 @@ export default function Marketplace() {
                           )}
                         </div>
                         <CardContent className="p-3">
-                          <p className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                            {product.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {product.stores?.name}
-                          </p>
-                          <p className="text-sm font-semibold text-primary mt-1">
-                            {formatPrice(Number(product.price))}
-                          </p>
+                          <p className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.name}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{product.stores?.name}</p>
+                          <p className="text-sm font-semibold text-primary mt-1">{formatPrice(Number(product.price))}</p>
                         </CardContent>
                       </Card>
                     </Link>
                   ))}
                 </div>
-                {searchProducts.length >= 6 && (
-                  <div className="text-center mt-3">
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={`/products?search=${encodeURIComponent(debouncedQuery)}`}>
-                        View all product results
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                    </Button>
-                  </div>
-                )}
               </section>
             )}
 
-            {/* Store Results Header */}
             {filteredStores.length > 0 && (
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Store className="h-5 w-5 text-primary" />
@@ -377,93 +398,94 @@ export default function Marketplace() {
               </h2>
             )}
 
-            {/* No Results */}
             {filteredStores.length === 0 && (!searchProducts || searchProducts.length === 0) && !searchProductsLoading && (
               <div className="text-center py-12">
                 <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-muted-foreground">No stores or products found for "{debouncedQuery}"</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">
-                  Try a different search term
-                </p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Try a different search term</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Top Stores - Show at top when not searching */}
-        {!isSearching && (
-          <section>
+        {/* === STORES MODE === */}
+        {!isSearching && browseMode === 'stores' && (
+          <>
             <TopStoresSection />
-          </section>
-        )}
 
-        {/* Featured Products - Show when not searching */}
-        {!isSearching && (
-          <section>
-            <FeaturedProductsCard />
-          </section>
-        )}
-
-        {/* New Arrivals & Categories Cards - Hide when searching */}
-        {!isSearching && (
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <NewArrivalsCard />
-            <CategoriesGridCard />
-          </section>
-        )}
-
-        {/* Seller Promotion Cards */}
-        {!isSearching && (
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <BecomeSellerCard />
-            <HowItWorksCard />
-          </section>
-        )}
-
-        {/* Grid of all stores - equal treatment */}
-        <section>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {isLoading ? (
-              Array.from({ length: 9 }).map((_, i) => (
-                <StoreCardSkeleton key={i} />
-              ))
-            ) : mainStores.length > 0 ? (
-              mainStores.map((store) => (
-                <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
-              ))
-            ) : !isSearching && allStores.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">No stores available yet.</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">
-                  Check back soon for amazing sellers!
-                </p>
+            <section>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {storesLoading ? (
+                  Array.from({ length: 9 }).map((_, i) => (
+                    <StoreCardSkeleton key={i} />
+                  ))
+                ) : allStores.length > 0 ? (
+                  allStores.map((store) => (
+                    <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">No stores available yet.</p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for amazing sellers!</p>
+                  </div>
+                )}
               </div>
-            ) : null}
-          </div>
-        </section>
+            </section>
+          </>
+        )}
 
-        {/* Remaining stores */}
-        {remainingStores.length > 0 && (
+        {/* === PRODUCTS MODE === */}
+        {!isSearching && browseMode === 'products' && (
+          <>
+            <RecentReleasesCarousel />
+
+            <section>
+              <h2 className="text-lg font-semibold mb-3">Featured Products</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {productsLoading ? (
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="rounded-lg border border-border overflow-hidden">
+                      <Skeleton className="aspect-[4/3]" />
+                      <div className="p-3 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-1/3" />
+                      </div>
+                    </div>
+                  ))
+                ) : featuredProducts?.length ? (
+                  featuredProducts.map((product) => (
+                    <MarketplaceProductCard key={product.id} product={product} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12 text-muted-foreground">
+                    No products available yet.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <div className="text-center pt-4">
+              <Button asChild variant="outline" size="lg">
+                <Link to="/products">
+                  View All Products
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </>
+        )}
+
+        {/* Search results store grid */}
+        {isSearching && filteredStores.length > 0 && (
           <section>
-            <h2 className="text-xl font-semibold mb-4">More Stores</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {remainingStores.map((store) => (
+              {filteredStores.map((store) => (
                 <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))}
             </div>
           </section>
         )}
-
-        {/* View All Products CTA */}
-        <div className="text-center pt-4">
-          <Button asChild variant="outline" size="lg">
-            <Link to="/products">
-              View All Products
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </Button>
-        </div>
       </div>
     </MainLayout>
   );
