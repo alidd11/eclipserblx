@@ -129,11 +129,12 @@ export function PWALandingHero() {
           </div>
 
           <div className="w-full px-0 space-y-6 pb-6">
+            <PWAFeaturedStores />
+            
             {/* Recent Releases - 2 cards rotating every 3s */}
             <PWARecentReleases />
             
             <ActiveOffersCard />
-            <PWAFeaturedStores />
             
             {/* Featured Products grid */}
             <div>
