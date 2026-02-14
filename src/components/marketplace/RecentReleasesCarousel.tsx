@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ShieldCheck, Award } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShieldCheck, Award, Star, Tag } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
@@ -14,17 +15,23 @@ interface RecentProduct {
   price: number;
   images: string[] | null;
   created_at: string;
+  category_id: string | null;
+  is_resellable: boolean;
+  average_rating: number | null;
+  categories: { name: string; slug: string } | null;
   stores: {
     name: string;
     slug: string;
     logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
+    eclipse_plus_discount_enabled: boolean;
   } | null;
 }
 
 export function RecentReleasesCarousel() {
   const { formatPrice } = useCurrency();
+  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -36,8 +43,9 @@ export function RecentReleasesCarousel() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, created_at,
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
+          id, name, slug, price, images, created_at, category_id, is_resellable, average_rating,
+          categories (name, slug),
+          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)
@@ -80,11 +88,14 @@ export function RecentReleasesCarousel() {
       <section>
         <h2 className="text-lg font-semibold mb-3">Recent Releases</h2>
         <div className="flex gap-3 overflow-hidden">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-44">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-[280px] sm:w-[300px]">
               <Skeleton className="aspect-[4/3] rounded-lg" />
-              <Skeleton className="h-4 w-3/4 mt-2" />
-              <Skeleton className="h-3 w-1/2 mt-1" />
+              <div className="mt-2 space-y-1.5">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/3" />
+              </div>
             </div>
           ))}
         </div>
@@ -122,57 +133,87 @@ export function RecentReleasesCarousel() {
 
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto scrollbar-hide pb-1"
+        className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {products.map((product) => (
-          <Link
-            key={product.id}
-            to={`/products/${product.slug}`}
-            className="flex-shrink-0 w-44 group"
-          >
-            <div className="overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
-              <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                {product.images?.[0] ? (
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                    No image
-                  </div>
-                )}
-                {/* Store overlay */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
-                  <div className="flex items-center gap-1">
-                    {product.stores?.logo_url && (
-                      <img
-                        src={product.stores.logo_url}
-                        alt=""
-                        className="h-3.5 w-3.5 rounded object-contain bg-white/10"
-                      />
-                    )}
-                    <span className="text-white text-[10px] font-medium truncate">
-                      {product.stores?.name}
-                    </span>
-                    {product.stores?.is_verified && <ShieldCheck className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" />}
-                    {product.stores?.is_trusted && <Award className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" />}
+        {products.map((product) => {
+          const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+          const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
+          const hasMemberDiscount = isEligible && memberPrice < product.price;
+
+          return (
+            <Link
+              key={product.id}
+              to={`/products/${product.slug}`}
+              className="flex-shrink-0 w-[280px] sm:w-[300px] group snap-start"
+            >
+              <div className="overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                {/* Large image area like ClearlyDev */}
+                <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+                  {product.images?.[0] ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                      No image
+                    </div>
+                  )}
+                  {/* Store overlay at bottom */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-8">
+                    <div className="flex items-center gap-1.5">
+                      {product.stores?.logo_url && (
+                        <img
+                          src={product.stores.logo_url}
+                          alt=""
+                          className="h-5 w-5 rounded object-contain bg-white/10"
+                        />
+                      )}
+                      <span className="text-white text-xs font-medium truncate">
+                        {product.stores?.name}
+                      </span>
+                      {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+                      {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+                    </div>
                   </div>
                 </div>
+                {/* Content area */}
+                <div className="p-3">
+                  {/* Category + Rating row */}
+                  <div className="flex items-center justify-between mb-1.5">
+                    {product.categories?.name ? (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Tag className="h-2.5 w-2.5" />
+                        {product.categories.name}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    {typeof product.average_rating === 'number' && product.average_rating > 0 && (
+                      <span className="flex items-center gap-0.5 text-muted-foreground">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        <span className="text-[10px] font-medium">{product.average_rating.toFixed(1)}</span>
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
+                    {product.name}
+                  </h3>
+                  {hasMemberDiscount ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
+                      <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
+                  )}
+                </div>
               </div>
-              <div className="p-2">
-                <h3 className="text-xs font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                  {product.name}
-                </h3>
-                <span className="text-xs font-bold text-foreground mt-0.5 block">
-                  {formatPrice(product.price)}
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
