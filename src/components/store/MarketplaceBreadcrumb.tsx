@@ -31,7 +31,7 @@ export function MarketplaceBreadcrumb({
           Eclipse
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <Link to="/marketplace" className="hover:text-foreground transition-colors">
+        <Link to="/" className="hover:text-foreground transition-colors">
           Stores
         </Link>
         <ChevronRight className="h-3 w-3" />
@@ -78,7 +78,7 @@ export function MarketplaceBreadcrumb({
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link 
-                to="/marketplace" 
+                to="/" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Stores

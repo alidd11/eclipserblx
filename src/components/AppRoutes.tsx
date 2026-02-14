@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load Global Guard router for /guard path
@@ -41,7 +41,7 @@ const BotInstallation = lazy(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazy(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazy(() => import("@/pages/NotificationPreferences"));
 const EclipsePlus = lazy(() => import("@/pages/EclipsePlus"));
-const Marketplace = lazy(() => import("@/pages/Marketplace"));
+
 const LiveChat = lazy(() => import("@/pages/LiveChat"));
 const Affiliate = lazy(() => import("@/pages/Affiliate"));
 const Messages = lazy(() => import("@/pages/Messages"));
@@ -233,7 +233,7 @@ export function AppRoutes() {
         <Route path="/bot-dashboard" element={<BotDashboard />} />
         <Route path="/notifications" element={<NotificationPreferences />} />
         <Route path="/eclipse-plus" element={<EclipsePlus />} />
-        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/marketplace" element={<Navigate to="/" replace />} />
         <Route path="/affiliate" element={<Affiliate />} />
         <Route path="/recruiter" element={<Recruiter />} />
         <Route path="/advertise" element={<Advertise />} />
