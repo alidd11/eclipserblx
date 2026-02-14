@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
+import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 
 // ---------- Types ----------
 
@@ -225,6 +227,15 @@ function StoreSkeleton({ large }: { large?: boolean }) {
 // ---------- Page ----------
 
 export default function AllStores() {
+  return (
+    <SearchCommandProvider>
+      <AllStoresContent />
+    </SearchCommandProvider>
+  );
+}
+
+function AllStoresContent() {
+  const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const { data: stores, isLoading } = useAllStores();
   const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');
@@ -288,158 +299,161 @@ export default function AllStores() {
   }, [stores, search, sort]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Page header */}
-        <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            All Stores
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Discover creators and sellers across the marketplace
-          </p>
-        </div>
-
-        {/* Search + Sort bar */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search stores..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 bg-card border-border"
-            />
-            {search && (
-              <button 
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+    <SearchCommandProvider>
+      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
+          {/* Page header */}
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              All Stores
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Discover creators and sellers across the marketplace
+            </p>
           </div>
-          <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-            <SelectTrigger className="w-[160px] h-10 bg-card border-border">
-              <SlidersHorizontal className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="popular">Most Popular</SelectItem>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-              <SelectItem value="products">Most Products</SelectItem>
-              <SelectItem value="name">A-Z</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
-        {/* Category chips */}
-        {categories?.length ? (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={cn(
-                "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                !selectedCategory
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+          {/* Search + Sort bar */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search stores..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10 bg-card border-border"
+              />
+              {search && (
+                <button 
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               )}
-            >
-              All
-            </button>
-            {categories.map(cat => (
+            </div>
+            <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+              <SelectTrigger className="w-[160px] h-10 bg-card border-border">
+                <SlidersHorizontal className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="popular">Most Popular</SelectItem>
+                <SelectItem value="rating">Highest Rated</SelectItem>
+                <SelectItem value="products">Most Products</SelectItem>
+                <SelectItem value="name">A-Z</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Category chips */}
+          {categories?.length ? (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                  selectedCategory === cat.id
+                  !selectedCategory
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
                 )}
               >
-                {cat.name}
+                All
               </button>
-            ))}
-          </div>
-        ) : null}
-
-        {isLoading ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {Array.from({ length: 3 }).map((_, i) => <StoreSkeleton key={i} large />)}
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                  className={cn(
+                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                    selectedCategory === cat.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                  )}
+                >
+                  {cat.name}
+                </button>
+              ))}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {Array.from({ length: 8 }).map((_, i) => <StoreSkeleton key={i} />)}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {/* Hero Spotlight */}
-            {spotlightStores.length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <Star className="h-4 w-4 text-amber-400" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    Staff Picks
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {spotlightStores.map(store => (
-                    <SpotlightCard key={store.id} store={store} />
-                  ))}
-                </div>
-              </section>
-            )}
+          ) : null}
 
-            {/* Trending / Rising */}
-            {trendingStores.length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    Trending Stores
-                  </h2>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {trendingStores.map(store => (
-                    <StoreCard key={store.id} store={store} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* All Stores Grid */}
-            {gridStores.length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    {search.trim() ? `Results for "${search}"` : 'All Stores'}
-                  </h2>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    {gridStores.length} store{gridStores.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {gridStores.map(store => (
-                    <StoreCard key={store.id} store={store} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Empty state */}
-            {!spotlightStores.length && !trendingStores.length && !gridStores.length && (
-              <div className="text-center py-16">
-                <p className="text-muted-foreground">No stores found</p>
+          {isLoading ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {Array.from({ length: 3 }).map((_, i) => <StoreSkeleton key={i} large />)}
               </div>
-            )}
-          </div>
-        )}
-      </main>
-      <Footer />
-    </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {Array.from({ length: 8 }).map((_, i) => <StoreSkeleton key={i} />)}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Hero Spotlight */}
+              {spotlightStores.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="h-4 w-4 text-amber-400" />
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      Staff Picks
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {spotlightStores.map(store => (
+                      <SpotlightCard key={store.id} store={store} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Trending / Rising */}
+              {trendingStores.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      Trending Stores
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {trendingStores.map(store => (
+                      <StoreCard key={store.id} store={store} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* All Stores Grid */}
+              {gridStores.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      {search.trim() ? `Results for "${search}"` : 'All Stores'}
+                    </h2>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {gridStores.length} store{gridStores.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {gridStores.map(store => (
+                      <StoreCard key={store.id} store={store} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Empty state */}
+              {!spotlightStores.length && !trendingStores.length && !gridStores.length && (
+                <div className="text-center py-16">
+                  <p className="text-muted-foreground">No stores found</p>
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+        <Footer />
+      </div>
+    </SearchCommandProvider>
   );
 }
