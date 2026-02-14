@@ -5,6 +5,7 @@ import { HeroProductShowcase } from './HeroProductShowcase';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
+import { useSellerStatus } from '@/hooks/useSellerStatus';
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -19,6 +20,7 @@ const POPULAR_SEARCHES = [
 export function LandingHero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isSeller } = useSellerStatus();
 
   const handleSearchClick = (term: string) => {
     navigate(`/products?q=${encodeURIComponent(term)}`);
@@ -49,14 +51,16 @@ export function LandingHero() {
                   <span className="sm:hidden">Browse</span>
                 </Button>
               </Link>
-              <Link to="/products">
-                <Button size="sm" className="h-8 px-3 text-xs">
-                  <Store className="h-3.5 w-3.5 sm:mr-1.5" />
-                  <span className="hidden sm:inline">{t('landing.startSelling')}</span>
-                  <span className="sm:hidden">Sell</span>
-                  <ArrowRight className="ml-1 h-3 w-3" />
-                </Button>
-              </Link>
+              {!isSeller && (
+                <Link to="/products">
+                  <Button size="sm" className="h-8 px-3 text-xs">
+                    <Store className="h-3.5 w-3.5 sm:mr-1.5" />
+                    <span className="hidden sm:inline">{t('landing.startSelling')}</span>
+                    <span className="sm:hidden">Sell</span>
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              )}
               <Link to="/eclipse-plus">
                 <Button 
                   size="sm" 

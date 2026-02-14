@@ -15,6 +15,7 @@ import { MarketplaceBrowseToggle } from '@/components/marketplace/MarketplaceBro
 import { RecentReleasesCarousel } from '@/components/marketplace/RecentReleasesCarousel';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useSellerStatus } from '@/hooks/useSellerStatus';
 
 interface StoreData {
   id: string;
@@ -205,6 +206,7 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
 
 export function MarketplaceSection() {
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
+  const { isSeller } = useSellerStatus();
   const [browseMode, setBrowseMode] = useState<'stores' | 'products'>('stores');
   const { formatPrice } = useCurrency();
 
@@ -258,9 +260,11 @@ export function MarketplaceSection() {
             Apply now to set up your store and be ready when we go live!
           </p>
         </div>
-        <div className="max-w-2xl mx-auto">
-          <BecomeSellerCard />
-        </div>
+        {!isSeller && (
+          <div className="max-w-2xl mx-auto">
+            <BecomeSellerCard />
+          </div>
+        )}
       </section>
     );
   }
