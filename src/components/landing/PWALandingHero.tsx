@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
-import { ShieldCheck, Award, Crown, Tag, Star } from 'lucide-react';
+import { ShieldCheck, Award, Crown, Tag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function PWAProductCard({ product }: { product: any }) {
@@ -52,12 +52,6 @@ function PWAProductCard({ product }: { product: any }) {
               {product.categories.name}
             </span>
           ) : <span />}
-          {typeof product.average_rating === 'number' && product.average_rating > 0 && (
-            <span className="flex items-center gap-0.5 text-muted-foreground">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span className="text-[10px] font-medium">{product.average_rating.toFixed(1)}</span>
-            </span>
-          )}
         </div>
         <h4 className="font-medium text-sm text-foreground line-clamp-1 mb-1">{product.name}</h4>
         <div className="flex items-center gap-1.5 flex-wrap">
