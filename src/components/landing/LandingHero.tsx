@@ -46,7 +46,7 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 mb-5">
+            <div className="flex items-center gap-2 mb-3">
               <Link to="/products">
                 <Button size="sm" className="h-9 px-4 text-sm">
                   <Store className="mr-1.5 h-3.5 w-3.5" />
@@ -60,17 +60,18 @@ export function LandingHero() {
                   {t('landing.browseMarketplace')}
                 </Button>
               </Link>
-              <Link to="/eclipse-plus">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-9 px-4 text-sm text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
-                >
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                  Eclipse+
-                </Button>
-              </Link>
             </div>
+
+            <Link to="/eclipse-plus" className="inline-flex mb-5">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="h-8 px-3 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
+              >
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                Eclipse+
+              </Button>
+            </Link>
 
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-[11px] text-muted-foreground flex items-center gap-1">
