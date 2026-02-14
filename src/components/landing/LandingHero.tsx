@@ -22,7 +22,7 @@ export function LandingHero() {
   const { t } = useTranslation();
 
   const handleSearchClick = (term: string) => {
-    navigate(`/marketplace?q=${encodeURIComponent(term)}`);
+    navigate(`/products?q=${encodeURIComponent(term)}`);
   };
 
   return (
@@ -47,14 +47,14 @@ export function LandingHero() {
             </p>
 
             <div className="flex flex-wrap items-center gap-2 mb-5">
-              <Link to="/marketplace">
+              <Link to="/products">
                 <Button size="sm" className="h-9 px-4 text-sm">
                   <Store className="mr-1.5 h-3.5 w-3.5" />
                   {t('landing.startSelling')}
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Button>
               </Link>
-              <Link to="/marketplace">
+              <Link to="/products">
                 <Button size="sm" variant="outline" className="h-9 px-4 text-sm">
                   <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
                   {t('landing.browseMarketplace')}

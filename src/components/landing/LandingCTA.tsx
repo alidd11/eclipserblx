@@ -26,14 +26,14 @@ export function LandingCTA() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/marketplace">
+            <Link to="/seller">
               <Button size="lg" className="text-lg px-8 py-6 h-auto w-full sm:w-auto">
                 <Store className="mr-2 h-5 w-5" />
                 {t('landing.openYourStore')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/marketplace">
+            <Link to="/products">
               <Button size="lg" variant="outline" className="text-lg px-8 py-6 h-auto w-full sm:w-auto">
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 {t('landing.exploreProducts')}

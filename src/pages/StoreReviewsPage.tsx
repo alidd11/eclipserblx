@@ -178,7 +178,7 @@ export default function StoreReviewsPage() {
             The store you're looking for doesn't exist.
           </p>
           <Button asChild>
-            <Link to="/marketplace">
+            <Link to="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Marketplace
             </Link>

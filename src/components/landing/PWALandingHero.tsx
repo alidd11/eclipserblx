@@ -30,7 +30,7 @@ export function PWALandingHero() {
           </p>
 
           <div className="w-full max-w-sm space-y-3 mb-8">
-            <Link to="/marketplace" className="block">
+            <Link to="/products" className="block">
               <Button size="lg" className="w-full h-14 text-lg font-semibold rounded-full">
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 {t('landing.shop')}

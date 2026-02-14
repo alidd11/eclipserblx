@@ -117,7 +117,7 @@ export function StoreSidebar({
       title: 'Quick Access',
       icon: Home,
       items: [
-        { title: 'Back to Marketplace', icon: ChevronLeft, href: '/marketplace' },
+        { title: 'Back to Marketplace', icon: ChevronLeft, href: '/' },
         { title: 'Store Home', icon: Home, href: `/store/${storeSlug}` },
         { title: 'About', icon: Info, href: `/store/${storeSlug}/about` },
       ],

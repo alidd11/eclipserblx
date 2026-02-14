@@ -167,7 +167,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        { title: t('sidebar.marketplace'), icon: Store, href: '/marketplace' },
+        { title: t('sidebar.marketplace'), icon: Store, href: '/' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
       ],
     },

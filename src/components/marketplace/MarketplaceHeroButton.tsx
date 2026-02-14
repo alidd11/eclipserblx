@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 export function MarketplaceHeroButton() {
   return (
-    <Link to="/marketplace">
+    <Link to="/">
       <Button
         size="lg"
         variant="outline"
