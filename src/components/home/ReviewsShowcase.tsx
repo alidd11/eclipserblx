@@ -113,13 +113,13 @@ export function ReviewsShowcase() {
 
   if (isLoading) {
     return (
-      <section className="py-16 sm:py-20">
+      <section className="py-6 sm:py-8">
         <div className="px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-12">
-            <Skeleton className="h-8 w-64 mx-auto mb-4" />
-            <Skeleton className="h-5 w-96 mx-auto" />
+          <div className="mb-4">
+            <Skeleton className="h-5 w-48 mb-2" />
+            <Skeleton className="h-4 w-72" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-48 rounded-xl" />
             ))}
@@ -134,22 +134,16 @@ export function ReviewsShowcase() {
   }
 
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-6 sm:py-8">
       <div className="px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10 sm:mb-12"
-        >
-          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">
             What Our Customers Say
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground mt-1">
             See why creators trust Eclipse for their Roblox development needs
           </p>
-        </motion.div>
+        </div>
 
         <div className="max-w-5xl mx-auto">
         <Carousel

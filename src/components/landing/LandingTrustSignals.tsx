@@ -66,24 +66,18 @@ export function LandingTrustSignals() {
   ];
 
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-6 sm:py-8">
       <div className="px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10 sm:mb-12"
-        >
-          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">
             {t('landing.whyChoose')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground mt-1">
             {t('landing.whyChooseDesc')}
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {trustSignals.map((signal, index) => (
             <motion.div
               key={signal.titleKey}
@@ -93,22 +87,22 @@ export function LandingTrustSignals() {
               transition={{ duration: 0.4, delay: index * 0.05 }}
               className="group"
             >
-              <div className="h-full rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-colors">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <signal.icon className="h-6 w-6 text-primary" />
+              <div className="h-full rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
+                    <signal.icon className="h-4 w-4 text-primary" />
                   </div>
                   {signal.highlight && (
-                    <span className="px-2 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-semibold">
+                    <span className="px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-semibold">
                       {signal.highlight}
                     </span>
                   )}
                 </div>
 
-                <h3 className="font-semibold text-foreground mb-2">
+                <h3 className="text-sm font-semibold text-foreground mb-1">
                   {t(signal.titleKey)}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {t(signal.descKey)}
                 </p>
               </div>
