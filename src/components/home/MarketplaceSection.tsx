@@ -131,7 +131,7 @@ function StoreCardSkeleton() {
   );
 }
 
-function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
@@ -151,18 +151,32 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
               <span className="text-muted-foreground text-sm">No image</span>
             </div>
           )}
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-            <div className="flex items-center gap-1">
+          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-8">
+            <div className="flex items-center gap-1.5">
               {product.stores?.logo_url && (
-                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10" />
+                <img src={product.stores.logo_url} alt="" className="h-5 w-5 rounded object-contain bg-white/10" />
               )}
-              <span className="text-white text-[11px] font-medium truncate">{product.stores?.name}</span>
+              <span className="text-white text-xs font-medium truncate">{product.stores?.name}</span>
               {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
               {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
             </div>
           </div>
         </div>
         <div className="p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            {product.categories?.name ? (
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Package className="h-2.5 w-2.5" />
+                {product.categories.name}
+              </span>
+            ) : <span />}
+            {typeof product.average_rating === 'number' && product.average_rating > 0 && (
+              <span className="flex items-center gap-0.5 text-muted-foreground">
+                <span className="text-amber-400">★</span>
+                <span className="text-[10px] font-medium">{product.average_rating.toFixed(1)}</span>
+              </span>
+            )}
+          </div>
           <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
             {product.name}
           </h3>
