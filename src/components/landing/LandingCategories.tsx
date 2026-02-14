@@ -1,12 +1,10 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, ArrowRight, ChevronRight, Package, Map, Shirt, Plane } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, ArrowRight, Package, Map, Shirt, Plane } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useCategoryTranslations } from '@/hooks/useCategoryTranslations';
-import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, typeof Car> = {
   'Car': Car,
@@ -24,179 +22,83 @@ const iconMap: Record<string, typeof Car> = {
   'Sparkles': Palette,
 };
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-  parent_id: string | null;
-  display_order: number | null;
-}
+const MAX_CATEGORIES = 6;
 
 export function LandingCategories() {
   const { t } = useTranslation();
   const { getTranslatedName, getTranslatedDescription } = useCategoryTranslations();
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  const { data: allCategories } = useQuery({
-    queryKey: ['landing-categories-with-children'],
+  const { data: parentCategories } = useQuery({
+    queryKey: ['landing-top-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, slug, description, icon, parent_id, display_order')
-        .order('display_order', { ascending: true });
+        .is('parent_id', null)
+        .order('display_order', { ascending: true })
+        .limit(MAX_CATEGORIES);
 
       if (error) throw error;
-      return data as Category[];
+      return data;
     },
     staleTime: 10 * 60 * 1000,
   });
 
-  const parentCategories = allCategories?.filter(c => !c.parent_id) || [];
-  const getChildren = (parentId: string) =>
-    allCategories?.filter(c => c.parent_id === parentId).sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)) || [];
-
-  if (!parentCategories.length) return null;
+  if (!parentCategories?.length) return null;
 
   return (
     <section className="py-6 sm:py-8">
       <div className="px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">
-            {t('landing.browseByCategory')}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('landing.browseByCategoryDesc')}
-          </p>
-        </div>
-
-        {/* Category List */}
-        <div className="max-w-3xl mx-auto space-y-1">
-          {parentCategories.map((category, index) => {
-            const children = getChildren(category.id);
-            const hasChildren = children.length > 0;
-            const isExpanded = expandedCategory === category.id;
-            const IconComponent = iconMap[category.icon || ''] || Package;
-
-            return (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: index * 0.03 }}
-              >
-                {/* Parent Category Row */}
-                {hasChildren ? (
-                  <button
-                    onClick={() => setExpandedCategory(isExpanded ? null : category.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left",
-                      "hover:bg-muted/60",
-                      isExpanded && "bg-muted/40"
-                    )}
-                  >
-                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <IconComponent className="h-4.5 w-4.5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-medium text-foreground">
-                        {getTranslatedName(category.id, category.name)}
-                      </span>
-                      {category.description && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {getTranslatedDescription(category.id, category.description)}
-                        </p>
-                      )}
-                    </div>
-                    <ChevronRight className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0",
-                      isExpanded && "rotate-90"
-                    )} />
-                  </button>
-                ) : (
-                  <Link
-                    to={`/products?category=${category.slug}`}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-muted/60 group"
-                  >
-                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <IconComponent className="h-4.5 w-4.5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-medium text-foreground group-hover:text-primary transition-colors">
-                        {getTranslatedName(category.id, category.name)}
-                      </span>
-                      {category.description && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {getTranslatedDescription(category.id, category.description)}
-                        </p>
-                      )}
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </Link>
-                )}
-
-                {/* Sub-categories */}
-                <AnimatePresence>
-                  {hasChildren && isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pl-8 pr-2 pb-1 space-y-0.5">
-                        {/* View All for this category */}
-                        <Link
-                          to={`/products?category=${category.slug}`}
-                          className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm hover:bg-muted/40 transition-colors group"
-                        >
-                          <div className="h-7 w-7 rounded-md bg-primary/5 flex items-center justify-center shrink-0">
-                            <Package className="h-3.5 w-3.5 text-primary" />
-                          </div>
-                          <span className="text-muted-foreground group-hover:text-primary transition-colors font-medium">
-                            View All {getTranslatedName(category.id, category.name)}
-                          </span>
-                        </Link>
-
-                        {children.map((child) => {
-                          const ChildIcon = iconMap[child.icon || ''] || Package;
-                          return (
-                            <Link
-                              key={child.id}
-                              to={`/products?category=${child.slug}`}
-                              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm hover:bg-muted/40 transition-colors group"
-                            >
-                              <div className="h-7 w-7 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
-                                <ChildIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                              </div>
-                              <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                                {getTranslatedName(child.id, child.name)}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* View All */}
-        <div className="text-center mt-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">
+              {t('landing.browseByCategory')}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {t('landing.browseByCategoryDesc')}
+            </p>
+          </div>
           <Link
-            to="/products"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+            to="/categories"
+            className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium transition-colors shrink-0"
           >
             {t('landing.viewAllCategories')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {parentCategories.map((category, index) => {
+            const IconComponent = iconMap[category.icon || ''] || Package;
+            return (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.25, delay: index * 0.04 }}
+              >
+                <Link
+                  to={`/products?category=${category.slug}`}
+                  className="group flex items-center gap-3 px-3.5 py-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-transparent hover:border-primary/20 transition-all"
+                >
+                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <IconComponent className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors block truncate">
+                      {getTranslatedName(category.id, category.name)}
+                    </span>
+                    {category.description && (
+                      <span className="text-xs text-muted-foreground truncate block mt-0.5">
+                        {getTranslatedDescription(category.id, category.description)}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
