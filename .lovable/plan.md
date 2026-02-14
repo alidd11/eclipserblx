@@ -1,62 +1,59 @@
 
 
-# Merge Marketplace into the Home Page
+## Redesign Categories Page with Expandable Sub-Categories
 
-Remove the separate `/marketplace` page and bring its content (browse toggle, store grid, product grid, recent releases) directly into the home page beneath the existing landing hero.
+Replace the current two-page flow (Categories grid -> separate Region Select page) with a single-page accordion-style layout where parent categories expand inline to reveal their sub-categories (UK/US/EU regions).
 
----
+### What Changes
 
-## What Changes
+**1. Redesign `/categories` page with accordion pattern**
+- Parent categories that have sub-categories (Civilian Vehicles, Marked Police, etc.) will be expandable rows
+- Clicking them expands to show sub-category options (UK, US, EU) inline with flag images
+- Parent categories without sub-categories (Maps, Bundle Deals, Bots, Buildings) link directly to products as they do now
+- Each row shows the category image/icon, name, and total product count
+- Expanded state shows sub-categories in a horizontal row with flag images and per-region counts
 
-### 1. Combine Landing + Marketplace on `/`
-The home page will show:
-1. **Landing Hero** (kept as-is -- headline, CTAs, popular searches, active offers)
-2. **Promotion Carousel** (kept as-is)
-3. **Browse Toggle** (Stores / Products) -- moved from Marketplace
-4. **Stores mode**: Top Stores + store grid
-5. **Products mode**: Recent Releases carousel + Featured Products grid
-6. **Landing Categories, Reviews, Trust Signals, CTA** -- kept below
+**2. Remove the Region Select page and route**
+- Delete `src/pages/RegionSelect.tsx`
+- Remove the `/browse/:categorySlug/region` route from `AppRoutes.tsx`
+- All region selection now happens inline on the categories page
 
-### 2. Remove `/marketplace` Route
-- Remove the `/marketplace` route from `AppRoutes.tsx`
-- Add a redirect: `/marketplace` -> `/` so any existing links/bookmarks still work
-- Remove the lazy import for Marketplace
+**3. Update data fetching**
+- Fetch both parent categories and their sub-categories in a single query on the categories page
+- Include product counts for each sub-category
+- Group sub-categories under their parent for rendering
 
-### 3. Update All `/marketplace` Links to `/`
-Update links in these files:
-- `MarketplaceHeroButton.tsx` -> `/`
-- `LandingHero.tsx` -> `/`
-- `LandingCTA.tsx` -> `/`
-- `PWALandingHero.tsx` -> `/`
-- `MarketplaceBreadcrumb.tsx` -> `/`
-- `StoreSidebar.tsx` -> `/`
-- `CustomerSidebar.tsx` -> `/`
-- Discord bot URL stays as external link (will redirect)
+### Visual Layout
 
----
+```text
++------------------------------------------+
+|             CATEGORIES                    |
++------------------------------------------+
+| [Civilian Vehicles]  [img]    12 items  v |
+|   +-- UK Civilian [flag]  5 items        |
+|   +-- US Civilian [flag]  4 items        |
+|   +-- EU Civilian [flag]  3 items        |
+|                                           |
+| [Marked Police]      [img]     8 items  > |
+| [Maps]               [img]     3 items  > |
+| [Bots]               [img]     2 items  > |
++------------------------------------------+
+```
 
-## Technical Details
+Categories without sub-categories navigate directly. Categories with sub-categories use the Radix accordion to expand/collapse.
 
-### Files Modified
+### Technical Details
 
-- **`src/pages/Landing.tsx`** -- Import and render the marketplace components (browse toggle, store/product grids, search, top stores, recent releases) between the PromotionCarousel and LandingCategories sections. Move the relevant logic (store queries, browse mode state, search) into this page or extract into a new `MarketplaceSection` component.
+**Files to modify:**
+- `src/pages/Categories.tsx` -- Complete redesign to use accordion layout with inline sub-categories. Fetch sub-categories alongside parents. Use existing region flag images from `src/assets/regions/`. Use the existing `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent` components from the UI library.
+- `src/components/AppRoutes.tsx` -- Remove the `/browse/:categorySlug/region` route and lazy import for `RegionSelect`.
 
-- **`src/components/AppRoutes.tsx`** -- Remove the Marketplace lazy import and route. Add `<Route path="/marketplace" element={<Navigate to="/" replace />} />` for backwards compatibility.
+**Files to delete:**
+- `src/pages/RegionSelect.tsx`
 
-- **`src/pages/Index.tsx`** -- No changes needed (already renders Landing).
-
-- **`src/components/marketplace/MarketplaceHeroButton.tsx`** -- Change link from `/marketplace` to `/`
-- **`src/components/landing/LandingHero.tsx`** -- Change `/marketplace` links to `/`
-- **`src/components/landing/LandingCTA.tsx`** -- Change `/marketplace` links to `/`
-- **`src/components/landing/PWALandingHero.tsx`** -- Change `/marketplace` link to `/`
-- **`src/components/store/MarketplaceBreadcrumb.tsx`** -- Change `/marketplace` links to `/`
-- **`src/components/store/StoreSidebar.tsx`** -- Change `/marketplace` link to `/`
-- **`src/components/layout/CustomerSidebar.tsx`** -- Change `/marketplace` href to `/`
-
-### New Component (optional, for cleanliness)
-- **`src/components/home/MarketplaceSection.tsx`** -- Extracts the store grid, product grid, browse toggle, search bar, and data fetching logic from `Marketplace.tsx` into a reusable section component that gets embedded in `Landing.tsx`. This keeps Landing.tsx clean rather than dumping 200+ lines of marketplace logic into it.
-
-### What Happens to `src/pages/Marketplace.tsx`
-- Kept in the codebase but no longer routed to directly
-- Its logic is either imported via the new `MarketplaceSection` component or inlined into Landing
+**Styling approach:**
+- Follows the existing utilitarian dark aesthetic (solid surfaces, no gradients/glow)
+- Uses existing category images as small thumbnails in each row
+- Sub-categories display region flag images from `src/assets/regions/` in a compact horizontal layout
+- Accordion animation uses existing Radix accordion components already in the project
 
