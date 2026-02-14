@@ -12,6 +12,22 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 // Categories that get a custom styled banner instead of product images
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
 
+// Static display order — keeps layout predictable for returning customers
+const CATEGORY_SORT_ORDER: Record<string, number> = {
+  'bundle-deals': 0,
+  'ambulance-vehicles': 1,
+  'marked-police-vehicles': 2,
+  'bots': 3,
+  'unmarked-police-vehicles': 4,
+  'civilian-vehicles': 5,
+  'buildings': 6,
+  'maps': 7,
+  'military-vehicles': 8,
+  'fire-vehicles': 9,
+  'aircraft': 10,
+  'uniforms': 11,
+};
+
 const categoryIcons: Record<string, React.ElementType> = {
   'civilian-vehicles': Car,
   'marked-police-vehicles': Shield,
@@ -112,6 +128,13 @@ function useCategoriesWithProducts(sourceFilter: string | null) {
           };
         })
       );
+
+      // Sort by static frontend order, not database display_order
+      results.sort((a, b) => {
+        const orderA = CATEGORY_SORT_ORDER[a.slug] ?? 99;
+        const orderB = CATEGORY_SORT_ORDER[b.slug] ?? 99;
+        return orderA - orderB;
+      });
 
       return results;
     },
