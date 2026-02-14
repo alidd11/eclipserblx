@@ -249,9 +249,9 @@ export function PWALandingHero() {
 
             {/* Featured Products — spotlight + grid */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground">{t('landing.featuredProducts')}</h3>
-                <Link to="/products" className="text-xs text-primary hover:underline">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('landing.featuredProducts')}</h3>
+                <Link to="/products" className="text-[10px] font-bold uppercase tracking-wider text-primary hover:underline">
                   {t('landing.viewAll')} →
                 </Link>
               </div>
