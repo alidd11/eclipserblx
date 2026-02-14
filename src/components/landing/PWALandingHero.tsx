@@ -94,24 +94,33 @@ export function PWALandingHero() {
       <div className="relative overflow-hidden">
         <HeroBanner />
         
-        <div className="relative z-10 flex flex-col px-4 py-6">
-          {/* Quick action buttons */}
-          <div className="flex gap-3 mb-6">
-            <Link to="/products" className="flex-1">
-              <Button size="lg" className="w-full h-12 text-base font-semibold">
+        <div className="relative z-10 flex flex-col items-center justify-center px-6 py-8">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-center leading-tight tracking-tight mb-3">
+            {t('landing.pwaHeadline')}{' '}
+            <span className="text-foreground">{t('landing.pwaHeadlineHighlight')}</span>
+          </h1>
+
+          <p className="text-muted-foreground text-center text-base max-w-md mb-6 leading-relaxed">
+            {t('landing.pwaDescription')}
+          </p>
+
+          <div className="w-full max-w-sm space-y-3 mb-8">
+            <Link to="/products" className="block">
+              <Button size="lg" className="w-full h-14 text-lg font-semibold rounded-full">
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 {t('landing.shop')}
               </Button>
             </Link>
-            <Link to="/seller" className="flex-1">
-              <Button size="lg" variant="outline" className="w-full h-12 text-base font-semibold">
+            
+            <Link to="/seller" className="block">
+              <Button size="lg" variant="outline" className="w-full h-14 text-lg font-semibold rounded-full">
                 <Store className="mr-2 h-5 w-5" />
                 {t('landing.openAStore')}
               </Button>
             </Link>
           </div>
 
-          <div className="space-y-6 pb-6">
+          <div className="w-full px-0 space-y-6 pb-6">
             {/* Recent Releases - horizontal carousel like ClearlyDev */}
             <RecentReleasesCarousel />
             
