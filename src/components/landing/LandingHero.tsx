@@ -46,25 +46,25 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 mb-5">
-              <Link to="/products">
-                <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
+            <div className="flex items-center gap-2 mb-5 overflow-x-auto [-webkit-overflow-scrolling:touch]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <Link to="/products" className="flex-shrink-0">
+                <Button size="sm" variant="outline" className="h-8 px-3 text-xs whitespace-nowrap">
                   <ShoppingBag className="mr-1 h-3 w-3" />
                   {t('landing.browseMarketplace')}
                 </Button>
               </Link>
-              <Link to="/products">
-                <Button size="sm" className="h-8 px-3 text-xs">
+              <Link to="/products" className="flex-shrink-0">
+                <Button size="sm" className="h-8 px-3 text-xs whitespace-nowrap">
                   <Store className="mr-1 h-3 w-3" />
                   {t('landing.startSelling')}
                   <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
-              <Link to="/eclipse-plus">
+              <Link to="/eclipse-plus" className="flex-shrink-0">
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="h-8 px-3 text-xs text-amber-500 border-amber-500/30 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
+                  className="h-8 px-3 text-xs whitespace-nowrap text-amber-500 border-amber-500/30 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
                 >
                   <Sparkles className="mr-1 h-3 w-3" />
                   Eclipse+
