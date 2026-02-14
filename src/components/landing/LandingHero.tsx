@@ -14,7 +14,6 @@ const POPULAR_SEARCHES = [
   'vehicles',
   'admin',
   'tools',
-  'free',
 ];
 
 export function LandingHero() {
