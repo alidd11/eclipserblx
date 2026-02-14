@@ -218,10 +218,10 @@ export function PWAFeaturedStores() {
   const listStores = stores?.slice(1, 7);
 
   return (
-    <div className="space-y-3">
+    <div className="rounded-lg border border-border bg-card p-3 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">{t('landing.featuredStores')}</h3>
-        <Link to="/stores" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('landing.featuredStores')}</h3>
+        <Link to="/stores" className="text-[10px] font-bold uppercase tracking-wider text-primary hover:underline flex items-center gap-0.5">
           {t('landing.viewAll')}
           <ChevronRight className="h-3 w-3" />
         </Link>
