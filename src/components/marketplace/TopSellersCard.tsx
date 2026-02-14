@@ -26,7 +26,7 @@ export function TopSellersCard() {
         .select('id, name, slug, logo_url, accent_color, is_verified')
         .eq('status', 'approved')
         .eq('is_active', true)
-        .order('follower_count', { ascending: false })
+        .order('follower_count', { ascending: true })
         .limit(5);
       
       if (error) throw error;

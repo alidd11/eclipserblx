@@ -41,11 +41,11 @@ function useAlgorithmicStores() {
       const scored = stores.map(store => ({
         ...store,
         score:
-          (store.is_trusted ? 100 : 0) +
-          (store.is_verified ? 50 : 0) +
-          (store.follower_count || 0) * 0.1 +
-          (store.average_rating || 0) * 10 +
-          Math.random() * 20
+          (store.is_trusted ? 10 : 50) +
+          (store.is_verified ? 5 : 30) +
+          Math.max(0, 100 - (store.follower_count || 0) * 0.5) +
+          (store.average_rating || 0) * 5 +
+          Math.random() * 40
       }));
       return scored.sort((a, b) => b.score - a.score).slice(0, 7);
     },
