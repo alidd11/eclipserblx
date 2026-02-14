@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import eclipseBanner from '@/assets/eclipse-banner.jpeg';
-import eclipseStoreLogo from '@/assets/eclipse-store-moon-logo.png';
+const ECLIPSE_BANNER = 'https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png';
+const ECLIPSE_LOGO = 'https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a/eclipse-moon-logo.png';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -405,7 +405,7 @@ export default function AdminDashboard() {
           {/* Banner area */}
           <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
             <img
-              src={eclipseBanner}
+              src={ECLIPSE_BANNER}
               alt=""
               className="absolute inset-0 w-full h-full object-cover opacity-40"
             />
@@ -416,7 +416,7 @@ export default function AdminDashboard() {
             {/* Avatar + Name row */}
             <div className="flex items-end gap-4 mb-4">
               <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
-                <AvatarImage src={eclipseStoreLogo} alt="Eclipse Store" />
+                <AvatarImage src={ECLIPSE_LOGO} alt="Eclipse Store" />
                 <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
               </Avatar>
 
