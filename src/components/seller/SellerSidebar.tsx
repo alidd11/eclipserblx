@@ -339,19 +339,30 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               </h1>
               <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Seller Dashboard</p>
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
-                  onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Sign Out</TooltipContent>
-            </Tooltip>
+            {isMobileDrawer ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
+                onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
+                    onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Sign Out</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         ) : (
           <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center gap-2">
