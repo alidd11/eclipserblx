@@ -78,22 +78,20 @@ export function LandingHero() {
             </div>
 
             {/* Popular Searches */}
-            <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
-              <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 mb-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                 <Search className="h-3 w-3" />
                 {t('landing.popular')}
               </span>
-              <div className="flex flex-wrap gap-1.5">
-                {POPULAR_SEARCHES.map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => handleSearchClick(term)}
-                    className="text-[11px] px-2.5 py-1 rounded-md bg-background/80 border border-border/50 hover:bg-accent hover:text-accent-foreground text-muted-foreground transition-colors"
-                  >
-                    {term}
-                  </button>
-                ))}
-              </div>
+              {POPULAR_SEARCHES.map((term) => (
+                <button
+                  key={term}
+                  onClick={() => handleSearchClick(term)}
+                  className="text-[11px] px-2 py-0.5 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {term}
+                </button>
+              ))}
             </div>
           </div>
 
