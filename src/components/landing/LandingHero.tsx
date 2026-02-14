@@ -46,17 +46,17 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 mb-5">
+            <div className="flex items-center gap-2 mb-5">
               <Link to="/products">
-                <Button size="sm" className="h-9 px-4 text-sm">
-                  <Store className="mr-1.5 h-3.5 w-3.5" />
+                <Button size="sm" className="h-8 px-3 text-xs">
+                  <Store className="mr-1 h-3 w-3" />
                   {t('landing.startSelling')}
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
               <Link to="/products">
-                <Button size="sm" variant="outline" className="h-9 px-4 text-sm">
-                  <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
+                <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
+                  <ShoppingBag className="mr-1 h-3 w-3" />
                   {t('landing.browseMarketplace')}
                 </Button>
               </Link>
@@ -64,9 +64,9 @@ export function LandingHero() {
                 <Button 
                   size="sm" 
                   variant="ghost" 
-                  className="h-9 px-4 text-sm text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
+                  className="h-8 px-3 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
                 >
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                  <Sparkles className="mr-1 h-3 w-3" />
                   Eclipse+
                 </Button>
               </Link>
