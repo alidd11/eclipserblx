@@ -64,7 +64,7 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
       style={accentBorder}
     >
       {/* Banner */}
-      <div className="relative h-32 overflow-hidden">
+      <div className="relative h-24 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
           style={{
@@ -88,18 +88,18 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
           )}
         </div>
         {/* Logo + name overlaid on banner */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-end gap-3">
-          <div className="w-12 h-12 rounded-lg bg-card border-2 border-card overflow-hidden shadow-md flex-shrink-0">
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+          <div className="w-10 h-10 rounded-lg bg-card border-2 border-card overflow-hidden shadow-md flex-shrink-0">
             {store.logo_url ? (
               <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-lg font-bold bg-muted text-muted-foreground">
+              <div className="w-full h-full flex items-center justify-center text-sm font-bold bg-muted text-muted-foreground">
                 {store.name.charAt(0)}
               </div>
             )}
           </div>
           <div className="min-w-0 pb-0.5">
-            <h3 className="font-semibold text-base text-white truncate">{store.name}</h3>
+            <h3 className="font-semibold text-sm text-white truncate">{store.name}</h3>
             {store.average_rating ? (
               <span className="text-xs text-white/70">
                 <span className="text-amber-400">★</span> {store.average_rating.toFixed(1)}
@@ -108,26 +108,22 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
           </div>
         </div>
       </div>
-      {/* Info */}
-      <div className="px-3 py-3">
-        {store.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-2.5">{store.description}</p>
-        )}
+      <div className="px-2.5 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {(store.follower_count ?? 0) > 0 && (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Users className="h-3 w-3" />{store.follower_count}
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Users className="h-2.5 w-2.5" />{store.follower_count}
               </span>
             )}
             {(store.product_count ?? 0) > 0 && (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Package className="h-3 w-3" />{store.product_count}
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Package className="h-2.5 w-2.5" />{store.product_count}
               </span>
             )}
           </div>
-          <span className="flex items-center text-xs text-primary font-medium group-hover:underline">
-            {t('landing.viewStore')}<ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          <span className="flex items-center text-[11px] text-primary font-medium group-hover:underline">
+            {t('landing.viewStore')}<ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
       </div>
@@ -141,40 +137,52 @@ function CompactStoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link
       to={`/store/${store.slug}`}
-      className="group flex items-center gap-2.5 rounded-lg border bg-card p-2.5 transition-colors hover:border-primary/30 active:scale-[0.98]"
+      className="group block rounded-lg overflow-hidden border bg-card transition-colors hover:border-primary/30 active:scale-[0.98]"
       style={accentBorder}
     >
-      {/* Logo */}
-      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-muted border border-border">
-        {store.logo_url ? (
-          <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted-foreground">
-            {store.name.charAt(0)}
+      {/* Mini banner */}
+      <div className="relative h-16 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{
+            backgroundImage: store.banner_url
+              ? `url(${store.banner_url})`
+              : 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted-foreground) / 0.2))'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+        {/* Badges */}
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+          {store.is_trusted && <Award className="h-3 w-3 text-amber-400" />}
+          {store.is_verified && !store.is_trusted && <ShieldCheck className="h-3 w-3 text-blue-400" />}
+        </div>
+        {/* Logo + name overlaid */}
+        <div className="absolute bottom-1.5 left-2 right-2 flex items-end gap-2">
+          <div className="w-7 h-7 rounded bg-card border border-card overflow-hidden shadow-sm flex-shrink-0">
+            {store.logo_url ? (
+              <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[10px] font-bold bg-muted text-muted-foreground">
+                {store.name.charAt(0)}
+              </div>
+            )}
           </div>
+          <h4 className="font-medium text-xs text-white truncate pb-0.5">{store.name}</h4>
+        </div>
+      </div>
+      {/* Stats */}
+      <div className="px-2 py-1.5 flex items-center gap-2">
+        {(store.follower_count ?? 0) > 0 && (
+          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+            <Users className="h-2.5 w-2.5" />{store.follower_count}
+          </span>
+        )}
+        {(store.product_count ?? 0) > 0 && (
+          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+            <Package className="h-2.5 w-2.5" />{store.product_count}
+          </span>
         )}
       </div>
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1">
-          <h4 className="font-medium text-sm text-foreground truncate">{store.name}</h4>
-          {store.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-          {store.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          {(store.follower_count ?? 0) > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <Users className="h-2.5 w-2.5" />{store.follower_count}
-            </span>
-          )}
-          {(store.product_count ?? 0) > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <Package className="h-2.5 w-2.5" />{store.product_count}
-            </span>
-          )}
-        </div>
-      </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
     </Link>
   );
 }
@@ -182,8 +190,8 @@ function CompactStoreCard({ store }: { store: FeaturedStore }) {
 function StoreSkeleton() {
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
-      <Skeleton className="h-32 rounded-none" />
-      <div className="px-3 py-3 space-y-2">
+      <Skeleton className="h-24 rounded-none" />
+      <div className="px-2.5 py-2 space-y-1.5">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-3 w-2/3" />
       </div>
@@ -193,10 +201,9 @@ function StoreSkeleton() {
 
 function CompactStoreSkeleton() {
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card p-2.5">
-      <Skeleton className="w-10 h-10 rounded-lg" />
-      <div className="flex-1 space-y-1.5">
-        <Skeleton className="h-4 w-24" />
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
+      <Skeleton className="h-16 rounded-none" />
+      <div className="px-2 py-1.5">
         <Skeleton className="h-3 w-16" />
       </div>
     </div>
@@ -223,18 +230,24 @@ export function PWAFeaturedStores() {
       {isLoading ? (
         <div className="space-y-2">
           <StoreSkeleton />
-          {Array.from({ length: 3 }).map((_, i) => (
-            <CompactStoreSkeleton key={i} />
-          ))}
+          <div className="grid grid-cols-2 gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <CompactStoreSkeleton key={i} />
+            ))}
+          </div>
         </div>
       ) : stores?.length ? (
         <div className="space-y-2">
-          {/* Spotlight: top store full-width with banner */}
+          {/* Spotlight: top store */}
           {spotlightStore && <SpotlightStoreCard store={spotlightStore} />}
-          {/* Compact list for remaining stores */}
-          {listStores?.map((store) => (
-            <CompactStoreCard key={store.id} store={store} />
-          ))}
+          {/* Grid for remaining stores */}
+          {listStores?.length ? (
+            <div className="grid grid-cols-2 gap-2">
+              {listStores.map((store) => (
+                <CompactStoreCard key={store.id} store={store} />
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-4">
