@@ -7,32 +7,9 @@ import { LandingCTA } from '@/components/landing/LandingCTA';
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 import { ReviewsShowcase } from '@/components/home/ReviewsShowcase';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
-import { PWALandingHero } from '@/components/landing/PWALandingHero';
-import { usePWAStandalone } from '@/hooks/usePWAStandalone';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
 
 export default function Landing() {
-  const { isStandalone, isLoading } = usePWAStandalone();
-
-  // Show nothing while detecting PWA mode to prevent flash
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="min-h-[50vh]" />
-      </MainLayout>
-    );
-  }
-
-  // PWA standalone mode: simplified hero-only layout
-  if (isStandalone) {
-    return (
-      <MainLayout>
-        <PWALandingHero />
-      </MainLayout>
-    );
-  }
-
-  // Browser mode: full landing page with marketplace
   return (
     <MainLayout>
       <OrganizationSchema />
