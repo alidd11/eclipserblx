@@ -518,7 +518,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         "bg-sidebar text-foreground flex flex-col transition-all duration-200 shrink-0",
         isMobileDrawer 
           ? "h-full w-full border-0 max-h-[100dvh]" 
-          : "h-screen sticky top-0 border-r border-border",
+          : "h-[100dvh] sticky top-0 border-r border-border",
         !isMobileDrawer && (isCollapsed ? "w-12" : "w-48"),
         className
       )}

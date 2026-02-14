@@ -301,7 +301,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       "bg-card text-foreground",
       isMobileDrawer 
         ? "h-full w-full border-0 max-h-[100dvh]" 
-        : "h-screen sticky top-0 border-r border-border",
+        : "h-[100dvh] sticky top-0 border-r border-border",
       !isMobileDrawer && (isCollapsed ? "w-14" : "w-60"),
       className
     )}>
