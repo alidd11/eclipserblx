@@ -5,6 +5,7 @@ import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { PWAFeaturedStores } from '@/components/landing/PWAFeaturedStores';
 import { PWARecentReleases } from '@/components/landing/PWARecentReleases';
 import { HeroBanner } from './HeroBanner';
+import { PWADiscordBanner } from './PWADiscordBanner';
 import { useTranslation } from 'react-i18next';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -240,7 +241,10 @@ export function PWALandingHero() {
             {/* Recent Releases - 2 cards rotating every 3s */}
             <PWARecentReleases />
 
-            <ActiveOffersCard />
+             <ActiveOffersCard />
+
+            {/* Discord Community Banner */}
+            <PWADiscordBanner />
 
             {/* Featured Products — spotlight + grid */}
             <div>
