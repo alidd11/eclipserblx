@@ -46,47 +46,54 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex items-center gap-2 mb-3">
-              <Link to="/products">
-                <Button size="sm" className="h-9 px-4 text-sm">
-                  <Store className="mr-1.5 h-3.5 w-3.5" />
-                  {t('landing.startSelling')}
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                </Button>
-              </Link>
-              <Link to="/products">
-                <Button size="sm" variant="outline" className="h-9 px-4 text-sm">
-                  <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
-                  {t('landing.browseMarketplace')}
+            {/* CTA Buttons */}
+            <div className="flex flex-col gap-3 mb-5">
+              <div className="flex items-center gap-2">
+                <Link to="/products">
+                  <Button size="sm" className="h-9 px-4 text-sm">
+                    <Store className="mr-1.5 h-3.5 w-3.5" />
+                    {t('landing.startSelling')}
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+                <Link to="/products">
+                  <Button size="sm" variant="outline" className="h-9 px-4 text-sm">
+                    <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
+                    {t('landing.browseMarketplace')}
+                  </Button>
+                </Link>
+              </div>
+
+              <Link to="/eclipse-plus" className="inline-flex">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-8 px-3 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 gap-1.5"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Discover Eclipse+
+                  <ArrowRight className="h-3 w-3" />
                 </Button>
               </Link>
             </div>
 
-            <Link to="/eclipse-plus" className="inline-flex mb-5">
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-8 px-3 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
-              >
-                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                Eclipse+
-              </Button>
-            </Link>
-
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+            {/* Popular Searches */}
+            <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
+              <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 mb-2">
                 <Search className="h-3 w-3" />
                 {t('landing.popular')}
               </span>
-              {POPULAR_SEARCHES.map((term) => (
-                <button
-                  key={term}
-                  onClick={() => handleSearchClick(term)}
-                  className="text-[11px] px-2 py-0.5 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {term}
-                </button>
-              ))}
+              <div className="flex flex-wrap gap-1.5">
+                {POPULAR_SEARCHES.map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => handleSearchClick(term)}
+                    className="text-[11px] px-2.5 py-1 rounded-md bg-background/80 border border-border/50 hover:bg-accent hover:text-accent-foreground text-muted-foreground transition-colors"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
