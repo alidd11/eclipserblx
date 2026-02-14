@@ -20,6 +20,7 @@ const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
 const Products = lazy(() => import("@/pages/Products"));
 const Featured = lazy(() => import("@/pages/Featured"));
 const Categories = lazy(() => import("@/pages/Categories"));
+const AllStores = lazy(() => import("@/pages/AllStores"));
 
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
 const Cart = lazy(() => import("@/pages/Cart"));
@@ -234,6 +235,7 @@ export function AppRoutes() {
         <Route path="/notifications" element={<NotificationPreferences />} />
         <Route path="/eclipse-plus" element={<EclipsePlus />} />
         <Route path="/marketplace" element={<Navigate to="/" replace />} />
+        <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />
         <Route path="/recruiter" element={<Recruiter />} />
         <Route path="/advertise" element={<Advertise />} />
