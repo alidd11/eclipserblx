@@ -150,7 +150,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.profile'), icon: User, href: '/account' },
         { title: t('sidebar.cart'), icon: ShoppingCart, href: '/cart' },
         { title: t('sidebar.wishlist'), icon: Heart, href: '/wishlist' },
-        { title: t('sidebar.following'), icon: Store, href: '/account/following' },
         { title: t('sidebar.purchases'), icon: Download, href: '/purchases' },
         { title: t('sidebar.wallet'), icon: Wallet, href: '/credits' },
         { title: t('sidebar.notifications'), icon: Bell, href: '/messages', showNotificationDot: true },
@@ -165,7 +164,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.categories'), icon: FolderOpen, href: '/categories' },
-        { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
+        { title: t('sidebar.allStores'), icon: Store, href: '/?view=stores' },
+        { title: t('sidebar.following'), icon: Heart, href: '/account/following' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
