@@ -1,59 +1,26 @@
 
 
-## Redesign Categories Page with Expandable Sub-Categories
+## Move Store Info Between Image and Details (with Banner)
 
-Replace the current two-page flow (Categories grid -> separate Region Select page) with a single-page accordion-style layout where parent categories expand inline to reveal their sub-categories (UK/US/EU regions).
+Currently the card layout is:
+1. Product image (with store name overlaid at bottom)
+2. Category, product name, price
 
-### What Changes
+The new layout will be:
+1. Product image (clean, no overlay)
+2. Store banner strip with logo, name, and trust badges
+3. Category, product name, price
 
-**1. Redesign `/categories` page with accordion pattern**
-- Parent categories that have sub-categories (Civilian Vehicles, Marked Police, etc.) will be expandable rows
-- Clicking them expands to show sub-category options (UK, US, EU) inline with flag images
-- Parent categories without sub-categories (Maps, Bundle Deals, Bots, Buildings) link directly to products as they do now
-- Each row shows the category image/icon, name, and total product count
-- Expanded state shows sub-categories in a horizontal row with flag images and per-region counts
+### Changes
 
-**2. Remove the Region Select page and route**
-- Delete `src/pages/RegionSelect.tsx`
-- Remove the `/browse/:categorySlug/region` route from `AppRoutes.tsx`
-- All region selection now happens inline on the categories page
+**`src/components/landing/PWARecentReleases.tsx`**
 
-**3. Update data fetching**
-- Fetch both parent categories and their sub-categories in a single query on the categories page
-- Include product counts for each sub-category
-- Group sub-categories under their parent for rendering
+1. Add `banner_url` to the `RecentProduct` interface's `stores` type and to the Supabase select query.
+2. Remove the gradient overlay from inside the product image area.
+3. Add a new store banner row between the image and the info section -- a short strip (h-8) using the store's `banner_url` as a background with a dark overlay, containing the store logo, name, and verified/trusted badges.
+4. If no banner exists, fall back to a flat `bg-muted` strip.
 
-### Visual Layout
+**`src/components/landing/PWALandingHero.tsx`**
 
-```text
-+------------------------------------------+
-|             CATEGORIES                    |
-+------------------------------------------+
-| [Civilian Vehicles]  [img]    12 items  v |
-|   +-- UK Civilian [flag]  5 items        |
-|   +-- US Civilian [flag]  4 items        |
-|   +-- EU Civilian [flag]  3 items        |
-|                                           |
-| [Marked Police]      [img]     8 items  > |
-| [Maps]               [img]     3 items  > |
-| [Bots]               [img]     2 items  > |
-+------------------------------------------+
-```
-
-Categories without sub-categories navigate directly. Categories with sub-categories use the Radix accordion to expand/collapse.
-
-### Technical Details
-
-**Files to modify:**
-- `src/pages/Categories.tsx` -- Complete redesign to use accordion layout with inline sub-categories. Fetch sub-categories alongside parents. Use existing region flag images from `src/assets/regions/`. Use the existing `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent` components from the UI library.
-- `src/components/AppRoutes.tsx` -- Remove the `/browse/:categorySlug/region` route and lazy import for `RegionSelect`.
-
-**Files to delete:**
-- `src/pages/RegionSelect.tsx`
-
-**Styling approach:**
-- Follows the existing utilitarian dark aesthetic (solid surfaces, no gradients/glow)
-- Uses existing category images as small thumbnails in each row
-- Sub-categories display region flag images from `src/assets/regions/` in a compact horizontal layout
-- Accordion animation uses existing Radix accordion components already in the project
+Apply the same query and interface changes so the `PWAProductCard` in the featured grid also includes `banner_url` in its store data (for consistency), and restructure its card the same way -- store info between image and details instead of overlaid on the image.
 
