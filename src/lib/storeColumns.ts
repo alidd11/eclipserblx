@@ -31,7 +31,7 @@ export const PUBLIC_STORE_COLUMNS = `
 export const STORE_LISTING_COLUMNS = `
   id, name, slug, description, logo_url, banner_url, accent_color,
   is_verified, is_trusted, follower_count, is_testing, average_rating,
-  eclipse_plus_discount_enabled
+  product_count, eclipse_plus_discount_enabled
 `;
 
 // Minimal columns for store cards/references
