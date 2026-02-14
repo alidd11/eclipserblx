@@ -267,7 +267,8 @@ export function MarketplaceSection() {
   }
 
   const storesList = stores || [];
-  const topStoreIds = new Set(storesList.slice(0, 3).map(s => s.id));
+  // TopStoresSection shows up to 6 stores, so exclude those from the grid below
+  const topStoreIds = new Set(storesList.slice(0, 6).map(s => s.id));
   const allStores = storesList.filter(s => !topStoreIds.has(s.id));
 
   return (
