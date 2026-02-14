@@ -126,7 +126,7 @@ export function TopStoresSection() {
         .order('is_trusted', { ascending: false })
         .order('is_verified', { ascending: false })
         .order('follower_count', { ascending: false })
-        .limit(6);
+        .limit(1);
       
       if (error) throw error;
       return data as TopStore[];
