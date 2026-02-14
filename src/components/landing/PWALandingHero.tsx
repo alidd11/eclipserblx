@@ -33,15 +33,29 @@ function PWAProductCard({ product }: { product: any }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">No image</div>
         )}
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
-          <div className="flex items-center gap-1.5">
-            {product.stores?.logo_url && (
-              <img src={product.stores.logo_url} alt="" className="h-5 w-5 rounded object-cover bg-white/10" />
-            )}
-            <span className="text-white text-xs truncate">{product.stores?.name}</span>
-            {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-            {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-          </div>
+      </div>
+      {/* Store banner strip */}
+      <div
+        className="h-8 relative flex items-center gap-1.5 px-2 overflow-hidden"
+        style={product.stores?.banner_url ? {
+          backgroundImage: `url(${product.stores.banner_url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
+        {product.stores?.banner_url && (
+          <div className="absolute inset-0 bg-black/60" />
+        )}
+        {!product.stores?.banner_url && (
+          <div className="absolute inset-0 bg-muted" />
+        )}
+        <div className="relative z-10 flex items-center gap-1.5 min-w-0">
+          {product.stores?.logo_url && (
+            <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10 flex-shrink-0" />
+          )}
+          <span className={product.stores?.banner_url ? "text-white text-[11px] font-medium truncate" : "text-foreground text-[11px] font-medium truncate"}>{product.stores?.name}</span>
+          {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+          {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
         </div>
       </div>
       <div className="p-3">

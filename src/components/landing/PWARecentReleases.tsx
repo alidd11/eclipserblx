@@ -22,6 +22,7 @@ interface RecentProduct {
     name: string;
     slug: string;
     logo_url: string | null;
+    banner_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
     eclipse_plus_discount_enabled: boolean;
@@ -54,16 +55,29 @@ function PWARecentCard({ product }: { product: RecentProduct }) {
             No image
           </div>
         )}
-        {/* Store overlay */}
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
-          <div className="flex items-center gap-1.5">
-            {product.stores?.logo_url && (
-              <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10" />
-            )}
-            <span className="text-white text-[11px] font-medium truncate">{product.stores?.name}</span>
-            {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-            {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-          </div>
+      </div>
+      {/* Store banner strip */}
+      <div
+        className="h-8 relative flex items-center gap-1.5 px-2 overflow-hidden"
+        style={product.stores?.banner_url ? {
+          backgroundImage: `url(${product.stores.banner_url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
+        {product.stores?.banner_url && (
+          <div className="absolute inset-0 bg-black/60" />
+        )}
+        {!product.stores?.banner_url && (
+          <div className="absolute inset-0 bg-muted" />
+        )}
+        <div className="relative z-10 flex items-center gap-1.5 min-w-0">
+          {product.stores?.logo_url && (
+            <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10 flex-shrink-0" />
+          )}
+          <span className={cn("text-[11px] font-medium truncate", product.stores?.banner_url ? "text-white" : "text-foreground")}>{product.stores?.name}</span>
+          {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+          {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
         </div>
       </div>
       {/* Info */}
@@ -100,7 +114,7 @@ export function PWARecentReleases() {
         .select(`
           id, name, slug, price, images, created_at, category_id, is_resellable,
           categories (name, slug),
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)
