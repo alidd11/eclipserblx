@@ -68,7 +68,49 @@ function useAllStores() {
   });
 }
 
-// Category filtering removed — stores don't have category associations yet
+function useStoreCategories() {
+  return useQuery({
+    queryKey: ['store-category-chips'],
+    queryFn: async () => {
+      // Only fetch parent categories that have at least one active approved product
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .is('parent_id', null)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+function useStoreCategoryMap(categoryId: string | null) {
+  return useQuery({
+    queryKey: ['store-ids-by-category', categoryId],
+    queryFn: async () => {
+      if (!categoryId) return null;
+      // Get all category IDs (parent + children) for this parent
+      const { data: childCats } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('parent_id', categoryId);
+      const catIds = [categoryId, ...(childCats?.map(c => c.id) || [])];
+      
+      // Get distinct store_ids that have products in these categories
+      const { data, error } = await supabase
+        .from('products')
+        .select('store_id')
+        .in('category_id', catIds)
+        .eq('is_active', true)
+        .eq('moderation_status', 'approved');
+      if (error) throw error;
+      return new Set(data?.map(p => p.store_id).filter(Boolean));
+    },
+    enabled: !!categoryId,
+    staleTime: 1000 * 60 * 2,
+  });
+}
 
 // ---------- Components ----------
 
@@ -223,18 +265,22 @@ export default function AllStores() {
 function AllStoresContent() {
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const { data: stores, isLoading } = useAllStores();
+  const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('popular');
-
-  // TODO: When category filtering is needed, we'd need a store_categories junction table
-  // For now, category chips are visual-only since stores don't have category associations yet
-  // Remove the category state and chips until the data model supports it
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { data: categoryStoreIds, isLoading: isCategoryLoading } = useStoreCategoryMap(selectedCategory);
 
   // Derive spotlight, trending, and grid stores
   const { spotlightStores, trendingStores, gridStores } = useMemo(() => {
     if (!stores?.length) return { spotlightStores: [], trendingStores: [], gridStores: [] };
 
     let filtered = stores;
+
+    // Category filter via products
+    if (selectedCategory && categoryStoreIds) {
+      filtered = filtered.filter(s => categoryStoreIds.has(s.id));
+    }
 
     // Search filter
     if (search.trim()) {
@@ -284,7 +330,7 @@ function AllStoresContent() {
     const grid = sorted.filter(s => !usedIds.has(s.id));
 
     return { spotlightStores: spotlight, trendingStores: trending, gridStores: grid };
-  }, [stores, search, sort]);
+  }, [stores, search, sort, selectedCategory, categoryStoreIds]);
 
   return (
     <SearchCommandProvider>
@@ -335,7 +381,38 @@ function AllStoresContent() {
             </Select>
           </div>
 
-          {isLoading ? (
+          {/* Category chips */}
+          {categories?.length ? (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={cn(
+                  "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                  !selectedCategory
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                )}
+              >
+                All
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                  className={cn(
+                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                    selectedCategory === cat.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                  )}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {(isLoading || (selectedCategory && isCategoryLoading)) ? (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {Array.from({ length: 3 }).map((_, i) => <StoreSkeleton key={i} large />)}
