@@ -132,8 +132,8 @@ export function PWALandingHero() {
             {/* Recent Releases - 2 cards rotating every 3s */}
             <PWARecentReleases />
             
-            <PWAFeaturedStores />
             <ActiveOffersCard />
+            <PWAFeaturedStores />
             
             {/* Featured Products grid */}
             <div>
