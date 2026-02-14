@@ -18,12 +18,12 @@ export default function Landing() {
       <LandingHero />
       {/* Promotions below hero */}
       <section className="px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
-        <PromotionCarousel />
+      <PromotionCarousel />
       </section>
-      <MarketplaceSection />
-      <section className="px-4 sm:px-6 lg:px-8 -mt-2 mb-4">
+      <section className="px-4 sm:px-6 lg:px-8 mt-4 mb-2">
         <PWADiscordBanner />
       </section>
+      <MarketplaceSection />
       <LandingCategories />
       
       
