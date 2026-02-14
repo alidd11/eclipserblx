@@ -163,7 +163,7 @@ export function PWALandingHero() {
               </div>
             </div>
             
-            <ReviewsShowcase />
+            
           </div>
         </div>
       </div>
