@@ -25,7 +25,7 @@ function CompactStoreCard({ store }: { store: TopStore }) {
 
   return (
     <Link to={`/store/${store.slug}`} className="group block snap-start" style={{ minWidth: 260, width: 260 }}>
-      <div className="relative overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200 h-full active:scale-[0.98]">
+      <div className="relative overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200 h-full">
         {/* Compact banner */}
         <div
           className="h-14 relative overflow-hidden"
