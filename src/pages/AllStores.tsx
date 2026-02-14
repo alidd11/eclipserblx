@@ -11,10 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
-import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
+import { MainLayout } from '@/components/layout/MainLayout';
 
 // ---------- Types ----------
 
@@ -255,15 +252,6 @@ function StoreSkeleton({ large }: { large?: boolean }) {
 // ---------- Page ----------
 
 export default function AllStores() {
-  return (
-    <SearchCommandProvider>
-      <AllStoresContent />
-    </SearchCommandProvider>
-  );
-}
-
-function AllStoresContent() {
-  const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const { data: stores, isLoading } = useAllStores();
   const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');
@@ -333,11 +321,8 @@ function AllStoresContent() {
   }, [stores, search, sort, selectedCategory, categoryStoreIds]);
 
   return (
-    <SearchCommandProvider>
-      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header />
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <MainLayout>
+      <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
           {/* Page header */}
           <div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
@@ -485,9 +470,7 @@ function AllStoresContent() {
               )}
             </div>
           )}
-        </main>
-        <Footer />
       </div>
-    </SearchCommandProvider>
+    </MainLayout>
   );
 }
