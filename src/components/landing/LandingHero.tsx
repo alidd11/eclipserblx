@@ -46,27 +46,29 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex items-center gap-2 mb-5 overflow-x-auto [-webkit-overflow-scrolling:touch]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              <Link to="/products" className="flex-shrink-0">
-                <Button size="sm" variant="outline" className="h-8 px-3 text-xs whitespace-nowrap">
-                  <ShoppingBag className="mr-1 h-3 w-3" />
-                  {t('landing.browseMarketplace')}
+            <div className="flex items-center gap-2 mb-5">
+              <Link to="/products">
+                <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
+                  <ShoppingBag className="h-3.5 w-3.5 sm:mr-1.5" />
+                  <span className="hidden sm:inline">{t('landing.browseMarketplace')}</span>
+                  <span className="sm:hidden">Browse</span>
                 </Button>
               </Link>
-              <Link to="/products" className="flex-shrink-0">
-                <Button size="sm" className="h-8 px-3 text-xs whitespace-nowrap">
-                  <Store className="mr-1 h-3 w-3" />
-                  {t('landing.startSelling')}
+              <Link to="/products">
+                <Button size="sm" className="h-8 px-3 text-xs">
+                  <Store className="h-3.5 w-3.5 sm:mr-1.5" />
+                  <span className="hidden sm:inline">{t('landing.startSelling')}</span>
+                  <span className="sm:hidden">Sell</span>
                   <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
-              <Link to="/eclipse-plus" className="flex-shrink-0">
+              <Link to="/eclipse-plus">
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="h-8 px-3 text-xs whitespace-nowrap text-amber-500 border-amber-500/30 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
+                  className="h-8 px-3 text-xs text-amber-500 border-amber-500/30 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
                 >
-                  <Sparkles className="mr-1 h-3 w-3" />
+                  <Sparkles className="h-3.5 w-3.5 sm:mr-1.5" />
                   Eclipse+
                 </Button>
               </Link>
