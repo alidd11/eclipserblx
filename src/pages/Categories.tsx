@@ -9,6 +9,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
+import botsImg from '@/assets/categories/bots.jpg';
+
+// Categories that should always use their static image instead of product images
+const staticImageCategories: Record<string, string> = {
+  'bots': botsImg,
+};
+
 const categoryIcons: Record<string, React.ElementType> = {
   'civilian-vehicles': Car,
   'marked-police-vehicles': Shield,
@@ -125,8 +132,9 @@ function getProductThumb(product: TopProduct): string | null {
 
 function CategoryCard({ category, sourceParam }: { category: CategoryData; sourceParam: string }) {
   const Icon = categoryIcons[category.slug] || Package;
-  // Use the best product image from the category as the banner
-  const bgImage = category.topProducts.length > 0 ? getProductThumb(category.topProducts[0]) : null;
+  // Use static image for certain categories (e.g. bots), otherwise use top product image
+  const bgImage = staticImageCategories[category.slug]
+    || (category.topProducts.length > 0 ? getProductThumb(category.topProducts[0]) : null);
   const isEmpty = category.product_count === 0;
 
   return (
