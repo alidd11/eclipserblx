@@ -9,6 +9,8 @@ import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
 import { NotificationCenter } from '@/components/seller/NotificationCenter';
 import { FileReviewConsentBanner } from '@/components/seller/FileReviewConsentBanner';
 import { SellerHeroBanner } from '@/components/seller/SellerHeroBanner';
+import { StoreSetupChecklist } from '@/components/seller/StoreSetupChecklist';
+import { SellerOnboardingWizard } from '@/components/seller/SellerOnboardingWizard';
 import { RevenueChart } from '@/components/seller/RevenueChart';
 import { TopProductsLeaderboard } from '@/components/seller/TopProductsLeaderboard';
 import { CustomerDemographics } from '@/components/seller/CustomerDemographics';
@@ -112,8 +114,14 @@ export default function SellerDashboard() {
         {/* File Review Consent Banners */}
         <FileReviewConsentBanner />
 
+        {/* ── Onboarding Wizard (modal, shows once for new sellers) ── */}
+        <SellerOnboardingWizard />
+
         {/* ── Hero Banner ── */}
         <SellerHeroBanner />
+
+        {/* ── Store Setup Checklist (soft nudge) ── */}
+        <StoreSetupChecklist />
 
         {/* ── Quick Actions Grid ── */}
         <Card>
