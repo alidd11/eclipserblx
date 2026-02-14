@@ -1,49 +1,44 @@
 
-## Restructure Seller Categories to Show Hierarchical Parent/Sub-Category Layout
+# Declutter Landing Page and Separate Marketplace Browsing
 
-### Overview
-Update the seller-side category experience to display categories in a hierarchical parent/sub-category structure (like ClearlyDev), instead of the current flat list. This affects three areas: the category management page, the store sections page, and the product form's category picker.
+Based on the CEO's feedback, the home page is too crowded. The plan is to remove the featured products grid from the landing page and redesign the marketplace to let users choose between browsing stores or products separately (inspired by the ClearlyDev layout).
 
-### Changes
+---
 
-#### 1. SellerCategories page (`/seller/categories`) - Hierarchical toggle list
-Currently shows a flat 2-column grid of all categories with toggle switches. Will be restructured to:
-- Display parent categories as expandable rows (accordion-style, matching the landing page pattern)
-- Nest sub-categories underneath their parent with indentation
-- Toggling a parent category enables/disables all its children
-- Each sub-category can also be individually toggled
-- Clean vertical list layout instead of grid
+## Changes Overview
 
-#### 2. Product form category selector (in `SellerProducts.tsx`)
-Currently a flat `<Select>` dropdown listing every category alphabetically. Will be updated to:
-- Group options by parent category using `<SelectGroup>` with `<SelectLabel>` headers
-- Show parent categories as group headers (non-selectable if they have children)
-- Show sub-categories indented under their parent group
-- Categories without children remain directly selectable
+### 1. Remove Featured Products from Landing Page
+- Remove the `<LandingFeaturedProducts />` component from `Landing.tsx`
+- This immediately declutters the home page, keeping: Hero, Promotions, Categories, Reviews, Trust Signals, and CTA
 
-#### 3. SellerStoreTabs page (`/seller/tabs`) - Minor alignment
-- No structural changes needed here as these are custom store sections, not marketplace categories
-- Rename sidebar label from "Store Sections" to something clearer if needed
+### 2. Redesign Marketplace Page with Browse Mode Selector
+Replace the current mixed layout in `Marketplace.tsx` with a cleaner experience:
 
-### Technical Details
+- **Marketplace Hero** stays the same (title + search)
+- **Browse Mode Toggle** -- two prominent cards/tabs at the top letting users pick:
+  - **Browse Stores** -- shows the store grid (current behavior)
+  - **Browse Products** -- shows a product-focused grid with filters (category, price, etc.)
+- When in "Stores" mode: show Top Stores + store grid (as today, minus the featured products card and other clutter)
+- When in "Products" mode: show a clean product grid with the scoring algorithm, horizontal scroll for recent releases (inspired by ClearlyDev screenshot)
 
-**SellerCategories.tsx:**
-- Modify the categories query to fetch all categories with `parent_id` field
-- Separate into `parentCategories` (where `parent_id` is null) and child lookup (grouped by `parent_id`)
-- Replace the 2-column grid with a vertical accordion list using expandable rows (same pattern as `LandingCategories`)
-- Add `useState` for expanded parent tracking
-- Use `framer-motion` `AnimatePresence` for expand/collapse animation
-- Add "toggle all children" logic when parent switch is toggled
+### 3. Add Recent Releases Carousel to Marketplace (Products mode)
+Inspired by ClearlyDev, add a horizontal scrolling "Recent Releases" section when browsing products, showing the newest products with left/right arrows.
 
-**SellerProducts.tsx (category selector):**
-- Update the categories query to include `parent_id` field
-- Separate parent vs child categories
-- Render `<SelectGroup>` per parent with `<SelectLabel>` for the parent name
-- Render child categories as `<SelectItem>` within each group
-- Standalone categories (no children, no parent) render as top-level `<SelectItem>`
+---
 
-**No database changes required** - the `parent_id` column already exists and is populated.
+## Technical Details
 
-### Files to modify
-- `src/pages/seller/SellerCategories.tsx` - Full redesign to hierarchical accordion layout
-- `src/pages/seller/SellerProducts.tsx` - Update category `<Select>` to grouped hierarchy
+### Files Modified
+- **`src/pages/Landing.tsx`** -- Remove `LandingFeaturedProducts` import and usage (2 lines)
+- **`src/pages/Marketplace.tsx`** -- Major refactor:
+  - Add a `browseMode` state (`'stores' | 'products'`)
+  - Add two toggle cards at the top (Store icon + Products icon)
+  - Conditionally render store grid vs product grid based on mode
+  - Remove `FeaturedProductsCard`, `NewArrivalsCard`, `CategoriesGridCard`, `BecomeSellerCard`, `HowItWorksCard` from the mixed layout when in products mode
+  - In products mode: fetch products using the existing scoring hook and display in a clean grid
+- **`src/components/marketplace/RecentReleasesCarousel.tsx`** (new) -- Horizontal carousel of newest products with navigation arrows, similar to ClearlyDev's "Recent Releases"
+- **`src/components/marketplace/MarketplaceBrowseToggle.tsx`** (new) -- Two-card toggle component for switching between Stores and Products views
+
+### Data Fetching
+- Stores mode reuses existing store query
+- Products mode uses a new query fetching active products with store info, ordered by `created_at` descending, with category filtering support
