@@ -32,9 +32,9 @@ function useAlgorithmicStores() {
         .select(STORE_LISTING_COLUMNS)
         .eq('is_active', true)
         .eq('is_testing', false)
-        .order('is_trusted', { ascending: false })
-        .order('is_verified', { ascending: false })
-        .order('follower_count', { ascending: false, nullsFirst: false })
+        .order('is_trusted', { ascending: true })
+        .order('is_verified', { ascending: true })
+        .order('follower_count', { ascending: true, nullsFirst: false })
         .limit(8);
       if (error) throw error;
       const stores = data as FeaturedStore[];
