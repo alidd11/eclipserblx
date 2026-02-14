@@ -40,10 +40,10 @@ function PWARecentCard({ product }: { product: RecentProduct }) {
   return (
     <Link
       to={`/products/${product.slug}`}
-      className="block rounded-lg overflow-hidden border border-border bg-card active:scale-[0.98] transition-transform flex-1 min-w-0"
+      className="block rounded-lg overflow-hidden border border-border bg-card active:scale-[0.99] transition-transform animate-fade-in"
     >
-      {/* Full-width image */}
-      <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+      {/* Wide image */}
+      <div className="aspect-[16/9] relative overflow-hidden bg-muted">
         {product.images?.[0] ? (
           <img
             src={product.images[0]}
@@ -58,7 +58,7 @@ function PWARecentCard({ product }: { product: RecentProduct }) {
       </div>
       {/* Store banner strip */}
       <div
-        className="h-8 relative flex items-center gap-1.5 px-2 overflow-hidden"
+        className="h-8 relative flex items-center gap-1.5 px-2.5 overflow-hidden"
         style={product.stores?.banner_url ? {
           backgroundImage: `url(${product.stores.banner_url})`,
           backgroundSize: 'cover',
@@ -81,22 +81,26 @@ function PWARecentCard({ product }: { product: RecentProduct }) {
         </div>
       </div>
       {/* Info */}
-      <div className="p-2.5">
-        {product.categories?.name && (
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
-            <Tag className="h-2.5 w-2.5" />
-            {product.categories.name}
-          </span>
-        )}
-        <h4 className="font-medium text-sm text-foreground line-clamp-1 mb-1">{product.name}</h4>
-        {hasMemberDiscount ? (
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
-            <span className="text-[10px] text-muted-foreground line-through">{formatPrice(product.price)}</span>
-          </div>
-        ) : (
-          <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
-        )}
+      <div className="px-3 py-2.5 flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {product.categories?.name && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
+              <Tag className="h-2.5 w-2.5" />
+              {product.categories.name}
+            </span>
+          )}
+          <h4 className="font-medium text-sm text-foreground truncate">{product.name}</h4>
+        </div>
+        <div className="flex-shrink-0">
+          {hasMemberDiscount ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
+              <span className="text-[10px] text-muted-foreground line-through">{formatPrice(product.price)}</span>
+            </div>
+          ) : (
+            <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
+          )}
+        </div>
       </div>
     </Link>
   );
@@ -130,34 +134,33 @@ export function PWARecentReleases() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const totalPages = products ? Math.ceil(products.length / 2) : 0;
+  const totalProducts = products?.length || 0;
 
   // Auto-rotate every 3 seconds
   useEffect(() => {
-    if (!totalPages || totalPages <= 1) return;
+    if (!totalProducts || totalProducts <= 1) return;
     const timer = setInterval(() => {
-      setPageIndex((prev) => (prev + 1) % totalPages);
+      setPageIndex((prev) => (prev + 1) % totalProducts);
     }, 3000);
     return () => clearInterval(timer);
-  }, [totalPages]);
+  }, [totalProducts]);
 
-  const currentPair = products?.slice(pageIndex * 2, pageIndex * 2 + 2) || [];
+  const currentProduct = products?.[pageIndex];
 
   if (isLoading) {
     return (
       <div>
         <h3 className="text-sm font-semibold text-foreground mb-3">Recent Releases</h3>
-        <div className="grid grid-cols-2 gap-2.5">
-          {[0, 1].map((i) => (
-            <div key={i} className="rounded-lg overflow-hidden border border-border bg-card">
-              <Skeleton className="aspect-[4/3]" />
-              <div className="p-2.5 space-y-1.5">
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-1/3" />
-              </div>
+        <div className="rounded-lg overflow-hidden border border-border bg-card">
+          <Skeleton className="aspect-[16/9]" />
+          <Skeleton className="h-8" />
+          <div className="px-3 py-2.5 flex items-center justify-between">
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-4 w-32" />
             </div>
-          ))}
+            <Skeleton className="h-4 w-12" />
+          </div>
         </div>
       </div>
     );
@@ -174,19 +177,15 @@ export function PWARecentReleases() {
         </Link>
       </div>
 
-      {/* 2-card grid that fills width */}
-      <div className="grid grid-cols-2 gap-2.5">
-        {currentPair.map((product) => (
-          <PWARecentCard key={product.id} product={product} />
-        ))}
-        {/* If odd number, fill empty slot */}
-        {currentPair.length === 1 && <div />}
-      </div>
+      {/* Single card rotating */}
+      {currentProduct && (
+        <PWARecentCard key={currentProduct.id} product={currentProduct} />
+      )}
 
       {/* Page indicators */}
-      {totalPages > 1 && (
+      {totalProducts > 1 && (
         <div className="flex items-center justify-center gap-1.5 mt-3">
-          {Array.from({ length: totalPages }).map((_, i) => (
+          {Array.from({ length: totalProducts }).map((_, i) => (
             <button
               key={i}
               onClick={() => setPageIndex(i)}
