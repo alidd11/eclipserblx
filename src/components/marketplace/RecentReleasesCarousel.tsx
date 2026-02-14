@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ShieldCheck, Award, Star, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShieldCheck, Award, Tag } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -17,7 +17,7 @@ interface RecentProduct {
   created_at: string;
   category_id: string | null;
   is_resellable: boolean;
-  average_rating: number | null;
+  
   categories: { name: string; slug: string } | null;
   stores: {
     name: string;
@@ -43,7 +43,7 @@ export function RecentReleasesCarousel() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, created_at, category_id, is_resellable, average_rating,
+          id, name, slug, price, images, created_at, category_id, is_resellable,
           categories (name, slug),
           stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
@@ -190,12 +190,6 @@ export function RecentReleasesCarousel() {
                       </span>
                     ) : (
                       <span />
-                    )}
-                    {typeof product.average_rating === 'number' && product.average_rating > 0 && (
-                      <span className="flex items-center gap-0.5 text-muted-foreground">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span className="text-[10px] font-medium">{product.average_rating.toFixed(1)}</span>
-                      </span>
                     )}
                   </div>
                   <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
