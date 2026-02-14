@@ -33,10 +33,6 @@ export function LandingHero() {
         <div className="w-full flex flex-col lg:flex-row lg:items-start lg:gap-12">
           {/* Left: Text content — left-aligned on desktop */}
           <div className="lg:flex-1 lg:max-w-xl">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium mb-3">
-              <Store className="h-3.5 w-3.5" />
-              {t('landing.badge')}
-            </div>
 
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
@@ -46,7 +42,7 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex items-center gap-2 mb-5">
+            <div className="flex justify-center items-center gap-2 mb-5">
               <Link to="/products">
                 <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
                   <ShoppingBag className="h-3.5 w-3.5 sm:mr-1.5" />
