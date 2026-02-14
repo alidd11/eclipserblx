@@ -56,7 +56,7 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
         </div>
         
         <CardContent className="pt-0 -mt-8 relative">
-          <div className="flex items-start gap-3 mb-3">
+          <div className="flex items-start gap-3 mb-1">
             {store.logo_url ? (
               <img 
                 src={store.logo_url} 
@@ -76,22 +76,25 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
               <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                 {store.name}
               </h3>
-              <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                {store.is_verified && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
-                    <ShieldCheck className="h-2.5 w-2.5" />
-                    Verified
-                  </Badge>
-                )}
-                {store.is_trusted && (
-                  <Badge className="text-[10px] px-1.5 py-0 gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0">
-                    <Award className="h-2.5 w-2.5" />
-                    Trusted
-                  </Badge>
-                )}
-              </div>
             </div>
           </div>
+
+          {(store.is_verified || store.is_trusted) && (
+            <div className="flex items-center gap-1.5 mb-2">
+              {store.is_verified && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                  <ShieldCheck className="h-2.5 w-2.5" />
+                  Verified
+                </Badge>
+              )}
+              {store.is_trusted && (
+                <Badge className="text-[10px] px-1.5 py-0 gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0">
+                  <Award className="h-2.5 w-2.5" />
+                  Trusted
+                </Badge>
+              )}
+            </div>
+          )}
           
           {store.description && (
             <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
