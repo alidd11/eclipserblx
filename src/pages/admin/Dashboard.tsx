@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
-import { EclipseLogo } from '@/components/ui/EclipseLogo';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import eclipseBanner from '@/assets/eclipse-banner.jpeg';
+import eclipseStoreLogo from '@/assets/eclipse-store-moon-logo.png';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -416,9 +416,8 @@ export default function AdminDashboard() {
             {/* Avatar + Name row */}
             <div className="flex items-end gap-4 mb-4">
               <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
-                <AvatarFallback className="bg-muted">
-                  <EclipseLogo size="lg" removeWhiteBackground />
-                </AvatarFallback>
+                <AvatarImage src={eclipseStoreLogo} alt="Eclipse Store" />
+                <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0 pb-1">
