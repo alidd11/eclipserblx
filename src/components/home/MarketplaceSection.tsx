@@ -268,11 +268,13 @@ export function MarketplaceSection() {
 
   const storesList = stores || [];
   // Exclude the featured spotlight store (smallest seller, same logic as TopStoresSection)
-  const sortedForSpotlight = [...storesList].sort((a, b) => {
-    if (a.is_trusted !== b.is_trusted) return a.is_trusted ? 1 : -1;
-    if (a.is_verified !== b.is_verified) return a.is_verified ? 1 : -1;
-    return (a.follower_count || 0) - (b.follower_count || 0);
-  });
+  const sortedForSpotlight = [...storesList]
+    .filter(s => (s as any).product_count > 0 || false)
+    .sort((a, b) => {
+      if (a.is_trusted !== b.is_trusted) return a.is_trusted ? 1 : -1;
+      if (a.is_verified !== b.is_verified) return a.is_verified ? 1 : -1;
+      return (a.follower_count || 0) - (b.follower_count || 0);
+    });
   const spotlightStoreId = sortedForSpotlight[0]?.id;
   const allStores = storesList.filter(s => s.id !== spotlightStoreId);
 

@@ -29,6 +29,7 @@ export function TopStoresSection() {
         .eq('status', 'approved')
         .eq('is_active', true)
         .eq('is_testing', false)
+        .gt('product_count', 0)
         .order('is_trusted', { ascending: true })
         .order('is_verified', { ascending: true })
         .order('follower_count', { ascending: true })
