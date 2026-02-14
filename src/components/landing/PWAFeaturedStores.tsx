@@ -32,20 +32,13 @@ function useAlgorithmicStores() {
         .select(STORE_LISTING_COLUMNS)
         .eq('is_active', true)
         .eq('is_testing', false)
-        .order('is_trusted', { ascending: true })
-        .order('is_verified', { ascending: true })
-        .order('follower_count', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: false })
         .limit(8);
       if (error) throw error;
       const stores = data as FeaturedStore[];
       const scored = stores.map(store => ({
         ...store,
-        score:
-          (store.is_trusted ? 10 : 50) +
-          (store.is_verified ? 5 : 30) +
-          Math.max(0, 100 - (store.follower_count || 0) * 0.5) +
-          (store.average_rating || 0) * 5 +
-          Math.random() * 40
+        score: Math.random() * 100
       }));
       return scored.sort((a, b) => b.score - a.score).slice(0, 7);
     },
