@@ -2,12 +2,11 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Car, Shield, ShieldOff, Flame, Ambulance, Plane, Shirt, Swords,
-  Map, Package, Bot, Building2, ChevronRight
+  Map, Package, Bot, Building2, ChevronRight, ArrowRight
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Category images
@@ -23,11 +22,6 @@ import mapsImg from '@/assets/categories/maps.jpg';
 import bundleDealsImg from '@/assets/categories/bundle-deals.jpg';
 import botsImg from '@/assets/categories/bots.jpg';
 import buildingsImg from '@/assets/categories/buildings.jpg';
-
-// Region flag images
-import ukFlagImg from '@/assets/regions/uk-flag.jpg';
-import usFlagImg from '@/assets/regions/us-flag.jpg';
-import euFlagImg from '@/assets/regions/eu-flag.jpg';
 
 const categoryIcons: Record<string, React.ElementType> = {
   'civilian-vehicles': Car,
@@ -59,30 +53,213 @@ const categoryImages: Record<string, string> = {
   'buildings': buildingsImg,
 };
 
-const REGION_FLAGS: Record<string, { name: string; image: string }> = {
-  'uk-': { name: 'United Kingdom', image: ukFlagImg },
-  'us-': { name: 'United States', image: usFlagImg },
-  'eu-': { name: 'European Union', image: euFlagImg },
-};
-
-interface SubCategory {
+interface TopProduct {
   id: string;
   name: string;
   slug: string;
-  product_count: number;
-  regionPrefix: string | null;
-  flagImage: string | null;
-  regionName: string | null;
+  price: number;
+  images: string[] | null;
 }
 
-interface CategoryWithSubs {
+interface CategoryData {
   id: string;
   name: string;
   slug: string;
   description: string | null;
-  display_order: number | null;
   product_count: number;
-  subCategories: SubCategory[];
+  topProducts: TopProduct[];
+}
+
+function useCategoriesWithProducts(sourceFilter: string | null) {
+  const isMarketplace = sourceFilter === 'marketplace';
+  return useQuery({
+    queryKey: ['categories-grid', sourceFilter],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+
+      // Fetch parent categories
+      const { data: parents, error } = await supabase
+        .from('categories')
+        .select('id, name, slug, description, display_order')
+        .is('parent_id', null)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+
+      // Also fetch children to aggregate counts
+      const { data: children } = await supabase
+        .from('categories')
+        .select('id, parent_id')
+        .not('parent_id', 'is', null);
+
+      const childMap: Record<string, string[]> = {};
+      (children || []).forEach(c => {
+        if (!childMap[c.parent_id!]) childMap[c.parent_id!] = [];
+        childMap[c.parent_id!].push(c.id);
+      });
+
+      // For each parent, get count + top 4 products across parent + child categories
+      const results: CategoryData[] = await Promise.all(
+        (parents || []).map(async (parent) => {
+          const catIds = [parent.id, ...(childMap[parent.id] || [])];
+
+          // Count
+          let countQ = supabase
+            .from('products')
+            .select('id', { count: 'exact', head: true })
+            .in('category_id', catIds)
+            .eq('is_active', true)
+            .eq('moderation_status', 'approved')
+            .or(`release_at.is.null,release_at.lte.${now}`);
+          if (isMarketplace) countQ = countQ.not('store_id', 'is', null);
+          const { count } = await countQ;
+
+          // Top products (by downloads, newest as tiebreaker)
+          let topQ = supabase
+            .from('products')
+            .select('id, name, slug, price, images')
+            .in('category_id', catIds)
+            .eq('is_active', true)
+            .eq('moderation_status', 'approved')
+            .or(`release_at.is.null,release_at.lte.${now}`)
+            .order('download_count', { ascending: false, nullsFirst: false })
+            .order('created_at', { ascending: false })
+            .limit(4);
+          if (isMarketplace) topQ = topQ.not('store_id', 'is', null);
+          const { data: topProducts } = await topQ;
+
+          return {
+            id: parent.id,
+            name: parent.name,
+            slug: parent.slug,
+            description: parent.description,
+            product_count: count || 0,
+            topProducts: (topProducts || []) as TopProduct[],
+          };
+        })
+      );
+
+      return results;
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+}
+
+// Get first image URL from a product, filtering out videos
+function getProductThumb(product: TopProduct): string | null {
+  if (!product.images?.length) return null;
+  const img = product.images.find(u => !u.endsWith('.mp4') && !u.endsWith('.webm'));
+  return img || null;
+}
+
+function CategoryCard({ category, sourceParam }: { category: CategoryData; sourceParam: string }) {
+  const Icon = categoryIcons[category.slug] || Package;
+  const bgImage = categoryImages[category.slug];
+  const isEmpty = category.product_count === 0;
+
+  return (
+    <div className={`group rounded-lg border border-border bg-card overflow-hidden transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 ${isEmpty ? 'opacity-50' : ''}`}>
+      {/* Category header with image */}
+      <Link
+        to={isEmpty ? '#' : `/products?category=${category.slug}${sourceParam}`}
+        className="relative block h-32 sm:h-36 overflow-hidden"
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{
+            backgroundImage: bgImage
+              ? `url(${bgImage})`
+              : 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted-foreground) / 0.15))'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        
+        {/* Category info overlay */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-card/90 border border-border/50 flex items-center justify-center shrink-0">
+              <Icon className="h-4.5 w-4.5 text-foreground" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-bold text-sm text-white truncate">{category.name}</h3>
+              <span className="text-[11px] text-white/60">{category.product_count} products</span>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-white/50 shrink-0 group-hover:text-white/80 transition-colors" />
+        </div>
+      </Link>
+
+      {/* Top products row */}
+      {category.topProducts.length > 0 && (
+        <div className="px-3 py-2.5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Top Products</span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {category.topProducts.map((product) => {
+              const thumb = getProductThumb(product);
+              return (
+                <Link
+                  key={product.id}
+                  to={`/product/${product.slug}`}
+                  className="group/item relative rounded-md overflow-hidden border border-border aspect-square hover:border-primary/40 transition-colors"
+                  title={product.name}
+                >
+                  {thumb ? (
+                    <img 
+                      src={thumb} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover/item:scale-110"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                </Link>
+              );
+            })}
+            {/* Fill empty slots */}
+            {Array.from({ length: Math.max(0, 4 - category.topProducts.length) }).map((_, i) => (
+              <div key={`empty-${i}`} className="rounded-md border border-border/50 aspect-square bg-muted/30" />
+            ))}
+          </div>
+          {!isEmpty && (
+            <Link
+              to={`/products?category=${category.slug}${sourceParam}`}
+              className="flex items-center justify-center gap-1 mt-2.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+            >
+              Browse all <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Fallback for categories with no products */}
+      {category.topProducts.length === 0 && (
+        <div className="px-3 py-4 text-center">
+          <p className="text-xs text-muted-foreground">No products yet</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategorySkeleton() {
+  return (
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
+      <Skeleton className="h-32 sm:h-36 rounded-none" />
+      <div className="px-3 py-2.5 space-y-2">
+        <Skeleton className="h-3 w-20" />
+        <div className="grid grid-cols-4 gap-1.5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square rounded-md" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function Categories() {
@@ -92,202 +269,30 @@ export default function Categories() {
   const isMarketplace = sourceFilter === 'marketplace';
   const sourceParam = isMarketplace ? '&source=marketplace' : '';
 
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ['categories-accordion', sourceFilter],
-    queryFn: async () => {
-      const now = new Date().toISOString();
-
-      // Fetch all categories (parents + children)
-      const { data: allCategories, error } = await supabase
-        .from('categories')
-        .select('id, name, slug, description, display_order, parent_id')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-
-      const parents = (allCategories || []).filter(c => !c.parent_id);
-      const children = (allCategories || []).filter(c => c.parent_id);
-
-      // Get product counts for all categories in one batch
-      const allIds = (allCategories || []).map(c => c.id);
-      
-      // Build count map
-      const countMap: Record<string, number> = {};
-      
-      // Fetch counts for all categories
-      await Promise.all(
-        allIds.map(async (id) => {
-          let q = supabase
-            .from('products')
-            .select('id', { count: 'exact', head: true })
-            .eq('category_id', id)
-            .eq('is_active', true)
-            .or(`release_at.is.null,release_at.lte.${now}`);
-          if (isMarketplace) q = q.not('store_id', 'is', null);
-          const { count } = await q;
-          countMap[id] = count || 0;
-        })
-      );
-
-      // Group into parent categories with sub-categories
-      const result: CategoryWithSubs[] = parents.map(parent => {
-        const subs = children
-          .filter(c => c.parent_id === parent.id)
-          .map(sub => {
-            // Detect region prefix
-            let regionPrefix: string | null = null;
-            let flagImage: string | null = null;
-            let regionName: string | null = null;
-            for (const [prefix, config] of Object.entries(REGION_FLAGS)) {
-              if (sub.slug.startsWith(prefix)) {
-                regionPrefix = prefix;
-                flagImage = config.image;
-                regionName = config.name;
-                break;
-              }
-            }
-            return {
-              id: sub.id,
-              name: sub.name,
-              slug: sub.slug,
-              product_count: countMap[sub.id] || 0,
-              regionPrefix,
-              flagImage,
-              regionName,
-            };
-          });
-
-        // Total count = sum of sub-category counts (if any), plus own direct products
-        const subTotal = subs.reduce((sum, s) => sum + s.product_count, 0);
-        const ownCount = countMap[parent.id] || 0;
-        const totalCount = subs.length > 0 ? subTotal + ownCount : ownCount;
-
-        return {
-          id: parent.id,
-          name: parent.name,
-          slug: parent.slug,
-          description: parent.description,
-          display_order: parent.display_order,
-          product_count: totalCount,
-          subCategories: subs,
-        };
-      });
-
-      return result;
-    },
-  });
+  const { data: categories, isLoading } = useCategoriesWithProducts(sourceFilter);
 
   return (
     <MainLayout>
-      <div className="container py-6 sm:py-8 max-w-3xl">
+      <div className="container py-6 sm:py-8 max-w-5xl">
         <div className="mb-6 sm:mb-8">
-          <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-widest text-center text-foreground">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             Categories
           </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Browse products by category
+          </p>
         </div>
 
         {isLoading ? (
-          <div className="space-y-3">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-16 rounded-xl" />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 9 }).map((_, i) => <CategorySkeleton key={i} />)}
           </div>
         ) : (
-          <Accordion type="multiple" className="space-y-2">
-            {categories?.map((category) => {
-              const Icon = categoryIcons[category.slug] || Package;
-              const bgImage = categoryImages[category.slug];
-              const hasSubs = category.subCategories.length > 0;
-              const isEmpty = category.product_count === 0;
-
-              if (!hasSubs) {
-                // Direct link row
-                return (
-                  <Link
-                    key={category.id}
-                    to={`/products?category=${category.slug}${sourceParam}`}
-                    className={`flex items-center gap-3 sm:gap-4 bg-card border border-border rounded-xl px-3 sm:px-4 py-3 hover:border-primary/50 transition-colors ${
-                      isEmpty ? 'opacity-50 pointer-events-none' : ''
-                    }`}
-                  >
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg overflow-hidden border border-border shrink-0">
-                      {bgImage ? (
-                        <img src={bgImage} alt={category.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-muted">
-                          <Icon className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-semibold text-foreground truncate block">{category.name}</span>
-                      <span className="text-xs text-muted-foreground">{category.product_count} items</span>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                  </Link>
-                );
-              }
-
-              // Accordion row for categories with sub-categories
-              return (
-                <AccordionItem key={category.id} value={category.id} className="border border-border rounded-xl overflow-hidden bg-card">
-                  <AccordionTrigger className={`px-3 sm:px-4 py-3 hover:no-underline hover:bg-muted/30 ${isEmpty ? 'opacity-50' : ''}`}>
-                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg overflow-hidden border border-border shrink-0">
-                        {bgImage ? (
-                          <img src={bgImage} alt={category.name} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-muted">
-                            <Icon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <span className="text-sm font-semibold text-foreground truncate block">{category.name}</span>
-                        <span className="text-xs text-muted-foreground">{category.product_count} items</span>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-3 sm:px-4 pb-3">
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                      {category.subCategories.map((sub) => (
-                        <Link
-                          key={sub.id}
-                          to={`/products?category=${sub.slug}${sourceParam}`}
-                          className={`group relative flex flex-col items-center gap-2 rounded-lg border border-border p-2 sm:p-3 hover:border-primary/50 transition-colors ${
-                            sub.product_count === 0 ? 'opacity-50 pointer-events-none' : ''
-                          }`}
-                        >
-                          {sub.flagImage && (
-                            <div className="w-full aspect-[3/2] rounded-md overflow-hidden border border-border">
-                              <img
-                                src={sub.flagImage}
-                                alt={sub.regionName || sub.name}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            </div>
-                          )}
-                          <div className="text-center min-w-0 w-full">
-                            <span className="text-[10px] sm:text-xs font-semibold text-foreground block truncate">
-                              {sub.regionName || sub.name}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">{sub.product_count} items</span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                    {/* View All link */}
-                    <Link
-                      to={`/products?category=${category.slug}${sourceParam}`}
-                      className="block text-center text-xs text-muted-foreground hover:text-primary mt-3 transition-colors"
-                    >
-                      View all {category.name} →
-                    </Link>
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories?.map((category) => (
+              <CategoryCard key={category.id} category={category} sourceParam={sourceParam} />
+            ))}
+          </div>
         )}
       </div>
     </MainLayout>
