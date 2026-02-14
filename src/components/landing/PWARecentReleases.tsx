@@ -150,7 +150,9 @@ export function PWARecentReleases() {
   if (isLoading) {
     return (
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3">Recent Releases</h3>
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 mb-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent Releases</h3>
+        </div>
         <div className="rounded-lg overflow-hidden border border-border bg-card">
           <Skeleton className="aspect-[16/9]" />
           <Skeleton className="h-8" />
@@ -170,9 +172,9 @@ export function PWARecentReleases() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-foreground">Recent Releases</h3>
-        <Link to="/products" className="text-xs text-primary flex items-center gap-0.5">
+      <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 mb-3">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent Releases</h3>
+        <Link to="/products" className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-0.5">
           View all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
