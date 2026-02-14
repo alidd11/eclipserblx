@@ -68,21 +68,7 @@ function useAllStores() {
   });
 }
 
-function useStoreCategories() {
-  return useQuery({
-    queryKey: ['store-category-chips'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug')
-        .is('parent_id', null)
-        .order('display_order', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-}
+// Category filtering removed — stores don't have category associations yet
 
 // ---------- Components ----------
 
@@ -237,10 +223,12 @@ export default function AllStores() {
 function AllStoresContent() {
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const { data: stores, isLoading } = useAllStores();
-  const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('popular');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // TODO: When category filtering is needed, we'd need a store_categories junction table
+  // For now, category chips are visual-only since stores don't have category associations yet
+  // Remove the category state and chips until the data model supports it
 
   // Derive spotlight, trending, and grid stores
   const { spotlightStores, trendingStores, gridStores } = useMemo(() => {
@@ -346,37 +334,6 @@ function AllStoresContent() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* Category chips */}
-          {categories?.length ? (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className={cn(
-                  "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                  !selectedCategory
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
-                )}
-              >
-                All
-              </button>
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                  className={cn(
-                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                    selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
-                  )}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          ) : null}
 
           {isLoading ? (
             <div className="space-y-6">
