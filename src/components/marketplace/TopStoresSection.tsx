@@ -24,7 +24,7 @@ function CompactStoreCard({ store }: { store: TopStore }) {
   const accentColor = store.accent_color || 'hsl(var(--primary))';
 
   return (
-    <Link to={`/store/${store.slug}`} className="group block flex-shrink-0 w-[260px] snap-start">
+    <Link to={`/store/${store.slug}`} className="group block snap-start" style={{ minWidth: 260, width: 260 }}>
       <div className="relative overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200 h-full active:scale-[0.98]">
         {/* Compact banner */}
         <div
@@ -97,7 +97,7 @@ function CompactStoreCard({ store }: { store: TopStore }) {
 
 function CompactStoreSkeleton() {
   return (
-    <div className="flex-shrink-0 w-[260px] snap-start rounded-lg border border-border bg-card overflow-hidden">
+    <div className="snap-start rounded-lg border border-border bg-card overflow-hidden" style={{ minWidth: 260, width: 260 }}>
       <Skeleton className="h-14 rounded-none" />
       <div className="px-3 pb-3 -mt-5 relative">
         <div className="flex items-end gap-2.5 mb-2">
@@ -138,8 +138,8 @@ export function TopStoresSection() {
   }
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
+    <section className="space-y-3 -mx-4 overflow-hidden">
+      <div className="flex items-center justify-between px-4">
         <h2 className="text-sm font-semibold text-foreground">Featured Stores</h2>
         <Link
           to="/stores"
@@ -152,11 +152,7 @@ export function TopStoresSection() {
 
       <div
         ref={scrollRef}
-        className={cn(
-          "flex gap-3 overflow-x-auto snap-x snap-mandatory",
-          "-mx-4 px-4 pb-1",
-          "[-webkit-overflow-scrolling:touch]"
-        )}
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-4 pb-1 [-webkit-overflow-scrolling:touch]"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {isLoading
