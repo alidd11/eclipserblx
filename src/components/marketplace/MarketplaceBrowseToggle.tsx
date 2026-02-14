@@ -10,30 +10,30 @@ interface MarketplaceBrowseToggleProps {
 
 export function MarketplaceBrowseToggle({ mode, onChange }: MarketplaceBrowseToggleProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+    <div className="flex items-center gap-2 max-w-xs mx-auto">
       <button
         onClick={() => onChange('stores')}
         className={cn(
-          'flex flex-col items-center gap-2 p-4 rounded-lg border transition-all duration-200',
+          'flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-all duration-200 flex-1 justify-center',
           mode === 'stores'
             ? 'border-primary bg-primary/10 text-primary'
             : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'
         )}
       >
-        <Store className="h-6 w-6" />
-        <span className="text-sm font-semibold">Browse Stores</span>
+        <Store className="h-4 w-4" />
+        Stores
       </button>
       <button
         onClick={() => onChange('products')}
         className={cn(
-          'flex flex-col items-center gap-2 p-4 rounded-lg border transition-all duration-200',
+          'flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-all duration-200 flex-1 justify-center',
           mode === 'products'
             ? 'border-primary bg-primary/10 text-primary'
             : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'
         )}
       >
-        <Package className="h-6 w-6" />
-        <span className="text-sm font-semibold">Browse Products</span>
+        <Package className="h-4 w-4" />
+        Products
       </button>
     </div>
   );
