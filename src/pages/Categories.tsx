@@ -9,20 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
-// Category images
-import civilianVehiclesImg from '@/assets/categories/civilian-vehicles.jpg';
-import markedPoliceImg from '@/assets/categories/marked-police.jpg';
-import unmarkedPoliceImg from '@/assets/categories/unmarked-police.jpg';
-import fireVehiclesImg from '@/assets/categories/fire-vehicles.jpg';
-import ambulanceVehiclesImg from '@/assets/categories/ambulance-vehicles.jpg';
-import aircraftImg from '@/assets/categories/aircraft.jpg';
-import uniformsImg from '@/assets/categories/uniforms.jpg';
-import militaryVehiclesImg from '@/assets/categories/military-vehicles.jpg';
-import mapsImg from '@/assets/categories/maps.jpg';
-import bundleDealsImg from '@/assets/categories/bundle-deals.jpg';
-import botsImg from '@/assets/categories/bots.jpg';
-import buildingsImg from '@/assets/categories/buildings.jpg';
-
 const categoryIcons: Record<string, React.ElementType> = {
   'civilian-vehicles': Car,
   'marked-police-vehicles': Shield,
@@ -38,20 +24,6 @@ const categoryIcons: Record<string, React.ElementType> = {
   'buildings': Building2,
 };
 
-const categoryImages: Record<string, string> = {
-  'civilian-vehicles': civilianVehiclesImg,
-  'marked-police-vehicles': markedPoliceImg,
-  'unmarked-police-vehicles': unmarkedPoliceImg,
-  'fire-vehicles': fireVehiclesImg,
-  'ambulance-vehicles': ambulanceVehiclesImg,
-  'aircraft': aircraftImg,
-  'uniforms': uniformsImg,
-  'military-vehicles': militaryVehiclesImg,
-  'maps': mapsImg,
-  'bundle-deals': bundleDealsImg,
-  'bots': botsImg,
-  'buildings': buildingsImg,
-};
 
 interface TopProduct {
   id: string;
@@ -153,7 +125,8 @@ function getProductThumb(product: TopProduct): string | null {
 
 function CategoryCard({ category, sourceParam }: { category: CategoryData; sourceParam: string }) {
   const Icon = categoryIcons[category.slug] || Package;
-  const bgImage = categoryImages[category.slug];
+  // Use the best product image from the category as the banner
+  const bgImage = category.topProducts.length > 0 ? getProductThumb(category.topProducts[0]) : null;
   const isEmpty = category.product_count === 0;
 
   return (
