@@ -267,9 +267,14 @@ export function MarketplaceSection() {
   }
 
   const storesList = stores || [];
-  // TopStoresSection shows up to 6 stores, so exclude those from the grid below
-  const topStoreIds = new Set(storesList.slice(0, 6).map(s => s.id));
-  const allStores = storesList.filter(s => !topStoreIds.has(s.id));
+  // Exclude the featured spotlight store (smallest seller, same logic as TopStoresSection)
+  const sortedForSpotlight = [...storesList].sort((a, b) => {
+    if (a.is_trusted !== b.is_trusted) return a.is_trusted ? 1 : -1;
+    if (a.is_verified !== b.is_verified) return a.is_verified ? 1 : -1;
+    return (a.follower_count || 0) - (b.follower_count || 0);
+  });
+  const spotlightStoreId = sortedForSpotlight[0]?.id;
+  const allStores = storesList.filter(s => s.id !== spotlightStoreId);
 
   return (
     <section className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
