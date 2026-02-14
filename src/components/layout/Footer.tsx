@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { SITE_NAME } from '@/lib/constants';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+
 
 export function Footer() {
   const { t } = useTranslation();
@@ -78,7 +78,6 @@ export function Footer() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">{t('common.securePayments')}</span>
-            <LanguageSwitcher />
           </div>
         </div>
       </div>
