@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { ReviewsShowcase } from '@/components/home/ReviewsShowcase';
 import { PWAFeaturedStores } from '@/components/landing/PWAFeaturedStores';
-import { RecentReleasesCarousel } from '@/components/marketplace/RecentReleasesCarousel';
+import { PWARecentReleases } from '@/components/landing/PWARecentReleases';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
@@ -115,8 +115,8 @@ export function PWALandingHero() {
           </div>
 
           <div className="w-full px-0 space-y-6 pb-6">
-            {/* Recent Releases - horizontal carousel like ClearlyDev */}
-            <RecentReleasesCarousel />
+            {/* Recent Releases - 2 cards rotating every 3s */}
+            <PWARecentReleases />
             
             <PWAFeaturedStores />
             <ActiveOffersCard />
