@@ -9,12 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
-import botsImg from '@/assets/categories/bots.jpg';
-
-// Categories that should always use their static image instead of product images
-const staticImageCategories: Record<string, string> = {
-  'bots': botsImg,
-};
+// Categories that get a custom styled banner instead of product images
+const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
 
 const categoryIcons: Record<string, React.ElementType> = {
   'civilian-vehicles': Car,
@@ -132,9 +128,10 @@ function getProductThumb(product: TopProduct): string | null {
 
 function CategoryCard({ category, sourceParam }: { category: CategoryData; sourceParam: string }) {
   const Icon = categoryIcons[category.slug] || Package;
-  // Use static image for certain categories (e.g. bots), otherwise use top product image
-  const bgImage = staticImageCategories[category.slug]
-    || (category.topProducts.length > 0 ? getProductThumb(category.topProducts[0]) : null);
+  const isCustomBanner = CUSTOM_BANNER_CATEGORIES.has(category.slug);
+  const bgImage = isCustomBanner
+    ? null
+    : (category.topProducts.length > 0 ? getProductThumb(category.topProducts[0]) : null);
   const isEmpty = category.product_count === 0;
 
   return (
@@ -144,15 +141,31 @@ function CategoryCard({ category, sourceParam }: { category: CategoryData; sourc
         to={isEmpty ? '#' : `/products?category=${category.slug}${sourceParam}`}
         className="relative block h-32 sm:h-36 overflow-hidden"
       >
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{
-            backgroundImage: bgImage
-              ? `url(${bgImage})`
-              : 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted-foreground) / 0.15))'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        {isCustomBanner && category.slug === 'bots' ? (
+          <>
+            {/* Discord-branded banner for bots */}
+            <div className="absolute inset-0 bg-[#5865F2]" />
+            <div className="absolute inset-0 flex items-center justify-center gap-3">
+              <svg viewBox="0 0 127.14 96.36" className="h-12 w-12 sm:h-14 sm:w-14 text-white fill-current">
+                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+              </svg>
+              <span className="text-white font-extrabold text-xl sm:text-2xl tracking-wide uppercase">Discord Bots</span>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+              style={{
+                backgroundImage: bgImage
+                  ? `url(${bgImage})`
+                  : 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted-foreground) / 0.15))'
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          </>
+        )}
         
         {/* Category info overlay */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
