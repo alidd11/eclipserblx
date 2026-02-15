@@ -121,7 +121,6 @@ export function StoreSidebar({
       title: 'Quick Access',
       icon: Home,
       items: [
-        { title: 'Back to Marketplace', icon: ChevronLeft, href: '/' },
         { title: 'Store Home', icon: Home, href: `/store/${storeSlug}` },
         { title: 'About', icon: Info, href: `/store/${storeSlug}/about` },
       ],
@@ -535,38 +534,50 @@ export function StoreSidebar({
 
         {/* Store info */}
         {!isCollapsed ? (
-          <div className="relative px-3 pb-3 flex items-end gap-2.5 -mt-5">
-            <div className="h-10 w-10 rounded-lg border-2 border-sidebar bg-sidebar shrink-0 overflow-hidden shadow-sm">
-              {logoUrl ? (
-                <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full bg-primary/10 flex items-center justify-center">
-                  <Package className="h-5 w-5 text-primary" />
-                </div>
-              )}
+          <>
+            <div className="relative px-3 pb-1.5 flex items-end gap-2.5 -mt-5">
+              <div className="h-10 w-10 rounded-lg border-2 border-sidebar bg-sidebar shrink-0 overflow-hidden shadow-sm">
+                {logoUrl ? (
+                  <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                    <Package className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="font-display font-bold text-sm text-foreground truncate">
+                  {storeName}
+                </h1>
+                <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Store</p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="font-display font-bold text-sm text-foreground truncate">
-                {storeName}
-              </h1>
-              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Store</p>
-            </div>
-          </div>
+            <Link
+              to="/"
+              onClick={handleNavClick}
+              className="flex items-center gap-1 px-3 pb-2.5 text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="h-3 w-3 stroke-[2]" />
+              <span>Back to Marketplace</span>
+            </Link>
+          </>
         ) : (
           <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="h-8 w-8 rounded-lg border-2 border-sidebar bg-sidebar overflow-hidden shadow-sm">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-primary/10 flex items-center justify-center">
-                      <Package className="h-4 w-4 text-primary" />
-                    </div>
-                  )}
-                </div>
+                <Link to="/" onClick={handleNavClick} className="block">
+                  <div className="h-8 w-8 rounded-lg border-2 border-sidebar bg-sidebar overflow-hidden shadow-sm">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                        <Package className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
+                  </div>
+                </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">{storeName}</TooltipContent>
+              <TooltipContent side="right">Back to Marketplace</TooltipContent>
             </Tooltip>
           </div>
         )}
