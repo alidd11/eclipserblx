@@ -52,7 +52,7 @@ export function LandingHero() {
                 </Button>
               </Link>
               {!isSeller && (
-                <Link to="/products">
+              <Link to="/seller">
                   <Button size="sm" className="h-8 px-3 text-xs">
                     <Store className="h-3.5 w-3.5 sm:mr-1.5" />
                     <span className="hidden sm:inline">{t('landing.startSelling')}</span>
