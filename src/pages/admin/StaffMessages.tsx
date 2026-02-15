@@ -204,7 +204,9 @@ function StaffMessagesContent() {
     enabled: messages.length > 0,
   });
 
-  // Fetch user roles
+  // Fetch user roles - pick highest priority staff role per user
+  const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'order_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
+
   const { data: userRoles = {} } = useQuery({
     queryKey: ['staff-roles', messages.map(m => m.user_id)],
     queryFn: async () => {
@@ -218,9 +220,14 @@ function StaffMessagesContent() {
       
       if (error) throw error;
       
-      return Object.fromEntries(
-        data.map(r => [r.user_id, r.role])
-      ) as Record<string, string>;
+      // Group roles by user, pick highest priority staff role
+      const roleMap: Record<string, string> = {};
+      for (const userId of userIds) {
+        const roles = data.filter(r => r.user_id === userId).map(r => r.role);
+        const bestRole = ROLE_PRIORITY.find(r => roles.includes(r));
+        if (bestRole) roleMap[userId] = bestRole;
+      }
+      return roleMap;
     },
     enabled: messages.length > 0,
   });
