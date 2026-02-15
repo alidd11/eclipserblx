@@ -44,10 +44,6 @@ serve(async (req) => {
           },
           description,
           color,
-          fields: [
-            { name: "User ID", value: `\`${discord_id}\``, inline: true },
-            { name: "Action", value: `${emoji} ${isBoosted ? "Boosted" : "Unboosted"}`, inline: true },
-          ],
           timestamp: new Date().toISOString(),
         },
       ],
