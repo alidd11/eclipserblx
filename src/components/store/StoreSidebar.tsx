@@ -508,7 +508,7 @@ export function StoreSidebar({
   return (
     <aside 
       className={cn(
-        "bg-sidebar text-foreground flex flex-col transition-all duration-200 shrink-0",
+        "bg-sidebar text-foreground flex flex-col transition-all duration-200 shrink-0 overflow-x-hidden",
         isMobileDrawer 
           ? "h-full w-full border-0 max-h-[100dvh]" 
           : "h-[100dvh] sticky top-0 border-r border-border",
@@ -555,10 +555,10 @@ export function StoreSidebar({
             <Link
               to="/"
               onClick={handleNavClick}
-              className="flex items-center gap-2.5 px-2.5 py-1.5 mx-1.5 rounded-md text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors duration-100"
+              className="group flex items-center gap-1.5 px-3 pb-2 pt-0.5 text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-150"
             >
-              <ChevronLeft className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
-              <span className="leading-none">Back to Marketplace</span>
+              <ChevronLeft className="h-3 w-3 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5" />
+              <span className="leading-none">Marketplace</span>
             </Link>
           </>
         ) : (
