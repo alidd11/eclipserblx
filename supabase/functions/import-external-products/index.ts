@@ -26,6 +26,26 @@ interface ScrapeResult {
   error?: string;
 }
 
+// Blocked competitor marketplace domains
+const BLOCKED_DOMAINS = [
+  'clearlydev.com',
+  'builtbybit.com',
+  'scriptblox.com',
+  'v3rmillion.net',
+  'robloxscripts.com',
+];
+const blockedDomainPattern = new RegExp(
+  BLOCKED_DOMAINS.map(d => d.replace(/\./g, '\\.')).join('|'),
+  'i'
+);
+
+/** Strip plain-text URLs pointing to blocked domains from a description string */
+function stripBlockedUrls(text: string): string {
+  if (!text) return '';
+  // Remove plain URLs to blocked domains
+  return text.replace(/https?:\/\/[^\s<>"']*(?:clearlydev\.com|builtbybit\.com|scriptblox\.com|v3rmillion\.net|robloxscripts\.com)[^\s<>"']*/gi, '').trim();
+}
+
 // Category keyword mapping for auto-matching
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   'discord-bots': ['bot', 'discord bot', 'moderation', 'music bot', 'utility bot'],
@@ -576,7 +596,7 @@ serve(async (req) => {
         .insert({
           name: product.name,
           slug: uniqueSlug,
-          description: product.description || null,
+          description: stripBlockedUrls(product.description) || null,
           price: product.price || 0,
           images: product.images.length > 0 ? product.images : [],
           store_id: store.id,
@@ -706,7 +726,7 @@ serve(async (req) => {
           .insert({
             name: product.name,
             slug: uniqueSlug,
-            description: product.description || null,
+            description: stripBlockedUrls(product.description) || null,
             price: product.price || 0,
             images: product.images.length > 0 ? product.images : [],
             store_id: store.id,

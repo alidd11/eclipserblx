@@ -40,6 +40,7 @@ import {
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { containsBlockedLinks } from '@/lib/blockedLinks';
 
 interface ModerationFlags {
   nsfw_flags?: string[];
@@ -457,6 +458,11 @@ export default function SellerProductEditor() {
     if (!formData.ip_ownership_confirmed) {
       toast.error('You must confirm you have the rights to sell this product');
       return;
+    }
+
+    // Warn about blocked marketplace links (they'll be stripped by sanitization)
+    if (containsBlockedLinks(formData.description)) {
+      toast.warning('Links to external marketplaces are not allowed and have been removed');
     }
 
     saveProduct.mutate(formData);
