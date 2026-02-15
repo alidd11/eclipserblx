@@ -121,7 +121,6 @@ export function StoreSidebar({
       title: 'Quick Access',
       icon: Home,
       items: [
-        { title: 'Back to Marketplace', icon: ChevronLeft, href: '/' },
         { title: 'Store Home', icon: Home, href: `/store/${storeSlug}` },
         { title: 'About', icon: Info, href: `/store/${storeSlug}/about` },
       ],
@@ -517,7 +516,7 @@ export function StoreSidebar({
       )}
       data-gesture-exempt="true"
     >
-      {/* Header with banner + logo */}
+      {/* Header with banner + logo + back button */}
       <div className="border-b border-border/50 overflow-hidden">
         {/* Banner */}
         <div className={cn("relative pt-[env(safe-area-inset-top)]", isMobileDrawer ? "h-20" : "h-16")}>
@@ -531,11 +530,22 @@ export function StoreSidebar({
             <div className="absolute inset-0 bg-primary/10" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/60 to-transparent" />
+          {/* Back to Marketplace overlay */}
+          {!isCollapsed && (
+            <Link
+              to="/"
+              onClick={handleNavClick}
+              className="absolute top-[env(safe-area-inset-top)] left-0 flex items-center gap-0.5 px-2 py-1.5 text-[11px] font-medium text-foreground/80 hover:text-foreground transition-colors z-10"
+            >
+              <ChevronLeft className="h-3.5 w-3.5 stroke-[2]" />
+              <span>Marketplace</span>
+            </Link>
+          )}
         </div>
 
         {/* Store info */}
         {!isCollapsed ? (
-          <div className={cn("relative px-3 pb-3 flex items-end gap-2.5 -mt-5")}>
+          <div className="relative px-3 pb-3 flex items-end gap-2.5 -mt-5">
             <div className="h-10 w-10 rounded-lg border-2 border-sidebar bg-sidebar shrink-0 overflow-hidden shadow-sm">
               {logoUrl ? (
                 <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
@@ -556,17 +566,19 @@ export function StoreSidebar({
           <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="h-8 w-8 rounded-lg border-2 border-sidebar bg-sidebar overflow-hidden shadow-sm">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-primary/10 flex items-center justify-center">
-                      <Package className="h-4 w-4 text-primary" />
-                    </div>
-                  )}
-                </div>
+                <Link to="/" onClick={handleNavClick} className="block">
+                  <div className="h-8 w-8 rounded-lg border-2 border-sidebar bg-sidebar overflow-hidden shadow-sm">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                        <Package className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
+                  </div>
+                </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">{storeName}</TooltipContent>
+              <TooltipContent side="right">Back to Marketplace</TooltipContent>
             </Tooltip>
           </div>
         )}
