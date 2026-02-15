@@ -402,7 +402,7 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto space-y-5">
         {/* Hero Banner */}
         <Card className="overflow-hidden border-border bg-card">
-          {/* Banner area */}
+          {/* Banner area with branding */}
           <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
             <img
               src={ECLIPSE_BANNER}
@@ -422,7 +422,7 @@ export default function AdminDashboard() {
 
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-display font-bold truncate">
+                  <h1 className="text-xl sm:text-2xl font-bold truncate">
                     {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                   </h1>
                   <Badge variant="default" className="gap-1 shrink-0">
@@ -432,7 +432,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-
           </CardContent>
         </Card>
 
