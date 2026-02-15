@@ -32,8 +32,8 @@ serve(async (req) => {
     const color = isBoosted ? BOOST_COLOR : UNBOOST_COLOR;
     const emoji = isBoosted ? "🚀" : "📉";
     const description = isBoosted
-      ? `🚀 Thank you for boosting the server, <@${discord_id}>! 🎉`
-      : `<@${discord_id}> is no longer boosting the server.`;
+      ? `🚀 Thank you for boosting the server! 🎉`
+      : `No longer boosting the server.`;
 
     const result = await sendBotMessage(BOOST_LOG_CHANNEL_ID, {
       content: `<@${discord_id}>`,
