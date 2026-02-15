@@ -2083,6 +2083,7 @@ export type Database = {
           max_uses: number | null
           min_order_amount: number | null
           product_ids: string[] | null
+          store_id: string | null
         }
         Insert: {
           category_ids?: string[] | null
@@ -2097,6 +2098,7 @@ export type Database = {
           max_uses?: number | null
           min_order_amount?: number | null
           product_ids?: string[] | null
+          store_id?: string | null
         }
         Update: {
           category_ids?: string[] | null
@@ -2111,8 +2113,24 @@ export type Database = {
           max_uses?: number | null
           min_order_amount?: number | null
           product_ids?: string[] | null
+          store_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "discount_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       download_logs: {
         Row: {

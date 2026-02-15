@@ -216,10 +216,24 @@ serve(async (req) => {
             .single();
 
           if (discount) {
-            if (discount.discount_type === 'percentage') {
-              discountAmount = (serverSubtotal * discount.discount_value) / 100;
+            // Store-scoped discount validation
+            if (discount.store_id) {
+              const itemStoreIds = validatedItems.map((i: any) => i.store_id).filter(Boolean);
+              if (!itemStoreIds.includes(discount.store_id)) {
+                // Skip - store mismatch
+              } else {
+                if (discount.discount_type === 'percentage') {
+                  discountAmount = (serverSubtotal * discount.discount_value) / 100;
+                } else {
+                  discountAmount = Math.min(discount.discount_value, serverSubtotal);
+                }
+              }
             } else {
-              discountAmount = Math.min(discount.discount_value, serverSubtotal);
+              if (discount.discount_type === 'percentage') {
+                discountAmount = (serverSubtotal * discount.discount_value) / 100;
+              } else {
+                discountAmount = Math.min(discount.discount_value, serverSubtotal);
+              }
             }
           }
         }

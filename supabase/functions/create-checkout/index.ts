@@ -205,12 +205,27 @@ serve(async (req) => {
         .single();
 
       if (discount) {
-        if (discount.discount_type === 'percentage') {
-          discountAmount = (serverSubtotal * discount.discount_value) / 100;
+        // If store-scoped, verify at least one item belongs to that store
+        if (discount.store_id) {
+          const itemStoreIds = validatedItems.map((i: any) => i.store_id).filter(Boolean);
+          if (!itemStoreIds.includes(discount.store_id)) {
+            logStep("Discount code rejected - store mismatch", { discountStoreId: discount.store_id, itemStoreIds });
+          } else {
+            if (discount.discount_type === 'percentage') {
+              discountAmount = (serverSubtotal * discount.discount_value) / 100;
+            } else {
+              discountAmount = Math.min(discount.discount_value, serverSubtotal);
+            }
+            logStep("Store-scoped discount applied", { discountAmount, storeId: discount.store_id });
+          }
         } else {
-          discountAmount = Math.min(discount.discount_value, serverSubtotal);
+          if (discount.discount_type === 'percentage') {
+            discountAmount = (serverSubtotal * discount.discount_value) / 100;
+          } else {
+            discountAmount = Math.min(discount.discount_value, serverSubtotal);
+          }
+          logStep("Discount code applied", { discountAmount, type: discount.discount_type });
         }
-        logStep("Discount code applied", { discountAmount, type: discount.discount_type });
       }
     } else if (discountCodeId && isEclipseMember) {
       logStep("Discount code ignored - Eclipse+ member (no stacking)");
