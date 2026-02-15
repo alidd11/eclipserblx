@@ -64,6 +64,8 @@ interface NavGroup {
 interface StoreSidebarProps {
   storeSlug: string;
   storeName: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
   tabs?: StoreTab[];
   activeTab: string | null;
   onTabChange: (tabSlug: string | null) => void;
@@ -78,6 +80,8 @@ interface StoreSidebarProps {
 export function StoreSidebar({
   storeSlug,
   storeName,
+  logoUrl,
+  bannerUrl,
   tabs = [],
   activeTab,
   onTabChange,
@@ -513,22 +517,60 @@ export function StoreSidebar({
       )}
       data-gesture-exempt="true"
     >
-      {/* Header */}
-      <div className="px-3 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-border">
-        {!isCollapsed && (
-          <h1 className="font-display font-bold text-sm text-foreground truncate">
-            {storeName}
-          </h1>
+      {/* Header with banner + logo */}
+      <div className="border-b border-border/50 overflow-hidden">
+        {/* Banner */}
+        {!isMobileDrawer && (
+          <div className="relative h-16 pt-[env(safe-area-inset-top)]">
+            {bannerUrl ? (
+              <img
+                src={bannerUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-primary/10" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/60 to-transparent" />
+          </div>
         )}
-        {isCollapsed && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center">
-                <span className="font-display font-bold text-sm text-foreground">{storeName.charAt(0)}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">{storeName}</TooltipContent>
-          </Tooltip>
+
+        {/* Store info */}
+        {!isCollapsed ? (
+          <div className={cn("relative px-3 pb-3 flex items-end gap-2.5", isMobileDrawer ? "pt-3" : "-mt-5")}>
+            <div className="h-10 w-10 rounded-lg border-2 border-sidebar bg-sidebar shrink-0 overflow-hidden shadow-sm">
+              {logoUrl ? (
+                <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                  <Package className="h-5 w-5 text-primary" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-display font-bold text-sm text-foreground truncate">
+                {storeName}
+              </h1>
+              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Store</p>
+            </div>
+          </div>
+        ) : (
+          <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="h-8 w-8 rounded-lg border-2 border-sidebar bg-sidebar overflow-hidden shadow-sm">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                      <Package className="h-4 w-4 text-primary" />
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">{storeName}</TooltipContent>
+            </Tooltip>
+          </div>
         )}
       </div>
 
