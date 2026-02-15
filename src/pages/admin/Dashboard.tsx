@@ -430,9 +430,6 @@ export default function AdminDashboard() {
                     Admin
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground truncate">
-                  Here's your platform overview
-                </p>
               </div>
             </div>
 
