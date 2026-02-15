@@ -31,6 +31,7 @@ interface StoreLayoutProps {
     slug?: string;
     name: string;
     logo_url?: string | null;
+    banner_url?: string | null;
     accent_color?: string;
     discord_url?: string | null;
     twitter_url?: string | null;
@@ -184,6 +185,8 @@ function StoreLayoutContent({
           <StoreSidebar
             storeSlug={store.slug || store.id}
             storeName={store.name}
+            logoUrl={store.logo_url}
+            bannerUrl={store.banner_url}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={handleTabChange}
@@ -207,6 +210,8 @@ function StoreLayoutContent({
               <StoreSidebar
                 storeSlug={store.slug || store.id}
                 storeName={store.name}
+                logoUrl={store.logo_url}
+                bannerUrl={store.banner_url}
                 tabs={tabs}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}

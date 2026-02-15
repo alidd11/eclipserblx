@@ -350,6 +350,7 @@ export default function StorePage() {
         slug: store.slug || storeSlug || '',
         name: store.name,
         logo_url: store.logo_url,
+        banner_url: store.banner_url,
         accent_color: accentColor,
         discord_url: store.discord_url,
         twitter_url: store.twitter_url,
