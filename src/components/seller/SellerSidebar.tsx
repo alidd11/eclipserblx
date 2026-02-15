@@ -297,7 +297,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
 
   return (
     <aside className={cn(
-      "flex flex-col transition-all duration-300 shrink-0",
+      "flex flex-col transition-all duration-300 shrink-0 overflow-x-hidden",
       "bg-card text-foreground",
       isMobileDrawer 
         ? "h-full w-full border-0 max-h-[100dvh]" 
