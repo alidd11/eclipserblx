@@ -52,33 +52,56 @@ serve(async (req) => {
     logStep("Product ID received", { productId });
 
     // Verify the user has an active Eclipse+ subscription
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      throw new Error("No active Eclipse+ subscription found");
+    // First check local database for admin-granted or promotion subscriptions
+    const { data: localSub } = await supabaseClient
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    let hasActiveSubscription = false;
+
+    if (localSub && !localSub.stripe_subscription_id && localSub.current_period_end) {
+      // Admin-granted or promotion subscription - check if still valid
+      const periodEnd = new Date(localSub.current_period_end);
+      if (periodEnd > new Date()) {
+        hasActiveSubscription = true;
+        logStep("Eclipse+ subscription verified (admin-granted)", { userId: user.id });
+      }
     }
 
-    const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 10,
-    });
+    // If no local subscription, check Stripe
+    if (!hasActiveSubscription) {
+      const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+      
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length === 0) {
+        throw new Error("No active Eclipse+ subscription found");
+      }
 
-    const eclipsePlusSub = subscriptions.data.find((sub: any) => {
-      return sub.items.data.some((item: any) => {
-        const prodId = typeof item.price.product === 'string' 
-          ? item.price.product 
-          : item.price.product?.id;
-        return prodId === ECLIPSE_PLUS_PRODUCT_ID;
+      const customerId = customers.data[0].id;
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 10,
       });
-    });
 
-    if (!eclipsePlusSub) {
-      throw new Error("No active Eclipse+ subscription found");
+      const eclipsePlusSub = subscriptions.data.find((sub: any) => {
+        return sub.items.data.some((item: any) => {
+          const prodId = typeof item.price.product === 'string' 
+            ? item.price.product 
+            : item.price.product?.id;
+          return prodId === ECLIPSE_PLUS_PRODUCT_ID;
+        });
+      });
+
+      if (!eclipsePlusSub) {
+        throw new Error("No active Eclipse+ subscription found");
+      }
+      hasActiveSubscription = true;
+      logStep("Eclipse+ subscription verified (Stripe)", { subscriptionId: eclipsePlusSub.id });
     }
-    logStep("Eclipse+ subscription verified", { subscriptionId: eclipsePlusSub.id });
 
     // Check if user has already claimed this month
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
