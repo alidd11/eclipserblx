@@ -307,23 +307,25 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     )}>
       {/* Header with banner + logo */}
       <div className="border-b border-border/50 overflow-hidden">
-        {/* Banner */}
-        <div className="relative h-16 pt-[env(safe-area-inset-top)]">
-          {store?.banner_url ? (
-            <img
-              src={store.banner_url}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-primary/10" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
-        </div>
+        {/* Banner - hidden on mobile drawer to save space */}
+        {!isMobileDrawer && (
+          <div className="relative h-16 pt-[env(safe-area-inset-top)]">
+            {store?.banner_url ? (
+              <img
+                src={store.banner_url}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-primary/10" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+          </div>
+        )}
 
         {/* Store info overlaid at bottom of banner */}
         {!isCollapsed ? (
-          <div className="relative px-3 pb-3 -mt-5 flex items-end gap-2.5">
+          <div className={cn("relative px-3 pb-3 flex items-end gap-2.5", isMobileDrawer ? "pt-3" : "-mt-5")}>
             <div className="h-10 w-10 rounded-lg border-2 border-card bg-card shrink-0 overflow-hidden shadow-sm">
               {store?.logo_url ? (
                 <img src={store.logo_url} alt={store?.name || 'Store'} className="h-full w-full object-cover" />
