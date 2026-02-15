@@ -16,7 +16,7 @@ serve(async (req) => {
   }
 
   try {
-    const { discord_id, discord_username, discord_avatar_url, role_name, action } = await req.json();
+    const { discord_id, discord_username, discord_avatar_url, role_name, role_id, action, performed_by_id, performed_by_username, performed_by_is_bot } = await req.json();
 
     if (!discord_id || !discord_username || !role_name || !action) {
       return new Response(
@@ -30,6 +30,46 @@ serve(async (req) => {
 
     const isAdded = action === "added";
 
+    // Build role mention - use <@&role_id> if available, otherwise bold name
+    const roleMention = role_id ? `<@&${role_id}>` : `**${role_name}**`;
+
+    // Build "performed by" field
+    let performedByValue = "Unknown";
+    if (performed_by_id) {
+      if (performed_by_is_bot) {
+        performedByValue = `🤖 <@${performed_by_id}>`;
+      } else {
+        performedByValue = `👤 <@${performed_by_id}>`;
+      }
+    }
+
+    const fields = [
+      {
+        name: "User ID",
+        value: `\`${discord_id}\``,
+        inline: true,
+      },
+      {
+        name: "Role",
+        value: roleMention,
+        inline: true,
+      },
+      {
+        name: "Action",
+        value: isAdded ? "✅ Added" : "❌ Removed",
+        inline: true,
+      },
+    ];
+
+    // Add "Performed By" field if we know who did it
+    if (performed_by_id) {
+      fields.push({
+        name: "Performed By",
+        value: performedByValue,
+        inline: true,
+      });
+    }
+
     const result = await sendBotMessage(ROLE_LOG_CHANNEL_ID, {
       embeds: [
         {
@@ -37,25 +77,9 @@ serve(async (req) => {
             name: discord_username,
             icon_url: avatarUrl,
           },
-          description: `<@${discord_id}> was ${isAdded ? "given" : "removed from"} the **${role_name}** role.`,
+          description: `<@${discord_id}> was ${isAdded ? "given" : "removed from"} the ${roleMention} role.`,
           color: isAdded ? ROLE_ADD_COLOR : ROLE_REMOVE_COLOR,
-          fields: [
-            {
-              name: "User ID",
-              value: `\`${discord_id}\``,
-              inline: true,
-            },
-            {
-              name: "Role",
-              value: role_name,
-              inline: true,
-            },
-            {
-              name: "Action",
-              value: isAdded ? "✅ Added" : "❌ Removed",
-              inline: true,
-            },
-          ],
+          fields,
           timestamp: new Date().toISOString(),
         },
       ],
