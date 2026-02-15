@@ -96,7 +96,9 @@ export default function Cart() {
                         <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1 text-sm sm:text-base">
                           {item.name}
                         </Link>
-                        <p className="text-muted-foreground text-xs sm:text-sm">{t('common.digitalProduct')} • {t('common.instantDelivery')}</p>
+                        <p className="text-muted-foreground text-xs sm:text-sm">
+                          {item.store_name ? `${item.store_name} • ` : ''}{t('common.digitalProduct')} • {t('common.instantDelivery')}
+                        </p>
                       </div>
 
                       <div className="flex flex-col items-end gap-1 shrink-0">
