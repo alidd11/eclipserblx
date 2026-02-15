@@ -73,9 +73,8 @@ serve(async (req) => {
         {
           title: "📢 Paid Promotions",
           description:
-            "This channel is for **paid advertisements** from verified Eclipse users.\n\n" +
-            "Want to promote your products, servers, or services here? Subscribe to an advertising plan and your ads will be posted automatically.\n\n" +
-            "**[Get Started →](" + SITE_URL + "/advertising)**",
+            "This channel is for **paid advertisements** from verified Eclipse users. " +
+            "Want to advertise here? **[Get Started →](" + SITE_URL + "/advertising)**",
           color: ECLIPSE_COLOR,
           footer: {
             text: "Eclipse Marketplace",
