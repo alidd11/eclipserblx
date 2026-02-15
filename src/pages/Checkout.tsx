@@ -238,7 +238,9 @@ export default function Checkout() {
                   </div>
                   <div className="flex-1 min-w-0 overflow-hidden">
                     <p className="font-medium truncate text-sm">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{t('common.digitalProduct')}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.store_name ? `${item.store_name} • ` : ''}{t('common.digitalProduct')}
+                    </p>
                   </div>
                   <div className="text-right">
                     {item.hasEclipseDiscount ? (

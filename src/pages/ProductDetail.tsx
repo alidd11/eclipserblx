@@ -317,6 +317,7 @@ export default function ProductDetail() {
         category_id: product.category_id,
         is_resellable: product.is_resellable,
         store_eclipse_enabled: storeEclipseEnabled,
+        store_name: product.stores?.name,
       };
 
       // Add bundle info if this is a bot product with a bundle selected

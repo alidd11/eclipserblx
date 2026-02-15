@@ -15,6 +15,7 @@ export interface CartItem {
   bundle_id?: string; // Reference to the bundle if applicable
   bundle_label?: string; // Human-readable bundle name (e.g., "3-Pack")
   store_eclipse_enabled?: boolean; // Whether store has Eclipse+ discounts enabled
+  store_name?: string; // Store name for transparency in cart/checkout
 }
 
 interface CartContextType {
