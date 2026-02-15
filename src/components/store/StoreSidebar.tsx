@@ -520,24 +520,22 @@ export function StoreSidebar({
       {/* Header with banner + logo */}
       <div className="border-b border-border/50 overflow-hidden">
         {/* Banner */}
-        {!isMobileDrawer && (
-          <div className="relative h-16 pt-[env(safe-area-inset-top)]">
-            {bannerUrl ? (
-              <img
-                src={bannerUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-primary/10" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/60 to-transparent" />
-          </div>
-        )}
+        <div className={cn("relative pt-[env(safe-area-inset-top)]", isMobileDrawer ? "h-20" : "h-16")}>
+          {bannerUrl ? (
+            <img
+              src={bannerUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-primary/10" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/60 to-transparent" />
+        </div>
 
         {/* Store info */}
         {!isCollapsed ? (
-          <div className={cn("relative px-3 pb-3 flex items-end gap-2.5", isMobileDrawer ? "pt-3" : "-mt-5")}>
+          <div className={cn("relative px-3 pb-3 flex items-end gap-2.5 -mt-5")}>
             <div className="h-10 w-10 rounded-lg border-2 border-sidebar bg-sidebar shrink-0 overflow-hidden shadow-sm">
               {logoUrl ? (
                 <img src={logoUrl} alt={storeName} className="h-full w-full object-cover" />
