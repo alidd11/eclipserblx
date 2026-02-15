@@ -116,10 +116,10 @@ serve(async (req) => {
       throw new Error("You have already claimed your free product this month");
     }
 
-    // Fetch the product to validate
+    // Fetch the product to validate (include store info for Eclipse+ check)
     const { data: product, error: productError } = await supabaseClient
       .from('products')
-      .select('id, name, price, category_id, is_active')
+      .select('id, name, price, category_id, is_active, is_resellable, eclipse_free_eligible, store_id')
       .eq('id', productId)
       .single();
 
@@ -135,6 +135,30 @@ serve(async (req) => {
     if (product.category_id === BOT_CATEGORY_ID) {
       throw new Error("Bot products cannot be claimed for free. The Eclipse+ free product benefit excludes bot products.");
     }
+
+    // Check if product is resellable (excluded from free claims)
+    if (product.is_resellable) {
+      throw new Error("Resellable products cannot be claimed for free.");
+    }
+
+    // Check if seller has opted out of free claims for this product
+    if (product.eclipse_free_eligible === false) {
+      throw new Error("This product is not eligible for free Eclipse+ claims.");
+    }
+
+    // Check if store has opted out of Eclipse+ entirely
+    if (product.store_id) {
+      const { data: store } = await supabaseClient
+        .from('stores')
+        .select('eclipse_plus_discount_enabled')
+        .eq('id', product.store_id)
+        .single();
+
+      if (store?.eclipse_plus_discount_enabled === false) {
+        throw new Error("This store does not participate in Eclipse+ benefits.");
+      }
+    }
+
     logStep("Product validated", { productName: product.name, price: product.price });
 
     // Create an order for the free product
