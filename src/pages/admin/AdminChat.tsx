@@ -44,6 +44,19 @@ interface AdminMember {
   email: string;
 }
 
+// Role badge styling - same as StaffMessages
+const DEFAULT_ROLE_BADGES: Record<string, { label: string; className: string }> = {
+  admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  lead_administrator: { label: 'Lead Admin', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  order_manager: { label: 'Orders', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  support_agent: { label: 'Support', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  analyst: { label: 'Analyst', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  recruiter: { label: 'Recruiter', className: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+  seller: { label: 'Seller', className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+};
+
+const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'order_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
+
 interface TypingUser {
   user_id: string;
   name: string;
@@ -202,7 +215,31 @@ function AdminChatContent() {
     enabled: messages.length > 0 && canAccessAdminChat,
   });
 
-  // Fetch current user profile for presence
+  // Fetch user roles - pick highest priority staff role per user
+  const { data: userRoles = {} } = useQuery({
+    queryKey: ['admin-chat-roles', messages.map(m => m.user_id)],
+    queryFn: async () => {
+      if (!messages.length) return {};
+      const userIds = [...new Set(messages.map(m => m.user_id))];
+      
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+      
+      if (error) throw error;
+      
+      const roleMap: Record<string, string> = {};
+      for (const userId of userIds) {
+        const roles = data.filter(r => r.user_id === userId).map(r => r.role);
+        const bestRole = ROLE_PRIORITY.find(r => roles.includes(r));
+        if (bestRole) roleMap[userId] = bestRole;
+      }
+      return roleMap;
+    },
+    enabled: messages.length > 0 && canAccessAdminChat,
+  });
+
   const { data: currentUserProfile } = useQuery({
     queryKey: ['current-user-profile', user?.id],
     queryFn: async () => {
@@ -952,9 +989,15 @@ function AdminChatContent() {
                         <span className="text-xs sm:text-sm font-medium text-foreground">
                           {getDisplayName(message.user_id)}
                         </span>
-                        <Badge variant="outline" className="text-[10px] sm:text-xs py-0 bg-red-500/20 text-red-400 border-red-500/30">
-                          Admin
-                        </Badge>
+                        {(() => {
+                          const role = userRoles[message.user_id];
+                          const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
+                          return roleBadge ? (
+                            <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
+                              {roleBadge.label}
+                            </Badge>
+                          ) : null;
+                        })()}
                         <span className="text-[10px] sm:text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                         </span>
@@ -1140,12 +1183,18 @@ function AdminChatContent() {
                           {suggestion.display_name || suggestion.email.split('@')[0]}
                         </div>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="ml-auto text-[10px] py-0 bg-red-500/20 text-red-400 border-red-500/30"
-                      >
-                        Admin
-                      </Badge>
+                      {(() => {
+                        const role = userRoles[suggestion.user_id];
+                        const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
+                        return roleBadge ? (
+                          <Badge
+                            variant="outline"
+                            className={cn('ml-auto text-[10px] py-0', roleBadge.className)}
+                          >
+                            {roleBadge.label}
+                          </Badge>
+                        ) : null;
+                      })()}
                     </>
                   )}
                 </button>
