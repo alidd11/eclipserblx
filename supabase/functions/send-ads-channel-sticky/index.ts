@@ -71,7 +71,7 @@ serve(async (req) => {
     const result = await sendBotMessage(channelId, {
       embeds: [
         {
-          title: "📢 Paid Promotions",
+          title: "",
           description:
             "This channel is for **paid advertisements** from verified Eclipse users. " +
             "Want to advertise here? **[Get Started →](" + SITE_URL + "/advertising)**",
