@@ -80,48 +80,48 @@ export default function Cart() {
                 const discountPercent = getDiscountPercent(item.category_id, item.is_resellable);
                 
                 return (
-                  <div key={item.id} className="p-4 rounded-lg bg-muted/50 flex gap-4">
-                    <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      {item.image ? (
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-xl font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1">
-                        {item.name}
-                      </Link>
-                      <p className="text-muted-foreground text-sm">{t('common.digitalProduct')} • {t('common.instantDelivery')}</p>
-                    </div>
+                  <div key={item.id} className="p-3 sm:p-4 rounded-lg bg-muted/50">
+                    <div className="flex gap-3 sm:gap-4">
+                      <div className="w-16 h-16 sm:w-24 sm:h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-xl font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1 text-sm sm:text-base">
+                          {item.name}
+                        </Link>
+                        <p className="text-muted-foreground text-xs sm:text-sm">{t('common.digitalProduct')} • {t('common.instantDelivery')}</p>
+                      </div>
 
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
+                      <div className="flex flex-col items-end gap-1 shrink-0">
                         {hasDiscount ? (
                           <>
-                            <span className="font-bold text-lg text-primary">{formatPrice(memberPrice)}</span>
+                            <span className="font-bold text-sm sm:text-lg text-primary">{formatPrice(memberPrice)}</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs text-muted-foreground line-through">{formatPrice(item.price)}</span>
+                              <span className="text-[10px] sm:text-xs text-muted-foreground line-through">{formatPrice(item.price)}</span>
                               <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-amber-500/20 text-amber-400 border-0">
                                 -{discountPercent}%
                               </Badge>
                             </div>
                           </>
                         ) : (
-                          <span className="font-bold text-lg">{formatPrice(item.price)}</span>
+                          <span className="font-bold text-sm sm:text-lg">{formatPrice(item.price)}</span>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeItem(item.id)}
+                          className="text-muted-foreground hover:text-destructive h-7 w-7 sm:h-8 sm:w-8"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeItem(item.id)}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 );
