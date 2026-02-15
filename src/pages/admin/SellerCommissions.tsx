@@ -6,7 +6,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
-import { Percent, Store, Shield, Eye, EyeOff, ChevronRight, Sparkles } from 'lucide-react';
+import { Percent, Store, Shield, Eye, EyeOff, ChevronRight, Sparkles, Tag, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ interface StoreWithCommission {
   is_active: boolean;
   is_trusted: boolean;
   is_verified: boolean;
+  eclipse_plus_discount_enabled: boolean | null;
   created_at: string;
   profiles?: {
     display_name: string | null;
@@ -44,7 +45,7 @@ export default function SellerCommissions() {
         .from('stores')
         .select(`
           id, name, slug, owner_id, commission_rate, custom_commission_rate, 
-          custom_rate_expires_at, is_active, is_trusted, is_verified, created_at,
+          custom_rate_expires_at, is_active, is_trusted, is_verified, eclipse_plus_discount_enabled, created_at,
           profiles:owner_id (display_name, username)
         `)
         .order('name');
@@ -232,6 +233,17 @@ export default function SellerCommissions() {
                             <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs shrink-0">
                               <Sparkles className="h-3 w-3" />
                               Eclipse+
+                            </Badge>
+                          )}
+                          {store.eclipse_plus_discount_enabled === false ? (
+                            <Badge variant="outline" className="gap-1 text-xs shrink-0 text-red-400 border-red-400/30">
+                              <XCircle className="h-3 w-3" />
+                              Discounts Off
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="gap-1 text-xs shrink-0 text-green-400 border-green-400/30">
+                              <Tag className="h-3 w-3" />
+                              Discounts On
                             </Badge>
                           )}
                         </div>
