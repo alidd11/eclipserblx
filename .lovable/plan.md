@@ -1,52 +1,58 @@
 
 
-## Fix: Admin Discount Codes RLS Policies
+## Prevent Competitor Marketplace Links in Product Descriptions
 
-### Problem
-The `discount_codes` table has Row-Level Security (RLS) enabled but **zero policies** defined. This means no one -- not even admins -- can create, read, update, or delete discount codes. The error message "new row violates row-level security policy" confirms this.
+### What This Does
+Automatically strips links to competing Roblox asset marketplaces (ClearlyDev, BuiltByBit, ScriptBlox, etc.) from product descriptions -- both when sellers write them and when products are imported from external sources. Sellers will see a toast notification if blocked links are detected.
 
-### Solution
-Add RLS policies to the `discount_codes` table that:
-- Allow **public read access** for active codes (needed at checkout and on the homepage offers card)
-- Allow **staff members** (any user with a role) to create, update, and delete discount codes
+### How It Works
 
-### Database Migration
+**1. Create a link-filtering utility (`src/lib/blockedLinks.ts`)**
+- Define a blocklist of competitor marketplace domains (e.g. `clearlydev.com`, `builtbybit.com`, `scriptblox.com`, `roblox-scripts.com`, etc.)
+- Export a `stripBlockedLinks(html)` function that removes `<a>` tags pointing to blocked domains
+- Export a `containsBlockedLinks(text)` function that checks raw text/HTML for blocked URLs (for showing warnings)
+- The blocklist will be easy to extend in one place
 
-A single migration will add 4 policies:
+**2. Integrate into the sanitization pipeline (`src/lib/sanitize.ts`)**
+- Call `stripBlockedLinks()` inside `sanitizeHtml()` after DOMPurify runs, so blocked links are silently removed from all rendered descriptions (product detail pages, admin views, store pages)
 
-1. **SELECT** -- public (anonymous + authenticated) can read discount codes (already needed by checkout and homepage)
-2. **INSERT** -- authenticated staff can create codes
-3. **UPDATE** -- authenticated staff can update codes
-4. **DELETE** -- authenticated staff can delete codes
+**3. Warn sellers on save (`src/pages/seller/SellerProductEditor.tsx`)**
+- Before submitting, check the description with `containsBlockedLinks()`
+- If detected, show a toast warning: "Links to external marketplaces are not allowed and have been removed"
+- Still allow the save (the links get stripped by sanitization), but the seller is informed
 
-Staff access is verified using the existing `is_staff(auth.uid())` security definer function, which checks the `user_roles` table.
+**4. Strip during external imports (`supabase/functions/import-external-products/index.ts`)**
+- After scraping product descriptions from ClearlyDev/BuiltByBit, strip any self-referential marketplace links before storing in the database
+
+### Blocked Domains (Initial List)
+- `clearlydev.com`
+- `builtbybit.com`
+- `scriptblox.com`
+- `v3rmillion.net`
+- `robloxscripts.com`
+- Additional domains can be added to the array at any time
 
 ### Technical Details
 
-```sql
--- Public can read discount codes (checkout, homepage offers)
-CREATE POLICY "Anyone can view discount codes"
-  ON public.discount_codes FOR SELECT
-  USING (true);
+**New file:** `src/lib/blockedLinks.ts`
+```typescript
+const BLOCKED_DOMAINS = [
+  'clearlydev.com',
+  'builtbybit.com',
+  'scriptblox.com',
+  'v3rmillion.net',
+  'robloxscripts.com',
+];
 
--- Staff can create discount codes
-CREATE POLICY "Staff can create discount codes"
-  ON public.discount_codes FOR INSERT
-  TO authenticated
-  WITH CHECK (public.is_staff(auth.uid()));
+// Strips <a> tags with blocked hrefs
+export function stripBlockedLinks(html: string): string { ... }
 
--- Staff can update discount codes
-CREATE POLICY "Staff can update discount codes"
-  ON public.discount_codes FOR UPDATE
-  TO authenticated
-  USING (public.is_staff(auth.uid()));
-
--- Staff can delete discount codes
-CREATE POLICY "Staff can delete discount codes"
-  ON public.discount_codes FOR DELETE
-  TO authenticated
-  USING (public.is_staff(auth.uid()));
+// Checks raw text for blocked URLs (for validation warnings)
+export function containsBlockedLinks(text: string): boolean { ... }
 ```
 
-### No Code Changes Needed
-The frontend code in `Promotions.tsx` is already correct -- it just needs the database policies to allow the operations through.
+**Modified files:**
+- `src/lib/sanitize.ts` -- call `stripBlockedLinks` after DOMPurify
+- `src/pages/seller/SellerProductEditor.tsx` -- add warning toast on save
+- `supabase/functions/import-external-products/index.ts` -- strip blocked links from imported descriptions
+
