@@ -49,11 +49,6 @@ Deno.serve(async (req) => {
       color: 0xFFD700, // Gold for premium feel
       fields: [
         {
-          name: "🎉 £10 Welcome Bonus",
-          value: "Receive **£10 in store credit** instantly when you subscribe — spend it on anything!\n\u200B",
-          inline: false,
-        },
-        {
           name: "💰 30% Discount",
           value: "Enjoy **30% off** all non-bot products in our store. The savings add up fast!\n\u200B",
           inline: false,
