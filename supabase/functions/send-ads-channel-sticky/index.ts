@@ -71,46 +71,16 @@ serve(async (req) => {
     const result = await sendBotMessage(channelId, {
       embeds: [
         {
-          title: "📢 Paid Promotions Channel",
+          title: "📢 Paid Promotions",
           description:
-            "Welcome to **Paid Promotions**! This channel is dedicated to advertisements from our community members.\n\n" +
-            "Every ad posted here is from a verified Eclipse user who has purchased an advertising slot through our platform.",
+            "This channel is for **paid advertisements** from verified Eclipse users.\n\n" +
+            "Want to promote your products, servers, or services here? Subscribe to an advertising plan and your ads will be posted automatically.\n\n" +
+            "**[Get Started →](" + SITE_URL + "/advertising)**",
           color: ECLIPSE_COLOR,
-          fields: [
-            {
-              name: "🛒 How It Works",
-              value:
-                "1. Visit the [Advertising page](" + SITE_URL + "/advertising)\n" +
-                "2. Choose a subscription tier (Basic, Pro, or Premium)\n" +
-                "3. Create your ad with images, links, and descriptions\n" +
-                "4. Your ad gets posted here automatically!",
-              inline: false,
-            },
-            {
-              name: "💎 Subscription Tiers",
-              value:
-                "**Basic** — 5 ads/month, up to 3 images\n" +
-                "**Pro** — 15 ads/month, up to 5 images + scheduling\n" +
-                "**Premium** — 30 ads/month, up to 10 images + scheduling + priority",
-              inline: false,
-            },
-            {
-              name: "📌 Optional Pings",
-              value:
-                "Subscribers can purchase `@here` and `@everyone` ping credits to boost visibility on their ads.",
-              inline: false,
-            },
-            {
-              name: "🔗 Get Started",
-              value: "[Subscribe & Advertise →](" + SITE_URL + "/advertising)",
-              inline: false,
-            },
-          ],
           footer: {
-            text: "Eclipse Marketplace • Paid Promotions",
+            text: "Eclipse Marketplace",
             icon_url: ECLIPSE_ICON,
           },
-          timestamp: new Date().toISOString(),
         },
       ],
     });
