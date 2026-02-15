@@ -121,6 +121,7 @@ export function StoreSidebar({
       title: 'Quick Access',
       icon: Home,
       items: [
+        { title: 'Marketplace', icon: ChevronLeft, href: '/' },
         { title: 'Store Home', icon: Home, href: `/store/${storeSlug}` },
         { title: 'About', icon: Info, href: `/store/${storeSlug}/about` },
       ],
@@ -552,14 +553,6 @@ export function StoreSidebar({
                 <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Store</p>
               </div>
             </div>
-            <Link
-              to="/"
-              onClick={handleNavClick}
-              className="group flex items-center gap-1.5 px-3 pb-2 pt-0.5 text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-150"
-            >
-              <ChevronLeft className="h-3 w-3 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5" />
-              <span className="leading-none">Marketplace</span>
-            </Link>
           </>
         ) : (
           <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center">
