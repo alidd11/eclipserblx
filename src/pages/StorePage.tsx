@@ -194,10 +194,11 @@ export default function StorePage() {
     enabled: !!store?.id,
   });
 
-  // Combine store tabs with global categories
+  // Combine store tabs with global categories, deduplicating by slug
+  const storeTabSlugs = new Set((storeTabs || []).map(t => t.slug));
   const allTabs = [
     ...(storeTabs || []).map(t => ({ ...t, isGlobalCategory: false })),
-    ...(enabledGlobalCategories || []),
+    ...(enabledGlobalCategories || []).filter(gc => !storeTabSlugs.has(gc.slug)),
   ];
 
   // Fetch tab product IDs if a custom tab is selected
