@@ -555,10 +555,10 @@ export function StoreSidebar({
             <Link
               to="/"
               onClick={handleNavClick}
-              className="flex items-center gap-1 px-3 pb-2.5 text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors"
+              className="flex items-center gap-2.5 px-2.5 py-1.5 mx-1.5 rounded-md text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors duration-100"
             >
-              <ChevronLeft className="h-3 w-3 stroke-[2]" />
-              <span>Back to Marketplace</span>
+              <ChevronLeft className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
+              <span className="leading-none">Back to Marketplace</span>
             </Link>
           </>
         ) : (
