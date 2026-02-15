@@ -436,25 +436,6 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Stats row - matching seller layout */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="rounded-lg bg-muted/50 p-3 flex flex-col justify-between min-h-[68px]">
-                <p className="text-xs text-muted-foreground leading-tight">Total Users</p>
-                <p className="text-lg font-bold">{adminStats?.totalUsers ?? '—'}</p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3 flex flex-col justify-between min-h-[68px]">
-                <p className="text-xs text-muted-foreground leading-tight">Total Orders</p>
-                <p className="text-lg font-bold">{adminStats?.totalOrders ?? '—'}</p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3 flex flex-col justify-between min-h-[68px]">
-                <p className="text-xs text-muted-foreground leading-tight">Products</p>
-                <p className="text-lg font-bold">{adminStats?.totalProducts ?? '—'}</p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3 flex flex-col justify-between min-h-[68px]">
-                <p className="text-xs text-muted-foreground leading-tight">Pending Review</p>
-                <p className="text-lg font-bold text-amber-500">{adminStats?.pendingModeration ?? '—'}</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
