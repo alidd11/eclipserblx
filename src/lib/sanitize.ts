@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { stripBlockedLinks } from './blockedLinks';
 
 /**
  * Converts markdown-style links [text](url) to HTML anchor tags.
@@ -76,7 +77,7 @@ export function sanitizeHtml(html: string | null | undefined): string {
   // Then convert basic markdown formatting (for imported descriptions)
   const withMarkdown = convertBasicMarkdown(withLinks);
   
-  return DOMPurify.sanitize(withMarkdown, {
+  const sanitized = DOMPurify.sanitize(withMarkdown, {
     ALLOWED_TAGS: [
       'p', 'br', 'strong', 'b', 'em', 'i', 'u', 
       'h2', 'h3', 'ul', 'ol', 'li', 'hr', 'a'
@@ -85,4 +86,7 @@ export function sanitizeHtml(html: string | null | undefined): string {
     // Strip dangerous protocols
     ALLOW_DATA_ATTR: false,
   });
+
+  // Strip links to competitor marketplaces
+  return stripBlockedLinks(sanitized);
 }
