@@ -218,6 +218,19 @@ serve(async (req) => {
           logStep("Discount code max uses reached", { discountCodeId });
         } else if (discount.min_order_amount && serverSubtotal < discount.min_order_amount) {
           logStep("Minimum order amount not met for discount", { discountCodeId, serverSubtotal, min: discount.min_order_amount });
+        } else if (discount.store_id) {
+          // Store-scoped discount: check items belong to store
+          const itemStoreIds = validatedItems.map((i: any) => i.store_id).filter(Boolean);
+          if (!itemStoreIds.includes(discount.store_id)) {
+            logStep("Discount code rejected - store mismatch", { discountStoreId: discount.store_id });
+          } else {
+            if (discount.discount_type === 'percentage') {
+              discountAmount = (serverSubtotal * discount.discount_value) / 100;
+            } else {
+              discountAmount = Math.min(discount.discount_value, serverSubtotal);
+            }
+            logStep("Store-scoped discount applied", { discountAmount });
+          }
         } else {
           if (discount.discount_type === 'percentage') {
             discountAmount = (serverSubtotal * discount.discount_value) / 100;

@@ -130,6 +130,21 @@ export default function Checkout() {
         return;
       }
 
+      // If discount is store-scoped, check cart items belong to that store
+      if (discount.store_id) {
+        const productIds = items.map(i => i.id);
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, store_id')
+          .in('id', productIds);
+        
+        const hasMatchingProduct = products?.some(p => p.store_id === discount.store_id);
+        if (!hasMatchingProduct) {
+          showErrorNotification('Invalid Code', 'This discount code is only valid for a specific store\'s products.');
+          return;
+        }
+      }
+
       if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
         showErrorNotification(t('checkout.codeExpired'), t('checkout.codeExpired'));
         return;

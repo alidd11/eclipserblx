@@ -29,6 +29,7 @@ interface DiscountForm {
   max_uses: number | null;
   expires_at: string | null;
   is_active: boolean;
+  store_id: string | null;
 }
 
 const emptyDiscountForm: DiscountForm = {
@@ -39,6 +40,7 @@ const emptyDiscountForm: DiscountForm = {
   max_uses: null,
   expires_at: null,
   is_active: true,
+  store_id: null,
 };
 
 // ==================== SIGNUP PROMOTIONS ====================
@@ -87,6 +89,20 @@ export default function AdminPromotions() {
   const [selectedPromo, setSelectedPromo] = useState<PromotionForm | null>(null);
   const [promoForm, setPromoForm] = useState<PromotionForm>(emptyPromotionForm);
 
+  // ==================== STORES QUERY ====================
+  const { data: stores } = useQuery({
+    queryKey: ['admin-stores-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('id, name, slug, banner_url, logo_url')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // ==================== DISCOUNT CODES QUERIES ====================
   const { data: discounts, isLoading: discountsLoading } = useQuery({
     queryKey: ['admin-discounts', discountSearch],
@@ -130,6 +146,7 @@ export default function AdminPromotions() {
         max_uses: data.max_uses,
         expires_at: data.expires_at || null,
         is_active: data.is_active,
+        store_id: data.store_id || null,
       };
 
       const isNewCode = !data.id;
@@ -289,6 +306,7 @@ export default function AdminPromotions() {
       max_uses: discount.max_uses,
       expires_at: discount.expires_at ? discount.expires_at.split('T')[0] : null,
       is_active: discount.is_active,
+      store_id: discount.store_id || null,
     });
     setDiscountDialogOpen(true);
   };
@@ -474,23 +492,23 @@ export default function AdminPromotions() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Discount</TableHead>
-                    <TableHead>Uses</TableHead>
-                    <TableHead>Min Order</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                     <TableHead>Code</TableHead>
+                     <TableHead>Store</TableHead>
+                     <TableHead>Discount</TableHead>
+                     <TableHead>Uses</TableHead>
+                     <TableHead>Expires</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {discountsLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
-                    </TableRow>
-                  ) : discounts?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                     <TableRow>
+                       <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
+                     </TableRow>
+                   ) : discounts?.length === 0 ? (
+                     <TableRow>
+                       <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         No discount codes found
                       </TableCell>
                     </TableRow>
@@ -504,15 +522,23 @@ export default function AdminPromotions() {
                               {copiedCode === discount.code ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                             </Button>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            {discount.discount_type === 'percentage' ? <Percent className="h-3 w-3 text-muted-foreground" /> : <DollarSign className="h-3 w-3 text-muted-foreground" />}
-                            {getDiscountDisplay(discount)}
-                          </div>
-                        </TableCell>
-                        <TableCell>{discount.current_uses || 0}{discount.max_uses && ` / ${discount.max_uses}`}</TableCell>
-                        <TableCell>{discount.min_order_amount ? `£${discount.min_order_amount.toFixed(2)}` : '-'}</TableCell>
+                         </TableCell>
+                         <TableCell>
+                           {discount.store_id ? (
+                             <Badge variant="outline" className="text-xs">
+                               {stores?.find(s => s.id === discount.store_id)?.name || 'Store'}
+                             </Badge>
+                           ) : (
+                             <Badge variant="secondary" className="text-xs">Platform</Badge>
+                           )}
+                         </TableCell>
+                         <TableCell>
+                           <div className="flex items-center gap-1">
+                             {discount.discount_type === 'percentage' ? <Percent className="h-3 w-3 text-muted-foreground" /> : <DollarSign className="h-3 w-3 text-muted-foreground" />}
+                             {getDiscountDisplay(discount)}
+                           </div>
+                         </TableCell>
+                         <TableCell>{discount.current_uses || 0}{discount.max_uses && ` / ${discount.max_uses}`}</TableCell>
                         <TableCell>
                           {discount.expires_at ? (
                             <span className={isExpired(discount.expires_at) ? 'text-destructive' : ''}>
@@ -767,6 +793,22 @@ export default function AdminPromotions() {
                   min="1"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Store (optional)</Label>
+              <Select
+                value={discountForm.store_id || 'platform'}
+                onValueChange={(value) => setDiscountForm({ ...discountForm, store_id: value === 'platform' ? null : value })}
+              >
+                <SelectTrigger><SelectValue placeholder="Platform-wide" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="platform">Platform-wide (all stores)</SelectItem>
+                  {stores?.map((store) => (
+                    <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">If set, code only works for this store's products</p>
             </div>
             <div className="space-y-2">
               <Label>Expires At</Label>
