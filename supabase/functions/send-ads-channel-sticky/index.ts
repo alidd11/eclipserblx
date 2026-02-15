@@ -73,8 +73,8 @@ serve(async (req) => {
         {
           title: "",
           description:
-            "This channel is for **paid advertisements** from verified Eclipse users.\n" +
-            "Want to advertise here? **[Get Started →](" + SITE_URL + "/advertising)**",
+            "This channel is for **paid advertisements** from verified Eclipse users.\n\n" +
+            "**[Get Started →](" + SITE_URL + "/advertising)**",
           color: ECLIPSE_COLOR,
         },
       ],
