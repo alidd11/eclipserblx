@@ -30,8 +30,8 @@ import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 
 // Unified icon styling constants (synchronized with CustomerSidebar)
-const ICON_SIZE = "h-[1.125rem] w-[1.125rem]";
-const ICON_SIZE_SMALL = "h-4 w-4";
+const ICON_SIZE = "h-4 w-4";
+const ICON_SIZE_SMALL = "h-3.5 w-3.5";
 const ICON_STROKE_ACTIVE = "stroke-[2.25]";
 const ICON_STROKE_DEFAULT = "stroke-[1.75]";
 
@@ -202,14 +202,14 @@ export function StoreSidebar({
     );
 
     const linkClassName = cn(
-      "group rounded-md text-[13px] font-medium select-none",
-      "transition-all duration-150 active:scale-[0.98] active:opacity-90",
+      "rounded-md text-[13px] font-medium select-none",
+      "transition-colors duration-100",
       isCollapsed
-        ? "flex items-center justify-center p-2.5"
-        : "flex items-center gap-2.5 px-2.5 py-[7px]",
+        ? "flex items-center justify-center py-1.5"
+        : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
       isActive
-        ? "bg-primary text-primary-foreground shadow-sm"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        ? "bg-muted text-foreground"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
     );
 
     // Button action (scroll anchors)
@@ -269,9 +269,8 @@ export function StoreSidebar({
     // QUICK-ACCESS group: always expanded, non-collapsible, no header
     if (group.id === 'quick-access') {
       return (
-        <div key={group.id} className="space-y-0.5 mb-1.5">
+        <div key={group.id} className="mb-1 space-y-0.5">
           {group.items.map(renderNavItem)}
-          <div className="h-px bg-border/40 mx-1 mb-1.5" />
         </div>
       );
     }
@@ -354,23 +353,22 @@ export function StoreSidebar({
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[11px] font-semibold uppercase tracking-wide select-none",
-              "transition-all duration-150 active:scale-[0.98]",
-              "focus:outline-none",
+              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold select-none uppercase tracking-wider",
+              "transition-colors duration-100",
+              "focus:outline-none focus-visible:outline-none",
               hasActiveItem
                 ? "text-foreground"
-                : "text-muted-foreground/50 hover:text-muted-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <group.icon className="h-3.5 w-3.5 shrink-0" />
             <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown className={cn(
-              "h-3 w-3 shrink-0 transition-transform duration-200",
+              ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
               isOpen ? "rotate-0" : "-rotate-90"
             )} />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="ml-[13px] border-l border-border/40 pl-2 space-y-0.5 pt-0.5 pb-1">
+        <CollapsibleContent className="space-y-px pt-px">
           {group.items.map(renderNavItem)}
         </CollapsibleContent>
       </Collapsible>
@@ -448,36 +446,35 @@ export function StoreSidebar({
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[11px] font-semibold uppercase tracking-wide select-none",
-              "transition-all duration-150 active:scale-[0.98]",
-              "focus:outline-none",
+              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold select-none uppercase tracking-wider",
+              "transition-colors duration-100",
+              "focus:outline-none focus-visible:outline-none",
               isBrowseActive
                 ? "text-foreground"
-                : "text-muted-foreground/50 hover:text-muted-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Package className="h-3.5 w-3.5 shrink-0" />
             <span className="flex-1 text-left truncate">Browse</span>
             <ChevronDown className={cn(
-              "h-3 w-3 shrink-0 transition-transform duration-200",
+              ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
               (openGroups['browse'] ?? true) ? "rotate-0" : "-rotate-90"
             )} />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="ml-[13px] border-l border-border/40 pl-2 space-y-0.5 pt-0.5 pb-1">
+        <CollapsibleContent className="space-y-px pt-px">
           {/* All Products */}
           <button
             onClick={() => handleTabClick(null)}
             className={cn(
-              "w-full group rounded-md text-[13px] font-medium select-none",
-              "transition-all duration-150 active:scale-[0.98] active:opacity-90",
-              "flex items-center gap-2.5 px-2.5 py-[7px]",
+              "w-full rounded-md text-[13px] font-medium select-none",
+              "transition-colors duration-100",
+              "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
               isAllProductsActive
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
-            <LayoutGrid className="h-4 w-4 shrink-0" />
+            <LayoutGrid className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
             <span className="leading-none flex-1 text-left">All Products</span>
             <span className="text-xs opacity-70">{productCount}</span>
           </button>
@@ -488,15 +485,15 @@ export function StoreSidebar({
               key={tab.id}
               onClick={() => handleTabClick(tab.slug)}
               className={cn(
-                "w-full group rounded-md text-[13px] font-medium select-none",
-                "transition-all duration-150 active:scale-[0.98] active:opacity-90",
-                "flex items-center gap-2.5 px-2.5 py-[7px]",
+                "w-full rounded-md text-[13px] font-medium select-none",
+                "transition-colors duration-100",
+                "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
                 activeTab === tab.slug
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
-              <Package className="h-4 w-4 shrink-0" />
+              <Package className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
               <span className="truncate leading-none flex-1 text-left">{tab.name}</span>
             </button>
           ))}
@@ -508,58 +505,43 @@ export function StoreSidebar({
   return (
     <aside 
       className={cn(
-        "bg-card text-foreground flex flex-col transition-all duration-300 shrink-0",
+        "bg-sidebar text-foreground flex flex-col transition-all duration-200 shrink-0",
         isMobileDrawer 
-          ? "h-full w-full border-0 max-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" 
-          : "h-[100dvh] sticky top-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] border-r border-border",
-        !isMobileDrawer && (isCollapsed ? "w-14" : "w-60")
+          ? "h-full w-full border-0 max-h-[100dvh]" 
+          : "h-[100dvh] sticky top-0 border-r border-border",
+        !isMobileDrawer && (isCollapsed ? "w-12" : "w-48")
       )}
       data-gesture-exempt="true"
     >
-      {/* Header spacer with collapse toggle - only show on desktop */}
-      {!isMobileDrawer && (
-        <div className="h-14 sm:h-16 shrink-0 flex items-end px-2 pb-1.5">
+      {/* Header */}
+      <div className="px-3 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-border">
+        {!isCollapsed && (
+          <h1 className="font-display font-bold text-sm text-foreground truncate">
+            {storeName}
+          </h1>
+        )}
+        {isCollapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "w-full h-8 text-[hsl(var(--sidebar-foreground)/0.6)] hover:text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]",
-                  isCollapsed ? "justify-center px-0" : "justify-between"
-                )}
-                onClick={() => {
-                  hapticTap();
-                  onToggle();
-                }}
-              >
-                {!isCollapsed && <span className="text-xs">Collapse</span>}
-                {isCollapsed ? (
-                  <PanelLeft className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
-                ) : (
-                  <PanelLeftClose className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
-                )}
-              </Button>
+              <div className="flex items-center justify-center">
+                <span className="font-display font-bold text-sm text-foreground">{storeName.charAt(0)}</span>
+              </div>
             </TooltipTrigger>
-            <TooltipContent side="right">
-              {isCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
-            </TooltipContent>
+            <TooltipContent side="right">{storeName}</TooltipContent>
           </Tooltip>
-        </div>
-      )}
-
-      {/* Mobile drawer top spacer */}
-      {isMobileDrawer && <div className="h-2 shrink-0" />}
+        )}
+      </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        {navGroups.map((group) => (
-          <div key={group.id}>
-            {renderGroup(group)}
-            {/* Insert Browse section after Store group */}
-            {group.id === 'store' && renderBrowseSection()}
-          </div>
-        ))}
+      <nav className="flex-1 px-1.5 py-1.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+        <div className="space-y-0.5">
+          {navGroups.map((group) => (
+            <div key={group.id}>
+              {renderGroup(group)}
+              {group.id === 'store' && renderBrowseSection()}
+            </div>
+          ))}
+        </div>
       </nav>
     </aside>
   );
