@@ -213,6 +213,46 @@ serve(async (req) => {
 
     logStep("Advertisement posted successfully", { messageId: discordMessageId });
 
+    // Increment ad counter and check if we need to resend the sticky message
+    try {
+      const { data: counterRecord } = await supabaseClient
+        .from("settings")
+        .select("value")
+        .eq("key", "ads_since_last_sticky")
+        .maybeSingle();
+
+      const currentCount = counterRecord?.value ? parseInt(String(counterRecord.value).replace(/"/g, ""), 10) || 0 : 0;
+      const newCount = currentCount + 1;
+
+      await supabaseClient
+        .from("settings")
+        .upsert({ key: "ads_since_last_sticky", value: JSON.stringify(String(newCount)) }, { onConflict: "key" });
+
+      if (newCount >= 6) {
+        logStep("6 ads reached, scheduling sticky resend in 1 hour");
+        // Fire and forget — resend sticky after 1 hour delay
+        setTimeout(async () => {
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+            const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+            await fetch(`${supabaseUrl}/functions/v1/send-ads-channel-sticky`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${supabaseAnonKey}`,
+              },
+              body: JSON.stringify({}),
+            });
+          } catch (e) {
+            console.error("[SEND-ADVERTISEMENT] Failed to trigger sticky resend:", e);
+          }
+        }, 60 * 60 * 1000); // 1 hour
+      }
+    } catch (stickyError) {
+      // Non-fatal — don't fail the ad post because of sticky logic
+      logStep("Sticky counter error (non-fatal)", { error: String(stickyError) });
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       message: "Advertisement posted to Discord",
