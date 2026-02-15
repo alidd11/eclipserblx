@@ -20,9 +20,9 @@ export function EclipsePlusBanner({ show }: EclipsePlusBannerProps) {
             <Crown className="h-5 w-5 text-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-sm">Get £10 free credit!</div>
+            <div className="font-medium text-sm">Eclipse+ Member Benefits</div>
             <div className="text-xs text-muted-foreground">
-              Subscribe to Eclipse+ for bonus credit & 30% off
+              Subscribe to Eclipse+ for 30% off & exclusive perks
             </div>
           </div>
           <Button size="sm" variant="outline" onClick={() => navigate('/eclipse-plus')}>
