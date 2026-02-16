@@ -263,7 +263,7 @@ export function MarketplaceSection() {
 
   // Featured products for products mode
   const { data: featuredProducts, isLoading: productsLoading } = useFeaturedProducts({
-    limit: 20,
+    limit: 11,
     maxPerStore: 3,
     queryKey: 'marketplace-products',
   });
@@ -352,7 +352,7 @@ export function MarketplaceSection() {
               {/* Spotlight product */}
               {(() => {
                 const spotlights = featuredProducts.slice(0, 2);
-                const gridProducts = featuredProducts.slice(2, 5);
+                const gridProducts = featuredProducts.slice(2, 11);
                 return (
                   <>
                     {/* Two spotlight products side by side */}
@@ -386,9 +386,9 @@ export function MarketplaceSection() {
                         </Link>
                       ))}
                     </div>
-                    {/* 3 products in grid below */}
+                    {/* 9 products in rows of 3 */}
                     {gridProducts.length > 0 && (
-                      <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                      <div className="grid grid-cols-3 gap-3 sm:gap-6">
                         {gridProducts.map((product) => (
                           <MarketplaceProductCard key={product.id} product={product} />
                         ))}
