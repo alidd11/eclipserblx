@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { PWAFeaturedStores } from '@/components/landing/PWAFeaturedStores';
 import { PWARecentReleases } from '@/components/landing/PWARecentReleases';
+import { FeaturedProductCard } from '@/components/marketplace/FeaturedProductCard';
 import { HeroBanner } from './HeroBanner';
 import { PWADiscordBanner } from './PWADiscordBanner';
 import { useTranslation } from 'react-i18next';
@@ -241,7 +242,10 @@ export function PWALandingHero() {
             {/* Discord Community Banner */}
             <PWADiscordBanner />
 
-            {/* Recent Releases - 1 card rotating every 3s */}
+            {/* Featured Product */}
+            <FeaturedProductCard />
+
+            {/* Recent Releases */}
             <PWARecentReleases />
 
              <ActiveOffersCard />
