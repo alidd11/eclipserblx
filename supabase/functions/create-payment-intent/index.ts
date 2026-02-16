@@ -216,8 +216,10 @@ serve(async (req) => {
             .single();
 
           if (discount) {
-            // Store-scoped discount validation
-            if (discount.store_id) {
+            // Verify user restriction
+            if (discount.restricted_to_user_id && discount.restricted_to_user_id !== userId) {
+              // Skip - user not allowed to use this code
+            } else if (discount.store_id) {
               const itemStoreIds = validatedItems.map((i: any) => i.store_id).filter(Boolean);
               if (!itemStoreIds.includes(discount.store_id)) {
                 // Skip - store mismatch

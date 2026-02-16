@@ -241,12 +241,59 @@ function getBotToken(): string | null {
  /**
   * Helper to build a settings map from Supabase settings query result
   */
- export function buildSettingsMap(
-   settings: Array<{ key: string; value: unknown }> | null
- ): Record<string, string> {
-   const map: Record<string, string> = {};
-   settings?.forEach((s) => {
-     map[s.key] = parseSettingValue(s.value);
-   });
-   return map;
- }
+export function buildSettingsMap(
+  settings: Array<{ key: string; value: unknown }> | null
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  settings?.forEach((s) => {
+    map[s.key] = parseSettingValue(s.value);
+  });
+  return map;
+}
+
+/**
+ * Send a direct message to a Discord user via DM channel.
+ * Creates a DM channel first, then sends the message.
+ * Gracefully handles users with DMs disabled.
+ */
+export async function sendDirectMessage(
+  recipientId: string,
+  payload: BotMessagePayload
+): Promise<SendMessageResult> {
+  const botToken = getBotToken();
+
+  if (!botToken) {
+    console.error('[discord-bot] Bot token not configured for DM');
+    return { success: false, error: 'Bot token not configured' };
+  }
+
+  try {
+    // Step 1: Create DM channel
+    const dmResponse = await fetch(`${DISCORD_API_BASE}/users/@me/channels`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bot ${botToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ recipient_id: recipientId }),
+    });
+
+    if (!dmResponse.ok) {
+      const errorText = await dmResponse.text();
+      console.error('[discord-bot] Failed to create DM channel:', dmResponse.status, errorText);
+      return { success: false, error: `Cannot DM user: ${dmResponse.status}` };
+    }
+
+    const dmChannel = await dmResponse.json();
+    const dmChannelId = dmChannel.id;
+
+    // Step 2: Send message to DM channel
+    return await sendBotMessage(dmChannelId, payload);
+  } catch (error) {
+    console.error('[discord-bot] DM error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown DM error',
+    };
+  }
+}

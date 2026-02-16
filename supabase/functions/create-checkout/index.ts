@@ -205,8 +205,10 @@ serve(async (req) => {
         .single();
 
       if (discount) {
-        // If store-scoped, verify at least one item belongs to that store
-        if (discount.store_id) {
+        // Verify user restriction
+        if (discount.restricted_to_user_id && discount.restricted_to_user_id !== userId) {
+          logStep("Discount code rejected - user restriction", { discountCodeId });
+        } else if (discount.store_id) {
           const itemStoreIds = validatedItems.map((i: any) => i.store_id).filter(Boolean);
           if (!itemStoreIds.includes(discount.store_id)) {
             logStep("Discount code rejected - store mismatch", { discountStoreId: discount.store_id, itemStoreIds });
