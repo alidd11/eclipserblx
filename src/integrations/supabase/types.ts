@@ -1483,6 +1483,27 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_audit_log_cursor: {
+        Row: {
+          guild_id: string
+          last_audit_log_id: string | null
+          last_polled_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          guild_id: string
+          last_audit_log_id?: string | null
+          last_polled_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          guild_id?: string
+          last_audit_log_id?: string | null
+          last_polled_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       discord_boost_trials: {
         Row: {
           boost_count: number
