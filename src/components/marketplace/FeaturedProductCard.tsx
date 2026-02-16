@@ -6,6 +6,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface FeaturedProduct {
   id: string;
@@ -91,7 +92,7 @@ export function FeaturedProductCard() {
                 <Package className="h-10 w-10 text-muted-foreground/30" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
             {/* Content overlay */}
             <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6">
@@ -100,16 +101,6 @@ export function FeaturedProductCard() {
                 <Star className="h-2.5 w-2.5 fill-current" />
                 Featured
               </Badge>
-
-              {/* Store info */}
-              <div className="flex items-center gap-2 mb-1.5">
-                {product.stores?.logo_url && (
-                  <img src={product.stores.logo_url} alt="" className="h-5 w-5 rounded object-contain bg-white/10" />
-                )}
-                <span className="text-white/80 text-xs font-medium truncate">{product.stores?.name}</span>
-                {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-                {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-              </div>
 
               {/* Product name */}
               <h3 className="text-white font-bold text-base sm:text-xl line-clamp-1 group-hover:text-primary transition-colors">
@@ -138,6 +129,33 @@ export function FeaturedProductCard() {
                   <span className="text-white font-bold text-sm sm:text-base">{formatPrice(product.price)}</span>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Store banner strip */}
+          <div
+            className="h-10 relative flex items-center gap-2 px-3 overflow-hidden"
+            style={product.stores?.banner_url ? {
+              backgroundImage: `url(${product.stores.banner_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            } : undefined}
+          >
+            {product.stores?.banner_url && (
+              <div className="absolute inset-0 bg-black/60" />
+            )}
+            {!product.stores?.banner_url && (
+              <div className="absolute inset-0 bg-muted" />
+            )}
+            <div className="relative z-10 flex items-center gap-2 min-w-0">
+              {product.stores?.logo_url && (
+                <img src={product.stores.logo_url} alt="" className="h-5 w-5 rounded object-contain bg-white/10 flex-shrink-0" />
+              )}
+              <span className={cn("text-xs font-medium truncate", product.stores?.banner_url ? "text-white" : "text-foreground")}>
+                {product.stores?.name}
+              </span>
+              {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+              {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
             </div>
           </div>
         </div>
