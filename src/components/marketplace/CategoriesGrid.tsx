@@ -22,6 +22,12 @@ const iconMap: Record<string, typeof Car> = {
   'Sparkles': Palette,
 };
 
+// Eclipse & Vino store IDs for fallback imagery
+const FALLBACK_STORE_IDS = [
+  '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a', // Eclipse
+  '9b842052-e1fd-4dfe-99bf-c7625df3e17d', // Vino
+];
+
 interface CategoryWithProducts {
   id: string;
   name: string;
@@ -31,14 +37,14 @@ interface CategoryWithProducts {
   parent_id: string | null;
   display_order: number | null;
   product_count: number;
-  preview_images: string[];
+  hero_image: string | null;
 }
 
 export function CategoriesGrid() {
   const { getTranslatedName } = useCategoryTranslations();
 
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['marketplace-categories-grid-optimized'],
+    queryKey: ['marketplace-categories-grid-v2'],
     queryFn: async () => {
       const { data: cats, error: catError } = await supabase
         .from('categories')
@@ -52,31 +58,55 @@ export function CategoriesGrid() {
       const catIds = cats.map(c => c.id);
       const now = new Date().toISOString();
 
+      // Fetch active products with download_count for ranking
       const { data: products, error: prodError } = await supabase
         .from('products')
-        .select('category_id, images')
+        .select('category_id, images, download_count, store_id')
         .in('category_id', catIds)
         .eq('is_active', true)
         .not('store_id', 'is', null)
-        .or(`release_at.is.null,release_at.lte.${now}`);
+        .or(`release_at.is.null,release_at.lte.${now}`)
+        .order('download_count', { ascending: false });
 
       if (prodError) throw prodError;
 
-      const countMap: Record<string, { count: number; images: string[] }> = {};
+      // Pick the best image per category: highest download_count with a valid image
+      const bestPerCat: Record<string, { image: string; count: number }> = {};
+      const countPerCat: Record<string, number> = {};
+
       for (const p of products || []) {
-        if (!countMap[p.category_id]) {
-          countMap[p.category_id] = { count: 0, images: [] };
+        countPerCat[p.category_id] = (countPerCat[p.category_id] || 0) + 1;
+        if (!bestPerCat[p.category_id] && Array.isArray(p.images) && p.images[0]) {
+          bestPerCat[p.category_id] = {
+            image: p.images[0] as string,
+            count: p.download_count ?? 0,
+          };
         }
-        countMap[p.category_id].count++;
-        if (countMap[p.category_id].images.length < 3 && Array.isArray(p.images) && p.images[0]) {
-          countMap[p.category_id].images.push(p.images[0] as string);
+      }
+
+      // Fallback: fetch a product from Eclipse/Vino for categories with no image
+      const catsNeedingFallback = catIds.filter(id => !bestPerCat[id]);
+      let fallbackImage: string | null = null;
+
+      if (catsNeedingFallback.length > 0) {
+        const { data: fallbackProducts } = await supabase
+          .from('products')
+          .select('images')
+          .in('store_id', FALLBACK_STORE_IDS)
+          .eq('is_active', true)
+          .not('images', 'is', null)
+          .order('download_count', { ascending: false })
+          .limit(1);
+
+        if (fallbackProducts?.[0]?.images && Array.isArray(fallbackProducts[0].images)) {
+          fallbackImage = fallbackProducts[0].images[0] as string;
         }
       }
 
       const result: CategoryWithProducts[] = cats.map(c => ({
         ...c,
-        product_count: countMap[c.id]?.count || 0,
-        preview_images: countMap[c.id]?.images || [],
+        product_count: countPerCat[c.id] || 0,
+        hero_image: bestPerCat[c.id]?.image || fallbackImage,
       }));
 
       result.sort((a, b) => {
@@ -127,11 +157,10 @@ export function CategoriesGrid() {
         </Link>
       </div>
 
-      {/* Populated categories — visual cards with image collage */}
+      {/* Populated categories */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {populated.map((category) => {
           const IconComponent = iconMap[category.icon || ''] || Package;
-          const hasImages = category.preview_images.length > 0;
 
           return (
             <Link
@@ -139,33 +168,23 @@ export function CategoriesGrid() {
               to={`/products?category=${category.slug}`}
               className="group relative flex flex-col overflow-hidden rounded-[0.375rem] border border-border bg-card hover:border-primary/30 transition-all"
             >
-              {/* Image area */}
+              {/* Single hero image */}
               <div className="relative aspect-[16/10] bg-muted overflow-hidden">
-                {hasImages ? (
-                  <div className="absolute inset-0 grid grid-cols-3 gap-px">
-                    {category.preview_images.map((img, i) => (
-                      <div key={i} className="relative overflow-hidden">
-                        <OptimizedImage
-                          src={img}
-                          alt=""
-                          className="h-full w-full"
-                          objectFit="cover"
-                          blur={false}
-                        />
-                      </div>
-                    ))}
-                    {/* Fill remaining slots with muted bg */}
-                    {Array.from({ length: Math.max(0, 3 - category.preview_images.length) }).map((_, i) => (
-                      <div key={`empty-${i}`} className="bg-muted/60" />
-                    ))}
-                  </div>
+                {category.hero_image ? (
+                  <OptimizedImage
+                    src={category.hero_image}
+                    alt={category.name}
+                    className="h-full w-full group-hover:scale-105 transition-transform duration-300"
+                    objectFit="cover"
+                    blur={false}
+                  />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <IconComponent className="h-8 w-8 text-muted-foreground/40" />
                   </div>
                 )}
-                {/* Gradient overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-70 group-hover:opacity-60 transition-opacity" />
                 {/* Count pill */}
                 <div className="absolute top-1.5 right-1.5 bg-card/80 text-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded-[0.25rem] border border-border">
                   {category.product_count}
@@ -186,7 +205,7 @@ export function CategoriesGrid() {
         })}
       </div>
 
-      {/* Empty categories — compact chip row */}
+      {/* Empty categories — compact chips */}
       {empty.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-0.5">
           {empty.map((category) => {
