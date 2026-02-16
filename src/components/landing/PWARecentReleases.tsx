@@ -160,10 +160,12 @@ export function PWARecentReleases() {
       </div>
 
       <div className="space-y-3">
-        {/* Two spotlight cards */}
-        {spotlights.map((product) => (
-          <SpotlightCard key={product.id} product={product} />
-        ))}
+        {/* Two spotlight cards side by side */}
+        <div className="grid grid-cols-2 gap-3">
+          {spotlights.map((product) => (
+            <SpotlightCard key={product.id} product={product} />
+          ))}
+        </div>
 
         {/* 3 products in grid */}
         {gridProducts.length > 0 && (
