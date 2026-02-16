@@ -2083,6 +2083,7 @@ export type Database = {
           max_uses: number | null
           min_order_amount: number | null
           product_ids: string[] | null
+          restricted_to_user_id: string | null
           store_id: string | null
         }
         Insert: {
@@ -2098,6 +2099,7 @@ export type Database = {
           max_uses?: number | null
           min_order_amount?: number | null
           product_ids?: string[] | null
+          restricted_to_user_id?: string | null
           store_id?: string | null
         }
         Update: {
@@ -2113,6 +2115,7 @@ export type Database = {
           max_uses?: number | null
           min_order_amount?: number | null
           product_ids?: string[] | null
+          restricted_to_user_id?: string | null
           store_id?: string | null
         }
         Relationships: [

@@ -211,8 +211,10 @@ serve(async (req) => {
         .single();
 
       if (discount) {
-        // Verify discount is still valid
-        if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
+        // Verify user restriction
+        if (discount.restricted_to_user_id && discount.restricted_to_user_id !== userId) {
+          logStep("Discount code rejected - user restriction", { discountCodeId, restrictedTo: discount.restricted_to_user_id });
+        } else if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
           logStep("Discount code expired", { discountCodeId });
         } else if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) {
           logStep("Discount code max uses reached", { discountCodeId });

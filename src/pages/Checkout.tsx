@@ -130,6 +130,12 @@ export default function Checkout() {
         return;
       }
 
+      // If discount is restricted to a specific user, verify ownership
+      if (discount.restricted_to_user_id && discount.restricted_to_user_id !== user?.id) {
+        showErrorNotification(t('common.error'), 'This discount code is not available for your account.');
+        return;
+      }
+
       // If discount is store-scoped, check cart items belong to that store
       if (discount.store_id) {
         const productIds = items.map(i => i.id);
