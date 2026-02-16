@@ -264,7 +264,18 @@ serve(async (req) => {
         if (amountInPence < 100) throw new Error("Minimum order amount is £1.00");
 
         description = `Purchase: ${validatedItems.map(i => i.name).join(', ')}`;
-        metadata.items = JSON.stringify(validatedItems);
+        // Truncate items metadata to fit Stripe's 500-char limit
+        const compactItems = validatedItems.map(i => ({ id: i.id, name: i.name, finalPrice: i.finalPrice }));
+        let itemsJson = JSON.stringify(compactItems);
+        if (itemsJson.length > 490) {
+          // Further reduce: just IDs and prices
+          const minimalItems = validatedItems.map(i => ({ id: i.id, p: i.finalPrice }));
+          itemsJson = JSON.stringify(minimalItems);
+          if (itemsJson.length > 490) {
+            itemsJson = itemsJson.substring(0, 490);
+          }
+        }
+        metadata.items = itemsJson;
         metadata.discount_code_id = discountCodeId || '';
         metadata.discount_amount = discountAmount.toString();
         metadata.eclipse_discount = serverEclipseDiscount.toString();
