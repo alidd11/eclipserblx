@@ -340,7 +340,7 @@ export function MarketplaceSection() {
         <>
           <FeaturedProductCard />
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recently Released</h2>
             <Link to="/products" className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-0.5">
               View all <ChevronRight className="h-3.5 w-3.5" />
             </Link>
