@@ -86,7 +86,7 @@ export function RecentReleasesCarousel() {
   if (isLoading) {
     return (
       <section>
-        <h2 className="text-lg font-semibold mb-3">Recent Releases</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Recent Releases</h2>
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex-shrink-0 w-[280px] sm:w-[300px]">
@@ -108,7 +108,7 @@ export function RecentReleasesCarousel() {
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold">Recent Releases</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent Releases</h2>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
