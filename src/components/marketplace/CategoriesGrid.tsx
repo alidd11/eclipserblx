@@ -192,13 +192,18 @@ export function CategoriesGrid() {
               </div>
 
               {/* Info strip */}
-              <div className="flex items-center gap-2 px-2.5 py-2 bg-muted/60">
-                <div className="h-6 w-6 rounded-[0.25rem] bg-primary/10 flex items-center justify-center shrink-0">
-                  <IconComponent className="h-3 w-3 text-primary" />
+              <div className="flex items-center justify-between gap-2 px-2.5 py-2.5 bg-muted/60">
+                <div className="min-w-0">
+                  <span className="font-semibold text-[13px] leading-tight text-foreground group-hover:text-primary transition-colors truncate block">
+                    {getTranslatedName(category.id, category.name)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                    {category.product_count} {category.product_count === 1 ? 'product' : 'products'}
+                  </span>
                 </div>
-                <span className="font-medium text-xs text-foreground group-hover:text-primary transition-colors truncate">
-                  {getTranslatedName(category.id, category.name)}
-                </span>
+                <div className="h-7 w-7 rounded-[0.25rem] bg-primary/10 flex items-center justify-center shrink-0">
+                  <IconComponent className="h-3.5 w-3.5 text-primary" />
+                </div>
               </div>
             </Link>
           );
