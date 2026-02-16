@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck, Award, Crown, Package, Star } from 'lucide-react';
+import { ShieldCheck, Award, Crown, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface FeaturedProduct {
@@ -61,8 +60,8 @@ export function FeaturedProductCard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured Product</h2>
+      <div className="space-y-2">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Spotlight</span>
         <Skeleton className="w-full aspect-[2.5/1] rounded-lg" />
       </div>
     );
@@ -76,11 +75,12 @@ export function FeaturedProductCard() {
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured Product</h2>
+    <div className="space-y-2">
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Spotlight</span>
       <Link to={`/products/${product.slug}`} className="group block">
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
-          <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-muted">
+          {/* Product image */}
+          <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">
             {product.images?.[0] ? (
               <img
                 src={product.images[0]}
@@ -92,66 +92,63 @@ export function FeaturedProductCard() {
                 <Package className="h-10 w-10 text-muted-foreground/30" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
             {/* Content overlay */}
-            <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6">
-              {/* Featured badge */}
-              <Badge className="w-fit mb-2 text-[10px] px-1.5 py-0.5 gap-1 bg-primary/90 text-primary-foreground border-0">
-                <Star className="h-2.5 w-2.5 fill-current" />
-                Featured
-              </Badge>
+            <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5">
+              {/* Category */}
+              {product.categories?.name && (
+                <span className="text-[10px] font-medium uppercase tracking-wider text-white/50 mb-0.5">
+                  {product.categories.name}
+                </span>
+              )}
 
               {/* Product name */}
-              <h3 className="text-white font-bold text-base sm:text-xl line-clamp-1 group-hover:text-primary transition-colors">
+              <h3 className="text-white font-display font-bold text-sm sm:text-lg line-clamp-1 leading-tight">
                 {product.name}
               </h3>
 
-              {/* Description */}
-              {product.description && (
-                <p className="text-white/60 text-xs sm:text-sm line-clamp-1 mt-0.5 hidden sm:block">
-                  {product.description}
-                </p>
-              )}
-
-              {/* Price */}
-              <div className="flex items-center gap-2 mt-1.5">
+              {/* Price row */}
+              <div className="flex items-center gap-2 mt-1">
                 {hasMemberDiscount ? (
                   <>
-                    <span className="text-amber-500 font-bold text-sm sm:text-base">{formatPrice(memberPrice)}</span>
-                    <span className="text-white/50 text-xs line-through">{formatPrice(product.price)}</span>
-                    <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
+                    <span className="text-amber-400 font-bold text-xs sm:text-sm">{formatPrice(memberPrice)}</span>
+                    <span className="text-white/40 text-[10px] sm:text-xs line-through">{formatPrice(product.price)}</span>
+                    <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-amber-500/15 text-amber-400 text-[9px] sm:text-[10px] font-semibold">
                       <Crown className="h-2.5 w-2.5" />
-                      {discountPercent}%
+                      -{discountPercent}%
                     </span>
                   </>
                 ) : (
-                  <span className="text-white font-bold text-sm sm:text-base">{formatPrice(product.price)}</span>
+                  <span className="text-white font-bold text-xs sm:text-sm">{formatPrice(product.price)}</span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Store banner strip */}
+          {/* Store strip */}
           <div
-            className="h-10 relative flex items-center gap-2 px-3 overflow-hidden"
+            className="h-9 relative flex items-center gap-2 px-3 overflow-hidden"
             style={product.stores?.banner_url ? {
               backgroundImage: `url(${product.stores.banner_url})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             } : undefined}
           >
-            {product.stores?.banner_url && (
-              <div className="absolute inset-0 bg-black/60" />
-            )}
-            {!product.stores?.banner_url && (
-              <div className="absolute inset-0 bg-muted" />
-            )}
-            <div className="relative z-10 flex items-center gap-2 min-w-0">
-              {product.stores?.logo_url && (
-                <img src={product.stores.logo_url} alt="" className="h-5 w-5 rounded object-contain bg-white/10 flex-shrink-0" />
+            <div className={cn(
+              "absolute inset-0",
+              product.stores?.banner_url ? "bg-black/70" : "bg-muted/80"
+            )} />
+            <div className="relative z-10 flex items-center gap-1.5 min-w-0">
+              {product.stores?.logo_url ? (
+                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded-sm object-contain bg-white/10 flex-shrink-0" />
+              ) : (
+                <div className="h-4 w-4 rounded-sm bg-white/10 flex-shrink-0" />
               )}
-              <span className={cn("text-xs font-medium truncate", product.stores?.banner_url ? "text-white" : "text-foreground")}>
+              <span className={cn(
+                "text-[11px] font-medium truncate",
+                product.stores?.banner_url ? "text-white/80" : "text-muted-foreground"
+              )}>
                 {product.stores?.name}
               </span>
               {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
