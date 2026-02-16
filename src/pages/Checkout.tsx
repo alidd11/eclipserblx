@@ -202,10 +202,11 @@ export default function Checkout() {
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (result?: { paymentIntentId?: string; subscriptionId?: string }) => {
     clearCart();
     showSuccessNotification(t('checkout.paymentSuccess'), t('checkout.orderProcessing'));
-    navigate('/order-success?embedded=true');
+    const piParam = result?.paymentIntentId ? `&payment_intent=${result.paymentIntentId}` : '';
+    navigate(`/order-success?embedded=true${piParam}`);
   };
 
   const handlePaymentError = (error: string) => {
