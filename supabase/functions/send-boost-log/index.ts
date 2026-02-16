@@ -88,9 +88,7 @@ serve(async (req) => {
             attempts++;
           }
 
-          const expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + 30);
-
+          // No expiry - code stays active until used or deactivated on unboost
           const { error: insertError } = await supabase
             .from("discount_codes")
             .insert({
@@ -100,17 +98,12 @@ serve(async (req) => {
               max_uses: 1,
               current_uses: 0,
               is_active: true,
-              expires_at: expiresAt.toISOString(),
               restricted_to_user_id: profile.user_id,
             });
 
           if (!insertError) {
             discountCode = code;
             console.log("[BOOST-LOG] Discount code created:", code, "for user:", profile.user_id);
-
-            const expiryDateStr = expiresAt.toLocaleDateString("en-GB", {
-              day: "numeric", month: "long", year: "numeric",
-            });
 
             const dmResult = await sendDirectMessage(discord_id, {
               embeds: [{
@@ -120,10 +113,10 @@ serve(async (req) => {
                 color: BOOST_COLOR,
                 fields: [
                   { name: "💎 Your Code", value: `\`\`\`${code}\`\`\``, inline: false },
-                  { name: "📅 Expires", value: expiryDateStr, inline: true },
                   { name: "🔒 Usage", value: "Single use · Only for you", inline: true },
+                  { name: "⏳ Valid", value: "While you're boosting", inline: true },
                 ],
-                footer: { text: "This code is exclusive to your account and cannot be shared." },
+                footer: { text: "This code is exclusive to your account and will be deactivated if you stop boosting." },
               }],
             });
 
