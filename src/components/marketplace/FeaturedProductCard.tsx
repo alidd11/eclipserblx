@@ -51,11 +51,10 @@ export function FeaturedProductCard() {
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('download_count', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
 
       if (error) throw error;
-      return data as unknown as FeaturedProduct | null;
+      return (data?.[0] as unknown as FeaturedProduct) ?? null;
     },
     staleTime: 5 * 60 * 1000,
   });
