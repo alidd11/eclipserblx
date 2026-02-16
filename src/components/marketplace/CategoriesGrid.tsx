@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCategoryTranslations } from '@/hooks/useCategoryTranslations';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 const iconMap: Record<string, typeof Car> = {
@@ -41,7 +40,6 @@ export function CategoriesGrid() {
   const { data: categories, isLoading } = useQuery({
     queryKey: ['marketplace-categories-grid-optimized'],
     queryFn: async () => {
-      // 1. Fetch parent categories
       const { data: cats, error: catError } = await supabase
         .from('categories')
         .select('id, name, slug, description, icon, parent_id, display_order')
@@ -54,7 +52,6 @@ export function CategoriesGrid() {
       const catIds = cats.map(c => c.id);
       const now = new Date().toISOString();
 
-      // 2. Batch fetch product counts and top images in one query
       const { data: products, error: prodError } = await supabase
         .from('products')
         .select('category_id, images')
@@ -65,7 +62,6 @@ export function CategoriesGrid() {
 
       if (prodError) throw prodError;
 
-      // 3. Aggregate counts and collect preview images per category
       const countMap: Record<string, { count: number; images: string[] }> = {};
       for (const p of products || []) {
         if (!countMap[p.category_id]) {
@@ -77,7 +73,6 @@ export function CategoriesGrid() {
         }
       }
 
-      // 4. Merge and sort: categories with products first (by count desc), then empty
       const result: CategoryWithProducts[] = cats.map(c => ({
         ...c,
         product_count: countMap[c.id]?.count || 0,
@@ -103,9 +98,9 @@ export function CategoriesGrid() {
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-4 w-16" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-lg" />
+            <Skeleton key={i} className="aspect-[4/3] rounded-[0.375rem]" />
           ))}
         </div>
       </div>
@@ -132,33 +127,24 @@ export function CategoriesGrid() {
         </Link>
       </div>
 
-      {/* Populated categories */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {/* Populated categories — visual cards with image collage */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {populated.map((category) => {
           const IconComponent = iconMap[category.icon || ''] || Package;
+          const hasImages = category.preview_images.length > 0;
+
           return (
             <Link
               key={category.id}
               to={`/products?category=${category.slug}`}
-              className="group flex items-center gap-3 px-3.5 py-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-transparent hover:border-primary/20 transition-all"
+              className="group relative flex flex-col overflow-hidden rounded-[0.375rem] border border-border bg-card hover:border-primary/30 transition-all"
             >
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <IconComponent className="h-4.5 w-4.5 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors truncate">
-                    {getTranslatedName(category.id, category.name)}
-                  </span>
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">
-                    {category.product_count}
-                  </Badge>
-                </div>
-                {/* Product thumbnail previews */}
-                {category.preview_images.length > 0 && (
-                  <div className="flex gap-1 mt-1.5">
+              {/* Image area */}
+              <div className="relative aspect-[16/10] bg-muted overflow-hidden">
+                {hasImages ? (
+                  <div className="absolute inset-0 grid grid-cols-3 gap-px">
                     {category.preview_images.map((img, i) => (
-                      <div key={i} className="h-7 w-7 rounded overflow-hidden bg-muted shrink-0">
+                      <div key={i} className="relative overflow-hidden">
                         <OptimizedImage
                           src={img}
                           alt=""
@@ -168,28 +154,51 @@ export function CategoriesGrid() {
                         />
                       </div>
                     ))}
+                    {/* Fill remaining slots with muted bg */}
+                    {Array.from({ length: Math.max(0, 3 - category.preview_images.length) }).map((_, i) => (
+                      <div key={`empty-${i}`} className="bg-muted/60" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <IconComponent className="h-8 w-8 text-muted-foreground/40" />
                   </div>
                 )}
+                {/* Gradient overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
+                {/* Count pill */}
+                <div className="absolute top-1.5 right-1.5 bg-card/80 text-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded-[0.25rem] border border-border">
+                  {category.product_count}
+                </div>
+              </div>
+
+              {/* Info strip */}
+              <div className="flex items-center gap-2 px-2.5 py-2 bg-muted/60">
+                <div className="h-6 w-6 rounded-[0.25rem] bg-primary/10 flex items-center justify-center shrink-0">
+                  <IconComponent className="h-3 w-3 text-primary" />
+                </div>
+                <span className="font-medium text-xs text-foreground group-hover:text-primary transition-colors truncate">
+                  {getTranslatedName(category.id, category.name)}
+                </span>
               </div>
             </Link>
           );
         })}
       </div>
 
-      {/* Empty categories - compact muted row */}
+      {/* Empty categories — compact chip row */}
       {empty.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1">
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
           {empty.map((category) => {
             const IconComponent = iconMap[category.icon || ''] || Package;
             return (
               <Link
                 key={category.id}
                 to={`/products?category=${category.slug}`}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all text-xs"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[0.375rem] border border-border/50 bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 hover:border-border transition-all text-xs"
               >
-                <IconComponent className="h-3 w-3" />
+                <IconComponent className="h-3 w-3 opacity-60" />
                 <span>{getTranslatedName(category.id, category.name)}</span>
-                <span className="text-[10px] opacity-60">Soon</span>
               </Link>
             );
           })}
