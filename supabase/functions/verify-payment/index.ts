@@ -328,6 +328,15 @@ serve(async (req) => {
               platformFee
             });
 
+            // Look up order_item_id
+            const { data: orderItemRecord } = await supabaseClient
+              .from("order_items")
+              .select("id")
+              .eq("order_id", orderId)
+              .eq("product_id", item.id)
+              .limit(1)
+              .maybeSingle();
+
             // Create transaction record with full fee breakdown
             const { error: txError } = await supabaseClient
               .from("seller_transactions")
@@ -335,7 +344,7 @@ serve(async (req) => {
                 seller_id: sellerId,
                 store_id: product.store_id,
                 order_id: orderId,
-                product_id: item.id,
+                order_item_id: orderItemRecord?.id || null,
                 gross_amount: grossAmount,
                 stripe_fee: proportionalStripeFee,
                 net_before_commission: netBeforeCommission,
