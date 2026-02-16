@@ -243,7 +243,14 @@ async function processPayment(
   let items: Array<{ id: string; name: string; price: number; category_slug?: string }> = [];
   if (metadata?.items) {
     try {
-      items = JSON.parse(metadata.items);
+      const rawItems = JSON.parse(metadata.items);
+      // Handle both full format {id,name,price} and compact formats {id,name,finalPrice} or {id,p}
+      items = rawItems.map((item: any) => ({
+        id: item.id || '',
+        name: item.name || 'Product',
+        price: item.price ?? item.finalPrice ?? item.p ?? 0,
+        category_slug: item.category_slug,
+      }));
       logStep("Parsed items from metadata", { itemCount: items.length });
     } catch (e) {
       logStep("Failed to parse items from metadata", { error: String(e) });
@@ -265,8 +272,8 @@ async function processPayment(
     }
   }
 
-  // Calculate totals
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  // Calculate totals - ensure never null/NaN
+  const subtotal = items.reduce((sum, item) => sum + (item.price || 0), 0) || (amountTotal ? amountTotal / 100 : 0);
   const total = amountTotal ? amountTotal / 100 : subtotal;
 
   // Get user ID from metadata or look up by email
