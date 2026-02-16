@@ -166,16 +166,15 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
               <span className="text-muted-foreground text-sm">No image</span>
             </div>
           )}
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-            <div className="flex items-center gap-1">
-              {product.stores?.logo_url && (
-                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10" />
-              )}
-              <span className="text-white text-[11px] font-medium truncate">{product.stores?.name}</span>
-              {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-              {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-            </div>
-          </div>
+        </div>
+        {/* Store strip */}
+        <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
+          {product.stores?.logo_url && (
+            <img src={product.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+          )}
+          <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
+          {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+          {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
         </div>
         <div className="p-3">
           <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
