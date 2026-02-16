@@ -346,3 +346,6 @@ verify_jwt = false
 
 [functions.translate-product]
 verify_jwt = false
+
+[functions.poll-discord-audit-log]
+verify_jwt = false
