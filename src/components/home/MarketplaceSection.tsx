@@ -359,7 +359,7 @@ export function MarketplaceSection() {
               {/* Spotlight product */}
               {(() => {
                 const spotlights = featuredProducts.slice(0, 2);
-                const gridProducts = featuredProducts.slice(2, 11);
+                const gridProducts = featuredProducts.slice(2, 8);
                 return (
                   <>
                     {/* Two spotlight products side by side */}
