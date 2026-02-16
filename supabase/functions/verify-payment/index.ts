@@ -170,17 +170,33 @@ serve(async (req) => {
       .eq("payment_id", paymentId)
       .single();
 
+    let orderId: string;
+
     if (existingOrder) {
       logStep("Order already exists", { orderId: existingOrder.id });
-      return new Response(JSON.stringify({ 
-        success: true, 
-        orderId: existingOrder.id,
-        alreadyProcessed: true 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
+      orderId = existingOrder.id;
+
+      // Check if seller transactions already exist for this order
+      const { data: existingTx } = await supabaseClient
+        .from("seller_transactions")
+        .select("id")
+        .eq("order_id", existingOrder.id)
+        .limit(1);
+
+      if (existingTx && existingTx.length > 0) {
+        logStep("Seller transactions already processed, skipping");
+        return new Response(JSON.stringify({ 
+          success: true, 
+          orderId: existingOrder.id,
+          alreadyProcessed: true 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      logStep("Order exists but seller transactions missing, processing now");
+    } else {
 
     // Calculate totals
     const subtotal = items.reduce((sum: number, item: any) => sum + item.price, 0);
@@ -228,12 +244,13 @@ serve(async (req) => {
     }
 
     logStep("Order created", { orderId: order.id });
+    orderId = order.id;
 
     // Create order items and track bot purchases
     const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
     
     const orderItems = items.map((item: any) => ({
-      order_id: order.id,
+      order_id: orderId,
       product_id: item.id,
       product_name: item.name,
       price: item.price,
@@ -248,6 +265,7 @@ serve(async (req) => {
       logStep("Order items error", itemsError);
       throw itemsError;
     }
+    } // end of else block (order didn't exist)
 
     // Process seller earnings for seller products (net-based after Stripe fees)
     // Calculate seller product count for proportional fee allocation
@@ -316,7 +334,7 @@ serve(async (req) => {
               .insert({
                 seller_id: sellerId,
                 store_id: product.store_id,
-                order_id: order.id,
+                order_id: orderId,
                 product_id: item.id,
                 gross_amount: grossAmount,
                 stripe_fee: proportionalStripeFee,
@@ -371,7 +389,7 @@ serve(async (req) => {
                   body: JSON.stringify({
                     type: 'sale',
                     store_id: product.store_id,
-                    order_id: order.id,
+                    order_id: orderId,
                     product_name: item.name,
                     amount: sellerEarnings,
                   }),
@@ -393,7 +411,7 @@ serve(async (req) => {
                         { name: "Product", value: item.name, inline: true },
                         { name: "Sale Price", value: `£${grossAmount.toFixed(2)}`, inline: true },
                         { name: "Your Earnings", value: `£${sellerEarnings.toFixed(2)}`, inline: true },
-                        { name: "Order ID", value: order.id.slice(0, 8) + "...", inline: true },
+                        { name: "Order ID", value: orderId.slice(0, 8) + "...", inline: true },
                       ],
                       footer: { text: `${storeName || 'Your Store'} • Eclipse Store` },
                       timestamp: new Date().toISOString(),
@@ -465,6 +483,8 @@ serve(async (req) => {
       }
     }
 
+    // The following sections only run for new orders (not when order was already created by webhook)
+    if (!existingOrder) {
     // Generate installation codes for bot purchases
     const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
     for (let i = 0; i < items.length; i++) {
@@ -502,7 +522,7 @@ serve(async (req) => {
             const { error: codeError } = await supabaseClient
               .from("bot_installation_codes")
               .insert({
-                order_id: order.id,
+                order_id: orderId,
                 order_item_id: insertedItemsArray[i].id,
                 user_id: userId,
                 installation_code: installationCode,
@@ -540,7 +560,7 @@ serve(async (req) => {
             .from("review_reminders")
             .insert({
               user_id: userId,
-              order_id: order.id,
+              order_id: orderId,
               product_id: item.id,
               product_name: item.name,
             });
@@ -564,7 +584,7 @@ serve(async (req) => {
       );
 
       const emailPayload = {
-        orderId: order.id,
+        orderId: orderId,
         customerEmail: customerEmail,
         items: items.map((item: any) => ({
           product_name: item.name,
@@ -574,7 +594,7 @@ serve(async (req) => {
         subtotal: subtotal,
         total: total,
         paymentMethod: paymentMethod,
-        orderDate: order.created_at,
+        orderDate: new Date().toISOString(),
         hasBotPurchase: hasBotPurchase,
         botInstallationCodes: botInstallationCodes.length > 0 ? botInstallationCodes : undefined,
       };
@@ -603,7 +623,7 @@ serve(async (req) => {
 
     // Process referral if applicable
     if (userId) {
-      logStep("Processing referral for user", { userId, orderTotal: order.total });
+      logStep("Processing referral for user", { userId, orderTotal: total });
       try {
         const referralResponse = await fetch(
           `${Deno.env.get("SUPABASE_URL")}/functions/v1/process-referral`,
@@ -613,7 +633,7 @@ serve(async (req) => {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
             },
-            body: JSON.stringify({ orderId: order.id, userId, orderTotal: order.total }),
+            body: JSON.stringify({ orderId: orderId, userId, orderTotal: total }),
           }
         );
 
@@ -671,7 +691,7 @@ serve(async (req) => {
               payload: {
                 title: notificationTitle,
                 body: notificationMessage,
-                tag: `order-${order.id}`,
+                tag: `order-${orderId}`,
                 url: '/downloads',
                 requireInteraction: true,
               },
@@ -694,7 +714,7 @@ serve(async (req) => {
               "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
             },
             body: JSON.stringify({
-              orderId: order.id,
+              orderId: orderId,
               userId: userId,
               customerEmail: customerEmail,
               productNames: items.map((item: any) => item.name),
@@ -707,10 +727,11 @@ serve(async (req) => {
         logStep("Discord notification error (non-fatal)", discordError);
       }
     }
+    } // end of !existingOrder block
 
     return new Response(JSON.stringify({ 
       success: true, 
-      orderId: order.id 
+      orderId: orderId 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
