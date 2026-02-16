@@ -138,22 +138,7 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
-      // === UNBOOST: Deactivate unclaimed codes and notify ===
-      const description = `No longer boosting the server.`;
-
-      // Send unboost log embed
-      const result = await sendBotMessage(BOOST_LOG_CHANNEL_ID, {
-        content: `<@${discord_id}>`,
-        allowed_mentions: { users: [discord_id] },
-        embeds: [{
-          author: { name: discord_username, icon_url: avatarUrl },
-          description,
-          color,
-          thumbnail: { url: avatarUrl },
-        }],
-      });
-
-      if (!result.success) throw new Error(result.error || "Failed to send unboost log");
+      // === UNBOOST: Deactivate unclaimed codes (no embed sent) ===
 
       // Deactivate any unclaimed boost codes for this user
       if (profile?.user_id) {
@@ -205,12 +190,7 @@ serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ success: true, messageId: result.messageId, deactivatedCode }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-
-      return new Response(
-        JSON.stringify({ success: true, messageId: result.messageId, deactivatedCode }),
+        JSON.stringify({ success: true, deactivatedCode }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
