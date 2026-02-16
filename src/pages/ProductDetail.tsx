@@ -353,26 +353,6 @@ export default function ProductDetail() {
             </div>
           </div>
         )}
-        
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto scrollbar-hide max-w-full">
-          <Link to="/" className="hover:text-foreground transition-colors flex-shrink-0">Home</Link>
-          <span className="flex-shrink-0">/</span>
-          <Link to="/products" className="hover:text-foreground transition-colors flex-shrink-0">Products</Link>
-          {product.categories && (
-            <>
-              <span className="flex-shrink-0">/</span>
-              <Link 
-                to={`/products?category=${product.categories.slug}`}
-                className="hover:text-foreground transition-colors flex-shrink-0"
-              >
-                {product.categories.name}
-              </Link>
-            </>
-          )}
-          <span className="flex-shrink-0">/</span>
-          <span className="text-foreground truncate max-w-[150px] sm:max-w-none">{product.name}</span>
-        </nav>
 
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-full">
