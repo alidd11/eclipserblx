@@ -661,20 +661,20 @@ export default function SellerStoreDetail() {
               <div className="grid gap-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Available Balance</span>
-                  <span className="font-medium text-green-500">${(stats?.balance?.available_balance || 0).toFixed(2)}</span>
+                  <span className="font-medium text-green-500">£{(stats?.balance?.available_balance || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Pending Balance</span>
-                  <span className="font-medium text-yellow-500">${(stats?.balance?.pending_balance || 0).toFixed(2)}</span>
+                  <span className="font-medium text-yellow-500">£{(stats?.balance?.pending_balance || 0).toFixed(2)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Earned</span>
-                  <span className="font-medium">${(stats?.balance?.total_earned || 0).toFixed(2)}</span>
+                  <span className="font-medium">£{(stats?.balance?.total_earned || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Paid Out</span>
-                  <span className="font-medium">${(stats?.balance?.total_paid || 0).toFixed(2)}</span>
+                  <span className="font-medium">£{(stats?.balance?.total_paid || 0).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
