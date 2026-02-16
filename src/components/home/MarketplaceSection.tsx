@@ -355,35 +355,37 @@ export function MarketplaceSection() {
                 const gridProducts = featuredProducts.slice(2, 5);
                 return (
                   <>
-                    {/* Two spotlight products */}
-                    {spotlights.map((spotlight) => (
-                      <Link key={spotlight.id} to={`/products/${spotlight.slug}`} className="group block">
-                        <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
-                          <div className="aspect-[16/9] relative overflow-hidden bg-muted">
-                            {spotlight.images?.[0] ? (
-                              <img src={spotlight.images[0]} alt={spotlight.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted">
-                                <Package className="h-8 w-8 text-muted-foreground/30" />
+                    {/* Two spotlight products side by side */}
+                    <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                      {spotlights.map((spotlight) => (
+                        <Link key={spotlight.id} to={`/products/${spotlight.slug}`} className="group block">
+                          <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
+                            <div className="aspect-[16/9] relative overflow-hidden bg-muted">
+                              {spotlight.images?.[0] ? (
+                                <img src={spotlight.images[0]} alt={spotlight.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-muted">
+                                  <Package className="h-8 w-8 text-muted-foreground/30" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                              <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  {spotlight.stores?.logo_url && (
+                                    <img src={spotlight.stores.logo_url} alt="" className="h-4 w-4 sm:h-6 sm:w-6 rounded object-contain bg-white/10" />
+                                  )}
+                                  <span className="text-white/80 text-[11px] sm:text-xs font-medium truncate">{spotlight.stores?.name}</span>
+                                  {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+                                  {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+                                </div>
+                                <h4 className="text-white font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
+                                <SpotlightPrice product={spotlight} />
                               </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                            <div className="absolute bottom-0 inset-x-0 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                {spotlight.stores?.logo_url && (
-                                  <img src={spotlight.stores.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-white/10" />
-                                )}
-                                <span className="text-white/80 text-xs font-medium">{spotlight.stores?.name}</span>
-                                {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400" />}
-                                {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400" />}
-                              </div>
-                              <h4 className="text-white font-bold text-base sm:text-lg line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
-                              <SpotlightPrice product={spotlight} />
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      ))}
+                    </div>
                     {/* 3 products in grid below */}
                     {gridProducts.length > 0 && (
                       <div className="grid grid-cols-2 gap-3 sm:gap-6">
