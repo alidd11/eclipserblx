@@ -338,7 +338,6 @@ export function MarketplaceSection() {
       {/* === PRODUCTS MODE === */}
       {browseMode === 'products' && (
         <>
-          <RecentReleasesCarousel />
           {productsLoading ? (
             <div className="space-y-4">
               <Skeleton className="aspect-[16/9] rounded-lg" />
