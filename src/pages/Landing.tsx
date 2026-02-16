@@ -3,7 +3,7 @@ import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingCategories } from '@/components/landing/LandingCategories';
 
 
-import { LandingCTA } from '@/components/landing/LandingCTA';
+
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
@@ -27,7 +27,7 @@ export default function Landing() {
       <LandingCategories />
       
       
-      <LandingCTA />
+      
     </MainLayout>
   );
 }
