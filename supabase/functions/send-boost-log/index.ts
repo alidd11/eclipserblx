@@ -9,7 +9,6 @@ const corsHeaders = {
 
 const BOOST_LOG_CHANNEL_ID = "1461353041310781531";
 const BOOST_COLOR = 0xFF73FA;   // Pink/Magenta
-const UNBOOST_COLOR = 0x808080; // Grey
 
 function generateBoostCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -39,7 +38,6 @@ serve(async (req) => {
       `https://cdn.discordapp.com/embed/avatars/${parseInt(discord_id) % 5}.png`;
 
     const isBoosted = action === "boosted";
-    const color = isBoosted ? BOOST_COLOR : UNBOOST_COLOR;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -66,7 +64,7 @@ serve(async (req) => {
         embeds: [{
           author: { name: discord_username, icon_url: avatarUrl },
           description,
-          color,
+          color: BOOST_COLOR,
           thumbnail: { url: avatarUrl },
         }],
       });
@@ -156,31 +154,13 @@ serve(async (req) => {
             const codeIds = activeCodes.map(c => c.id);
             deactivatedCode = activeCodes[0].code;
 
-            // Deactivate them
+            // Silently deactivate them — no DM sent
             await supabase
               .from("discount_codes")
               .update({ is_active: false })
               .in("id", codeIds);
 
             console.log("[BOOST-LOG] Deactivated unclaimed boost codes:", codeIds.length);
-
-            // DM the user about deactivation
-            const dmResult = await sendDirectMessage(discord_id, {
-              embeds: [{
-                author: { name: "Eclipse Portal", icon_url: avatarUrl },
-                title: "📉 Boost Discount Deactivated",
-                description: "Since you're no longer boosting the server, your unclaimed boost discount code has been deactivated.",
-                color: UNBOOST_COLOR,
-                fields: [
-                  { name: "❌ Deactivated Code", value: `\`\`\`${deactivatedCode}\`\`\``, inline: false },
-                ],
-                footer: { text: "Boost again anytime to receive a new discount code!" },
-              }],
-            });
-
-            if (!dmResult.success) {
-              console.log("[BOOST-LOG] Could not DM user about deactivation:", dmResult.error);
-            }
           } else {
             console.log("[BOOST-LOG] No unclaimed boost codes to deactivate for user:", profile.user_id);
           }
