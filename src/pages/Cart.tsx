@@ -17,12 +17,13 @@ export default function Cart() {
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
   const { formatPrice } = useCurrency();
 
-  // Calculate Eclipse+ discount
+  // Calculate Eclipse+ discount (only for eligible items)
   const calculateMemberTotal = () => {
     if (!isSubscribed) return total;
     return items.reduce((sum, item) => {
-      const memberPrice = getMemberPrice(item.price, item.category_id, item.is_resellable);
-      return sum + memberPrice;
+      const eligible = isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
+      const price = eligible ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
+      return sum + price;
     }, 0);
   };
 
