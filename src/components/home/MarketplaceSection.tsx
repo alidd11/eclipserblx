@@ -345,80 +345,57 @@ export function MarketplaceSection() {
         <>
           <RecentReleasesCarousel />
           {productsLoading ? (
-            <div className="space-y-8">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="aspect-[16/9] rounded-lg" />
-                  <div className="grid grid-cols-3 gap-2">
-                    {Array.from({ length: 3 }).map((_, j) => (
-                      <Skeleton key={j} className="aspect-[4/3] rounded-lg" />
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-4">
+              <Skeleton className="aspect-[16/9] rounded-lg" />
+              <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-[4/3] rounded-lg" />
+                ))}
+              </div>
             </div>
           ) : featuredProducts?.length ? (
-            <div className="space-y-8">
+            <div className="space-y-4">
+              {/* Spotlight product */}
               {(() => {
-                // Group products by category
-                const grouped = new Map<string, { name: string; slug: string; products: typeof featuredProducts }>();
-                for (const product of featuredProducts) {
-                  const catName = product.categories?.name || 'Other';
-                  const catSlug = product.categories?.slug || 'other';
-                  if (!grouped.has(catName)) {
-                    grouped.set(catName, { name: catName, slug: catSlug, products: [] });
-                  }
-                  grouped.get(catName)!.products.push(product);
-                }
-                return Array.from(grouped.values()).map(({ name, slug, products }) => {
-                  const [spotlight, ...rest] = products;
-                  return (
-                    <div key={name} className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">{name}</h3>
-                        <Link to={`/products?category=${slug}`} className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
-                          View all <ChevronRight className="h-3 w-3" />
-                        </Link>
-                      </div>
-                      {/* Spotlight product */}
-                      <Link to={`/products/${spotlight.slug}`} className="group block">
-                        <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
-                          <div className="aspect-[16/9] relative overflow-hidden bg-muted">
-                            {spotlight.images?.[0] ? (
-                              <img src={spotlight.images[0]} alt={spotlight.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted">
-                                <Package className="h-8 w-8 text-muted-foreground/30" />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                            <div className="absolute bottom-0 inset-x-0 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                {spotlight.stores?.logo_url && (
-                                  <img src={spotlight.stores.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-white/10" />
-                                )}
-                                <span className="text-white/80 text-xs font-medium">{spotlight.stores?.name}</span>
-                                {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400" />}
-                                {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400" />}
-                              </div>
-                              <h4 className="text-white font-bold text-base sm:text-lg line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
-                              <SpotlightPrice product={spotlight} />
+                const [spotlight, ...rest] = featuredProducts;
+                return (
+                  <>
+                    <Link to={`/products/${spotlight.slug}`} className="group block">
+                      <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
+                        <div className="aspect-[16/9] relative overflow-hidden bg-muted">
+                          {spotlight.images?.[0] ? (
+                            <img src={spotlight.images[0]} alt={spotlight.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted">
+                              <Package className="h-8 w-8 text-muted-foreground/30" />
                             </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          <div className="absolute bottom-0 inset-x-0 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              {spotlight.stores?.logo_url && (
+                                <img src={spotlight.stores.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-white/10" />
+                              )}
+                              <span className="text-white/80 text-xs font-medium">{spotlight.stores?.name}</span>
+                              {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400" />}
+                              {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400" />}
+                            </div>
+                            <h4 className="text-white font-bold text-base sm:text-lg line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
+                            <SpotlightPrice product={spotlight} />
                           </div>
                         </div>
-                      </Link>
-                      {/* Smaller products grid */}
-                      {rest.length > 0 && (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                          {rest.map((product) => (
-                            <MarketplaceProductCard key={product.id} product={product} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                });
+                      </div>
+                    </Link>
+                    {/* Regular product grid */}
+                    {rest.length > 0 && (
+                      <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                        {rest.map((product) => (
+                          <MarketplaceProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
               })()}
             </div>
           ) : (
