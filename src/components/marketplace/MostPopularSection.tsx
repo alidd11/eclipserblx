@@ -43,7 +43,7 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
         </div>
 
         {/* Product image */}
-        <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden bg-muted">
+        <div className="flex-shrink-0 w-14 h-14 rounded-md overflow-hidden bg-muted">
           {product.images?.[0] ? (
             <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
           ) : (
@@ -101,7 +101,7 @@ export function MostPopularSection() {
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('download_count', { ascending: false })
-        .limit(5);
+        .limit(3);
 
       if (error) throw error;
       return (data as unknown as PopularProduct[]) ?? [];
@@ -117,7 +117,7 @@ export function MostPopularSection() {
           Most Popular
         </h2>
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-[68px] rounded-lg" />
           ))}
         </div>
