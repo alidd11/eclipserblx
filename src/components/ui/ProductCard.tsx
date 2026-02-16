@@ -166,50 +166,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             </div>
           )}
           
-          {/* Store info overlay at bottom of image */}
-          {storeName && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-2 pt-6">
-              <div className="flex items-center gap-1.5">
-                {/* Store Logo */}
-                {storeLogo ? (
-                  <img 
-                    src={storeLogo} 
-                    alt={storeName}
-                    className="h-5 w-5 rounded object-contain bg-white/10 flex-shrink-0"
-                  />
-                ) : (
-                  <div className="h-5 w-5 rounded bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <Store className="h-3 w-3 text-white/70" />
-                  </div>
-                )}
-                <span 
-                  className="text-[10px] text-white/90 font-medium truncate hover:text-white transition-colors cursor-pointer"
-                  onClick={(e) => {
-                    if (storeSlug) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigate(`/store/${storeSlug}`);
-                    }
-                  }}
-                >
-                  {storeName}
-                </span>
-                {isVerified && (
-                  <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-                )}
-                {isTrusted && (
-                  <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
-                )}
-                {/* Product Rating */}
-                {typeof averageRating === 'number' && averageRating > 0 && (
-                  <span className="flex items-center gap-0.5 ml-auto text-white/90">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
           
           {/* Badges */}
           <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
@@ -235,6 +191,47 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             <WishlistButton productId={id} variant="icon" />
           </div>
         </div>
+
+        {/* Store strip */}
+        {storeName && (
+          <div className="h-7 flex items-center gap-1.5 px-2 xs:px-2.5 bg-muted/60 border-b border-border/50">
+            {storeLogo ? (
+              <img 
+                src={storeLogo} 
+                alt={storeName}
+                className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="h-3.5 w-3.5 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+                <Store className="h-2.5 w-2.5 text-muted-foreground" />
+              </div>
+            )}
+            <span 
+              className="text-[10px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
+              onClick={(e) => {
+                if (storeSlug) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/store/${storeSlug}`);
+                }
+              }}
+            >
+              {storeName}
+            </span>
+            {isVerified && (
+              <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+            )}
+            {isTrusted && (
+              <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
+            )}
+            {typeof averageRating === 'number' && averageRating > 0 && (
+              <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Content with flag background */}
         <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
