@@ -14,6 +14,7 @@ import { TopStoresSection } from '@/components/marketplace/TopStoresSection';
 import { MarketplaceBrowseToggle } from '@/components/marketplace/MarketplaceBrowseToggle';
 import { RecentReleasesCarousel } from '@/components/marketplace/RecentReleasesCarousel';
 import { FeaturedProductCard } from '@/components/marketplace/FeaturedProductCard';
+import { MostPopularSection } from '@/components/marketplace/MostPopularSection';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
@@ -339,6 +340,7 @@ export function MarketplaceSection() {
       {browseMode === 'products' && (
         <>
           <FeaturedProductCard />
+          <MostPopularSection />
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recently Released</h2>
             <Link to="/products" className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-0.5">
