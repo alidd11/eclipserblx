@@ -47,7 +47,7 @@ export function TopStoresSection() {
   if (isLoading) {
     return (
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">Featured Store</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured Store</h2>
         <Skeleton className="w-full aspect-[16/9] rounded-xl" />
       </section>
     );
@@ -59,7 +59,7 @@ export function TopStoresSection() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Featured Store</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured Store</h2>
         <Link
           to="/stores"
           className="text-xs text-primary hover:underline flex items-center gap-0.5"
