@@ -140,7 +140,7 @@ serve(async (req) => {
     const productIds = items.map(item => item.id);
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
-      .select('id, name, price, category_id, is_resellable, slug, stores(eclipse_plus_discount_enabled)')
+      .select('id, name, price, category_id, is_resellable, slug, store_id, stores(eclipse_plus_discount_enabled)')
       .in('id', productIds);
 
     if (productsError) {
@@ -220,26 +220,44 @@ serve(async (req) => {
           logStep("Discount code max uses reached", { discountCodeId });
         } else if (discount.min_order_amount && serverSubtotal < discount.min_order_amount) {
           logStep("Minimum order amount not met for discount", { discountCodeId, serverSubtotal, min: discount.min_order_amount });
-        } else if (discount.store_id) {
-          // Store-scoped discount: check items belong to store
-          const itemStoreIds = validatedItems.map((i: any) => i.store_id).filter(Boolean);
-          if (!itemStoreIds.includes(discount.store_id)) {
-            logStep("Discount code rejected - store mismatch", { discountStoreId: discount.store_id });
+        } else {
+          // Check if this is a BOOST code - restrict to Eclipse & Vino stores only
+          const isBoostCode = discount.code?.startsWith('BOOST-');
+          const ADMIN_STORE_IDS = ['83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a', '9b842052-e1fd-4dfe-99bf-c7625df3e17d'];
+          
+          if (isBoostCode) {
+            const itemStoreIds = validatedItems.map((i: any) => productMap.get(i.id)?.store_id).filter(Boolean);
+            const allFromAdminStores = itemStoreIds.length > 0 && itemStoreIds.every((sid: string) => ADMIN_STORE_IDS.includes(sid));
+            
+            if (!allFromAdminStores) {
+              logStep("Boost discount rejected - items not from Eclipse/Vino stores");
+            } else {
+              if (discount.discount_type === 'percentage') {
+                discountAmount = (serverSubtotal * discount.discount_value) / 100;
+              } else {
+                discountAmount = Math.min(discount.discount_value, serverSubtotal);
+              }
+            }
+          } else if (discount.store_id) {
+            const itemStoreIds = validatedItems.map((i: any) => productMap.get(i.id)?.store_id).filter(Boolean);
+            if (!itemStoreIds.includes(discount.store_id)) {
+              logStep("Discount code rejected - store mismatch", { discountStoreId: discount.store_id });
+            } else {
+              if (discount.discount_type === 'percentage') {
+                discountAmount = (serverSubtotal * discount.discount_value) / 100;
+              } else {
+                discountAmount = Math.min(discount.discount_value, serverSubtotal);
+              }
+              logStep("Store-scoped discount applied", { discountAmount });
+            }
           } else {
             if (discount.discount_type === 'percentage') {
               discountAmount = (serverSubtotal * discount.discount_value) / 100;
             } else {
               discountAmount = Math.min(discount.discount_value, serverSubtotal);
             }
-            logStep("Store-scoped discount applied", { discountAmount });
+            logStep("Discount applied", { discountAmount, type: discount.discount_type });
           }
-        } else {
-          if (discount.discount_type === 'percentage') {
-            discountAmount = (serverSubtotal * discount.discount_value) / 100;
-          } else {
-            discountAmount = Math.min(discount.discount_value, serverSubtotal);
-          }
-          logStep("Discount applied", { discountAmount, type: discount.discount_type });
         }
       }
     } else if (discountCodeId && isEclipseMember) {
