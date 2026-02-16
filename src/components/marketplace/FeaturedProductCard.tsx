@@ -127,28 +127,14 @@ export function FeaturedProductCard() {
           </div>
 
           {/* Store strip */}
-          <div
-            className="h-9 relative flex items-center gap-2 px-3 overflow-hidden"
-            style={product.stores?.banner_url ? {
-              backgroundImage: `url(${product.stores.banner_url})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            } : undefined}
-          >
-            <div className={cn(
-              "absolute inset-0",
-              product.stores?.banner_url ? "bg-black/70" : "bg-muted/80"
-            )} />
-            <div className="relative z-10 flex items-center gap-1.5 min-w-0">
+          <div className="h-8 relative flex items-center gap-1.5 px-3 overflow-hidden bg-muted/60">
+            <div className="flex items-center gap-1.5 min-w-0">
               {product.stores?.logo_url ? (
-                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded-sm object-contain bg-white/10 flex-shrink-0" />
+                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded-sm object-cover flex-shrink-0" />
               ) : (
-                <div className="h-4 w-4 rounded-sm bg-white/10 flex-shrink-0" />
+                <div className="h-4 w-4 rounded-sm bg-muted flex-shrink-0" />
               )}
-              <span className={cn(
-                "text-[11px] font-medium truncate",
-                product.stores?.banner_url ? "text-white/80" : "text-muted-foreground"
-              )}>
+              <span className="text-[11px] font-medium truncate text-muted-foreground">
                 {product.stores?.name}
               </span>
               {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
