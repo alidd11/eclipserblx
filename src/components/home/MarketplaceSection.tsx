@@ -242,7 +242,7 @@ export function MarketplaceSection() {
     queryFn: async () => {
       let query = supabase
         .from('stores')
-        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count, is_testing')
+        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count, is_testing, product_count')
         .eq('status', 'approved')
         .eq('is_active', true)
         .order('is_trusted', { ascending: false })
@@ -255,7 +255,7 @@ export function MarketplaceSection() {
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as (StoreData & { is_testing?: boolean })[];
+      return data as (StoreData & { is_testing?: boolean; product_count?: number })[];
     },
     enabled: hasAccess,
   });
@@ -302,7 +302,7 @@ export function MarketplaceSection() {
   const storesList = stores || [];
   // Exclude the featured spotlight store (smallest seller, same logic as TopStoresSection)
   const sortedForSpotlight = [...storesList]
-    .filter(s => (s as any).product_count > 0 || false)
+    .filter(s => (s.product_count ?? 0) > 0)
     .sort((a, b) => {
       if (a.is_trusted !== b.is_trusted) return a.is_trusted ? 1 : -1;
       if (a.is_verified !== b.is_verified) return a.is_verified ? 1 : -1;
