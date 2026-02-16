@@ -122,7 +122,7 @@ function GridCard({ product }: { product: ScoredProduct }) {
 
 export function PWARecentReleases() {
   const { data: products, isLoading } = useFeaturedProducts({
-    limit: 5,
+    limit: 11,
     maxPerStore: 3,
     queryKey: 'pwa-recent-featured',
   });
@@ -148,7 +148,7 @@ export function PWARecentReleases() {
   if (!products?.length) return null;
 
   const spotlights = products.slice(0, 2);
-  const gridProducts = products.slice(2, 5);
+  const gridProducts = products.slice(2, 11);
 
   return (
     <div>
@@ -167,9 +167,9 @@ export function PWARecentReleases() {
           ))}
         </div>
 
-        {/* 3 products in grid */}
+        {/* 9 products in rows of 3 */}
         {gridProducts.length > 0 && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {gridProducts.map((product) => (
               <GridCard key={product.id} product={product} />
             ))}
