@@ -61,7 +61,7 @@ export function FeaturedProductCard() {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Spotlight</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Featured</span>
         <Skeleton className="w-full aspect-[2.5/1] rounded-lg" />
       </div>
     );
@@ -76,7 +76,7 @@ export function FeaturedProductCard() {
 
   return (
     <div className="space-y-2">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Spotlight</span>
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Featured</span>
       <Link to={`/products/${product.slug}`} className="group block">
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
           {/* Product image */}
