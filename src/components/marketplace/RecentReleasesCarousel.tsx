@@ -161,23 +161,15 @@ export function RecentReleasesCarousel() {
                       No image
                     </div>
                   )}
-                  {/* Store overlay at bottom */}
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-8">
-                    <div className="flex items-center gap-1.5">
-                      {product.stores?.logo_url && (
-                        <img
-                          src={product.stores.logo_url}
-                          alt=""
-                          className="h-5 w-5 rounded object-contain bg-white/10"
-                        />
-                      )}
-                      <span className="text-white text-xs font-medium truncate">
-                        {product.stores?.name}
-                      </span>
-                      {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-                      {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-                    </div>
-                  </div>
+                </div>
+                {/* Store strip */}
+                <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
+                  {product.stores?.logo_url && (
+                    <img src={product.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+                  )}
+                  <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
+                  {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+                  {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
                 </div>
                 {/* Content area */}
                 <div className="p-3">
