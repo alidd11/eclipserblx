@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendBotMessage } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
