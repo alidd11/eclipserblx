@@ -398,7 +398,7 @@ export default function SellerStoreDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${(stats?.totalRevenue || 0).toFixed(2)}</p>
+              <p className="text-2xl font-bold">£{(stats?.totalRevenue || 0).toFixed(2)}</p>
             </CardContent>
           </Card>
           <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
