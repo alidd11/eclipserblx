@@ -17,7 +17,6 @@ interface FeaturedProduct {
   category_id: string | null;
   is_resellable: boolean;
   download_count: number;
-  average_rating: number | null;
   categories: { name: string; slug: string } | null;
   stores: {
     name: string;
@@ -41,7 +40,7 @@ export function FeaturedProductCard() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, description, category_id, is_resellable, download_count, average_rating,
+          id, name, slug, price, images, description, category_id, is_resellable, download_count,
           categories (name, slug),
           stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
@@ -137,12 +136,6 @@ export function FeaturedProductCard() {
                   </>
                 ) : (
                   <span className="text-white font-bold text-sm sm:text-base">{formatPrice(product.price)}</span>
-                )}
-                {typeof product.average_rating === 'number' && product.average_rating > 0 && (
-                  <span className="flex items-center gap-0.5 text-white/60 ml-auto">
-                    <span className="text-amber-400">★</span>
-                    <span className="text-xs font-medium">{product.average_rating.toFixed(1)}</span>
-                  </span>
                 )}
               </div>
             </div>
