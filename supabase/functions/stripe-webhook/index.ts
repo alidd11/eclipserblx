@@ -702,12 +702,23 @@ async function processSellerEarnings(
 
     if (!sellerId) continue;
 
+    // Look up the order_item_id for this product in this order
+    const { data: orderItem } = await supabase
+      .from("order_items")
+      .select("id")
+      .eq("order_id", orderId)
+      .eq("product_id", item.id)
+      .limit(1)
+      .maybeSingle();
+
+    const orderItemId = orderItem?.id || null;
+
     // Check if seller transaction already exists
     const { data: existingTx } = await supabase
       .from("seller_transactions")
       .select("id")
       .eq("order_id", orderId)
-      .eq("product_id", item.id)
+      .eq("order_item_id", orderItemId)
       .limit(1);
 
     if (existingTx && existingTx.length > 0) {
@@ -732,7 +743,7 @@ async function processSellerEarnings(
         seller_id: sellerId,
         store_id: product.store_id,
         order_id: orderId,
-        product_id: item.id,
+        order_item_id: orderItemId,
         gross_amount: grossAmount,
         stripe_fee: proportionalStripeFee,
         net_before_commission: netBeforeCommission,
