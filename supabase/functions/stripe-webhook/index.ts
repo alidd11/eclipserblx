@@ -458,6 +458,9 @@ async function processPayment(
       }
     }
 
+    // Process seller earnings for seller products
+    await processSellerEarnings(supabase, stripe, orderId, items, data);
+
     // Create review reminders for each item if user is logged in
     if (userId) {
       for (let i = 0; i < items.length; i++) {
@@ -632,6 +635,201 @@ async function processPayment(
   }
 
   logStep("Payment processing complete", { orderId });
+}
+
+async function processSellerEarnings(
+  supabase: SupabaseClient,
+  stripe: Stripe,
+  orderId: string,
+  items: Array<{ id: string; name: string; price: number }>,
+  paymentData: PaymentData
+) {
+  // Retrieve Stripe processing fee
+  let stripeProcessingFee = 0;
+  try {
+    const piId = paymentData.paymentType === 'payment_intent' 
+      ? paymentData.paymentId 
+      : null;
+    
+    if (piId) {
+      const pi = await stripe.paymentIntents.retrieve(piId, {
+        expand: ['latest_charge.balance_transaction']
+      });
+      const charge = pi.latest_charge as Stripe.Charge | null;
+      const bt = charge?.balance_transaction as Stripe.BalanceTransaction | null;
+      if (bt?.fee) {
+        stripeProcessingFee = bt.fee / 100;
+      }
+    } else if (paymentData.paymentType === 'checkout_session') {
+      const session = await stripe.checkout.sessions.retrieve(paymentData.paymentId, {
+        expand: ['payment_intent']
+      });
+      const pi = session.payment_intent as Stripe.PaymentIntent | null;
+      if (pi?.latest_charge) {
+        const charge = await stripe.charges.retrieve(
+          typeof pi.latest_charge === 'string' ? pi.latest_charge : pi.latest_charge.id,
+          { expand: ['balance_transaction'] }
+        );
+        const bt = charge.balance_transaction as Stripe.BalanceTransaction | null;
+        if (bt?.fee) {
+          stripeProcessingFee = bt.fee / 100;
+        }
+      }
+    }
+    logStep("Stripe fee for seller calc", { fee: stripeProcessingFee });
+  } catch (feeErr) {
+    logStep("Could not retrieve Stripe fee for seller calc (non-fatal)", { error: String(feeErr) });
+  }
+
+  const sellerItems = items.filter(item => item.id);
+  const sellerProductCount = sellerItems.length;
+
+  for (const item of sellerItems) {
+    const { data: product } = await supabase
+      .from("products")
+      .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name)")
+      .eq("id", item.id)
+      .single();
+
+    if (!product?.is_seller_product || !product.store_id) continue;
+
+    const storesArray = product.stores as unknown as { 
+      owner_id: string; commission_rate?: number; name?: string 
+    }[] | null;
+    const sellerId = storesArray?.[0]?.owner_id;
+    const commissionRate = storesArray?.[0]?.commission_rate ?? 15;
+    const storeName = storesArray?.[0]?.name;
+
+    if (!sellerId) continue;
+
+    // Check if seller transaction already exists
+    const { data: existingTx } = await supabase
+      .from("seller_transactions")
+      .select("id")
+      .eq("order_id", orderId)
+      .eq("product_id", item.id)
+      .limit(1);
+
+    if (existingTx && existingTx.length > 0) {
+      logStep("Seller transaction already exists, skipping", { productId: item.id });
+      continue;
+    }
+
+    // Use full product.price so platform absorbs Eclipse+ discount
+    const grossAmount = product.price;
+    const proportionalStripeFee = sellerProductCount > 0 ? stripeProcessingFee / sellerProductCount : 0;
+    const netBeforeCommission = grossAmount - proportionalStripeFee;
+    const sellerEarnings = Math.max(0, netBeforeCommission * (1 - commissionRate / 100));
+    const platformFee = netBeforeCommission - sellerEarnings;
+
+    logStep("Processing seller earnings", { 
+      productId: item.id, sellerId, grossAmount, sellerEarnings, commissionRate 
+    });
+
+    const { error: txError } = await supabase
+      .from("seller_transactions")
+      .insert({
+        seller_id: sellerId,
+        store_id: product.store_id,
+        order_id: orderId,
+        product_id: item.id,
+        gross_amount: grossAmount,
+        stripe_fee: proportionalStripeFee,
+        net_before_commission: netBeforeCommission,
+        platform_fee: platformFee,
+        net_amount: sellerEarnings,
+        amount: sellerEarnings,
+        type: "sale",
+        status: "completed",
+      });
+
+    if (txError) {
+      logStep("Seller transaction error (non-fatal)", { error: txError.message });
+      continue;
+    }
+
+    // Update seller balance
+    const { data: currentBalance } = await supabase
+      .from("seller_balances")
+      .select("available_balance, total_earned")
+      .eq("user_id", sellerId)
+      .single();
+
+    if (currentBalance) {
+      await supabase
+        .from("seller_balances")
+        .update({
+          available_balance: (currentBalance.available_balance || 0) + sellerEarnings,
+          total_earned: (currentBalance.total_earned || 0) + sellerEarnings,
+        })
+        .eq("user_id", sellerId);
+    } else {
+      await supabase
+        .from("seller_balances")
+        .insert({
+          user_id: sellerId,
+          store_id: product.store_id,
+          available_balance: sellerEarnings,
+          total_earned: sellerEarnings,
+        });
+    }
+    logStep("Seller balance updated", { sellerId, amount: sellerEarnings });
+
+    // Notify seller
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      await fetch(`${supabaseUrl}/functions/v1/notify-seller-sale`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({
+          type: 'sale',
+          store_id: product.store_id,
+          order_id: orderId,
+          product_name: item.name,
+          amount: sellerEarnings,
+        }),
+      });
+      logStep("Seller sale notification triggered", { sellerId, product: item.name });
+    } catch (notifyError) {
+      logStep("Seller notification error (non-fatal)", { error: String(notifyError) });
+    }
+
+    // Send Discord webhook to seller if configured
+    try {
+      const { data: credentials } = await supabase
+        .from("store_credentials")
+        .select("discord_webhook_url")
+        .eq("store_id", product.store_id)
+        .single();
+
+      if (credentials?.discord_webhook_url) {
+        await fetch(credentials.discord_webhook_url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            embeds: [{
+              title: "🎉 New Sale!",
+              description: `Someone just purchased **${item.name}** from your store!`,
+              color: 0x22c55e,
+              fields: [
+                { name: "Product", value: item.name, inline: true },
+                { name: "Sale Price", value: `£${grossAmount.toFixed(2)}`, inline: true },
+                { name: "Your Earnings", value: `£${sellerEarnings.toFixed(2)}`, inline: true },
+              ],
+              footer: { text: `${storeName || 'Your Store'} • Eclipse Store` },
+              timestamp: new Date().toISOString(),
+            }],
+          }),
+        });
+        logStep("Seller Discord notification sent", { product: item.name });
+      }
+    } catch (webhookErr) {
+      logStep("Seller Discord webhook error (non-fatal)", { error: String(webhookErr) });
+    }
+  }
 }
 
 interface RefundData {
