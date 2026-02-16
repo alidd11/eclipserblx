@@ -377,17 +377,18 @@ export function MarketplaceSection() {
                               )}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  {spotlight.stores?.logo_url && (
-                                    <img src={spotlight.stores.logo_url} alt="" className="h-4 w-4 sm:h-6 sm:w-6 rounded object-contain bg-white/10" />
-                                  )}
-                                  <span className="text-white/80 text-[11px] sm:text-xs font-medium truncate">{spotlight.stores?.name}</span>
-                                  {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-                                  {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
-                                </div>
                                 <h4 className="text-white font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
                                 <SpotlightPrice product={spotlight} />
                               </div>
+                            </div>
+                            {/* Store strip */}
+                            <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
+                              {spotlight.stores?.logo_url && (
+                                <img src={spotlight.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+                              )}
+                              <span className="text-[10px] text-muted-foreground font-medium truncate">{spotlight.stores?.name}</span>
+                              {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+                              {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
                             </div>
                           </div>
                         </Link>
