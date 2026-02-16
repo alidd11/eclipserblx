@@ -40,48 +40,41 @@ serve(async (req) => {
 
     const isBoosted = action === "boosted";
     const color = isBoosted ? BOOST_COLOR : UNBOOST_COLOR;
-    const description = isBoosted
-      ? `🚀 Thank you for boosting the server! 🎉`
-      : `No longer boosting the server.`;
 
-    // Send the boost log embed as normal
-    const result = await sendBotMessage(BOOST_LOG_CHANNEL_ID, {
-      content: `<@${discord_id}>`,
-      allowed_mentions: { users: [discord_id] },
-      embeds: [
-        {
-          author: {
-            name: discord_username,
-            icon_url: avatarUrl,
-          },
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Look up the user's profile by discord_id
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("discord_id", discord_id)
+      .single();
+
+    let discountCode: string | null = null;
+    let deactivatedCode: string | null = null;
+
+    if (isBoosted) {
+      // === BOOST: Generate discount code ===
+      const description = `🚀 Thank you for boosting the server! 🎉`;
+
+      // Send boost log embed
+      const result = await sendBotMessage(BOOST_LOG_CHANNEL_ID, {
+        content: `<@${discord_id}>`,
+        allowed_mentions: { users: [discord_id] },
+        embeds: [{
+          author: { name: discord_username, icon_url: avatarUrl },
           description,
           color,
           thumbnail: { url: avatarUrl },
-        },
-      ],
-    });
+        }],
+      });
 
-    if (!result.success) {
-      throw new Error(result.error || "Failed to send boost log");
-    }
+      if (!result.success) throw new Error(result.error || "Failed to send boost log");
 
-    // If boosted, generate discount code and DM the user
-    let discountCode: string | null = null;
-    if (isBoosted) {
-      try {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-        // Look up the user's profile by discord_id
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("user_id")
-          .eq("discord_id", discord_id)
-          .single();
-
-        if (profile?.user_id) {
-          // Generate unique code
+      if (profile?.user_id) {
+        try {
           let code = generateBoostCode();
           let attempts = 0;
           while (attempts < 5) {
@@ -95,11 +88,9 @@ serve(async (req) => {
             attempts++;
           }
 
-          // Set expiry to 30 days
           const expiresAt = new Date();
           expiresAt.setDate(expiresAt.getDate() + 30);
 
-          // Insert discount code
           const { error: insertError } = await supabase
             .from("discount_codes")
             .insert({
@@ -117,45 +108,23 @@ serve(async (req) => {
             discountCode = code;
             console.log("[BOOST-LOG] Discount code created:", code, "for user:", profile.user_id);
 
-            // Send DM to the booster
             const expiryDateStr = expiresAt.toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
+              day: "numeric", month: "long", year: "numeric",
             });
 
             const dmResult = await sendDirectMessage(discord_id, {
-              embeds: [
-                {
-                  author: {
-                    name: "Eclipse Portal",
-                    icon_url: avatarUrl,
-                  },
-                  title: "🚀 Thank You for Boosting!",
-                  description: "Here's your exclusive **50% discount code** as a thank you for boosting the server!",
-                  color: BOOST_COLOR,
-                  fields: [
-                    {
-                      name: "💎 Your Code",
-                      value: `\`\`\`${code}\`\`\``,
-                      inline: false,
-                    },
-                    {
-                      name: "📅 Expires",
-                      value: expiryDateStr,
-                      inline: true,
-                    },
-                    {
-                      name: "🔒 Usage",
-                      value: "Single use · Only for you",
-                      inline: true,
-                    },
-                  ],
-                  footer: {
-                    text: "This code is exclusive to your account and cannot be shared.",
-                  },
-                },
-              ],
+              embeds: [{
+                author: { name: "Eclipse Portal", icon_url: avatarUrl },
+                title: "🚀 Thank You for Boosting!",
+                description: "Here's your exclusive **50% discount code** as a thank you for boosting the server!",
+                color: BOOST_COLOR,
+                fields: [
+                  { name: "💎 Your Code", value: `\`\`\`${code}\`\`\``, inline: false },
+                  { name: "📅 Expires", value: expiryDateStr, inline: true },
+                  { name: "🔒 Usage", value: "Single use · Only for you", inline: true },
+                ],
+                footer: { text: "This code is exclusive to your account and cannot be shared." },
+              }],
             });
 
             if (!dmResult.success) {
@@ -164,18 +133,94 @@ serve(async (req) => {
           } else {
             console.error("[BOOST-LOG] Failed to insert discount code:", insertError);
           }
-        } else {
-          console.log("[BOOST-LOG] No linked platform account for discord_id:", discord_id);
+        } catch (discountError) {
+          console.error("[BOOST-LOG] Discount generation error (non-fatal):", discountError);
         }
-      } catch (discountError) {
-        console.error("[BOOST-LOG] Discount generation error (non-fatal):", discountError);
+      } else {
+        console.log("[BOOST-LOG] No linked platform account for discord_id:", discord_id);
       }
-    }
 
-    return new Response(
-      JSON.stringify({ success: true, messageId: result.messageId, discountCode }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      return new Response(
+        JSON.stringify({ success: true, messageId: result.messageId, discountCode }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } else {
+      // === UNBOOST: Deactivate unclaimed codes and notify ===
+      const description = `No longer boosting the server.`;
+
+      // Send unboost log embed
+      const result = await sendBotMessage(BOOST_LOG_CHANNEL_ID, {
+        content: `<@${discord_id}>`,
+        allowed_mentions: { users: [discord_id] },
+        embeds: [{
+          author: { name: discord_username, icon_url: avatarUrl },
+          description,
+          color,
+          thumbnail: { url: avatarUrl },
+        }],
+      });
+
+      if (!result.success) throw new Error(result.error || "Failed to send unboost log");
+
+      // Deactivate any unclaimed boost codes for this user
+      if (profile?.user_id) {
+        try {
+          // Find active, unused boost codes for this user
+          const { data: activeCodes } = await supabase
+            .from("discount_codes")
+            .select("id, code")
+            .eq("restricted_to_user_id", profile.user_id)
+            .eq("is_active", true)
+            .eq("current_uses", 0)
+            .ilike("code", "BOOST-%");
+
+          if (activeCodes && activeCodes.length > 0) {
+            const codeIds = activeCodes.map(c => c.id);
+            deactivatedCode = activeCodes[0].code;
+
+            // Deactivate them
+            await supabase
+              .from("discount_codes")
+              .update({ is_active: false })
+              .in("id", codeIds);
+
+            console.log("[BOOST-LOG] Deactivated unclaimed boost codes:", codeIds.length);
+
+            // DM the user about deactivation
+            const dmResult = await sendDirectMessage(discord_id, {
+              embeds: [{
+                author: { name: "Eclipse Portal", icon_url: avatarUrl },
+                title: "📉 Boost Discount Deactivated",
+                description: "Since you're no longer boosting the server, your unclaimed boost discount code has been deactivated.",
+                color: UNBOOST_COLOR,
+                fields: [
+                  { name: "❌ Deactivated Code", value: `\`\`\`${deactivatedCode}\`\`\``, inline: false },
+                ],
+                footer: { text: "Boost again anytime to receive a new discount code!" },
+              }],
+            });
+
+            if (!dmResult.success) {
+              console.log("[BOOST-LOG] Could not DM user about deactivation:", dmResult.error);
+            }
+          } else {
+            console.log("[BOOST-LOG] No unclaimed boost codes to deactivate for user:", profile.user_id);
+          }
+        } catch (deactivateError) {
+          console.error("[BOOST-LOG] Deactivation error (non-fatal):", deactivateError);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, messageId: result.messageId, deactivatedCode }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+
+      return new Response(
+        JSON.stringify({ success: true, messageId: result.messageId, deactivatedCode }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[BOOST-LOG] Error:", msg);
