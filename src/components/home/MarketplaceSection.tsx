@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown } from 'lucide-react';
+import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import { MostPopularSection } from '@/components/marketplace/MostPopularSection'
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { CategoriesGrid } from '@/components/marketplace/CategoriesGrid';
 
 interface StoreData {
   id: string;
@@ -234,7 +235,7 @@ function SpotlightPrice({ product }: { product: { price: number; category_id: st
 export function MarketplaceSection() {
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const { isSeller } = useSellerStatus();
-  const [browseMode, setBrowseMode] = useState<'stores' | 'products'>('stores');
+  const [browseMode, setBrowseMode] = useState<'stores' | 'products' | 'categories'>('stores');
   const { formatPrice } = useCurrency();
   const queryClient = useQueryClient();
 
@@ -422,6 +423,11 @@ export function MarketplaceSection() {
             </Button>
           </div>
         </>
+      )}
+
+      {/* === CATEGORIES MODE === */}
+      {browseMode === 'categories' && (
+        <CategoriesGrid />
       )}
     </section>
   );

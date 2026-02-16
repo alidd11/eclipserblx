@@ -205,7 +205,7 @@ export default function Marketplace() {
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [browseMode, setBrowseMode] = useState<'stores' | 'products'>('stores');
+  const [browseMode, setBrowseMode] = useState<'stores' | 'products' | 'categories'>('stores');
   const { formatPrice } = useCurrency();
 
   // Debounce search query

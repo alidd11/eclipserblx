@@ -1,6 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { LandingCategories } from '@/components/landing/LandingCategories';
+
 
 
 
@@ -24,7 +24,7 @@ export default function Landing() {
         <PWADiscordBanner />
       </section>
       <MarketplaceSection />
-      <LandingCategories />
+      
       
       
       
