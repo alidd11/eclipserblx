@@ -46,6 +46,7 @@ serve(async (req) => {
           },
           description,
           color,
+          thumbnail: { url: avatarUrl },
         },
       ],
     });
