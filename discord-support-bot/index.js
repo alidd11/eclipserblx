@@ -159,93 +159,38 @@ async function sendNoTicketMessage(channel) {
   await channel.send({ embeds: [embed] });
 }
 
-// Handle new member joins - send welcome DM
+// Handle new member joins - send plain text welcome in public channel
 client.on('guildMemberAdd', async (member) => {
   if (member.user.bot) return;
 
   console.log(`[JOIN] ${member.user.tag} joined ${member.guild.name} (${member.guild.id})`);
 
   try {
-    // Check if this guild is linked to a store
-    const { data: store } = await supabase
-      .from('stores')
-      .select('id, name, slug, description, logo_url')
-      .eq('discord_guild_id', member.guild.id)
-      .eq('status', 'approved')
-      .maybeSingle();
-
     const siteUrl = process.env.SITE_URL || 'https://eclipserblx.com';
+    const bannerUrl = 'https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/eclipse-discord-banner.png';
 
-    const embed = new EmbedBuilder()
-      .setColor(ECLIPSE_COLOR)
-      .setTitle('👋 Welcome to Eclipse!')
-      .setThumbnail(ECLIPSE_ICON)
-      .setTimestamp();
+    // Find the public chat channel: use system channel or first text channel
+    const channel = member.guild.systemChannel
+      || member.guild.channels.cache.find(
+           (ch) => ch.type === ChannelType.GuildText && ch.permissionsFor(member.guild.members.me)?.has('SendMessages')
+         );
 
-    if (store) {
-      // Server is linked to a seller store — personalized welcome
-      embed.setDescription(
-        `Hey **${member.user.username}**! Welcome to **${member.guild.name}**!\n\n` +
-        `This server is powered by **${store.name}** on Eclipse Marketplace. ` +
-        `Check out their products and explore the marketplace below!`
-      );
-      embed.addFields(
-        {
-          name: '🛍️ Visit Store',
-          value: `[Browse ${store.name}](${siteUrl}/store/${store.slug})`,
-          inline: true,
-        },
-        {
-          name: '🏪 Marketplace',
-          value: `[Explore All Products](${siteUrl}/products)`,
-          inline: true,
-        },
-        {
-          name: '🔗 Link Your Account',
-          value: `Use \`/link\` in this server to connect your Discord to Eclipse and access your purchases!`,
-          inline: false,
-        }
-      );
-      if (store.logo_url) {
-        embed.setThumbnail(store.logo_url);
-      }
-    } else {
-      // Generic Eclipse server welcome
-      embed.setDescription(
-        `Hey **${member.user.username}**! Welcome to **${member.guild.name}**!\n\n` +
-        `Eclipse is the ultimate marketplace for Roblox scripts, bots, and digital products. ` +
-        `Here are some links to get you started!`
-      );
-      embed.addFields(
-        {
-          name: '🏪 Marketplace',
-          value: `[Browse Products](${siteUrl}/products)`,
-          inline: true,
-        },
-        {
-          name: '📖 Get Started',
-          value: `[Create Account](${siteUrl}/auth)`,
-          inline: true,
-        },
-        {
-          name: '💬 Commands',
-          value: `Use \`/help\` to see all available commands!`,
-          inline: false,
-        }
-      );
+    if (!channel) {
+      console.log(`[WELCOME] No suitable channel found in ${member.guild.name}`);
+      return;
     }
 
-    embed.setFooter({ text: 'Eclipse Marketplace', iconURL: ECLIPSE_ICON });
+    const welcomeText =
+      `👋 Welcome to Eclipse, <@${member.user.id}>!\n\n` +
+      `You've joined Eclipse — a professional marketplace for high-quality Roblox assets and development resources.\n\n` +
+      `🚀 Explore the server, review the rules, and start building with confidence.\n\n` +
+      `Shop & Earn Here : ${siteUrl}\n\n` +
+      `✨ Eclipse — **Inspiring Your Innovation.**`;
 
-    await member.send({ embeds: [embed] });
-    console.log(`[WELCOME] Sent welcome DM to ${member.user.tag}`);
+    await channel.send({ content: welcomeText, files: [bannerUrl] });
+    console.log(`[WELCOME] Sent welcome message for ${member.user.tag} in #${channel.name}`);
   } catch (error) {
-    // DMs might be disabled — this is non-fatal
-    if (error.code === 50007) {
-      console.log(`[WELCOME] Cannot send DM to ${member.user.tag} (DMs disabled)`);
-    } else {
-      console.error(`[WELCOME] Error sending welcome DM:`, error);
-    }
+    console.error(`[WELCOME] Error sending welcome message:`, error);
   }
 });
 
