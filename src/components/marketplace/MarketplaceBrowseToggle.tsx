@@ -10,8 +10,8 @@ interface MarketplaceBrowseToggleProps {
 
 const tabs: { mode: BrowseMode; label: string; icon: typeof Store }[] = [
   { mode: 'stores', label: 'Stores', icon: Store },
-  { mode: 'products', label: 'Products', icon: Package },
   { mode: 'categories', label: 'Categories', icon: LayoutGrid },
+  { mode: 'products', label: 'Products', icon: Package },
 ];
 
 export function MarketplaceBrowseToggle({ mode, onChange }: MarketplaceBrowseToggleProps) {
