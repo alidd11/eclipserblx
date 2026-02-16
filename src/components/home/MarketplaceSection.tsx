@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -235,6 +235,7 @@ export function MarketplaceSection() {
   const { isSeller } = useSellerStatus();
   const [browseMode, setBrowseMode] = useState<'stores' | 'products'>('stores');
   const { formatPrice } = useCurrency();
+  const queryClient = useQueryClient();
 
   // Fetch all approved stores
   const { data: stores, isLoading: storesLoading } = useQuery({
@@ -300,16 +301,10 @@ export function MarketplaceSection() {
   }
 
   const storesList = stores || [];
-  // Exclude the featured spotlight store (smallest seller, same logic as TopStoresSection)
-  const sortedForSpotlight = [...storesList]
-    .filter(s => (s.product_count ?? 0) > 0)
-    .sort((a, b) => {
-      if (a.is_trusted !== b.is_trusted) return a.is_trusted ? 1 : -1;
-      if (a.is_verified !== b.is_verified) return a.is_verified ? 1 : -1;
-      return (a.follower_count || 0) - (b.follower_count || 0);
-    });
-  const spotlightStoreId = sortedForSpotlight[0]?.id;
-  const allStores = storesList.filter(s => s.id !== spotlightStoreId);
+  // Get the spotlight store ID from TopStoresSection's query cache to avoid duplication
+  const topStoresData = queryClient.getQueryData<{ id: string }[]>(['top-stores-featured']);
+  const spotlightStoreId = topStoresData?.[0]?.id;
+  const allStores = spotlightStoreId ? storesList.filter(s => s.id !== spotlightStoreId) : storesList;
 
   return (
     <section className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
