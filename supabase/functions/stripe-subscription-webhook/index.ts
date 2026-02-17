@@ -150,9 +150,23 @@ serve(async (req) => {
       }
 
       // Sync seller commission rate if user has a store
-      // Eclipse+ members get 10% commission, non-members get 15%
+      // Rates are configurable via admin settings
       if (discordEvent) {
-        const newCommissionRate = isActive ? 10 : 15;
+        // Fetch configurable rates from settings table
+        const { data: rateSettings } = await supabaseAdmin
+          .from("settings")
+          .select("key, value")
+          .in("key", ["marketplace_default_commission_rate", "marketplace_eclipse_commission_rate"]);
+        
+        const settingsMap = (rateSettings || []).reduce((acc: Record<string, number>, s: any) => {
+          const val = typeof s.value === 'string' ? s.value.replace(/^"|"$/g, '') : s.value;
+          acc[s.key] = parseFloat(String(val)) || 0;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        const eclipseRate = settingsMap.marketplace_eclipse_commission_rate ?? 10;
+        const defaultRate = settingsMap.marketplace_default_commission_rate ?? 15;
+        const newCommissionRate = isActive ? eclipseRate : defaultRate;
         
         const { data: store, error: storeError } = await supabaseAdmin
           .from("stores")
