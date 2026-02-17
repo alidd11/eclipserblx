@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Send, Link as LinkIcon, HelpCircle, CreditCard, Package, Settings, FileQuestion } from 'lucide-react';
+import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Send, Link as LinkIcon, HelpCircle, CreditCard, Package, Settings, FileQuestion, Paperclip, X, FileIcon, Image as ImageIcon } from 'lucide-react';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,7 @@ interface TicketMessage {
   is_admin: boolean;
   created_at: string;
   user_id: string;
+  attachment_url?: string | null;
 }
 
 interface Ticket {
@@ -62,6 +63,8 @@ export default function SellerSupport() {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [activeTab, setActiveTab] = useState('open');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
   const [category, setCategory] = useState('');
@@ -148,6 +151,25 @@ export default function SellerSupport() {
     mutationFn: async () => {
       if (!user?.id || !selectedTicket?.id) throw new Error('Invalid state');
       
+      let attachmentUrl: string | null = null;
+      
+      if (attachmentFile) {
+        const fileExt = attachmentFile.name.split('.').pop();
+        const filePath = `${user.id}/${selectedTicket.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('seller-ticket-attachments')
+          .upload(filePath, attachmentFile);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('seller-ticket-attachments')
+          .getPublicUrl(filePath);
+        
+        attachmentUrl = publicUrl;
+      }
+      
       const { error } = await supabase
         .from('seller_ticket_messages')
         .insert({
@@ -155,6 +177,7 @@ export default function SellerSupport() {
           user_id: user.id,
           message: newMessage,
           is_admin: false,
+          attachment_url: attachmentUrl,
         });
       
       if (error) throw error;
@@ -162,6 +185,7 @@ export default function SellerSupport() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-ticket-messages', selectedTicket?.id] });
       setNewMessage('');
+      setAttachmentFile(null);
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -548,6 +572,26 @@ export default function SellerSupport() {
                               {msg.is_admin ? 'Support Team' : 'You'}
                             </p>
                             <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                            {msg.attachment_url && (
+                              <a 
+                                href={msg.attachment_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="mt-2 flex items-center gap-1.5 text-xs text-primary hover:underline"
+                              >
+                                {/\.(jpg|jpeg|png|gif|webp)$/i.test(msg.attachment_url) ? (
+                                  <>
+                                    <ImageIcon className="h-3 w-3" />
+                                    <img src={msg.attachment_url} alt="attachment" className="mt-1 max-w-[200px] rounded border" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <FileIcon className="h-3 w-3" />
+                                    Attachment
+                                  </>
+                                )}
+                              </a>
+                            )}
                             <p className="text-xs text-muted-foreground mt-1">
                               {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                             </p>
@@ -559,24 +603,58 @@ export default function SellerSupport() {
 
                   {/* Reply input */}
                   {!['resolved', 'closed'].includes(selectedTicket.status) && (
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Type your message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey && newMessage.trim()) {
-                            e.preventDefault();
-                            sendMessage.mutate();
-                          }
-                        }}
-                      />
-                      <Button 
-                        onClick={() => sendMessage.mutate()}
-                        disabled={!newMessage.trim() || sendMessage.isPending}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
+                    <div className="space-y-2">
+                      {attachmentFile && (
+                        <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
+                          <Paperclip className="h-3 w-3" />
+                          <span className="truncate flex-1">{attachmentFile.name}</span>
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 10 * 1024 * 1024) {
+                                toast({ title: 'File too large', description: 'Max 10MB', variant: 'destructive' });
+                                return;
+                              }
+                              setAttachmentFile(file);
+                            }
+                          }}
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Paperclip className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          placeholder="Type your message..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && (newMessage.trim() || attachmentFile)) {
+                              e.preventDefault();
+                              sendMessage.mutate();
+                            }
+                          }}
+                        />
+                        <Button 
+                          onClick={() => sendMessage.mutate()}
+                          disabled={(!newMessage.trim() && !attachmentFile) || sendMessage.isPending}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
