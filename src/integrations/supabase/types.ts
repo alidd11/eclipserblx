@@ -5444,6 +5444,7 @@ export type Database = {
       }
       seller_ticket_messages: {
         Row: {
+          attachment_url: string | null
           created_at: string
           id: string
           is_admin: boolean
@@ -5452,6 +5453,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachment_url?: string | null
           created_at?: string
           id?: string
           is_admin?: boolean
@@ -5460,6 +5462,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachment_url?: string | null
           created_at?: string
           id?: string
           is_admin?: boolean
