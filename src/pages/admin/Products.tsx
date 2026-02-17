@@ -672,9 +672,9 @@ export default function AdminProducts() {
             </div>
 
             {/* Filters row */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="grid grid-cols-3 gap-2">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-[150px] shrink-0 bg-background">
+                <SelectTrigger className="bg-background text-xs sm:text-sm">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -686,7 +686,7 @@ export default function AdminProducts() {
               </Select>
 
               <Select value={filterStore} onValueChange={setFilterStore}>
-                <SelectTrigger className="w-[140px] shrink-0 bg-background">
+                <SelectTrigger className="bg-background text-xs sm:text-sm">
                   <SelectValue placeholder="Store" />
                 </SelectTrigger>
                 <SelectContent>
@@ -699,7 +699,7 @@ export default function AdminProducts() {
               </Select>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[130px] shrink-0 bg-background">
+                <SelectTrigger className="bg-background text-xs sm:text-sm">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
