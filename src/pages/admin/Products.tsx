@@ -672,7 +672,7 @@ export default function AdminProducts() {
             </div>
 
             {/* Filters row */}
-            <div className="flex items-center gap-2 overflow-x-auto">
+            <div className="flex items-center gap-2 flex-wrap">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger className="w-[150px] shrink-0 bg-background">
                   <SelectValue placeholder="Category" />
