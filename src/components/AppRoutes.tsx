@@ -113,6 +113,7 @@ const AdminDiscordOutreach = lazy(() => import("@/pages/admin/DiscordOutreach"))
 const AdminDiscordOutreachDetail = lazy(() => import("@/pages/admin/DiscordOutreachDetail"));
 const AdminEmailTemplates = lazy(() => import("@/pages/admin/EmailTemplates"));
 const AdminRefunds = lazy(() => import("@/pages/admin/Refunds"));
+const AdminDisputes = lazy(() => import("@/pages/admin/Disputes"));
 const AdminAdvertisementAnalytics = lazy(() => import("@/pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazy(() => import("@/pages/admin/GiftCredits"));
 const AdminIPReports = lazy(() => import("@/pages/admin/IPReports"));
@@ -297,6 +298,7 @@ export function AppRoutes() {
         <Route path="/admin/promotions" element={<AdminPromotions />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/refunds" element={<AdminRefunds />} />
+        <Route path="/admin/disputes" element={<AdminDisputes />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
