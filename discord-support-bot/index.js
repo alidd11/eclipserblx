@@ -159,11 +159,25 @@ async function sendNoTicketMessage(channel) {
   await channel.send({ embeds: [embed] });
 }
 
-// Handle new member joins - send welcome DM
+// Handle new member joins - send welcome DM + channel welcome
 client.on('guildMemberAdd', async (member) => {
   if (member.user.bot) return;
 
   console.log(`[JOIN] ${member.user.tag} joined ${member.guild.name} (${member.guild.id})`);
+
+  // Send a plain text welcome in the welcome channel after 1 minute
+  const WELCOME_CHANNEL_ID = '1461353041310781531';
+  setTimeout(async () => {
+    try {
+      const welcomeChannel = await client.channels.fetch(WELCOME_CHANNEL_ID);
+      if (welcomeChannel) {
+        await welcomeChannel.send(`👋 Welcome to the server, <@${member.user.id}>! We're glad to have you here!`);
+        console.log(`[WELCOME] Sent channel welcome for ${member.user.tag}`);
+      }
+    } catch (err) {
+      console.error(`[WELCOME] Failed to send channel welcome for ${member.user.tag}:`, err);
+    }
+  }, 60_000); // 1 minute delay
 
   try {
     // Check if this guild is linked to a store
