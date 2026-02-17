@@ -118,6 +118,9 @@ const emptyMassEditForm: MassEditForm = {
 
 export default function AdminProducts() {
   const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterStore, setFilterStore] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>(emptyForm);
@@ -153,10 +156,17 @@ export default function AdminProducts() {
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['admin-products', search],
+    queryKey: ['admin-products', search, filterCategory, filterStore, filterStatus],
     queryFn: async () => {
       let query = supabase.from('products').select(`*, categories(name)`).order('created_at', { ascending: false });
       if (search) query = query.ilike('name', `%${search}%`);
+      if (filterCategory && filterCategory !== 'all') query = query.eq('category_id', filterCategory);
+      if (filterStore === 'eclipse') query = query.eq('store_id', ECLIPSE_STORE_ID);
+      else if (filterStore === 'vino') query = query.eq('store_id', VINO_STORE_ID);
+      else if (filterStore === 'none') query = query.is('store_id', null);
+      if (filterStatus === 'active') query = query.eq('is_active', true);
+      else if (filterStatus === 'inactive') query = query.eq('is_active', false);
+      else if (filterStatus === 'featured') query = query.eq('is_featured', true);
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -651,6 +661,42 @@ export default function AdminProducts() {
                   className="pl-10 bg-background"
                 />
               </div>
+
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-[160px] bg-background">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterStore} onValueChange={setFilterStore}>
+                <SelectTrigger className="w-[140px] bg-background">
+                  <SelectValue placeholder="Store" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stores</SelectItem>
+                  <SelectItem value="eclipse">Eclipse</SelectItem>
+                  <SelectItem value="vino">Vino</SelectItem>
+                  <SelectItem value="none">No Store</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[140px] bg-background">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                </SelectContent>
+              </Select>
               
               {/* Mass edit actions - visible when products are selected */}
               {selectedProducts.size > 0 && (
