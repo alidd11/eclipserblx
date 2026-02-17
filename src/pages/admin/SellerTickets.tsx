@@ -462,7 +462,7 @@ export default function SellerTickets() {
 
         {/* Ticket Detail Dialog */}
         <Dialog open={!!selectedTicket} onOpenChange={(open) => !open && setSelectedTicket(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+          <DialogContent className="max-w-3xl max-h-[85dvh] h-[85dvh] sm:h-auto sm:max-h-[85dvh] flex flex-col overflow-hidden">
             {selectedTicket && (
               <>
                 <DialogHeader>
@@ -477,7 +477,7 @@ export default function SellerTickets() {
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-hidden flex flex-col gap-4">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-4 min-h-0">
                   {/* Seller Info */}
                   <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div>
@@ -546,7 +546,7 @@ export default function SellerTickets() {
                   )}
 
                   {/* Messages */}
-                  <ScrollArea className="flex-1 min-h-[150px] max-h-[250px]">
+                  <ScrollArea className="flex-1 min-h-[100px]">
                     <div className="space-y-3 pr-4">
                       {messages?.map((msg) => (
                         <div 
