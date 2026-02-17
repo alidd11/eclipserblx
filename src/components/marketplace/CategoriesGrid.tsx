@@ -158,7 +158,7 @@ export function CategoriesGrid() {
       </div>
 
       {/* Populated categories */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {populated.map((category) => {
           const IconComponent = iconMap[category.icon || ''] || Package;
 
