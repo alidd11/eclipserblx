@@ -205,19 +205,32 @@ export function CategoriesGrid() {
         })}
       </div>
 
-      {/* Empty categories — compact chips */}
+      {/* Empty categories — same card style with coming soon */}
       {empty.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-0.5">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {empty.map((category) => {
             const IconComponent = iconMap[category.icon || ''] || Package;
             return (
               <Link
                 key={category.id}
                 to={`/products?category=${category.slug}`}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[0.375rem] border border-border/50 bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 hover:border-border transition-all text-xs"
+                className="group relative flex flex-col overflow-hidden rounded-[0.375rem] border border-border/50 bg-card hover:border-border transition-all opacity-70 hover:opacity-100"
               >
-                <IconComponent className="h-3 w-3 opacity-60" />
-                <span>{getTranslatedName(category.id, category.name)}</span>
+                <div className="relative aspect-[16/10] bg-muted/40 overflow-hidden flex items-center justify-center">
+                  <IconComponent className="h-8 w-8 text-muted-foreground/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-70" />
+                  <div className="absolute top-1.5 right-1.5 bg-card/80 text-muted-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded-[0.25rem] border border-border">
+                    Soon
+                  </div>
+                </div>
+                <div className="px-2.5 py-2.5 bg-muted/60">
+                  <span className="font-semibold text-[13px] leading-tight text-muted-foreground group-hover:text-foreground transition-colors truncate block">
+                    {getTranslatedName(category.id, category.name)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                    Coming soon
+                  </span>
+                </div>
               </Link>
             );
           })}
