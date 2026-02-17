@@ -13,16 +13,38 @@ export function TopProductsLeaderboard() {
     queryFn: async () => {
       if (!store?.id) return [];
 
-      const { data } = await supabase
+      // Get all active products for this store
+      const { data: products } = await supabase
         .from('products')
-        .select('id, name, images, download_count, price')
+        .select('id, name, images, price')
         .eq('store_id', store.id)
         .eq('is_active', true)
-        .is('deleted_at', null)
-        .order('download_count', { ascending: false, nullsFirst: false })
-        .limit(5);
+        .is('deleted_at', null);
 
-      return data || [];
+      if (!products || products.length === 0) return [];
+
+      // Count actual sales from order_items joined with paid/completed orders
+      const { data: salesData } = await supabase
+        .from('order_items')
+        .select('product_id, orders!inner(status)')
+        .in('product_id', products.map(p => p.id))
+        .in('orders.status', ['paid', 'completed']);
+
+      // Tally sales per product
+      const salesMap = new Map<string, number>();
+      (salesData || []).forEach((item: any) => {
+        const pid = item.product_id;
+        salesMap.set(pid, (salesMap.get(pid) || 0) + 1);
+      });
+
+      // Attach sales count and sort
+      const enriched = products.map(p => ({
+        ...p,
+        sales_count: salesMap.get(p.id) || 0,
+      }));
+      enriched.sort((a, b) => b.sales_count - a.sales_count);
+
+      return enriched.slice(0, 5);
     },
     enabled: !!store?.id,
   });
@@ -60,7 +82,7 @@ export function TopProductsLeaderboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {product.download_count || 0} sales
+                    {product.sales_count || 0} sales
                   </p>
                 </div>
                 <span className="text-sm font-semibold shrink-0">
