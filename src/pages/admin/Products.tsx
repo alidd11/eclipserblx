@@ -660,19 +660,19 @@ export default function AdminProducts() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Search and Mass Edit Actions */}
-            <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 overflow-x-auto">
-              <div className="relative min-w-[180px] flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 bg-background"
-                />
-              </div>
+            {/* Search */}
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-background"
+              />
+            </div>
 
+            {/* Filters row */}
+            <div className="flex items-center gap-2 overflow-x-auto">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger className="w-[150px] shrink-0 bg-background">
                   <SelectValue placeholder="Category" />
@@ -747,7 +747,6 @@ export default function AdminProducts() {
                   </Button>
                 </div>
               )}
-            </div>
 
             {/* Mobile Card View */}
             <div className="block md:hidden space-y-3">
