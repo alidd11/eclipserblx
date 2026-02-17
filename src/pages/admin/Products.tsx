@@ -155,15 +155,25 @@ export default function AdminProducts() {
     },
   });
 
+  const { data: stores } = useQuery({
+    queryKey: ['admin-stores-filter'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('stores').select('id, name').order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products', search, filterCategory, filterStore, filterStatus],
     queryFn: async () => {
       let query = supabase.from('products').select(`*, categories(name)`).order('created_at', { ascending: false });
       if (search) query = query.ilike('name', `%${search}%`);
       if (filterCategory && filterCategory !== 'all') query = query.eq('category_id', filterCategory);
-      if (filterStore === 'eclipse') query = query.eq('store_id', ECLIPSE_STORE_ID);
-      else if (filterStore === 'vino') query = query.eq('store_id', VINO_STORE_ID);
-      else if (filterStore === 'none') query = query.is('store_id', null);
+      if (filterStore && filterStore !== 'all') {
+        if (filterStore === 'none') query = query.is('store_id', null);
+        else query = query.eq('store_id', filterStore);
+      }
       if (filterStatus === 'active') query = query.eq('is_active', true);
       else if (filterStatus === 'inactive') query = query.eq('is_active', false);
       else if (filterStatus === 'featured') query = query.eq('is_featured', true);
@@ -652,7 +662,8 @@ export default function AdminProducts() {
           <CardContent className="space-y-4">
             {/* Search and Mass Edit Actions */}
             <div className="flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 sm:max-w-sm">
+            <div className="flex items-center gap-2 overflow-x-auto">
+              <div className="relative min-w-[180px] flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products..."
@@ -663,7 +674,7 @@ export default function AdminProducts() {
               </div>
 
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-[160px] bg-background">
+                <SelectTrigger className="w-[150px] shrink-0 bg-background">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -675,19 +686,20 @@ export default function AdminProducts() {
               </Select>
 
               <Select value={filterStore} onValueChange={setFilterStore}>
-                <SelectTrigger className="w-[140px] bg-background">
+                <SelectTrigger className="w-[140px] shrink-0 bg-background">
                   <SelectValue placeholder="Store" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Stores</SelectItem>
-                  <SelectItem value="eclipse">Eclipse</SelectItem>
-                  <SelectItem value="vino">Vino</SelectItem>
                   <SelectItem value="none">No Store</SelectItem>
+                  {stores?.map((store) => (
+                    <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[140px] bg-background">
+                <SelectTrigger className="w-[130px] shrink-0 bg-background">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -697,9 +709,10 @@ export default function AdminProducts() {
                   <SelectItem value="featured">Featured</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
               
-              {/* Mass edit actions - visible when products are selected */}
-              {selectedProducts.size > 0 && (
+            {/* Mass edit actions - visible when products are selected */}
+            {selectedProducts.size > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-sm py-1">
                     {selectedProducts.size} selected
