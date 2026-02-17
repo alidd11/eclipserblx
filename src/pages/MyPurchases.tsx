@@ -16,7 +16,8 @@ import {
   Calendar,
   Filter,
   X,
-  ShoppingBag
+  ShoppingBag,
+  AlertTriangle
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ import { AddToServerButton } from '@/components/bots/AddToServerButton';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { DisputeDialog } from '@/components/purchases/DisputeDialog';
 
 // Format bytes to human readable size
 const formatFileSize = (bytes: number): string => {
@@ -126,6 +128,7 @@ export default function MyPurchases() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [ordersPage, setOrdersPage] = useState(1);
+  const [disputeOrder, setDisputeOrder] = useState<{ id: string; displayId: string } | null>(null);
   
   const ITEMS_PER_PAGE = 6;
 
@@ -626,9 +629,21 @@ export default function MyPurchases() {
                               {displayStatus}
                             </div>
                           </div>
-                          <Button asChild variant="outline" className="w-full">
-                            <Link to={`/order-success?order_id=${order.id}`}>View order</Link>
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button asChild variant="outline" className="flex-1">
+                              <Link to={`/order-success?order_id=${order.id}`}>View order</Link>
+                            </Button>
+                            {['paid', 'completed'].includes(order.status) && (
+                              <Button
+                                variant="outline"
+                                className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                                onClick={() => setDisputeOrder({ id: order.id, displayId: formatOrderId(order.id) })}
+                              >
+                                <AlertTriangle className="h-4 w-4 mr-2" />
+                                Dispute
+                              </Button>
+                            )}
+                          </div>
                         </div>
                         <div className="border-t border-border/50 p-4 space-y-2 bg-muted/20">
                           <div className="flex justify-between text-sm">
@@ -664,6 +679,16 @@ export default function MyPurchases() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Dispute Dialog */}
+        {disputeOrder && (
+          <DisputeDialog
+            open={!!disputeOrder}
+            onOpenChange={(open) => !open && setDisputeOrder(null)}
+            orderId={disputeOrder.id}
+            orderDisplayId={disputeOrder.displayId}
+          />
+        )}
       </div>
     </MainLayout>
   );
