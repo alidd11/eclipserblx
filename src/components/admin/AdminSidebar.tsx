@@ -86,6 +86,7 @@ const navGroups: NavGroup[] = [
       { title: 'Categories', icon: FolderOpen, href: '/admin/categories', permissions: ['manage_products'] },
       { title: 'Orders', icon: ShoppingCart, href: '/admin/orders', permissions: ['view_orders'] },
       { title: 'Refunds', icon: RotateCcw, href: '/admin/refunds', permissions: ['manage_orders'] },
+      { title: 'Disputes', icon: AlertTriangle, href: '/admin/disputes', permissions: ['manage_orders'] },
       { title: 'Reviews', icon: Star, href: '/admin/reviews', permissions: ['view_reviews'] },
     ],
   },
