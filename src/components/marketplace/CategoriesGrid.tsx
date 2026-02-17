@@ -179,20 +179,19 @@ export function CategoriesGrid() {
                     blur={false}
                   />
                 ) : (
-                  <IconComponent className="h-8 w-8 text-muted-foreground/30" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">Coming Soon</span>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-70 group-hover:opacity-60 transition-opacity" />
-                <div className={`absolute top-1.5 right-1.5 bg-card/80 text-[10px] font-semibold px-1.5 py-0.5 rounded-[0.25rem] border border-border ${isEmpty ? 'text-muted-foreground' : 'text-foreground'}`}>
-                  {isEmpty ? 'Soon' : category.product_count}
-                </div>
+                {!isEmpty && (
+                  <div className="absolute top-1.5 right-1.5 bg-card/80 text-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded-[0.25rem] border border-border">
+                    {category.product_count}
+                  </div>
+                )}
               </div>
 
-              <div className="px-2.5 py-2.5 bg-muted/60">
-                <span className={`font-semibold text-[13px] leading-tight transition-colors truncate block ${isEmpty ? 'text-muted-foreground group-hover:text-foreground' : 'text-foreground group-hover:text-primary'}`}>
+              <div className="px-2 py-1.5 bg-muted/60">
+                <span className={`font-semibold text-[11px] sm:text-[13px] leading-tight transition-colors block ${isEmpty ? 'text-muted-foreground group-hover:text-foreground' : 'text-foreground group-hover:text-primary'}`}>
                   {getTranslatedName(category.id, category.name)}
-                </span>
-                <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                  {isEmpty ? 'Coming soon' : `${category.product_count} ${category.product_count === 1 ? 'product' : 'products'}`}
                 </span>
               </div>
             </Link>
