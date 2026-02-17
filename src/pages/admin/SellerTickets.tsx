@@ -151,7 +151,6 @@ export default function SellerTickets() {
           user_id: user.id,
           message: newMessage,
           is_admin: true,
-          is_staff_reply: true, // Mark as staff reply for escalation tracking
         });
       
       if (error) throw error;
