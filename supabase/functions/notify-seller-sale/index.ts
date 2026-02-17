@@ -69,39 +69,86 @@ const handler = async (req: Request): Promise<Response> => {
     let notificationMessage: string;
 
     if (body.type === 'sale') {
-      notificationType = 'sale';
-      notificationTitle = 'New Sale!';
-      notificationMessage = `You sold "${body.product_name}" for £${body.amount.toFixed(2)}${body.buyer_name ? ` to ${body.buyer_name}` : ''}.`;
+      // Check if this is the seller's first sale
+      const { count: saleCount } = await supabase
+        .from('seller_transactions')
+        .select('id', { count: 'exact', head: true })
+        .eq('store_id', body.store_id)
+        .eq('type', 'sale');
 
-      emailContent = {
-        subject: `You made a sale — ${body.product_name}`,
-        title: 'New Sale',
-        message: `
-          <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${profile.display_name},</p>
-          <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
-            Someone just purchased <strong style="color: #e4e4e7;">${body.product_name}</strong> from your store.
-          </p>
-          <div style="background: #1a1a2e; border-radius: 8px; padding: 16px; margin: 0 0 16px 0;">
-            <table width="100%" cellspacing="0" cellpadding="0">
-              <tr>
-                <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Product</td>
-                <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${body.product_name}</td>
-              </tr>
-              <tr>
-                <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Amount</td>
-                <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${body.amount.toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td style="font-size: 13px; color: #737373;">Order</td>
-                <td style="font-size: 13px; color: #a3a3a3; text-align: right; font-family: monospace;">${body.order_id.substring(0, 8)}...</td>
-              </tr>
-            </table>
-          </div>
-          <p style="margin: 0; font-size: 14px; color: #a3a3a3; line-height: 1.6;">
-            View your sales in the <a href="https://eclipserblx.com/seller/orders" style="color: #a855f7; text-decoration: none;">Seller Dashboard</a>.
-          </p>
-        `,
-      };
+      const isFirstSale = (saleCount ?? 0) <= 1;
+      logStep("Sale count check", { store_id: body.store_id, saleCount, isFirstSale });
+
+      notificationType = 'sale';
+      notificationTitle = isFirstSale ? 'Your First Sale!' : 'New Sale!';
+      notificationMessage = isFirstSale
+        ? `Congratulations! You just made your first sale — "${body.product_name}" for £${body.amount.toFixed(2)}. This is just the beginning!`
+        : `You sold "${body.product_name}" for £${body.amount.toFixed(2)}${body.buyer_name ? ` to ${body.buyer_name}` : ''}.`;
+
+      if (isFirstSale) {
+        emailContent = {
+          subject: `Congratulations on your first sale!`,
+          title: 'Your First Sale',
+          message: `
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${profile.display_name},</p>
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+              This is a big moment — you just made your <strong style="color: #22c55e;">first ever sale</strong> on Eclipse.
+            </p>
+            <div style="background: #1a1a2e; border-radius: 8px; padding: 16px; margin: 0 0 16px 0;">
+              <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Product</td>
+                  <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${body.product_name}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Amount</td>
+                  <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${body.amount.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 13px; color: #737373;">Store</td>
+                  <td style="font-size: 13px; color: #a3a3a3; text-align: right;">${store.name}</td>
+                </tr>
+              </table>
+            </div>
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+              Every successful store started with one sale. Keep going — your next customer is already out there.
+            </p>
+            <p style="margin: 0; font-size: 14px; color: #a3a3a3; line-height: 1.6;">
+              Track your earnings in the <a href="https://eclipserblx.com/seller/orders" style="color: #a855f7; text-decoration: none;">Seller Dashboard</a>.
+            </p>
+          `,
+        };
+      } else {
+        emailContent = {
+          subject: `You made a sale — ${body.product_name}`,
+          title: 'New Sale',
+          message: `
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${profile.display_name},</p>
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+              Someone just purchased <strong style="color: #e4e4e7;">${body.product_name}</strong> from your store.
+            </p>
+            <div style="background: #1a1a2e; border-radius: 8px; padding: 16px; margin: 0 0 16px 0;">
+              <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Product</td>
+                  <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${body.product_name}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Amount</td>
+                  <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${body.amount.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 13px; color: #737373;">Order</td>
+                  <td style="font-size: 13px; color: #a3a3a3; text-align: right; font-family: monospace;">${body.order_id.substring(0, 8)}...</td>
+                </tr>
+              </table>
+            </div>
+            <p style="margin: 0; font-size: 14px; color: #a3a3a3; line-height: 1.6;">
+              View your sales in the <a href="https://eclipserblx.com/seller/orders" style="color: #a855f7; text-decoration: none;">Seller Dashboard</a>.
+            </p>
+          `,
+        };
+      }
     } else {
       notificationType = 'dispute';
       notificationTitle = 'Dispute Filed';
