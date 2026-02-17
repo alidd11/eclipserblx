@@ -330,7 +330,13 @@ export default function AdminProducts() {
         // If enabled but no custom hours, we'll use null to indicate "use platform default"
       }
 
-      const payload = {
+      const isEditing = !!data.id;
+      
+      // Find the original product to check if it's a seller product
+      const originalProduct = isEditing ? products?.find(p => p.id === data.id) : null;
+      const isSellerProduct = originalProduct?.is_seller_product === true;
+
+      const payload: Record<string, any> = {
         name: data.name,
         slug: data.slug,
         price: parseFloat(data.price),
@@ -349,20 +355,24 @@ export default function AdminProducts() {
           typeof robuxPriceValue === 'number' && Number.isFinite(robuxPriceValue)
             ? robuxPriceValue
             : null,
-        // Marketplace store selection
-        store_id: data.marketplace_store === 'eclipse' 
+      };
+
+      // Only set store/seller fields for non-seller products or new products
+      // This prevents overwriting seller product metadata when admins edit them
+      if (!isSellerProduct) {
+        payload.store_id = data.marketplace_store === 'eclipse' 
           ? ECLIPSE_STORE_ID 
           : data.marketplace_store === 'vino' 
             ? VINO_STORE_ID 
-            : null,
-        moderation_status: data.marketplace_store ? 'approved' : null,
-        is_seller_product: false, // Distinguishes from community seller products
-      };
+            : null;
+        payload.moderation_status = data.marketplace_store ? 'approved' : null;
+        payload.is_seller_product = false;
+      }
 
-      const isNewProduct = !data.id;
+      const isNewProduct = !isEditing;
 
       if (data.id) {
-        const { error } = await supabase.from('products').update(payload).eq('id', data.id);
+        const { error } = await supabase.from('products').update(payload as any).eq('id', data.id);
         if (error) throw error;
 
         // Re-translate product in background on update
@@ -371,7 +381,7 @@ export default function AdminProducts() {
         }).catch(err => console.error('Translation failed:', err));
 
       } else {
-        const { data: newProduct, error } = await supabase.from('products').insert(payload).select().single();
+        const { data: newProduct, error } = await supabase.from('products').insert(payload as any).select().single();
         if (error) throw error;
 
         // Translate new product in background
