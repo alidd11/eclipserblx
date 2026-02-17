@@ -150,11 +150,45 @@ export default function SellerProducts() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (productId: string) => {
+    mutationFn: async (product: any) => {
+      // Delete product images from storage first
+      const images: string[] = product.images || [];
+      if (images.length > 0) {
+        const storagePaths = images
+          .map((imageUrl: string) => {
+            try {
+              const url = new URL(imageUrl);
+              const pathParts = url.pathname.split('/product-images/');
+              return pathParts[1] ? decodeURIComponent(pathParts[1]) : null;
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean) as string[];
+
+        if (storagePaths.length > 0) {
+          await supabase.storage.from('product-images').remove(storagePaths);
+        }
+      }
+
+      // Delete asset file from storage if exists
+      if (product.asset_file_url) {
+        try {
+          const url = new URL(product.asset_file_url);
+          const pathParts = url.pathname.split('/product-assets/');
+          if (pathParts[1]) {
+            await supabase.storage.from('product-assets').remove([decodeURIComponent(pathParts[1])]);
+          }
+        } catch {
+          // Asset deletion is best-effort
+        }
+      }
+
+      // Then delete the product record
       const { error } = await supabase
         .from("products")
         .delete()
-        .eq("id", productId);
+        .eq("id", product.id);
 
       if (error) throw error;
     },
@@ -178,7 +212,7 @@ export default function SellerProducts() {
     if (deleteStep === 1) {
       setDeleteStep(2);
     } else {
-      deleteMutation.mutate(productToDelete.id);
+      deleteMutation.mutate(productToDelete);
     }
   };
 
