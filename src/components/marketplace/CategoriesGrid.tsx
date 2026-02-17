@@ -190,7 +190,7 @@ export function CategoriesGrid() {
               </div>
 
               <div className="px-2 py-1.5 bg-muted/60">
-                <span className={`font-semibold text-[11px] sm:text-[13px] leading-tight transition-colors block ${isEmpty ? 'text-muted-foreground group-hover:text-foreground' : 'text-foreground group-hover:text-primary'}`}>
+                <span className={`font-semibold text-[9px] sm:text-[11px] leading-tight transition-colors block truncate uppercase tracking-wide ${isEmpty ? 'text-muted-foreground group-hover:text-foreground' : 'text-foreground group-hover:text-primary'}`}>
                   {getTranslatedName(category.id, category.name)}
                 </span>
               </div>
