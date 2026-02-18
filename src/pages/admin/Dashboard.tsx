@@ -441,7 +441,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {quickLinks.map((link) => (
                 <Link key={link.href} to={link.href}>
                   <motion.div
