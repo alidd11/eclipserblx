@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Bell, BellOff, Check, CheckCheck, Trash2,
   ShoppingCart, RotateCcw, Heart, Package, Zap, Megaphone, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const NOTIFICATION_ICONS: Record<string, any> = {
   new_order: ShoppingCart,
@@ -37,49 +37,49 @@ const NOTIFICATION_COLORS: Record<string, string> = {
 };
 
 export default function SellerNotifications() {
-  const { store } = useSellerStatus();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { data: notifications, isLoading } = useQuery({
-    queryKey: ['seller-notifications', store?.id],
+    queryKey: ['seller-notifications', user?.id],
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('seller_notifications')
         .select('*')
-        .eq('store_id', store.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return data || [];
+      return (data || []) as any[];
     },
-    enabled: !!store?.id,
+    enabled: !!user?.id,
   });
 
   // Subscribe to realtime notifications
   useEffect(() => {
-    if (!store?.id) return;
+    if (!user?.id) return;
     const channel = supabase
       .channel('seller-notifications-realtime')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'seller_notifications',
-        filter: `store_id=eq.${store.id}`,
+        filter: `user_id=eq.${user.id}`,
       }, () => {
-        queryClient.invalidateQueries({ queryKey: ['seller-notifications', store.id] });
-        queryClient.invalidateQueries({ queryKey: ['seller-unread-count', store.id] });
+        queryClient.invalidateQueries({ queryKey: ['seller-notifications', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['seller-unread-count', user.id] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [store?.id, queryClient]);
+  }, [user?.id, queryClient]);
 
   const markAsRead = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('seller_notifications')
-        .update({ is_read: true })
+        .update({ read_at: new Date().toISOString() } as any)
         .eq('id', id);
       if (error) throw error;
     },
@@ -91,12 +91,12 @@ export default function SellerNotifications() {
 
   const markAllRead = useMutation({
     mutationFn: async () => {
-      if (!store?.id) return;
+      if (!user?.id) return;
       const { error } = await supabase
         .from('seller_notifications')
-        .update({ is_read: true })
-        .eq('store_id', store.id)
-        .eq('is_read', false);
+        .update({ read_at: new Date().toISOString() } as any)
+        .eq('user_id', user.id)
+        .is('read_at', null);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -108,12 +108,12 @@ export default function SellerNotifications() {
 
   const clearAll = useMutation({
     mutationFn: async () => {
-      if (!store?.id) return;
+      if (!user?.id) return;
       const { error } = await supabase
         .from('seller_notifications')
         .delete()
-        .eq('store_id', store.id)
-        .eq('is_read', true);
+        .eq('user_id', user.id)
+        .not('read_at', 'is', null);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -123,15 +123,15 @@ export default function SellerNotifications() {
   });
 
   const handleClick = (notification: any) => {
-    if (!notification.is_read) {
+    if (!notification.read_at) {
       markAsRead.mutate(notification.id);
     }
-    if (notification.link) {
-      navigate(notification.link);
+    if (notification.action_url) {
+      navigate(notification.action_url);
     }
   };
 
-  const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
+  const unreadCount = notifications?.filter((n: any) => !n.read_at).length || 0;
 
   return (
     <SellerLayout>
@@ -164,6 +164,7 @@ export default function SellerNotifications() {
             {notifications.map((n: any) => {
               const Icon = NOTIFICATION_ICONS[n.type] || Bell;
               const colorClass = NOTIFICATION_COLORS[n.type] || 'text-muted-foreground';
+              const isUnread = !n.read_at;
 
               return (
                 <Card
@@ -171,7 +172,7 @@ export default function SellerNotifications() {
                   interactive
                   className={cn(
                     'transition-all',
-                    !n.is_read && 'border-primary/30 bg-primary/5'
+                    isUnread && 'border-primary/30 bg-primary/5'
                   )}
                   onClick={() => handleClick(n)}
                 >
@@ -181,10 +182,10 @@ export default function SellerNotifications() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className={cn('text-sm font-medium', !n.is_read && 'font-semibold')}>
+                        <p className={cn('text-sm font-medium', isUnread && 'font-semibold')}>
                           {n.title}
                         </p>
-                        {!n.is_read && (
+                        {isUnread && (
                           <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
                         )}
                       </div>
@@ -195,7 +196,7 @@ export default function SellerNotifications() {
                         {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                       </p>
                     </div>
-                    {!n.is_read && (
+                    {isUnread && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -224,8 +225,4 @@ export default function SellerNotifications() {
       </div>
     </SellerLayout>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }
