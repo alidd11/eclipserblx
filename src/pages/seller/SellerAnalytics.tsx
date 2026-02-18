@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { 
   LineChart, 
   Line, 
@@ -21,7 +22,10 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend 
+  Legend,
+  FunnelChart,
+  Funnel,
+  LabelList,
 } from 'recharts';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { 
@@ -29,12 +33,17 @@ import {
   ShoppingCart, 
   CreditCard, 
   TrendingUp,
+  TrendingDown,
   Users,
   Monitor,
   Smartphone,
   Tablet,
   Globe,
-  MousePointer
+  MousePointer,
+  Package,
+  ArrowDown,
+  UserCheck,
+  UserPlus
 } from 'lucide-react';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -73,8 +82,30 @@ export default function SellerAnalytics() {
     enabled: !!store?.id,
   });
 
+  // Fetch product names for product performance
+  const productIds = useMemo(() => {
+    if (!analyticsData) return [];
+    const ids = new Set(analyticsData.filter((e: any) => e.product_id).map((e: any) => e.product_id));
+    return Array.from(ids) as string[];
+  }, [analyticsData]);
+
+  const { data: productsMap } = useQuery({
+    queryKey: ['seller-analytics-products', productIds],
+    queryFn: async () => {
+      if (productIds.length === 0) return {};
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, price, image_url')
+        .in('id', productIds);
+      const map: Record<string, any> = {};
+      (data || []).forEach((p: any) => { map[p.id] = p; });
+      return map;
+    },
+    enabled: productIds.length > 0,
+  });
+
   // Process analytics data
-  const processedData = (() => {
+  const processedData = useMemo(() => {
     if (!analyticsData) return null;
 
     const { start, end } = getDateRange();
@@ -92,6 +123,7 @@ export default function SellerAnalytics() {
         views: dayEvents.filter((e: any) => e.event_type === 'store_view' || e.event_type === 'product_view').length,
         addToCarts: dayEvents.filter((e: any) => e.event_type === 'add_to_cart').length,
         purchases: dayEvents.filter((e: any) => e.event_type === 'purchase').length,
+        uniqueVisitors: new Set(dayEvents.map((e: any) => e.visitor_id)).size,
       };
     });
 
@@ -104,10 +136,35 @@ export default function SellerAnalytics() {
       uniqueVisitors: new Set(analyticsData.map((e: any) => e.visitor_id)).size,
     };
 
+    // Visitor analysis
+    const visitorEventCounts = analyticsData.reduce((acc: Record<string, number>, e: any) => {
+      acc[e.visitor_id] = (acc[e.visitor_id] || 0) + 1;
+      return acc;
+    }, {});
+    const returningVisitors = Object.values(visitorEventCounts).filter((count: any) => count > 1).length;
+    const newVisitors = totals.uniqueVisitors - returningVisitors;
+
     // Conversion rate
-    const conversionRate = totals.storeViews > 0 
-      ? ((totals.purchases / totals.storeViews) * 100).toFixed(2)
+    const totalViews = totals.storeViews + totals.productViews;
+    const conversionRate = totalViews > 0 
+      ? ((totals.purchases / totalViews) * 100).toFixed(2)
       : '0.00';
+
+    // Funnel data
+    const funnelData = [
+      { name: 'Store Views', value: totals.storeViews, fill: 'hsl(var(--primary))' },
+      { name: 'Product Views', value: totals.productViews, fill: 'hsl(var(--chart-2))' },
+      { name: 'Add to Cart', value: totals.addToCarts, fill: 'hsl(var(--chart-3))' },
+      { name: 'Purchases', value: totals.purchases, fill: 'hsl(var(--chart-4))' },
+    ];
+
+    // Funnel step percentages
+    const funnelSteps = funnelData.map((step, i) => {
+      const prevValue = i === 0 ? step.value : funnelData[i - 1].value;
+      const dropOff = prevValue > 0 ? ((1 - step.value / prevValue) * 100).toFixed(1) : '0.0';
+      const rate = prevValue > 0 ? ((step.value / prevValue) * 100).toFixed(1) : '0.0';
+      return { ...step, dropOff, rate, prevValue };
+    });
 
     // Device breakdown
     const deviceCounts = analyticsData.reduce((acc: any, event: any) => {
@@ -154,6 +211,27 @@ export default function SellerAnalytics() {
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
 
+    // Product performance
+    const productStats = analyticsData.reduce((acc: Record<string, any>, e: any) => {
+      if (!e.product_id) return acc;
+      if (!acc[e.product_id]) {
+        acc[e.product_id] = { id: e.product_id, views: 0, carts: 0, purchases: 0 };
+      }
+      if (e.event_type === 'product_view') acc[e.product_id].views++;
+      if (e.event_type === 'add_to_cart') acc[e.product_id].carts++;
+      if (e.event_type === 'purchase') acc[e.product_id].purchases++;
+      return acc;
+    }, {});
+
+    const productPerformance = Object.values(productStats)
+      .map((p: any) => ({
+        ...p,
+        conversionRate: p.views > 0 ? ((p.purchases / p.views) * 100).toFixed(1) : '0.0',
+        cartRate: p.views > 0 ? ((p.carts / p.views) * 100).toFixed(1) : '0.0',
+      }))
+      .sort((a: any, b: any) => b.views - a.views)
+      .slice(0, 10);
+
     return {
       dailyData,
       totals,
@@ -161,8 +239,12 @@ export default function SellerAnalytics() {
       deviceData,
       referrerData,
       countryData,
+      funnelSteps,
+      newVisitors,
+      returningVisitors,
+      productPerformance,
     };
-  })();
+  }, [analyticsData]);
 
   const getDeviceIcon = (device: string) => {
     switch (device.toLowerCase()) {
@@ -265,24 +347,10 @@ export default function SellerAnalytics() {
                     <SelectValue placeholder="Select view" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border z-50">
-                    <SelectItem value="traffic">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
-                        Traffic
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="conversions">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        Conversions
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="sources">
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        Sources
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="traffic">Traffic</SelectItem>
+                    <SelectItem value="funnel">Funnel</SelectItem>
+                    <SelectItem value="products">Products</SelectItem>
+                    <SelectItem value="sources">Sources</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -290,10 +358,12 @@ export default function SellerAnalytics() {
               {/* Desktop tabs */}
               <TabsList className="hidden sm:inline-flex">
                 <TabsTrigger value="traffic">Traffic</TabsTrigger>
-                <TabsTrigger value="conversions">Conversions</TabsTrigger>
+                <TabsTrigger value="funnel">Funnel</TabsTrigger>
+                <TabsTrigger value="products">Products</TabsTrigger>
                 <TabsTrigger value="sources">Sources</TabsTrigger>
               </TabsList>
 
+              {/* ── Traffic Tab ── */}
               <TabsContent value="traffic" className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -314,35 +384,70 @@ export default function SellerAnalytics() {
                               borderRadius: '8px'
                             }} 
                           />
-                          <Line 
-                            type="monotone" 
-                            dataKey="views" 
-                            stroke="hsl(var(--primary))" 
-                            strokeWidth={2}
-                            dot={false}
-                          />
+                          <Line type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Views" />
+                          <Line type="monotone" dataKey="uniqueVisitors" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} name="Unique Visitors" />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Visitor Breakdown */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Device Breakdown</CardTitle>
+                      <CardTitle className="text-base">Visitor Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <UserPlus className="h-4 w-4 text-primary" />
+                            <span className="text-sm">New Visitors</span>
+                          </div>
+                          <span className="font-semibold">{processedData.newVisitors}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <UserCheck className="h-4 w-4 text-chart-2" />
+                            <span className="text-sm">Returning</span>
+                          </div>
+                          <span className="font-semibold">{processedData.returningVisitors}</span>
+                        </div>
+                        <div className="h-3 bg-muted rounded-full overflow-hidden flex">
+                          {processedData.totals.uniqueVisitors > 0 && (
+                            <>
+                              <div 
+                                className="h-full bg-primary"
+                                style={{ width: `${(processedData.newVisitors / processedData.totals.uniqueVisitors) * 100}%` }}
+                              />
+                              <div 
+                                className="h-full bg-chart-2"
+                                style={{ width: `${(processedData.returningVisitors / processedData.totals.uniqueVisitors) * 100}%` }}
+                              />
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Device Breakdown */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Device Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {processedData.deviceData.length > 0 ? (
-                        <div className="h-64">
+                        <div className="h-48">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
                                 data={processedData.deviceData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
+                                innerRadius={40}
+                                outerRadius={65}
                                 paddingAngle={5}
                                 dataKey="value"
                               >
@@ -356,37 +461,33 @@ export default function SellerAnalytics() {
                           </ResponsiveContainer>
                         </div>
                       ) : (
-                        <div className="h-64 flex items-center justify-center text-muted-foreground">
+                        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
                           No device data available
                         </div>
                       )}
                     </CardContent>
                   </Card>
 
+                  {/* Top Countries */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Top Countries</CardTitle>
+                      <CardTitle className="text-base">Top Countries</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {processedData.countryData.length > 0 ? (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {processedData.countryData.map((country, index) => (
-                            <div key={country.name} className="flex items-center gap-3">
-                              <div className="w-6 text-center text-sm text-muted-foreground">
-                                {index + 1}
-                              </div>
-                              <Globe className="h-4 w-4 text-muted-foreground" />
+                            <div key={country.name} className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground w-4">{index + 1}</span>
                               <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{country.name}</span>
-                                  <span className="text-sm text-muted-foreground">{country.value}</span>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium truncate">{country.name}</span>
+                                  <span className="text-muted-foreground">{country.value}</span>
                                 </div>
-                                <div className="h-2 bg-muted rounded-full mt-1 overflow-hidden">
+                                <div className="h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
                                   <div 
                                     className="h-full bg-primary rounded-full"
-                                    style={{ 
-                                      width: `${(country.value / processedData.countryData[0].value) * 100}%` 
-                                    }}
+                                    style={{ width: `${(country.value / processedData.countryData[0].value) * 100}%` }}
                                   />
                                 </div>
                               </div>
@@ -394,7 +495,7 @@ export default function SellerAnalytics() {
                           ))}
                         </div>
                       ) : (
-                        <div className="h-64 flex items-center justify-center text-muted-foreground">
+                        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
                           No country data available
                         </div>
                       )}
@@ -403,11 +504,72 @@ export default function SellerAnalytics() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="conversions">
+              {/* ── Funnel Tab ── */}
+              <TabsContent value="funnel" className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Conversion Funnel</CardTitle>
-                    <CardDescription>From views to purchases</CardDescription>
+                    <CardDescription>Track drop-off at each stage from view to purchase</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Visual Step Funnel */}
+                    <div className="space-y-0">
+                      {processedData.funnelSteps.map((step, i) => {
+                        const maxValue = processedData.funnelSteps[0].value || 1;
+                        const widthPercent = Math.max(20, (step.value / maxValue) * 100);
+                        
+                        return (
+                          <div key={step.name}>
+                            <div className="flex items-center gap-4">
+                              <div className="w-28 text-sm font-medium text-right shrink-0">
+                                {step.name}
+                              </div>
+                              <div className="flex-1">
+                                <div 
+                                  className="h-12 rounded-lg flex items-center px-4 transition-all"
+                                  style={{ 
+                                    width: `${widthPercent}%`,
+                                    backgroundColor: step.fill,
+                                    opacity: 0.85,
+                                  }}
+                                >
+                                  <span className="text-sm font-bold text-white">
+                                    {step.value.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                              {i > 0 && (
+                                <div className="w-20 text-right shrink-0">
+                                  <span className="text-sm font-semibold text-green-500">
+                                    {step.rate}%
+                                  </span>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    of previous
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            {i < processedData.funnelSteps.length - 1 && (
+                              <div className="flex items-center gap-4 py-1">
+                                <div className="w-28" />
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground pl-4">
+                                  <ArrowDown className="h-3 w-3" />
+                                  <span>{processedData.funnelSteps[i + 1].dropOff}% drop-off</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Daily Conversion Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Daily Conversion Breakdown</CardTitle>
+                    <CardDescription>Views, add-to-carts, and purchases per day</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
@@ -433,6 +595,71 @@ export default function SellerAnalytics() {
                 </Card>
               </TabsContent>
 
+              {/* ── Products Tab ── */}
+              <TabsContent value="products" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Product Performance</CardTitle>
+                    <CardDescription>Per-product analytics — views, cart adds, purchases, and conversion rates</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {processedData.productPerformance.length > 0 ? (
+                      <div className="space-y-3">
+                        {/* Header */}
+                        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-2 pb-2 border-b border-border">
+                          <div className="col-span-4">Product</div>
+                          <div className="col-span-2 text-center">Views</div>
+                          <div className="col-span-2 text-center">Add to Cart</div>
+                          <div className="col-span-2 text-center">Purchases</div>
+                          <div className="col-span-2 text-center">Conv. Rate</div>
+                        </div>
+                        {processedData.productPerformance.map((product: any) => {
+                          const info = productsMap?.[product.id];
+                          return (
+                            <div key={product.id} className="grid grid-cols-12 gap-2 items-center px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                              <div className="col-span-4 flex items-center gap-2 min-w-0">
+                                {info?.image_url ? (
+                                  <img src={info.image_url} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
+                                ) : (
+                                  <div className="h-8 w-8 rounded bg-muted flex items-center justify-center shrink-0">
+                                    <Package className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <span className="text-sm font-medium truncate">
+                                  {info?.name || 'Unknown Product'}
+                                </span>
+                              </div>
+                              <div className="col-span-2 text-center">
+                                <span className="text-sm font-semibold">{product.views}</span>
+                              </div>
+                              <div className="col-span-2 text-center">
+                                <span className="text-sm">{product.carts}</span>
+                                <span className="text-xs text-muted-foreground ml-1">({product.cartRate}%)</span>
+                              </div>
+                              <div className="col-span-2 text-center">
+                                <span className="text-sm">{product.purchases}</span>
+                              </div>
+                              <div className="col-span-2 text-center">
+                                <Badge variant={Number(product.conversionRate) >= 5 ? 'default' : 'secondary'} className="text-xs">
+                                  {product.conversionRate}%
+                                </Badge>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center text-muted-foreground">
+                        <Package className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                        <p>No product-level analytics available yet</p>
+                        <p className="text-sm mt-1">Data appears once customers view your products</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ── Sources Tab ── */}
               <TabsContent value="sources">
                 <Card>
                   <CardHeader>
@@ -445,7 +672,7 @@ export default function SellerAnalytics() {
                         {processedData.referrerData.map((source, index) => (
                           <div key={source.name} className="flex items-center gap-3">
                             <div 
-                              className="w-3 h-3 rounded-full"
+                              className="w-3 h-3 rounded-full shrink-0"
                               style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
                             <div className="flex-1">
