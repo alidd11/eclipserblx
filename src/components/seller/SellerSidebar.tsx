@@ -4,7 +4,8 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
-  Gamepad2, Layers, TrendingUp, Receipt, LineChart
+  Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
+  RotateCcw, Zap, PackagePlus
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -44,8 +45,19 @@ const navGroups: NavGroup[] = [
       { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
       { title: 'Recent Orders', icon: ShoppingCart, href: '/seller/orders' },
       { title: 'Reviews', icon: Star, href: '/seller/reviews' },
-      { title: 'Discounts', icon: Tag, href: '/seller/discounts' },
+      { title: 'Customers', icon: Heart, href: '/seller/customers' },
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
+    ],
+  },
+  {
+    id: 'promotions',
+    title: 'Promotions',
+    icon: Tag,
+    items: [
+      { title: 'Discount Codes', icon: Tag, href: '/seller/discounts' },
+      { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
+      { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
+      { title: 'Announcements', icon: Megaphone, href: '/seller/announcements' },
     ],
   },
   {
@@ -54,6 +66,7 @@ const navGroups: NavGroup[] = [
     icon: MessageCircle,
     items: [
       { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
+      { title: 'Refund Requests', icon: RotateCcw, href: '/seller/refunds' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
     ],
   },
