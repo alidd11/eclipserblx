@@ -11,6 +11,7 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { StoreReviews } from '@/components/store/StoreReviews';
+import { StoreCustomSections } from '@/components/store/StoreCustomSections';
 
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { StoreBestSellers } from '@/components/store/StoreBestSellers';
@@ -367,7 +368,16 @@ export default function StorePage() {
       averageRating={store.average_rating}
       bio={bio}
     >
-      {/* Store Banner */}
+      {/* Store Banner - with scheduling */}
+      {(() => {
+        const now = new Date();
+        const bannerStart = (store as any).banner_start_at ? new Date((store as any).banner_start_at) : null;
+        const bannerEnd = (store as any).banner_end_at ? new Date((store as any).banner_end_at) : null;
+        const showBanner = (!bannerStart || now >= bannerStart) && (!bannerEnd || now <= bannerEnd);
+        
+        if (!showBanner) return <div className="h-8" />;
+        
+        return (
       <div className="relative">
         {store.banner_url ? (
           <div 
@@ -417,6 +427,8 @@ export default function StorePage() {
           </div>
         )}
       </div>
+        );
+      })()}
 
       {/* Store Header - Transparent overlay on banner */}
       <div className="container px-4 -mt-16 relative z-10">
@@ -824,6 +836,13 @@ export default function StorePage() {
               isVerified={store.is_verified}
               isTrusted={(store as any).is_trusted}
             />
+
+            {/* Custom Sections */}
+            {store && (
+              <div className="mb-8">
+                <StoreCustomSections storeId={store.id} accentColor={accentColor} />
+              </div>
+            )}
 
             {/* Reviews Section */}
             {store && (

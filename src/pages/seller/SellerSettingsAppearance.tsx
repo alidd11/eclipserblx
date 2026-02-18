@@ -4,6 +4,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
+import { LiveThemePreview } from '@/components/seller/LiveThemePreview';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,10 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { 
   Palette, 
   Save, 
@@ -22,7 +27,8 @@ import {
   Megaphone,
   Star,
   Eye,
-  Code
+  Code,
+  CalendarIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
@@ -79,6 +85,8 @@ const INITIAL_FORM_DATA = {
   show_reviews: true,
   show_social_proof: true,
   custom_css: '',
+  banner_start_at: null as string | null,
+  banner_end_at: null as string | null,
 };
 
 export default function SellerSettingsAppearance() {
@@ -109,6 +117,8 @@ export default function SellerSettingsAppearance() {
         show_reviews: store.show_reviews !== false,
         show_social_proof: store.show_social_proof !== false,
         custom_css: store.custom_css || '',
+        banner_start_at: (store as any).banner_start_at || null,
+        banner_end_at: (store as any).banner_end_at || null,
       });
     }
   }, [store]);
@@ -134,8 +144,10 @@ export default function SellerSettingsAppearance() {
           show_reviews: data.show_reviews,
           show_social_proof: data.show_social_proof,
           custom_css: data.custom_css || null,
+          banner_start_at: data.banner_start_at || null,
+          banner_end_at: data.banner_end_at || null,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq('id', store.id);
 
       if (error) throw error;
@@ -155,7 +167,7 @@ export default function SellerSettingsAppearance() {
 
   return (
     <SellerLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Store Appearance</h1>
           <p className="text-muted-foreground">
@@ -163,6 +175,8 @@ export default function SellerSettingsAppearance() {
           </p>
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+        <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Dropdown for all devices */}
           <Select value={activeTab} onValueChange={setActiveTab}>
@@ -399,6 +413,96 @@ export default function SellerSettingsAppearance() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Banner Scheduling */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5" />
+                  Banner Scheduling
+                </CardTitle>
+                <CardDescription>
+                  Schedule when your store banner is visible
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Start Date (optional)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.banner_start_at && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.banner_start_at
+                            ? format(new Date(formData.banner_start_at), 'PPP')
+                            : 'No start date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.banner_start_at ? new Date(formData.banner_start_at) : undefined}
+                          onSelect={(date) => setFormData({ ...formData, banner_start_at: date?.toISOString() || null })}
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {formData.banner_start_at && (
+                      <Button
+                        variant="ghost" size="sm" className="text-xs"
+                        onClick={() => setFormData({ ...formData, banner_start_at: null })}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>End Date (optional)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.banner_end_at && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.banner_end_at
+                            ? format(new Date(formData.banner_end_at), 'PPP')
+                            : 'No end date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.banner_end_at ? new Date(formData.banner_end_at) : undefined}
+                          onSelect={(date) => setFormData({ ...formData, banner_end_at: date?.toISOString() || null })}
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {formData.banner_end_at && (
+                      <Button
+                        variant="ghost" size="sm" className="text-xs"
+                        onClick={() => setFormData({ ...formData, banner_end_at: null })}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Leave both empty to always show the banner. Set dates to control visibility.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Typography Tab */}
@@ -542,6 +646,25 @@ export default function SellerSettingsAppearance() {
             <Save className="h-4 w-4 mr-2" />
             {updateStore.isPending ? 'Saving...' : 'Save All Changes'}
           </Button>
+        </div>
+        </div>
+
+        {/* Live Preview Sidebar */}
+        <div className="hidden lg:block sticky top-4 self-start">
+          <LiveThemePreview
+            theme={formData.theme}
+            accentColor={formData.accent_color}
+            fontHeading={formData.font_heading}
+            fontBody={formData.font_body}
+            layoutStyle={formData.layout_style}
+            heroTitle={formData.hero_title}
+            heroSubtitle={formData.hero_subtitle}
+            heroCta={formData.hero_cta_text}
+            announcementText={formData.announcement_text}
+            announcementActive={formData.announcement_active}
+            bannerUrl={store?.banner_url || undefined}
+          />
+        </div>
         </div>
       </div>
     </SellerLayout>
