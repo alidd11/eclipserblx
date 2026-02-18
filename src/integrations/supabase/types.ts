@@ -2360,6 +2360,66 @@ export type Database = {
         }
         Relationships: []
       }
+      flash_sales: {
+        Row: {
+          apply_to_all: boolean
+          created_at: string
+          discount_type: string
+          discount_value: number
+          ends_at: string
+          id: string
+          is_active: boolean
+          name: string
+          product_ids: string[] | null
+          starts_at: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          apply_to_all?: boolean
+          created_at?: string
+          discount_type?: string
+          discount_value: number
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          name: string
+          product_ids?: string[] | null
+          starts_at: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          apply_to_all?: boolean
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          product_ids?: string[] | null
+          starts_at?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_sales_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flash_sales_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_categories: {
         Row: {
           color: string | null
@@ -3625,6 +3685,69 @@ export type Database = {
         }
         Relationships: []
       }
+      product_bundles: {
+        Row: {
+          bundle_price: number
+          created_at: string
+          current_purchases: number
+          description: string | null
+          id: string
+          is_active: boolean
+          max_purchases: number | null
+          name: string
+          original_price: number
+          product_ids: string[]
+          savings_percent: number | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          bundle_price: number
+          created_at?: string
+          current_purchases?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_purchases?: number | null
+          name: string
+          original_price: number
+          product_ids: string[]
+          savings_percent?: number | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          bundle_price?: number
+          created_at?: string
+          current_purchases?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_purchases?: number | null
+          name?: string
+          original_price?: number
+          product_ids?: string[]
+          savings_percent?: number | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_bundles_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_bundles_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_imports: {
         Row: {
           error_message: string | null
@@ -4564,6 +4687,98 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      refund_requests: {
+        Row: {
+          admin_resolved_at: string | null
+          admin_resolved_by: string | null
+          admin_response: string | null
+          amount: number
+          created_at: string
+          customer_id: string
+          details: string | null
+          escalated_at: string | null
+          escalation_reason: string | null
+          id: string
+          order_id: string
+          order_item_id: string | null
+          reason: string
+          seller_responded_at: string | null
+          seller_response: string | null
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_resolved_at?: string | null
+          admin_resolved_by?: string | null
+          admin_response?: string | null
+          amount: number
+          created_at?: string
+          customer_id: string
+          details?: string | null
+          escalated_at?: string | null
+          escalation_reason?: string | null
+          id?: string
+          order_id: string
+          order_item_id?: string | null
+          reason: string
+          seller_responded_at?: string | null
+          seller_response?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_resolved_at?: string | null
+          admin_resolved_by?: string | null
+          admin_response?: string | null
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          details?: string | null
+          escalated_at?: string | null
+          escalation_reason?: string | null
+          id?: string
+          order_id?: string
+          order_item_id?: string | null
+          reason?: string
+          seller_responded_at?: string | null
+          seller_response?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5914,6 +6129,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      store_announcements: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          link_url: string | null
+          message: string
+          pinned: boolean
+          store_id: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          link_url?: string | null
+          message: string
+          pinned?: boolean
+          store_id: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          link_url?: string | null
+          message?: string
+          pinned?: boolean
+          store_id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_announcements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_announcements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_applications: {
         Row: {
