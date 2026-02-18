@@ -7490,6 +7490,14 @@ export type Database = {
         Returns: undefined
       }
       revert_expired_custom_rates: { Args: never; Returns: undefined }
+      seller_has_products_in_order: {
+        Args: { _order_id: string; _user_id: string }
+        Returns: boolean
+      }
+      seller_owns_order_item_product: {
+        Args: { _product_id: string; _user_id: string }
+        Returns: boolean
+      }
       soft_delete: {
         Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
@@ -7532,8 +7540,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      user_can_insert_order_item: {
+        Args: { _order_id: string; _user_id: string }
+        Returns: boolean
+      }
       user_has_purchased_product: {
         Args: { _product_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_owns_order: {
+        Args: { _order_id: string; _user_id: string }
         Returns: boolean
       }
     }
