@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink, Wallet, RefreshCw, Coins } from 'lucide-react';
+import { TrendingUp, Calendar, FileDown, Lock, Shield, Eye, EyeOff, Clock, Percent, Gamepad2, CheckCircle2, XCircle, Package, ExternalLink, Wallet, RefreshCw, Coins, Store } from 'lucide-react';
+import { SellerEarningsTab } from '@/components/admin/income/SellerEarningsTab';
 import { CreditsAnalyticsTab } from '@/components/admin/income/CreditsAnalyticsTab';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -462,7 +463,7 @@ export default function AdminIncome() {
 
         {/* Income Tabs */}
         <Tabs defaultValue="stripe" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="stripe" className="gap-2">
               <Wallet className="h-4 w-4" />
               Stripe Balance
@@ -478,6 +479,10 @@ export default function AdminIncome() {
             <TabsTrigger value="robux" className="gap-2">
               <Gamepad2 className="h-4 w-4" />
               Robux
+            </TabsTrigger>
+            <TabsTrigger value="sellers" className="gap-2">
+              <Store className="h-4 w-4" />
+              Sellers
             </TabsTrigger>
           </TabsList>
 
@@ -1406,6 +1411,10 @@ export default function AdminIncome() {
                 <p>4. Include your ROBUX_WEBHOOK_SECRET in requests</p>
               </CardContent>
             </Card>
+          </TabsContent>
+          {/* Seller Earnings Tab */}
+          <TabsContent value="sellers" className="space-y-6">
+            <SellerEarningsTab />
           </TabsContent>
         </Tabs>
       </div>
