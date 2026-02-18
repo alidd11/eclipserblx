@@ -7532,6 +7532,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      user_has_purchased_product: {
+        Args: { _product_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       bot_license_status: "pending" | "active" | "expired" | "revoked"
