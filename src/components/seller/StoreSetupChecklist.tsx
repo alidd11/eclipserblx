@@ -15,6 +15,7 @@ import {
   Image,
   LinkIcon,
   ChevronRight,
+  Gamepad2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -115,6 +116,14 @@ export function StoreSetupChecklist() {
       completed: setupData.hasProducts,
       href: '/seller/products/new',
       icon: Package,
+    },
+    {
+      id: 'roblox',
+      label: 'Add Roblox marketplace link',
+      description: 'Link your Roblox creator store',
+      completed: !!store.roblox_url,
+      href: '/seller/settings/profile',
+      icon: Gamepad2,
     },
     {
       id: 'socials',
