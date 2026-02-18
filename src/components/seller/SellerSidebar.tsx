@@ -17,6 +17,7 @@ import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
+import { useSellerUnreadCount } from '@/hooks/useSellerUnreadCount';
 
 interface NavItem {
   title: string;
@@ -34,6 +35,7 @@ interface NavGroup {
 // Top-level items (no group)
 const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/seller' },
+  { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
 ];
 
 const navGroups: NavGroup[] = [
@@ -130,6 +132,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
   const { store } = useSellerStatus();
   const navigate = useNavigate();
   const location = useLocation();
+  const unreadCount = useSellerUnreadCount();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   
@@ -190,13 +193,21 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
         )} />
         {!isCollapsed && (
-          <span className="min-w-0 truncate">{item.title}</span>
+          <span className="min-w-0 truncate flex-1">{item.title}</span>
+        )}
+        {item.title === 'Notifications' && unreadCount > 0 && (
+          <span className={cn(
+            "inline-flex items-center justify-center text-[10px] font-bold rounded-full shrink-0",
+            isCollapsed ? "absolute -top-1 -right-1 h-4 min-w-4 px-1 bg-destructive text-destructive-foreground" : "h-5 min-w-5 px-1.5 bg-destructive text-destructive-foreground"
+          )}>
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </>
     );
 
     const linkClass = cn(
-      "group rounded-md text-[13px] font-medium select-none transition-all duration-150",
+      "group rounded-md text-[13px] font-medium select-none transition-all duration-150 relative",
       "active:scale-[0.98] active:opacity-90",
       isCollapsed
         ? "flex items-center justify-center p-2.5"

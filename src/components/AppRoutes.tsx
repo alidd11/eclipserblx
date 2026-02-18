@@ -145,6 +145,7 @@ const SellerAnnouncements = lazy(() => import("@/pages/seller/SellerAnnouncement
 const SellerRefunds = lazy(() => import("@/pages/seller/SellerRefunds"));
 const SellerFlashSales = lazy(() => import("@/pages/seller/SellerFlashSales"));
 const SellerBundles = lazy(() => import("@/pages/seller/SellerBundles"));
+const SellerNotifications = lazy(() => import("@/pages/seller/SellerNotifications"));
 const SellerAnalytics = lazy(() => import("@/pages/seller/SellerAnalytics"));
 const SellerDocuments = lazy(() => import("@/pages/seller/SellerDocuments"));
 const SellerTermsOfService = lazy(() => import("@/pages/seller/SellerTermsOfService"));
@@ -272,6 +273,7 @@ export function AppRoutes() {
         <Route path="/seller/refunds" element={<SellerRefunds />} />
         <Route path="/seller/flash-sales" element={<SellerFlashSales />} />
         <Route path="/seller/bundles" element={<SellerBundles />} />
+        <Route path="/seller/notifications" element={<SellerNotifications />} />
         <Route path="/seller/documents" element={<SellerDocuments />} />
         <Route path="/seller/documents/terms" element={<SellerTermsOfService />} />
         <Route path="/seller/documents/guide" element={<SellerGuide />} />
