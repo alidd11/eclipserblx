@@ -100,7 +100,6 @@ const AdminStaffDocuments = lazy(() => import("@/pages/admin/StaffDocuments"));
 const AdminPublicDocuments = lazy(() => import("@/pages/admin/PublicDocuments"));
 const AdminSellerDocuments = lazy(() => import("@/pages/admin/SellerDocuments"));
 const AdminManualPayouts = lazy(() => import("@/pages/admin/ManualPayouts"));
-const AdminMarketplaceInterest = lazy(() => import("@/pages/admin/MarketplaceInterest"));
 const AdminSellerTickets = lazy(() => import("@/pages/admin/SellerTickets"));
 const AdminRolePermissions = lazy(() => import("@/pages/admin/RolePermissions"));
 const AdminDiscordModmail = lazy(() => import("@/pages/admin/DiscordModmail"));
@@ -349,7 +348,6 @@ export function AppRoutes() {
         <Route path="/admin/seller-documents" element={<AdminSellerDocuments />} />
         <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
         <Route path="/admin/manual-payouts" element={<AdminManualPayouts />} />
-        <Route path="/admin/marketplace-interest" element={<AdminMarketplaceInterest />} />
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
         <Route path="/admin/discord-modmail" element={<AdminDiscordModmail />} />
