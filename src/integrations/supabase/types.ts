@@ -6434,6 +6434,57 @@ export type Database = {
           },
         ]
       }
+      store_custom_sections: {
+        Row: {
+          content: Json
+          created_at: string
+          display_order: number
+          id: string
+          is_visible: boolean
+          section_type: string
+          store_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          section_type: string
+          store_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          section_type?: string
+          store_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_custom_sections_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_custom_sections_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_follows: {
         Row: {
           created_at: string
@@ -6800,6 +6851,8 @@ export type Database = {
           announcement_active: boolean | null
           announcement_text: string | null
           average_rating: number | null
+          banner_end_at: string | null
+          banner_start_at: string | null
           banner_url: string | null
           bio: string | null
           commission_rate: number | null
@@ -6868,6 +6921,8 @@ export type Database = {
           announcement_active?: boolean | null
           announcement_text?: string | null
           average_rating?: number | null
+          banner_end_at?: string | null
+          banner_start_at?: string | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
@@ -6936,6 +6991,8 @@ export type Database = {
           announcement_active?: boolean | null
           announcement_text?: string | null
           average_rating?: number | null
+          banner_end_at?: string | null
+          banner_start_at?: string | null
           banner_url?: string | null
           bio?: string | null
           commission_rate?: number | null
