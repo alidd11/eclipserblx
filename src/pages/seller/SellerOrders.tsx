@@ -1,129 +1,46 @@
-import { useState } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { 
-  Search, 
-  ShoppingCart,
-  DollarSign,
-  TrendingUp
-} from 'lucide-react';
-
-const TRANSACTIONS_PER_PAGE = 20;
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
+import { OrdersTab } from '@/components/seller/orders/OrdersTab';
+import { TransactionsTab } from '@/components/seller/orders/TransactionsTab';
 
 export default function SellerOrders() {
   const { store } = useSellerStatus();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch seller's transactions with pagination
-  const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
-    queryKey: ['seller-transactions', store?.id, currentPage],
+  const { data: stats } = useQuery({
+    queryKey: ['seller-order-stats', store?.id],
     queryFn: async () => {
-      if (!store?.id) return { transactions: [], totalCount: 0 };
+      if (!store?.id) return { totalSales: 0, totalRevenue: 0, pendingAmount: 0 };
       
-      const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
-      const to = from + TRANSACTIONS_PER_PAGE - 1;
-      
-      const { data, count, error } = await supabase
+      const { data } = await supabase
         .from('seller_transactions')
-        .select('*', { count: 'exact' })
-        .eq('store_id', store.id)
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .select('type, status, net_amount')
+        .eq('store_id', store.id);
 
-      if (error) throw error;
-      return { transactions: data || [], totalCount: count || 0 };
+      const txs = data || [];
+      return {
+        totalSales: txs.filter(t => t.type === 'sale').length,
+        totalRevenue: txs.reduce((sum, t) => t.type === 'sale' ? sum + (t.net_amount || 0) : sum, 0),
+        pendingAmount: txs.reduce((sum, t) => t.status === 'pending' ? sum + (t.net_amount || 0) : sum, 0),
+      };
     },
     enabled: !!store?.id,
-    staleTime: 30000,
+    staleTime: 60000,
   });
 
-  const transactions = transactionsData?.transactions || [];
-  const totalCount = transactionsData?.totalCount || 0;
-  const totalPages = Math.ceil(totalCount / TRANSACTIONS_PER_PAGE);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
-
-  const filteredTransactions = transactions.filter((tx: any) => {
-    const matchesSearch = tx.description?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          tx.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || tx.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  // Calculate stats from filtered page data (note: for accurate totals, stats would need separate queries)
-  const stats = {
-    totalSales: transactions.filter((tx: any) => tx.type === 'sale').length,
-    totalRevenue: transactions.reduce((sum: number, tx: any) => 
-      tx.type === 'sale' ? sum + (tx.net_amount || 0) : sum, 0),
-    pendingAmount: transactions.reduce((sum: number, tx: any) => 
-      tx.status === 'pending' ? sum + (tx.net_amount || 0) : sum, 0),
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Badge variant="default" className="bg-green-600">Completed</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
-      case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case 'sale':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Sale</Badge>;
-      case 'refund':
-        return <Badge variant="outline" className="text-red-600 border-red-600">Refund</Badge>;
-      case 'payout':
-        return <Badge variant="outline" className="text-blue-600 border-blue-600">Payout</Badge>;
-      default:
-        return <Badge variant="outline">{type}</Badge>;
-    }
-  };
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
 
   return (
     <SellerLayout>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Orders & Transactions</h1>
-          <p className="text-muted-foreground">
-            Track your sales and transaction history
-          </p>
+          <p className="text-muted-foreground">Track your sales, orders, and transaction history</p>
         </div>
 
         {/* Stats Cards */}
@@ -134,165 +51,45 @@ export default function SellerOrders() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalSales}</div>
+              <div className="text-2xl font-bold">{stats?.totalSales || 0}</div>
               <p className="text-xs text-muted-foreground">Completed orders</p>
             </CardContent>
           </Card>
-
           <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(stats.totalRevenue)}
-              </div>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(stats?.totalRevenue || 0)}</div>
               <p className="text-xs text-muted-foreground">After platform fees</p>
             </CardContent>
           </Card>
-
           <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
-                {formatCurrency(stats.pendingAmount)}
-              </div>
+              <div className="text-2xl font-bold text-yellow-600">{formatCurrency(stats?.pendingAmount || 0)}</div>
               <p className="text-xs text-muted-foreground">Awaiting clearance</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="py-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by order ID or description..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Transactions Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>
-              All sales, refunds, and payouts for your store
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {transactionsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Skeleton key={i} className="h-16" />
-                ))}
-              </div>
-            ) : filteredTransactions.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Platform Fee</TableHead>
-                      <TableHead>Net Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTransactions.map((tx: any) => (
-                      <TableRow key={tx.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {new Date(tx.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{getTypeBadge(tx.type)}</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{tx.description || 'Transaction'}</p>
-                            {tx.order_id && (
-                              <p className="text-xs text-muted-foreground">
-                                Order: {tx.order_id.slice(0, 8)}...
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatCurrency(tx.amount)}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          -{formatCurrency(tx.platform_fee || 0)}
-                        </TableCell>
-                        <TableCell className={tx.type === 'sale' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                          {tx.type === 'sale' ? '+' : '-'}{formatCurrency(tx.net_amount || tx.amount)}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(tx.status)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No transactions yet</h3>
-                <p className="text-muted-foreground">
-                  Your sales and transactions will appear here once you start selling.
-                </p>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages} ({totalCount} total)
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Tabbed Content */}
+        <Tabs defaultValue="orders" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          </TabsList>
+          <TabsContent value="orders">
+            {store?.id && <OrdersTab storeId={store.id} />}
+          </TabsContent>
+          <TabsContent value="transactions">
+            {store?.id && <TransactionsTab storeId={store.id} />}
+          </TabsContent>
+        </Tabs>
       </div>
     </SellerLayout>
   );
