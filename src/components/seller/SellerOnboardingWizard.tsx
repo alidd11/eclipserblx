@@ -22,6 +22,7 @@ import {
   Rocket,
   CheckCircle2,
   PartyPopper,
+  Gamepad2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -120,6 +121,14 @@ export function SellerOnboardingWizard() {
       icon: LayoutGrid,
       href: '/seller/categories',
       completed: setupData.categoriesEnabled,
+    },
+    {
+      id: 'roblox',
+      title: 'Add Roblox Marketplace Link',
+      description: 'Link your Roblox creator store so customers can find your marketplace.',
+      icon: Gamepad2,
+      href: '/seller/settings/profile',
+      completed: !!store.roblox_url,
     },
     {
       id: 'socials',
