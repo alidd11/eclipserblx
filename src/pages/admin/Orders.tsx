@@ -81,7 +81,7 @@ export default function AdminOrders() {
 
       let query = supabase
         .from('orders')
-        .select(`*, order_items(*, products(name))`)
+        .select(`*, order_items(*, products(name, stores(name)))`)
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -371,9 +371,14 @@ export default function AdminOrders() {
                 <p className="text-sm text-muted-foreground mb-2">Items</p>
                 <div className="space-y-2">
                   {selectedOrder.order_items?.map((item: any) => (
-                    <div key={item.id} className="flex justify-between p-2 bg-muted/50 rounded">
-                      <span>{item.product_name}</span>
-                      <span className="font-medium">£{item.price.toFixed(2)}</span>
+                    <div key={item.id} className="flex justify-between items-start p-2 bg-muted/50 rounded">
+                      <div className="min-w-0">
+                        <span className="block">{item.product_name}</span>
+                        {item.products?.stores?.name && (
+                          <span className="text-xs text-muted-foreground">{item.products.stores.name}</span>
+                        )}
+                      </div>
+                      <span className="font-medium shrink-0 ml-2">£{item.price.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
