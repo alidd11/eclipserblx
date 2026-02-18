@@ -1,36 +1,51 @@
 
+# Add Seller Earnings Tab to Admin Income Dashboard
 
-# Optimize the Categories Tab
+## What This Adds
+A new **"Seller Earnings"** tab in the existing Income Analytics page (`/admin/income`) that gives you full business visibility into how money flows through the marketplace -- what sellers earn, what the platform keeps as commission, and the status of payouts.
 
-## Current Issues
-- Shows all 12 categories equally, but only 4 have products (Maps: 4, Bundle Deals: 13, Bots: 2, Buildings: 5). The other 8 are empty.
-- Simple flat list with small icons -- no visual hierarchy or product previews to entice clicks.
-- No product counts shown, so users click into empty categories blindly.
-- The full `/categories` page already has rich cards with product thumbnails, but the home tab doesn't leverage any of that.
+## Why This Matters
+Right now, the Income page shows Stripe balance, credits, gross revenue, and Robux -- but nothing about seller-side finances. As a marketplace operator, you need to see:
+- How much commission the platform is earning
+- How much sellers are owed vs. what's been paid out
+- Which stores are generating the most revenue
+- Payout pipeline status (pending, processing, completed)
 
-## Proposed Changes
+## What You'll See
 
-### 1. Show product counts on each category
-Add a small count badge (e.g. "13 products") next to each category name so users know what's available.
+### Summary Cards
+- **Total Platform Commission** -- your cut from all seller sales
+- **Total Seller Earnings** -- net amount earned by all sellers
+- **Outstanding Balances** -- total owed to sellers (not yet paid)
+- **Total Paid Out** -- how much has been paid to sellers
+- **Stripe Fees on Seller Sales** -- fees deducted from seller transactions
 
-### 2. Prioritize categories with products
-Sort categories so those with actual products appear first. Empty categories get grouped at the bottom with a dimmed/muted style.
+### Breakdowns
+- **Time-period breakdown** (today / 7 days / 30 days / all time) for commission and seller earnings
+- **Top Stores by Revenue** -- ranked list showing each store's gross sales, commission paid, and net earnings
+- **Payout Pipeline** -- counts and totals for pending, processing, awaiting funds, and completed payouts
 
-### 3. Add product thumbnail previews for populated categories
-For categories that have products, show 2-3 small product thumbnails inline (similar to the full Categories page), making the grid more visual and engaging.
+### 30-Day Trend Chart
+- Lines for platform commission and seller earnings over the last 30 days
 
-### 4. Single query with counts
-Replace the current simple query with one that also fetches product counts and a couple of top product images per category -- all in a single pass instead of the N+1 pattern used in the full Categories page.
+---
 
 ## Technical Details
 
-**File: `src/components/marketplace/CategoriesGrid.tsx`**
+### File Modified
+- **`src/pages/admin/Income.tsx`** -- Add a 5th tab "Sellers" to the existing Tabs component
 
-- Update the query to fetch product counts and top 3 product images per category using a combined approach (fetch categories, then batch-fetch top products for all category IDs in one query).
-- Sort results: categories with products first (by count descending), empty ones last.
-- Restyle each category card:
-  - Categories **with products**: show icon, name, count badge, and a row of 2-3 small product thumbnail squares.
-  - Categories **without products**: render in a compact, muted row at the bottom with a "Coming soon" label.
-- Remove the framer-motion stagger animation (unnecessary overhead for a small grid).
-- Keep the "View all" link to `/categories` for the full experience.
+### Data Sources (all existing tables, no schema changes needed)
+- `seller_transactions` (type='sale', refunded_at IS NULL) -- gross, platform_fee, stripe_fee, net_amount per sale
+- `seller_balances` -- available_balance, total_earned, total_paid per seller/store
+- `seller_payouts` -- payout status pipeline (pending/processing/completed/rejected)
+- `stores` -- store names for the top-stores leaderboard
 
+### New Queries (all within the existing Income page component)
+1. **Seller financial summary** -- aggregates from `seller_transactions`
+2. **Balance overview** -- aggregates from `seller_balances`
+3. **Top stores** -- grouped by store_id from `seller_transactions` joined with `stores`
+4. **Payout pipeline** -- grouped counts/sums from `seller_payouts`
+5. **30-day trend** -- daily aggregation from `seller_transactions`
+
+### No database changes required -- all data already exists.
