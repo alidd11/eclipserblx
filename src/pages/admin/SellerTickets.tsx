@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, FileIcon, Image as ImageIcon } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, FileIcon, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -432,7 +434,7 @@ export default function SellerTickets() {
                           {getStatusBadge(ticket.status)}
                           {getPriorityBadge(ticket.priority)}
                         </div>
-                        <h3 className="font-medium truncate">{ticket.subject}</h3>
+                        <h3 className="font-medium line-clamp-2">{ticket.subject}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <User className="h-3 w-3" />
                           <span>{ticket.profiles?.display_name || 'Unknown'}</span>
@@ -460,94 +462,110 @@ export default function SellerTickets() {
           </div>
         )}
 
-        {/* Ticket Detail Dialog */}
-        <Dialog open={!!selectedTicket} onOpenChange={(open) => !open && setSelectedTicket(null)}>
-          <DialogContent className="max-w-3xl max-h-[80dvh] flex flex-col overflow-hidden">
+        {/* Ticket Detail Drawer */}
+        <Drawer open={!!selectedTicket} onOpenChange={(open) => !open && setSelectedTicket(null)}>
+          <DrawerContent className="h-[95dvh] flex flex-col">
             {selectedTicket && (
               <>
-                <DialogHeader>
+                {/* Compact header */}
+                <div className="px-4 pt-2 pb-3 border-b space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="font-mono">{selectedTicket.ticket_number}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{selectedTicket.ticket_number}</Badge>
                     {getStatusBadge(selectedTicket.status)}
                     {getPriorityBadge(selectedTicket.priority)}
                   </div>
-                  <DialogTitle>{selectedTicket.subject}</DialogTitle>
-                  <DialogDescription>
+                  <DrawerTitle className="text-base">{selectedTicket.subject}</DrawerTitle>
+                  <DrawerDescription className="text-xs">
                     {CATEGORY_LABELS[selectedTicket.category] || selectedTicket.category}
-                  </DialogDescription>
-                </DialogHeader>
+                  </DrawerDescription>
 
-                <div className="flex-1 overflow-y-auto flex flex-col gap-3 min-h-0 -mx-6 px-6">
-                  {/* Seller Info */}
-                  <div className="grid grid-cols-2 gap-2 p-3 bg-muted/50 rounded-lg text-sm">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Seller</Label>
-                      <p className="font-medium">{selectedTicket.profiles?.display_name}</p>
-                      <p className="text-sm text-muted-foreground">{selectedTicket.profiles?.email}</p>
-                    </div>
-                    {selectedTicket.stores && (
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Store</Label>
-                        <p className="font-medium">{selectedTicket.stores.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{selectedTicket.stores.store_id}</p>
-                      </div>
-                    )}
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Discord</Label>
-                      <p className="text-sm">{selectedTicket.profiles?.discord_username || 'Not linked'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Roblox</Label>
-                      <p className="text-sm">{selectedTicket.profiles?.roblox_username || 'Not linked'}</p>
-                    </div>
-                  </div>
-
-                  {/* Original message */}
-                  <Card className="bg-muted/50">
-                    <CardContent className="pt-4">
-                      <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
-                      
-                      {selectedTicket.category === 'account_link_change' && (
-                        <div className="mt-4 pt-4 border-t space-y-2">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-medium text-muted-foreground">Account Link Change Request</p>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => applyLinkChange.mutate()}
-                              disabled={applyLinkChange.isPending}
-                            >
-                              <LinkIcon className="h-3 w-3 mr-1" />
-                              Apply Changes
-                            </Button>
-                          </div>
-                          {selectedTicket.new_discord_username && (
-                            <p className="text-sm">New Discord: <span className="font-medium">{selectedTicket.new_discord_username}</span></p>
-                          )}
-                          {selectedTicket.new_roblox_username && (
-                            <p className="text-sm">New Roblox: <span className="font-medium">{selectedTicket.new_roblox_username}</span></p>
-                          )}
-                          {selectedTicket.change_reason && (
-                            <p className="text-sm">Reason: {selectedTicket.change_reason}</p>
-                          )}
-                        </div>
+                  {/* Collapsible seller info */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
+                      <User className="h-3.5 w-3.5" />
+                      <span className="font-medium text-foreground">{selectedTicket.profiles?.display_name || 'Unknown'}</span>
+                      {selectedTicket.stores && (
+                        <>
+                          <span className="text-muted-foreground">·</span>
+                          <Store className="h-3.5 w-3.5" />
+                          <span>{selectedTicket.stores.name}</span>
+                        </>
                       )}
-                    </CardContent>
-                  </Card>
+                      <ChevronDown className="h-3.5 w-3.5 ml-auto transition-transform [[data-state=open]>&]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-2 gap-2 p-3 bg-muted/50 rounded-lg text-sm">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Email</Label>
+                          <p className="text-sm">{selectedTicket.profiles?.email || '—'}</p>
+                        </div>
+                        {selectedTicket.stores && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Store ID</Label>
+                            <p className="text-xs font-mono">{selectedTicket.stores.store_id}</p>
+                          </div>
+                        )}
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Discord</Label>
+                          <p className="text-sm">{selectedTicket.profiles?.discord_username || 'Not linked'}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Roblox</Label>
+                          <p className="text-sm">{selectedTicket.profiles?.roblox_username || 'Not linked'}</p>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
 
-                  {/* Resolution notes */}
-                  {selectedTicket.resolution_notes && (
-                    <Card className="bg-green-500/10 border-green-500/30">
+                {/* Scrollable content area */}
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="px-4 py-3 space-y-3">
+                    {/* Original message */}
+                    <Card className="bg-muted/50">
                       <CardContent className="pt-4">
-                        <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-2">Resolution</p>
-                        <p className="text-sm">{selectedTicket.resolution_notes}</p>
+                        <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
+                        
+                        {selectedTicket.category === 'account_link_change' && (
+                          <div className="mt-4 pt-4 border-t space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-medium text-muted-foreground">Account Link Change Request</p>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => applyLinkChange.mutate()}
+                                disabled={applyLinkChange.isPending}
+                              >
+                                <LinkIcon className="h-3 w-3 mr-1" />
+                                Apply Changes
+                              </Button>
+                            </div>
+                            {selectedTicket.new_discord_username && (
+                              <p className="text-sm">New Discord: <span className="font-medium">{selectedTicket.new_discord_username}</span></p>
+                            )}
+                            {selectedTicket.new_roblox_username && (
+                              <p className="text-sm">New Roblox: <span className="font-medium">{selectedTicket.new_roblox_username}</span></p>
+                            )}
+                            {selectedTicket.change_reason && (
+                              <p className="text-sm">Reason: {selectedTicket.change_reason}</p>
+                            )}
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
-                  )}
 
-                  {/* Messages */}
-                  <ScrollArea className="flex-1 min-h-[80px] max-h-[30dvh]">
-                    <div className="space-y-3 pr-4">
+                    {/* Resolution notes */}
+                    {selectedTicket.resolution_notes && (
+                      <Card className="bg-green-500/10 border-green-500/30">
+                        <CardContent className="pt-4">
+                          <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-2">Resolution</p>
+                          <p className="text-sm">{selectedTicket.resolution_notes}</p>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Messages */}
+                    <div className="space-y-3">
                       {messages?.map((msg) => (
                         <div 
                           key={msg.id} 
@@ -589,94 +607,94 @@ export default function SellerTickets() {
                         </div>
                       ))}
                     </div>
-                  </ScrollArea>
+                  </div>
+                </ScrollArea>
 
-                  {/* Actions */}
-                  {!['resolved', 'closed'].includes(selectedTicket.status) && (
-                    <div className="space-y-3">
-                      {attachmentFile && (
-                        <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
-                          <Paperclip className="h-3 w-3" />
-                          <span className="truncate flex-1">{attachmentFile.name}</span>
-                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
-                      <div className="flex gap-2">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          className="hidden"
-                          accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.size > 10 * 1024 * 1024) {
-                                toast({ title: 'File too large', description: 'Max 10MB', variant: 'destructive' });
-                                return;
-                              }
-                              setAttachmentFile(file);
-                            }
-                          }}
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Paperclip className="h-4 w-4" />
-                        </Button>
-                        <Input
-                          placeholder="Type your message..."
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey && (newMessage.trim() || attachmentFile)) {
-                              e.preventDefault();
-                              sendMessage.mutate();
-                            }
-                          }}
-                        />
-                        <Button 
-                          onClick={() => sendMessage.mutate()}
-                          disabled={(!newMessage.trim() && !attachmentFile) || sendMessage.isPending}
-                        >
-                          <Send className="h-4 w-4" />
+                {/* Sticky input bar at bottom */}
+                {!['resolved', 'closed'].includes(selectedTicket.status) && (
+                  <div className="border-t px-4 py-3 space-y-2">
+                    {attachmentFile && (
+                      <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
+                        <Paperclip className="h-3 w-3" />
+                        <span className="truncate flex-1">{attachmentFile.name}</span>
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
-
-                      <div className="flex gap-2 flex-wrap">
-                        <Select 
-                          value={selectedTicket.status} 
-                          onValueChange={(val) => updateStatus.mutate(val)}
-                        >
-                          <SelectTrigger className="w-48">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="open">Open</SelectItem>
-                            <SelectItem value="in_progress">In Progress</SelectItem>
-                            <SelectItem value="awaiting_seller">Awaiting Seller</SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        <Button 
-                          variant="outline" 
-                          className="text-green-600"
-                          onClick={() => setShowResolveDialog(true)}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Resolve
-                        </Button>
-                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast({ title: 'File too large', description: 'Max 10MB', variant: 'destructive' });
+                              return;
+                            }
+                            setAttachmentFile(file);
+                          }
+                        }}
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        placeholder="Type your message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey && (newMessage.trim() || attachmentFile)) {
+                            e.preventDefault();
+                            sendMessage.mutate();
+                          }
+                        }}
+                      />
+                      <Button 
+                        onClick={() => sendMessage.mutate()}
+                        disabled={(!newMessage.trim() && !attachmentFile) || sendMessage.isPending}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )}
-                </div>
+
+                    <div className="flex gap-2 flex-wrap">
+                      <Select 
+                        value={selectedTicket.status} 
+                        onValueChange={(val) => updateStatus.mutate(val)}
+                      >
+                        <SelectTrigger className="w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="awaiting_seller">Awaiting Seller</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Button 
+                        variant="outline" 
+                        className="text-green-600"
+                        onClick={() => setShowResolveDialog(true)}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Resolve
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
-          </DialogContent>
-        </Dialog>
+          </DrawerContent>
+        </Drawer>
 
         {/* Resolve Dialog */}
         <Dialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
