@@ -47,7 +47,7 @@ const navGroups: NavGroup[] = [
       { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
       { title: 'Recent Orders', icon: ShoppingCart, href: '/seller/orders' },
       { title: 'Reviews', icon: Star, href: '/seller/reviews' },
-      { title: 'Customers', icon: Heart, href: '/seller/customers' },
+      
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
     ],
   },
