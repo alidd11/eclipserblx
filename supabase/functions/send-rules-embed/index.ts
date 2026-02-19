@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
             "**1D: Obnoxious Behaviour**\n" +
             "Anything from being toxic to spreading lies and rumours about someone, something that should not be spread on Discord. This rule also covers raiding our server, violating Discord's Terms of Service and sharing inappropriate / NSFW material.\n\n" +
             "**Ban Appeal Form**\n" +
-            `Please use the following link to appeal any bans or moderation action.\n[**Contact Us**](${SITE_URL}/contact)`,
+            `Please use the following link to appeal any bans or moderation action.\n\n[**Contact Us**](${SITE_URL}/contact)`,
           color: ECLIPSE_COLOR,
           image: {
             url: BANNER_URL,
