@@ -68,7 +68,7 @@ const navGroups: NavGroup[] = [
     icon: MessageCircle,
     items: [
       { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
-      { title: 'Refund Requests', icon: RotateCcw, href: '/seller/refunds' },
+      { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
     ],
   },

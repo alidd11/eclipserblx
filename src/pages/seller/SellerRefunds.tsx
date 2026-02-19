@@ -90,9 +90,9 @@ export default function SellerRefunds() {
     <SellerLayout>
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Refund Requests</h1>
+         <h1 className="text-3xl font-bold">Disputes</h1>
           <p className="text-muted-foreground">
-            Manage customer refund requests for your products
+            Manage customer disputes for your products. Respond within 48 hours to prevent escalation.
           </p>
         </div>
 
