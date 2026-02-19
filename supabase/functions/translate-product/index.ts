@@ -6,12 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SUPPORTED_LANGUAGES = [
-  { code: "es", name: "Spanish" },
-  { code: "pt", name: "Portuguese" },
-  { code: "fr", name: "French" },
-  { code: "de", name: "German" },
-];
+const SUPPORTED_LANGUAGES = ["es", "pt", "fr", "de"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,6 +23,28 @@ serve(async (req) => {
       );
     }
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if all translations already exist
+    const { data: existingTranslations } = await supabase
+      .from("product_translations")
+      .select("language_code")
+      .eq("product_id", productId)
+      .in("language_code", SUPPORTED_LANGUAGES);
+
+    const existingCodes = new Set(existingTranslations?.map(t => t.language_code) || []);
+    const missingLanguages = SUPPORTED_LANGUAGES.filter(code => !existingCodes.has(code));
+
+    if (missingLanguages.length === 0) {
+      console.log(`All translations already exist for product ${productId}, skipping AI call`);
+      return new Response(
+        JSON.stringify({ success: true, translated: 0, cached: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(
@@ -35,10 +52,6 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch product
     const { data: product, error: productError } = await supabase
@@ -54,7 +67,12 @@ serve(async (req) => {
       );
     }
 
-    // Translate to all languages in one AI call
+    const languageNames: Record<string, string> = { es: "Spanish", pt: "Portuguese", fr: "French", de: "German" };
+    const missingNames = missingLanguages.map(c => languageNames[c]).join(", ");
+
+    console.log(`Translating product ${productId} into ${missingNames} (${missingLanguages.length} missing)`);
+
+    // Only translate missing languages
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -70,7 +88,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: `Translate this product into Spanish, Portuguese, French, and German.
+            content: `Translate this product into ${missingNames}.
 
 Product Name: ${product.name}
 
@@ -93,7 +111,7 @@ Product Description: ${product.description || "No description"}`,
                       properties: {
                         language_code: {
                           type: "string",
-                          enum: ["es", "pt", "fr", "de"],
+                          enum: missingLanguages,
                         },
                         translated_name: { type: "string" },
                         translated_description: { type: "string" },
@@ -136,7 +154,7 @@ Product Description: ${product.description || "No description"}`,
 
     const { translations } = JSON.parse(toolCall.function.arguments);
 
-    // Upsert translations into the database
+    // Upsert translations
     const upsertPromises = translations.map((t: any) =>
       supabase
         .from("product_translations")
