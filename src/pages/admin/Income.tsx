@@ -133,7 +133,7 @@ export default function AdminIncome() {
       const { data: orders, error } = await supabase
         .from('orders')
         .select('total, status, created_at')
-        .in('status', ['paid', 'fulfilled']);
+        .in('status', ['paid', 'fulfilled', 'completed']);
 
       if (error) throw error;
 
@@ -191,7 +191,7 @@ export default function AdminIncome() {
       const { data: orders, error } = await supabase
         .from('orders')
         .select('total, created_at')
-        .in('status', ['paid', 'fulfilled'])
+        .in('status', ['paid', 'fulfilled', 'completed'])
         .gte('created_at', subDays(new Date(), 30).toISOString());
 
       if (error) throw error;
