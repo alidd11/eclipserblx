@@ -25,6 +25,8 @@ serve(async (req) => {
       );
     }
 
+    const ticketUrl = ticket_id ? `https://roleplay-hub-shop.lovable.app/admin/support/${ticket_id}` : null;
+
     const result = await sendBotMessage(TICKET_CHANNEL_ID, {
       content: `<@&${STAFF_ROLE_ID}>`,
       embeds: [
@@ -56,6 +58,22 @@ serve(async (req) => {
           timestamp: new Date().toISOString(),
         },
       ],
+      ...(ticketUrl ? {
+        components: [
+          {
+            type: 1,
+            components: [
+              {
+                type: 2,
+                style: 5,
+                label: "View Ticket",
+                url: ticketUrl,
+                emoji: { name: "🔗" },
+              },
+            ],
+          },
+        ],
+      } : {}),
     });
 
     if (!result.success) {
