@@ -363,7 +363,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   }, [sidebarCollapsed]);
 
   const gateNeedsPermissions = requiredPermissions.length > 0 && !!user?.id && !isAdmin;
-  const isGateLoading = loading || (gateNeedsPermissions && permissionsLoading);
+  // Also wait for permissions if we have a user but isStaff hasn't resolved yet (roles still loading)
+  const isGateLoading = loading || (!!user?.id && permissionsLoading);
 
   if (isGateLoading) {
     return (
