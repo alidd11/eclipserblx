@@ -138,6 +138,20 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
               message: ticketMessage,
               is_internal_note: false,
             });
+
+          // Send Discord notification for the dispute ticket
+          const customerName = user.user_metadata?.display_name || user.email || 'Unknown';
+          supabase.functions.invoke('send-ticket-notification', {
+            body: {
+              ticket_number: ticket.ticket_number,
+              subject: ticketSubject,
+              category: 'Dispute',
+              customer_name: customerName,
+              ticket_id: ticket.id,
+              type: 'customer',
+              is_escalation: true,
+            },
+          }).catch(err => console.error('Failed to send dispute notification:', err));
         }
       } catch (err) {
         console.error('Failed to auto-create support ticket:', err);
