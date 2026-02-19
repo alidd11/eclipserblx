@@ -35,9 +35,6 @@ Deno.serve(async (req) => {
           image: {
             url: BANNER_URL,
           },
-          footer: {
-            text: "Eclipse Marketplace • Community Guidelines",
-          },
           timestamp: new Date().toISOString(),
         },
       ],
