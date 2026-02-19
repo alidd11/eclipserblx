@@ -74,6 +74,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
       if (!selectedItem) throw new Error('Please select a product');
 
       const itemPrice = Number(selectedItem.price);
+      const reasonLabel = disputeReasons.find(r => r.value === reason)?.label || reason;
 
       const { error } = await supabase
         .from('refund_requests')
@@ -82,7 +83,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
           order_item_id: selectedItem.id,
           customer_id: user.id,
           store_id: storeId,
-          reason: disputeReasons.find(r => r.value === reason)?.label || reason,
+          reason: reasonLabel,
           details: description.trim(),
           amount: itemPrice,
           status: 'pending',
@@ -93,6 +94,20 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
           throw new Error('You already have an open dispute for this item.');
         }
         throw error;
+      }
+
+      // Send email notification to seller
+      if (storeId) {
+        supabase.functions.invoke('notify-seller-sale', {
+          body: {
+            type: 'dispute',
+            store_id: storeId,
+            order_id: orderId,
+            product_name: selectedItem.product_name || 'Unknown product',
+            reason: reasonLabel,
+            amount: itemPrice,
+          },
+        }).catch((err) => console.error('Failed to send dispute email:', err));
       }
     },
     onSuccess: () => {
