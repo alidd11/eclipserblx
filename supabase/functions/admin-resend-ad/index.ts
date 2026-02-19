@@ -79,6 +79,19 @@ serve(async (req) => {
       }
     }
 
+    // Extract and strip [View Image](url) markdown links from description
+    // Discord plain text doesn't render markdown hyperlinks
+    const markdownLinkRegex = /\[View Image\]\((https?:\/\/[^\)]+)\)/gi;
+    let extractedImageUrl = ad.image_url || null;
+    const cleanDescription = ad.description.replace(markdownLinkRegex, (_, url) => {
+      if (!extractedImageUrl) extractedImageUrl = url.trim();
+      return ''; // remove from description
+    }).replace(/\n{3,}/g, '\n\n').trim(); // clean up excess blank lines
+
+    // Also strip any bare [text](url) markdown links since they don't work in plain text
+    const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+    const fullyCleanDescription = cleanDescription.replace(anyMarkdownLink, (_, text, url) => url);
+
     // Get subscription tier for footer
     const { data: subscription } = await supabaseAdmin
       .from("advertisement_subscriptions")
@@ -98,11 +111,14 @@ serve(async (req) => {
     if (ad.ping_type === "everyone") pingPrefix = "@everyone\n";
     else if (ad.ping_type === "here") pingPrefix = "@here\n";
 
-    // Build plain text message
-    let plainText = `${pingPrefix}📢 **${ad.title}**\n\n${ad.description}`;
+    // Build plain text message using cleaned description
+    let plainText = `${pingPrefix}📢 **${ad.title}**\n\n${fullyCleanDescription}`;
     if (ad.link_url) plainText += `\n\n🔗 ${ad.link_url}`;
-    if (ad.image_url) plainText += `\n${ad.image_url}`;
+    // Post image URL as raw link so Discord auto-embeds it
+    if (extractedImageUrl) plainText += `\n${extractedImageUrl}`;
     plainText += `\n\n${footerLine}`;
+    // Enforce Discord's 2000 char limit
+    if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';
 
     // Post to Discord
     const discordRes = await fetch(webhookUrl + "?wait=true", {
