@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -724,12 +724,12 @@ export default function AdminAnalytics() {
                 <CardContent>
                 <ChartContainer config={chartConfig} className="h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={orderTrend || []} margin={{ left: 0, right: 8 }}>
+                    <BarChart data={orderTrend || []} margin={{ left: 0, right: 8 }}>
                       <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
                       <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="orders" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-2))' }} />
-                    </LineChart>
+                      <Bar dataKey="orders" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
                 </CardContent>
