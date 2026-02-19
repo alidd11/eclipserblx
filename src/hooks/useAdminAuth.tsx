@@ -28,7 +28,9 @@ export function useAdminAuth() {
   const isSupportAgent = roles?.includes('support_agent') ?? false;
   const isAnalyst = roles?.includes('analyst') ?? false;
   const isSeller = roles?.includes('seller') ?? false;
-  const isStaff = (roles?.length ?? 0) > 0;
+  // Status roles (customer, eclipse_plus_member, seller) don't grant staff/admin access
+  const STATUS_ROLES = ['customer', 'eclipse_plus_member', 'seller'];
+  const isStaff = (roles ?? []).some(role => !STATUS_ROLES.includes(role));
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;
 
