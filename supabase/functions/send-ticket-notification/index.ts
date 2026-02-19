@@ -23,7 +23,7 @@ serve(async (req) => {
   }
 
   try {
-    const { ticket_number, subject, category, customer_name, ticket_id, type = "customer", is_escalation = false } = await req.json();
+    const { ticket_number, subject, category, customer_name, store_name, ticket_id, type = "customer", is_escalation = false } = await req.json();
 
     if (!subject) {
       return new Response(
@@ -68,6 +68,11 @@ serve(async (req) => {
               value: customer_name || "Unknown",
               inline: true,
             },
+            ...(store_name ? [{
+              name: "Store",
+              value: store_name,
+              inline: true,
+            }] : []),
             {
               name: "Subject",
               value: subject,
