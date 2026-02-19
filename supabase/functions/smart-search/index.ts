@@ -6,14 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const CACHE_TTL_MINUTES = 30;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
-  // Simple in-memory cache for parsed queries (per instance)
-  const queryCache = new Map<string, { params: any; timestamp: number }>();
-  const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
 
   try {
     const { query, userId } = await req.json();
@@ -43,9 +41,8 @@ serve(async (req) => {
       .from("categories")
       .select("id, name, slug");
 
-    // Check cache first
-    const cacheKey = query.toLowerCase().trim();
-    const cached = queryCache.get(cacheKey);
+    // Check DB cache first
+    const cacheKey = `smart_search:${query.toLowerCase().trim()}`;
     let searchParams: {
       keywords: string[];
       category?: string;
@@ -54,9 +51,16 @@ serve(async (req) => {
       sortBy?: string;
     } = { keywords: [query] };
 
-    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-      console.log("Using cached parsed query for:", cacheKey);
-      searchParams = cached.params;
+    const { data: cached } = await supabase
+      .from("ai_response_cache")
+      .select("response")
+      .eq("cache_key", cacheKey)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (cached) {
+      console.log("Using DB-cached parsed query for:", cacheKey);
+      searchParams = cached.response as typeof searchParams;
     } else {
       // Use AI to parse the natural language query
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -161,22 +165,20 @@ Examples:
         console.error("Failed to parse AI response:", e);
       }
 
-      // Cache the result
-      queryCache.set(cacheKey, { params: searchParams, timestamp: Date.now() });
+      // Cache to DB (fire-and-forget)
+      const expiresAt = new Date(Date.now() + CACHE_TTL_MINUTES * 60 * 1000).toISOString();
+      supabase
+        .from("ai_response_cache")
+        .upsert({ cache_key: cacheKey, function_name: "smart-search", response: searchParams, expires_at: expiresAt }, { onConflict: "cache_key" })
+        .then(({ error }) => { if (error) console.error("Cache write error:", error); });
     }
 
     console.log("Parsed search params:", searchParams);
 
-    // Sanitize keywords to prevent SQL injection
-    // Only allow alphanumeric characters, spaces, hyphens, and underscores
+    // Sanitize keywords
     const sanitizeKeyword = (keyword: string): string => {
       if (!keyword || typeof keyword !== 'string') return '';
-      // Remove any characters that could be used for SQL injection
-      // Allow only alphanumeric, spaces, hyphens, underscores
-      return keyword
-        .replace(/[^a-zA-Z0-9\s\-_]/g, '')
-        .substring(0, 100) // Limit length
-        .trim();
+      return keyword.replace(/[^a-zA-Z0-9\s\-_]/g, '').substring(0, 100).trim();
     };
 
     // Build the database query
@@ -186,28 +188,23 @@ Examples:
       .eq("is_active", true)
       .eq("moderation_status", "approved");
 
-    // Apply keyword search with sanitized input
     if (searchParams.keywords && searchParams.keywords.length > 0) {
       const sanitizedKeyword = sanitizeKeyword(searchParams.keywords[0]);
       if (sanitizedKeyword) {
-        // Escape ILIKE special characters (% and _) to prevent pattern injection
         const escapedKeyword = sanitizedKeyword.replace(/[%_]/g, '\\$&');
         dbQuery = dbQuery.or(`name.ilike.%${escapedKeyword}%,description.ilike.%${escapedKeyword}%`);
       }
     }
 
-    // Apply category filter
     if (searchParams.category) {
-      const categorySearch = searchParams.category;
       const matchingCategory = categories?.find(
-        (c: any) => c.name.toLowerCase().includes(categorySearch.toLowerCase())
+        (c: any) => c.name.toLowerCase().includes(searchParams.category!.toLowerCase())
       );
       if (matchingCategory) {
         dbQuery = dbQuery.eq("category_id", matchingCategory.id);
       }
     }
 
-    // Apply price filters
     if (searchParams.maxPrice !== undefined) {
       dbQuery = dbQuery.lte("price", searchParams.maxPrice);
     }
@@ -215,7 +212,6 @@ Examples:
       dbQuery = dbQuery.gte("price", searchParams.minPrice);
     }
 
-    // Apply sorting
     switch (searchParams.sortBy) {
       case "price_asc":
         dbQuery = dbQuery.order("price", { ascending: true });
@@ -242,7 +238,6 @@ Examples:
       throw dbError;
     }
 
-    // Filter to include products without stores (Eclipse main store) or with active stores
     const filteredProducts = (products || []).filter((p: any) => !p.stores || p.stores.is_active !== false);
 
     // Log the search for analytics
