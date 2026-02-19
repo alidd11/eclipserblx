@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const result = await sendBotMessage(CHANNEL_ID, {
       embeds: [
         {
-          title: "⚠ Community Guidelines ⚠",
+          title: "⚠️ Community Guidelines ⚠️",
           description:
             "**1A: Respect**\n" +
             "We expect you to be respectful to everyone, this includes not being discriminative in any way and or generally disrespectful. This also includes threatening other individuals, a group of individuals internally or externally.\n\n" +
