@@ -100,7 +100,10 @@ serve(async (req) => {
     try {
       await supabaseClient
         .from('store_payment_details')
-        .update({ payouts_enabled: account.payouts_enabled })
+        .update({ 
+          payouts_enabled: account.payouts_enabled,
+          details_submitted: account.details_submitted 
+        })
         .eq('store_id', store.id);
     } catch (syncErr) {
       logStep('Warning: failed to sync payouts_enabled', { message: String(syncErr) });
