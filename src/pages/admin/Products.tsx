@@ -593,6 +593,10 @@ export default function AdminProducts() {
       toast.error('Please fill in required fields');
       return;
     }
+    if (!form.asset_file_url) {
+      toast.error('A product file must be uploaded before saving');
+      return;
+    }
     saveMutation.mutate(form);
   };
 
@@ -1078,7 +1082,7 @@ export default function AdminProducts() {
             </div>
 
             <div className="space-y-2">
-              <Label>Downloadable File</Label>
+              <Label>Downloadable File <span className="text-destructive">*</span></Label>
               <input
                 type="file"
                 ref={fileInputRef}

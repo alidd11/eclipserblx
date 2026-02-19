@@ -459,6 +459,10 @@ export default function SellerProductEditor() {
       toast.error('You must confirm you have the rights to sell this product');
       return;
     }
+    if (!formData.asset_file_url) {
+      toast.error('A product file must be uploaded before saving');
+      return;
+    }
 
     // Warn about blocked marketplace links (they'll be stripped by sanitization)
     if (containsBlockedLinks(formData.description)) {
@@ -785,8 +789,8 @@ export default function SellerProductEditor() {
           {/* Digital Asset */}
           <Card>
             <CardHeader>
-              <CardTitle>Digital Asset</CardTitle>
-              <CardDescription>Upload the file customers will download after purchase</CardDescription>
+              <CardTitle>Digital Asset <span className="text-destructive">*</span></CardTitle>
+              <CardDescription>Upload the file customers will download after purchase (required)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
