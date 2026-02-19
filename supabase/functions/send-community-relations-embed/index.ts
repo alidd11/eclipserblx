@@ -30,14 +30,14 @@ Deno.serve(async (req) => {
         {
           title: "✉ Community Relations ✉",
           description:
-            `**Eclipse Terms of Service**\n[Click Here](${SITE_URL}/terms)\n\n` +
-            `**Eclipse Refund Policy**\n[Click Here](${SITE_URL}/refund-policy)\n\n` +
-            `**Eclipse Privacy Policy**\n[Click Here](${SITE_URL}/privacy)\n\n` +
-            `**Eclipse DMCA / IP Policy**\n[Click Here](${SITE_URL}/dmca)\n\n` +
-            `**Eclipse Marketplace**\n[Click Here](${SITE_URL})\n\n` +
-            `**Partnership Requirements**\n[Click Here](https://docs.google.com/document/d/1Xtpx8FAVvj1SkwruuiP0o656hlxLpCqnSEQUj92uzcM/edit?usp=sharing)\n\n` +
-            `**Eclipse Jobs**\n[Click Here](${SITE_URL}/careers)\n\n` +
-            `**Eclipse FAQ**\n[Click Here](${SITE_URL}/faq)`,
+            `**[Eclipse Terms of Service](${SITE_URL}/terms)**\n\n` +
+            `**[Eclipse Refund Policy](${SITE_URL}/refund-policy)**\n\n` +
+            `**[Eclipse Privacy Policy](${SITE_URL}/privacy)**\n\n` +
+            `**[Eclipse DMCA / IP Policy](${SITE_URL}/dmca)**\n\n` +
+            `**[Eclipse Marketplace](${SITE_URL})**\n\n` +
+            `**[Partnership Requirements](https://docs.google.com/document/d/1Xtpx8FAVvj1SkwruuiP0o656hlxLpCqnSEQUj92uzcM/edit?usp=sharing)**\n\n` +
+            `**[Eclipse Jobs](${SITE_URL}/careers)**\n\n` +
+            `**[Eclipse FAQ](${SITE_URL}/faq)**`,
           color: ECLIPSE_COLOR,
           image: {
             url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png",
