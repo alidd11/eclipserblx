@@ -96,11 +96,11 @@ serve(async (req) => {
 
     // If we have a local active subscription, check if it needs ads reset
     if (localSub && localSub.status === 'active') {
-      const resetAt = new Date(localSub.ads_reset_at);
       const now = new Date();
+      const resetAt = localSub.ads_reset_at ? new Date(localSub.ads_reset_at) : null;
       
-      // Reset ads if a month has passed
-      if (now.getTime() - resetAt.getTime() > 30 * 24 * 60 * 60 * 1000) {
+      // Reset ads if a month has passed (or if ads_reset_at was never set)
+      if (!resetAt || now.getTime() - resetAt.getTime() > 30 * 24 * 60 * 60 * 1000) {
         await supabaseAdmin
           .from("advertisement_subscriptions")
           .update({ 
