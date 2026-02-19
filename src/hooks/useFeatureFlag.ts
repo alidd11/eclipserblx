@@ -69,13 +69,14 @@ export function useFeatureFlag(flagName: string): UseFeatureFlagResult {
 }
 
 // Convenience hook specifically for marketplace feature
-// Sellers with the seller role automatically have access
+// Sellers with the seller role OR an approved store automatically have access
 // Admins always have access
 export function useMarketplaceAccess() {
   const { user, loading: authLoading } = useAuth();
   const featureFlag = useFeatureFlag('marketplace');
   const [hasSellerRole, setHasSellerRole] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasApprovedStore, setHasApprovedStore] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
   const [isMarketplacePublic, setIsMarketplacePublic] = useState(false);
   const [publicLoading, setPublicLoading] = useState(true);
@@ -110,14 +111,24 @@ export function useMarketplaceAccess() {
 
     async function checkRoles() {
       try {
-        const { data } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
+        const [rolesResult, storeResult] = await Promise.all([
+          supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id),
+          supabase
+            .from('stores')
+            .select('id')
+            .eq('owner_id', user.id)
+            .eq('status', 'approved')
+            .limit(1)
+            .maybeSingle(),
+        ]);
         
-        const roles = data?.map(r => r.role) || [];
+        const roles = rolesResult.data?.map(r => r.role) || [];
         setHasSellerRole(roles.includes('seller'));
         setIsAdmin(roles.includes('admin'));
+        setHasApprovedStore(!!storeResult.data);
       } catch (err) {
         console.error('Error checking roles:', err);
       } finally {
@@ -129,7 +140,7 @@ export function useMarketplaceAccess() {
   }, [user, authLoading]);
 
   return {
-    hasAccess: isMarketplacePublic || featureFlag.hasAccess || hasSellerRole || isAdmin,
+    hasAccess: isMarketplacePublic || featureFlag.hasAccess || hasSellerRole || isAdmin || hasApprovedStore,
     isAdmin,
     isMarketplacePublic,
     loading: featureFlag.loading || roleLoading || publicLoading,
