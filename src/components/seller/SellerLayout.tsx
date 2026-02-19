@@ -203,8 +203,15 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
   }, [isMobile, handleTouchStart, handleTouchEnd]);
 
 
+  // Wait for ALL async sources before making any access decisions
+  // isApprovedSeller comes from sellerLoading, hasSellerRole from roleLoading
   const loading = authLoading || sellerLoading || flagLoading || roleLoading;
+  
+  // A seller can access the dashboard if they have a seller role OR an approved store
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
+  
+  // hasAccess covers: marketplace public, feature flag whitelist, seller/admin role, OR approved store
+  const canAccessMarketplace = hasAccess || isApprovedSeller;
 
   if (loading) {
     return (
@@ -218,7 +225,7 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!hasAccess) {
+  if (!canAccessMarketplace) {
     return <Navigate to="/" replace />;
   }
 
