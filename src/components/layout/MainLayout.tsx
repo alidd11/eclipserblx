@@ -185,7 +185,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
           <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} />
           <UniversalBreadcrumb />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingBottom: 'var(--chat-safe-bottom, env(safe-area-inset-bottom))' }}>
             {children}
             <Footer />
           </main>
