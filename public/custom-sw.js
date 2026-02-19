@@ -1,28 +1,17 @@
 // Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.0.5';
+const SW_VERSION = '1.0.6';
 const CACHE_PREFIX = 'eclipse-v';
 const OFFLINE_CACHE = 'offline-v1';
 const OFFLINE_URL = '/offline.html';
 
-// Clear old caches on activation (cache busting)
+// Clear ALL caches on activation - full reset for every new SW version
 const clearOldCaches = async () => {
   const cacheNames = await caches.keys();
-  const oldCaches = cacheNames.filter(name => {
-    // Keep only current version caches and workbox caches
-    if (name.startsWith('workbox-')) return false;
-    if (name === 'supabase-cache') return false;
-    if (name === 'font-cache') return false;
-    // NOTE: Do NOT persist image-cache across SW updates.
-    // Images (like region flags) are user-visible and can change between releases,
-    // and stale image-cache causes the installed PWA to appear "stuck" on old assets.
-    // Clear any other stale caches
-    return true;
-  });
-  
-  console.log('[Eclipse SW] Clearing old caches:', oldCaches);
-  return Promise.all(oldCaches.map(cache => caches.delete(cache)));
+  // Nuke everything - users need fresh assets after every deployment
+  console.log('[Eclipse SW] Force-clearing ALL caches:', cacheNames);
+  return Promise.all(cacheNames.map(cache => caches.delete(cache)));
 };
 
 // Force refresh all clients when a new SW activates
