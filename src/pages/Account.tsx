@@ -27,7 +27,7 @@ import { AffiliateCard } from '@/components/account/AffiliateCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
-import { MyMessagesCard } from '@/components/account/MyMessagesCard';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
@@ -923,8 +923,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           {/* Security Tab */}
           <TabsContent value="security">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* My Messages */}
-              <MyMessagesCard />
 
               {/* Saved Payment Methods */}
               <SavedCardsCard />
