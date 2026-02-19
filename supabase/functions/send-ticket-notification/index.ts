@@ -10,8 +10,8 @@ const TICKET_CHANNEL_ID = "1469155627916984476";
 
 // Different role pings for different ticket types
 const ROLE_IDS: Record<string, string> = {
-  customer: "1460220731072712920",
-  seller: "1460220738832302151",
+  customer: "1460220738832302151",  // Support Agent
+  seller: "1460220731072712920",    // Senior Support Agent
 };
 
 const TICKET_COLOR = 0x5865F2; // Discord Blurple
