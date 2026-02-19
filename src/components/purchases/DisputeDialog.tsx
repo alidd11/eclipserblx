@@ -109,9 +109,42 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
           },
         }).catch((err) => console.error('Failed to send dispute email:', err));
       }
+
+      // Auto-create a support ticket so the customer can talk to staff
+      try {
+        const ticketSubject = `Dispute: ${selectedItem.product_name || 'Order item'} (${orderDisplayId})`;
+        const ticketMessage = `Reason: ${reasonLabel}\n\n${description.trim()}\n\n---\nOrder: ${orderDisplayId}\nProduct: ${selectedItem.product_name}\nAmount: £${itemPrice.toFixed(2)}`;
+
+        const { data: ticket, error: ticketError } = await supabase
+          .from('support_tickets')
+          .insert({
+            user_id: user.id,
+            customer_email: user.email || '',
+            subject: ticketSubject,
+            category: 'refund',
+            status: 'open',
+            priority: 'high',
+          })
+          .select()
+          .single();
+
+        if (!ticketError && ticket) {
+          await supabase
+            .from('ticket_messages')
+            .insert({
+              ticket_id: ticket.id,
+              sender_id: user.id,
+              sender_type: 'customer',
+              message: ticketMessage,
+              is_internal_note: false,
+            });
+        }
+      } catch (err) {
+        console.error('Failed to auto-create support ticket:', err);
+      }
     },
     onSuccess: () => {
-      toast.success('Dispute submitted. The seller will review it — if unresolved, you can escalate to Eclipse.');
+      toast.success('Dispute submitted and a support ticket has been created so our team can assist you.');
       setReason('');
       setDescription('');
       setSelectedItemId('');
