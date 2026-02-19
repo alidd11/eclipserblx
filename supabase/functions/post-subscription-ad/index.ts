@@ -245,55 +245,46 @@ serve(async (req) => {
       });
     }
 
-    // Build Discord embed
-    const embed: Record<string, unknown> = {
-      title: `📢 ${sanitizedTitle}`,
-      description: sanitizedDescription,
-      color: subscription.tier === 'premium' ? 0xFFD700 : subscription.tier === 'pro' ? 0x9B59B6 : 0x3498DB,
-      timestamp: new Date().toISOString(),
-      footer: {
-        text: sanitizedDiscordUsername 
-          ? `Sponsored • @${sanitizedDiscordUsername} • Eclipse Ads ${subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}`
-          : `Sponsored • Eclipse Ads ${subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}`,
-      },
-    };
-
-    if (imageUrl) {
-      embed.image = { url: imageUrl };
-    }
-
-    if (linkUrl) {
-      embed.fields = [{
-        name: "🔗 Learn More",
-        value: `[Click here](${linkUrl})`,
-        inline: false,
-      }];
-    }
-
     // Determine partnership ping usage (seller-only, costs a partnership_pings_balance credit)
     const partnershipPingsBalance = subscription.partnership_pings_balance || 0;
     const usePartnershipPing = isSeller && partnershipPingsBalance > 0 && !selectedPingType;
 
-    // Build content with ping if selected
-    let messageContent = "";
+    // Build ping prefix
+    let pingPrefix = "";
     if (selectedPingType === 'everyone') {
-      messageContent = "@everyone";
+      pingPrefix = "@everyone\n";
     } else if (selectedPingType === 'here') {
-      messageContent = "@here";
+      pingPrefix = "@here\n";
     } else if (usePartnershipPing) {
-      // Seller with partnership ping balance — ping the seller/partner role
-      messageContent = `<@&${SELLER_PARTNERSHIP_PING_ROLE_ID}>`;
+      pingPrefix = `<@&${SELLER_PARTNERSHIP_PING_ROLE_ID}>\n`;
     }
+
+    const tierLabel = `Eclipse Ads ${subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}`;
+    const footerLine = sanitizedDiscordUsername
+      ? `*Sponsored • @${sanitizedDiscordUsername} • ${tierLabel}*`
+      : `*Sponsored • ${tierLabel}*`;
+
+    // Build plain text message — show full ad
+    let plainText = `${pingPrefix}📢 **${sanitizedTitle}**\n\n${sanitizedDescription}`;
+
+    if (linkUrl) {
+      plainText += `\n\n🔗 ${linkUrl}`;
+    }
+
+    if (imageUrl) {
+      plainText += `\n${imageUrl}`;
+    }
+
+    plainText += `\n\n${footerLine}`;
 
     logStep("Posting to Discord", { pingType: selectedPingType, usePartnershipPing, isSeller, partnershipPingsBalance });
 
-    // Post to Discord
+    // Post to Discord as plain text (no embeds)
     const discordResponse = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        content: messageContent || undefined,
-        embeds: [embed],
+        content: plainText,
       }),
     });
 
