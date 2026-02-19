@@ -42,8 +42,8 @@ serve(async (req) => {
 
     const ticketUrl = ticket_id && ticket_id !== "test"
       ? type === "seller"
-        ? `https://eclipsemarket.co.uk/admin/seller-tickets`
-        : `https://eclipsemarket.co.uk/admin/support/${ticket_id}`
+        ? `https://eclipserblx.com/admin/seller-tickets`
+        : `https://eclipserblx.com/admin/support/${ticket_id}`
       : null;
 
     const result = await sendBotMessage(TICKET_CHANNEL_ID, {
