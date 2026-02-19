@@ -18,6 +18,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Parse request body for force flag
+  let force = false;
+  try {
+    const body = await req.json();
+    force = body?.force === true;
+  } catch { /* no body */ }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -65,7 +72,7 @@ serve(async (req) => {
       return msgTime > twentyMinutesAgo && msgTime <= tenMinutesAgo;
     });
 
-    if (!hasRecentPost) {
+    if (!hasRecentPost && !force) {
       console.log("[PARTNERSHIP-STICKY] No qualifying posts found, skipping");
       return new Response(
         JSON.stringify({ success: true, action: "skipped", reason: "no recent posts" }),
@@ -74,7 +81,7 @@ serve(async (req) => {
     }
 
     // Check if the most recent message is already our sticky (avoid duplicates)
-    if (messages.length > 0 && messages[0].id === currentStickyId) {
+    if (messages.length > 0 && messages[0].id === currentStickyId && !force) {
       console.log("[PARTNERSHIP-STICKY] Sticky is already the latest message, skipping");
       return new Response(
         JSON.stringify({ success: true, action: "skipped", reason: "sticky already latest" }),
