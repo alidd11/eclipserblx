@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +13,7 @@ import {
   Link2, 
   Unlink, 
   Loader2, 
-  Check, 
-  X, 
+  Check,
   ExternalLink,
   Gamepad2,
   Sparkles,
@@ -64,12 +63,9 @@ export function LinkedAccountsCard({
   const [copiedRedirect, setCopiedRedirect] = useState(false);
   
   // Roblox state
-  const [robloxInput, setRobloxInput] = useState('');
-  const [isVerifyingRoblox, setIsVerifyingRoblox] = useState(false);
+  const [isLinkingRoblox, setIsLinkingRoblox] = useState(false);
   const [isUnlinkingRoblox, setIsUnlinkingRoblox] = useState(false);
-  const [verifiedRoblox, setVerifiedRoblox] = useState<{ id: string; name: string; displayName: string } | null>(null);
-  const [robloxError, setRobloxError] = useState<string | null>(null);
-
+  const [isProcessingRobloxOAuth, setIsProcessingRobloxOAuth] = useState(false);
   const isDiscordLinked = !!discordId && !!discordUsername;
   const isRobloxLinked = !!robloxUserId && !!robloxUsername;
 
@@ -113,15 +109,60 @@ export function LinkedAccountsCard({
         url.searchParams.delete("error");
         url.searchParams.delete("error_description");
         url.searchParams.delete("action");
+        url.searchParams.delete("state");
         window.history.replaceState({}, "", url.toString());
       }
 
       if (error) {
         toastHook({
-          title: "Discord Authorization Failed",
+          title: "Authorization Failed",
           description: urlParams.get("error_description") || "Authorization was cancelled or failed",
           variant: "destructive",
         });
+        return;
+      }
+
+      // Determine if this is a Roblox or Discord callback based on stored PKCE verifier
+      const robloxCodeVerifier = sessionStorage.getItem('roblox_link_code_verifier');
+
+      if (code && userId && robloxCodeVerifier) {
+        // Roblox OAuth callback
+        sessionStorage.removeItem('roblox_link_code_verifier');
+        sessionStorage.removeItem('roblox_link_state');
+        setIsProcessingRobloxOAuth(true);
+        try {
+          const { data, error: invokeError } = await supabase.functions.invoke(
+            "roblox-link-callback",
+            {
+              body: {
+                code,
+                redirect_uri: new URL("/account", window.location.origin).toString(),
+                code_verifier: robloxCodeVerifier,
+                user_id: userId,
+              },
+            }
+          );
+
+          if (invokeError) throw invokeError;
+          if (data?.error) throw new Error(data.error);
+
+          toastHook({
+            title: "Roblox Linked!",
+            description: `Connected as ${data.roblox_username}`,
+          });
+
+          queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+          onUpdate();
+        } catch (err: unknown) {
+          console.error("Roblox OAuth callback error:", err);
+          toastHook({
+            title: "Link Failed",
+            description: err instanceof Error ? err.message : "Failed to link Roblox account",
+            variant: "destructive",
+          });
+        } finally {
+          setIsProcessingRobloxOAuth(false);
+        }
         return;
       }
 
@@ -215,49 +256,32 @@ export function LinkedAccountsCard({
     }
   };
 
-  const handleVerifyRoblox = async () => {
-    if (!robloxInput.trim()) return;
-    setIsVerifyingRoblox(true);
-    setRobloxError(null);
-    setVerifiedRoblox(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-roblox-user', {
-        body: { username: robloxInput.trim() },
-      });
-
-      if (error) throw new Error('Failed to verify username');
-      if (!data.found) {
-        setRobloxError('Username not found on Roblox');
-        return;
-      }
-
-      setVerifiedRoblox({ id: data.id, name: data.name, displayName: data.displayName });
-    } catch (error) {
-      console.error('Roblox verification error:', error);
-      setRobloxError('Failed to verify username. Please try again.');
-    } finally {
-      setIsVerifyingRoblox(false);
-    }
+  // Roblox OAuth - generate auth URL and redirect
+  const getRobloxRedirectUri = () => {
+    return new URL("/account", window.location.origin).toString();
   };
 
   const handleLinkRoblox = async () => {
-    if (!verifiedRoblox) return;
+    setIsLinkingRoblox(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ roblox_user_id: verifiedRoblox.id, roblox_username: verifiedRoblox.name })
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      queryClient.invalidateQueries({ queryKey: ['profile', userId] });
-      setRobloxInput('');
-      setVerifiedRoblox(null);
-      toast.success('Roblox account linked successfully!');
-      onUpdate();
-    } catch (error) {
-      console.error('Failed to link Roblox account:', error);
-      toast.error('Failed to link account. Please try again.');
+      const { data, error: urlError } = await supabase.functions.invoke("roblox-auth-url", {
+        body: { redirect_uri: getRobloxRedirectUri() },
+      });
+      if (urlError || !data?.url) {
+        throw new Error(data?.error || urlError?.message || "Failed to get Roblox auth URL");
+      }
+      // Store code_verifier for PKCE flow
+      sessionStorage.setItem('roblox_link_code_verifier', data.code_verifier);
+      sessionStorage.setItem('roblox_link_state', data.state);
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Roblox link error:", err);
+      setIsLinkingRoblox(false);
+      toastHook({
+        title: "Link Failed",
+        description: err instanceof Error ? err.message : "Could not start Roblox linking",
+        variant: "destructive",
+      });
     }
   };
 
@@ -291,13 +315,15 @@ export function LinkedAccountsCard({
     }
   };
 
-  if (isProcessingOAuth) {
+  if (isProcessingOAuth || isProcessingRobloxOAuth) {
     return (
       <Card className="border-border bg-card">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-3">
-            <Loader2 className="w-6 h-6 animate-spin text-[#5865F2] mx-auto" />
-            <p className="text-sm text-muted-foreground">Linking your Discord account...</p>
+            <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+            <p className="text-sm text-muted-foreground">
+              Linking your {isProcessingRobloxOAuth ? 'Roblox' : 'Discord'} account...
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -428,53 +454,18 @@ export function LinkedAccountsCard({
             </p>
           ) : (
             <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Roblox username"
-                  value={robloxInput}
-                  onChange={(e) => {
-                    setRobloxInput(e.target.value);
-                    setRobloxError(null);
-                    setVerifiedRoblox(null);
-                  }}
-                  className="flex-1 h-9"
-                />
-                <Button
-                  onClick={handleVerifyRoblox}
-                  disabled={!robloxInput.trim() || isVerifyingRoblox}
-                  variant="secondary"
-                  size="sm"
-                  className="h-9"
-                >
-                  {isVerifyingRoblox ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
-                </Button>
-              </div>
-
-              {robloxError && (
-                <div className="flex items-center gap-1.5 text-xs text-destructive">
-                  <X className="h-3 w-3" />
-                  {robloxError}
-                </div>
-              )}
-
-              {verifiedRoblox && (
-                <div className="flex items-center justify-between p-2.5 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={getRobloxAvatarUrl(verifiedRoblox.id)} alt={verifiedRoblox.displayName} />
-                      <AvatarFallback className="bg-primary/10"><Gamepad2 className="h-4 w-4" /></AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <Check className="h-3 w-3 text-green-500" />
-                        <p className="font-medium text-sm">{verifiedRoblox.displayName}</p>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">@{verifiedRoblox.name}</p>
-                    </div>
-                  </div>
-                  <Button size="sm" onClick={handleLinkRoblox} className="h-8">Link</Button>
-                </div>
-              )}
+              <Button
+                onClick={handleLinkRoblox}
+                disabled={isLinkingRoblox}
+                size="sm"
+                className="w-full bg-destructive hover:bg-destructive/90 h-9"
+              >
+                {isLinkingRoblox ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Redirecting...</>
+                ) : (
+                  <><Gamepad2 className="w-4 h-4 mr-2" />Link Roblox</>
+                )}
+              </Button>
             </div>
           )}
         </div>
