@@ -77,6 +77,10 @@ serve(async (req) => {
       // Check if this is an ad ping purchase
       else if (session.metadata?.type === "ad_ping_purchase") {
         await processAdPingPurchase(supabaseAdmin, session);
+      }
+      // Check if this is an ad subscription purchase
+      else if (session.metadata?.type === "ad_subscription") {
+        await processAdSubscriptionPurchase(supabaseAdmin, stripe, session);
       } else {
         await processPayment(supabaseAdmin, stripe, {
           paymentId: session.id,
@@ -1053,6 +1057,134 @@ async function processRefund(
   }
 
   logStep("Refund processing complete", { orderId, isFullRefund, refundAmount });
+}
+
+// Tier mappings (keep in sync with check-ad-subscription)
+const PRICE_TO_TIER_WEBHOOK: Record<string, string> = {
+  'price_1SttzSCjEHxHwNl9UHABm76P': 'basic',
+  'price_1Stu02CjEHxHwNl9zVFtnEK8': 'basic',
+  'price_1Stu17CjEHxHwNl9CG4LHcNQ': 'pro',
+  'price_1Stu1dCjEHxHwNl9FsDlCc4g': 'pro',
+  'price_1Stu2FCjEHxHwNl9JtlqWHFx': 'premium',
+  'price_1Stu2SCjEHxHwNl9tNsxoyHk': 'premium',
+};
+
+const TIER_PARTNERSHIP_PINGS_WEBHOOK: Record<string, number> = {
+  'basic': 2,
+  'pro': 4,
+  'premium': 10,
+};
+
+// Process ad subscription purchases from Stripe checkout
+async function processAdSubscriptionPurchase(
+  supabase: SupabaseClient,
+  stripe: Stripe,
+  session: Stripe.Checkout.Session
+) {
+  const metadata = session.metadata;
+  if (!metadata) {
+    logStep("No metadata in ad subscription session");
+    return;
+  }
+
+  const userId = metadata.user_id;
+  const tier = metadata.tier;
+
+  logStep("Processing ad subscription purchase", { userId, tier, sessionId: session.id });
+
+  if (!userId || !tier) {
+    logStep("ERROR: Missing user_id or tier in ad subscription metadata", { userId, tier });
+    return;
+  }
+
+  try {
+    // Get the Stripe subscription details via the session
+    let stripeSubId: string | null = null;
+    let periodStart: string | null = null;
+    let periodEnd: string | null = null;
+    let customerId: string | null = null;
+    let billingPeriod = metadata.billing_period || 'monthly';
+
+    if (session.subscription) {
+      const stripeSub = await stripe.subscriptions.retrieve(session.subscription as string);
+      stripeSubId = stripeSub.id;
+      customerId = stripeSub.customer as string;
+      periodStart = new Date(stripeSub.current_period_start * 1000).toISOString();
+      periodEnd = new Date(stripeSub.current_period_end * 1000).toISOString();
+      billingPeriod = stripeSub.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
+    }
+
+    // Check for existing record
+    const { data: existingSub } = await supabase
+      .from("advertisement_subscriptions")
+      .select("id, partnership_pings_balance")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const now = new Date().toISOString();
+    const partnershipPings = existingSub?.partnership_pings_balance ?? TIER_PARTNERSHIP_PINGS_WEBHOOK[tier] ?? 0;
+
+    if (existingSub) {
+      const { error } = await supabase
+        .from("advertisement_subscriptions")
+        .update({
+          tier,
+          status: 'active',
+          stripe_subscription_id: stripeSubId,
+          stripe_customer_id: customerId,
+          current_period_start: periodStart,
+          current_period_end: periodEnd,
+          billing_period: billingPeriod,
+          payment_method: 'stripe',
+          ads_used_this_month: 0,
+          ads_reset_at: now,
+          partnership_pings_balance: partnershipPings,
+          updated_at: now,
+        })
+        .eq("id", existingSub.id);
+
+      if (error) logStep("ERROR updating ad subscription", { error: error.message });
+      else logStep("Ad subscription updated", { userId, tier });
+    } else {
+      const { error } = await supabase
+        .from("advertisement_subscriptions")
+        .insert({
+          user_id: userId,
+          tier,
+          status: 'active',
+          stripe_subscription_id: stripeSubId,
+          stripe_customer_id: customerId,
+          current_period_start: periodStart,
+          current_period_end: periodEnd,
+          billing_period: billingPeriod,
+          payment_method: 'stripe',
+          ads_used_this_month: 0,
+          ads_reset_at: now,
+          partnership_pings_balance: partnershipPings,
+          here_pings_balance: 0,
+          everyone_pings_balance: 0,
+        });
+
+      if (error) logStep("ERROR inserting ad subscription", { error: error.message });
+      else logStep("Ad subscription created", { userId, tier });
+    }
+
+    // Send notification
+    try {
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          title: `📢 ${tier.charAt(0).toUpperCase() + tier.slice(1)} Ad Plan Activated!`,
+          message: `Your ${tier} advertising plan is now active. Start creating your first ad!`,
+          type: 'success',
+        });
+    } catch (e) {
+      logStep("Failed to send ad subscription notification (non-fatal)", { error: String(e) });
+    }
+  } catch (err) {
+    logStep("ERROR in processAdSubscriptionPurchase", { error: String(err) });
+  }
 }
 
 // Process ad ping credit purchases
