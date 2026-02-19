@@ -77,9 +77,22 @@
            is_internal_note: false,
          });
  
-       if (messageError) throw messageError;
- 
-       return ticket;
+        if (messageError) throw messageError;
+
+        // Send Discord notification (fire and forget)
+        const customerName = user.user_metadata?.display_name || user.email || 'Unknown';
+        const categoryLabel = categories.find(c => c.value === category)?.label || category;
+        supabase.functions.invoke('send-ticket-notification', {
+          body: {
+            ticket_number: ticket.ticket_number,
+            subject: subject.trim(),
+            category: categoryLabel,
+            customer_name: customerName,
+            ticket_id: ticket.id,
+          },
+        }).catch(err => console.error('Failed to send ticket notification:', err));
+
+        return ticket;
      },
      onSuccess: (ticket) => {
        toast.success('Ticket submitted successfully');
