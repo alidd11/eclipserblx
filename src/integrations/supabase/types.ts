@@ -6601,6 +6601,7 @@ export type Database = {
           bank_routing_number: string | null
           bank_swift_bic: string | null
           created_at: string | null
+          details_submitted: boolean | null
           id: string
           payout_method: string | null
           payouts_enabled: boolean | null
@@ -6617,6 +6618,7 @@ export type Database = {
           bank_routing_number?: string | null
           bank_swift_bic?: string | null
           created_at?: string | null
+          details_submitted?: boolean | null
           id?: string
           payout_method?: string | null
           payouts_enabled?: boolean | null
@@ -6633,6 +6635,7 @@ export type Database = {
           bank_routing_number?: string | null
           bank_swift_bic?: string | null
           created_at?: string | null
+          details_submitted?: boolean | null
           id?: string
           payout_method?: string | null
           payouts_enabled?: boolean | null
