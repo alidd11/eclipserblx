@@ -141,15 +141,27 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
 
           // Send Discord notification for the dispute ticket
           const customerName = user.user_metadata?.display_name || user.email || 'Unknown';
+          
+          // Fetch store name for the notification
+          let storeName = 'Unknown Store';
+          if (storeId) {
+            const { data: storeData } = await supabase
+              .from('stores')
+              .select('name')
+              .eq('id', storeId)
+              .single();
+            if (storeData?.name) storeName = storeData.name;
+          }
+          
           supabase.functions.invoke('send-ticket-notification', {
             body: {
               ticket_number: ticket.ticket_number,
               subject: ticketSubject,
               category: 'Dispute',
-              customer_name: customerName,
+              customer_name: `${customerName} (vs ${storeName})`,
               ticket_id: ticket.id,
               type: 'customer',
-              is_escalation: true,
+              is_escalation: false,
             },
           }).catch(err => console.error('Failed to send dispute notification:', err));
         }
