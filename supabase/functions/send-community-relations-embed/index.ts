@@ -26,9 +26,6 @@ Deno.serve(async (req) => {
             "All assets, all ranges and categories, Eclipse Marketplace is the marketplace for you.\n\n" +
             `Join today! - [Eclipse](${SITE_URL})`,
           color: ECLIPSE_COLOR,
-          image: {
-            url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png",
-          },
         },
         {
           title: "✉ Community Relations ✉",
@@ -42,6 +39,9 @@ Deno.serve(async (req) => {
             `**Eclipse Jobs**\n[Click Here](${SITE_URL}/careers)\n\n` +
             `**Eclipse FAQ**\n[Click Here](${SITE_URL}/faq)`,
           color: ECLIPSE_COLOR,
+          image: {
+            url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png",
+          },
         },
       ],
     });
