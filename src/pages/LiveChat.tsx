@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { Button } from '@/components/ui/button';
@@ -543,10 +544,7 @@ const LiveChatPage = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from('chat-attachments')
-        .getPublicUrl(fileName);
-
+      // Store just the file path for signed URL resolution
       const { error: msgError } = await supabase
         .from('chat_messages')
         .insert({
@@ -554,7 +552,7 @@ const LiveChatPage = () => {
           sender_type: 'customer',
           sender_id: user?.id,
           message: `📎 ${file.name}`,
-          attachment_url: urlData.publicUrl,
+          attachment_url: fileName,
         });
 
       if (msgError) throw msgError;
@@ -723,14 +721,11 @@ const LiveChatPage = () => {
                           <>
                             <p className="text-sm whitespace-pre-wrap">{parseMessageWithLinks(msg.message, msg.sender_type === 'customer')}</p>
                             {msg.attachment_url && (
-                              <a
-                                href={msg.attachment_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs underline mt-1 block opacity-80 hover:opacity-100"
-                              >
-                                View attachment
-                              </a>
+                              <AttachmentDisplay
+                                url={msg.attachment_url}
+                                bucket="chat-attachments"
+                                className="mt-1"
+                              />
                             )}
                           </>
                         )}

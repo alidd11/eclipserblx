@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, FileIcon, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown } from 'lucide-react';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -161,11 +162,8 @@ export default function SellerTickets() {
         
         if (uploadError) throw uploadError;
         
-        const { data: { publicUrl } } = supabase.storage
-          .from('seller-ticket-attachments')
-          .getPublicUrl(filePath);
-        
-        attachmentUrl = publicUrl;
+        // Store just the file path for signed URL resolution
+        attachmentUrl = filePath;
       }
       
       const { error } = await supabase
@@ -581,24 +579,12 @@ export default function SellerTickets() {
                             </p>
                             <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                             {msg.attachment_url && (
-                              <a 
-                                href={msg.attachment_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="mt-2 flex items-center gap-1.5 text-xs text-primary hover:underline"
-                              >
-                                {/\.(jpg|jpeg|png|gif|webp)$/i.test(msg.attachment_url) ? (
-                                  <>
-                                    <ImageIcon className="h-3 w-3" />
-                                    <img src={msg.attachment_url} alt="attachment" className="mt-1 max-w-[200px] rounded border" />
-                                  </>
-                                ) : (
-                                  <>
-                                    <FileIcon className="h-3 w-3" />
-                                    Attachment
-                                  </>
-                                )}
-                              </a>
+                              <div className="mt-2">
+                                <AttachmentDisplay
+                                  url={msg.attachment_url}
+                                  bucket="seller-ticket-attachments"
+                                />
+                              </div>
                             )}
                             <p className="text-xs text-muted-foreground mt-1">
                               {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, AtSign, Plus, Paperclip, X, Image, FileText, Loader2 } from 'lucide-react';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
@@ -356,11 +357,8 @@ function StaffMessagesContent() {
       throw uploadError;
     }
 
-    const { data: urlData } = supabase.storage
-      .from('staff-chat-attachments')
-      .getPublicUrl(fileName);
-
-    return urlData.publicUrl;
+    // Store just the file path for signed URL resolution
+    return fileName;
   };
 
   // Handle file selection
@@ -916,32 +914,11 @@ function StaffMessagesContent() {
                       )}
                     >
                       {message.attachment_url && (
-                        <div className="mb-2">
-                          {isImageUrl(message.attachment_url) ? (
-                            <a href={message.attachment_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                              <img 
-                                src={message.attachment_url} 
-                                alt="Attachment" 
-                                className="max-w-[200px] max-h-[200px] rounded-lg object-cover"
-                              />
-                            </a>
-                          ) : (
-                            <a 
-                              href={message.attachment_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className={cn(
-                                "flex items-center gap-2 p-2 rounded-lg",
-                                isOwn ? "bg-primary-foreground/10" : "bg-background/50"
-                              )}
-                            >
-                              <FileText className="h-4 w-4 flex-shrink-0" />
-                              <span className="text-sm truncate max-w-[150px]">
-                                {getFileName(message.attachment_url)}
-                              </span>
-                            </a>
-                          )}
+                        <div className="mb-2" onClick={(e) => e.stopPropagation()}>
+                          <AttachmentDisplay
+                            url={message.attachment_url}
+                            bucket="staff-chat-attachments"
+                          />
                         </div>
                       )}
                       {message.message && message.message !== '📎 Attachment' && renderMessageWithMentions(message.message, { isOwn })}
