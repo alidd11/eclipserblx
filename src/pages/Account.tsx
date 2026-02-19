@@ -212,7 +212,7 @@ const StatusBadgesSection = ({
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
   const { user, signOut, loading: authLoading } = useAuth();
-  const { isStaff, isAdmin, loading: adminLoading } = useAdminAuth();
+  const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();
   const { isSubscribed } = useSubscription();
   const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
@@ -642,7 +642,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   <Button variant="ghost" size="icon" disabled className="h-9 w-9">
                     <Loader2 className="h-4 w-4 animate-spin" />
                   </Button>
-                ) : isAdmin ? (
+                ) : isStaff ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} className="h-9 w-9">
