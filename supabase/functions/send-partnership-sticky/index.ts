@@ -114,10 +114,6 @@ serve(async (req) => {
             `**Before applying, please review our requirements:**\n` +
             `📋 **[Partnership Requirements](${PARTNERSHIP_LINK})**`,
           color: ECLIPSE_COLOR,
-          footer: {
-            text: "Eclipse Partnerships",
-          },
-          timestamp: new Date().toISOString(),
         },
       ],
     });
