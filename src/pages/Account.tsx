@@ -17,7 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
-import { BadgeShowcase } from '@/components/badges/BadgeShowcase';
+
 
 import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { LinkedAccountsCard } from '@/components/account/LinkedAccountsCard';
@@ -757,18 +757,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             {/* Eclipse+ Subscription */}
             <SubscriptionCard />
 
-            {/* Badges */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Award className="h-4 w-4" />
-                  My Badges
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BadgeShowcase badges={badges} userBadges={userBadges} showAll />
-              </CardContent>
-            </Card>
 
             {/* Grid for referral/affiliate cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
