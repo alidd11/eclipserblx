@@ -129,11 +129,25 @@ export default function SellerSupport() {
         ticketData.change_reason = changeReason;
       }
       
-      const { error } = await supabase
+      const { data: ticket, error } = await supabase
         .from('seller_support_tickets')
-        .insert(ticketData);
+        .insert(ticketData)
+        .select('ticket_number, id')
+        .single();
       
       if (error) throw error;
+
+      // Send Discord notification (fire and forget)
+      supabase.functions.invoke('send-ticket-notification', {
+        body: {
+          ticket_number: ticket?.ticket_number,
+          subject,
+          category,
+          customer_name: store?.name || 'Unknown Seller',
+          ticket_id: ticket?.id,
+          type: 'seller',
+        },
+      }).catch(err => console.error('Failed to send seller ticket notification:', err));
     },
     onSuccess: () => {
       toast({ title: 'Ticket Created', description: 'Your support ticket has been submitted.' });

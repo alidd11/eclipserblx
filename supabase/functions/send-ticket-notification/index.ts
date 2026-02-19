@@ -7,8 +7,15 @@ const corsHeaders = {
 };
 
 const TICKET_CHANNEL_ID = "1469155627916984476";
-const STAFF_ROLE_ID = "1460220738832302151";
+
+// Different role pings for different ticket types
+const ROLE_IDS: Record<string, string> = {
+  customer: "1460220738832302151",
+  seller: "1460220731072712920",
+};
+
 const TICKET_COLOR = 0x5865F2; // Discord Blurple
+const ESCALATION_COLOR = 0xF59E0B; // Amber for escalations
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -16,7 +23,7 @@ serve(async (req) => {
   }
 
   try {
-    const { ticket_number, subject, category, customer_name, ticket_id } = await req.json();
+    const { ticket_number, subject, category, customer_name, ticket_id, type = "customer", is_escalation = false } = await req.json();
 
     if (!subject) {
       return new Response(
@@ -25,14 +32,26 @@ serve(async (req) => {
       );
     }
 
-    const ticketUrl = ticket_id ? `https://roleplay-hub-shop.lovable.app/admin/support/${ticket_id}` : null;
+    const roleId = ROLE_IDS[type] || ROLE_IDS.customer;
+    const color = is_escalation ? ESCALATION_COLOR : TICKET_COLOR;
+    const title = is_escalation
+      ? "⚠️ Dispute Escalated"
+      : type === "seller"
+        ? "🏪 New Seller Ticket"
+        : "🎫 New Support Ticket";
+
+    const ticketUrl = ticket_id && ticket_id !== "test"
+      ? type === "seller"
+        ? `https://roleplay-hub-shop.lovable.app/admin/seller-tickets`
+        : `https://roleplay-hub-shop.lovable.app/admin/support/${ticket_id}`
+      : null;
 
     const result = await sendBotMessage(TICKET_CHANNEL_ID, {
-      content: `<@&${STAFF_ROLE_ID}>`,
+      content: `<@&${roleId}>`,
       embeds: [
         {
-          title: "🎫 New Support Ticket",
-          color: TICKET_COLOR,
+          title,
+          color,
           fields: [
             {
               name: "Ticket",
@@ -45,7 +64,7 @@ serve(async (req) => {
               inline: true,
             },
             {
-              name: "Customer",
+              name: type === "seller" ? "Seller" : "Customer",
               value: customer_name || "Unknown",
               inline: true,
             },
