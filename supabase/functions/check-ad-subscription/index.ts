@@ -29,6 +29,13 @@ const TIER_ADS: Record<string, number> = {
   'premium': 30,
 };
 
+// Partnership pings included per tier
+const TIER_PARTNERSHIP_PINGS: Record<string, number> = {
+  'basic': 2,
+  'pro': 4,
+  'premium': 10,
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -121,6 +128,7 @@ serve(async (req) => {
         billing_period: localSub.billing_period,
         here_pings_balance: localSub.here_pings_balance || 0,
         everyone_pings_balance: localSub.everyone_pings_balance || 0,
+        partnership_pings_balance: localSub.partnership_pings_balance || 0,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -217,6 +225,8 @@ serve(async (req) => {
         current_period_end: periodEnd,
         billing_period: adSubscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly',
         ads_used_this_month: adsUsed,
+        // Seed partnership pings for new records; preserve existing balance
+        partnership_pings_balance: localSub?.partnership_pings_balance ?? TIER_PARTNERSHIP_PINGS[tier] ?? 0,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'user_id',
@@ -235,6 +245,7 @@ serve(async (req) => {
       billing_period: adSubscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly',
       here_pings_balance: localSub?.here_pings_balance || 0,
       everyone_pings_balance: localSub?.everyone_pings_balance || 0,
+      partnership_pings_balance: localSub?.partnership_pings_balance ?? TIER_PARTNERSHIP_PINGS[tier] ?? 0,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

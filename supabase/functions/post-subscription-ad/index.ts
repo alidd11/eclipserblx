@@ -18,6 +18,16 @@ const TIER_ADS: Record<string, number> = {
   'premium': 30,
 };
 
+// Partnership pings included per tier (for sellers only)
+const TIER_PARTNERSHIP_PINGS: Record<string, number> = {
+  'basic': 2,
+  'pro': 4,
+  'premium': 10,
+};
+
+// Hardcoded seller Discord role ID for partnership pings
+const SELLER_PARTNERSHIP_PING_ROLE_ID = '1461853576694468876';
+
 // Sanitize text input
 const sanitizeText = (text: string): string => {
   return text
@@ -138,14 +148,24 @@ serve(async (req) => {
       throw new Error("Scheduling is only available for Pro and Premium subscribers");
     }
 
-    // Get webhook URL and partnership ping role ID
+    // Check if the user is a seller (has an active store)
+    const { data: sellerStore } = await supabaseAdmin
+      .from("stores")
+      .select("id")
+      .eq("owner_id", user.id)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    const isSeller = !!sellerStore;
+    logStep("Seller check", { isSeller, userId: user.id });
+
+    // Get webhook URL from settings
     const { data: adSettings } = await supabaseAdmin
       .from("settings")
       .select("key, value")
-      .in("key", ["advertisements_discord_webhook_url", "advertisements_partnership_ping_role_id"]);
+      .eq("key", "advertisements_discord_webhook_url");
 
     const webhookSetting = adSettings?.find(s => s.key === "advertisements_discord_webhook_url");
-    const partnershipPingSetting = adSettings?.find(s => s.key === "advertisements_partnership_ping_role_id");
 
     if (!webhookSetting?.value) {
       throw new Error("Advertisement webhook not configured");
@@ -154,12 +174,6 @@ serve(async (req) => {
     const webhookUrl = typeof webhookSetting.value === 'string' 
       ? webhookSetting.value.replace(/"/g, '') 
       : String(webhookSetting.value);
-
-    const partnershipPingRoleId = partnershipPingSetting?.value 
-      ? (typeof partnershipPingSetting.value === 'string' 
-          ? partnershipPingSetting.value.replace(/"/g, '') 
-          : String(partnershipPingSetting.value))
-      : null;
 
     // Validate ping type if provided and check balance
     const validPingTypes = ['here', 'everyone', null];
@@ -200,7 +214,7 @@ serve(async (req) => {
 
     // If scheduled, don't post to Discord now - just save and return
     if (parsedScheduledFor) {
-      // Update subscription usage
+      // Update subscription usage (scheduled ads still consume the ping balance upfront)
       const updateData: Record<string, unknown> = {
         ads_used_this_month: adsUsed + 1,
         updated_at: new Date().toISOString(),
@@ -211,6 +225,7 @@ serve(async (req) => {
       } else if (selectedPingType === 'everyone') {
         updateData.everyone_pings_balance = Math.max(0, (subscription.everyone_pings_balance || 0) - 1);
       }
+      // Note: partnership pings for scheduled ads are deducted when the ad actually posts (via process-scheduled-ads)
 
       await supabaseAdmin
         .from("advertisement_subscriptions")
@@ -255,18 +270,22 @@ serve(async (req) => {
       }];
     }
 
+    // Determine partnership ping usage (seller-only, costs a partnership_pings_balance credit)
+    const partnershipPingsBalance = subscription.partnership_pings_balance || 0;
+    const usePartnershipPing = isSeller && partnershipPingsBalance > 0 && !selectedPingType;
+
     // Build content with ping if selected
     let messageContent = "";
     if (selectedPingType === 'everyone') {
       messageContent = "@everyone";
     } else if (selectedPingType === 'here') {
       messageContent = "@here";
-    } else if (partnershipPingRoleId) {
-      // Default partnership ping for non-ping ads
-      messageContent = `<@&${partnershipPingRoleId}>`;
+    } else if (usePartnershipPing) {
+      // Seller with partnership ping balance — ping the seller/partner role
+      messageContent = `<@&${SELLER_PARTNERSHIP_PING_ROLE_ID}>`;
     }
 
-    logStep("Posting to Discord", { pingType: selectedPingType, hasPartnershipPing: !!partnershipPingRoleId });
+    logStep("Posting to Discord", { pingType: selectedPingType, usePartnershipPing, isSeller, partnershipPingsBalance });
 
     // Post to Discord
     const discordResponse = await fetch(webhookUrl, {
@@ -303,6 +322,9 @@ serve(async (req) => {
       updateData.here_pings_balance = Math.max(0, (subscription.here_pings_balance || 0) - 1);
     } else if (selectedPingType === 'everyone') {
       updateData.everyone_pings_balance = Math.max(0, (subscription.everyone_pings_balance || 0) - 1);
+    }
+    if (usePartnershipPing) {
+      updateData.partnership_pings_balance = Math.max(0, partnershipPingsBalance - 1);
     }
 
     await supabaseAdmin
