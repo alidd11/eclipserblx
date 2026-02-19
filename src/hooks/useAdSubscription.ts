@@ -36,6 +36,7 @@ export interface AdSubscriptionStatus {
   billing_period: AdBillingPeriod | null;
   here_pings_balance: number;
   everyone_pings_balance: number;
+  partnership_pings_balance: number;
 }
 
 export function useAdTiers() {
@@ -85,6 +86,7 @@ export function useAdSubscription() {
         billing_period: data.billing_period || null,
         here_pings_balance: data.here_pings_balance || 0,
         everyone_pings_balance: data.everyone_pings_balance || 0,
+        partnership_pings_balance: data.partnership_pings_balance || 0,
       };
     },
     enabled: !!session?.user,

@@ -133,6 +133,7 @@ export type Database = {
           everyone_pings_balance: number | null
           here_pings_balance: number | null
           id: string
+          partnership_pings_balance: number
           payment_method: string | null
           roblox_subscription_id: string | null
           roblox_user_id: string | null
@@ -153,6 +154,7 @@ export type Database = {
           everyone_pings_balance?: number | null
           here_pings_balance?: number | null
           id?: string
+          partnership_pings_balance?: number
           payment_method?: string | null
           roblox_subscription_id?: string | null
           roblox_user_id?: string | null
@@ -173,6 +175,7 @@ export type Database = {
           everyone_pings_balance?: number | null
           here_pings_balance?: number | null
           id?: string
+          partnership_pings_balance?: number
           payment_method?: string | null
           roblox_subscription_id?: string | null
           roblox_user_id?: string | null
