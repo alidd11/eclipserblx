@@ -68,6 +68,8 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
+        // Bump this to force workbox to invalidate its precache on next deploy
+        cacheId: 'eclipse-v2',
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
         // Import custom service worker for push notifications
         importScripts: ["/custom-sw.js"],
