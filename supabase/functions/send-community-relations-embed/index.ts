@@ -18,6 +18,19 @@ Deno.serve(async (req) => {
     const result = await sendBotMessage(CHANNEL_ID, {
       embeds: [
         {
+          title: "✦ Company Information ✦",
+          description:
+            "**About Us**\n" +
+            "At Eclipse we provide you a safe, secure and trustable marketplace in which you can sell your Roblox Assets on. We promote reliability, sustainability and creativity with our marketplace.\n\n" +
+            "Our marketplace is designed to keep your assets protected with DMCA protection and compliance along with our multiple levels of online security.\n\n" +
+            "All assets, all ranges and categories, Eclipse Marketplace is the marketplace for you.\n\n" +
+            `Join today! - [Eclipse](${SITE_URL})`,
+          color: ECLIPSE_COLOR,
+          image: {
+            url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/product-images/eclipse-banner.png",
+          },
+        },
+        {
           title: "✉ Community Relations ✉",
           description:
             `**Eclipse Terms of Service**\n[Click Here](${SITE_URL}/terms)\n\n` +
