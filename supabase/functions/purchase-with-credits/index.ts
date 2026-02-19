@@ -205,6 +205,9 @@ serve(async (req) => {
           platformFee,
         });
 
+        // Find the matching order_item_id for this product
+        const matchingOrderItem = insertedItems?.find(oi => oi.product_id === item.id);
+
         // Create seller transaction record
         const { error: txError } = await supabaseClient
           .from("seller_transactions")
@@ -212,7 +215,7 @@ serve(async (req) => {
             seller_id: item.seller_id,
             store_id: item.store_id,
             order_id: order.id,
-            product_id: item.id,
+            order_item_id: matchingOrderItem?.id || null,
             gross_amount: grossAmount,
             stripe_fee: 0, // No Stripe fee for credit purchases
             net_before_commission: grossAmount, // Full amount since no Stripe fee
@@ -225,7 +228,7 @@ serve(async (req) => {
           });
 
         if (txError) {
-          logStep("Seller transaction error (non-fatal)", txError);
+          logStep("Seller transaction error (non-fatal)", { message: txError.message, details: txError.details, code: txError.code });
         } else {
           // Update seller balance
           const { data: currentSellerBalance } = await supabaseClient
