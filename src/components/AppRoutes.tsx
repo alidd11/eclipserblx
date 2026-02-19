@@ -81,7 +81,7 @@ const AdminAffiliates = lazy(() => import("@/pages/admin/Affiliates"));
 const AdminBotCodes = lazy(() => import("@/pages/admin/BotCodes"));
 const AdminBotRequests = lazy(() => import("@/pages/admin/BotRequests"));
 const AdminBotServers = lazy(() => import("@/pages/admin/BotServers"));
-const AdminContactMessages = lazy(() => import("@/pages/admin/ContactMessages"));
+
 const AdminCustomerTickets = lazy(() => import("@/pages/admin/CustomerTickets"));
 const AdminCustomerTicketDetail = lazy(() => import("@/pages/admin/CustomerTicketDetail"));
 const AdminArchivedApplications = lazy(() => import("@/pages/admin/ArchivedApplications"));
@@ -328,7 +328,7 @@ export function AppRoutes() {
         <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
         <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
         <Route path="/admin/bot-servers" element={<AdminBotServers />} />
-        <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
+        
         <Route path="/admin/customer-tickets" element={<AdminCustomerTickets />} />
         <Route path="/admin/customer-tickets/:ticketId" element={<AdminCustomerTicketDetail />} />
         <Route path="/admin/archived-applications" element={<AdminArchivedApplications />} />

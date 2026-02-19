@@ -77,7 +77,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Live Chat', icon: Inbox, href: '/admin/live-chat', permissions: ['view_live_chat'] },
       { title: 'Discord Modmail', icon: Mail, href: '/admin/discord-modmail', permissions: ['view_live_chat'] },
-      { title: 'Contact Messages', icon: Mail, href: '/admin/contact-messages', permissions: ['view_contact_messages'] },
+      
        { title: 'Customer Tickets', icon: Ticket, href: '/admin/customer-tickets', permissions: ['view_live_chat'] },
       { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', permissions: ['view_seller_tickets'] },
       { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', permissions: ['view_live_chat'], dividerAfter: true },

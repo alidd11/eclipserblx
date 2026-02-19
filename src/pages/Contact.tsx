@@ -65,14 +65,19 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('contact_messages')
+      // Create a support ticket instead of a contact message
+      const { data: ticket, error } = await supabase
+        .from('support_tickets')
         .insert({
-          name: validation.data.name,
-          email: validation.data.email,
+          user_id: user?.id || null,
+          customer_email: validation.data.email,
           subject: validation.data.subject,
-          message: validation.data.message,
-        });
+          category: 'other',
+          status: 'open',
+          priority: 'medium',
+        })
+        .select()
+        .single();
 
       if (error) {
         // Check for rate limit error (RLS policy violation)
@@ -83,20 +88,24 @@ export default function Contact() {
         throw error;
       }
 
+      // Add the message as the first ticket message
+      if (ticket) {
+        await supabase
+          .from('ticket_messages')
+          .insert({
+            ticket_id: ticket.id,
+            sender_id: user?.id || null,
+            sender_type: 'customer',
+            message: `From: ${validation.data.name} (${validation.data.email})\n\n${validation.data.message}`,
+            is_internal_note: false,
+          });
+      }
+
       // Record rate limit entry after successful submission
       await supabase.rpc('record_rate_limit', {
         p_identifier: validation.data.email,
         p_action_type: 'contact_form'
       });
-
-      // Notify staff about the new message (fire and forget)
-      supabase.functions.invoke('notify-new-contact-message', {
-        body: {
-          name: validation.data.name,
-          email: validation.data.email,
-          subject: validation.data.subject,
-        },
-      }).catch(console.error);
 
       showSuccessNotification('Message Sent!', 'We\'ll get back to you within 24-48 hours.');
 
