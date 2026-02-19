@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Paperclip, X, Image, FileText, Loader2, Upload, AtSign, Plus } from 'lucide-react';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { ChatMessageActions, ChatReaction } from '@/components/admin/ChatMessageActions';
 import { QuotedMessage } from '@/components/admin/QuotedMessage';
 import { Button } from '@/components/ui/button';
@@ -408,11 +409,8 @@ function AdminChatContent() {
       throw uploadError;
     }
 
-    const { data: urlData } = supabase.storage
-      .from('admin-chat-attachments')
-      .getPublicUrl(fileName);
-
-    return urlData.publicUrl;
+    // Store just the file path for signed URL resolution
+    return fileName;
   };
 
   // Send message mutation
@@ -1007,32 +1005,12 @@ function AdminChatContent() {
                     {/* Attachment preview */}
                     {message.attachment_url && (
                       <div className="mb-2 max-w-full min-w-0">
-                        {isImageUrl(message.attachment_url) ? (
-                          <a 
-                            href={message.attachment_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="block max-w-full"
-                          >
-                            <img 
-                              src={message.attachment_url} 
-                              alt="Attachment" 
-                              className="block max-w-full max-h-64 rounded-lg border border-border/50 hover:opacity-90 transition-opacity object-contain"
-                            />
-                          </a>
-                        ) : (
-                          <a
-                            href={message.attachment_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/50 hover:bg-muted transition-colors max-w-full min-w-0 overflow-hidden"
-                          >
-                            <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm truncate min-w-0 max-w-[150px] sm:max-w-[200px]">
-                              {getFileName(message.attachment_url)}
-                            </span>
-                          </a>
-                        )}
+                        <AttachmentDisplay
+                          url={message.attachment_url}
+                          bucket="admin-chat-attachments"
+                          maxImageWidth="100%"
+                          maxImageHeight="256px"
+                        />
                       </div>
                     )}
 

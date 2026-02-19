@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Circle, Paperclip, Loader2, MessageSquare, ChevronDown, ArrowLeft, RefreshCw, AlertCircle, Upload, Copy, Check, ShoppingBag, ChevronUp } from 'lucide-react';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -553,10 +554,7 @@ export default function AdminLiveChat() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-attachments')
-        .getPublicUrl(fileName);
-
+      // Store just the file path for signed URL resolution
       const { data: inserted, error: insertError } = await supabase
         .from('chat_messages')
         .insert({
@@ -564,7 +562,7 @@ export default function AdminLiveChat() {
           message: file.name,
           sender_type: 'agent',
           sender_id: user.id,
-          attachment_url: publicUrl,
+          attachment_url: fileName,
         })
         .select('*')
         .single();
@@ -933,25 +931,12 @@ export default function AdminLiveChat() {
                           >
                             {msg.attachment_url && (
                               <div className="mb-2">
-                                {isImageUrl(msg.attachment_url) ? (
-                                  <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
-                                    <img 
-                                      src={msg.attachment_url} 
-                                      alt="Attachment" 
-                                      className="max-w-full rounded max-h-40 object-cover"
-                                    />
-                                  </a>
-                                ) : (
-                                  <a 
-                                    href={msg.attachment_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-xs underline"
-                                  >
-                                    <Paperclip className="h-3 w-3" />
-                                    {msg.message}
-                                  </a>
-                                )}
+                                <AttachmentDisplay
+                                  url={msg.attachment_url}
+                                  bucket="chat-attachments"
+                                  maxImageWidth="100%"
+                                  maxImageHeight="160px"
+                                />
                               </div>
                             )}
                             {!msg.attachment_url && <p className="text-sm lg:text-base">{msg.message}</p>}
