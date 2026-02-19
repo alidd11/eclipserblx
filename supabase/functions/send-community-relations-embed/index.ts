@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
             `Join today! - [Eclipse](${SITE_URL})`,
           color: ECLIPSE_COLOR,
           image: {
-            url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/product-images/eclipse-banner.png",
+            url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png",
           },
         },
         {
