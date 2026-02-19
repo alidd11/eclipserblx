@@ -205,8 +205,19 @@ serve(async (req) => {
     const priceId = adSubscription.items.data[0]?.price?.id;
     const tier = adSubscription.metadata?.tier || PRICE_TO_TIER[priceId!] || 'basic';
     const adsPerMonth = TIER_ADS[tier] || 3;
-    const periodEnd = new Date(adSubscription.current_period_end * 1000).toISOString();
-    const periodStart = new Date(adSubscription.current_period_start * 1000).toISOString();
+
+    // Safe date parsing - handle both Unix timestamps (number) and ISO strings
+    const safeToISOString = (val: unknown): string | null => {
+      if (!val) return null;
+      try {
+        const ms = typeof val === 'number' ? val * 1000 : new Date(val as string).getTime();
+        if (isNaN(ms)) return null;
+        return new Date(ms).toISOString();
+      } catch { return null; }
+    };
+
+    const periodEnd = safeToISOString(adSubscription.current_period_end);
+    const periodStart = safeToISOString(adSubscription.current_period_start);
 
     logStep("Active subscription found", { tier, priceId });
 
