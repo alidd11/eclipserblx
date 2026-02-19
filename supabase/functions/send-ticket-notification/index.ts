@@ -42,8 +42,8 @@ serve(async (req) => {
 
     const ticketUrl = ticket_id && ticket_id !== "test"
       ? type === "seller"
-        ? `https://roleplay-hub-shop.lovable.app/admin/seller-tickets`
-        : `https://roleplay-hub-shop.lovable.app/admin/support/${ticket_id}`
+        ? `https://eclipsemarket.co.uk/admin/seller-tickets`
+        : `https://eclipsemarket.co.uk/admin/support/${ticket_id}`
       : null;
 
     const result = await sendBotMessage(TICKET_CHANNEL_ID, {
