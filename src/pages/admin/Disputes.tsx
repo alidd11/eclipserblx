@@ -31,23 +31,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
-import { AlertTriangle, Search, Eye, Loader2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { AlertTriangle, Search, Eye, Loader2, CheckCircle, XCircle, Clock, ShieldAlert } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
-  open: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-  under_review: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  resolved: 'bg-green-500/10 text-green-500 border-green-500/20',
-  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
-};
-
-const reasonLabels: Record<string, string> = {
-  not_as_described: 'Not as described',
-  not_received: 'Not received',
-  defective: 'Defective',
-  unauthorized: 'Unauthorized',
-  other: 'Other',
+  pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+  approved: 'bg-green-500/10 text-green-500 border-green-500/20',
+  denied: 'bg-destructive/10 text-destructive border-destructive/20',
+  escalated: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  resolved: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
 };
 
 export default function Disputes() {
@@ -55,19 +48,15 @@ export default function Disputes() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
-  const [adminNotes, setAdminNotes] = useState('');
+  const [adminResponse, setAdminResponse] = useState('');
   const [newStatus, setNewStatus] = useState('');
 
   const { data: disputes, isLoading } = useQuery({
     queryKey: ['admin-disputes', statusFilter],
     queryFn: async () => {
       let query = supabase
-        .from('order_disputes')
-        .select(`
-          *,
-          orders (id, total, status, created_at),
-          profiles!order_disputes_user_id_fkey (display_name, username, email, customer_id)
-        `)
+        .from('refund_requests')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -76,53 +65,72 @@ export default function Disputes() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+
+      // Fetch customer profiles, store names
+      const customerIds = [...new Set((data || []).map((r: any) => r.customer_id))];
+      const storeIds = [...new Set((data || []).map((r: any) => r.store_id).filter(Boolean))];
+
+      const [profilesRes, storesRes] = await Promise.all([
+        customerIds.length > 0
+          ? supabase.from('profiles').select('user_id, display_name, username, email, customer_id').in('user_id', customerIds)
+          : { data: [] },
+        storeIds.length > 0
+          ? supabase.from('stores').select('id, name').in('id', storeIds)
+          : { data: [] },
+      ]);
+
+      const profileMap = Object.fromEntries((profilesRes.data || []).map(p => [p.user_id, p]));
+      const storeMap = Object.fromEntries((storesRes.data || []).map(s => [s.id, s]));
+
+      return (data || []).map((r: any) => ({
+        ...r,
+        customer: profileMap[r.customer_id] || null,
+        store: storeMap[r.store_id] || null,
+      }));
     },
   });
 
   const updateDispute = useMutation({
-    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes: string }) => {
-      const { error } = await supabase
-        .from('order_disputes')
-        .update({
-          status,
-          admin_notes: notes || null,
-          resolved_at: ['resolved', 'rejected'].includes(status) ? new Date().toISOString() : null,
-          resolved_by: (await supabase.auth.getUser()).data.user?.id,
-        } as any)
-        .eq('id', id);
+    mutationFn: async ({ id, status, response }: { id: string; status: string; response: string }) => {
+      const updateData: any = {
+        status,
+        admin_response: response || null,
+        updated_at: new Date().toISOString(),
+      };
+      if (status === 'resolved') {
+        updateData.admin_resolved_at = new Date().toISOString();
+        updateData.admin_resolved_by = (await supabase.auth.getUser()).data.user?.id;
+      }
+      const { error } = await supabase.from('refund_requests').update(updateData).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Dispute updated successfully');
+      toast.success('Dispute updated');
       queryClient.invalidateQueries({ queryKey: ['admin-disputes'] });
       setSelectedDispute(null);
-      setAdminNotes('');
+      setAdminResponse('');
       setNewStatus('');
     },
-    onError: (err) => {
-      toast.error('Failed to update dispute');
-      console.error(err);
-    },
+    onError: () => toast.error('Failed to update dispute'),
   });
 
   const filtered = disputes?.filter((d: any) => {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
-      d.profiles?.display_name?.toLowerCase().includes(s) ||
-      d.profiles?.email?.toLowerCase().includes(s) ||
-      d.profiles?.customer_id?.toLowerCase().includes(s) ||
+      d.customer?.display_name?.toLowerCase().includes(s) ||
+      d.customer?.email?.toLowerCase().includes(s) ||
+      d.customer?.customer_id?.toLowerCase().includes(s) ||
       d.reason?.toLowerCase().includes(s) ||
-      d.orders?.id?.toLowerCase().includes(s)
+      d.store?.name?.toLowerCase().includes(s)
     );
   });
 
   const stats = {
     total: disputes?.length ?? 0,
-    open: disputes?.filter((d: any) => d.status === 'open').length ?? 0,
-    underReview: disputes?.filter((d: any) => d.status === 'under_review').length ?? 0,
-    resolved: disputes?.filter((d: any) => d.status === 'resolved').length ?? 0,
+    pending: disputes?.filter((d: any) => d.status === 'pending').length ?? 0,
+    escalated: disputes?.filter((d: any) => d.status === 'escalated').length ?? 0,
+    resolved: disputes?.filter((d: any) => ['resolved', 'approved'].includes(d.status)).length ?? 0,
   };
 
   return (
@@ -131,15 +139,17 @@ export default function Disputes() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <AlertTriangle className="h-6 w-6 text-destructive" />
-            Order Disputes
+            Customer Disputes
           </h1>
-          <p className="text-muted-foreground">Review and manage customer dispute requests.</p>
+          <p className="text-muted-foreground">
+            Disputes go to sellers first. Escalated disputes need Eclipse review.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <AdminStatCard label="Total Disputes" value={stats.total} />
-          <AdminStatCard label="Open" value={stats.open} valueColor="yellow" />
-          <AdminStatCard label="Under Review" value={stats.underReview} valueColor="blue" />
+          <AdminStatCard label="Total" value={stats.total} />
+          <AdminStatCard label="Pending (Seller)" value={stats.pending} valueColor="yellow" />
+          <AdminStatCard label="Escalated" value={stats.escalated} valueColor="orange" />
           <AdminStatCard label="Resolved" value={stats.resolved} valueColor="green" />
         </div>
 
@@ -163,10 +173,11 @@ export default function Disputes() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="under_review">Under Review</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="denied">Denied</SelectItem>
+                    <SelectItem value="escalated">Escalated</SelectItem>
                     <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -185,40 +196,43 @@ export default function Disputes() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Customer</TableHead>
+                      <TableHead>Store</TableHead>
                       <TableHead>Reason</TableHead>
-                      <TableHead>Order Total</TableHead>
+                      <TableHead>Amount</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((dispute: any) => (
-                      <TableRow key={dispute.id}>
+                    {filtered.map((d: any) => (
+                      <TableRow key={d.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{dispute.profiles?.display_name || 'Unknown'}</p>
-                            <p className="text-xs text-muted-foreground">{dispute.profiles?.customer_id}</p>
+                            <p className="font-medium">{d.customer?.display_name || 'Unknown'}</p>
+                            <p className="text-xs text-muted-foreground">{d.customer?.customer_id}</p>
                           </div>
                         </TableCell>
-                        <TableCell>{reasonLabels[dispute.reason] || dispute.reason}</TableCell>
-                        <TableCell>£{dispute.orders?.total?.toFixed(2) ?? '—'}</TableCell>
+                        <TableCell className="text-sm">{d.store?.name || '—'}</TableCell>
+                        <TableCell className="text-sm max-w-[200px] truncate">{d.reason}</TableCell>
+                        <TableCell>£{Number(d.amount).toFixed(2)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={statusColors[dispute.status] || ''}>
-                            {dispute.status?.replace('_', ' ')}
+                          <Badge variant="outline" className={statusColors[d.status] || ''}>
+                            {d.status === 'escalated' && <ShieldAlert className="h-3 w-3 mr-1" />}
+                            {d.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(dispute.created_at), 'dd MMM yyyy')}
+                          {format(new Date(d.created_at), 'dd MMM yyyy')}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => {
-                              setSelectedDispute(dispute);
-                              setNewStatus(dispute.status);
-                              setAdminNotes(dispute.admin_notes || '');
+                              setSelectedDispute(d);
+                              setNewStatus(d.status);
+                              setAdminResponse(d.admin_response || '');
                             }}
                           >
                             <Eye className="h-4 w-4" />
@@ -239,37 +253,62 @@ export default function Disputes() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Dispute Details</DialogTitle>
-            <DialogDescription>
-              Review and update this dispute.
-            </DialogDescription>
+            <DialogDescription>Review and manage this dispute.</DialogDescription>
           </DialogHeader>
           {selectedDispute && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">Customer</p>
-                  <p className="font-medium">{selectedDispute.profiles?.display_name}</p>
+                  <p className="font-medium">{selectedDispute.customer?.display_name}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Customer ID</p>
-                  <p className="font-medium">{selectedDispute.profiles?.customer_id}</p>
+                  <p className="text-muted-foreground">Store</p>
+                  <p className="font-medium">{selectedDispute.store?.name || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Reason</p>
-                  <p className="font-medium">{reasonLabels[selectedDispute.reason] || selectedDispute.reason}</p>
+                  <p className="text-muted-foreground">Amount</p>
+                  <p className="font-medium">£{Number(selectedDispute.amount).toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Order Total</p>
-                  <p className="font-medium">£{selectedDispute.orders?.total?.toFixed(2)}</p>
+                  <p className="text-muted-foreground">Status</p>
+                  <Badge variant="outline" className={statusColors[selectedDispute.status] || ''}>
+                    {selectedDispute.status}
+                  </Badge>
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Customer Description</p>
-                <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-                  {selectedDispute.description}
-                </div>
+                <p className="text-sm text-muted-foreground mb-1">Reason</p>
+                <p className="text-sm font-medium">{selectedDispute.reason}</p>
               </div>
+
+              {selectedDispute.details && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Customer Details</p>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                    {selectedDispute.details}
+                  </div>
+                </div>
+              )}
+
+              {selectedDispute.seller_response && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Seller Response</p>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                    {selectedDispute.seller_response}
+                  </div>
+                </div>
+              )}
+
+              {selectedDispute.escalation_reason && (
+                <Card className="border-amber-500/20 bg-amber-500/5">
+                  <CardContent className="py-3">
+                    <p className="text-sm font-medium text-amber-600">Escalation Reason</p>
+                    <p className="text-sm text-muted-foreground">{selectedDispute.escalation_reason}</p>
+                  </CardContent>
+                </Card>
+              )}
 
               <div className="space-y-2">
                 <Label>Update Status</Label>
@@ -278,16 +317,16 @@ export default function Disputes() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">
-                      <span className="flex items-center gap-2"><Clock className="h-3 w-3" /> Open</span>
+                    <SelectItem value="pending">
+                      <span className="flex items-center gap-2"><Clock className="h-3 w-3" /> Pending</span>
                     </SelectItem>
-                    <SelectItem value="under_review">
-                      <span className="flex items-center gap-2"><Eye className="h-3 w-3" /> Under Review</span>
+                    <SelectItem value="escalated">
+                      <span className="flex items-center gap-2"><ShieldAlert className="h-3 w-3" /> Escalated</span>
                     </SelectItem>
                     <SelectItem value="resolved">
                       <span className="flex items-center gap-2"><CheckCircle className="h-3 w-3" /> Resolved</span>
                     </SelectItem>
-                    <SelectItem value="rejected">
+                    <SelectItem value="denied">
                       <span className="flex items-center gap-2"><XCircle className="h-3 w-3" /> Rejected</span>
                     </SelectItem>
                   </SelectContent>
@@ -295,24 +334,22 @@ export default function Disputes() {
               </div>
 
               <div className="space-y-2">
-                <Label>Admin Notes</Label>
+                <Label>Eclipse Response</Label>
                 <Textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="Add internal notes about this dispute..."
+                  value={adminResponse}
+                  onChange={(e) => setAdminResponse(e.target.value)}
+                  placeholder="Add your response or resolution notes..."
                   className="min-h-[80px]"
                 />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setSelectedDispute(null)}>
-                  Cancel
-                </Button>
+                <Button variant="outline" onClick={() => setSelectedDispute(null)}>Cancel</Button>
                 <Button
-                  onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, notes: adminNotes })}
+                  onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse })}
                   disabled={updateDispute.isPending}
                 >
-                  {updateDispute.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  {updateDispute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Update Dispute
                 </Button>
               </div>
