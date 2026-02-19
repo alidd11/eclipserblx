@@ -18,26 +18,26 @@ Deno.serve(async (req) => {
     const result = await sendBotMessage(CHANNEL_ID, {
       embeds: [
         {
-          title: "✦ Company Information ✦",
+          title: "✦ COMPANY INFORMATION ✦",
           description:
-            "**About Us**\n" +
+            "**ABOUT US**\n" +
             "At Eclipse we provide you a safe, secure and trustable marketplace in which you can sell your Roblox Assets on. We promote reliability, sustainability and creativity with our marketplace.\n\n" +
             "Our marketplace is designed to keep your assets protected with DMCA protection and compliance along with our multiple levels of online security.\n\n" +
             "All assets, all ranges and categories, Eclipse Marketplace is the marketplace for you.\n\n" +
-            `Join today! - [Eclipse](${SITE_URL})`,
+            `[JOIN TODAY](${SITE_URL}) - Eclipse`,
           color: ECLIPSE_COLOR,
         },
         {
-          title: "✉ Community Relations ✉",
+          title: "✉ COMMUNITY RELATIONS ✉",
           description:
-            `**[Eclipse Terms of Service](${SITE_URL}/terms)**\n\n` +
-            `**[Eclipse Refund Policy](${SITE_URL}/refund-policy)**\n\n` +
-            `**[Eclipse Privacy Policy](${SITE_URL}/privacy)**\n\n` +
-            `**[Eclipse DMCA / IP Policy](${SITE_URL}/dmca)**\n\n` +
-            `**[Eclipse Marketplace](${SITE_URL})**\n\n` +
-            `**[Partnership Requirements](https://docs.google.com/document/d/1Xtpx8FAVvj1SkwruuiP0o656hlxLpCqnSEQUj92uzcM/edit?usp=sharing)**\n\n` +
-            `**[Eclipse Jobs](${SITE_URL}/careers)**\n\n` +
-            `**[Eclipse FAQ](${SITE_URL}/faq)**`,
+            `**[ECLIPSE TERMS OF SERVICE](${SITE_URL}/terms)**\n\n` +
+            `**[ECLIPSE REFUND POLICY](${SITE_URL}/refund-policy)**\n\n` +
+            `**[ECLIPSE PRIVACY POLICY](${SITE_URL}/privacy)**\n\n` +
+            `**[ECLIPSE DMCA / IP POLICY](${SITE_URL}/dmca)**\n\n` +
+            `**[ECLIPSE MARKETPLACE](${SITE_URL})**\n\n` +
+            `**[PARTNERSHIP REQUIREMENTS](https://docs.google.com/document/d/1Xtpx8FAVvj1SkwruuiP0o656hlxLpCqnSEQUj92uzcM/edit?usp=sharing)**\n\n` +
+            `**[ECLIPSE JOBS](${SITE_URL}/careers)**\n\n` +
+            `**[ECLIPSE FAQ](${SITE_URL}/faq)**`,
           color: ECLIPSE_COLOR,
           image: {
             url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png",
