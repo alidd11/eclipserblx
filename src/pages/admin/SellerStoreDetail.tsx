@@ -33,8 +33,7 @@ export default function SellerStoreDetail() {
   const [passwordError, setPasswordError] = useState(false);
   const [pendingAction, setPendingAction] = useState<'delete' | 'deactivate' | null>(null);
 
-  // Password for destructive store actions
-  const STORE_ACTION_PASSWORD = 'VinoAI2024!';
+  // Re-authenticate for destructive actions (server-side password verification)
   const isAdminManagedStore = storeId ? ADMIN_MANAGED_STORES.includes(storeId as any) : false;
 
   // Fetch store details with owner info
@@ -789,7 +788,7 @@ export default function SellerStoreDetail() {
           </Card>
         </div>
 
-        {/* Deactivate Confirmation with Password */}
+        {/* Deactivate Confirmation with Re-auth */}
         <AlertDialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -799,21 +798,25 @@ export default function SellerStoreDetail() {
               </AlertDialogTitle>
               <AlertDialogDescription>
                 This will temporarily disable "{store.name}". The store can be reactivated later.
-                Enter the admin password to confirm.
+                Enter your account password to confirm.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-4 py-4">
               <Input
                 type="password"
-                placeholder="Enter admin password"
+                placeholder="Enter your account password"
                 value={actionPassword}
                 onChange={(e) => {
                   setActionPassword(e.target.value);
                   setPasswordError(false);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    if (actionPassword === STORE_ACTION_PASSWORD) {
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter' && user?.email) {
+                    const { error } = await supabase.auth.signInWithPassword({
+                      email: user.email,
+                      password: actionPassword,
+                    });
+                    if (!error) {
                       toggleActiveMutation.mutate(false);
                       setShowDeactivateDialog(false);
                       setActionPassword('');
@@ -833,8 +836,13 @@ export default function SellerStoreDetail() {
               <Button
                 variant="outline"
                 className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
-                onClick={() => {
-                  if (actionPassword === STORE_ACTION_PASSWORD) {
+                onClick={async () => {
+                  if (!user?.email) return;
+                  const { error } = await supabase.auth.signInWithPassword({
+                    email: user.email,
+                    password: actionPassword,
+                  });
+                  if (!error) {
                     toggleActiveMutation.mutate(false);
                     setShowDeactivateDialog(false);
                     setActionPassword('');
@@ -849,7 +857,7 @@ export default function SellerStoreDetail() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Delete Confirmation with Password */}
+        {/* Delete Confirmation with Re-auth */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -860,21 +868,25 @@ export default function SellerStoreDetail() {
               <AlertDialogDescription>
                 This will permanently delete "{store.name}" and deactivate all its products. 
                 Order history will be preserved. This action cannot be undone.
-                Enter the admin password to confirm.
+                Enter your account password to confirm.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-4 py-4">
               <Input
                 type="password"
-                placeholder="Enter admin password"
+                placeholder="Enter your account password"
                 value={actionPassword}
                 onChange={(e) => {
                   setActionPassword(e.target.value);
                   setPasswordError(false);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    if (actionPassword === STORE_ACTION_PASSWORD) {
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter' && user?.email) {
+                    const { error } = await supabase.auth.signInWithPassword({
+                      email: user.email,
+                      password: actionPassword,
+                    });
+                    if (!error) {
                       deleteStoreMutation.mutate();
                       setShowDeleteDialog(false);
                       setActionPassword('');
@@ -893,8 +905,13 @@ export default function SellerStoreDetail() {
               <AlertDialogCancel onClick={() => setActionPassword('')}>Cancel</AlertDialogCancel>
               <Button
                 variant="destructive"
-                onClick={() => {
-                  if (actionPassword === STORE_ACTION_PASSWORD) {
+                onClick={async () => {
+                  if (!user?.email) return;
+                  const { error } = await supabase.auth.signInWithPassword({
+                    email: user.email,
+                    password: actionPassword,
+                  });
+                  if (!error) {
                     deleteStoreMutation.mutate();
                     setShowDeleteDialog(false);
                     setActionPassword('');
