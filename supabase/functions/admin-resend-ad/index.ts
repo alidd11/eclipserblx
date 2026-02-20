@@ -81,7 +81,8 @@ serve(async (req) => {
 
     // Extract and strip ALL [View Image](url) markdown links from description
     // Discord plain text doesn't render markdown hyperlinks
-    const markdownLinkRegex = /\[View Image\]\((https?:\/\/[^\)]+)\)/gi;
+    // Regex allows one level of parentheses inside URLs (e.g. image-(1).png)
+    const markdownLinkRegex = /\[View Image\]\((https?:\/\/(?:[^\(\)]+|\([^\)]*\))+)\)/gi;
     const extractedImageUrls: string[] = ad.image_url ? [ad.image_url] : [];
     const cleanDescription = ad.description.replace(markdownLinkRegex, (_, url) => {
       extractedImageUrls.push(url.trim());
@@ -90,7 +91,7 @@ serve(async (req) => {
 
     // Also strip any bare [text](url) markdown links since they don't work in plain text
     // Replace them with just the raw URL so Discord can render them
-    const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+    const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/(?:[^\(\)]+|\([^\)]*\))+)\)/g;
     const fullyCleanDescription = cleanDescription.replace(anyMarkdownLink, (_, text, url) => url);
 
     // Get subscription tier for footer

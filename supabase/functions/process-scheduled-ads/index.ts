@@ -91,7 +91,8 @@ serve(async (req) => {
     for (const ad of scheduledAds) {
       try {
         // Extract and strip ALL [View Image](url) markdown links from description
-        const markdownLinkRegex = /\[View Image\]\((https?:\/\/[^\)]+)\)/gi;
+        // Regex allows one level of parentheses inside URLs (e.g. image-(1).png)
+        const markdownLinkRegex = /\[View Image\]\((https?:\/\/(?:[^\(\)]+|\([^\)]*\))+)\)/gi;
         const extractedImageUrls: string[] = ad.image_url ? [ad.image_url] : [];
         const cleanDescription = ad.description.replace(markdownLinkRegex, (_, url) => {
           extractedImageUrls.push(url.trim());
@@ -99,7 +100,7 @@ serve(async (req) => {
         }).replace(/\n{3,}/g, '\n\n').trim();
 
         // Convert remaining markdown links to raw URLs so Discord can render them
-        const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+        const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/(?:[^\(\)]+|\([^\)]*\))+)\)/g;
         const fullyCleanDescription = cleanDescription.replace(anyMarkdownLink, (_, _text, url) => url);
 
         // Build ping prefix
