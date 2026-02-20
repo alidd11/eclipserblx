@@ -126,14 +126,13 @@ serve(async (req) => {
     // Build plain text message using cleaned description
     let plainText = `${pingPrefix}📢 **${ad.title}**\n\n${fullyCleanDescription}`;
     if (ad.link_url) {
+      // Only shorten the link URL (not images — raw URLs needed for Discord auto-embed)
       const shortLink = await shortenUrl(ad.link_url);
       plainText += `\n\n🔗 ${shortLink}`;
     }
     // Post raw image URL so Discord auto-embeds it as an inline image
-    if (extractedImageUrl) {
-      const shortImg = await shortenUrl(extractedImageUrl);
-      plainText += `\n${shortImg}`;
-    }
+    // NOTE: URL must end with an image extension (.jpg/.png) for Discord to embed it
+    if (extractedImageUrl) plainText += `\n${extractedImageUrl}`;
     plainText += `\n\n${footerLine}`;
     // Enforce Discord's 2000 char limit
     if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';
