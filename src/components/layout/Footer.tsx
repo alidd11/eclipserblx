@@ -36,9 +36,9 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border mt-auto">
-      <div className="container mx-auto px-4 py-10">
+      <div className="px-4 sm:px-6 lg:px-8 py-10 max-w-3xl">
         {/* 3-column link grid */}
-        <div className="grid grid-cols-3 gap-8 mb-10">
+        <div className="grid grid-cols-3 gap-12 mb-10">
           {columns.map((col) => (
             <div key={col.heading} className="flex flex-col gap-4">
               <p className="text-sm font-bold text-foreground">{col.heading}</p>
@@ -61,7 +61,7 @@ export function Footer() {
         <div className="border-t border-border mb-6" />
 
         {/* Bottom copyright */}
-        <div className="flex flex-col items-center gap-1 text-center">
+        <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
