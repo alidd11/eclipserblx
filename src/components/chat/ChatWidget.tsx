@@ -1,6 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
- import { MessageCircle, HelpCircle, Ticket, X } from 'lucide-react';
+import { MessageCircle, HelpCircle, Ticket, X } from 'lucide-react';
 import { useChatPanel } from '@/hooks/useChatPanel';
+import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { useState, forwardRef } from 'react';
 
 // Opening hours configuration (24-hour format)
@@ -36,8 +37,15 @@ function getOpeningStatus() {
 export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_props, _ref) {
   const location = useLocation();
   const { toggleChat, isOpen, unreadCount } = useChatPanel();
+  const { showBanner, showSettings } = useCookieConsent();
   const status = getOpeningStatus();
   const [showInfo, setShowInfo] = useState(false);
+
+  const cookieBannerVisible = showBanner && !showSettings;
+  // Estimated cookie banner height (~80px) + safe area
+  const bottomOffset = cookieBannerVisible
+    ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'
+    : 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)';
 
   // Hide the chat widget on admin pages only
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -56,7 +64,7 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
           className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center active:scale-95 transition-transform"
           style={{
             WebkitTapHighlightColor: 'transparent',
-            bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)',
+            bottom: bottomOffset,
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
           }}
           aria-label={isOpen ? 'Close chat' : 'Open chat'}
@@ -85,7 +93,9 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
           onClick={() => setShowInfo(true)}
           className="fixed z-[9998] h-6 w-6 rounded-full bg-muted shadow-sm touch-manipulation cursor-pointer flex items-center justify-center hover:bg-muted transition-colors"
           style={{
-            bottom: 'max(4.5rem, env(safe-area-inset-bottom, 0px) + 4rem)',
+            bottom: cookieBannerVisible
+              ? 'calc(9rem + env(safe-area-inset-bottom, 0px))'
+              : 'max(4.5rem, env(safe-area-inset-bottom, 0px) + 4rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
           }}
           aria-label="View support info"
