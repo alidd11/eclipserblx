@@ -302,13 +302,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
 
     const linkClassName = cn(
-      "rounded-md text-[13px] font-medium select-none",
+      "text-[13px] font-medium select-none",
       "transition-colors duration-100",
       isCollapsed
-        ? "flex items-center justify-center py-1.5"
-        : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
+        ? "flex items-center justify-center py-1.5 rounded-md"
+        : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md",
       isActive
-        ? "bg-muted text-foreground"
+        ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
     );
 
