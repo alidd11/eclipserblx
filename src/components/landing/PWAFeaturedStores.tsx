@@ -48,16 +48,18 @@ function useAlgorithmicStores() {
 
 function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
   const { t } = useTranslation();
-  const accentBorder = store.accent_color ? { borderColor: store.accent_color } : undefined;
+  const accentStyle = store.accent_color
+    ? { borderColor: store.accent_color }
+    : undefined;
 
   return (
     <Link
       to={`/store/${store.slug}`}
-      className="group relative block rounded-lg overflow-hidden border bg-card transition-all duration-300 hover:shadow-lg active:scale-[0.99]"
-      style={accentBorder}
+      className="group relative block rounded-lg overflow-hidden border bg-card transition-all duration-300 hover:shadow-xl active:scale-[0.99]"
+      style={accentStyle}
     >
-      {/* Banner */}
-      <div className="relative h-24 overflow-hidden">
+      {/* Cinematic Banner */}
+      <div className="relative h-40 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
           style={{
@@ -66,57 +68,56 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
               : 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted-foreground) / 0.2))'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        {/* Badges */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+
+        {/* Badges top-right */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
           {store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-medium">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-semibold shadow">
               <Award className="h-3 w-3" />{t('landing.trusted')}
             </span>
           )}
           {store.is_verified && !store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-medium">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-semibold shadow">
               <ShieldCheck className="h-3 w-3" />{t('landing.verified')}
             </span>
           )}
         </div>
-        {/* Logo + name overlaid on banner */}
-        <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
-          <div className="w-10 h-10 rounded-lg bg-card border-2 border-card overflow-hidden shadow-md flex-shrink-0">
+
+        {/* Logo + Store info overlaid at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 flex items-end gap-3">
+          <div className="w-12 h-12 rounded-lg bg-card border-2 border-white/20 overflow-hidden shadow-lg flex-shrink-0">
             {store.logo_url ? (
               <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-sm font-bold bg-muted text-muted-foreground">
+              <div className="w-full h-full flex items-center justify-center text-base font-bold bg-muted text-muted-foreground">
                 {store.name.charAt(0)}
               </div>
             )}
           </div>
-          <div className="min-w-0 pb-0.5">
-            <h3 className="font-semibold text-sm text-white truncate">{store.name}</h3>
-            {store.average_rating ? (
-              <span className="text-xs text-white/70">
-                <span className="text-amber-400">★</span> {store.average_rating.toFixed(1)}
-              </span>
-            ) : null}
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base text-white truncate leading-tight">{store.name}</h3>
+            <div className="flex items-center gap-2 mt-0.5">
+              {(store.follower_count ?? 0) > 0 && (
+                <span className="flex items-center gap-1 text-[11px] text-white/60">
+                  <Users className="h-3 w-3" />{store.follower_count}
+                </span>
+              )}
+              {(store.product_count ?? 0) > 0 && (
+                <span className="flex items-center gap-1 text-[11px] text-white/60">
+                  <Package className="h-3 w-3" />{store.product_count} products
+                </span>
+              )}
+              {store.average_rating ? (
+                <span className="text-[11px] text-white/60">
+                  <span className="text-amber-400">★</span> {store.average_rating.toFixed(1)}
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="px-2.5 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {(store.follower_count ?? 0) > 0 && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Users className="h-2.5 w-2.5" />{store.follower_count}
-              </span>
-            )}
-            {(store.product_count ?? 0) > 0 && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Package className="h-2.5 w-2.5" />{store.product_count}
-              </span>
-            )}
-          </div>
-          <span className="flex items-center text-[11px] text-primary font-medium group-hover:underline">
-            {t('landing.viewStore')}<ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          <span className="flex items-center gap-0.5 text-[11px] text-white/80 font-medium group-hover:text-white transition-colors flex-shrink-0">
+            {t('landing.viewStore')}<ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
       </div>
