@@ -104,8 +104,8 @@ serve(async (req) => {
           timestamp: new Date().toISOString(),
           footer: {
             text: ad.discord_username 
-              ? `Sponsored • @${ad.discord_username} • Eclipse Ads ${tier.charAt(0).toUpperCase() + tier.slice(1)}`
-              : `Sponsored • Eclipse Ads ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
+              ? `Sponsored • @${ad.discord_username} • Eclipse Ads`
+              : `Sponsored • Eclipse Ads`,
           },
         };
 

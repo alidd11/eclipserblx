@@ -101,11 +101,9 @@ serve(async (req) => {
       .eq("status", "active")
       .maybeSingle();
 
-    const tier = subscription?.tier || "basic";
-    const tierLabel = `Eclipse Ads ${tier.charAt(0).toUpperCase() + tier.slice(1)}`;
     const footerLine = ad.discord_username
-      ? `*Sponsored • @${ad.discord_username} • ${tierLabel}*`
-      : `*Sponsored • ${tierLabel}*`;
+      ? `*Sponsored • @${ad.discord_username} • Eclipse Ads*`
+      : `*Sponsored • Eclipse Ads*`;
 
     // Build ping content
     let pingPrefix = "";
