@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_schedule_slots: {
+        Row: {
+          ad_id: string | null
+          booked_at: string | null
+          created_at: string
+          id: string
+          slot_date: string
+          slot_time: string
+          tier: string
+          user_id: string | null
+        }
+        Insert: {
+          ad_id?: string | null
+          booked_at?: string | null
+          created_at?: string
+          id?: string
+          slot_date: string
+          slot_time: string
+          tier?: string
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string | null
+          booked_at?: string | null
+          created_at?: string
+          id?: string
+          slot_date?: string
+          slot_time?: string
+          tier?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_schedule_slots_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "discord_advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_chat_messages: {
         Row: {
           attachment_url: string | null
