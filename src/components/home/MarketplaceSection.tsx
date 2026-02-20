@@ -86,16 +86,16 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
           {(store.is_verified || store.is_trusted) && (
             <div className="flex items-center gap-1.5 mb-2">
               {store.is_verified && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary border border-primary/30 px-1.5 py-0.5">
                   <ShieldCheck className="h-2.5 w-2.5" />
                   Verified
-                </Badge>
+                </span>
               )}
               {store.is_trusted && (
-                <Badge className="text-[10px] px-1.5 py-0 gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-500 border border-amber-500/30 px-1.5 py-0.5">
                   <Award className="h-2.5 w-2.5" />
                   Trusted
-                </Badge>
+                </span>
               )}
             </div>
           )}
@@ -278,19 +278,16 @@ export function MarketplaceSection() {
   if (!isMarketplacePublic && !isAdmin) {
     return (
       <section className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <Store className="h-4 w-4" />
-            Eclipse Marketplace
-          </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Coming Soon</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            The Eclipse Marketplace is preparing for launch. Want to be one of our first sellers? 
-            Apply now to set up your store and be ready when we go live!
+        <div className="border-t border-border pt-6">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">Eclipse Marketplace</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">Coming Soon</h2>
+          <p className="text-muted-foreground max-w-xl text-sm leading-relaxed">
+            The Eclipse Marketplace is preparing for launch. Want to be one of our first sellers?
+            Apply now and be ready when we go live.
           </p>
         </div>
         {!isSeller && (
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl">
             <BecomeSellerCard />
           </div>
         )}
@@ -327,10 +324,10 @@ export function MarketplaceSection() {
                 <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))
             ) : (
-              <div className="col-span-full text-center py-12">
-                <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">No stores available yet.</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for amazing sellers!</p>
+              <div className="col-span-full py-12 border-t border-b border-border">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-2">Marketplace</p>
+                <p className="text-lg font-bold text-foreground">No stores yet</p>
+                <p className="text-sm text-muted-foreground mt-1">Check back soon — sellers are on the way.</p>
               </div>
             )}
           </div>
