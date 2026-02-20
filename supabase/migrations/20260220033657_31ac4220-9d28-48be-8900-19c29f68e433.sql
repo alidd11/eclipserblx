@@ -1,0 +1,2 @@
+ALTER TABLE public.discord_advertisements DROP CONSTRAINT discord_advertisements_status_check;
+ALTER TABLE public.discord_advertisements ADD CONSTRAINT discord_advertisements_status_check CHECK (status = ANY (ARRAY['pending'::text, 'paid'::text, 'posted'::text, 'failed'::text, 'scheduled'::text]));
