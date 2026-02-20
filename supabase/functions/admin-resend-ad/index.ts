@@ -114,8 +114,8 @@ serve(async (req) => {
     // Build plain text message using cleaned description
     let plainText = `${pingPrefix}📢 **${ad.title}**\n\n${fullyCleanDescription}`;
     if (ad.link_url) plainText += `\n\n🔗 ${ad.link_url}`;
-    // Post image URL as clickable markdown link on its own line
-    if (extractedImageUrl) plainText += `\n[Product Image](${extractedImageUrl})`;
+    // Post raw image URL so Discord auto-embeds it as an inline image
+    if (extractedImageUrl) plainText += `\n${extractedImageUrl}`;
     plainText += `\n\n${footerLine}`;
     // Enforce Discord's 2000 char limit
     if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';

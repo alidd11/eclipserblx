@@ -284,7 +284,8 @@ serve(async (req) => {
     }
 
     if (validImageUrls.length > 0) {
-      plainText += `\n${validImageUrls.map((url, i) => `[Product Image${validImageUrls.length > 1 ? ` ${i + 1}` : ''}](${url})`).join('\n')}`;
+      // Post raw URLs so Discord auto-embeds them as inline images
+      plainText += `\n${validImageUrls.join('\n')}`;
     }
 
     plainText += `\n\n${footerLine}`;
