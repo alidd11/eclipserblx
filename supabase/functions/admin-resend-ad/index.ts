@@ -111,11 +111,29 @@ serve(async (req) => {
     if (ad.ping_type === "everyone") pingPrefix = "@everyone\n";
     else if (ad.ping_type === "here") pingPrefix = "@here\n";
 
+    // Helper: shorten a URL via TinyURL free API
+    const shortenUrl = async (url: string): Promise<string> => {
+      try {
+        const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+          const short = (await res.text()).trim();
+          if (short.startsWith('http')) return short;
+        }
+      } catch { /* fall through */ }
+      return url;
+    };
+
     // Build plain text message using cleaned description
     let plainText = `${pingPrefix}📢 **${ad.title}**\n\n${fullyCleanDescription}`;
-    if (ad.link_url) plainText += `\n\n🔗 ${ad.link_url}`;
+    if (ad.link_url) {
+      const shortLink = await shortenUrl(ad.link_url);
+      plainText += `\n\n🔗 ${shortLink}`;
+    }
     // Post raw image URL so Discord auto-embeds it as an inline image
-    if (extractedImageUrl) plainText += `\n${extractedImageUrl}`;
+    if (extractedImageUrl) {
+      const shortImg = await shortenUrl(extractedImageUrl);
+      plainText += `\n${shortImg}`;
+    }
     plainText += `\n\n${footerLine}`;
     // Enforce Discord's 2000 char limit
     if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';

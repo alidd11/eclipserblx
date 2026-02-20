@@ -276,16 +276,30 @@ serve(async (req) => {
       ? `*Sponsored • @${sanitizedDiscordUsername} • ${tierLabel}*`
       : `*Sponsored • ${tierLabel}*`;
 
+    // Helper: shorten a URL via TinyURL free API
+    const shortenUrl = async (url: string): Promise<string> => {
+      try {
+        const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+          const short = (await res.text()).trim();
+          if (short.startsWith('http')) return short;
+        }
+      } catch { /* fall through */ }
+      return url;
+    };
+
     // Build plain text message — show full ad
     let plainText = `${pingPrefix}📢 **${sanitizedTitle}**\n\n${sanitizedDescription}`;
 
     if (linkUrl) {
-      plainText += `\n\n🔗 ${linkUrl}`;
+      const shortLink = await shortenUrl(linkUrl);
+      plainText += `\n\n🔗 ${shortLink}`;
     }
 
     if (validImageUrls.length > 0) {
-      // Post raw URLs so Discord auto-embeds them as inline images
-      plainText += `\n${validImageUrls.join('\n')}`;
+      // Shorten and post raw URLs so Discord auto-embeds them as inline images
+      const shortImgUrls = await Promise.all(validImageUrls.map(shortenUrl));
+      plainText += `\n${shortImgUrls.join('\n')}`;
     }
 
     plainText += `\n\n${footerLine}`;
