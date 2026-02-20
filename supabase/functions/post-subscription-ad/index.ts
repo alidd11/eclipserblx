@@ -52,7 +52,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, imageUrl, linkUrl, discordUsername, pingType, scheduledFor } = await req.json();
+    const { title, description, imageUrls, linkUrl, discordUsername, pingType, scheduledFor } = await req.json();
 
     // Validate inputs
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -67,10 +67,22 @@ serve(async (req) => {
     if (description.length > 500) {
       throw new Error("Description must be 500 characters or less");
     }
-    
-    if (imageUrl && (typeof imageUrl !== 'string' || imageUrl.length > 500 || !isValidUrl(imageUrl))) {
-      throw new Error("Invalid image URL");
+
+    // Validate imageUrls array (up to 3)
+    const validImageUrls: string[] = [];
+    if (imageUrls && Array.isArray(imageUrls)) {
+      for (const url of imageUrls) {
+        if (!url || typeof url !== 'string' || !url.trim()) continue;
+        if (url.length > 500 || !isValidUrl(url)) {
+          throw new Error("Invalid image URL: " + url.substring(0, 50));
+        }
+        validImageUrls.push(url.trim());
+      }
     }
+    if (validImageUrls.length > 3) {
+      throw new Error("Maximum 3 image URLs allowed");
+    }
+
     if (linkUrl && (typeof linkUrl !== 'string' || linkUrl.length > 500 || !isValidUrl(linkUrl))) {
       throw new Error("Invalid link URL");
     }
@@ -196,7 +208,7 @@ serve(async (req) => {
         user_id: user.id,
         title: sanitizedTitle,
         description: sanitizedDescription,
-        image_url: imageUrl?.trim() || null,
+        image_url: validImageUrls[0] || null,
         link_url: linkUrl?.trim() || null,
         discord_username: sanitizedDiscordUsername,
         status: parsedScheduledFor ? "scheduled" : "paid",
@@ -271,8 +283,8 @@ serve(async (req) => {
       plainText += `\n\n🔗 ${linkUrl}`;
     }
 
-    if (imageUrl) {
-      plainText += `\n${imageUrl}`;
+    if (validImageUrls.length > 0) {
+      plainText += `\n${validImageUrls.join('\n')}`;
     }
 
     plainText += `\n\n${footerLine}`;

@@ -51,7 +51,7 @@ export default function Advertise() {
   const [adFormData, setAdFormData, clearAdFormData] = useFormPersistence('advertise-form', {
     title: '',
     description: '',
-    imageUrl: '',
+    imageUrls: ['', '', ''] as string[],
     linkUrl: '',
     discordUsername: '',
   });
@@ -124,7 +124,7 @@ export default function Advertise() {
       setAdFormData({
         title: lastAd.title || '',
         description: lastAd.description || '',
-        imageUrl: lastAd.image_url || '',
+        imageUrls: [lastAd.image_url || '', '', ''],
         linkUrl: lastAd.link_url || '',
         discordUsername: lastAd.discord_username || '',
       });
@@ -217,7 +217,7 @@ export default function Advertise() {
         body: { 
           title: adFormData.title, 
           description: adFormData.description, 
-          imageUrl: adFormData.imageUrl || null,
+          imageUrls: adFormData.imageUrls?.filter(u => u.trim()) || [],
           linkUrl: adFormData.linkUrl || null,
           discordUsername: adFormData.discordUsername || null,
           pingType: selectedPing === 'none' ? null : selectedPing,
@@ -687,17 +687,26 @@ export default function Advertise() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="imageUrl" className="flex items-center gap-2">
+                        <Label className="flex items-center gap-2">
                           <ImageIcon className="h-4 w-4" />
-                          Image URL (optional)
+                          Image URLs (optional)
+                          <span className="text-xs text-muted-foreground font-normal">
+                            — up to {tiers?.find(t => t.tier === subscription?.tier)?.max_images ?? 1}
+                          </span>
                         </Label>
-                        <Input
-                          id="imageUrl"
-                          type="url"
-                          placeholder="https://example.com/image.png"
-                          value={adFormData.imageUrl}
-                          onChange={(e) => setAdFormData({ imageUrl: e.target.value })}
-                        />
+                        {Array.from({ length: tiers?.find(t => t.tier === subscription?.tier)?.max_images ?? 1 }).map((_, i) => (
+                          <Input
+                            key={i}
+                            type="url"
+                            placeholder={`https://example.com/image${i + 1}.png`}
+                            value={(adFormData.imageUrls ?? [])[i] ?? ''}
+                            onChange={(e) => {
+                              const updated = [...(adFormData.imageUrls ?? ['', '', ''])];
+                              updated[i] = e.target.value;
+                              setAdFormData({ imageUrls: updated });
+                            }}
+                          />
+                        ))}
                       </div>
 
                       <div className="space-y-2">
