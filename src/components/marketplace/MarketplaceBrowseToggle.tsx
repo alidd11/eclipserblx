@@ -16,19 +16,19 @@ const tabs: { mode: BrowseMode; label: string; icon: typeof Store }[] = [
 
 export function MarketplaceBrowseToggle({ mode, onChange }: MarketplaceBrowseToggleProps) {
   return (
-    <div className="flex items-center gap-2 max-w-md mx-auto">
+    <div className="flex items-center border-b border-border">
       {tabs.map(({ mode: m, label, icon: Icon }) => (
         <button
           key={m}
           onClick={() => onChange(m)}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-all duration-200 flex-1 justify-center',
+            'flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-150 border-b-2 -mb-px relative',
             mode === m
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'
+              ? 'border-primary text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3.5 w-3.5" />
           {label}
         </button>
       ))}

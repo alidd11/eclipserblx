@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,7 +39,7 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
   
   return (
     <Link to={`/store/${store.slug}`}>
-      <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden h-full border-border/50 hover:border-primary/30">
+      <div className="group overflow-hidden h-full border border-border hover:border-primary/40 transition-colors duration-200 rounded-md bg-card">
         <div 
           className="h-20 relative overflow-hidden"
           style={{ 
@@ -59,7 +59,7 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
           )}
         </div>
         
-        <CardContent className="pt-0 -mt-8 relative">
+        <div className="pt-0 -mt-8 relative px-3 pb-3">
           <div className="flex items-start gap-3 mb-1">
             {store.logo_url ? (
               <img 
@@ -113,17 +113,17 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
             </span>
             <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }
 
 function StoreCardSkeleton() {
   return (
-    <Card className="overflow-hidden h-full">
+    <div className="overflow-hidden h-full border border-border rounded-md bg-card">
       <Skeleton className="h-20 rounded-none" />
-      <CardContent className="pt-0 -mt-8 relative">
+      <div className="pt-0 -mt-8 relative px-3 pb-3">
         <div className="flex items-start gap-3 mb-3">
           <Skeleton className="h-14 w-14 rounded-lg flex-shrink-0" />
           <div className="flex-1 pt-4 space-y-2">
@@ -133,8 +133,8 @@ function StoreCardSkeleton() {
         </div>
         <Skeleton className="h-8 w-full mb-3" />
         <Skeleton className="h-3 w-20" />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

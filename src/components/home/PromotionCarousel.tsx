@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Store, ArrowRight, Percent } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useCallback, useEffect, useState } from 'react';
@@ -19,22 +18,22 @@ export function PromotionCarousel() {
     {
       id: 'affiliate',
       icon: Percent,
+      label: 'AFFILIATES',
       title: t('landing.affiliateTitle'),
       description: t('landing.affiliateDesc'),
       cta: t('landing.affiliateCta'),
       link: '/affiliate',
-      accentColor: 'text-foreground',
-      bgAccent: 'bg-muted',
+      accentClass: 'bg-primary',
     },
     {
       id: 'seller',
       icon: Store,
+      label: 'SELLERS',
       title: t('landing.sellerTitle'),
       description: t('landing.sellerDesc'),
       cta: t('landing.sellerCta'),
       link: '/account',
-      accentColor: 'text-amber-500',
-      bgAccent: 'bg-amber-500/10',
+      accentClass: 'bg-amber-500',
     },
   ];
 
@@ -62,80 +61,55 @@ export function PromotionCarousel() {
 
   const currentPromo = promotions[selectedIndex] || promotions[0];
 
+  const renderSlide = (promo: typeof promotions[0]) => (
+    <div className="flex items-center justify-between gap-4 px-5 py-4">
+      <div className="flex items-center gap-4 min-w-0">
+        {/* Left accent bar + icon */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className={`w-0.5 h-10 ${promo.accentClass} rounded-full`} />
+          <promo.icon className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <div className="min-w-0">
+          <span className={`text-[10px] font-bold tracking-widest uppercase ${promo.id === 'seller' ? 'text-amber-500' : 'text-primary'} block mb-0.5`}>{promo.label}</span>
+          <h3 className="font-semibold text-sm text-foreground truncate">{promo.title}</h3>
+          <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{promo.description}</p>
+        </div>
+      </div>
+      <Link
+        to={promo.link}
+        className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {promo.cta}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+    </div>
+  );
+
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden">
-      <div 
-        ref={emblaRef} 
+    <div className="border border-border bg-card rounded-md overflow-hidden">
+      <div
+        ref={emblaRef}
         className={`overflow-hidden transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0 absolute'}`}
       >
         <div className="flex">
           {promotions.map((promo) => (
             <div key={promo.id} className="flex-[0_0_100%] min-w-0">
-              <div className="p-5 md:p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className={`w-12 h-12 rounded-xl ${promo.bgAccent} flex items-center justify-center shrink-0`}>
-                      <promo.icon className={`h-6 w-6 ${promo.accentColor}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-base md:text-lg truncate">{promo.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 max-w-md">{promo.description}</p>
-                    </div>
-                  </div>
-                  <Link to={promo.link} className="shrink-0 hidden sm:block">
-                    <Button variant="outline" className={`${promo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
-                      {promo.cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-                <Link to={promo.link} className="block sm:hidden mt-4">
-                  <Button variant="outline" className={`w-full ${promo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
-                    {promo.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
+              {renderSlide(promo)}
             </div>
           ))}
         </div>
       </div>
 
-      {!isReady && (
-        <div className="p-5 md:p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
-              <div className={`w-12 h-12 rounded-xl ${currentPromo.bgAccent} flex items-center justify-center shrink-0`}>
-                <currentPromo.icon className={`h-6 w-6 ${currentPromo.accentColor}`} />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-semibold text-base md:text-lg truncate">{currentPromo.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 max-w-md">{currentPromo.description}</p>
-              </div>
-            </div>
-            <Link to={currentPromo.link} className="shrink-0 hidden sm:block">
-              <Button variant="outline" className={`${currentPromo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
-                {currentPromo.cta}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <Link to={currentPromo.link} className="block sm:hidden mt-4">
-            <Button variant="outline" className={`w-full ${currentPromo.id === 'affiliate' ? '' : 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10'}`}>
-              {currentPromo.cta}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      )}
+      {!isReady && renderSlide(currentPromo)}
 
-      <div className="flex justify-center gap-2 pb-4">
+      {/* Dots */}
+      <div className="flex justify-center gap-1.5 pb-3">
         {promotions.map((_, index) => (
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === selectedIndex ? 'bg-primary w-6' : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+            className={`h-0.5 rounded-full transition-all duration-300 ${
+              index === selectedIndex ? 'bg-foreground w-5' : 'bg-border w-2'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
