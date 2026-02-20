@@ -94,22 +94,35 @@ serve(async (req) => {
     const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/(?:[^\(\)]+|\([^\)]*\))+)\)/g;
     const fullyCleanDescription = cleanDescription.replace(anyMarkdownLink, (_, text, url) => url);
 
-    // Get subscription tier for footer
-    const { data: subscription } = await supabaseAdmin
-      .from("advertisement_subscriptions")
-      .select("tier")
-      .eq("user_id", ad.user_id)
-      .eq("status", "active")
-      .maybeSingle();
+    // Get subscription and check seller status in parallel
+    const [{ data: subscription }, { data: sellerStore }] = await Promise.all([
+      supabaseAdmin
+        .from("advertisement_subscriptions")
+        .select("tier, partnership_pings_balance")
+        .eq("user_id", ad.user_id)
+        .eq("status", "active")
+        .maybeSingle(),
+      supabaseAdmin
+        .from("stores")
+        .select("id")
+        .eq("owner_id", ad.user_id)
+        .eq("is_active", true)
+        .maybeSingle(),
+    ]);
+
+    const isSeller = !!sellerStore;
+    const partnershipPingsBalance = subscription?.partnership_pings_balance || 0;
+    const SELLER_PARTNERSHIP_PING_ROLE_ID = '1461853576694468876';
 
     const footerLine = ad.discord_username
       ? `*Sponsored • @${ad.discord_username} • Eclipse Ads*`
       : `*Sponsored • Eclipse Ads*`;
 
-    // Build ping content
+    // Build ping content — respect stored ping_type, fall back to partnership ping for sellers
     let pingPrefix = "";
     if (ad.ping_type === "everyone") pingPrefix = "@everyone\n";
     else if (ad.ping_type === "here") pingPrefix = "@here\n";
+    else if (isSeller && partnershipPingsBalance > 0) pingPrefix = `<@&${SELLER_PARTNERSHIP_PING_ROLE_ID}>\n`;
 
     // Helper: shorten a URL via TinyURL free API
     const shortenUrl = async (url: string): Promise<string> => {
@@ -136,8 +149,16 @@ serve(async (req) => {
       plainText += `\n${extractedImageUrls.join('\n')}`;
     }
     plainText += `\n\n${footerLine}`;
-    // Enforce Discord's 2000 char limit
-    if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';
+    // Enforce Discord's 2000 char limit — truncate description only, not image URLs or footer
+    if (plainText.length > 2000) {
+      const overhead = pingPrefix.length + `📢 **${ad.title}**\n\n`.length + (ad.link_url ? 30 : 0) + extractedImageUrls.join('\n').length + footerLine.length + 10;
+      const maxDesc = 2000 - overhead;
+      const truncatedDesc = fullyCleanDescription.substring(0, maxDesc) + '...';
+      plainText = `${pingPrefix}📢 **${ad.title}**\n\n${truncatedDesc}`;
+      if (ad.link_url) plainText += `\n\n🔗 ${await shortenUrl(ad.link_url)}`;
+      if (extractedImageUrls.length > 0) plainText += `\n${extractedImageUrls.join('\n')}`;
+      plainText += `\n\n${footerLine}`;
+    }
 
     // Post to Discord
     const discordRes = await fetch(webhookUrl + "?wait=true", {
