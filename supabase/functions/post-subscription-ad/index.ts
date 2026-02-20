@@ -52,7 +52,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, imageUrls, linkUrl, discordUsername, pingType, scheduledFor } = await req.json();
+    const { title, description, imageUrls, linkUrl, discordUsername, pingType, scheduledFor, slotId } = await req.json();
 
     // Validate inputs
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -154,10 +154,17 @@ serve(async (req) => {
 
     logStep("Subscription valid", { tier: subscription.tier, adsUsed, adsPerMonth });
 
-    // Check if scheduling is allowed (Pro+ only)
-    const canSchedule = subscription.tier === 'pro' || subscription.tier === 'premium';
-    if (parsedScheduledFor && !canSchedule) {
-      throw new Error("Scheduling is only available for Pro and Premium subscribers");
+    // All tiers can schedule; validate slot if provided
+    if (parsedScheduledFor && slotId) {
+      // Mark the slot as booked
+      const { error: slotError } = await supabaseAdmin
+        .from("ad_schedule_slots")
+        .update({ user_id: userId, booked_at: new Date().toISOString() })
+        .eq("id", slotId)
+        .is("user_id", null); // Only book if not already taken
+      if (slotError) {
+        throw new Error("That slot is already taken. Please choose another.");
+      }
     }
 
     // Check if the user is a seller (has an active store)

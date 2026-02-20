@@ -13,11 +13,10 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart, History, Calendar, Clock } from 'lucide-react';
+import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart, History, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { AdSlotPicker, SelectedSlot } from '@/components/ads/AdSlotPicker';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
 
@@ -60,10 +59,8 @@ export default function Advertise() {
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
   
-  // Scheduling state (Pro+ only)
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
-  const [scheduledTime, setScheduledTime] = useState('12:00');
-  
+  // Scheduling state — slot-based
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
   // Ping purchase quantities for checkout
   const [herePingsToAdd, setHerePingsToAdd] = useState(0);
   const [everyonePingsToAdd, setEveryonePingsToAdd] = useState(0);
@@ -204,13 +201,15 @@ export default function Advertise() {
         throw new Error('Please sign in to post an advertisement');
       }
 
-      // Build scheduled_for timestamp if date is selected
+      // Build scheduled_for from selected slot
       let scheduledFor: string | null = null;
-      if (scheduledDate && canSchedule) {
-        const [hours, minutes] = scheduledTime.split(':').map(Number);
-        const scheduled = new Date(scheduledDate);
+      let slotId: string | null = null;
+      if (selectedSlot) {
+        const [hours, minutes] = selectedSlot.time.split(':').map(Number);
+        const scheduled = new Date(selectedSlot.date);
         scheduled.setHours(hours, minutes, 0, 0);
         scheduledFor = scheduled.toISOString();
+        slotId = selectedSlot.slotId;
       }
 
       const { data, error } = await supabase.functions.invoke('post-subscription-ad', {
@@ -222,6 +221,7 @@ export default function Advertise() {
           discordUsername: adFormData.discordUsername || null,
           pingType: selectedPing === 'none' ? null : selectedPing,
           scheduledFor,
+          slotId,
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -235,8 +235,7 @@ export default function Advertise() {
     onSuccess: (data) => {
       clearAdFormData();
       setSelectedPing('none');
-      setScheduledDate(undefined);
-      setScheduledTime('12:00');
+      setSelectedSlot(null);
       refetchSubscription();
       if (data?.scheduled) {
         toast.success('Advertisement scheduled successfully!');
@@ -812,83 +811,33 @@ export default function Advertise() {
                         </p>
                       </div>
 
-                      {/* Scheduling (Pro+ only) */}
-                      {canSchedule && (
-                        <div className="space-y-3 p-4 rounded-lg border border-purple-500/30 bg-purple-500/5">
-                          <Label className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-purple-500" />
-                            Schedule Ad (Pro+ Feature)
-                          </Label>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label className="text-xs text-muted-foreground">Date</Label>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal",
-                                      !scheduledDate && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <Calendar className="mr-2 h-4 w-4" />
-                                    {scheduledDate ? format(scheduledDate, "PPP") : "Post immediately"}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <CalendarComponent
-                                    mode="single"
-                                    selected={scheduledDate}
-                                    onSelect={setScheduledDate}
-                                    disabled={(date) => date < new Date()}
-                                    initialFocus
-                                    className="p-3 pointer-events-auto"
-                                  />
-                                  {scheduledDate && (
-                                    <div className="p-3 border-t">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setScheduledDate(undefined)}
-                                        className="w-full"
-                                      >
-                                        Clear (Post Immediately)
-                                      </Button>
-                                    </div>
-                                  )}
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                            <div className="space-y-2">
-                              <Label className="text-xs text-muted-foreground">Time</Label>
-                              <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type="time"
-                                  value={scheduledTime}
-                                  onChange={(e) => setScheduledTime(e.target.value)}
-                                  disabled={!scheduledDate}
-                                  className="pl-10"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          {scheduledDate && (
-                            <p className="text-xs text-purple-500">
-                              Your ad will be posted on {format(scheduledDate, "PPP")} at {scheduledTime}
-                            </p>
+                      {/* Scheduling — slot picker for all tiers */}
+                      <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
+                        <Label className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          Schedule Your Ad
+                          {subscription?.tier === 'basic' && (
+                            <span className="text-xs text-muted-foreground font-normal">(same-day or next-day)</span>
                           )}
-                        </div>
-                      )}
-
-                      {!canSchedule && subscription?.tier === 'basic' && (
-                        <div className="p-3 rounded-lg border border-border bg-muted/30">
-                          <p className="text-xs text-muted-foreground flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>Upgrade to <strong>Pro</strong> or <strong>Premium</strong> to schedule ads in advance</span>
+                          {subscription?.tier === 'pro' && (
+                            <span className="text-xs text-muted-foreground font-normal">(up to 3 days ahead)</span>
+                          )}
+                          {subscription?.tier === 'premium' && (
+                            <span className="text-xs text-muted-foreground font-normal">(up to 7 days ahead)</span>
+                          )}
+                        </Label>
+                        <AdSlotPicker
+                          tier={(subscription?.tier as 'basic' | 'pro' | 'premium') ?? 'basic'}
+                          userId={user?.id ?? ''}
+                          value={selectedSlot}
+                          onChange={setSelectedSlot}
+                        />
+                        {!selectedSlot && (
+                          <p className="text-xs text-muted-foreground">
+                            No slot selected — your ad will be posted immediately upon submission.
                           </p>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       <Button
                         type="submit"
@@ -898,12 +847,12 @@ export default function Advertise() {
                       >
                         {postAdMutation.isPending ? (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : scheduledDate ? (
+                        ) : selectedSlot ? (
                           <Calendar className="h-4 w-4 mr-2" />
                         ) : (
                           <Sparkles className="h-4 w-4 mr-2" />
                         )}
-                        {scheduledDate 
+                        {selectedSlot
                           ? `Schedule Advertisement (${subscription.ads_remaining} remaining)`
                           : `Post Advertisement (${subscription.ads_remaining} remaining)`
                         }
