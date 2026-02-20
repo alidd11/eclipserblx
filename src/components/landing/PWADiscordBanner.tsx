@@ -1,4 +1,5 @@
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { ArrowRight } from 'lucide-react';
 
 function DiscordLogo({ className }: { className?: string }) {
   return (
@@ -16,19 +17,22 @@ export function PWADiscordBanner() {
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block rounded-lg overflow-hidden border border-border bg-[#5865F2] hover:bg-[#4752C4] transition-colors active:scale-[0.99]"
+      className="group flex items-center justify-between border border-border bg-card hover:border-[#5865F2]/50 transition-colors duration-200 rounded-md px-5 py-3.5 overflow-hidden relative"
     >
-      <div className="flex items-center justify-between px-4 py-3.5">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-white/15 flex-shrink-0">
-            <DiscordLogo className="h-5 w-5 text-white" />
-          </div>
-          <div className="min-w-0">
-            <h4 className="text-sm font-bold text-white tracking-tight">JOIN THE COMMUNITY</h4>
-            <p className="text-[11px] text-white/70 truncate">Chat, get support & stay updated</p>
-          </div>
+      {/* Left accent */}
+      <div className="absolute left-0 inset-y-0 w-0.5 bg-[#5865F2]" />
+
+      <div className="flex items-center gap-3 min-w-0 pl-1">
+        <DiscordLogo className="h-4 w-4 text-[#5865F2] shrink-0" />
+        <div className="min-w-0">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#5865F2] block mb-0.5">COMMUNITY</span>
+          <p className="text-sm font-semibold text-foreground truncate">JOIN THE DISCORD SERVER</p>
         </div>
-        <span className="text-white/80 text-lg flex-shrink-0">→</span>
+      </div>
+
+      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
+        Join
+        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
       </div>
     </a>
   );
