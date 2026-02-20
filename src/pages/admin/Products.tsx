@@ -167,7 +167,8 @@ export default function AdminProducts() {
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products', search, filterCategory, filterStore, filterStatus],
     queryFn: async () => {
-      let query = supabase.from('products').select(`*, categories(name)`).order('created_at', { ascending: false });
+      let query = supabase.from('products').select(`*, categories(name)`).order('created_at', { ascending: false })
+        .eq('is_seller_product', false); // Only show admin-managed products here; seller products are under Marketplace > Seller Products
       if (search) query = query.ilike('name', `%${search}%`);
       if (filterCategory && filterCategory !== 'all') query = query.eq('category_id', filterCategory);
       if (filterStore && filterStore !== 'all') {
