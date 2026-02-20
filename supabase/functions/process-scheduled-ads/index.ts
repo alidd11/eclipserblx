@@ -128,7 +128,25 @@ serve(async (req) => {
         } else if (ad.ping_type === 'here') {
           messageContent = "@here";
         } else if (partnershipPingRoleId) {
-          messageContent = `<@&${partnershipPingRoleId}>`;
+          // Only ping partnership role if the user has balance remaining
+          const { data: subForPing } = await supabaseAdmin
+            .from("advertisement_subscriptions")
+            .select("id, partnership_pings_balance")
+            .eq("user_id", ad.user_id)
+            .eq("status", "active")
+            .maybeSingle();
+
+          if (subForPing && subForPing.partnership_pings_balance > 0) {
+            messageContent = `<@&${partnershipPingRoleId}>`;
+            // Deduct 1 from partnership ping balance
+            await supabaseAdmin
+              .from("advertisement_subscriptions")
+              .update({ partnership_pings_balance: subForPing.partnership_pings_balance - 1 })
+              .eq("id", subForPing.id);
+            logStep(`Deducted partnership ping for ad ${ad.id}`, { remaining: subForPing.partnership_pings_balance - 1 });
+          } else {
+            logStep(`No partnership ping balance for ad ${ad.id}, skipping ping`);
+          }
         }
 
         logStep(`Posting scheduled ad ${ad.id} to Discord`, { title: ad.title, pingType: ad.ping_type });
