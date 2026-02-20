@@ -865,3 +865,10 @@ video.background-video::-webkit-media-controls-play-button {
 video.background-video::-webkit-media-controls-start-playback-button {
   display: none !important;
 }
+
+/* Skeleton shimmer sweep */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
