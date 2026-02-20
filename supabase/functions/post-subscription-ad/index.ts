@@ -292,14 +292,14 @@ serve(async (req) => {
     let plainText = `${pingPrefix}📢 **${sanitizedTitle}**\n\n${sanitizedDescription}`;
 
     if (linkUrl) {
+      // Only shorten the link URL (not images — raw URLs needed for Discord auto-embed)
       const shortLink = await shortenUrl(linkUrl);
       plainText += `\n\n🔗 ${shortLink}`;
     }
 
     if (validImageUrls.length > 0) {
-      // Shorten and post raw URLs so Discord auto-embeds them as inline images
-      const shortImgUrls = await Promise.all(validImageUrls.map(shortenUrl));
-      plainText += `\n${shortImgUrls.join('\n')}`;
+      // Post raw URLs — Discord requires the actual image URL (with extension) to auto-embed
+      plainText += `\n${validImageUrls.join('\n')}`;
     }
 
     plainText += `\n\n${footerLine}`;
