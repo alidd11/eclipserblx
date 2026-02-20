@@ -79,16 +79,17 @@ serve(async (req) => {
       }
     }
 
-    // Extract and strip [View Image](url) markdown links from description
+    // Extract and strip ALL [View Image](url) markdown links from description
     // Discord plain text doesn't render markdown hyperlinks
     const markdownLinkRegex = /\[View Image\]\((https?:\/\/[^\)]+)\)/gi;
-    let extractedImageUrl = ad.image_url || null;
+    const extractedImageUrls: string[] = ad.image_url ? [ad.image_url] : [];
     const cleanDescription = ad.description.replace(markdownLinkRegex, (_, url) => {
-      if (!extractedImageUrl) extractedImageUrl = url.trim();
+      extractedImageUrls.push(url.trim());
       return ''; // remove from description
     }).replace(/\n{3,}/g, '\n\n').trim(); // clean up excess blank lines
 
     // Also strip any bare [text](url) markdown links since they don't work in plain text
+    // Replace them with just the raw URL so Discord can render them
     const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
     const fullyCleanDescription = cleanDescription.replace(anyMarkdownLink, (_, text, url) => url);
 
@@ -130,9 +131,11 @@ serve(async (req) => {
       const shortLink = await shortenUrl(ad.link_url);
       plainText += `\n\n🔗 ${shortLink}`;
     }
-    // Post raw image URL so Discord auto-embeds it as an inline image
-    // NOTE: URL must end with an image extension (.jpg/.png) for Discord to embed it
-    if (extractedImageUrl) plainText += `\n${extractedImageUrl}`;
+    // Post all raw image URLs so Discord auto-embeds them inline
+    // NOTE: URLs must end with an image extension (.jpg/.png) for Discord to embed them
+    if (extractedImageUrls.length > 0) {
+      plainText += `\n${extractedImageUrls.join('\n')}`;
+    }
     plainText += `\n\n${footerLine}`;
     // Enforce Discord's 2000 char limit
     if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';
