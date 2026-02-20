@@ -28,13 +28,13 @@ const BOOKING_WINDOWS: Record<string, number> = {
 };
 
 const TIME_LABELS: Record<string, string> = {
-  '09:00': '9:00 AM',
-  '13:00': '1:00 PM',
-  '17:00': '5:00 PM',
-  '21:00': '9:00 PM',
+  '18:00': '6:00 PM',
+  '19:00': '7:00 PM',
+  '20:00': '8:00 PM',
+  '22:00': '10:00 PM',
 };
 
-const ALL_SLOTS = ['09:00', '13:00', '17:00', '21:00'];
+const ALL_SLOTS = ['18:00', '19:00', '20:00', '22:00'];
 
 export function AdSlotPicker({ tier, userId, value, onChange }: AdSlotPickerProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(value?.date ?? undefined);
