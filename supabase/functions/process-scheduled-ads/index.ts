@@ -11,11 +11,16 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[PROCESS-SCHEDULED-ADS] ${step}${detailsStr}`);
 };
 
-// Tier ads limits for embed color
-const TIER_COLORS: Record<string, number> = {
-  'basic': 0x3498DB,
-  'pro': 0x9B59B6,
-  'premium': 0xFFD700,
+// Helper: shorten a URL via TinyURL free API
+const shortenUrl = async (url: string): Promise<string> => {
+  try {
+    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+    if (res.ok) {
+      const short = (await res.text()).trim();
+      if (short.startsWith('http')) return short;
+    }
+  } catch { /* fall through */ }
+  return url;
 };
 
 serve(async (req) => {
@@ -85,49 +90,23 @@ serve(async (req) => {
 
     for (const ad of scheduledAds) {
       try {
-        // Get user's subscription tier for embed color
-        const { data: subscription } = await supabaseAdmin
-          .from("advertisement_subscriptions")
-          .select("tier")
-          .eq("user_id", ad.user_id)
-          .eq("status", "active")
-          .maybeSingle();
+        // Extract and strip ALL [View Image](url) markdown links from description
+        const markdownLinkRegex = /\[View Image\]\((https?:\/\/[^\)]+)\)/gi;
+        const extractedImageUrls: string[] = ad.image_url ? [ad.image_url] : [];
+        const cleanDescription = ad.description.replace(markdownLinkRegex, (_, url) => {
+          extractedImageUrls.push(url.trim());
+          return '';
+        }).replace(/\n{3,}/g, '\n\n').trim();
 
-        const tier = subscription?.tier || 'basic';
-        const embedColor = TIER_COLORS[tier] || TIER_COLORS.basic;
+        // Convert remaining markdown links to raw URLs so Discord can render them
+        const anyMarkdownLink = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+        const fullyCleanDescription = cleanDescription.replace(anyMarkdownLink, (_, _text, url) => url);
 
-        // Build Discord embed
-        const embed: Record<string, unknown> = {
-          title: `📢 ${ad.title}`,
-          description: ad.description,
-          color: embedColor,
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: ad.discord_username 
-              ? `Sponsored • @${ad.discord_username} • Eclipse Ads`
-              : `Sponsored • Eclipse Ads`,
-          },
-        };
-
-        if (ad.image_url) {
-          embed.image = { url: ad.image_url };
-        }
-
-        if (ad.link_url) {
-          embed.fields = [{
-            name: "🔗 Learn More",
-            value: `[Click here](${ad.link_url})`,
-            inline: false,
-          }];
-        }
-
-        // Build content with ping if selected
-        let messageContent = "";
-        if (ad.ping_type === 'everyone') {
-          messageContent = "@everyone";
-        } else if (ad.ping_type === 'here') {
-          messageContent = "@here";
-        } else if (partnershipPingRoleId) {
+        // Build ping prefix
+        let pingPrefix = "";
+        if (ad.ping_type === 'everyone') pingPrefix = "@everyone\n";
+        else if (ad.ping_type === 'here') pingPrefix = "@here\n";
+        else if (partnershipPingRoleId) {
           // Only ping partnership role if the user has balance remaining
           const { data: subForPing } = await supabaseAdmin
             .from("advertisement_subscriptions")
@@ -137,7 +116,7 @@ serve(async (req) => {
             .maybeSingle();
 
           if (subForPing && subForPing.partnership_pings_balance > 0) {
-            messageContent = `<@&${partnershipPingRoleId}>`;
+            pingPrefix = `<@&${partnershipPingRoleId}>\n`;
             // Deduct 1 from partnership ping balance
             await supabaseAdmin
               .from("advertisement_subscriptions")
@@ -149,16 +128,32 @@ serve(async (req) => {
           }
         }
 
-        logStep(`Posting scheduled ad ${ad.id} to Discord`, { title: ad.title, pingType: ad.ping_type });
+        // Footer line
+        const footerLine = ad.discord_username
+          ? `*Sponsored • @${ad.discord_username} • Eclipse Ads*`
+          : `*Sponsored • Eclipse Ads*`;
 
-        // Post to Discord
-        const discordResponse = await fetch(webhookUrl, {
+        // Build plain text message (same approach as admin-resend-ad)
+        let plainText = `${pingPrefix}📢 **${ad.title}**\n\n${fullyCleanDescription}`;
+        if (ad.link_url) {
+          const shortLink = await shortenUrl(ad.link_url);
+          plainText += `\n\n🔗 ${shortLink}`;
+        }
+        // Post all raw image URLs so Discord auto-embeds them inline
+        if (extractedImageUrls.length > 0) {
+          plainText += `\n${extractedImageUrls.join('\n')}`;
+        }
+        plainText += `\n\n${footerLine}`;
+        // Enforce Discord's 2000 char limit
+        if (plainText.length > 2000) plainText = plainText.substring(0, 1997) + '...';
+
+        logStep(`Posting scheduled ad ${ad.id} to Discord`, { title: ad.title, pingType: ad.ping_type, imageCount: extractedImageUrls.length });
+
+        // Post to Discord as plain text (with ?wait=true to get message ID back)
+        const discordResponse = await fetch(webhookUrl + "?wait=true", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: messageContent || undefined,
-            embeds: [embed],
-          }),
+          body: JSON.stringify({ content: plainText }),
         });
 
         if (!discordResponse.ok) {
@@ -178,18 +173,22 @@ serve(async (req) => {
           continue;
         }
 
+        const discordResult = await discordResponse.json();
+        const newMessageId = discordResult?.id || null;
+
         // Update advertisement status to posted
         await supabaseAdmin
           .from("discord_advertisements")
           .update({ 
             status: "posted", 
             posted_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            discord_message_id: newMessageId,
           })
           .eq("id", ad.id);
 
         processedCount++;
-        logStep(`Successfully posted scheduled ad ${ad.id}`);
+        logStep(`Successfully posted scheduled ad ${ad.id}`, { messageId: newMessageId });
 
         // Add a small delay between posts to avoid rate limiting
         if (scheduledAds.indexOf(ad) < scheduledAds.length - 1) {
