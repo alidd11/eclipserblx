@@ -707,6 +707,12 @@ export default function Advertise() {
                             }}
                           />
                         ))}
+                        <p className="text-xs text-muted-foreground flex items-start gap-1">
+                          <AlertCircle className="h-3 w-3 mt-0.5 shrink-0 text-yellow-500" />
+                          <span>
+                            Image URLs <strong>must end with a file extension</strong> (e.g. <code className="text-xs bg-muted px-1 rounded">.jpg</code>, <code className="text-xs bg-muted px-1 rounded">.png</code>, <code className="text-xs bg-muted px-1 rounded">.gif</code>) to display in Discord. Use the <strong>direct image link</strong>, not a short link or page URL.
+                          </span>
+                        </p>
                       </div>
 
                       <div className="space-y-2">
