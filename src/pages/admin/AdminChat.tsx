@@ -441,8 +441,10 @@ function AdminChatContent() {
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['admin-chat-messages'] });
     },
-    onError: () => {
+    onError: (error: any) => {
       hapticError();
+      console.error('Send message error:', error);
+      toast.error('Failed to send message', { description: error?.message || 'Please try again' });
     },
   });
 
