@@ -124,8 +124,10 @@ serve(async (req) => {
     else if (ad.ping_type === "here") pingPrefix = "@here\n";
     else if (isSeller && partnershipPingsBalance > 0) pingPrefix = `<@&${SELLER_PARTNERSHIP_PING_ROLE_ID}>\n`;
 
-    // Helper: shorten a URL via TinyURL free API
+    // Helper: shorten a URL via TinyURL free API (skip Discord links)
     const shortenUrl = async (url: string): Promise<string> => {
+      // Don't shorten Discord invite links
+      if (/discord\.(gg|com|io)/i.test(url)) return url;
       try {
         const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
         if (res.ok) {
