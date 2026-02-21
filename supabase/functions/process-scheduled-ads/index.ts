@@ -11,8 +11,10 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[PROCESS-SCHEDULED-ADS] ${step}${detailsStr}`);
 };
 
-// Helper: shorten a URL via TinyURL free API
+// Helper: shorten a URL via TinyURL free API (skip Discord links)
 const shortenUrl = async (url: string): Promise<string> => {
+  // Don't shorten Discord invite links
+  if (/discord\.(gg|com|io)/i.test(url)) return url;
   try {
     const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
     if (res.ok) {
