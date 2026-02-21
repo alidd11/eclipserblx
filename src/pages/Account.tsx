@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
+import { CreditsCard } from '@/components/account/CreditsCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
@@ -763,6 +764,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               {hasMarketplaceAccess && <BecomeSellerCard />}
               <ReferralCard />
               <AffiliateCard />
+              <CreditsCard />
             </div>
           </TabsContent>
 

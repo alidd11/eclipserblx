@@ -17,20 +17,21 @@ export function PWADiscordBanner() {
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center justify-between border border-border bg-card hover:border-[#5865F2]/50 transition-colors duration-200 rounded-md px-5 py-3.5 overflow-hidden relative"
+      className="group flex items-center justify-between border border-border bg-card hover:border-[#5865F2]/50 transition-colors duration-200 rounded-md overflow-hidden"
     >
-      {/* Left accent */}
-      <div className="absolute left-0 inset-y-0 w-0.5 bg-[#5865F2]" />
-
-      <div className="flex items-center gap-3 min-w-0 pl-1">
-        <DiscordLogo className="h-4 w-4 text-[#5865F2] shrink-0" />
+      <div className="flex items-center gap-4 min-w-0 px-5 py-4">
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-0.5 h-10 bg-[#5865F2] rounded-full" />
+          <DiscordLogo className="h-5 w-5 text-muted-foreground" />
+        </div>
         <div className="min-w-0">
           <span className="text-[10px] font-bold tracking-widest uppercase text-[#5865F2] block mb-0.5">COMMUNITY</span>
-          <p className="text-sm font-semibold text-foreground truncate">JOIN THE DISCORD SERVER</p>
+          <h3 className="font-semibold text-sm text-foreground truncate">Join the Discord Server</h3>
+          <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">Chat, get support & stay updated with the community</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
+      <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors pr-5">
         Join
         <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
       </div>
