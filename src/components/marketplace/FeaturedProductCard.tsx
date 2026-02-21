@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
 import { cn } from '@/lib/utils';
 
 interface FeaturedProduct {
@@ -33,6 +34,34 @@ export function FeaturedProductCard() {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
+  // First check for a promoted product
+  const { data: promotedProduct } = useQuery({
+    queryKey: ['promoted-featured-product'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_promotions')
+        .select(`
+          id, product_id,
+          products!inner (
+            id, name, slug, price, images, description, category_id, is_resellable, download_count,
+            categories (name, slug),
+            stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          )
+        `)
+        .eq('slot_type', 'featured')
+        .eq('status', 'active')
+        .order('current_bid', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      if (!data?.[0]) return null;
+      
+      const promo = data[0] as any;
+      return { ...promo.products, _promoted: true } as FeaturedProduct & { _promoted?: boolean };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: product, isLoading } = useQuery({
     queryKey: ['featured-product-standalone'],
     queryFn: async () => {
@@ -56,6 +85,7 @@ export function FeaturedProductCard() {
       return (data?.[0] as unknown as FeaturedProduct) ?? null;
     },
     staleTime: 5 * 60 * 1000,
+    enabled: !promotedProduct, // only fetch fallback if no promoted product
   });
 
   if (isLoading) {
@@ -67,24 +97,28 @@ export function FeaturedProductCard() {
     );
   }
 
-  if (!product) return null;
+  // Use promoted product if available, otherwise fallback
+  const displayProduct = promotedProduct || product;
+  const isPromoted = !!(promotedProduct as any)?._promoted;
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
+  if (!displayProduct) return null;
+
+  const isEligible = isEligibleForDiscount(displayProduct.category_id, displayProduct.is_resellable, displayProduct.stores?.eclipse_plus_discount_enabled);
+  const memberPrice = isEligible ? getMemberPrice(displayProduct.price, displayProduct.category_id, displayProduct.is_resellable) : displayProduct.price;
+  const discountPercent = getDiscountPercent(displayProduct.category_id, displayProduct.is_resellable);
+  const hasMemberDiscount = isEligible && memberPrice < displayProduct.price;
 
   return (
     <div className="space-y-2">
       <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Featured</span>
-      <Link to={`/products/${product.slug}`} className="group block">
+      <Link to={`/products/${displayProduct.slug}`} className="group block">
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
           {/* Product image */}
           <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">
-            {product.images?.[0] ? (
+            {displayProduct.images?.[0] ? (
               <img
-                src={product.images[0]}
-                alt={product.name}
+                src={displayProduct.images[0]}
+                alt={displayProduct.name}
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             ) : (
@@ -94,18 +128,25 @@ export function FeaturedProductCard() {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
+            {/* Promoted badge */}
+            {isPromoted && (
+              <div className="absolute top-2 right-2">
+                <PromotedBadge size="md" />
+              </div>
+            )}
+
             {/* Content overlay */}
             <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5">
               {/* Category */}
-              {product.categories?.name && (
+              {displayProduct.categories?.name && (
                 <span className="text-[10px] font-medium uppercase tracking-wider text-white/50 mb-0.5">
-                  {product.categories.name}
+                  {displayProduct.categories.name}
                 </span>
               )}
 
               {/* Product name */}
               <h3 className="text-white font-display font-bold text-sm sm:text-lg line-clamp-1 leading-tight">
-                {product.name}
+                {displayProduct.name}
               </h3>
 
               {/* Price row */}
@@ -113,14 +154,14 @@ export function FeaturedProductCard() {
                 {hasMemberDiscount ? (
                   <>
                     <span className="text-amber-400 font-bold text-xs sm:text-sm">{formatPrice(memberPrice)}</span>
-                    <span className="text-white/40 text-[10px] sm:text-xs line-through">{formatPrice(product.price)}</span>
+                    <span className="text-white/40 text-[10px] sm:text-xs line-through">{formatPrice(displayProduct.price)}</span>
                     <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-amber-500/15 text-amber-400 text-[9px] sm:text-[10px] font-semibold">
                       <Crown className="h-2.5 w-2.5" />
                       -{discountPercent}%
                     </span>
                   </>
                 ) : (
-                  <span className="text-white font-bold text-xs sm:text-sm">{formatPrice(product.price)}</span>
+                  <span className="text-white font-bold text-xs sm:text-sm">{formatPrice(displayProduct.price)}</span>
                 )}
               </div>
             </div>
@@ -129,16 +170,16 @@ export function FeaturedProductCard() {
           {/* Store strip */}
           <div className="h-8 relative flex items-center gap-1.5 px-3 overflow-hidden bg-muted/60">
             <div className="flex items-center gap-1.5 min-w-0">
-              {product.stores?.logo_url ? (
-                <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded-sm object-cover flex-shrink-0" />
+              {displayProduct.stores?.logo_url ? (
+                <img src={displayProduct.stores.logo_url} alt="" className="h-4 w-4 rounded-sm object-cover flex-shrink-0" />
               ) : (
                 <div className="h-4 w-4 rounded-sm bg-muted flex-shrink-0" />
               )}
               <span className="text-[11px] font-medium truncate text-muted-foreground">
-                {product.stores?.name}
+                {displayProduct.stores?.name}
               </span>
-              {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-              {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+              {displayProduct.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+              {displayProduct.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
             </div>
           </div>
         </div>

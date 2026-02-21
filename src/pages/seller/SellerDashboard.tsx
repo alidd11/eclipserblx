@@ -27,7 +27,8 @@ import {
   BarChart3,
   Tag,
   DollarSign,
-  LayoutGrid
+  LayoutGrid,
+  Megaphone
 } from 'lucide-react';
 
 const CURRENT_TOS_VERSION = "1.0";
@@ -79,6 +80,7 @@ export default function SellerDashboard() {
     { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
     { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
     { title: 'Categories', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
+    { title: 'Promote', href: '/seller/promote', icon: Megaphone, description: 'Boost products' },
   ];
 
   return (
@@ -129,7 +131,7 @@ export default function SellerDashboard() {
             <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
               {quickActions.map((action, i) => (
                 <Link key={action.href} to={action.href}>
                   <motion.div
